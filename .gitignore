@@ -1,0 +1,19 @@
+target
+
+# mvn hpi:run
+work
+
+# IntelliJ IDEA project files
+*.iml
+*.iws
+*.ipr
+.idea
+
+# Eclipse project files
+.settings
+.classpath
+.project
+.factorypath
+
+# VS Code project files
+.vscode

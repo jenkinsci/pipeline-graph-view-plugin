@@ -1,0 +1,4 @@
+<?jelly escape-by-default='true'?>
+<div>
+    Provides "Pipeline Graph" visualization of a pipeline job run.
+</div>

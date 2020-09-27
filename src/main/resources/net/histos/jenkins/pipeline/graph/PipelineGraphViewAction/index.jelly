@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+    <l:layout title="Pipeline Graph">
+        <st:include page="sidepanel.jelly" it="${it.run}"/>
+        <l:main-panel>
+            Pipeline Graph!
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

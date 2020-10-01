@@ -1,7 +1,12 @@
+node
+node_modules
 target
 
 # mvn hpi:run
 work
+
+# frontend build output
+src/main/webapp
 
 # IntelliJ IDEA project files
 *.iml

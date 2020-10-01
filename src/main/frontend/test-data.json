@@ -1,0 +1,167 @@
+[
+    {
+      "name": "Build",
+      "children": [],
+      "state": "success",
+      "completePercent": 50,
+      "id": 111,
+      "type": "STAGE",
+      "title": "Build"
+    },
+    {
+      "name": "Test",
+      "children": [
+        {
+          "name": "JUnit",
+          "children": [],
+          "state": "success",
+          "completePercent": 50,
+          "id": 112,
+          "type": "PARALLEL",
+          "title": "JUnit"
+        },
+        {
+          "name": "DBUnit",
+          "children": [],
+          "state": "success",
+          "completePercent": 50,
+          "id": 113,
+          "type": "PARALLEL",
+          "title": "DBUnit"
+        },
+        {
+          "name": "Jasmine",
+          "children": [],
+          "state": "success",
+          "completePercent": 50,
+          "id": 114,
+          "type": "PARALLEL",
+          "title": "Jasmine"
+        }
+      ],
+      "state": "not_built",
+      "completePercent": 50,
+      "id": 115,
+      "type": "STAGE",
+      "title": "Test"
+    },
+    {
+      "name": "Browser Tests",
+      "children": [
+        {
+          "name": "Firefox",
+          "children": [],
+          "state": "success",
+          "completePercent": 50,
+          "id": 116,
+          "type": "PARALLEL",
+          "title": "Firefox"
+        },
+        {
+          "name": "Edge",
+          "children": [],
+          "state": "failure",
+          "completePercent": 50,
+          "id": 117,
+          "type": "PARALLEL",
+          "title": "Edge"
+        },
+        {
+          "name": "Safari",
+          "children": [],
+          "state": "running",
+          "completePercent": 60,
+          "id": 118,
+          "type": "PARALLEL",
+          "title": "Safari"
+        },
+        {
+          "name": "Chrome",
+          "children": [],
+          "state": "running",
+          "completePercent": 120,
+          "id": 119,
+          "type": "PARALLEL",
+          "title": "Chrome"
+        }
+      ],
+      "state": "not_built",
+      "completePercent": 50,
+      "id": 120,
+      "type": "STAGE",
+      "title": "Browser Tests"
+    },
+    {
+      "name": "Skizzled",
+      "children": [],
+      "state": "skipped",
+      "completePercent": 50,
+      "id": 121,
+      "type": "STAGE",
+      "title": "Skizzled"
+    },
+    {
+      "name": "Foshizzle",
+      "children": [],
+      "state": "skipped",
+      "completePercent": 50,
+      "id": 122,
+      "type": "STAGE",
+      "title": "Foshizzle"
+    },
+    {
+      "name": "Dev",
+      "children": [
+        {
+          "name": "US-East",
+          "children": [],
+          "state": "success",
+          "completePercent": 50,
+          "id": 123,
+          "type": "PARALLEL",
+          "title": "US-East"
+        },
+        {
+          "name": "US-West",
+          "children": [],
+          "state": "success",
+          "completePercent": 50,
+          "id": 124,
+          "type": "PARALLEL",
+          "title": "US-West"
+        },
+        {
+          "name": "APAC",
+          "children": [],
+          "state": "success",
+          "completePercent": 50,
+          "id": 125,
+          "type": "PARALLEL",
+          "title": "APAC"
+        }
+      ],
+      "state": "success",
+      "completePercent": 50,
+      "id": 126,
+      "type": "STAGE",
+      "title": "Dev"
+    },
+    {
+      "name": "Staging",
+      "children": [],
+      "state": "skipped",
+      "completePercent": 50,
+      "id": 127,
+      "type": "STAGE",
+      "title": "Staging"
+    },
+    {
+      "name": "Production",
+      "children": [],
+      "state": "not_built",
+      "completePercent": 50,
+      "id": 128,
+      "type": "STAGE",
+      "title": "Production"
+    }
+  ]

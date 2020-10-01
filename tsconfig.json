@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+      "outDir": "./src/main/webapp/js",
+      "sourceMap": true,
+      "noImplicitAny": true,
+      "strict": true,
+      "module": "commonjs",
+      "target": "es6",
+      "jsx": "react",
+      "resolveJsonModule": true
+    }
+  }

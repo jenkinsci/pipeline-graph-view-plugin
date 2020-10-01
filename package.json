@@ -1,0 +1,40 @@
+{
+  "name": "pipeline-graph-view-plugin",
+  "version": "1.0.0",
+  "description": "Pipeline Graph visualization for Jenkins pipelines",
+  "private": true,
+  "scripts": {
+    "mvnbuild": "npm run build",
+    "build": "webpack --mode production",
+    "build:dev": "webpack --mode development --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:cliffmeyers/pipeline-graph-view-plugin.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cliffmeyers/pipeline-graph-view-plugin/issues"
+  },
+  "homepage": "https://github.com/cliffmeyers/pipeline-graph-view-plugin/#readme",
+  "dependencies": {
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
+  },
+  "devDependencies": {
+    "@types/node": "10.17.35",
+    "@types/react": "^16.9.35",
+    "@types/react-dom": "^16.9.8",
+    "css-loader": "^3.5.3",
+    "sass": "1.26.11",
+    "sass-loader": "10.0.2",
+    "source-map-loader": "^0.2.4",
+    "style-loader": "^1.2.1",
+    "ts-loader": "^7.0.5",
+    "typescript": "^3.9.3",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.11"
+  }
+}

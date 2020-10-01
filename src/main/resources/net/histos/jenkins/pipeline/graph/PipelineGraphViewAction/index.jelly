@@ -6,6 +6,9 @@
         <st:include page="sidepanel.jelly" it="${it.run}"/>
         <l:main-panel>
             Pipeline Graph!
+
+            <div id="root"/>
+            <script src="${rootURL}/plugin/pipeline-graph-view-plugin/js/pipeline-graph-view-bundle.js"/>
         </l:main-panel>
     </l:layout>
 </j:jelly>

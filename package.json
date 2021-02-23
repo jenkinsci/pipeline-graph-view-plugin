@@ -5,9 +5,10 @@
   "private": true,
   "scripts": {
     "mvnbuild": "npm run build",
+    "mvntest": "npm run test",
     "build": "webpack --mode production",
     "build:dev": "webpack --mode development --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: TODO add tests\" && exit 0"
   },
   "repository": {
     "type": "git",

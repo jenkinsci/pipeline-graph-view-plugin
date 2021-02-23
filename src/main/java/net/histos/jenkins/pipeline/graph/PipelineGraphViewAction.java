@@ -26,7 +26,7 @@ public class PipelineGraphViewAction implements Action, IconSpec {
 
     @Override
     public String getUrlName() {
-        return "pipelineGraph";
+        return "pipeline-graph";
     }
 
     @Override

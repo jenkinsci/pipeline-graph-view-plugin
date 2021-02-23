@@ -1,18 +1,11 @@
 package io.jenkins.plugins.pipelinegraphview;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-
-import java.util.Collections;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
 public class PipelineGraphApi {
-
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private transient WorkflowRun run;
 
@@ -20,7 +13,7 @@ public class PipelineGraphApi {
         this.run = run;
     }
 
-    private PipelineGraph generateGraph() {
+    public PipelineGraph createGraph() {
         PipelineStage stage1 = new PipelineStage(111, "Build", emptyList(), "success", 50, "STAGE", "Build");
 
         PipelineStage stage2child1 = new PipelineStage(112, "JUnit", emptyList(), "success", 50, "PARALLEL", "JUnit");
@@ -40,10 +33,5 @@ public class PipelineGraphApi {
         PipelineStage stage6 = new PipelineStage(123, "Deploy", emptyList(), "success", 50, "STAGE", "Deploy");
 
         return new PipelineGraph(asList(stage1, stage2, stage3, stage4, stage5, stage6));
-    }
-
-    public JSONObject createGraph() throws JsonProcessingException {
-        String graph = OBJECT_MAPPER.writeValueAsString(generateGraph());
-        return JSONObject.fromObject(graph);
     }
 }

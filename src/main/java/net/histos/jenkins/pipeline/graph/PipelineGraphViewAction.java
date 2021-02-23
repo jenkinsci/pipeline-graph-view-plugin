@@ -1,10 +1,12 @@
 package net.histos.jenkins.pipeline.graph;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.model.Action;
 import hudson.util.HttpResponses;
 import io.jenkins.plugins.pipelinegraphview.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.PipelineGraphApi;
+import net.sf.json.JSONObject;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
@@ -17,6 +19,8 @@ import java.util.Collections;
 
 public class PipelineGraphViewAction implements Action, IconSpec {
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     static {
         IconSet.icons.addIcon(new Icon("icon-pipeline-graph icon-md", "plugin/pipeline-graph-view/images/24x24/blueocean.png", Icon.ICON_MEDIUM_STYLE));
         IconSet.icons.addIcon(new Icon("icon-pipeline-graph icon-xl", "plugin/pipeline-graph-view/images/48x48/blueocean.png", Icon.ICON_XLARGE_STYLE));
@@ -28,13 +32,18 @@ public class PipelineGraphViewAction implements Action, IconSpec {
         this.api = new PipelineGraphApi(target);
     }
 
+    private JSONObject createGraph(PipelineGraph pipelineGraph) throws JsonProcessingException {
+        String graph = OBJECT_MAPPER.writeValueAsString(pipelineGraph);
+        return JSONObject.fromObject(graph);
+    }
+
     @GET
     @WebMethod(name = "graph")
     public HttpResponse getGraph() throws JsonProcessingException {
         // TODO for automatic json serialisation look at:
         // https://github.com/jenkinsci/blueocean-plugin/blob/4f2aa260fca22604a087629dc0da5c80735e0548/blueocean-commons/src/main/java/io/jenkins/blueocean/commons/stapler/Export.java#L101
         // https://github.com/jenkinsci/blueocean-plugin/blob/4f2aa260fca22604a087629dc0da5c80735e0548/blueocean-commons/src/main/java/io/jenkins/blueocean/commons/stapler/TreeResponse.java#L48
-        return HttpResponses.okJSON(api.createGraph());
+        return HttpResponses.okJSON(createGraph(api.createGraph()));
     }
 
     @Override

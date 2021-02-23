@@ -62,8 +62,17 @@ export class PipelineGraph extends React.Component {
         };
     }
 
-    componentWillMount() {
-        this.stagesUpdated(this.props.stages);
+    componentDidMount() {
+        fetch('graph')
+            .then(res => res.json())
+            .then((result) => {
+                this.setState({
+                    stages: result.data.stages
+                })
+                this.stagesUpdated(result.data.stages); // TODO this doesn't seem right
+            })
+            .catch(console.log)
+
     }
 
     componentWillReceiveProps(nextProps: Props) {

@@ -19,7 +19,7 @@ public class PipelineGraphViewActionFactory extends TransientActionFactory<Workf
 
     @Override
     public Collection<? extends Action> createFor(WorkflowRun target) {
-        PipelineGraphViewAction a = new PipelineGraphViewAction();
+        PipelineGraphViewAction a = new PipelineGraphViewAction(target);
         return Collections.singleton(a);
     }
     

@@ -8,7 +8,7 @@
         <relativePath />
     </parent>
     <groupId>net.histos</groupId>
-    <artifactId>pipeline-graph-view-plugin</artifactId>
+    <artifactId>pipeline-graph-view</artifactId>
     <version>${revision}${changelist}</version>
     <packaging>hpi</packaging>
     <properties>

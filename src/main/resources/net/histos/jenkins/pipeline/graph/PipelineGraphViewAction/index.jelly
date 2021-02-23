@@ -8,7 +8,7 @@
             Pipeline Graph!
 
             <div id="root"/>
-            <script src="${rootURL}/plugin/pipeline-graph-view-plugin/js/pipeline-graph-view-bundle.js"/>
+            <script src="${rootURL}/plugin/pipeline-graph-view/js/pipeline-graph-view-bundle.js"/>
         </l:main-panel>
     </l:layout>
 </j:jelly>

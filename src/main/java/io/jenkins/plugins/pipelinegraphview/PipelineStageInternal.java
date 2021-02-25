@@ -1,5 +1,6 @@
 package io.jenkins.plugins.pipelinegraphview;
 
+import java.util.Collections;
 import java.util.List;
 
 public class PipelineStageInternal {
@@ -37,8 +38,28 @@ public class PipelineStageInternal {
         return sequential;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public void setSequential(boolean sequential) {
         this.sequential = sequential;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public void setCompletePercent(int completePercent) {
+        this.completePercent = completePercent;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public void setNextSibling(PipelineStageInternal nextSibling) {
@@ -95,7 +116,7 @@ public class PipelineStageInternal {
                 type,
                 title,
                 seqContainerName,
-                nextSibling,
+                nextSibling != null ? nextSibling.toPipelineStage(Collections.emptyList()) : null,
                 sequential
         );
     }

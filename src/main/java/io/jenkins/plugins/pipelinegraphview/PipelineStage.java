@@ -12,7 +12,7 @@ public class PipelineStage {
     private String title;
     private int id; // TODO what's this for?
     private String seqContainerName;
-    private final PipelineStageInternal nextSibling;
+    private final PipelineStage nextSibling;
     private boolean sequential;
 
     public PipelineStage(
@@ -24,7 +24,7 @@ public class PipelineStage {
             String type,
             String title,
             String seqContainerName,
-            PipelineStageInternal nextSibling,
+            PipelineStage nextSibling,
             boolean sequential) {
         this.id = id;
         this.name = name;
@@ -38,7 +38,7 @@ public class PipelineStage {
         this.sequential = sequential;
     }
 
-    public PipelineStageInternal getNextSibling() {
+    public PipelineStage getNextSibling() {
         return nextSibling;
     }
 

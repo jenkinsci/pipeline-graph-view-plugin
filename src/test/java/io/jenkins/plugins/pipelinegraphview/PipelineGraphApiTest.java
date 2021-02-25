@@ -71,7 +71,7 @@ public class PipelineGraphApiTest {
         PipelineGraph graph = api.createGraph();
 
         List<PipelineStage> stages = graph.getStages();
-        assertThat(stages, hasSize(14));
+        assertThat(stages, hasSize(4));
 
         // TODO implement parallel stage handling
     }

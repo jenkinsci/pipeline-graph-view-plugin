@@ -44,6 +44,10 @@ public class PipelineGraphApi {
 
         Map<Integer, List<Integer>> stageToChildrenMap = new HashMap<>();
 
+        List<Integer> stagesThatAreNested = new ArrayList<>();
+
+        Map<Integer, Integer> nextSiblingToOlderSibling = new HashMap<>();
+
         List<Integer> stagesThatAreChildrenOrNestedStages = new ArrayList<>();
         stages.forEach(stage -> {
             if (stage.getParents().isEmpty()) {
@@ -55,12 +59,25 @@ public class PipelineGraphApi {
                 stageToChildrenMap.put(parentId, childrenOfParent);
                 stagesThatAreChildrenOrNestedStages.add(stage.getId());
             } else if (stageMap.get(stage.getParents().get(0)).getType().equals("PARALLEL")) {
-                PipelineStageInternal parent = stageMap.get(stage.getParents().get(0));
+                Integer parentId = stage.getParents().get(0);
+                PipelineStageInternal parent = stageMap.get(parentId);
                 parent.setSeqContainerName(parent.getName());
                 parent.setName(stage.getName());
                 parent.setSequential(true);
+                parent.setType(stage.getType());
+                parent.setTitle(stage.getTitle());
+                parent.setCompletePercent(stage.getCompletePercent());
+                stage.setSequential(true);
+
+                nextSiblingToOlderSibling.put(stage.getId(), parentId);
+                stagesThatAreNested.add(stage.getId());
+                stagesThatAreChildrenOrNestedStages.add(stage.getId());
+                // nested stage of nested stage
+            } else if (stagesThatAreNested.contains(stageMap.get(stage.getParents().get(0)).getId())) {
+                PipelineStageInternal parent = stageMap.get(nextSiblingToOlderSibling.get(stage.getParents().get(0)));
                 stage.setSequential(true);
                 parent.setNextSibling(stage);
+                stagesThatAreNested.add(stage.getId());
                 stagesThatAreChildrenOrNestedStages.add(stage.getId());
             }
         });

@@ -1,4 +1,4 @@
-package net.histos.jenkins.pipeline.graph;
+package io.jenkins.plugins.pipelinegraphview;
 
 import java.util.Collection;
 import java.util.Collections;

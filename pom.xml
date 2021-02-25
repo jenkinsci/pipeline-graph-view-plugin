@@ -7,7 +7,7 @@
         <version>4.16</version>
         <relativePath />
     </parent>
-    <groupId>net.histos</groupId>
+    <groupId>io.jenkins.plugins</groupId>
     <artifactId>pipeline-graph-view</artifactId>
     <version>${revision}${changelist}</version>
     <packaging>hpi</packaging>

@@ -1,4 +1,4 @@
-package net.histos.jenkins.pipeline.graph;
+package io.jenkins.plugins.pipelinegraphview;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -4,6 +4,7 @@ import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -39,8 +40,7 @@ public class PipelineGraphApi {
 
         // id => stage
         Map<Integer, PipelineStageInternal> stageMap = stages.stream()
-                .collect(Collectors.toMap(PipelineStageInternal::getId, stage -> stage));
-
+                .collect(Collectors.toMap(PipelineStageInternal::getId, stage -> stage, (u, v) -> u, LinkedHashMap::new));
 
         Map<Integer, List<Integer>> stageToChildrenMap = new HashMap<>();
 

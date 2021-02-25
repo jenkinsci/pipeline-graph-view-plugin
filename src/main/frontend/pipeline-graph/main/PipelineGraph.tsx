@@ -12,7 +12,7 @@ import {
     NodeColumn,
     NodeInfo,
     StageInfo,
-    StageNodeInfo,
+    StageNodeInfo, Result,
 } from './PipelineGraphModel';
 
 import { layoutGraph, sequentialStagesLabelOffset } from './PipelineGraphLayout';
@@ -552,7 +552,7 @@ export class PipelineGraph extends React.Component {
 
         const groupChildren: SVGChildren = [];
 
-        if (node.isPlaceholder === true) {
+        if (node.isPlaceholder) {
             groupChildren.push(<circle r={terminalRadius} className="PWGx-pipeline-node-terminal" />);
         } else {
             const { completePercent = 0, title, state } = node.stage;

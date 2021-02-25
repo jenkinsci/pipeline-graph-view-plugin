@@ -15,8 +15,6 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.verb.GET;
 
-import java.util.Collections;
-
 public class PipelineGraphViewAction implements Action, IconSpec {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();

@@ -64,6 +64,18 @@ public class PipelineGraphApiTest {
         assertThat(pipelineStage.getState(), is("FAILURE"));
     }
 
+    @Test
+    public void complexSmokes() throws Exception {
+        WorkflowRun run = createAndRunJob("complexSmokes", "complexSmokes.jenkinsfile", Result.SUCCESS);
+        PipelineGraphApi api = new PipelineGraphApi(run);
+        PipelineGraph graph = api.createGraph();
+
+        List<PipelineStage> stages = graph.getStages();
+        assertThat(stages, hasSize(14));
+
+        // TODO implement parallel stage handling
+    }
+
     private WorkflowRun createAndRunJob(String jobName, String jenkinsFileName, Result expectedResult) throws Exception {
         WorkflowJob job = createJob(jobName, jenkinsFileName);
         j.assertBuildStatus(expectedResult, job.scheduleBuild2(0));

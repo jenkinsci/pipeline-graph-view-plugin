@@ -12,9 +12,9 @@
     <version>${revision}${changelist}</version>
     <packaging>hpi</packaging>
     <properties>
-        <revision>1.0</revision>
+        <revision>0.1</revision>
         <changelist>-SNAPSHOT</changelist>
-
+        <gitHubRepo>jenkinsci/pipeline-graph-view-plugin</gitHubRepo>
         <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
         <jenkins.version>2.280</jenkins.version>
         <java.level>8</java.level>
@@ -22,6 +22,7 @@
         <npm.version>7.5.6</npm.version>
     </properties>
     <name>Pipeline Graph View Plugin</name>
+    <url>https://github.com/jenkinsci/pipeline-graph-view-plugin</url>
 
     <dependencyManagement>
         <dependencies>
@@ -121,7 +122,19 @@
       </developer>
     </developers> -->
 
-    
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
+    <scm>
+        <connection>scm:git:git://github.com/${gitHubRepo}.git</connection>
+        <developerConnection>scm:git:git@github.com:${gitHubRepo}.git</developerConnection>
+        <url>https://github.com/${gitHubRepo}</url>
+        <tag>${scmTag}</tag>
+    </scm>
 
     <repositories>
         <repository>

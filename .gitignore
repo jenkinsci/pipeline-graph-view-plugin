@@ -22,3 +22,5 @@ src/main/webapp/js
 
 # VS Code project files
 .vscode
+
+*.dylib

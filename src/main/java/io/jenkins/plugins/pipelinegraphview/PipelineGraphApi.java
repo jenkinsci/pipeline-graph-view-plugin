@@ -27,8 +27,8 @@ public class PipelineGraphApi {
                         Integer.parseInt(flowNodeWrapper.getId()), // TODO no need to parse it BO returns a string even though the datatype is number on the frontend
                         flowNodeWrapper.getDisplayName(),
                         flowNodeWrapper.getParents().stream()
-                            .map(wrapper -> Integer.parseInt(wrapper.getId()))
-                        .collect(Collectors.toList()),
+                                .map(wrapper -> Integer.parseInt(wrapper.getId()))
+                                .collect(Collectors.toList()),
                         flowNodeWrapper.getStatus().getState() == BlueRun.BlueRunState.SKIPPED ? "skipped" : flowNodeWrapper.getStatus().getResult().name(),
                         50, // TODO how ???
                         flowNodeWrapper.getType().name(),
@@ -43,20 +43,29 @@ public class PipelineGraphApi {
 
 
         Map<Integer, List<Integer>> stageToChildrenMap = new HashMap<>();
-        List<Integer> stagesThatAreChildren = new ArrayList<>();
+
+        List<Integer> stagesThatAreChildrenOrNestedStages = new ArrayList<>();
         stages.forEach(stage -> {
             if (stage.getParents().isEmpty()) {
                 stageToChildrenMap.put(stage.getId(), new ArrayList<>());
-            } else if (stage.getType().equals("PARALLEL") || stageMap.get(stage.getParents().get(0)).getType().equals("PARALLEL")) {
+            } else if (stage.getType().equals("PARALLEL")) {
                 Integer parentId = stage.getParents().get(0); // assume one parent for now
                 List<Integer> childrenOfParent = stageToChildrenMap.getOrDefault(parentId, new ArrayList<>());
                 childrenOfParent.add(stage.getId());
                 stageToChildrenMap.put(parentId, childrenOfParent);
-                stagesThatAreChildren.add(stage.getId());
+                stagesThatAreChildrenOrNestedStages.add(stage.getId());
+            } else if (stageMap.get(stage.getParents().get(0)).getType().equals("PARALLEL")) {
+                PipelineStageInternal parent = stageMap.get(stage.getParents().get(0));
+                parent.setSeqContainerName(parent.getName());
+                parent.setName(stage.getName());
+                parent.setSequential(true);
+                stage.setSequential(true);
+                parent.setNextSibling(stage);
+                stagesThatAreChildrenOrNestedStages.add(stage.getId());
             }
         });
 
-        List<PipelineStage> stageResults = stages.stream()
+        List<PipelineStage> stageResults = stageMap.values().stream()
                 .map(pipelineStageInternal -> {
                     List<PipelineStage> children = stageToChildrenMap.getOrDefault(pipelineStageInternal.getId(), emptyList())
                             .stream()
@@ -65,7 +74,7 @@ public class PipelineGraphApi {
 
                     return pipelineStageInternal.toPipelineStage(children);
                 })
-                .filter(stage -> !stagesThatAreChildren.contains(stage.getId())).collect(Collectors.toList());
+                .filter(stage -> !stagesThatAreChildrenOrNestedStages.contains(stage.getId())).collect(Collectors.toList());
 
         return new PipelineGraph(stageResults);
     }

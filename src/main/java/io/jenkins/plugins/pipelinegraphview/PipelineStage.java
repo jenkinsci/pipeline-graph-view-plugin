@@ -11,6 +11,9 @@ public class PipelineStage {
     private String type; // TODO enum
     private String title;
     private int id; // TODO what's this for?
+    private String seqContainerName;
+    private final PipelineStageInternal nextSibling;
+    private boolean sequential;
 
     public PipelineStage(
             int id,
@@ -19,8 +22,10 @@ public class PipelineStage {
             String state,
             int completePercent,
             String type,
-            String title
-    ) {
+            String title,
+            String seqContainerName,
+            PipelineStageInternal nextSibling,
+            boolean sequential) {
         this.id = id;
         this.name = name;
         this.children = children;
@@ -28,6 +33,23 @@ public class PipelineStage {
         this.completePercent = completePercent;
         this.type = type;
         this.title = title;
+        this.seqContainerName = seqContainerName;
+        this.nextSibling = nextSibling;
+        this.sequential = sequential;
+    }
+
+    public PipelineStageInternal getNextSibling() {
+        return nextSibling;
+    }
+
+    // TODO clean up naming
+    // HACK: blue ocean has a broken name for this 'isSequential'
+    public boolean getIsSequential() {
+        return sequential;
+    }
+
+    public String getSeqContainerName() {
+        return seqContainerName;
     }
 
     public int getId() {

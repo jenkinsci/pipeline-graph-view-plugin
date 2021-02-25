@@ -11,6 +11,9 @@ public class PipelineStageInternal {
     private String type; // TODO enum
     private String title;
     private int id; // TODO what's this for?
+    private String seqContainerName;
+    private PipelineStageInternal nextSibling;
+    private boolean sequential;
 
     public PipelineStageInternal(
             int id,
@@ -28,6 +31,30 @@ public class PipelineStageInternal {
         this.completePercent = completePercent;
         this.type = type;
         this.title = title;
+    }
+
+    public boolean isSequential() {
+        return sequential;
+    }
+
+    public void setSequential(boolean sequential) {
+        this.sequential = sequential;
+    }
+
+    public void setNextSibling(PipelineStageInternal nextSibling) {
+        this.nextSibling = nextSibling;
+    }
+
+    public void setSeqContainerName(String seqContainerName) {
+        this.seqContainerName = seqContainerName;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getSeqContainerName() {
+        return seqContainerName;
     }
 
     public int getId() {
@@ -66,7 +93,10 @@ public class PipelineStageInternal {
                 state,
                 completePercent,
                 type,
-                title
+                title,
+                seqContainerName,
+                nextSibling,
+                sequential
         );
     }
 }

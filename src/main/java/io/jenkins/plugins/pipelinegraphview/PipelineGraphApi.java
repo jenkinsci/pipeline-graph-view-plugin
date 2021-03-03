@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -24,17 +25,24 @@ public class PipelineGraphApi {
         PipelineNodeGraphVisitor builder = new PipelineNodeGraphVisitor(run);
         List<PipelineStageInternal> stages = builder.getPipelineNodes()
                 .stream()
-                .map(flowNodeWrapper -> new PipelineStageInternal(
-                        Integer.parseInt(flowNodeWrapper.getId()), // TODO no need to parse it BO returns a string even though the datatype is number on the frontend
-                        flowNodeWrapper.getDisplayName(),
-                        flowNodeWrapper.getParents().stream()
-                                .map(wrapper -> Integer.parseInt(wrapper.getId()))
-                                .collect(Collectors.toList()),
-                        flowNodeWrapper.getStatus().getState() == BlueRun.BlueRunState.SKIPPED ? "skipped" : flowNodeWrapper.getStatus().getResult().name(),
-                        50, // TODO how ???
-                        flowNodeWrapper.getType().name(),
-                        flowNodeWrapper.getDisplayName() // TODO blue ocean uses timing information: "Passed in 0s"
-                ))
+                .map(flowNodeWrapper -> {
+                    String state = flowNodeWrapper.getStatus().getResult().name();
+                    if (flowNodeWrapper.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
+                        state = flowNodeWrapper.getStatus().getState().name().toLowerCase(Locale.ROOT);
+                    }
+
+                    return new PipelineStageInternal(
+                            Integer.parseInt(flowNodeWrapper.getId()), // TODO no need to parse it BO returns a string even though the datatype is number on the frontend
+                            flowNodeWrapper.getDisplayName(),
+                            flowNodeWrapper.getParents().stream()
+                                    .map(wrapper -> Integer.parseInt(wrapper.getId()))
+                                    .collect(Collectors.toList()),
+                            state,
+                            50, // TODO how ???
+                            flowNodeWrapper.getType().name(),
+                            flowNodeWrapper.getDisplayName() // TODO blue ocean uses timing information: "Passed in 0s"
+                    );
+                })
                 .collect(Collectors.toList());
 
 

@@ -83,10 +83,14 @@ public class PipelineGraphApi {
                 // nested stage of nested stage
             } else if (stagesThatAreNested.contains(stageMap.get(stage.getParents().get(0)).getId())) {
                 PipelineStageInternal parent = stageMap.get(nextSiblingToOlderSibling.get(stage.getParents().get(0)));
-                stage.setSequential(true);
-                parent.setNextSibling(stage);
-                stagesThatAreNested.add(stage.getId());
-                stagesThatAreChildrenOrNestedStages.add(stage.getId());
+                // shouldn't happen but found it after restarting a matrix build
+                // this breaks the layout badly but prevents a null pointer
+                if (parent != null) {
+                    stage.setSequential(true);
+                    parent.setNextSibling(stage);
+                    stagesThatAreNested.add(stage.getId());
+                    stagesThatAreChildrenOrNestedStages.add(stage.getId());
+                }
             }
         });
 

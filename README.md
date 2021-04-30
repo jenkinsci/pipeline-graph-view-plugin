@@ -24,6 +24,12 @@ Semi complex pipeline:
 
 ![Semi complex pipeline](./docs/images/semi-complex-pipeline.png)
 
+## Video
+
+See a live demonstration from a Jenkins Contributor Summit:
+
+[![Demo of Pipeline Graph View plugin](http://img.youtube.com/vi/MBI3MBY2eJ8/0.jpg)](http://www.youtube.com/watch?v=MBI3MBY2eJ8?t=3289 "Pipeline Graph View plugin")
+
 ## Vision
 
 This plugin aims to bring the best of Blue Ocean into the regular Jenkins UI.

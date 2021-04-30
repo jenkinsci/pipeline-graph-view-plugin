@@ -28,7 +28,7 @@ Semi complex pipeline:
 
 See a live demonstration from a Jenkins Contributor Summit:
 
-[![Demo of Pipeline Graph View plugin](http://img.youtube.com/vi/MBI3MBY2eJ8/0.jpg)](http://www.youtube.com/watch?v=MBI3MBY2eJ8&t=3289 "Pipeline Graph View plugin")
+[![Demo of Pipeline Graph View plugin](http://img.youtube.com/vi/MBI3MBY2eJ8/0.jpg)](http://www.youtube.com/watch?v=MBI3MBY2eJ8&t=3295 "Pipeline Graph View plugin")
 
 ## Vision
 

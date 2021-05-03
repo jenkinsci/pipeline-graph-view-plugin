@@ -21,6 +21,12 @@
   },
   "homepage": "https://github.com/cliffmeyers/pipeline-graph-view-plugin/#readme",
   "dependencies": {
+    "@material-ui/core": "latest",
+    "@material-ui/icons": "latest",
+    "@material-ui/lab": "latest",
+    "@react-spring/web": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
     "react": "^16.13.1",
     "react-dom": "^16.13.1"
   },

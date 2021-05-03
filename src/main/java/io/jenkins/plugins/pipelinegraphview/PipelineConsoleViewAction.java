@@ -36,10 +36,13 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
 
     @WebMethod(name = "consoleOutput")
     public void getConsoleOutput(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        LOGGER.log(Level.INFO, "PipelineConsoleViewAction getConsoleOutput called.");
         String nodeIds = req.getParameter("nodeIds");
         if (nodeIds != null) {
+            LOGGER.log(Level.INFO, "PipelineConsoleViewAction getConsoleOutput passed nodeIds.");
             rsp.getWriter().append("{\"text\": \"Selected node: " + nodeIds + "\"}");
         } else {
+            LOGGER.log(Level.INFO, "PipelineConsoleViewAction getConsoleOutput not passed nodeIds.");
             rsp.getWriter().append("{\"text\": \"Error getting console text\"}");
         }
         

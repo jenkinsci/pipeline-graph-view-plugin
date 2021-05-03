@@ -1,0 +1,40 @@
+{
+  "stages": [
+    {
+      "name": "Hello",
+      "children": [],
+      "state": "SUCCESS",
+      "completePercent": 50,
+      "type": "STAGE",
+      "title": "Hello",
+      "id": 6,
+      "seqContainerName": null,
+      "nextSibling": null,
+      "isSequential": false
+    },
+    {
+      "name": "Sub Stage",
+      "children": [],
+      "state": "SUCCESS",
+      "completePercent": 50,
+      "type": "STAGE",
+      "title": "Sub Stage",
+      "id": 12,
+      "seqContainerName": null,
+      "nextSibling": null,
+      "isSequential": false
+    },
+    {
+      "name": "Goodbye",
+      "children": [],
+      "state": "SUCCESS",
+      "completePercent": 50,
+      "type": "STAGE",
+      "title": "Goodbye",
+      "id": 21,
+      "seqContainerName": null,
+      "nextSibling": null,
+      "isSequential": false
+    }
+  ]
+}

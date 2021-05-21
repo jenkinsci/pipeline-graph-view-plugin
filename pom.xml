@@ -9,11 +9,10 @@
     </parent>
     <groupId>io.jenkins.plugins</groupId>
     <artifactId>pipeline-graph-view</artifactId>
-    <version>${revision}${changelist}</version>
+    <version>${changelist}</version>
     <packaging>hpi</packaging>
     <properties>
-        <revision>0.2</revision>
-        <changelist>-SNAPSHOT</changelist>
+        <changelist>999999-SNAPSHOT</changelist>
         <gitHubRepo>jenkinsci/pipeline-graph-view-plugin</gitHubRepo>
         <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
         <jenkins.version>2.277.1</jenkins.version>

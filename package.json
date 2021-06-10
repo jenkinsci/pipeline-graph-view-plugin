@@ -17,9 +17,9 @@
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/cliffmeyers/pipeline-graph-view-plugin/issues"
+    "url": "https://github.com/jenkinsci/pipeline-graph-view-plugin/issues"
   },
-  "homepage": "https://github.com/cliffmeyers/pipeline-graph-view-plugin/#readme",
+  "homepage": "https://github.com/jenkinsci/pipeline-graph-view-plugin/#readme",
   "dependencies": {
     "react": "^16.13.1",
     "react-dom": "^16.13.1"

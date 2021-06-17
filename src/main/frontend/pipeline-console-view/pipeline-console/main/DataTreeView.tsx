@@ -73,7 +73,6 @@ const StepTreeItem = withStyles((theme: Theme) =>
 
 const getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
   return stepsItems.map((stepItemData) => {
-    //console.log(treeItemData.id)
     return (
       <StepTreeItem
         key={stepItemData.id}
@@ -83,38 +82,21 @@ const getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
     );
   });
 };
-/*
-const getStepsForStage = (nodeId: String) => {
-  //var obj;
-  //const res = fetch()
-  //console.log(res);
-  //const json = res.json();
-  //console.log(json);
-  //console.log(obj);
-  return fetch(`steps?nodeId=${nodeId}`).then((response) => {
-    response
-      .json()
-      .then((data) => {
-        return getTreeItemsFromStepList(data.steps);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  });
-};*/
 
 const getTreeItemsFromStage = (
   stageItems: StageInfo[],
   stageSteps: Map<String, StepInfo[]>
 ) => {
+
+  // TODO: Refactor to make more DRY
   return stageItems.map((stageItemData) => {
     if (stageItemData.children && stageItemData.children.length > 0) {
-      let children = getTreeItemsFromStage(stageItemData.children, stageSteps)
-      let steps = stageSteps.get(`${stageItemData.id}`)
-      if (steps){
-           console.log(`!!!!Found steps for ${stageItemData.id}, ${steps}`);
-          let stepsItems = getTreeItemsFromStepList(steps)
-          children = [...children, ...stepsItems]
+      let children = getTreeItemsFromStage(stageItemData.children, stageSteps);
+      let steps = stageSteps.get(`${stageItemData.id}`);
+      if (steps) {
+        console.log(`!!!!Found steps for ${stageItemData.id}, ${steps}`);
+        let stepsItems = getTreeItemsFromStepList(steps);
+        children = [...children, ...stepsItems];
       } else {
         console.log(`????Found no steps for ${stageItemData.id}`);
       }
@@ -127,45 +109,38 @@ const getTreeItemsFromStage = (
         />
       );
     } else {
-        return <StageTreeItem
+      let steps = stageSteps.get(`${stageItemData.id}`);
+      if (steps) {
+        let stepsItems = getTreeItemsFromStepList(steps);
+        return (
+          <StageTreeItem
             key={stageItemData.id}
             nodeId={String(stageItemData.id)}
             label={stageItemData.name}
-        />
-    }
-    //StageInfo[]
-    /*childSteps = Promise.resolve(
-        getStepsForStage(String(treeItemData.id)).then((steps) => {
-            return steps
-        })
-    );*/
-    /*
-    return getStepsForStage(String(treeItemData.id)).then(childSteps => {
-        console.log("Children , " + treeItemData.id + ", " + childSteps);
+            children={stepsItems}
+          />
+        );
+      } else {
         return (
-            <StageTreeItem
-              key={treeItemData.id}
-              nodeId={String(treeItemData.id)}
-              label={treeItemData.name}
-              children={[...(children || []), ...(childSteps || [])]}
-            />
-          );
-        });
-        */
+          <StageTreeItem
+            key={stageItemData.id}
+            nodeId={String(stageItemData.id)}
+            label={stageItemData.name}
+          />
+        );
+      }
+    }
   });
 };
 
 interface DataTreeViewProps {
   stages: Array<StageInfo>;
-  //onNodeSelect: (event: React.MouseEvent<HTMLButtonElement>) => void;
   onActionNodeSelect: (event: React.ChangeEvent<any>, nodeIds: string) => void;
 }
 
 interface State {
   stages: Array<StageInfo>;
   steps: Map<String, StepInfo[]>;
-  //onNodeSelect: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  //onNodeSelect: (event: React.ChangeEvent<any>, nodeIds: string) => void;
 }
 
 export class DataTreeView extends React.Component {
@@ -177,64 +152,40 @@ export class DataTreeView extends React.Component {
     this.state = {
       stages: [],
       steps: new Map(),
-      //onNodeSelect: props.onNodeSelect
     };
   }
 
   componentDidMount() {
-    console.log(`...Getting tree`);
     fetch("tree")
       .then((res) => res.json())
       .then((result) =>
-            //console.log(`...Trying to get steps for stages`)
-            // Get steps for a each stage and add to 'steps' state
-            this.setState({
-                    stages: result.data.stages,
-                },() => {
-                    // Add Steps to state - consider moving this code to a new function.
-                    console.log(`...Stages updated, trying to get steps for stages`);
-                    this.state.stages.forEach((stageData) => {
-                        console.log(`...Trying to get steps for stage ${stageData.id}`)
-                        fetch(`steps?nodeId=${stageData.id}`)
-                            .then((step_res) => step_res.json())
-                            .then((step_result) =>
-                                this.setState({
-                                    steps: new Map(this.state.steps.set(`${stageData.id}`, step_result.steps)),
-                                })
-                            )
-                    })
-            })
+        // Get steps for a each stage and add to 'steps' state
+        this.setState(
+          {
+            stages: result.data.stages,
+          },
+          () => {
+            // Add Steps to state - consider moving this code to a new function.
+            this.state.stages.forEach((stageData) => {
+              fetch(`steps?nodeId=${stageData.id}`)
+                .then((step_res) => step_res.json())
+                .then((step_result) =>
+                  this.setState({
+                    steps: new Map(
+                      this.state.steps.set(`${stageData.id}`, step_result.steps)
+                    ),
+                  })
+                );
+            });
+          }
         )
+      )
       .catch(console.log);
   }
 
   handleOnNodeSelect() {
     this.props.onActionNodeSelect;
   }
-  /*
-    checkAll = () => {
-        let newData = data.map((item) => {
-        item.checked = true;
-        item.items = item.items.map((child) => {
-            child.checked = true;
-            return child;
-        });
-        return item;
-        });
-        setData(newData);
-    };
-    
-    uncheckAll = () => {
-        let newData = data.map((item) => {
-        item.checked = false;
-        item.items = item.items.map((child) => {
-            child.checked = false;
-            return child;
-        });
-        return item;
-        });
-        setData(newData);
-    };*/
 
   render() {
     return (

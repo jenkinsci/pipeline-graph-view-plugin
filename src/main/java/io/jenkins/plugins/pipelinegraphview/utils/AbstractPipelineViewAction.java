@@ -1,11 +1,9 @@
-package io.jenkins.plugins.pipelinegraphview;
+package io.jenkins.plugins.pipelinegraphview.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.model.Action;
 import hudson.util.HttpResponses;
-import io.jenkins.plugins.pipelinegraphview.PipelineGraph;
-import io.jenkins.plugins.pipelinegraphview.PipelineGraphApi;
 import net.sf.json.JSONObject;
 import org.jenkins.ui.icon.Icon;
 import org.jenkins.ui.icon.IconSet;
@@ -18,7 +16,7 @@ import org.kohsuke.stapler.verb.GET;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 public abstract class AbstractPipelineViewAction implements Action, IconSpec {
-    private static final Logger LOGGER = Logger.getLogger(PipelineGraphViewAction.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AbstractPipelineViewAction.class.getName());
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     static {
@@ -32,7 +30,7 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
         this.api = new PipelineGraphApi(target);
     }
 
-    private JSONObject createGraph(PipelineGraph pipelineGraph) throws JsonProcessingException {
+    protected JSONObject createGraph(PipelineGraph pipelineGraph) throws JsonProcessingException {
         String graph = OBJECT_MAPPER.writeValueAsString(pipelineGraph);
         return JSONObject.fromObject(graph);
     }
@@ -44,6 +42,13 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
         // https://github.com/jenkinsci/blueocean-plugin/blob/4f2aa260fca22604a087629dc0da5c80735e0548/blueocean-commons/src/main/java/io/jenkins/blueocean/commons/stapler/Export.java#L101
         // https://github.com/jenkinsci/blueocean-plugin/blob/4f2aa260fca22604a087629dc0da5c80735e0548/blueocean-commons/src/main/java/io/jenkins/blueocean/commons/stapler/TreeResponse.java#L48
         JSONObject graph = createGraph(api.createGraph());
+        return HttpResponses.okJSON(graph);
+    }
+
+    @WebMethod(name = "tree")
+    //public void getTree(StaplerRequest req, StaplerResponse rsp) 3throws IOException {
+    public HttpResponse getTree() throws JsonProcessingException {
+        JSONObject graph = createGraph(PipelineGraphApi.convertToTree(api.createGraph()));
         return HttpResponses.okJSON(graph);
     }
 

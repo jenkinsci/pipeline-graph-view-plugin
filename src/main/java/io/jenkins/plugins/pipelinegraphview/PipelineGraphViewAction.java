@@ -1,5 +1,6 @@
 package io.jenkins.plugins.pipelinegraphview;
 
+import io.jenkins.plugins.pipelinegraphview.utils.AbstractPipelineViewAction;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 import java.util.logging.Level;

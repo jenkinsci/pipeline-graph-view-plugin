@@ -9,14 +9,14 @@ interface PipelineConsoleState {
 export class PipelineConsole extends React.Component {
     constructor(props: PipelineConsoleProps) {
         super(props)
-        this.handleNodeSelect = this.handleNodeSelect.bind(this)
+        this.handleActionNodeSelect = this.handleActionNodeSelect.bind(this)
     }
     state: PipelineConsoleState = {
         consoleText: 'My Original Text'
     }
 
-    handleNodeSelect(event: React.ChangeEvent<any>, nodeIds: string) {
-      fetch(`consoleOutput?nodeIds=${nodeIds}`)
+    handleActionNodeSelect(event: React.ChangeEvent<any>, nodeIds: string) {
+      fetch(`consoleOutput?nodeId=${nodeIds}`)
         .then(res => res.json())
         .then(json => this.setState({consoleText: json.text}))
         .catch(console.log);
@@ -27,7 +27,7 @@ export class PipelineConsole extends React.Component {
             <React.Fragment>
                 <div style={{minHeight: "40%"}}>
                     <div className="section-header">Pipeline Nodes</div>
-                    <DataTreeView stages={[]} onNodeSelect={this.handleNodeSelect}/>
+                    <DataTreeView stages={[]} onActionNodeSelect={this.handleActionNodeSelect}/>
                 </div>
                 <hr></hr>
                 <div className="console-output">

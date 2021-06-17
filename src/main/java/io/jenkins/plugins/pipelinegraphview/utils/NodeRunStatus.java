@@ -1,4 +1,4 @@
-package io.jenkins.plugins.pipelinegraphview;
+package io.jenkins.plugins.pipelinegraphview.utils;
 
 import hudson.model.Result;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;

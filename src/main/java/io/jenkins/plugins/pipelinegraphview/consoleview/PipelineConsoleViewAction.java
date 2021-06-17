@@ -1,4 +1,4 @@
-package io.jenkins.plugins.pipelinegraphview;
+package io.jenkins.plugins.pipelinegraphview.consoleview;
 
 
 import io.jenkins.plugins.pipelinegraphview.utils.AbstractPipelineViewAction;

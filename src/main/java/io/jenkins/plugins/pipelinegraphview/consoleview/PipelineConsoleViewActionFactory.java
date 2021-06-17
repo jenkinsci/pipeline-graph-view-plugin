@@ -1,4 +1,4 @@
-package io.jenkins.plugins.pipelinegraphview;
+package io.jenkins.plugins.pipelinegraphview.consoleview;
 
 import java.util.Collection;
 import java.util.Collections;

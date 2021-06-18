@@ -18,7 +18,6 @@ import {
 
 import { layoutGraph, sequentialStagesLabelOffset } from './PipelineGraphLayout';
 
-
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck
 
 // Generate a react key for a connection

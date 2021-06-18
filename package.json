@@ -12,14 +12,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:cliffmeyers/pipeline-graph-view-plugin.git"
+    "url": "git@github.com:jenkinsci/pipeline-graph-view-plugin.git"
   },
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/cliffmeyers/pipeline-graph-view-plugin/issues"
+    "url": "https://github.com/jenkinsci/pipeline-graph-view-plugin/issues"
   },
-  "homepage": "https://github.com/cliffmeyers/pipeline-graph-view-plugin/#readme",
+  "homepage": "https://github.com/jenkinsci/pipeline-graph-view-plugin/#readme",
   "dependencies": {
     "@material-ui/core": "latest",
     "@material-ui/icons": "latest",

@@ -105,7 +105,7 @@ public class PipelineGraphApi {
                 })
                 .filter(stage -> !stagesThatAreChildrenOrNestedStages.contains(stage.getId())).collect(Collectors.toList());
 
-        return new PipelineGraph(stageResults);
+        return new PipelineGraph(stageResults, run.getExecution().isComplete());
     }
 
     private Function<Integer, PipelineStage> mapper(Map<Integer, PipelineStageInternal> stageMap, Map<Integer, List<Integer>> stageToChildrenMap) {

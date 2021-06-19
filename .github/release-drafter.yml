@@ -1,2 +1,1 @@
 _extends: .github
-tag-template: pipeline-graph-view-$NEXT_MINOR_VERSION

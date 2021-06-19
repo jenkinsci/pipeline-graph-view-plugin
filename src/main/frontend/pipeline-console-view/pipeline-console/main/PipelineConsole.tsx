@@ -17,8 +17,11 @@ export class PipelineConsole extends React.Component {
 
     handleActionNodeSelect(event: React.ChangeEvent<any>, nodeIds: string) {
       fetch(`consoleOutput?nodeId=${nodeIds}`)
-        .then(res => res.json())
-        .then(json => this.setState({consoleText: json.text}))
+        .then(res => res.text())
+        .then(text => {
+            console.log(text)
+            this.setState({consoleText: text})
+        })
         .catch(console.log);
     }
 

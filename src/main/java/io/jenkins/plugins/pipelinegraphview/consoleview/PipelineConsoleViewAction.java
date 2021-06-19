@@ -67,7 +67,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
             rsp.getWriter().append(mapper.writeValueAsString(stepApi.getSteps()));
         } else {
             LOGGER.log(Level.INFO, "PipelineConsoleViewAction getSteps not passed nodeId.");
-            rsp.getWriter().append("{\"text\": \"Error getting console text\"}");
+            rsp.getWriter().append("Error getting console text");
         }
     }
 
@@ -81,11 +81,11 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
             if (nodeConsoleText != null) {
                 rsp.getWriter().append(nodeConsoleText);
             } else {
-                rsp.getWriter().append("{\"text\": \"No console output for node: " + nodeId + "\"}");
+                rsp.getWriter().append("No console output for node: ").append(nodeId);
             }
         } else {
             LOGGER.log(Level.INFO, "PipelineConsoleViewAction getConsoleOutput not passed nodeId.");
-            rsp.getWriter().append("{\"text\": \"Error getting console text\"}");
+            rsp.getWriter().append("Error getting console text");
         }
     }
 
@@ -102,7 +102,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
                     log.getLogText().writeLogTo(0, writer);
                     String consoleText = writer.toString();
                     LOGGER.log(Level.INFO, "PipelineConsoleViewAction found log text '"+consoleText+"'.");
-                    return "{\"text\": \"" + consoleText.trim() + "\"}";
+                    return consoleText.trim();
                 }
             }
         }

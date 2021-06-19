@@ -1,4 +1,4 @@
-package io.jenkins.plugins.pipelinegraphview.console;
+package io.jenkins.plugins.pipelinegraphview.consoleview;
 
 
 import io.jenkins.plugins.pipelinegraphview.utils.AbstractPipelineViewAction;
@@ -32,7 +32,6 @@ import java.io.Writer;
 import java.io.StringWriter;
 
 public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final Logger LOGGER = Logger.getLogger(PipelineConsoleViewAction.class.getName());
     private final WorkflowRun target;
     public PipelineConsoleViewAction(WorkflowRun target) {

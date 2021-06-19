@@ -7,12 +7,14 @@ public class PipelineGraph {
     private List<PipelineStage> stages;
     private boolean complete = false;
 
-    public PipelineGraph(List<PipelineStage> stages, boolean isComplete) {
+    public PipelineGraph(List<PipelineStage> stages, boolean complete) {
         this.stages = stages;
-        this.complete = isComplete;
+        this.complete = complete;
     }
 
-    public boolean isComplete() { return complete; }
+    public boolean isComplete() { 
+        return complete;
+    }
     public List<PipelineStage> getStages() {
         return stages;
     }

@@ -41,13 +41,11 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
 
     @Override
     public String getDisplayName() {
-        LOGGER.log(Level.INFO, "PipelineConsoleViewAction getDisplayName called.");
         return "Pipeline Console";
     }
 
     @Override
     public String getUrlName() {
-        LOGGER.log(Level.INFO, "PipelineConsoleViewAction getUrlName called.");
         return "pipeline-console";
     }
 
@@ -57,26 +55,26 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     // making a fetch call - which seems impossible to wait for the result of (maybe fetch is the wrong thing to use?)
     @WebMethod(name = "steps")
     public void getSteps(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        LOGGER.log(Level.INFO, "PipelineConsoleViewAction getSteps called.");
+        LOGGER.log(Level.FINE, "PipelineConsoleViewAction getSteps called.");
         String nodeId = req.getParameter("nodeId");
         if (nodeId != null) {
-            LOGGER.log(Level.INFO, "PipelineConsoleViewAction getSteps passed nodeId '" + nodeId + "'.");
+            LOGGER.log(Level.FINE, "PipelineConsoleViewAction getSteps passed nodeId '" + nodeId + "'.");
             PipelineStepApi stepApi = new PipelineStepApi(target, nodeId);
             ObjectMapper mapper = new ObjectMapper();
-            LOGGER.log(Level.INFO, "Steps: '" + mapper.writeValueAsString(stepApi.getSteps()) + "'.");
+            LOGGER.log(Level.FINE, "Steps: '" + mapper.writeValueAsString(stepApi.getSteps()) + "'.");
             rsp.getWriter().append(mapper.writeValueAsString(stepApi.getSteps()));
         } else {
-            LOGGER.log(Level.INFO, "PipelineConsoleViewAction getSteps not passed nodeId.");
+            LOGGER.log(Level.FINE, "PipelineConsoleViewAction getSteps not passed nodeId.");
             rsp.getWriter().append("Error getting console text");
         }
     }
 
     @WebMethod(name = "consoleOutput")
     public void getConsoleOutput(StaplerRequest req, StaplerResponse rsp) throws IOException {
-        LOGGER.log(Level.INFO, "PipelineConsoleViewAction getConsoleOutput called.");
+        LOGGER.log(Level.FINE, "PipelineConsoleViewAction getConsoleOutput called.");
         String nodeId = req.getParameter("nodeId");
         if (nodeId != null) {
-            LOGGER.log(Level.INFO, "PipelineConsoleViewAction getConsoleOutput passed nodeId.");
+            LOGGER.log(Level.FINE, "PipelineConsoleViewAction getConsoleOutput passed nodeId.");
             String nodeConsoleText = getLogForNode(nodeId);
             if (nodeConsoleText != null) {
                 rsp.getWriter().append(nodeConsoleText);
@@ -84,7 +82,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
                 rsp.getWriter().append("No console output for node: ").append(nodeId);
             }
         } else {
-            LOGGER.log(Level.INFO, "PipelineConsoleViewAction getConsoleOutput not passed nodeId.");
+            LOGGER.log(Level.FINE, "PipelineConsoleViewAction getConsoleOutput not passed nodeId.");
             rsp.getWriter().append("Error getting console text");
         }
     }
@@ -92,16 +90,16 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     private String getLogForNode(String nodeId) throws IOException {
         FlowExecution execution = target.getExecution();
         if (execution != null) {
-            LOGGER.log(Level.INFO, "PipelineConsoleViewAction getConsoleOutput found execution.");
+            LOGGER.log(Level.FINE, "PipelineConsoleViewAction getConsoleOutput found execution.");
             FlowNode node = execution.getNode(nodeId);
             if (node != null) {
-                LOGGER.log(Level.INFO, "PipelineConsoleViewAction getConsoleOutput found node.");
+                LOGGER.log(Level.FINE, "PipelineConsoleViewAction getConsoleOutput found node.");
                 LogAction log = node.getAction(LogAction.class);
                 if (log != null) {
                     Writer writer = new StringWriter();
                     log.getLogText().writeLogTo(0, writer);
                     String consoleText = writer.toString();
-                    LOGGER.log(Level.INFO, "PipelineConsoleViewAction found log text '"+consoleText+"'.");
+                    LOGGER.log(Level.FINE, "PipelineConsoleViewAction found log text '"+consoleText+"'.");
                     return consoleText.trim();
                 }
             }

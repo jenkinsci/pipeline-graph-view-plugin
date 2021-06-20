@@ -30,7 +30,7 @@ public class PipelineStepApi {
     public PipelineStepList getSteps() {
         PipelineStepVisitor builder = new PipelineStepVisitor(run, null);
         List<FlowNodeWrapper> stepNodes = builder.getSteps();
-        LOGGER.log(Level.INFO, "PipelineConsoleViewAction steps: '" + stepNodes + "'.");
+        LOGGER.log(Level.FINE, "PipelineStepApi steps: '" + stepNodes + "'.");
         List<PipelineStep> steps = stepNodes.stream()
             .map(flowNodeWrapper -> {
                 String state = flowNodeWrapper.getStatus().getResult().name();

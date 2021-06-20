@@ -14,13 +14,11 @@ public class PipelineGraphViewAction extends AbstractPipelineViewAction {
 
     @Override
     public String getDisplayName() {
-        LOGGER.log(Level.INFO, "PipelineGraphViewAction getDisplayName called.");
         return "Pipeline Graph";
     }
 
     @Override
     public String getUrlName() {
-        LOGGER.log(Level.INFO, "PipelineGraphViewAction getUrlName called.");
         return "pipeline-graph";
     }
 }

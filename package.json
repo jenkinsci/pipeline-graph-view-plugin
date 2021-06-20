@@ -27,8 +27,10 @@
     "@react-spring/web": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "html-react-parser": "^1.2.7",
     "react": "^16.13.1",
-    "react-dom": "^16.13.1"
+    "react-dom": "^16.13.1",
+    "react-split-pane": "^0.1.92"
   },
   "devDependencies": {
     "@types/node": "10.17.35",

@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { nodeStrokeWidth, getGroupForResult } from './support/StatusIcons';
 import { TruncatingLabel } from './support/TruncatingLabel';
+import startPollingPipelineStatus from './support/startPollingPipelineStatus';
 
 import {
     CompositeConnection,
@@ -64,16 +65,21 @@ export class PipelineGraph extends React.Component {
     
 
     componentDidMount() {
-        fetch('graph')
-            .then(res => res.json())
-            .then((result) => {
-                this.setState({
-                    stages: result.data.stages
-                })
-                this.stagesUpdated(result.data.stages); // TODO this doesn't seem right
-            })
-            .catch(console.log)
+        const onPipelineDataReceived = (data: { stages: Array<StageInfo> }) => {
+            const { stages } = data;
+            this.setState({ stages });
+            this.stagesUpdated(stages)
+        };
+        const onPollingError = (err: Error) => {
+            console.log('There was an error when polling the pipeline status', err)
+        };
+        const onPipelineComplete = () => undefined
 
+        startPollingPipelineStatus(
+            onPipelineDataReceived,
+            onPollingError,
+            onPipelineComplete
+        )
     }
 
     componentWillReceiveProps(nextProps: Props) {

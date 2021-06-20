@@ -1,5 +1,10 @@
 import * as React from "react";
+import SplitPane, { Pane } from 'react-split-pane';
 import { DataTreeView } from './DataTreeView';
+import parse from 'html-react-parser';
+
+import "./pipeline-console.scss";
+
 
 interface PipelineConsoleProps {}
 interface PipelineConsoleState {
@@ -12,7 +17,7 @@ export class PipelineConsole extends React.Component {
         this.handleActionNodeSelect = this.handleActionNodeSelect.bind(this)
     }
     state: PipelineConsoleState = {
-        consoleText: 'My Original Text'
+        consoleText: 'Select a node to view console output.'
     }
 
     handleActionNodeSelect(event: React.ChangeEvent<any>, nodeIds: string) {
@@ -26,20 +31,33 @@ export class PipelineConsole extends React.Component {
     }
 
     render() {
+        const splitPaneStyle: React.CSSProperties = {
+          position: 'relative',
+          height: '100%',
+        }
+        const paneStyle:  React.CSSProperties = {
+          paddingLeft: '8px',
+          textAlign: 'left'
+        }
+
         return (
-            <React.Fragment>
-                <div style={{minHeight: "40%"}}>
-                    <div className="section-header">Pipeline Nodes</div>
-                    <DataTreeView stages={[]} onActionNodeSelect={this.handleActionNodeSelect}/>
+          <React.Fragment>
+            <div className="App">
+              <SplitPane split="vertical" minSize={150}
+                    defaultSize={parseInt(localStorage.getItem('splitPos') || '10')}
+                    onChange={(size) => localStorage.setItem('splitPos', `${size}`)}
+                    style={splitPaneStyle}>
+                <div style={paneStyle}>
+                  <DataTreeView stages={[]} onActionNodeSelect={this.handleActionNodeSelect}/>
                 </div>
-                <hr></hr>
                 <div className="console-output">
-                    <div className="section-header">Node Console Output</div>
-                    <pre id="console-pane">
+                    <pre className="console-pane">
                         {this.state.consoleText}
                     </pre>
                 </div>
-            </React.Fragment>
+              </SplitPane>
+            </div>
+          </React.Fragment>
         );
     }
 }

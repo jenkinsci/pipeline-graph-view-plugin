@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import TreeView from "@material-ui/lab/TreeView";
-//import TreeItem from "@material-ui/lab/TreeItem";
+
 import {
   fade,
   makeStyles,
@@ -35,16 +35,6 @@ export interface TreeItemData {
   children: TreeItemData[];
 }
 
-const useStyles = makeStyles(
-  createStyles({
-    root: {
-      height: 264,
-      flexGrow: 1,
-      maxWidth: 400,
-    },
-  })
-);
-
 // Tree Item for stages
 const StageTreeItem = withStyles((theme: Theme) =>
   createStyles({
@@ -66,7 +56,7 @@ const StageTreeItem = withStyles((theme: Theme) =>
 const StepTreeItem = withStyles((theme: Theme) =>
   createStyles({
     label: {
-      fontWeight: "bold",
+      textDecoration: "underline",
     },
   })
 )((props: TreeItemProps) => <TreeItem {...props} />);
@@ -82,14 +72,6 @@ const getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
     );
   });
 };
-
-const getStageTreeItem = (
-    childStages: StageInfo[],
-    childSteps: Map<String, StepInfo[]>
-  ) => {
-
-}
-
 
 const getTreeItemsFromStage = (
   stageItems: StageInfo[],

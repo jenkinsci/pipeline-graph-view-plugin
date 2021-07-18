@@ -1,7 +1,6 @@
 import * as React from "react";
-import SplitPane, { Pane } from 'react-split-pane';
+import SplitPane from 'react-split-pane';
 import { DataTreeView } from './DataTreeView';
-import parse from 'html-react-parser';
 
 import "./pipeline-console.scss";
 
@@ -20,8 +19,8 @@ export class PipelineConsole extends React.Component {
         consoleText: 'Select a node to view console output.'
     }
 
-    handleActionNodeSelect(event: React.ChangeEvent<any>, nodeIds: string) {
-      fetch(`consoleOutput?nodeId=${nodeIds}`)
+    handleActionNodeSelect(event: React.ChangeEvent<any>, nodeId: string) {
+      fetch(`consoleOutput?nodeId=${nodeId}`)
         .then(res => res.text())
         .then(text => {
             console.log(text)
@@ -44,7 +43,7 @@ export class PipelineConsole extends React.Component {
           <React.Fragment>
             <div className="App">
               <SplitPane split="vertical" minSize={150}
-                    defaultSize={parseInt(localStorage.getItem('splitPos') || '10')}
+                    defaultSize={parseInt(localStorage.getItem('splitPos') || '250')}
                     onChange={(size) => localStorage.setItem('splitPos', `${size}`)}
                     style={splitPaneStyle}>
                 <div style={paneStyle}>

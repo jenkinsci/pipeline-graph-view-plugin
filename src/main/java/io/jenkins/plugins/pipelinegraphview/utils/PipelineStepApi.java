@@ -22,13 +22,16 @@ public class PipelineStepApi {
     private static final Logger LOGGER = Logger.getLogger(PipelineStepApi.class.getName());
     private transient WorkflowRun run;
     private transient FlowNode node;
+    private final String nodeId;
+
 
     public PipelineStepApi(WorkflowRun run, String nodeId) throws java.io.IOException {
         this.run = run;
+        this.nodeId = nodeId;
     }
 
-    public PipelineStepList getSteps() {
-        PipelineStepVisitor builder = new PipelineStepVisitor(run, null);
+    public PipelineStepList getSteps() throws java.io.IOException{
+        PipelineStepVisitor builder = new PipelineStepVisitor(run, this.run.getExecution().getNode(this.nodeId));
         List<FlowNodeWrapper> stepNodes = builder.getSteps();
         LOGGER.log(Level.FINE, "PipelineStepApi steps: '" + stepNodes + "'.");
         List<PipelineStep> steps = stepNodes.stream()

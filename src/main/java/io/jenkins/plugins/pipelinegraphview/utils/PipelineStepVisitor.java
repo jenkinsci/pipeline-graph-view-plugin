@@ -52,7 +52,6 @@ import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.StageChunkFinder;
  * @author Vivek Pandey
  */
 public class PipelineStepVisitor extends StandardChunkVisitor {
-    //private static final Logger LOGGER = Logger.getLogger(PipelineStepVisitor.class.getName());
     private final FlowNode node;
     private final WorkflowRun run;
 

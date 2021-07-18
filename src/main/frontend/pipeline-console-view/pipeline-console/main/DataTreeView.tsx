@@ -78,7 +78,7 @@ const getTreeItemsFromStage = (
   stageSteps: Map<String, StepInfo[]>
 ) => {
   return stageItems.map((stageItemData) => {
-    let children : JSX.Element[] = []
+    let children: JSX.Element[] = []
     if (stageItemData.children && stageItemData.children.length > 0) {
       children = [...getTreeItemsFromStage(stageItemData.children, stageSteps)]
     }

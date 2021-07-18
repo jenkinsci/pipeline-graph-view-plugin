@@ -3,7 +3,6 @@ package io.jenkins.plugins.pipelinegraphview.consoleview;
 
 import io.jenkins.plugins.pipelinegraphview.utils.AbstractPipelineViewAction;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
-//import jdk.internal.net.http.websocket.FailWebSocketException;
 
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.actions.LogAction;
@@ -28,8 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
-import java.io.Writer;
-import java.io.StringWriter;
+import java.io.ByteArrayOutputStream;
 
 public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     private static final Logger LOGGER = Logger.getLogger(PipelineConsoleViewAction.class.getName());
@@ -96,11 +94,22 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
                 LOGGER.log(Level.FINE, "PipelineConsoleViewAction getConsoleOutput found node.");
                 LogAction log = node.getAction(LogAction.class);
                 if (log != null) {
-                    Writer writer = new StringWriter();
-                    log.getLogText().writeLogTo(0, writer);
-                    String consoleText = writer.toString();
-                    LOGGER.log(Level.FINE, "PipelineConsoleViewAction found log text '"+consoleText+"'.");
-                    return consoleText.trim();
+                    ByteArrayOutputStream oututStream = new ByteArrayOutputStream();
+                    log.getLogText().writeLogTo(0, oututStream);
+                    String consoleText = oututStream.toString().trim();
+                    int maxLength = 120;
+                    if (consoleText.length() > maxLength) {
+                        LOGGER.log(
+                            Level.FINE,
+                            "PipelineConsoleViewAction found log text '" + consoleText.substring(0, maxLength) + "...'."
+                        );
+                    } else {
+                        LOGGER.log(
+                            Level.FINE,
+                            "PipelineConsoleViewAction found log text '" + consoleText + "'."
+                        );
+                    }
+                    return consoleText;
                 }
             }
         }

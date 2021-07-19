@@ -95,8 +95,9 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
                 LogAction log = node.getAction(LogAction.class);
                 if (log != null) {
                     ByteArrayOutputStream oututStream = new ByteArrayOutputStream();
-                    log.getLogText().writeLogTo(0, oututStream);
-                    String consoleText = oututStream.toString().trim();
+                    Long receivedBytes = log.getLogText().writeLogTo(0, oututStream);
+                    // Assuming logs are is UFT-8. This seems to be what LogStorage does.
+                    String consoleText = oututStream.toString("UTF-8").trim();
                     int maxLength = 120;
                     if (consoleText.length() > maxLength) {
                         LOGGER.log(

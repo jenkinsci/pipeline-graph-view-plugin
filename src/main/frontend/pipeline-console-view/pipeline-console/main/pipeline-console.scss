@@ -55,3 +55,72 @@
   text-align: left;
   padding-left: 16px;
 }
+
+.console-output p {
+  margin: 0;
+}
+
+.ansi-fg-0 {
+  color: var(--black, #333);
+}
+
+.ansi-fg-1 {
+  color: var(--danger, #cc0003);
+}
+
+.ansi-fg-2 {
+  color: var(--success, #138347);
+}
+
+.ansi-fg-3 {
+  color: var(--warning, #ea6b19);
+}
+
+.ansi-fg-4 {
+  color: var(--primary, #0b6aa2);
+}
+
+.ansi-fg-5 {
+  color: var(--unknown-color, #bd0fe1);
+}
+
+.ansi-fg-6 {
+  color: var(--paused-color, #24B0D5);
+}
+
+.ansi-fg-7 {
+  color: var(--white, #fff);
+}
+
+// Standard background colors
+.ansi-bg-0 {
+  background: var(--black, #333);
+}
+
+.ansi-bg-1 {
+  background: var(--danger, #cc0003);
+}
+
+.ansi-bg-2 {
+  background: var(--success, #138347);
+}
+
+.ansi-bg-3 {
+  background: var(--warning, #ea6b19);
+}
+
+.ansi-bg-4 {
+  background: var(--primary, #0b6aa2);
+}
+
+.ansi-bg-5 {
+  background: var(--unknown-color, #bd0fe1);
+}
+
+.ansi-bg-6 {
+  background: var(--paused-color, #24B0D5);
+}
+
+.ansi-bg-7 {
+  background: var(--white, #fff);
+}

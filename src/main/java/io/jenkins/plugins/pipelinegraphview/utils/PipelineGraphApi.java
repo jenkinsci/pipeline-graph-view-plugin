@@ -1,5 +1,6 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 import java.util.ArrayList;
@@ -105,7 +106,8 @@ public class PipelineGraphApi {
                 })
                 .filter(stage -> !stagesThatAreChildrenOrNestedStages.contains(stage.getId())).collect(Collectors.toList());
 
-        return new PipelineGraph(stageResults, run.getExecution().isComplete());
+        FlowExecution execution = run.getExecution();
+        return new PipelineGraph(stageResults, execution != null && execution.isComplete());
     }
 
     private Function<Integer, PipelineStage> mapper(Map<Integer, PipelineStageInternal> stageMap, Map<Integer, List<Integer>> stageToChildrenMap) {

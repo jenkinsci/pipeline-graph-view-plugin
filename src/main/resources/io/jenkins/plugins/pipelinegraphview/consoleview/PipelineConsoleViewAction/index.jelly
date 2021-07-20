@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+    <l:layout title="Pipeline Console">
+        <st:include page="sidepanel.jelly" it="${it.run}"/>
+        <l:main-panel>
+            <div id="root"/>
+            <script src="${rootURL}/plugin/pipeline-graph-view/js/pipeline-console-view-bundle.js"/>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

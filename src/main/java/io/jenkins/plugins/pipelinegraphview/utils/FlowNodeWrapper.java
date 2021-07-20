@@ -1,9 +1,9 @@
-package io.jenkins.plugins.pipelinegraphview;
+package io.jenkins.plugins.pipelinegraphview.utils;
 
 import hudson.model.Action;
 import hudson.model.Result;
-import io.jenkins.plugins.pipelinegraphview.BlueRun.BlueRunResult;
-import io.jenkins.plugins.pipelinegraphview.BlueRun.BlueRunState;
+import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunResult;
+import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunState;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.graph.AtomNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;

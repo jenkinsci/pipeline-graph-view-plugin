@@ -21,8 +21,14 @@
   },
   "homepage": "https://github.com/jenkinsci/pipeline-graph-view-plugin/#readme",
   "dependencies": {
+    "@material-ui/core": "^4.11.4",
+    "@material-ui/icons": "^4.11.2",
+    "@material-ui/lab": "^4.0.0-alpha.58",
+    "@react-spring/web": "^9.1.2",
+    "html-react-parser": "^1.2.7",
     "react": "^16.13.1",
-    "react-dom": "^16.13.1"
+    "react-dom": "^16.13.1",
+    "react-split-pane": "^0.1.92"
   },
   "devDependencies": {
     "@types/node": "10.17.35",

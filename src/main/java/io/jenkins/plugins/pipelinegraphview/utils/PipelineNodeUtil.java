@@ -1,4 +1,4 @@
-package io.jenkins.plugins.pipelinegraphview;
+package io.jenkins.plugins.pipelinegraphview.utils;
 
 import com.google.common.base.Predicate;
 import hudson.model.Action;
@@ -28,7 +28,6 @@ import javax.annotation.Nullable;
  * @author Vivek Pandey
  */
 public class PipelineNodeUtil {
-
 
     public static String getDisplayName(@Nonnull FlowNode node) {
         ThreadNameAction threadNameAction = node.getAction(ThreadNameAction.class);

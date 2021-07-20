@@ -1,4 +1,4 @@
-package io.jenkins.plugins.pipelinegraphview;
+package io.jenkins.plugins.pipelinegraphview.utils;
 
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
@@ -109,11 +109,20 @@ public class PipelineGraphApi {
     }
 
     private Function<Integer, PipelineStage> mapper(Map<Integer, PipelineStageInternal> stageMap, Map<Integer, List<Integer>> stageToChildrenMap) {
+
         return id -> {
             List<Integer> orDefault = stageToChildrenMap.getOrDefault(id, emptyList());
             List<PipelineStage> children = orDefault.stream()
                     .map(mapper(stageMap, stageToChildrenMap)).collect(Collectors.toList());
             return stageMap.get(id).toPipelineStage(children);
         };
+    }
+
+    /* WARNING: Currently does nothing.
+    * Convert a Pipeline graph to a tree.
+    * Original source: https://github.com/jenkinsci/workflow-support-plugin/blob/master/src/main/java/org/jenkinsci/plugins/workflow/support/visualization/table/FlowGraphTable.java#L126
+    */
+    public static PipelineGraph convertToTree(PipelineGraph graph) {
+        return graph;
     }
 }

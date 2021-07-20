@@ -62,6 +62,7 @@ export class PipelineGraph extends React.Component {
             selectedStage: props.selectedStage,
         };
     }
+    
 
     componentDidMount() {
         const onPipelineDataReceived = (data: { stages: Array<StageInfo> }) => {

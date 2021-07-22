@@ -121,11 +121,9 @@ export class DataTreeView extends React.Component {
   }
 
   getStepsForStageTree(stage: StageInfo): void {
-    console.log("Fetching " + stage.id)
     fetch(`steps?nodeId=${stage.id}`)
       .then((step_res) => step_res.json())
       .then((step_result) => {
-        console.log("Setting state for " + stage.id)
         this.setState({
           steps: new Map(
             this.state.steps.set(`${stage.id}`, step_result.steps)

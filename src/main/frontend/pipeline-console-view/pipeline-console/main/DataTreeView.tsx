@@ -120,6 +120,26 @@ export class DataTreeView extends React.Component {
     };
   }
 
+  getStepsForStageTree(stage: StageInfo): void {
+    console.log("Fetching " + stage.id)
+    fetch(`steps?nodeId=${stage.id}`)
+      .then((step_res) => step_res.json())
+      .then((step_result) => {
+        console.log("Setting state for " + stage.id)
+        this.setState({
+          steps: new Map(
+            this.state.steps.set(`${stage.id}`, step_result.steps)
+          )
+        });
+      }
+    );
+    if (stage.children && stage.children.length > 0) {
+      stage.children.forEach((childStage) => {
+        this.getStepsForStageTree(childStage)
+      });
+    }
+  }
+
   componentDidMount() {
     fetch("tree")
       .then((res) => res.json())
@@ -130,17 +150,8 @@ export class DataTreeView extends React.Component {
             stages: result.data.stages,
           },
           () => {
-            // Add Steps to state - consider moving this code to a new function.
             this.state.stages.forEach((stageData) => {
-              fetch(`steps?nodeId=${stageData.id}`)
-                .then((step_res) => step_res.json())
-                .then((step_result) =>
-                  this.setState({
-                    steps: new Map(
-                      this.state.steps.set(`${stageData.id}`, step_result.steps)
-                    ),
-                  })
-                );
+              this.getStepsForStageTree(stageData)
             });
           }
         )

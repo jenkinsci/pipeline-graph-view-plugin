@@ -60,12 +60,16 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
     private final ArrayDeque<FlowNodeWrapper> postSteps = new ArrayDeque<>();
 
     private final Map<String,FlowNodeWrapper> stepMap = new HashMap<>();
+    private final Map<String,List<FlowNodeWrapper>> stageStepMap = new HashMap<>();
 
     private boolean stageStepsCollectionCompleted = false;
 
     private boolean inStageScope;
+    private boolean inParallelScope;
 
     private FlowNode currentStage;
+    // Used to track the stage/parallel node which encloses the current steps.
+    private FlowNode enclosingNode;
 
     private ArrayDeque<FlowNode> stages = new ArrayDeque<>();
     private InputAction inputAction;
@@ -103,6 +107,8 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
         }else if(node != null && PipelineNodeUtil.isParallelBranch(node) && !branchStartNode.equals(node)){
             resetSteps();
         }
+        // Starting to parse parallel block - as we parse backwards.
+        inParallelScope = false;
     }
 
 
@@ -111,6 +117,8 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
         if(!stageStepsCollectionCompleted && node != null && PipelineNodeUtil.isParallelBranch(node) && branchEndNode instanceof StepEndNode){
             resetSteps();
         }
+        // Starting to parse parallel block - as we parse backwards.
+        inParallelScope = true;
     }
 
     @Override
@@ -136,6 +144,16 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
         if(node!= null && endNode instanceof StepEndNode && ((StepEndNode)endNode).getStartNode().equals(node)){
             this.stageStepsCollectionCompleted = false;
             this.inStageScope = true;
+        }
+
+        if (currentStage != null) {
+            if (PipelineNodeUtil.isParallelBranch(currentStage)) {
+                logger.info("Setting enclosingNode to parallel branch: " + currentStage.getId());
+                enclosingNode = currentStage;
+            } else if (PipelineNodeUtil.isStage(currentStage)) {
+                logger.info("Setting enclosingNode to stage: " + currentStage.getId());
+                enclosingNode = currentStage;
+            }
         }
 
         if (endNode instanceof StepStartNode && PipelineNodeUtil.isAgentStart(endNode)) {
@@ -166,8 +184,15 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
                 FlowNodeWrapper stepNode = new FlowNodeWrapper(step, new NodeRunStatus(BlueRun.BlueRunResult.UNKNOWN, BlueRun.BlueRunState.QUEUED),new TimingInfo(), run);
                 steps.push(stepNode);
                 stepMap.put(step.getId(), stepNode);
+                // Record which stage the step belongs to.
+                List<FlowNodeWrapper> stageSteps = stageStepMap.getOrDefault(chunk.getFirstNode().getId(), new ArrayList<FlowNodeWrapper>());
+                stageSteps.add(stepNode);
+                logger.info("Adding step '" + stepNode.getId() + "' to '" + chunk.getFirstNode().getId() + "' in handleChunkDone.");
+                logger.info("Step enclosing IDs '" + stepNode.getNode().getAllEnclosingIds() + "'.");
+                stageStepMap.put(chunk.getFirstNode().getId(), stageSteps);
             }
-        }if(node != null && PipelineNodeUtil.isStage(node) && !inStageScope && !chunk.getFirstNode().equals(node)){
+        }
+        if(node != null && PipelineNodeUtil.isStage(node) && !inStageScope && !chunk.getFirstNode().equals(node)){
             resetSteps();
         }
     }
@@ -213,22 +238,32 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
                  status = new NodeRunStatus(atomNode);
             }
 
-            FlowNodeWrapper node = new FlowNodeWrapper(atomNode, status, times, inputStep, run);
+            FlowNodeWrapper stepNode = new FlowNodeWrapper(atomNode, status, times, inputStep, run);
             if(PipelineNodeUtil.isPreSyntheticStage(currentStage)){
-                preSteps.push(node);
+                preSteps.push(stepNode);
             }else if(PipelineNodeUtil.isPostSyntheticStage(currentStage)){
-                postSteps.push(node);
+                postSteps.push(stepNode);
             }else {
-                if(!steps.contains(node)) {
-                    steps.push(node);
+                if(!steps.contains(stepNode)) {
+                    steps.push(stepNode);
                 }
             }
-            stepMap.put(node.getId(), node);
+            stepMap.put(stepNode.getId(), stepNode);
+            // Record which stage the step belongs to.
+            if (enclosingNode != null) {
+                List<FlowNodeWrapper> stageSteps = stageStepMap.getOrDefault(enclosingNode.getId(), new ArrayList<FlowNodeWrapper>());
+                stageSteps.add(stepNode);
+                logger.info("Adding step '" + stepNode.getId() + "' to '" + enclosingNode.getId() + "' in atomNode");
+                logger.info("Step enclosing IDs '" + stepNode.getNode().getAllEnclosingIds() + "'.");
+                stageStepMap.put(enclosingNode.getId(), stageSteps);
+            } else {
+                logger.info("Not adding step as enclosingNode '" + enclosingNode + "'.");
+            }
 
             // If there is closest block boundary, we capture it's error to the last step encountered and prepare for next block.
             // but only if the previous node did not fail
             if(closestEndNode!=null && closestEndNode.getError() != null && new NodeRunStatus(before).result != BlueRunResult.FAILURE) {
-                node.setBlockErrorAction(closestEndNode.getError());
+                stepNode.setBlockErrorAction(closestEndNode.getError());
                 closestEndNode = null; //prepare for next block
             }
         }
@@ -261,6 +296,11 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
             s.addAll(postSteps);
         }
         return s;
+    }
+
+
+    public List<FlowNodeWrapper> getStageSteps(String startNodeId){
+        return stageStepMap.getOrDefault(startNodeId, new ArrayList<FlowNodeWrapper>());
     }
 
     public FlowNodeWrapper getStep(String id){

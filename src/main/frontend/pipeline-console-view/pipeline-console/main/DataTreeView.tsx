@@ -121,6 +121,8 @@ export class DataTreeView extends React.Component {
   }
 
   getStepsForStageTree(stage: StageInfo): void {
+    // TODO: This should change to getting all the steps in one API call.
+    // Otherwise large Pipelines will make a lot of API calls (one per stage).
     fetch(`steps?nodeId=${stage.id}`)
       .then((step_res) => step_res.json())
       .then((step_result) => {
@@ -141,7 +143,7 @@ export class DataTreeView extends React.Component {
   componentDidMount() {
     fetch("tree")
       .then((res) => res.json())
-      .then((result) =>
+      .then((result) => {
         // Get steps for a each stage and add to 'steps' state
         this.setState(
           {
@@ -153,7 +155,7 @@ export class DataTreeView extends React.Component {
             });
           }
         )
-      )
+        })
       .catch(console.log);
   }
 

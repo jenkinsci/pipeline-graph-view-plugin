@@ -20,7 +20,7 @@ import static java.util.Collections.emptyList;
 
 public class PipelineGraphApi {
     private static final Logger LOGGER = Logger.getLogger(PipelineStepApi.class.getName());
-    private transient WorkflowRun run;
+    private transient final WorkflowRun run;
 
     public PipelineGraphApi(WorkflowRun run) {
         this.run = run;
@@ -133,7 +133,7 @@ public class PipelineGraphApi {
     */
     public PipelineGraph createTree() {
         List<PipelineStageInternal> stages = getPipelineNodes();
-        List<Integer> topLevelStageIds = new ArrayList<Integer>();
+        List<Integer> topLevelStageIds = new ArrayList<>();
 
         // id => stage
         Map<Integer, PipelineStageInternal> stageMap = stages.stream()
@@ -141,7 +141,7 @@ public class PipelineGraphApi {
 
         Map<Integer, List<Integer>> stageToChildrenMap = new HashMap<>();
 
-        List<Integer> stageIds = new ArrayList<Integer>();
+        List<Integer> stageIds = new ArrayList<>();
         stages.forEach(stage -> {
             LOGGER.log(Level.INFO, "Stage '" + stage.getName() + "' with id '" + stage.getId() + "' is type '" + stage.getType() + "'.");
             stageIds.add(stage.getId());
@@ -149,11 +149,14 @@ public class PipelineGraphApi {
         FlowExecution execution = run.getExecution();
         if (execution == null) {
             // If we don't have an execution - e.g. if the Pipeline has a syntax error - then return an empty graph.
-            return new PipelineGraph(new ArrayList<PipelineStage>(), false);
+            return new PipelineGraph(new ArrayList<>(), false);
         }
         stages.forEach(stage -> {
             try {
                 FlowNode stageNode = execution.getNode(Integer.toString(stage.getId()));
+                if (stageNode == null) {
+                    return;
+                }
                 List<Integer> ancestors = getAncestors(stage, stageMap);
                 Integer treeParentId = null;
                 // Compare the list of GraphVistor ancestors to the IDs of the enclosing node in the execution.
@@ -189,12 +192,12 @@ public class PipelineGraphApi {
                     return pipelineStageInternal.toPipelineStage(children);
                 })
                 .filter(stage -> topLevelStageIds.contains(stage.getId())).collect(Collectors.toList());
-        return new PipelineGraph(stageResults, execution != null && execution.isComplete());
+        return new PipelineGraph(stageResults, execution.isComplete());
     }
 
 
     private List<Integer> getAncestors(PipelineStageInternal stage, Map<Integer, PipelineStageInternal> stageMap) {
-        List<Integer> ancestors = new ArrayList<Integer>();
+        List<Integer> ancestors = new ArrayList<>();
         if (!stage.getParents().isEmpty()) {
             Integer parentId = stage.getParents().get(0); // Assume one parent.
             ancestors.add(parentId);

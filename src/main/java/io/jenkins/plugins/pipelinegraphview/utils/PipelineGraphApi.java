@@ -1,7 +1,11 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
+import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,16 +19,16 @@ import java.util.stream.Collectors;
 import static java.util.Collections.emptyList;
 
 public class PipelineGraphApi {
-
+    private static final Logger LOGGER = Logger.getLogger(PipelineStepApi.class.getName());
     private transient WorkflowRun run;
 
     public PipelineGraphApi(WorkflowRun run) {
         this.run = run;
     }
 
-    public PipelineGraph createGraph() {
+    private List<PipelineStageInternal> getPipelineNodes() {
         PipelineNodeGraphVisitor builder = new PipelineNodeGraphVisitor(run);
-        List<PipelineStageInternal> stages = builder.getPipelineNodes()
+        return builder.getPipelineNodes()
                 .stream()
                 .map(flowNodeWrapper -> {
                     String state = flowNodeWrapper.getStatus().getResult().name();
@@ -45,7 +49,10 @@ public class PipelineGraphApi {
                     );
                 })
                 .collect(Collectors.toList());
+    }
 
+    public PipelineGraph createGraph() {
+        List<PipelineStageInternal> stages = getPipelineNodes();
 
         // id => stage
         Map<Integer, PipelineStageInternal> stageMap = stages.stream()
@@ -120,11 +127,82 @@ public class PipelineGraphApi {
         };
     }
 
-    /* WARNING: Currently does nothing.
-    * Convert a Pipeline graph to a tree.
+    /*
+    * Create a Tree from the GraphVisitor.
     * Original source: https://github.com/jenkinsci/workflow-support-plugin/blob/master/src/main/java/org/jenkinsci/plugins/workflow/support/visualization/table/FlowGraphTable.java#L126
     */
-    public static PipelineGraph convertToTree(PipelineGraph graph) {
-        return graph;
+    public PipelineGraph createTree() {
+        List<PipelineStageInternal> stages = getPipelineNodes();
+        List<Integer> topLevelStageIds = new ArrayList<Integer>();
+
+        // id => stage
+        Map<Integer, PipelineStageInternal> stageMap = stages.stream()
+                .collect(Collectors.toMap(PipelineStageInternal::getId, stage -> stage, (u, v) -> u, LinkedHashMap::new));
+
+        Map<Integer, List<Integer>> stageToChildrenMap = new HashMap<>();
+
+        List<Integer> stageIds = new ArrayList<Integer>();
+        stages.forEach(stage -> {
+            LOGGER.log(Level.INFO, "Stage '" + stage.getName() + "' with id '" + stage.getId() + "' is type '" + stage.getType() + "'.");
+            stageIds.add(stage.getId());
+        });
+        FlowExecution execution = run.getExecution();
+        if (execution == null) {
+            // If we don't have an execution - e.g. if the Pipeline has a syntax error - then return an empty graph.
+            return new PipelineGraph(new ArrayList<PipelineStage>(), false);
+        }
+        stages.forEach(stage -> {
+            try {
+                FlowNode stageNode = execution.getNode(Integer.toString(stage.getId()));
+                List<Integer> ancestors = getAncestors(stage, stageMap);
+                Integer treeParentId = null;
+                // Compare the list of GraphVistor ancestors to the IDs of the enclosing node in the execution.
+                // If a node encloses another node, it means it's a tree parent, so the first ancestor ID we find
+                // which matches an enclosing node then it's the stages tree parent.
+                for (Integer ancestorId : ancestors) {
+                    if(stageNode.getAllEnclosingIds().contains(Integer.toString(ancestorId))) {
+                        treeParentId = ancestorId;
+                        break;
+                    }
+                }
+                if (treeParentId != null) {
+                    List<Integer> childrenOfParent = stageToChildrenMap.getOrDefault(treeParentId, new ArrayList<>());
+                    childrenOfParent.add(stage.getId());
+                    stageToChildrenMap.put(treeParentId, childrenOfParent);
+                } else {
+                    // If we can't find a matching parent in the execution and GraphVistor then this is a top level node.
+                    stageToChildrenMap.put(stage.getId(), new ArrayList<>());
+                    topLevelStageIds.add(stage.getId());
+                }
+            } catch (java.io.IOException ex) {
+                LOGGER.log(Level.SEVERE, "Caught a " + ex.getClass().getSimpleName() + " when trying to find parent of stage '" + stage.getName() + "'");
+            }
+        });
+
+        List<PipelineStage> stageResults = stageMap.values().stream()
+                .map(pipelineStageInternal -> {
+                    List<PipelineStage> children = stageToChildrenMap.getOrDefault(pipelineStageInternal.getId(), emptyList())
+                            .stream()
+                            .map(mapper(stageMap, stageToChildrenMap))
+                            .collect(Collectors.toList());
+
+                    return pipelineStageInternal.toPipelineStage(children);
+                })
+                .filter(stage -> topLevelStageIds.contains(stage.getId())).collect(Collectors.toList());
+        return new PipelineGraph(stageResults, execution != null && execution.isComplete());
+    }
+
+
+    private List<Integer> getAncestors(PipelineStageInternal stage, Map<Integer, PipelineStageInternal> stageMap) {
+        List<Integer> ancestors = new ArrayList<Integer>();
+        if (!stage.getParents().isEmpty()) {
+            Integer parentId = stage.getParents().get(0); // Assume one parent.
+            ancestors.add(parentId);
+            if (stageMap.containsKey(parentId)) {
+                PipelineStageInternal parent = stageMap.get(parentId);
+                ancestors.addAll(getAncestors(parent, stageMap));
+            }
+        }
+        return ancestors;
     }
 }

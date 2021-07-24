@@ -3,10 +3,13 @@ package io.jenkins.plugins.pipelinegraphview.consoleview;
 
 import io.jenkins.plugins.pipelinegraphview.utils.AbstractPipelineViewAction;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
+import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.actions.LogAction;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -32,9 +35,12 @@ import java.io.ByteArrayOutputStream;
 public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     private static final Logger LOGGER = Logger.getLogger(PipelineConsoleViewAction.class.getName());
     private final WorkflowRun target;
+    private final PipelineStepApi stepApi;
+
     public PipelineConsoleViewAction(WorkflowRun target) {
         super(target);
         this.target = target;
+        this.stepApi = new PipelineStepApi(target, null);
     }
 
     @Override
@@ -56,12 +62,13 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         String nodeId = req.getParameter("nodeId");
         if (nodeId != null) {
             LOGGER.log(Level.FINE, "getSteps was passed nodeId '" + nodeId + "'.");
-            PipelineStepApi stepApi = new PipelineStepApi(target, nodeId);
             ObjectMapper mapper = new ObjectMapper();
-            LOGGER.log(Level.FINE, "Steps: '" + mapper.writeValueAsString(stepApi.getSteps()) + "'.");
-            rsp.getWriter().append(mapper.writeValueAsString(stepApi.getSteps()));
+            PipelineStepList steps = stepApi.getSteps(nodeId);
+            LOGGER.log(Level.FINE, "Steps: '" + mapper.writeValueAsString(steps) + "'.");
+            rsp.getWriter().append(mapper.writeValueAsString(steps));
         } else {
             LOGGER.log(Level.FINE, "getSteps was not passed nodeId.");
+            // Consider returning the full map in one go here - the frontend will need to be updated to handle this.
             rsp.getWriter().append("Error getting console text");
         }
     }

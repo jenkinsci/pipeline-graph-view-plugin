@@ -26,37 +26,35 @@ public class PipelineStepApi {
     private final String nodeId;
 
 
-    public PipelineStepApi(WorkflowRun run, String nodeId) throws java.io.IOException {
+    public PipelineStepApi(WorkflowRun run, String nodeId) {
         this.run = run;
         this.nodeId = nodeId;
     }
 
-    public PipelineStepList getSteps() throws java.io.IOException{
-        FlowExecution execution = this.run.getExecution();
-        if (execution != null) {
-            PipelineStepVisitor builder = new PipelineStepVisitor(run, execution.getNode(this.nodeId));
-            List<FlowNodeWrapper> stepNodes = builder.getSteps();
-            LOGGER.log(Level.FINE, "PipelineStepApi steps: '" + stepNodes + "'.");
-            List<PipelineStep> steps = stepNodes.stream()
-                .map(flowNodeWrapper -> {
-                    String state = flowNodeWrapper.getStatus().getResult().name();
-                    if (flowNodeWrapper.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
-                        state = flowNodeWrapper.getStatus().getState().name().toLowerCase(Locale.ROOT);
-                    }
-                    return new PipelineStep(
-                        Integer.parseInt(flowNodeWrapper.getId()), // TODO no need to parse it BO returns a string even though the datatype is number on the frontend
-                        flowNodeWrapper.getDisplayName(),
-                        state,
-                        50, // TODO how ???
-                        flowNodeWrapper.getType().name(),
-                        flowNodeWrapper.getDisplayName() // TODO blue ocean uses timing information: "Passed in 0s"
-                    );
-                })
-                .collect(Collectors.toList());
-            return new PipelineStepList(steps);
-        } else {
-            LOGGER.log(Level.WARNING, "Could not get FlowExecution for run. Returning empty list of steps.");
-            return new PipelineStepList(new ArrayList<PipelineStep>());
-        }
+    private List<PipelineStep> parseSteps(List<FlowNodeWrapper> stepNodes) {
+        LOGGER.log(Level.FINE, "PipelineStepApi steps: '" + stepNodes + "'.");
+        List<PipelineStep> steps = stepNodes.stream()
+            .map(flowNodeWrapper -> {
+                String state = flowNodeWrapper.getStatus().getResult().name();
+                if (flowNodeWrapper.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
+                    state = flowNodeWrapper.getStatus().getState().name().toLowerCase(Locale.ROOT);
+                }
+                return new PipelineStep(
+                    Integer.parseInt(flowNodeWrapper.getId()), // TODO no need to parse it BO returns a string even though the datatype is number on the frontend
+                    flowNodeWrapper.getDisplayName(),
+                    state,
+                    50, // TODO how ???
+                    flowNodeWrapper.getType().name(),
+                    flowNodeWrapper.getDisplayName() // TODO blue ocean uses timing information: "Passed in 0s"
+                );
+            })
+            .collect(Collectors.toList());
+        return steps;
+    }
+
+    public PipelineStepList getSteps(String stageId) {
+        PipelineStepVisitor builder = new PipelineStepVisitor(run, null);
+        List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
+        return new PipelineStepList(parseSteps(stepNodes));
     }
 }

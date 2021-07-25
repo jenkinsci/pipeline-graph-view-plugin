@@ -63,10 +63,13 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
     private final Map<String,FlowNodeWrapper> stepMap = new HashMap<>();
     private final Map<String,List<FlowNodeWrapper>> stageStepMap = new HashMap<>();
 
+    private final ArrayDeque<FlowNode> pendingBlocks = new ArrayDeque<>();
+
     private boolean stageStepsCollectionCompleted = false;
 
     private boolean inStageScope;
     private boolean inParallelBranchScope;
+    private boolean parentnIsParallelBranch;
 
     private FlowNode currentStage;
 
@@ -98,8 +101,10 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
 
     @Override
     public void parallelBranchStart(@Nonnull FlowNode parallelStartNode, @Nonnull FlowNode branchStartNode, @Nonnull ForkScanner scanner) {
+        FlowNode finshedBlock = pendingBlocks.pop();
         // TODO: Remove once finished debugging.
-        logger.info("Node ID: " + parallelStartNode.getId() + " - " + PipelineNodeUtil.isStage(parallelStartNode) + " - " + PipelineNodeUtil.isParallelBranch(parallelStartNode) + " - " + PipelineNodeUtil.isSyntheticStage(parallelStartNode) + " .");
+        logger.info("Node ID: " + branchStartNode.getId() + " - " + PipelineNodeUtil.isStage(branchStartNode) + " - " + PipelineNodeUtil.isParallelBranch(branchStartNode) + " - " + PipelineNodeUtil.isSyntheticStage(branchStartNode) + " .");
+
         if(stageStepsCollectionCompleted){ // skip
             return;
         }
@@ -111,14 +116,20 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
         // TODO: Remove once finished debugging.
         logger.info("Pushing steps to stage in parallelBranchStart.");
         // Record which stage the steps belong to.
-        pushStageStepsToMap(parallelStartNode);
+        pushStageStepsToMap(branchStartNode);
+        inParallelBranchScope = false;
     }
 
 
     @Override
     public void parallelBranchEnd(@Nonnull FlowNode parallelStartNode, @Nonnull FlowNode branchEndNode, @Nonnull ForkScanner scanner) {
         // TODO: Remove once finished debugging.
-        logger.info("Node ID: " + parallelStartNode.getId() + " - " + PipelineNodeUtil.isStage(parallelStartNode) + " - " + PipelineNodeUtil.isParallelBranch(parallelStartNode) + " - " + PipelineNodeUtil.isSyntheticStage(parallelStartNode) + " .");
+        if (branchEndNode instanceof StepEndNode) {
+            FlowNode branchStartNode = ((StepEndNode) branchEndNode).getStartNode();
+            logger.info("Node ID: " + branchStartNode.getId() + " - " + PipelineNodeUtil.isStage(branchStartNode) + " - " + PipelineNodeUtil.isParallelBranch(branchStartNode) + " - " + PipelineNodeUtil.isSyntheticStage(branchStartNode) + " .");
+            pendingBlocks.push(branchStartNode);
+        }
+    
         if(!stageStepsCollectionCompleted && node != null && PipelineNodeUtil.isParallelBranch(node) && branchEndNode instanceof StepEndNode){
             resetSteps();
         }
@@ -137,7 +148,12 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
     @Override
     public void chunkEnd(@Nonnull FlowNode endNode, @CheckForNull FlowNode afterChunk, @Nonnull ForkScanner scanner) {
         // TODO: Remove once finished debugging.
-        logger.info("Node ID: " + endNode.getId() + " - " + PipelineNodeUtil.isStage(endNode) + " - " + PipelineNodeUtil.isParallelBranch(endNode) + " - " + PipelineNodeUtil.isSyntheticStage(endNode) + " .");
+        if (endNode instanceof StepEndNode) {
+            FlowNode startNode = ((StepEndNode) endNode).getStartNode();
+            logger.info("Node ID: " + startNode.getId() + " - " + PipelineNodeUtil.isStage(startNode) + " - " + PipelineNodeUtil.isParallelBranch(startNode) + " - " + PipelineNodeUtil.isSyntheticStage(startNode) + " .");
+            pendingBlocks.push(startNode);
+        }
+    
         super.chunkEnd(endNode, afterChunk, scanner);
         if(endNode instanceof StepEndNode && PipelineNodeUtil.isStage(((StepEndNode)endNode).getStartNode())){
             currentStage = ((StepEndNode)endNode).getStartNode();
@@ -182,16 +198,17 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
                 stepMap.put(step.getId(), stepNode);
             }
         }
-        // Only record the steps here if we are not directly in a parallel branch
-        // This avoid steps of a parallel branch getting maps to an invisible stage inside.
-        if (!inParallelBranchScope) {
+        FlowNode finshedBlock = pendingBlocks.pop();
+        // Do not add steps to this stage if it's parent is a parallel block (it should get addded to that instead).
+        if (!PipelineNodeUtil.isParallelBranch(pendingBlocks.peek())) {
             // TODO: Remove once finished debugging.
             logger.info("Pushing steps to stage in handleChunkDone.");
+
             // Record which stage the steps belong to.
             pushStageStepsToMap(chunk.getFirstNode());
         } else {
             // TODO: Remove once finished debugging.
-            logger.info("Not pushing steps to stage in handleChunkDone as inParallelBranchScope set.");
+            logger.info("Not pushing steps to stage in handleChunkDone as parent is parallel block.");
         }
         if(node != null && PipelineNodeUtil.isStage(node) && !inStageScope && !chunk.getFirstNode().equals(node)){
             resetSteps();
@@ -252,6 +269,7 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
             stepMap.put(stepNode.getId(), stepNode);
             // TODO: Remove once finished debugging.
             logger.info("Pushing step: " + stepNode.getId() + " to stack.");
+    
             stageSteps.push(stepNode);
 
             // If there is closest block boundary, we capture it's error to the last step encountered and prepare for next block.
@@ -312,10 +330,12 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
         for (FlowNodeWrapper step: stageSteps) {
             // TODO: Remove once finished debugging.
             logger.info("Adding step '" + step.getId() + "' to '" + stage.getId() + "'.");
+
             stageStepsList.add(step);
         }
         // TODO: Remove once finished debugging.
         logger.info("Clearing " + stageSteps.size() + ".");
+
         stageSteps.clear();
         stageStepMap.put(stage.getId(), stageStepsList);
     }

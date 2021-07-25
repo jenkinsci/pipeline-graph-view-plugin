@@ -22,9 +22,10 @@ import static java.util.Collections.emptyList;
 public class PipelineStepApi {
     private static final Logger LOGGER = Logger.getLogger(PipelineStepApi.class.getName());
     private transient WorkflowRun run;
-    private transient FlowNode node;
     private final String nodeId;
 
+    private static PipelineStepVisitor builder;
+    private static Object mutex = new Object();
 
     public PipelineStepApi(WorkflowRun run, String nodeId) {
         this.run = run;
@@ -53,7 +54,12 @@ public class PipelineStepApi {
     }
 
     public PipelineStepList getSteps(String stageId) {
-        PipelineStepVisitor builder = new PipelineStepVisitor(run, null);
+        // Create a shared PipelineStepVisitor (so we don't parse the graph for each call).
+        synchronized (mutex) {
+            if (builder == null) {
+                builder = new PipelineStepVisitor(run, null);
+            }
+        }
         List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
         return new PipelineStepList(parseSteps(stepNodes));
     }

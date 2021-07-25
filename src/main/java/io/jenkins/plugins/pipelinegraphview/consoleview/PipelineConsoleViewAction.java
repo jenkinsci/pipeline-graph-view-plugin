@@ -1,36 +1,22 @@
 package io.jenkins.plugins.pipelinegraphview.consoleview;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jenkins.plugins.pipelinegraphview.utils.AbstractPipelineViewAction;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
-import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
-
-import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.actions.LogAction;
-
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.kohsuke.stapler.HttpResponse;
-import hudson.util.HttpResponses;
-import net.sf.json.JSONObject;
-import org.kohsuke.stapler.WebMethod;
-import org.kohsuke.stapler.verb.GET;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import java.io.IOException;
-
-import org.jenkinsci.plugins.workflow.support.visualization.table.FlowGraphTable;
-import org.jenkinsci.plugins.workflow.support.visualization.table.FlowGraphTable.Row;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
+import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.WebMethod;
+
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     private static final Logger LOGGER = Logger.getLogger(PipelineConsoleViewAction.class.getName());

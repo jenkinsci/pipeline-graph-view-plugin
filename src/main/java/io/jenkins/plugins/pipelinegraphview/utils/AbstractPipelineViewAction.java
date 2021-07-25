@@ -13,10 +13,7 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.verb.GET;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 public abstract class AbstractPipelineViewAction implements Action, IconSpec {
-    private static final Logger LOGGER = Logger.getLogger(AbstractPipelineViewAction.class.getName());
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     static {

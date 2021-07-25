@@ -1,31 +1,20 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
-import org.jenkinsci.plugins.workflow.actions.LogAction;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.jenkinsci.plugins.workflow.graph.FlowNode;
-import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import static java.util.Collections.emptyList;
 
 public class PipelineStepApi {
     private static final Logger LOGGER = Logger.getLogger(PipelineStepApi.class.getName());
-    private transient WorkflowRun run;
+    private final transient WorkflowRun run;
     private final String nodeId;
 
     private static PipelineStepVisitor builder;
-    private static Object mutex = new Object();
+    private static final Object mutex = new Object();
 
     public PipelineStepApi(WorkflowRun run, String nodeId) {
         this.run = run;

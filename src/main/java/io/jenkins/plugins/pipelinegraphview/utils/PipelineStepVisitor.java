@@ -1,26 +1,10 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
-import hudson.model.Action;
-import hudson.model.Result;
-
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunResult;
-import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunState;
-
-import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.TimeoutException;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepEndNode;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
+import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.AtomNode;
 import org.jenkinsci.plugins.workflow.graph.BlockEndNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
@@ -28,6 +12,7 @@ import org.jenkinsci.plugins.workflow.graphanalysis.ForkScanner;
 import org.jenkinsci.plugins.workflow.graphanalysis.MemoryFlowChunk;
 import org.jenkinsci.plugins.workflow.graphanalysis.StandardChunkVisitor;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.StageChunkFinder;
 import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.StatusAndTiming;
 import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 import org.jenkinsci.plugins.workflow.support.actions.PauseAction;
@@ -37,10 +22,18 @@ import org.jenkinsci.plugins.workflow.support.steps.input.InputStepExecution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-import org.jenkinsci.plugins.workflow.flow.FlowExecution;
-
-import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.StageChunkFinder;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeoutException;
 /**
  * Gives steps inside
  *
@@ -101,16 +94,15 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
 
     @Override
     public void parallelBranchStart(@Nonnull FlowNode parallelStartNode, @Nonnull FlowNode branchStartNode, @Nonnull ForkScanner scanner) {
-        FlowNode finshedBlock = pendingBlocks.pop();
         // TODO: Remove once finished debugging.
         logger.info("Node ID: " + branchStartNode.getId() + " - " + PipelineNodeUtil.isStage(branchStartNode) + " - " + PipelineNodeUtil.isParallelBranch(branchStartNode) + " - " + PipelineNodeUtil.isSyntheticStage(branchStartNode) + " .");
 
         if(stageStepsCollectionCompleted){ // skip
             return;
         }
-        if(node != null && branchStartNode.equals(node)){
+        if(branchStartNode.equals(node)){
             stageStepsCollectionCompleted = true;
-        }else if(node != null && PipelineNodeUtil.isParallelBranch(node) && !branchStartNode.equals(node)){
+        }else if(PipelineNodeUtil.isParallelBranch(node) && !branchStartNode.equals(node)){
             resetSteps();
         }
         // TODO: Remove once finished debugging.
@@ -130,7 +122,7 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
             pendingBlocks.push(branchStartNode);
         }
     
-        if(!stageStepsCollectionCompleted && node != null && PipelineNodeUtil.isParallelBranch(node) && branchEndNode instanceof StepEndNode){
+        if(!stageStepsCollectionCompleted && PipelineNodeUtil.isParallelBranch(node) && branchEndNode instanceof StepEndNode){
             resetSteps();
         }
     }
@@ -198,7 +190,6 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
                 stepMap.put(step.getId(), stepNode);
             }
         }
-        FlowNode finshedBlock = pendingBlocks.pop();
         // Do not add steps to this stage if it's parent is a parallel block (it should get addded to that instead).
         if (!PipelineNodeUtil.isParallelBranch(pendingBlocks.peek())) {
             // TODO: Remove once finished debugging.
@@ -210,7 +201,7 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
             // TODO: Remove once finished debugging.
             logger.info("Not pushing steps to stage in handleChunkDone as parent is parallel block.");
         }
-        if(node != null && PipelineNodeUtil.isStage(node) && !inStageScope && !chunk.getFirstNode().equals(node)){
+        if(PipelineNodeUtil.isStage(node) && !inStageScope && !chunk.getFirstNode().equals(node)){
             resetSteps();
         }
     }
@@ -294,11 +285,11 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
                 last = stages.getLast();
             }
 
-            if(first!= null && node.equals(first)){
+            if(node.equals(first)){
                 s.addAll(preSteps);
             }
             s.addAll(steps);
-            if(last!= null && (node.equals(last) || PipelineNodeUtil.isSkippedStage(last))){
+            if((node.equals(last) || PipelineNodeUtil.isSkippedStage(last))){
                 s.addAll(postSteps);
             }
 

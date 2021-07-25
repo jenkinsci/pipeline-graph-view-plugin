@@ -195,10 +195,10 @@ export class PipelineGraph extends React.Component {
                             layout={this.state.layout}
                             isStageSelected={this.stageIsSelected}
                         />
-                    )}
+                    ))}
                     {branchLabels.map(label => (
                         <SequentialContainerLabel key={label.key} details={label} layout={this.state.layout} />
-                    )}
+                    ))}
                 </div>
             </div>
         );

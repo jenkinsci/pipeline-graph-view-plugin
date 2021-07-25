@@ -50,7 +50,7 @@ export function Node({ node, layout, isStageSelected, onClick }: NodeProps) {
 			clickableProps.onClick = () => onClick(node)
 	}
 
-	// Add an invisible click/touch/mouseover target, coz the nodes are small and (more importantly)
+	// Add an invisible click/touch/mouseover target, because the nodes are small and (more importantly)
 	// many are hollow.
 	groupChildren.push(
 			<circle r={nodeRadius + 2 * connectorStrokeWidth} className="PWGx-pipeline-node-hittarget" fillOpacity="0" stroke="none" {...clickableProps} />

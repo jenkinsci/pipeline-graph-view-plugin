@@ -27,7 +27,7 @@ export function BigLabel({
 	selectedStage
 }: RenderBigLabelProps) {
 	/**
-	 * Is this any child of this stage currently selected?
+	 * Is any child of this stage currently selected?
 	 */
 	function isStageChildSelected(stage?: StageInfo, selectedStage?: StageInfo) {
 		if (stage) {

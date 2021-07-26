@@ -35,13 +35,12 @@ public class PipelineGraphApi {
               }
 
               return new PipelineStageInternal(
-                  Integer.parseInt(
-                      flowNodeWrapper
-                          .getId()), // TODO no need to parse it BO returns a string even though the
+                  flowNodeWrapper
+                      .getId(), // TODO no need to parse it BO returns a string even though the
                   // datatype is number on the frontend
                   flowNodeWrapper.getDisplayName(),
                   flowNodeWrapper.getParents().stream()
-                      .map(wrapper -> Integer.parseInt(wrapper.getId()))
+                      .map(FlowNodeWrapper::getId)
                       .collect(Collectors.toList()),
                   state,
                   50, // TODO how ???
@@ -57,32 +56,32 @@ public class PipelineGraphApi {
     List<PipelineStageInternal> stages = getPipelineNodes();
 
     // id => stage
-    Map<Integer, PipelineStageInternal> stageMap =
+    Map<String, PipelineStageInternal> stageMap =
         stages.stream()
             .collect(
                 Collectors.toMap(
                     PipelineStageInternal::getId, stage -> stage, (u, v) -> u, LinkedHashMap::new));
 
-    Map<Integer, List<Integer>> stageToChildrenMap = new HashMap<>();
+    Map<String, List<String>> stageToChildrenMap = new HashMap<>();
 
-    List<Integer> stagesThatAreNested = new ArrayList<>();
+    List<String> stagesThatAreNested = new ArrayList<>();
 
-    Map<Integer, Integer> nextSiblingToOlderSibling = new HashMap<>();
+    Map<String, String> nextSiblingToOlderSibling = new HashMap<>();
 
-    List<Integer> stagesThatAreChildrenOrNestedStages = new ArrayList<>();
+    List<String> stagesThatAreChildrenOrNestedStages = new ArrayList<>();
     stages.forEach(
         stage -> {
           if (stage.getParents().isEmpty()) {
             stageToChildrenMap.put(stage.getId(), new ArrayList<>());
           } else if (stage.getType().equals("PARALLEL")) {
-            Integer parentId = stage.getParents().get(0); // assume one parent for now
-            List<Integer> childrenOfParent =
+            String parentId = stage.getParents().get(0); // assume one parent for now
+            List<String> childrenOfParent =
                 stageToChildrenMap.getOrDefault(parentId, new ArrayList<>());
             childrenOfParent.add(stage.getId());
             stageToChildrenMap.put(parentId, childrenOfParent);
             stagesThatAreChildrenOrNestedStages.add(stage.getId());
           } else if (stageMap.get(stage.getParents().get(0)).getType().equals("PARALLEL")) {
-            Integer parentId = stage.getParents().get(0);
+            String parentId = stage.getParents().get(0);
             PipelineStageInternal parent = stageMap.get(parentId);
             parent.setSeqContainerName(parent.getName());
             parent.setName(stage.getName());
@@ -130,12 +129,11 @@ public class PipelineGraphApi {
     return new PipelineGraph(stageResults, execution != null && execution.isComplete());
   }
 
-  private Function<Integer, PipelineStage> mapper(
-      Map<Integer, PipelineStageInternal> stageMap,
-      Map<Integer, List<Integer>> stageToChildrenMap) {
+  private Function<String, PipelineStage> mapper(
+      Map<String, PipelineStageInternal> stageMap, Map<String, List<String>> stageToChildrenMap) {
 
     return id -> {
-      List<Integer> orDefault = stageToChildrenMap.getOrDefault(id, emptyList());
+      List<String> orDefault = stageToChildrenMap.getOrDefault(id, emptyList());
       List<PipelineStage> children =
           orDefault.stream().map(mapper(stageMap, stageToChildrenMap)).collect(Collectors.toList());
       return stageMap.get(id).toPipelineStage(children);
@@ -148,16 +146,16 @@ public class PipelineGraphApi {
    */
   public PipelineGraph createTree() {
     List<PipelineStageInternal> stages = getPipelineNodes();
-    List<Integer> topLevelStageIds = new ArrayList<>();
+    List<String> topLevelStageIds = new ArrayList<>();
 
     // id => stage
-    Map<Integer, PipelineStageInternal> stageMap =
+    Map<String, PipelineStageInternal> stageMap =
         stages.stream()
             .collect(
                 Collectors.toMap(
                     PipelineStageInternal::getId, stage -> stage, (u, v) -> u, LinkedHashMap::new));
 
-    Map<Integer, List<Integer>> stageToChildrenMap = new HashMap<>();
+    Map<String, List<String>> stageToChildrenMap = new HashMap<>();
 
     FlowExecution execution = run.getExecution();
     if (execution == null) {
@@ -168,25 +166,25 @@ public class PipelineGraphApi {
     stages.forEach(
         stage -> {
           try {
-            FlowNode stageNode = execution.getNode(Integer.toString(stage.getId()));
+            FlowNode stageNode = execution.getNode(stage.getId());
             if (stageNode == null) {
               return;
             }
-            List<Integer> ancestors = getAncestors(stage, stageMap);
-            Integer treeParentId = null;
+            List<String> ancestors = getAncestors(stage, stageMap);
+            String treeParentId = null;
             // Compare the list of GraphVistor ancestors to the IDs of the enclosing node in the
             // execution.
             // If a node encloses another node, it means it's a tree parent, so the first ancestor
             // ID we find
             // which matches an enclosing node then it's the stages tree parent.
-            for (Integer ancestorId : ancestors) {
-              if (stageNode.getAllEnclosingIds().contains(Integer.toString(ancestorId))) {
+            for (String ancestorId : ancestors) {
+              if (stageNode.getAllEnclosingIds().contains(ancestorId)) {
                 treeParentId = ancestorId;
                 break;
               }
             }
             if (treeParentId != null) {
-              List<Integer> childrenOfParent =
+              List<String> childrenOfParent =
                   stageToChildrenMap.getOrDefault(treeParentId, new ArrayList<>());
               childrenOfParent.add(stage.getId());
               stageToChildrenMap.put(treeParentId, childrenOfParent);
@@ -223,11 +221,11 @@ public class PipelineGraphApi {
     return new PipelineGraph(stageResults, execution.isComplete());
   }
 
-  private List<Integer> getAncestors(
-      PipelineStageInternal stage, Map<Integer, PipelineStageInternal> stageMap) {
-    List<Integer> ancestors = new ArrayList<>();
+  private List<String> getAncestors(
+      PipelineStageInternal stage, Map<String, PipelineStageInternal> stageMap) {
+    List<String> ancestors = new ArrayList<>();
     if (!stage.getParents().isEmpty()) {
-      Integer parentId = stage.getParents().get(0); // Assume one parent.
+      String parentId = stage.getParents().get(0); // Assume one parent.
       ancestors.add(parentId);
       if (stageMap.containsKey(parentId)) {
         PipelineStageInternal parent = stageMap.get(parentId);

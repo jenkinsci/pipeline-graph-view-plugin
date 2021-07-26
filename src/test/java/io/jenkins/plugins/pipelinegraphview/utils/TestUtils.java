@@ -64,24 +64,4 @@ public class TestUtils {
         }
         return matchingNodes;
     }
-
-    public static List<FlowNode> getNodesByArguments(WorkflowRun run, String arguments) throws java.io.IOException {
-        FlowExecution execution = run.getExecution();
-        FlowGraphTable graphTable = new FlowGraphTable(execution);
-        graphTable.build();
-        List<FlowNode> matchingNodes = new ArrayList<FlowNode>();
-        for (Row row : graphTable.getRows()) {
-            String argumentsString = getNodeArguments(row.getNode());
-            if (argumentsString != null && argumentsString.equals(arguments)) {
-                FlowNode node = row.getNode();
-                LOGGER.log(Level.INFO, "Found matching node: '" + arguments + "' with ID " + node.getId());
-                matchingNodes.add(node);
-            }
-        }
-        return matchingNodes;
-    }
-
-    public static String getNodeArguments(FlowNode node) {
-        return ArgumentsAction.getStepArgumentsAsString(node);
-    }
 }

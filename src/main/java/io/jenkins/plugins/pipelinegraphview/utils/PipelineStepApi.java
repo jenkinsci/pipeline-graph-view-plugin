@@ -12,7 +12,6 @@ public class PipelineStepApi {
     private static final Logger logger = LoggerFactory.getLogger(PipelineStepApi.class);
     private final transient WorkflowRun run;
 
-    private static PipelineStepVisitor builder;
     private static final Object mutex = new Object();
 
     public PipelineStepApi(WorkflowRun run) {
@@ -43,12 +42,7 @@ public class PipelineStepApi {
     }
 
     public PipelineStepList getSteps(String stageId) {
-        // Create a shared PipelineStepVisitor (so we don't parse the graph for each call).
-        synchronized (mutex) {
-            if (builder == null) {
-                builder = new PipelineStepVisitor(run, null);
-            }
-        }
+        PipelineStepVisitor builder = new PipelineStepVisitor(run, null);
         List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
         return new PipelineStepList(parseSteps(stepNodes));
     }

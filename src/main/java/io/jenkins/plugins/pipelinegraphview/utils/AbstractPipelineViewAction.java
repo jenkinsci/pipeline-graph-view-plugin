@@ -13,10 +13,7 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.verb.GET;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 public abstract class AbstractPipelineViewAction implements Action, IconSpec {
-    private static final Logger LOGGER = Logger.getLogger(AbstractPipelineViewAction.class.getName());
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     static {
@@ -24,13 +21,13 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
         IconSet.icons.addIcon(new Icon("icon-pipeline-graph icon-xl", "plugin/pipeline-graph-view/images/48x48/blueocean.png", Icon.ICON_XLARGE_STYLE));
     }
 
-    private final transient PipelineGraphApi api;
+    protected final transient PipelineGraphApi api;
 
     public AbstractPipelineViewAction(WorkflowRun target) {
         this.api = new PipelineGraphApi(target);
     }
 
-    protected JSONObject createGraph(PipelineGraph pipelineGraph) throws JsonProcessingException {
+    protected JSONObject createJson(PipelineGraph pipelineGraph) throws JsonProcessingException {
         String graph = OBJECT_MAPPER.writeValueAsString(pipelineGraph);
         return JSONObject.fromObject(graph);
     }
@@ -41,7 +38,7 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
         // TODO for automatic json serialisation look at:
         // https://github.com/jenkinsci/blueocean-plugin/blob/4f2aa260fca22604a087629dc0da5c80735e0548/blueocean-commons/src/main/java/io/jenkins/blueocean/commons/stapler/Export.java#L101
         // https://github.com/jenkinsci/blueocean-plugin/blob/4f2aa260fca22604a087629dc0da5c80735e0548/blueocean-commons/src/main/java/io/jenkins/blueocean/commons/stapler/TreeResponse.java#L48
-        JSONObject graph = createGraph(api.createGraph());
+        JSONObject graph = createJson(api.createGraph());
         return HttpResponses.okJSON(graph);
     }
 
@@ -49,7 +46,8 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
     public HttpResponse getTree() throws JsonProcessingException {
         // TODO: This need to be updated to return a tree representation of the graph, not the graph.
         // Here is how FlowGraphTree does it: https://github.com/jenkinsci/workflow-support-plugin/blob/master/src/main/java/org/jenkinsci/plugins/workflow/support/visualization/table/FlowGraphTable.java#L126
-        JSONObject graph = createGraph(PipelineGraphApi.convertToTree(api.createGraph()));
+        JSONObject graph = createJson(api.createTree());
+
         return HttpResponses.okJSON(graph);
     }
 

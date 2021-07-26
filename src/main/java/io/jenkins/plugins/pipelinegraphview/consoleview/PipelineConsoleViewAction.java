@@ -1,40 +1,32 @@
 package io.jenkins.plugins.pipelinegraphview.consoleview;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jenkins.plugins.pipelinegraphview.utils.AbstractPipelineViewAction;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
-
-import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import org.jenkinsci.plugins.workflow.actions.LogAction;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import org.kohsuke.stapler.HttpResponse;
-import hudson.util.HttpResponses;
-import net.sf.json.JSONObject;
-import org.kohsuke.stapler.WebMethod;
-import org.kohsuke.stapler.verb.GET;
-import org.kohsuke.stapler.interceptor.RequirePOST;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
-import java.io.IOException;
-
-import org.jenkinsci.plugins.workflow.support.visualization.table.FlowGraphTable;
-import org.jenkinsci.plugins.workflow.support.visualization.table.FlowGraphTable.Row;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
+import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.WebMethod;
+
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
-    private static final Logger LOGGER = Logger.getLogger(PipelineConsoleViewAction.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(PipelineConsoleViewAction.class);
     private final WorkflowRun target;
+    private final PipelineStepApi stepApi;
+
     public PipelineConsoleViewAction(WorkflowRun target) {
         super(target);
         this.target = target;
+        this.stepApi = new PipelineStepApi(target);
     }
 
     @Override
@@ -55,13 +47,17 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     public void getSteps(StaplerRequest req, StaplerResponse rsp) throws IOException {
         String nodeId = req.getParameter("nodeId");
         if (nodeId != null) {
-            LOGGER.log(Level.FINE, "getSteps was passed nodeId '" + nodeId + "'.");
-            PipelineStepApi stepApi = new PipelineStepApi(target, nodeId);
+            logger.debug("getSteps was passed nodeId '" + nodeId + "'.");
             ObjectMapper mapper = new ObjectMapper();
-            LOGGER.log(Level.FINE, "Steps: '" + mapper.writeValueAsString(stepApi.getSteps()) + "'.");
-            rsp.getWriter().append(mapper.writeValueAsString(stepApi.getSteps()));
+            PipelineStepList steps = stepApi.getSteps(nodeId);
+            String stepsJson = mapper.writeValueAsString(steps);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Steps: '" + stepsJson + "'.");
+            }
+            rsp.getWriter().append(stepsJson);
         } else {
-            LOGGER.log(Level.FINE, "getSteps was not passed nodeId.");
+            logger.debug("getSteps was not passed nodeId.");
+            // Consider returning the full map in one go here - the frontend will need to be updated to handle this.
             rsp.getWriter().append("Error getting console text");
         }
     }
@@ -70,7 +66,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     public void getConsoleOutput(StaplerRequest req, StaplerResponse rsp) throws IOException {
         String nodeId = req.getParameter("nodeId");
         if (nodeId != null) {
-            LOGGER.log(Level.FINE, "getConsoleOutput was passed node id '" + nodeId + "'.");
+            logger.debug("getConsoleOutput was passed node id '" + nodeId + "'.");
             String nodeConsoleText = getLogForNode(nodeId);
             if (nodeConsoleText != null) {
                 rsp.getWriter().append(nodeConsoleText);
@@ -78,7 +74,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
                 rsp.getWriter().append("No console output for node: ").append(nodeId);
             }
         } else {
-            LOGGER.log(Level.FINE, "getConsoleOutput was ot passed nodeId.");
+            logger.debug("getConsoleOutput was ot passed nodeId.");
             rsp.getWriter().append("Error getting console text");
         }
     }
@@ -86,15 +82,15 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     private String getLogForNode(String nodeId) throws IOException {
         FlowExecution execution = target.getExecution();
         if (execution != null) {
-            LOGGER.log(Level.FINE, "getConsoleOutput found execution.");
+            logger.debug("getConsoleOutput found execution.");
             FlowNode node = execution.getNode(nodeId);
             if (node != null) {
-                LOGGER.log(Level.FINE, "getConsoleOutput found node.");
+                logger.debug("getConsoleOutput found node.");
                 LogAction log = node.getAction(LogAction.class);
                 if (log != null) {
                     ByteArrayOutputStream oututStream = new ByteArrayOutputStream();
                     Long receivedBytes = log.getLogText().writeLogTo(0, oututStream);
-                    LOGGER.log(Level.FINE, "Received " + receivedBytes + " of console output.");
+                    logger.debug("Received " + receivedBytes + " of console output.");
                     // Assuming logs are is UFT-8. This seems to be what LogStorage does.
                     return oututStream.toString("UTF-8").trim();
                 }

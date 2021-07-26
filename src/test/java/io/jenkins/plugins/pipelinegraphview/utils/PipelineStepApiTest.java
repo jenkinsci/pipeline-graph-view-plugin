@@ -54,7 +54,7 @@ public class PipelineStepApiTest {
     }
 
     @Test
-    public void complexParallelParallelBranchesHaveCorrectSteps() throws Exception {
+    public void complexParallelBranchesHaveCorrectSteps() throws Exception {
         // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a long time)
         WorkflowRun run = TestUtils.createAndRunJob(j, "complexParallelSmokes", "complexParallelSmokes.jenkinsfile", Result.SUCCESS);
         PipelineStepApi api = new PipelineStepApi(run);

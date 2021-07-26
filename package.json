@@ -8,7 +8,7 @@
     "mvntest": "npm run test",
     "build": "webpack --mode production",
     "build:dev": "webpack --mode development --watch",
-    "test": "echo \"Error: TODO add tests\" && exit 0"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -26,22 +26,39 @@
     "@material-ui/lab": "^4.0.0-alpha.58",
     "@react-spring/web": "^9.1.2",
     "html-react-parser": "^1.2.7",
+    "linkifyjs": "^3.0.0-beta.3",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-split-pane": "^0.1.92"
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.14.8",
+    "@babel/preset-react": "^7.14.5",
+    "@types/enzyme": "^3.10.9",
+    "@types/jest": "^26.0.24",
+    "@types/linkifyjs": "^2.1.4",
     "@types/node": "10.17.35",
     "@types/react": "^16.9.35",
     "@types/react-dom": "^16.9.8",
     "css-loader": "^3.5.3",
+    "enzyme": "^3.11.0",
+    "enzyme-adapter-react-16": "^1.15.6",
+    "jest": "^27.0.6",
     "sass": "1.26.11",
     "sass-loader": "10.0.2",
     "source-map-loader": "^0.2.4",
     "style-loader": "^1.2.1",
+    "ts-jest": "^27.0.4",
     "ts-loader": "^7.0.5",
     "typescript": "^3.9.3",
     "webpack": "^4.43.0",
     "webpack-cli": "^3.3.11"
+  },
+  "jest": {
+    "rootDir": "src/main/frontend",
+    "setupFilesAfterEnv": ["<rootDir>setupTests.js"],
+    "transform": {
+      "^.+\\.(ts|tsx)$": "ts-jest"
+    }
   }
 }

@@ -1,11 +1,11 @@
-import React from 'react';
-import OriginalLinkify, {LinkifyProps} from 'linkifyjs/react';
+import React from "react";
+import OriginalLinkify, { LinkifyProps } from "linkifyjs/react";
 import PropTypes from "prop-types";
 
 // Makes sure we only linkify explicit URLs with expected protocols
 function validateURL(value: string) {
-    const explicitURL = /^(http|https|file|ftp|mailto):/i;
-    return explicitURL.test(value);
+  const explicitURL = /^(http|https|file|ftp|mailto):/i;
+  return explicitURL.test(value);
 }
 
 type Props = LinkifyProps;
@@ -17,23 +17,23 @@ type Props = LinkifyProps;
  * @param props
  */
 export const Linkify = (props: Props) => {
-    const childOptions = {
-        validate: validateURL,
-        ...(props.options || {}),
-    };
+  const childOptions = {
+    validate: validateURL,
+    ...(props.options || {}),
+  };
 
-    const childProps = {
-        ...props,
-        options: childOptions,
-    };
+  const childProps = {
+    ...props,
+    options: childOptions,
+  };
 
-    return <OriginalLinkify {...childProps} />;
+  return <OriginalLinkify {...childProps} />;
 };
 
 Linkify.propTypes = {
-    // @ts-ignore
-    ...OriginalLinkify.propTypes,
-    options: PropTypes.object,
+  // @ts-ignore
+  ...OriginalLinkify.propTypes,
+  options: PropTypes.object,
 };
 // @ts-ignore
 Linkify.defaultProps = OriginalLinkify.defaultProps;

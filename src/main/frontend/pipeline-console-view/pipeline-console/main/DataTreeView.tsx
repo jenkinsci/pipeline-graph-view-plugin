@@ -78,14 +78,14 @@ const getTreeItemsFromStage = (
   stageSteps: Map<String, StepInfo[]>
 ) => {
   return stageItems.map((stageItemData) => {
-    let children: JSX.Element[] = []
+    let children: JSX.Element[] = [];
     if (stageItemData.children && stageItemData.children.length > 0) {
-      children = [...getTreeItemsFromStage(stageItemData.children, stageSteps)]
+      children = [...getTreeItemsFromStage(stageItemData.children, stageSteps)];
     }
     let steps = stageSteps.get(`${stageItemData.id}`);
     if (steps) {
       let stepsItems = getTreeItemsFromStepList(steps);
-      children = [...children, ...stepsItems]
+      children = [...children, ...stepsItems];
     }
     return (
       <StageTreeItem
@@ -129,13 +129,12 @@ export class DataTreeView extends React.Component {
         this.setState({
           steps: new Map(
             this.state.steps.set(`${stage.id}`, step_result.steps)
-          )
+          ),
         });
-      }
-    );
+      });
     if (stage.children && stage.children.length > 0) {
       stage.children.forEach((childStage) => {
-        this.getStepsForStageTree(childStage)
+        this.getStepsForStageTree(childStage);
       });
     }
   }
@@ -151,11 +150,11 @@ export class DataTreeView extends React.Component {
           },
           () => {
             this.state.stages.forEach((stageData) => {
-              this.getStepsForStageTree(stageData)
+              this.getStepsForStageTree(stageData);
             });
           }
-        )
-        })
+        );
+      })
       .catch(console.log);
   }
 

@@ -4,8 +4,8 @@ import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 import static java.util.Collections.emptyList;
 
 public class PipelineGraphApi {
-    private static final Logger LOGGER = Logger.getLogger(PipelineStepApi.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(PipelineStepApi.class);
     private transient final WorkflowRun run;
 
     public PipelineGraphApi(WorkflowRun run) {
@@ -141,11 +141,6 @@ public class PipelineGraphApi {
 
         Map<Integer, List<Integer>> stageToChildrenMap = new HashMap<>();
 
-        List<Integer> stageIds = new ArrayList<>();
-        stages.forEach(stage -> {
-            LOGGER.log(Level.INFO, "Stage '" + stage.getName() + "' with id '" + stage.getId() + "' is type '" + stage.getType() + "'.");
-            stageIds.add(stage.getId());
-        });
         FlowExecution execution = run.getExecution();
         if (execution == null) {
             // If we don't have an execution - e.g. if the Pipeline has a syntax error - then return an empty graph.
@@ -178,7 +173,7 @@ public class PipelineGraphApi {
                     topLevelStageIds.add(stage.getId());
                 }
             } catch (java.io.IOException ex) {
-                LOGGER.log(Level.SEVERE, "Caught a " + ex.getClass().getSimpleName() + " when trying to find parent of stage '" + stage.getName() + "'");
+                logger.error("Caught a " + ex.getClass().getSimpleName() + " when trying to find parent of stage '" + stage.getName() + "'");
             }
         });
 

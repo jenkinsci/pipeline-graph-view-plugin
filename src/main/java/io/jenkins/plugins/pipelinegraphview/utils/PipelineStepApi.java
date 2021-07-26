@@ -4,25 +4,25 @@ import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PipelineStepApi {
-    private static final Logger LOGGER = Logger.getLogger(PipelineStepApi.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(PipelineStepApi.class);
     private final transient WorkflowRun run;
-    private final String nodeId;
 
     private static PipelineStepVisitor builder;
     private static final Object mutex = new Object();
 
-    public PipelineStepApi(WorkflowRun run, String nodeId) {
+    public PipelineStepApi(WorkflowRun run) {
         this.run = run;
-        this.nodeId = nodeId;
     }
 
     private List<PipelineStep> parseSteps(List<FlowNodeWrapper> stepNodes) {
-        LOGGER.log(Level.FINE, "PipelineStepApi steps: '" + stepNodes + "'.");
+        if (logger.isDebugEnabled()) {
+            logger.debug("PipelineStepApi steps: '" + stepNodes + "'.");
+        }
         List<PipelineStep> steps = stepNodes.stream()
             .map(flowNodeWrapper -> {
                 String state = flowNodeWrapper.getStatus().getResult().name();

@@ -6,20 +6,20 @@ import java.util.List;
 public class PipelineStageInternal {
 
   private String name;
-  private List<Integer> parents;
+  private List<String> parents;
   private String state; // TODO enum
   private int completePercent; // TODO int is fine?
   private String type; // TODO enum
   private String title;
-  private int id; // TODO what's this for?
+  private String id;
   private String seqContainerName;
   private PipelineStageInternal nextSibling;
   private boolean sequential;
 
   public PipelineStageInternal(
-      int id,
+      String id,
       String name,
-      List<Integer> parents,
+      List<String> parents,
       String state,
       int completePercent,
       String type,
@@ -37,7 +37,7 @@ public class PipelineStageInternal {
     return sequential;
   }
 
-  public void setId(int id) {
+  public void setId(String id) {
     this.id = id;
   }
 
@@ -77,7 +77,7 @@ public class PipelineStageInternal {
     return seqContainerName;
   }
 
-  public int getId() {
+  public String getId() {
     return id;
   }
 
@@ -85,7 +85,7 @@ public class PipelineStageInternal {
     return name;
   }
 
-  public List<Integer> getParents() {
+  public List<String> getParents() {
     return parents;
   }
 

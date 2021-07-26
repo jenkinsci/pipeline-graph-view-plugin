@@ -10,13 +10,13 @@ public class PipelineStage {
   private int completePercent; // TODO int is fine?
   private String type; // TODO enum
   private String title;
-  private int id; // TODO what's this for?
+  private String id; // TODO what's this for?
   private String seqContainerName;
   private final PipelineStage nextSibling;
   private boolean sequential;
 
   public PipelineStage(
-      int id,
+      String id,
       String name,
       List<PipelineStage> children,
       String state,
@@ -52,7 +52,7 @@ public class PipelineStage {
     return seqContainerName;
   }
 
-  public int getId() {
+  public String getId() {
     return id;
   }
 

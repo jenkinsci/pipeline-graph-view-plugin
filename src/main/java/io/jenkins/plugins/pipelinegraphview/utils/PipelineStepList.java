@@ -4,13 +4,13 @@ import java.util.List;
 
 public class PipelineStepList {
 
-    private List<PipelineStep> steps;
+  private List<PipelineStep> steps;
 
-    public PipelineStepList(List<PipelineStep> steps) {
-        this.steps = steps;
-    }
+  public PipelineStepList(List<PipelineStep> steps) {
+    this.steps = steps;
+  }
 
-    public List<PipelineStep> getSteps() {
-        return steps;
-    }
+  public List<PipelineStep> getSteps() {
+    return steps;
+  }
 }

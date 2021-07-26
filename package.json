@@ -8,7 +8,9 @@
     "mvntest": "npm run test",
     "build": "webpack --mode production",
     "build:dev": "webpack --mode development --watch",
-    "test": "jest"
+    "test": "npm run prettier-check && jest",
+    "prettier-check": "prettier --check src/main/frontend/",
+    "prettier": "prettier --write src/main/frontend/"
   },
   "repository": {
     "type": "git",
@@ -44,6 +46,7 @@
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.6",
     "jest": "^27.0.6",
+    "prettier": "2.3.2",
     "sass": "1.26.11",
     "sass-loader": "10.0.2",
     "source-map-loader": "^0.2.4",

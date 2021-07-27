@@ -59,14 +59,14 @@ public class PipelineStepApiTest {
             j, "complexParallelSmokes", "complexParallelSmokes.jenkinsfile", Result.SUCCESS);
 
     // Dynamically find the nodes which will be returned by the GraphAPI
-    String nonParallelId = TestUtils.getNodesByDisplayName(run, "Non-Parallel Stage").get(0).getId();
+    String nonParallelId =
+        TestUtils.getNodesByDisplayName(run, "Non-Parallel Stage").get(0).getId();
     // We need to prefix with 'Branch: ' as these are Declarative parallel stages.
     String branchAId = TestUtils.getNodesByDisplayName(run, "Branch: Branch A").get(0).getId();
     String branchBId = TestUtils.getNodesByDisplayName(run, "Branch: Branch B").get(0).getId();
     String branchCId = TestUtils.getNodesByDisplayName(run, "Branch: Branch C").get(0).getId();
     String branchNested1Id = TestUtils.getNodesByDisplayName(run, "Nested 1").get(0).getId();
     String branchNested2Id = TestUtils.getNodesByDisplayName(run, "Nested 2").get(0).getId();
-
 
     // Check 'Non-Parallel Stage'
     PipelineStepApi api = new PipelineStepApi(run);

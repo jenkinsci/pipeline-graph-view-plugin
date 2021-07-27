@@ -174,7 +174,7 @@ export function SequentialContainerLabel({
     maxWidth: sequentialStagesLabelOffset,
     overflow: "hidden",
     textOverflow: "ellipsis",
-    background: "white",
+    background: "var(--background, white)",
     padding: "0 7px",
     lineHeight: "1",
     whiteSpace: "nowrap",

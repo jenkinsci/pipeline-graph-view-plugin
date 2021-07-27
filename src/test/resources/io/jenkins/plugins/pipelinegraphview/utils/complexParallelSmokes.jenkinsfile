@@ -4,6 +4,8 @@ pipeline {
         stage('Non-Parallel Stage') {
             steps {
                 echo 'This stage will be executed first.'
+                // Test empty/no args for step
+                echo ''
             }
         }
         stage('Parallel Stage') {

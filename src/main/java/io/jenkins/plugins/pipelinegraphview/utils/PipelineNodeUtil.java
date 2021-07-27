@@ -106,7 +106,7 @@ public class PipelineNodeUtil {
         && node.getAction(ThreadNameAction.class) != null;
   }
 
-  public static String getArgumentsAsString(@Nullable FlowNode node){
+  public static String getArgumentsAsString(@Nullable FlowNode node) {
     if (node != null) {
       return ArgumentsAction.getStepArgumentsAsString(node);
     }

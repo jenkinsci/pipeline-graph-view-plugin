@@ -29,12 +29,17 @@ public class PipelineStepApi {
                   if (flowNodeWrapper.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
                     state = flowNodeWrapper.getStatus().getState().name().toLowerCase(Locale.ROOT);
                   }
+                  String displayName = flowNodeWrapper.getDisplayName();
+                  String stepArguments = flowNodeWrapper.getArgumentsAsString();
+                  if (stepArguments != null && !stepArguments.isEmpty()) {
+                    displayName = stepArguments + " - " + displayName;
+                  }
                   return new PipelineStep(
                       Integer.parseInt(
                           flowNodeWrapper
                               .getId()), // TODO no need to parse it BO returns a string even though
                       // the datatype is number on the frontend
-                      flowNodeWrapper.getDisplayName() + " - " + flowNodeWrapper.getArgumentsAsString(),
+                      displayName,
                       state,
                       50, // TODO how ???
                       flowNodeWrapper.getType().name(),

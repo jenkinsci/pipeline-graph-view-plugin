@@ -71,8 +71,9 @@ public class PipelineStepApiTest {
     // Check 'Non-Parallel Stage'
     PipelineStepApi api = new PipelineStepApi(run);
     List<PipelineStep> steps = api.getSteps(nonParallelId).getSteps();
-    assertThat(steps, hasSize(1));
+    assertThat(steps, hasSize(2));
     assertThat(steps.get(0).getName(), is("This stage will be executed first. - Print Message"));
+    assertThat(steps.get(1).getName(), is("Print Message"));
 
     // Check 'Branch A'
     steps = api.getSteps(branchAId).getSteps();

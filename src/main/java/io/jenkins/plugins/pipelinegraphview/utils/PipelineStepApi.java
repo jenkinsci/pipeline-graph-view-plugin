@@ -34,7 +34,7 @@ public class PipelineStepApi {
                           flowNodeWrapper
                               .getId()), // TODO no need to parse it BO returns a string even though
                       // the datatype is number on the frontend
-                      flowNodeWrapper.getDisplayName(),
+                      flowNodeWrapper.getDisplayName() + " - " + flowNodeWrapper.getArgumentsAsString(),
                       state,
                       50, // TODO how ???
                       flowNodeWrapper.getType().name(),

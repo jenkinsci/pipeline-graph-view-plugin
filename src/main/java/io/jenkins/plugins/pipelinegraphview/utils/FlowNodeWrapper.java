@@ -273,4 +273,8 @@ public class FlowNodeWrapper {
   public void setPipelineActions(Collection<Action> pipelineActions) {
     this.pipelineActions = pipelineActions;
   }
+
+  public String getArgumentsAsString() {
+    return PipelineNodeUtil.getArgumentsAsString(node);
+  }
 }

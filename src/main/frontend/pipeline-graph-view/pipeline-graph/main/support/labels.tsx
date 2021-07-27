@@ -172,15 +172,14 @@ export function SequentialContainerLabel({
   const containerStyle: any = {
     top: y,
     left: x,
-    marginTop: "-0.5em",
+    marginTop: "2.2em",
+    marginLeft: "-1.5em",
     position: "absolute",
-    maxWidth: sequentialStagesLabelOffset,
-    overflow: "hidden",
-    textOverflow: "ellipsis",
     background: "var(--background, white)",
+    maxWidth: 250,
     padding: "0 7px",
     lineHeight: "1",
-    whiteSpace: "nowrap",
+    whiteSpace: "wrap",
   };
 
   return (

@@ -168,6 +168,8 @@ export class DataTreeView extends React.Component {
   }
 
   componentDidMount() {
+    let params = new URLSearchParams(document.location.search.substring(1));
+    let selectedNode = params.get("selected-node") || "";
     fetch("tree")
       .then((res) => res.json())
       .then((result) => {
@@ -175,7 +177,7 @@ export class DataTreeView extends React.Component {
         this.setState(
           {
             stages: result.data.stages,
-            expanded: this.getNodeHeirarchy("15", result.data.stages),
+            expanded: this.getNodeHeirarchy(selectedNode, result.data.stages),
           },
           () => {
             this.state.stages.forEach((stageData) => {

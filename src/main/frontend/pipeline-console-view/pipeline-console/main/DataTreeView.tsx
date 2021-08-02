@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useEffect, useState } from "react";
 
 import TreeView from "@material-ui/lab/TreeView";
 
@@ -75,7 +75,7 @@ const getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
 
 const getTreeItemsFromStage = (
   stageItems: StageInfo[],
-  stageSteps: Map<String, StepInfo[]>
+  stageSteps: Map<string, StepInfo[]>
 ) => {
   return stageItems.map((stageItemData) => {
     let children: JSX.Element[] = [];
@@ -105,7 +105,8 @@ interface DataTreeViewProps {
 
 interface State {
   stages: Array<StageInfo>;
-  steps: Map<String, StepInfo[]>;
+  steps: Map<string, StepInfo[]>;
+  expanded: Array<string>;
 }
 
 export class DataTreeView extends React.Component {
@@ -117,7 +118,15 @@ export class DataTreeView extends React.Component {
     this.state = {
       stages: [],
       steps: new Map(),
+      expanded: [],
     };
+    this.handleToggle = this.handleToggle.bind(this);
+  }
+
+  handleToggle(event: React.ChangeEvent<{}>, nodeIds: string[]): void {
+    this.setState({
+      expanded: nodeIds,
+    });
   }
 
   getStepsForStageTree(stage: StageInfo): void {
@@ -139,7 +148,27 @@ export class DataTreeView extends React.Component {
     }
   }
 
+  getNodeHierarchy(nodeId: string, stages: StageInfo[]): Array<string> {
+    for (let i = 0; i < stages.length; i++) { 
+      let stage = stages[i];
+      if (String(stage.id) == nodeId) {
+        // Found the node, so start a list of expanded nodes - it will be this and it's ancestors.
+        return [String(stage.id)];
+      } else if (stage.children && stage.children.length > 0) {
+        let expandedNodes = this.getNodeHierarchy(nodeId, stage.children);
+        if (expandedNodes.length > 0) {
+          // Our child is expanded, so we need to be expanded too.
+          expandedNodes.push(String(stage.id));
+          return expandedNodes;
+        }
+      }
+    }
+    return [];
+  }
+
   componentDidMount() {
+    let params = new URLSearchParams(document.location.search.substring(1));
+    let selectedNode = params.get("selected-node") || "";
     fetch("tree")
       .then((res) => res.json())
       .then((result) => {
@@ -147,6 +176,7 @@ export class DataTreeView extends React.Component {
         this.setState(
           {
             stages: result.data.stages,
+            expanded: this.getNodeHierarchy(selectedNode, result.data.stages),
           },
           () => {
             this.state.stages.forEach((stageData) => {
@@ -168,6 +198,8 @@ export class DataTreeView extends React.Component {
         defaultCollapseIcon={<ExpandMoreIcon />}
         defaultExpandIcon={<ChevronRightIcon />}
         onNodeSelect={this.props.onActionNodeSelect}
+        expanded={this.state.expanded}
+        onNodeToggle={this.handleToggle}
       >
         {getTreeItemsFromStage(this.state.stages, this.state.steps)}
       </TreeView>

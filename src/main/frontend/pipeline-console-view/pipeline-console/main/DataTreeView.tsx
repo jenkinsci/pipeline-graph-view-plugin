@@ -12,6 +12,7 @@ import {
 import TreeItem, { TreeItemProps } from "@material-ui/lab/TreeItem";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
+//import { useParams } from "react-router-dom";
 import {
   StageInfo,
   Result,
@@ -139,6 +140,24 @@ export class DataTreeView extends React.Component {
     }
   }
 
+  getNodeHeirarchy(nodeId: string, stages: StageInfo[]): Array<string> {
+    for (let i = 0; i < stages.length; i++) { 
+      let stage = stages[i];
+      if (String(stage.id) == nodeId) {
+        // Found the node, so start a list of expanded nodes - it will be this and it's ancestors.
+        return [String(stage.id)];
+      } else if (stage.children && stage.children.length > 0) {
+        let expandedNodes = this.getNodeHeirarchy(nodeId, stage.children);
+        if (expandedNodes.length > 0) {
+          // Our child is expanded, so we need to be expanded too.
+          expandedNodes.push(String(stage.id));
+          return expandedNodes;
+        }
+      }
+    }
+    return [];
+  }
+
   componentDidMount() {
     fetch("tree")
       .then((res) => res.json())
@@ -163,11 +182,13 @@ export class DataTreeView extends React.Component {
   }
 
   render() {
+    console.log(this.getNodeHeirarchy("15", this.state.stages))
     return (
       <TreeView
         defaultCollapseIcon={<ExpandMoreIcon />}
         defaultExpandIcon={<ChevronRightIcon />}
         onNodeSelect={this.props.onActionNodeSelect}
+        expanded={this.getNodeHeirarchy("15", this.state.stages)}
       >
         {getTreeItemsFromStage(this.state.stages, this.state.steps)}
       </TreeView>

@@ -21,9 +21,10 @@ export const sequentialStagesLabelOffset = 70;
  */
 export function layoutGraph(
   newStages: Array<StageInfo>,
-  layout: LayoutInfo
+  layout: LayoutInfo,
+  collasped: boolean
 ): PositionedGraph {
-  const stageNodeColumns = createNodeColumns(newStages);
+  const stageNodeColumns = createNodeColumns(newStages, collasped);
   const { nodeSpacingH, ypStart } = layout;
 
   const startNode: NodeInfo = {
@@ -55,13 +56,13 @@ export function layoutGraph(
   positionNodes(allNodeColumns, layout);
 
   const bigLabels = createBigLabels(allNodeColumns);
-  const smallLabels = createSmallLabels(allNodeColumns);
-  const branchLabels = createBranchLabels(allNodeColumns);
-  const connections = createConnections(allNodeColumns);
+  const smallLabels = createSmallLabels(allNodeColumns, collasped);
+  const branchLabels = createBranchLabels(allNodeColumns, collasped);
+  const connections = createConnections(allNodeColumns, collasped);
 
   // Calculate the size of the graph
   let measuredWidth = 0;
-  let measuredHeight = 200;
+  let measuredHeight = 60;
 
   for (const column of allNodeColumns) {
     for (const row of column.rows) {
@@ -87,7 +88,8 @@ export function layoutGraph(
  * Generate an array of columns, based on the top-level stages
  */
 function createNodeColumns(
-  topLevelStages: Array<StageInfo> = []
+  topLevelStages: Array<StageInfo> = [],
+  collasped: boolean
 ): Array<NodeColumn> {
   const nodeColumns: Array<NodeColumn> = [];
 
@@ -109,12 +111,25 @@ function createNodeColumns(
     for (const firstStageForRow of stagesForColumn) {
       const rowNodes: Array<NodeInfo> = [];
       let nodeStage: StageInfo | undefined = firstStageForRow;
+      if (!collasped) {
+        while (nodeStage) {
+          if (nodeStage.seqContainerName) {
+            column.hasBranchLabels = true;
+          }
 
-      while (nodeStage) {
-        if (nodeStage.seqContainerName) {
-          column.hasBranchLabels = true;
+          rowNodes.push({
+            x: 0, // Layout is done later
+            y: 0,
+            name: nodeStage.name,
+            id: nodeStage.id,
+            stage: nodeStage,
+            isPlaceholder: false,
+            key: "n_" + nodeStage.id,
+          });
+          nodeStage = nodeStage.nextSibling;
         }
-
+        column.rows.push(rowNodes);
+      } else {
         rowNodes.push({
           x: 0, // Layout is done later
           y: 0,
@@ -124,9 +139,9 @@ function createNodeColumns(
           isPlaceholder: false,
           key: "n_" + nodeStage.id,
         });
-        nodeStage = nodeStage.nextSibling;
+        column.rows.push(rowNodes);
+        break;
       }
-      column.rows.push(rowNodes);
     }
 
     nodeColumns.push(column);
@@ -232,9 +247,14 @@ function createBigLabels(columns: Array<NodeColumn>): Array<NodeLabelInfo> {
 /**
  * Generate label descriptions for small labels under the nodes
  */
-function createSmallLabels(columns: Array<NodeColumn>): Array<NodeLabelInfo> {
+function createSmallLabels(
+  columns: Array<NodeColumn>,
+  collasped: boolean
+): Array<NodeLabelInfo> {
   const labels: Array<NodeLabelInfo> = [];
-
+  if (collasped) {
+    return labels;
+  }
   for (const column of columns) {
     for (const row of column.rows) {
       for (const node of row) {
@@ -265,8 +285,14 @@ function createSmallLabels(columns: Array<NodeColumn>): Array<NodeLabelInfo> {
 /**
  * Generate label descriptions for named sequential parallels
  */
-function createBranchLabels(columns: Array<NodeColumn>): Array<NodeLabelInfo> {
+function createBranchLabels(
+  columns: Array<NodeColumn>,
+  collasped: boolean
+): Array<NodeLabelInfo> {
   const labels: Array<NodeLabelInfo> = [];
+  if (collasped) {
+    return labels;
+  }
   let count = 0;
 
   for (const column of columns) {
@@ -293,7 +319,8 @@ function createBranchLabels(columns: Array<NodeColumn>): Array<NodeLabelInfo> {
  * Generate connection information from column to column
  */
 function createConnections(
-  columns: Array<NodeColumn>
+  columns: Array<NodeColumn>,
+  collasped: boolean
 ): Array<CompositeConnection> {
   const connections: Array<CompositeConnection> = [];
 

@@ -149,7 +149,7 @@ export class DataTreeView extends React.Component {
   }
 
   getNodeHierarchy(nodeId: string, stages: StageInfo[]): Array<string> {
-    for (let i = 0; i < stages.length; i++) { 
+    for (let i = 0; i < stages.length; i++) {
       let stage = stages[i];
       if (String(stage.id) == nodeId) {
         // Found the node, so start a list of expanded nodes - it will be this and it's ancestors.

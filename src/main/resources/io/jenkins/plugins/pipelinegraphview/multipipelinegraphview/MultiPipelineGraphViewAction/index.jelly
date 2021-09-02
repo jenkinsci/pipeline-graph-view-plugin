@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+    <l:layout title="Multi Pipeline Graph">
+        <st:include page="sidepanel.jelly" it="${it.job}"/>
+        <l:main-panel>
+              <div class="jenkins-app-bar">
+                <div class="jenkins-app-bar__content">
+                    <h1>
+                        ${it.displayName}
+                    </h1>
+                </div>
+            </div>
+            <div id="multiple-pipeline-root"/>
+            <script src="${rootURL}/plugin/pipeline-graph-view/js/multi-pipeline-graph-view-bundle.js"/>
+        </l:main-panel>
+    </l:layout>
+</j:jelly>

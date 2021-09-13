@@ -64,13 +64,13 @@ export class PipelineConsole extends React.Component {
             <div className="console-output">
               <pre className="console-pane">
                 {lineChunks.map((line, index) => (
-                  <p key={index}>
+                  <div key={index}>
                     {React.createElement(
                       Linkify,
                       { options: { className: "line ansi-color" } },
                       line
                     )}
-                  </p>
+                  </div>
                 ))}
               </pre>
             </div>

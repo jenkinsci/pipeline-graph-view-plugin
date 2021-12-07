@@ -1,2 +1,19 @@
 @import "variables";
 @import "PipelineGraphWidget";
+
+.PWGx-PipelineGraph-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: auto;
+  margin-bottom: 16px;
+
+  * {
+    box-sizing: border-box;
+  }
+
+  .PWGx-PipelineGraph {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}

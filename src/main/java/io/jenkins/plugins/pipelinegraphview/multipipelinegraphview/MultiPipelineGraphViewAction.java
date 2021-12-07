@@ -86,7 +86,7 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
 
   @Override
   public String getDisplayName() {
-    return "Multi Pipeline Graph";
+    return "Stages";
   }
 
   @Override

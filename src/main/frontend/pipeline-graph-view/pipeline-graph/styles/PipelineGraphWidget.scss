@@ -1,22 +1,5 @@
 // TODO: Remove manual PWGx- namespacing, replace with tooling
 
-.PWGx-PipelineGraph-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  overflow-x: auto;
-  margin-bottom: 16px;
-
-  * {
-    box-sizing: border-box;
-  }
-
-  .PWGx-PipelineGraph {
-    margin-left: auto;
-    margin-right: auto;
-  }
-}
-
 circle.halo {
   fill: none;
 }

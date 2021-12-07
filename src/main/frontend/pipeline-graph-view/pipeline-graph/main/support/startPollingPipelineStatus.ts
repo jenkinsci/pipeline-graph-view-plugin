@@ -13,13 +13,14 @@ export default function startPollingPipelineStatus(
   onFetchSuccess: (data: ApiResult) => void,
   onFetchError: (err: Error) => void,
   onPipelineComplete: () => void,
+  path: string,
   interval = 3000
 ) {
   let isComplete = false;
 
   async function fetchPipelineData() {
     try {
-      const res = await fetch("graph");
+      const res = await fetch(path);
       const result = await res.json();
       onFetchSuccess(result.data);
       isComplete = result.data.complete;

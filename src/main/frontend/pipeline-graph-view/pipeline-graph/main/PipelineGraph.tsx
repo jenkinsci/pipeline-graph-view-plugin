@@ -23,8 +23,11 @@ import { GraphConnections } from "./support/connections";
 interface Props {
   stages: Array<StageInfo>;
   layout?: Partial<LayoutInfo>;
+  setStages?: (stages: Array<StageInfo>) => void;
   onNodeClick?: (nodeName: string, id: number) => void;
   selectedStage?: StageInfo;
+  path?: string;
+  collapsed?: boolean;
 }
 
 interface State {
@@ -72,7 +75,8 @@ export class PipelineGraph extends React.Component {
     startPollingPipelineStatus(
       onPipelineDataReceived,
       onPollingError,
-      onPipelineComplete
+      onPipelineComplete,
+      this.props.path ?? "graph"
     );
   }
 
@@ -115,7 +119,12 @@ export class PipelineGraph extends React.Component {
    * Main process for laying out the graph. Calls out to PipelineGraphLayout module.
    */
   private stagesUpdated(newStages: Array<StageInfo> = []) {
-    this.setState(layoutGraph(newStages, this.state.layout));
+    if (this.props.setStages != undefined) {
+      this.props.setStages(newStages);
+    }
+    this.setState(
+      layoutGraph(newStages, this.state.layout, this.props.collapsed ?? false)
+    );
   }
 
   /**

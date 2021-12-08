@@ -37,7 +37,7 @@ This plugin aims to bring the best of Blue Ocean into the regular Jenkins UI.
 That means functionality like:
 
 * [x] Pipeline graph
-* [ ] Summary of runs in a job (like [Pipeline Stage View Plugin](https://github.com/jenkinsci/pipeline-stage-view-plugin/), but simpler, more modern and more performant)
+* [x] Summary of runs in a job (like [Pipeline Stage View Plugin](https://github.com/jenkinsci/pipeline-stage-view-plugin/), but simpler, more modern and more performant)
 * [ ] Modern logs viewing
 
 The plugin should be lightweight, using or providing extension points where possible rather than building everything into one plugin.

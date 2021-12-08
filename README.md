@@ -28,7 +28,7 @@ Semi complex pipeline:
 
 See a live demonstration from a Jenkins Contributor Summit:
 
-[![Demo of Pipeline Graph View plugin](http://img.youtube.com/vi/MBI3MBY2eJ8/0.jpg)](http://www.youtube.com/watch?v=MBI3MBY2eJ8&t=3295 "Pipeline Graph View plugin")
+[![Demo of Pipeline Graph View plugin](https://img.youtube.com/vi/MBI3MBY2eJ8/0.jpg)](https://www.youtube.com/watch?v=MBI3MBY2eJ8&t=3295 "Pipeline Graph View plugin")
 
 ## Vision
 
@@ -37,7 +37,7 @@ This plugin aims to bring the best of Blue Ocean into the regular Jenkins UI.
 That means functionality like:
 
 * [x] Pipeline graph
-* [ ] Summary of runs in a job (like [Pipeline Stage View Plugin](http://github.com/jenkinsci/pipeline-stage-view-plugin/), but simpler, more modern and more performant)
+* [ ] Summary of runs in a job (like [Pipeline Stage View Plugin](https://github.com/jenkinsci/pipeline-stage-view-plugin/), but simpler, more modern and more performant)
 * [ ] Modern logs viewing
 
 The plugin should be lightweight, using or providing extension points where possible rather than building everything into one plugin.

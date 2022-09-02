@@ -393,7 +393,7 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
   }
 
   public List<FlowNodeWrapper> getStageSteps(String startNodeId) {
-    return stageStepMap.getOrDefault(startNodeId, new ArrayList<FlowNodeWrapper>());
+    return stageStepMap.getOrDefault(startNodeId, new ArrayList<>());
   }
 
   public FlowNodeWrapper getStep(String id) {
@@ -408,7 +408,7 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
 
   private void pushStageStepsToMap(FlowNode stage) {
     List<FlowNodeWrapper> stageStepsList =
-        stageStepMap.getOrDefault(stage.getId(), new ArrayList<FlowNodeWrapper>());
+        stageStepMap.getOrDefault(stage.getId(), new ArrayList<>());
     for (FlowNodeWrapper step : stageSteps) {
       if (logger.isDebugEnabled()) {
         logger.debug("Adding step '" + step.getId() + "' to '" + stage.getId() + "'.");

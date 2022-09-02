@@ -1,5 +1,8 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.Action;
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunResult;
@@ -8,9 +11,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.graph.AtomNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
@@ -76,19 +76,19 @@ public class FlowNodeWrapper {
   private Collection<Action> pipelineActions;
 
   public FlowNodeWrapper(
-      @Nonnull FlowNode node,
-      @Nonnull NodeRunStatus status,
-      @Nonnull TimingInfo timingInfo,
-      @Nonnull WorkflowRun run) {
+      @NonNull FlowNode node,
+      @NonNull NodeRunStatus status,
+      @NonNull TimingInfo timingInfo,
+      @NonNull WorkflowRun run) {
     this(node, status, timingInfo, null, run);
   }
 
   public FlowNodeWrapper(
-      @Nonnull FlowNode node,
-      @Nonnull NodeRunStatus status,
-      @Nonnull TimingInfo timingInfo,
+      @NonNull FlowNode node,
+      @NonNull NodeRunStatus status,
+      @NonNull TimingInfo timingInfo,
       @Nullable InputStep inputStep,
-      @Nonnull WorkflowRun run) {
+      @NonNull WorkflowRun run) {
     this.node = node;
     this.status = status;
     this.timingInfo = timingInfo;
@@ -102,7 +102,7 @@ public class FlowNodeWrapper {
     return run;
   }
 
-  public @Nonnull String getDisplayName() {
+  public @NonNull String getDisplayName() {
     return displayName;
   }
 
@@ -118,7 +118,7 @@ public class FlowNodeWrapper {
         String.format("Unknown FlowNode %s, type: %s", node.getId(), node.getClass()));
   }
 
-  public @Nonnull NodeRunStatus getStatus() {
+  public @NonNull NodeRunStatus getStatus() {
     if (hasBlockError()) {
       if (isBlockErrorInterruptedWithAbort()) {
         return new NodeRunStatus(BlueRunResult.ABORTED, BlueRunState.FINISHED);
@@ -129,15 +129,15 @@ public class FlowNodeWrapper {
     return status;
   }
 
-  public @Nonnull TimingInfo getTiming() {
+  public @NonNull TimingInfo getTiming() {
     return timingInfo;
   }
 
-  public @Nonnull String getId() {
+  public @NonNull String getId() {
     return node.getId();
   }
 
-  public @Nonnull FlowNode getNode() {
+  public @NonNull FlowNode getNode() {
     return node;
   }
 
@@ -165,7 +165,7 @@ public class FlowNodeWrapper {
     return parents.size() > 0 ? parents.get(0) : null;
   }
 
-  public @Nonnull List<FlowNodeWrapper> getParents() {
+  public @NonNull List<FlowNodeWrapper> getParents() {
     return parents;
   }
 

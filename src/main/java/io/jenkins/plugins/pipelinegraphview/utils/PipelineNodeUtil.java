@@ -1,12 +1,12 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
 import com.google.common.base.Predicate;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.Action;
 import hudson.model.Queue;
 import hudson.model.queue.CauseOfBlockage;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.jenkinsci.plugins.pipeline.StageStatus;
 import org.jenkinsci.plugins.pipeline.SyntheticStage;
 import org.jenkinsci.plugins.workflow.actions.ArgumentsAction;
@@ -27,7 +27,7 @@ import org.jenkinsci.plugins.workflow.support.steps.input.InputAction;
 /** @author Vivek Pandey */
 public class PipelineNodeUtil {
 
-  public static String getDisplayName(@Nonnull FlowNode node) {
+  public static String getDisplayName(@NonNull FlowNode node) {
     ThreadNameAction threadNameAction = node.getAction(ThreadNameAction.class);
     return threadNameAction != null ? threadNameAction.getThreadName() : node.getDisplayName();
   }
@@ -138,7 +138,7 @@ public class PipelineNodeUtil {
    * @return cause of block if present, nul otherwise
    */
   public static @CheckForNull String getCauseOfBlockage(
-      @Nonnull FlowNode stage, @Nullable FlowNode nodeBlock) {
+      @NonNull FlowNode stage, @Nullable FlowNode nodeBlock) {
     if (nodeBlock != null) {
       // Check and see if this node block is inside this stage
       for (FlowNode p : nodeBlock.getParents()) {
@@ -171,7 +171,7 @@ public class PipelineNodeUtil {
       };
 
   public static boolean isPausedForInputStep(
-      @Nonnull StepAtomNode step, @Nullable InputAction inputAction) {
+      @NonNull StepAtomNode step, @Nullable InputAction inputAction) {
     if (inputAction == null) {
       return false;
     }

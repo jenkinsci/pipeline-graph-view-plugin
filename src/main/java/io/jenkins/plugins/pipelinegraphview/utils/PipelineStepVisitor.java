@@ -1,5 +1,8 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunResult;
 import java.io.IOException;
 import java.util.ArrayDeque;
@@ -10,9 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepEndNode;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
@@ -97,9 +97,9 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
 
   @Override
   public void parallelBranchStart(
-      @Nonnull FlowNode parallelStartNode,
-      @Nonnull FlowNode branchStartNode,
-      @Nonnull ForkScanner scanner) {
+      @NonNull FlowNode parallelStartNode,
+      @NonNull FlowNode branchStartNode,
+      @NonNull ForkScanner scanner) {
     if (!pendingBlocks.isEmpty()) {
       // Finished processing atom nodes in this block
       FlowNode finishedBlock = pendingBlocks.pop();
@@ -137,9 +137,9 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
 
   @Override
   public void parallelBranchEnd(
-      @Nonnull FlowNode parallelStartNode,
-      @Nonnull FlowNode branchEndNode,
-      @Nonnull ForkScanner scanner) {
+      @NonNull FlowNode parallelStartNode,
+      @NonNull FlowNode branchEndNode,
+      @NonNull ForkScanner scanner) {
     if (branchEndNode instanceof StepEndNode) {
       FlowNode branchStartNode = ((StepEndNode) branchEndNode).getStartNode();
       if (logger.isDebugEnabled()) {
@@ -166,9 +166,9 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
 
   @Override
   public void chunkStart(
-      @Nonnull FlowNode startNode,
+      @NonNull FlowNode startNode,
       @CheckForNull FlowNode beforeBlock,
-      @Nonnull ForkScanner scanner) {
+      @NonNull ForkScanner scanner) {
     if (logger.isDebugEnabled()) {
       logger.debug(
           "Node ID: "
@@ -189,7 +189,7 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
 
   @Override
   public void chunkEnd(
-      @Nonnull FlowNode endNode, @CheckForNull FlowNode afterChunk, @Nonnull ForkScanner scanner) {
+      @NonNull FlowNode endNode, @CheckForNull FlowNode afterChunk, @NonNull ForkScanner scanner) {
     if (endNode instanceof StepEndNode) {
       FlowNode startNode = ((StepEndNode) endNode).getStartNode();
       if (logger.isDebugEnabled()) {
@@ -237,7 +237,7 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
   }
 
   @Override
-  protected void handleChunkDone(@Nonnull MemoryFlowChunk chunk) {
+  protected void handleChunkDone(@NonNull MemoryFlowChunk chunk) {
     if (!pendingBlocks.isEmpty()) {
       // Finished processing atom nodes in this block
       FlowNode finishedBlock = pendingBlocks.pop();
@@ -291,9 +291,9 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
   @Override
   public void atomNode(
       @CheckForNull FlowNode before,
-      @Nonnull FlowNode atomNode,
+      @NonNull FlowNode atomNode,
       @CheckForNull FlowNode after,
-      @Nonnull ForkScanner scan) {
+      @NonNull ForkScanner scan) {
     if (stageStepsCollectionCompleted && !PipelineNodeUtil.isSyntheticStage(currentStage)) {
       return;
     }

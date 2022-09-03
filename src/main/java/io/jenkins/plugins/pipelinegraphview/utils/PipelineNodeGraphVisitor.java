@@ -504,8 +504,7 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
       parallelBranches.push(branch);
     }
 
-    FlowNodeWrapper[] sortedBranches =
-        parallelBranches.toArray(new FlowNodeWrapper[0]);
+    FlowNodeWrapper[] sortedBranches = parallelBranches.toArray(new FlowNodeWrapper[0]);
     Arrays.sort(sortedBranches, Comparator.comparing(FlowNodeWrapper::getDisplayName));
 
     parallelBranches.clear();

@@ -1,7 +1,7 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Result;
-import javax.annotation.Nonnull;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.NotExecutedNodeAction;
 import org.jenkinsci.plugins.workflow.actions.QueueItemAction;
@@ -16,7 +16,7 @@ public class NodeRunStatus {
   public final BlueRun.BlueRunResult result;
   public final BlueRun.BlueRunState state;
 
-  public NodeRunStatus(@Nonnull FlowNode endNode) {
+  public NodeRunStatus(@NonNull FlowNode endNode) {
     Result result = null;
     ErrorAction errorAction = endNode.getError();
     WarningAction warningAction = endNode.getPersistentAction(WarningAction.class);

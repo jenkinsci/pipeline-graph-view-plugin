@@ -43,7 +43,7 @@ public class TestUtils {
     FlowExecution execution = run.getExecution();
     FlowGraphTable graphTable = new FlowGraphTable(execution);
     graphTable.build();
-    List<FlowNode> matchingNodes = new ArrayList<FlowNode>();
+    List<FlowNode> matchingNodes = new ArrayList<>();
     for (Row row : graphTable.getRows()) {
       if (row.getDisplayName().equals(displayName)) {
         FlowNode node = row.getNode();

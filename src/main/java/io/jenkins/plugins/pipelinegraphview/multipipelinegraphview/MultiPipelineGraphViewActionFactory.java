@@ -1,5 +1,6 @@
 package io.jenkins.plugins.pipelinegraphview.multipipelinegraphview;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Action;
 import java.util.Collection;
@@ -15,8 +16,9 @@ public class MultiPipelineGraphViewActionFactory extends TransientActionFactory<
     return WorkflowJob.class;
   }
 
+  @NonNull
   @Override
-  public Collection<? extends Action> createFor(WorkflowJob target) {
+  public Collection<? extends Action> createFor(@NonNull WorkflowJob target) {
     MultiPipelineGraphViewAction a = new MultiPipelineGraphViewAction(target);
     return Collections.singleton(a);
   }

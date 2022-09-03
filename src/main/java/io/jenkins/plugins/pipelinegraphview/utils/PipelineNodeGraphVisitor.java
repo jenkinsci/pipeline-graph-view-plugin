@@ -1,5 +1,8 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Action;
 import java.io.IOException;
@@ -18,9 +21,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Stack;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.pipeline.modeldefinition.actions.ExecutionModelAction;
 import org.jenkinsci.plugins.workflow.actions.LabelAction;
@@ -126,9 +126,9 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
 
   @Override
   public void chunkStart(
-      @Nonnull FlowNode startNode,
+      @NonNull FlowNode startNode,
       @CheckForNull FlowNode beforeBlock,
-      @Nonnull ForkScanner scanner) {
+      @NonNull ForkScanner scanner) {
     super.chunkStart(startNode, beforeBlock, scanner);
     if (isNodeVisitorDumpEnabled) {
       dump(
@@ -147,7 +147,7 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
 
   @Override
   public void chunkEnd(
-      @Nonnull FlowNode endNode, @CheckForNull FlowNode afterBlock, @Nonnull ForkScanner scanner) {
+      @NonNull FlowNode endNode, @CheckForNull FlowNode afterBlock, @NonNull ForkScanner scanner) {
     super.chunkEnd(endNode, afterBlock, scanner);
 
     if (isNodeVisitorDumpEnabled) {
@@ -203,7 +203,7 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
       justification =
           "chunk.getLastNode() is marked non null but is null sometimes, when JENKINS-40200 is fixed we will remove this check ")
   @Override
-  protected void handleChunkDone(@Nonnull MemoryFlowChunk chunk) {
+  protected void handleChunkDone(@NonNull MemoryFlowChunk chunk) {
 
     if (isNodeVisitorDumpEnabled) {
       dump(
@@ -307,11 +307,7 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
           logger.debug("skip parsing stage {} but parallelBranchEndNodes is empty", stage);
         } else {
           String endId = pendingBranchEndNodes.peek().getId();
-          Stack<FlowNodeWrapper> stack = stackPerEnd.get(endId);
-          if (stack == null) {
-            stack = new Stack<>();
-            stackPerEnd.put(endId, stack);
-          }
+          Stack<FlowNodeWrapper> stack = stackPerEnd.computeIfAbsent(endId, k -> new Stack<>());
           stack.add(stage);
         }
       }
@@ -327,7 +323,7 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
   }
 
   @Override
-  protected void resetChunk(@Nonnull MemoryFlowChunk chunk) {
+  protected void resetChunk(@NonNull MemoryFlowChunk chunk) {
     super.resetChunk(chunk);
     firstExecuted = null;
     pendingInputSteps.clear();
@@ -335,9 +331,9 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
 
   @Override
   public void parallelStart(
-      @Nonnull FlowNode parallelStartNode,
-      @Nonnull FlowNode branchNode,
-      @Nonnull ForkScanner scanner) {
+      @NonNull FlowNode parallelStartNode,
+      @NonNull FlowNode branchNode,
+      @NonNull ForkScanner scanner) {
     if (isNodeVisitorDumpEnabled) {
       dump(
           String.format(
@@ -508,13 +504,12 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
       parallelBranches.push(branch);
     }
 
-    FlowNodeWrapper[] sortedBranches =
-        parallelBranches.toArray(new FlowNodeWrapper[parallelBranches.size()]);
+    FlowNodeWrapper[] sortedBranches = parallelBranches.toArray(new FlowNodeWrapper[0]);
     Arrays.sort(sortedBranches, Comparator.comparing(FlowNodeWrapper::getDisplayName));
 
     parallelBranches.clear();
-    for (int i = 0; i < sortedBranches.length; i++) {
-      parallelBranches.push(sortedBranches[i]);
+    for (FlowNodeWrapper sortedBranch : sortedBranches) {
+      parallelBranches.push(sortedBranch);
     }
     for (FlowNodeWrapper p : parallelBranches) {
       nodes.push(p);
@@ -529,9 +524,9 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
 
   @Override
   public void parallelEnd(
-      @Nonnull FlowNode parallelStartNode,
-      @Nonnull FlowNode parallelEndNode,
-      @Nonnull ForkScanner scanner) {
+      @NonNull FlowNode parallelStartNode,
+      @NonNull FlowNode parallelEndNode,
+      @NonNull ForkScanner scanner) {
     if (isNodeVisitorDumpEnabled) {
       dump(
           String.format(
@@ -555,9 +550,9 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
 
   @Override
   public void parallelBranchStart(
-      @Nonnull FlowNode parallelStartNode,
-      @Nonnull FlowNode branchStartNode,
-      @Nonnull ForkScanner scanner) {
+      @NonNull FlowNode parallelStartNode,
+      @NonNull FlowNode branchStartNode,
+      @NonNull ForkScanner scanner) {
     if (isNodeVisitorDumpEnabled) {
       dump(
           String.format(
@@ -578,9 +573,9 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
 
   @Override
   public void parallelBranchEnd(
-      @Nonnull FlowNode parallelStartNode,
-      @Nonnull FlowNode branchEndNode,
-      @Nonnull ForkScanner scanner) {
+      @NonNull FlowNode parallelStartNode,
+      @NonNull FlowNode branchEndNode,
+      @NonNull ForkScanner scanner) {
     if (isNodeVisitorDumpEnabled) {
       dump(
           String.format(
@@ -606,9 +601,9 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
   @Override
   public void atomNode(
       @CheckForNull FlowNode before,
-      @Nonnull FlowNode atomNode,
+      @NonNull FlowNode atomNode,
       @CheckForNull FlowNode after,
-      @Nonnull ForkScanner scan) {
+      @NonNull ForkScanner scan) {
     if (isNodeVisitorDumpEnabled) {
       dump(
           String.format(
@@ -825,8 +820,8 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
    * nodes API using this id: /nodes/12-parallel-synthetic/ would correctly pick the synthetic stage
    * wrapping parallel block 12 by doing a lookup nodeMap.get("12-parallel-synthetic")
    */
-  private @Nonnull String createSyntheticStageId(
-      @Nonnull String firstNodeId, @Nonnull String syntheticStageName) {
+  private @NonNull String createSyntheticStageId(
+      @NonNull String firstNodeId, @NonNull String syntheticStageName) {
     return String.format("%s-%s-synthetic", firstNodeId, syntheticStageName.toLowerCase());
   }
 }

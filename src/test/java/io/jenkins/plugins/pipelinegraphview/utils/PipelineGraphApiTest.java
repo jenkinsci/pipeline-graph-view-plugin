@@ -1,11 +1,11 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
 import hudson.model.Result;
 import java.util.List;
+import java.util.Optional;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.Rule;
 import org.junit.Test;
@@ -24,38 +24,27 @@ public class PipelineGraphApiTest {
     PipelineGraph graph = api.createGraph();
 
     List<PipelineStage> stages = graph.getStages();
-    assertThat(stages, hasSize(4));
-    PipelineStage pipelineStage = stages.get(0);
 
-    assertThat(pipelineStage.getCompletePercent(), is(50));
-    assertThat(pipelineStage.getName(), is("unstable-one"));
-    assertThat(pipelineStage.getTitle(), is("unstable-one"));
-    assertThat(pipelineStage.getType(), is("STAGE"));
-    assertThat(pipelineStage.getState(), is("UNSTABLE"));
-
-    pipelineStage = stages.get(1);
-
-    assertThat(pipelineStage.getCompletePercent(), is(50));
-    assertThat(pipelineStage.getName(), is("success"));
-    assertThat(pipelineStage.getTitle(), is("success"));
-    assertThat(pipelineStage.getType(), is("STAGE"));
-    assertThat(pipelineStage.getState(), is("SUCCESS"));
-
-    pipelineStage = stages.get(2);
-
-    assertThat(pipelineStage.getCompletePercent(), is(50));
-    assertThat(pipelineStage.getName(), is("unstable-two"));
-    assertThat(pipelineStage.getTitle(), is("unstable-two"));
-    assertThat(pipelineStage.getType(), is("STAGE"));
-    assertThat(pipelineStage.getState(), is("UNSTABLE"));
-
-    pipelineStage = stages.get(3);
-
-    assertThat(pipelineStage.getCompletePercent(), is(50));
-    assertThat(pipelineStage.getName(), is("failure"));
-    assertThat(pipelineStage.getTitle(), is("failure"));
-    assertThat(pipelineStage.getType(), is("STAGE"));
-    assertThat(pipelineStage.getState(), is("FAILURE"));
+    String stagesString =
+        TestUtils.collectStagesAsString(
+            stages,
+            (PipelineStage stage) ->
+                String.format(
+                    "{%d,%s,%s,%s,%s}",
+                    stage.getCompletePercent(),
+                    stage.getName(),
+                    stage.getTitle(),
+                    stage.getType(),
+                    stage.getState()));
+    assertThat(
+        stagesString,
+        is(
+            String.join(
+                "",
+                "{50,unstable-one,unstable-one,STAGE,UNSTABLE},",
+                "{50,success,success,STAGE,SUCCESS},",
+                "{50,unstable-two,unstable-two,STAGE,UNSTABLE},",
+                "{50,failure,failure,STAGE,FAILURE}")));
   }
 
   @Test
@@ -66,48 +55,29 @@ public class PipelineGraphApiTest {
     PipelineGraph graph = api.createGraph();
 
     List<PipelineStage> stages = graph.getStages();
-    assertThat(stages, hasSize(4));
 
-    // Top level stages
-    // Non-Parallel Stage
-    PipelineStage pipelineStage = stages.get(0);
-    assertThat(pipelineStage.getName(), is("Non-Parallel Stage"));
+    String stagesString =
+        TestUtils.collectStagesAsString(
+            stages,
+            (PipelineStage stage) ->
+                String.format(
+                    "{%s,%s}",
+                    stage.getName(), Optional.ofNullable(stage.getSeqContainerName()).orElse("-")));
 
-    List<PipelineStage> children = pipelineStage.getChildren();
-    assertThat(children, hasSize(0));
-
-    // Parallel Stage
-    pipelineStage = stages.get(1);
-    assertThat(pipelineStage.getName(), is("Parallel Stage"));
-
-    children = pipelineStage.getChildren();
-    assertThat(children, hasSize(3));
-
-    // Parallel Stage - children
-    PipelineStage child = children.get(0);
-    assertThat(child.getName(), is("Branch A"));
-
-    child = children.get(1);
-    assertThat(child.getName(), is("Branch B"));
-
-    // As this is a graph view, and Branch C doesn't have and steps, it doesn't get added as a node.
-    // Instead it's first child with steps 'Nested 1' gets added as a node, and all other children
-    // get added add siblings. The 'getSeqContainerName' property of the Nested 1 noe gets set to
-    // it's
-    // parent's display name ('Branch C') so the frontend can add a lable.
-    child = children.get(2);
-    assertThat(child.getName(), is("Nested 1"));
-    assertThat(child.getSeqContainerName(), is("Branch C"));
-
-    PipelineStage sibling = child.getNextSibling();
-    assertThat(sibling.getName(), is("Nested 2"));
-
-    // Skipped stage
-    pipelineStage = stages.get(2);
-    assertThat(pipelineStage.getName(), is("Skipped stage"));
-
-    children = pipelineStage.getChildren();
-    assertThat(children, hasSize(0));
+    // As this is a graph view, and 'Branch C' doesn't have and steps, it doesn't get added as a
+    // node.
+    // Instead, its first child with steps 'Nested 1' gets added as a node, and all other children
+    // get added as siblings. The 'getSeqContainerName' property of the 'Nested 1' now gets set to
+    // its parent's display name ('Branch C') so the frontend can add a label.
+    assertThat(
+        stagesString,
+        is(
+            String.join(
+                "",
+                "{Non-Parallel Stage,-},",
+                "{Parallel Stage,-}[{Branch A,-},{Branch B,-},{Nested 1,Branch C}],",
+                "{Skipped stage,-},",
+                "{Parallel Stage 2,-}[{Branch A,-},{Branch B,-},{Nested 1,Branch C}]")));
   }
 
   @Test
@@ -119,38 +89,27 @@ public class PipelineGraphApiTest {
     PipelineGraph graph = api.createTree();
 
     List<PipelineStage> stages = graph.getStages();
-    assertThat(stages, hasSize(4));
-    PipelineStage pipelineStage = stages.get(0);
 
-    assertThat(pipelineStage.getCompletePercent(), is(50));
-    assertThat(pipelineStage.getName(), is("unstable-one"));
-    assertThat(pipelineStage.getTitle(), is("unstable-one"));
-    assertThat(pipelineStage.getType(), is("STAGE"));
-    assertThat(pipelineStage.getState(), is("UNSTABLE"));
-
-    pipelineStage = stages.get(1);
-
-    assertThat(pipelineStage.getCompletePercent(), is(50));
-    assertThat(pipelineStage.getName(), is("success"));
-    assertThat(pipelineStage.getTitle(), is("success"));
-    assertThat(pipelineStage.getType(), is("STAGE"));
-    assertThat(pipelineStage.getState(), is("SUCCESS"));
-
-    pipelineStage = stages.get(2);
-
-    assertThat(pipelineStage.getCompletePercent(), is(50));
-    assertThat(pipelineStage.getName(), is("unstable-two"));
-    assertThat(pipelineStage.getTitle(), is("unstable-two"));
-    assertThat(pipelineStage.getType(), is("STAGE"));
-    assertThat(pipelineStage.getState(), is("UNSTABLE"));
-
-    pipelineStage = stages.get(3);
-
-    assertThat(pipelineStage.getCompletePercent(), is(50));
-    assertThat(pipelineStage.getName(), is("failure"));
-    assertThat(pipelineStage.getTitle(), is("failure"));
-    assertThat(pipelineStage.getType(), is("STAGE"));
-    assertThat(pipelineStage.getState(), is("FAILURE"));
+    String stagesString =
+        TestUtils.collectStagesAsString(
+            stages,
+            (PipelineStage stage) ->
+                String.format(
+                    "{%d,%s,%s,%s,%s}",
+                    stage.getCompletePercent(),
+                    stage.getName(),
+                    stage.getTitle(),
+                    stage.getType(),
+                    stage.getState()));
+    assertThat(
+        stagesString,
+        is(
+            String.join(
+                "",
+                "{50,unstable-one,unstable-one,STAGE,UNSTABLE},",
+                "{50,success,success,STAGE,SUCCESS},",
+                "{50,unstable-two,unstable-two,STAGE,UNSTABLE},",
+                "{50,failure,failure,STAGE,FAILURE}")));
   }
 
   @Test
@@ -161,48 +120,16 @@ public class PipelineGraphApiTest {
     PipelineGraph graph = api.createTree();
 
     List<PipelineStage> stages = graph.getStages();
-    assertThat(stages, hasSize(4));
 
-    // Top level stages
-    // Non-Parallel Stage
-    PipelineStage pipelineStage = stages.get(0);
-    assertThat(pipelineStage.getName(), is("Non-Parallel Stage"));
-
-    List<PipelineStage> children = pipelineStage.getChildren();
-    assertThat(children, hasSize(0));
-
-    // Parallel Stage
-    pipelineStage = stages.get(1);
-    assertThat(pipelineStage.getName(), is("Parallel Stage"));
-
-    children = pipelineStage.getChildren();
-    assertThat(children, hasSize(3));
-
-    // Parallel Stage - children
-    PipelineStage child = children.get(0);
-    assertThat(child.getName(), is("Branch A"));
-
-    child = children.get(1);
-    assertThat(child.getName(), is("Branch B"));
-
-    child = children.get(2);
-    assertThat(child.getName(), is("Branch C"));
-
-    children = child.getChildren();
-    assertThat(children, hasSize(2));
-
-    // Branch C - children
-    child = children.get(0);
-    assertThat(child.getName(), is("Nested 1"));
-
-    child = children.get(1);
-    assertThat(child.getName(), is("Nested 2"));
-
-    // Skipped stage
-    pipelineStage = stages.get(2);
-    assertThat(pipelineStage.getName(), is("Skipped stage"));
-
-    children = pipelineStage.getChildren();
-    assertThat(children, hasSize(0));
+    String stagesString = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
+    assertThat(
+        stagesString,
+        is(
+            String.join(
+                "",
+                "Non-Parallel Stage,",
+                "Parallel Stage[Branch A,Branch B,Branch C[Nested 1,Nested 2]],",
+                "Skipped stage,",
+                "Parallel Stage 2[Branch A,Branch B,Branch C[Nested 1,Nested 2]]")));
   }
 }

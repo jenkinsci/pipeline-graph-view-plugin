@@ -6,8 +6,10 @@ import hudson.model.Result;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
@@ -53,5 +55,19 @@ public class TestUtils {
       }
     }
     return matchingNodes;
+  }
+
+  public static String collectStagesAsString(
+      List<PipelineStage> stages, Function<PipelineStage, String> converter) {
+    return stages.stream()
+        .map(
+            (PipelineStage stage) ->
+                stage.getChildren().isEmpty()
+                    ? converter.apply(stage)
+                    : String.format(
+                        "%s[%s]",
+                        converter.apply(stage),
+                        collectStagesAsString(stage.getChildren(), converter)))
+        .collect(Collectors.joining(","));
   }
 }

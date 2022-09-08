@@ -16,9 +16,7 @@ export const SingleRun: (data: Props) => JSX.Element = ({ run }) => {
 
   const handleNodeClick = (nodeName: string, id: number) => {
     console.log(nodeName, id);
-    window.location.href = `../${
-      run.id
-    }/pipeline-console?selected-node=${id}`;
+    window.location.href = `../${run.id}/pipeline-console?selected-node=${id}`;
   };
   return (
     <tr>

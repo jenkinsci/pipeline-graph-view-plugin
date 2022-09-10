@@ -735,7 +735,12 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
               firstBranch.getId(), (parallel == null ? "(none)" : parallel.getId())));
     }
 
-    String firstNodeId = firstBranch.getId();
+    String syntheticNodeId =
+        firstBranch.getNode().getParents().stream()
+            .map((node) -> node.getId())
+            .findFirst()
+            .orElseGet(
+                () -> createSyntheticStageId(firstBranch.getId(), PARALLEL_SYNTHETIC_STAGE_NAME));
     List<FlowNode> parents;
     if (parallel != null) {
       parents = parallel.getNode().getParents();
@@ -743,10 +748,7 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
       parents = new ArrayList<>();
     }
     FlowNode syntheticNode =
-        new FlowNode(
-            firstBranch.getNode().getExecution(),
-            createSyntheticStageId(firstNodeId, PARALLEL_SYNTHETIC_STAGE_NAME),
-            parents) {
+        new FlowNode(firstBranch.getNode().getExecution(), syntheticNodeId, parents) {
           @Override
           public void save() throws IOException {
             // no-op to avoid JENKINS-45892 violations from serializing the synthetic FlowNode.

@@ -1,0 +1,44 @@
+stage('A') {
+    echo ''
+}
+parallel(
+    B: {
+        stage('BA') {
+            echo ''
+        }
+        stage('BB') {
+            echo ''
+        }
+    },
+    C: {
+        stage('CA') {
+            echo ''
+        }
+        stage('CB') {
+            echo ''
+        }
+    },
+)
+stage('D') {
+    parallel(
+        E: {
+            stage('EA') {
+                echo ''
+            }
+            stage('EB') {
+                echo ''
+            }
+        },
+        F: {
+            stage('FA') {
+                echo ''
+            }
+            stage('FB') {
+                echo ''
+            }
+        },
+    )
+}
+stage('G') {
+    echo ''
+}

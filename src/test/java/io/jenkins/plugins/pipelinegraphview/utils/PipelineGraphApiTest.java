@@ -132,4 +132,18 @@ public class PipelineGraphApiTest {
                 "Skipped stage,",
                 "Parallel Stage 2[Branch A,Branch B,Branch C[Nested 1,Nested 2]]")));
   }
+
+  @Test
+  public void createTree_scriptedParallel() throws Exception {
+    WorkflowRun run =
+        TestUtils.createAndRunJob(
+            j, "scriptedParallel", "scriptedParallel.jenkinsfile", Result.SUCCESS);
+    PipelineGraphApi api = new PipelineGraphApi(run);
+    PipelineGraph graph = api.createTree();
+
+    List<PipelineStage> stages = graph.getStages();
+
+    String stagesString = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
+    assertThat(stagesString, is("A,Parallel[B[BA,BB],C[CA,CB]],D[E[EA,EB],F[FA,FB]],G"));
+  }
 }

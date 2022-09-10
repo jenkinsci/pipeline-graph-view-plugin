@@ -47,7 +47,7 @@ public class TestUtils {
     graphTable.build();
     List<FlowNode> matchingNodes = new ArrayList<>();
     for (Row row : graphTable.getRows()) {
-      if (row.getDisplayName().equals(displayName)) {
+      if (row.getDisplayName().contains(" (" + displayName + ")")) {
         FlowNode node = row.getNode();
         LOGGER.log(
             Level.INFO, "Found matching node: '" + displayName + "' with ID " + node.getId());

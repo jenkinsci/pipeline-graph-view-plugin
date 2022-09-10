@@ -15,9 +15,9 @@
         <changelist>999999-SNAPSHOT</changelist>
         <gitHubRepo>jenkinsci/pipeline-graph-view-plugin</gitHubRepo>
         <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
-        <jenkins.version>2.277.1</jenkins.version>
-        <node.version>15.9.0</node.version>
-        <npm.version>7.5.6</npm.version>
+        <jenkins.version>2.332.4</jenkins.version>
+        <node.version>16.17.0</node.version>
+        <npm.version>8.15.0</npm.version>
     </properties>
     <name>Pipeline Graph View Plugin</name>
     <url>https://github.com/jenkinsci/pipeline-graph-view-plugin</url>
@@ -27,8 +27,8 @@
             <dependency>
                 <!-- Pick up common dependencies for the selected LTS line: https://github.com/jenkinsci/bom#usage -->
                 <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-2.277.x</artifactId>
-                <version>807.v6d348e44c987</version>
+                <artifactId>bom-2.332.x</artifactId>
+                <version>1607.va_c1576527071</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -59,7 +59,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>pipeline-graph-analysis</artifactId>
-            <version>1.10</version>
+            <version>195.v5812d95a_a_2f9</version>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -107,7 +107,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>pipeline-milestone-step</artifactId>
-            <version>1.3.2</version>
+            <version>101.vd572fef9d926</version>
         </dependency>
     </dependencies>
 

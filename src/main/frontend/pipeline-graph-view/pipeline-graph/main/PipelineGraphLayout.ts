@@ -109,10 +109,10 @@ export function createNodeColumns(
     };
   };
 
-  for (const topStage of topLevelStages) {
+  const processTopStage = (topStage: StageInfo, willRecurse: boolean) => {
     // If stage has children, we don't draw a node for it, just its children
     const stagesForColumn =
-      topStage.children && topStage.children.length
+      !willRecurse && stageHasChildren(topStage)
         ? topStage.children
         : [topStage];
 
@@ -126,11 +126,11 @@ export function createNodeColumns(
 
     for (const nodeStage of stagesForColumn) {
       const rowNodes: Array<NodeInfo> = [];
-      if (!collasped && nodeStage.children && nodeStage.children.length) {
+      if (!collasped && !willRecurse && stageHasChildren(nodeStage)) {
         column.hasBranchLabels = true;
-        for (const childStage of nodeStage.children) {
-          rowNodes.push(makeNodeForStage(childStage, nodeStage.name));
-        }
+        forEachChildStage(nodeStage, (parentStage, childStage, _) =>
+          rowNodes.push(makeNodeForStage(childStage, parentStage.name))
+        );
       } else {
         rowNodes.push(makeNodeForStage(nodeStage));
       }
@@ -141,9 +141,47 @@ export function createNodeColumns(
     }
 
     nodeColumns.push(column);
+  };
+
+  for (const protoTopStage of topLevelStages) {
+    const selfParentTopStage = { ...protoTopStage, children: [protoTopStage] };
+
+    forEachChildStage(selfParentTopStage, (_, topStage, willRecurse) =>
+      processTopStage(topStage, willRecurse)
+    );
   }
 
   return nodeColumns;
+}
+
+/**
+ * Check if stage has children.
+ */
+function stageHasChildren(stage: StageInfo): boolean {
+  return !!(stage.children && stage.children.length);
+}
+
+/**
+ * Walk the children of the stage recursively (depth first), invoking callback for each child.
+ *
+ * Don't recurse into parallel children as those are processed separately.
+ * If one child of the stage is parallel, we assume all of its children are.
+ */
+function forEachChildStage(
+  topStage: StageInfo,
+  callback: (parent: StageInfo, child: StageInfo, willRecurse: boolean) => void
+) {
+  if (!stageHasChildren(topStage)) {
+    return;
+  }
+  for (const stage of topStage.children) {
+    const needToRecurse =
+      stageHasChildren(stage) && stage.children[0].type != "PARALLEL";
+    callback(topStage, stage, needToRecurse);
+    if (needToRecurse) {
+      forEachChildStage(stage, callback);
+    }
+  }
 }
 
 /**

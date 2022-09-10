@@ -53,7 +53,6 @@ export interface StageInfo {
   children: Array<StageInfo>; // Used by the top-most stages with parallel branches
   nextSibling?: StageInfo; // Used within a parallel branch to denote sequential stages
   isSequential?: boolean;
-  seqContainerName?: string; //used within a parallel branch to denote the name of the container of the parallel sequential stages
 }
 
 interface BaseNodeInfo {
@@ -73,6 +72,7 @@ export interface StageNodeInfo extends BaseNodeInfo {
 
   // -- Unique
   stage: StageInfo;
+  seqContainerName?: string; // Used within a parallel branch to denote the name of the container of the parallel sequential stages
 }
 
 export interface PlaceholderNodeInfo extends BaseNodeInfo {

@@ -76,7 +76,7 @@ export class PipelineGraph extends React.Component {
       onPipelineDataReceived,
       onPollingError,
       onPipelineComplete,
-      this.props.path ?? "graph"
+      this.props.path ?? "tree"
     );
   }
 

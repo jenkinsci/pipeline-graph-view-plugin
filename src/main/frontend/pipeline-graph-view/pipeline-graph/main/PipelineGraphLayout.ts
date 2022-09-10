@@ -87,11 +87,27 @@ export function layoutGraph(
 /**
  * Generate an array of columns, based on the top-level stages
  */
-function createNodeColumns(
+export function createNodeColumns(
   topLevelStages: Array<StageInfo> = [],
   collasped: boolean
 ): Array<NodeColumn> {
   const nodeColumns: Array<NodeColumn> = [];
+
+  const makeNodeForStage = (
+    stage: StageInfo,
+    seqContainerName: string | undefined = undefined
+  ): NodeInfo => {
+    return {
+      x: 0, // Layout is done later
+      y: 0,
+      name: stage.name,
+      id: stage.id,
+      stage,
+      seqContainerName,
+      isPlaceholder: false,
+      key: "n_" + stage.id,
+    };
+  };
 
   for (const topStage of topLevelStages) {
     // If stage has children, we don't draw a node for it, just its children
@@ -108,38 +124,18 @@ function createNodeColumns(
       hasBranchLabels: false, // set below
     };
 
-    for (const firstStageForRow of stagesForColumn) {
+    for (const nodeStage of stagesForColumn) {
       const rowNodes: Array<NodeInfo> = [];
-      let nodeStage: StageInfo | undefined = firstStageForRow;
-      if (!collasped) {
-        while (nodeStage) {
-          if (nodeStage.seqContainerName) {
-            column.hasBranchLabels = true;
-          }
-
-          rowNodes.push({
-            x: 0, // Layout is done later
-            y: 0,
-            name: nodeStage.name,
-            id: nodeStage.id,
-            stage: nodeStage,
-            isPlaceholder: false,
-            key: "n_" + nodeStage.id,
-          });
-          nodeStage = nodeStage.nextSibling;
+      if (!collasped && nodeStage.children && nodeStage.children.length) {
+        column.hasBranchLabels = true;
+        for (const childStage of nodeStage.children) {
+          rowNodes.push(makeNodeForStage(childStage, nodeStage.name));
         }
-        column.rows.push(rowNodes);
       } else {
-        rowNodes.push({
-          x: 0, // Layout is done later
-          y: 0,
-          name: nodeStage.name,
-          id: nodeStage.id,
-          stage: nodeStage,
-          isPlaceholder: false,
-          key: "n_" + nodeStage.id,
-        });
-        column.rows.push(rowNodes);
+        rowNodes.push(makeNodeForStage(nodeStage));
+      }
+      column.rows.push(rowNodes);
+      if (collasped) {
         break;
       }
     }
@@ -299,13 +295,13 @@ function createBranchLabels(
     if (column.hasBranchLabels) {
       for (const row of column.rows) {
         const firstNode = row[0];
-        if (!firstNode.isPlaceholder && firstNode.stage.seqContainerName) {
+        if (!firstNode.isPlaceholder && firstNode.seqContainerName) {
           labels.push({
             x: column.startX,
             y: firstNode.y,
             key: `branchLabel-${++count}`,
             node: firstNode,
-            text: firstNode.stage.seqContainerName,
+            text: firstNode.seqContainerName,
           });
         }
       }

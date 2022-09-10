@@ -2,8 +2,7 @@
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-    <l:layout title="${it.displayName}">
-        <st:include page="sidepanel.jelly" it="${it.job}"/>
+    <l:layout title="${it.displayName}" type="one-column">
         <l:main-panel>
               <div class="jenkins-app-bar">
                 <div class="jenkins-app-bar__content">

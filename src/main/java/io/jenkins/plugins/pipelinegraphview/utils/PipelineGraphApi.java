@@ -177,8 +177,9 @@ public class PipelineGraphApi {
             // If a node encloses another node, it means it's a tree parent, so the first ancestor
             // ID we find
             // which matches an enclosing node then it's the stages tree parent.
+            List<String> enclosingIds = stageNode.getAllEnclosingIds();
             for (String ancestorId : ancestors) {
-              if (stageNode.getAllEnclosingIds().contains(ancestorId)) {
+              if (enclosingIds.contains(ancestorId)) {
                 treeParentId = ancestorId;
                 break;
               }

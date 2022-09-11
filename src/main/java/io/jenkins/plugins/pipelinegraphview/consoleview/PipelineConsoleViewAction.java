@@ -87,7 +87,8 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         long receivedBytes = logText.writeLogTo(offset, spool);
         logger.debug("Received " + receivedBytes + " of console output.");
 
-        Writer writer = createWriter(req, rsp, logText.length());
+        logText.length();
+        Writer writer = rsp.getWriter();
 
         if (offset > 0) {
           writer
@@ -103,16 +104,6 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     } else {
       logger.debug("getConsoleOutput was not passed nodeId.");
       rsp.getWriter().append("Error getting console text");
-    }
-  }
-
-  private Writer createWriter(StaplerRequest req, StaplerResponse rsp, long size)
-      throws IOException {
-    // when sending big text, try compression. don't bother if it's small
-    if (size > 4096) {
-      return rsp.getCompressedWriter(req);
-    } else {
-      return rsp.getWriter();
     }
   }
 

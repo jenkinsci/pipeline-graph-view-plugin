@@ -240,5 +240,121 @@ describe("PipelineGraphLayout", () => {
         },
       ]);
     });
+
+    it("returns proper columns (GH#50)", () => {
+      const columns = createNodeColumns(
+        [
+          makeStage(3, "Parallel", [
+            makeParallel(4, "parallel:0", [
+              makeStage(6, "parent:0", [
+                makeStage(9, "child:0"),
+                makeStage(14, "child:1"),
+                makeStage(19, "child:3"),
+              ]),
+            ]),
+          ]),
+          makeStage(29, "parent:1"),
+        ],
+        false
+      );
+
+      expect(columns).toMatchObject([
+        {
+          hasBranchLabels: true,
+          topStage: { name: "Parallel", id: 3 },
+          rows: [
+            [
+              makeNode(6, "parent:0", "parallel:0"),
+              makeNode(9, "child:0", "parent:0"),
+              makeNode(14, "child:1", "parent:0"),
+              makeNode(19, "child:3", "parent:0"),
+            ],
+          ],
+        },
+        {
+          hasBranchLabels: false,
+          topStage: { name: "parent:1", id: 29 },
+          rows: [[makeNode(29, "parent:1")]],
+        },
+      ]);
+    });
+
+    it("returns proper columns (GH#18)", () => {
+      const columns = createNodeColumns(
+          [
+            makeStage(6, "Stage 1"),
+            makeStage(11, "Stage 2"),
+            makeStage(31, "Stage6, When anyOf", [
+              makeStage(12, "Stage 3"),
+              makeStage(33, "Parallel", [
+                makeParallel(36, "Parallel Stage 1", [
+                  makeStage(43, "Parallel Stage 1.1"),
+                  makeStage(61, "Parallel Stage 1.2"),
+                ]),
+                makeParallel(37, "Parallel Stage 2", [
+                  makeStage(45, "Parallel Stage 2.1"),
+                  makeStage(63, "Parallel Stage 2.2"),
+                ]),
+              ]),
+              makeStage(13, "Stage 4", [
+                makeStage(14, "Stage 5", [makeStage(15, "Stage 7")]),
+              ]),
+            ]),
+          ],
+          false
+      );
+
+      expect(columns).toMatchObject([
+        {
+          hasBranchLabels: false,
+          topStage: { name: "Stage 1", id: 6 },
+          rows: [[makeNode(6, "Stage 1")]],
+        },
+        {
+          hasBranchLabels: false,
+          topStage: { name: "Stage 2", id: 11 },
+          rows: [[makeNode(11, "Stage 2")]],
+        },
+        {
+          hasBranchLabels: false,
+          topStage: { name: "Stage6, When anyOf", id: 31 },
+          rows: [[makeNode(31, "Stage6, When anyOf")]],
+        },
+        {
+          hasBranchLabels: false,
+          topStage: { name: "Stage 3", id: 12 },
+          rows: [[makeNode(12, "Stage 3")]],
+        },
+        {
+          hasBranchLabels: true,
+          topStage: { name: "Parallel", id: 33 },
+          rows: [
+            [
+              makeNode(43, "Parallel Stage 1.1", "Parallel Stage 1"),
+              makeNode(61, "Parallel Stage 1.2", "Parallel Stage 1"),
+            ],
+            [
+              makeNode(45, "Parallel Stage 2.1", "Parallel Stage 2"),
+              makeNode(63, "Parallel Stage 2.2", "Parallel Stage 2"),
+            ],
+          ],
+        },
+        {
+          hasBranchLabels: false,
+          topStage: { name: "Stage 4", id: 13 },
+          rows: [[makeNode(13, "Stage 4")]],
+        },
+        {
+          hasBranchLabels: false,
+          topStage: { name: "Stage 5", id: 14 },
+          rows: [[makeNode(14, "Stage 5")]],
+        },
+        {
+          hasBranchLabels: false,
+          topStage: { name: "Stage 7", id: 15 },
+          rows: [[makeNode(15, "Stage 7")]],
+        },
+      ]);
+    });
   });
 });

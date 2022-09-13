@@ -1,0 +1,32 @@
+pipeline {
+  agent any
+  stages {
+    stage('Stage 1') {
+      steps {
+        echo 'Stage 1'
+      }
+    }
+    stage('Parallel stage') {
+      when {
+        expression { false }
+      }
+      parallel {
+        stage('Parallel Stage 1') {
+          steps {
+            echo 'Parallel Stage 1'
+          }
+        }
+        stage('Parallel Stage 2') {
+          steps {
+            echo 'Parallel Stage 2'
+          }
+        }
+      }
+    }
+    stage('Stage 2') {
+      steps {
+        echo 'Stage 2'
+      }
+    }
+  }
+}

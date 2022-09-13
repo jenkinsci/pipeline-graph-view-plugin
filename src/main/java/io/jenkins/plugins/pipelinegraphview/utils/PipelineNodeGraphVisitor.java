@@ -306,6 +306,10 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
         nextStage.addParent(stage);
         stage.addEdge(nextStage);
       }
+      for (FlowNodeWrapper p : parallelBranches) {
+        nodes.remove(p);
+        nodeMap.remove(p.getId(), p);
+      }
     }
     parallelBranches.clear();
     if (!parallelNestedStages) {

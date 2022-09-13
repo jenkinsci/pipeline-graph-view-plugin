@@ -15,6 +15,7 @@ public class PipelineStageInternal {
   private String seqContainerName;
   private PipelineStageInternal nextSibling;
   private boolean sequential;
+  private boolean synthetic;
 
   public PipelineStageInternal(
       String id,
@@ -23,7 +24,8 @@ public class PipelineStageInternal {
       String state,
       int completePercent,
       String type,
-      String title) {
+      String title,
+      boolean synthetic) {
     this.id = id;
     this.name = name;
     this.parents = parents;
@@ -31,6 +33,7 @@ public class PipelineStageInternal {
     this.completePercent = completePercent;
     this.type = type;
     this.title = title;
+    this.synthetic = synthetic;
   }
 
   public boolean isSequential() {
@@ -105,6 +108,14 @@ public class PipelineStageInternal {
     return title;
   }
 
+  public boolean isSynthetic() {
+    return synthetic;
+  }
+
+  public void setSynthetic(boolean synthetic) {
+    this.synthetic = synthetic;
+  }
+
   public PipelineStage toPipelineStage(List<PipelineStage> children) {
     return new PipelineStage(
         id,
@@ -116,6 +127,7 @@ public class PipelineStageInternal {
         title,
         seqContainerName,
         nextSibling != null ? nextSibling.toPipelineStage(Collections.emptyList()) : null,
-        sequential);
+        sequential,
+        synthetic);
   }
 }

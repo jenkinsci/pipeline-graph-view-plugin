@@ -277,4 +277,8 @@ public class FlowNodeWrapper {
   public String getArgumentsAsString() {
     return PipelineNodeUtil.getArgumentsAsString(node);
   }
+
+  public boolean isSynthetic() {
+    return PipelineNodeUtil.isSyntheticStage(node);
+  }
 }

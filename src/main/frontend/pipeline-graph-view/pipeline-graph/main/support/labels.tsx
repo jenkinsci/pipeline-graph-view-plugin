@@ -77,6 +77,9 @@ export function BigLabel({
   ) {
     classNames.push("selected");
   }
+  if (details.stage && details.stage.synthetic) {
+    classNames.push("synthetic");
+  }
 
   return (
     <TruncatingLabel

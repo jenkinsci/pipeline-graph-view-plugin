@@ -14,6 +14,7 @@ public class PipelineStage {
   private String seqContainerName;
   private final PipelineStage nextSibling;
   private boolean sequential;
+  private boolean synthetic;
 
   public PipelineStage(
       String id,
@@ -25,7 +26,8 @@ public class PipelineStage {
       String title,
       String seqContainerName,
       PipelineStage nextSibling,
-      boolean sequential) {
+      boolean sequential,
+      boolean synthetic) {
     this.id = id;
     this.name = name;
     this.children = children;
@@ -36,6 +38,7 @@ public class PipelineStage {
     this.seqContainerName = seqContainerName;
     this.nextSibling = nextSibling;
     this.sequential = sequential;
+    this.synthetic = synthetic;
   }
 
   public PipelineStage getNextSibling() {
@@ -78,5 +81,9 @@ public class PipelineStage {
 
   public String getTitle() {
     return title;
+  }
+
+  public boolean isSynthetic() {
+    return synthetic;
   }
 }

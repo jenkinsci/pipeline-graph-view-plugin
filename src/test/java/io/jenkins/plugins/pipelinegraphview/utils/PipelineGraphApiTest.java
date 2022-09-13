@@ -8,6 +8,7 @@ import java.util.List;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class PipelineGraphApiTest {
@@ -79,5 +80,32 @@ public class PipelineGraphApiTest {
 
     String stagesString = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
     assertThat(stagesString, is("A,Parallel[B[BA,BB],C[CA,CB]],D[E[EA,EB],F[FA,FB]],G"));
+  }
+
+  @Issue("GH#85")
+  @Test
+  public void createTree_syntheticStages() throws Exception {
+    WorkflowRun run =
+        TestUtils.createAndRunJob(
+            j, "syntheticStages", "syntheticStages.jenkinsfile", Result.SUCCESS);
+    PipelineGraphApi api = new PipelineGraphApi(run);
+    PipelineGraph graph = api.createTree();
+
+    List<PipelineStage> stages = graph.getStages();
+
+    String stagesString =
+        TestUtils.collectStagesAsString(
+            stages,
+            (PipelineStage stage) ->
+                String.format("{%s,%s}", stage.getName(), stage.isSynthetic() ? "true" : "false"));
+    assertThat(
+        stagesString,
+        is(
+            String.join(
+                "",
+                "{Checkout SCM,true},",
+                "{Stage 1,false},",
+                "{Stage 2,false},",
+                "{Post Actions,true}")));
   }
 }

@@ -27,14 +27,20 @@ import org.jenkinsci.plugins.workflow.support.steps.input.InputAction;
 /** @author Vivek Pandey */
 public class PipelineNodeUtil {
 
+  private static final String DECLARATIVE_DISPLAY_NAME_PREFIX = "Declarative: ";
+
   public static String getDisplayName(@NonNull FlowNode node) {
     ThreadNameAction threadNameAction = node.getAction(ThreadNameAction.class);
-    return threadNameAction != null ? threadNameAction.getThreadName() : node.getDisplayName();
+    String name =
+        threadNameAction != null ? threadNameAction.getThreadName() : node.getDisplayName();
+    return isSyntheticStage(node) && name.startsWith(DECLARATIVE_DISPLAY_NAME_PREFIX)
+        ? name.substring(DECLARATIVE_DISPLAY_NAME_PREFIX.length())
+        : name;
   }
 
   public static boolean isStage(FlowNode node) {
     return node != null
-        && ((node.getAction(StageAction.class) != null && !isSyntheticStage(node))
+        && ((node.getAction(StageAction.class) != null)
             || (node.getAction(LabelAction.class) != null
                 && node.getAction(ThreadNameAction.class) == null));
   }

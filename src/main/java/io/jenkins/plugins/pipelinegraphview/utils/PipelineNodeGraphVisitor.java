@@ -137,9 +137,6 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
               startNode.getId(), startNode.getDisplayName(), startNode.getDisplayFunctionName()));
     }
 
-    if (PipelineNodeUtil.isSyntheticStage(startNode)) {
-      return;
-    }
     if (NotExecutedNodeAction.isExecuted(startNode)) {
       firstExecuted = startNode;
     }
@@ -174,8 +171,6 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
     // if block stage node push it to stack as it may have nested stages
     if (parallelEnds.isEmpty()
         && endNode instanceof StepEndNode
-        && !PipelineNodeUtil.isSyntheticStage(
-            ((StepEndNode) endNode).getStartNode()) // skip synthetic stages
         && PipelineNodeUtil.isStage(((StepEndNode) endNode).getStartNode())) {
 
       // XXX: There seems to be bug in eventing, chunkEnd is sent twice for the same FlowNode
@@ -212,10 +207,6 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
               chunk.getFirstNode().getId(),
               chunk.getFirstNode().getDisplayName(),
               chunk.getFirstNode().getDisplayFunctionName()));
-    }
-
-    if (PipelineNodeUtil.isSyntheticStage(chunk.getFirstNode())) {
-      return;
     }
 
     boolean parallelNestedStages = false;

@@ -182,7 +182,7 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
               + " .");
     }
     super.chunkStart(startNode, beforeBlock, scanner);
-    if (PipelineNodeUtil.isStage(startNode) && !PipelineNodeUtil.isSyntheticStage(startNode)) {
+    if (PipelineNodeUtil.isStage(startNode)) {
       stages.push(startNode);
     }
   }
@@ -294,7 +294,7 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
       @NonNull FlowNode atomNode,
       @CheckForNull FlowNode after,
       @NonNull ForkScanner scan) {
-    if (stageStepsCollectionCompleted && !PipelineNodeUtil.isSyntheticStage(currentStage)) {
+    if (stageStepsCollectionCompleted) {
       return;
     }
 

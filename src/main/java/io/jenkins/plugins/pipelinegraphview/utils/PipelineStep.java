@@ -8,15 +8,17 @@ public class PipelineStep {
   private String type; // TODO enum
   private String title;
   private int id;
+  private String stageId;
 
   public PipelineStep(
-      int id, String name, String state, int completePercent, String type, String title) {
+      int id, String name, String state, int completePercent, String type, String title, String stageId) {
     this.id = id;
     this.name = name;
     this.state = state;
     this.completePercent = completePercent;
     this.type = type;
     this.title = title;
+    this.stageId = stageId;
   }
 
   public int getId() {
@@ -41,5 +43,9 @@ public class PipelineStep {
 
   public String getTitle() {
     return title;
+  }
+
+  public String getStageId() {
+    return stageId;
   }
 }

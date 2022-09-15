@@ -7,6 +7,7 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Map;
 import org.jenkinsci.plugins.workflow.actions.LogAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
@@ -42,17 +43,13 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     return "pipeline-console";
   }
 
+
   @Override
   public String getIconClassName() {
     return "symbol-terminal-outline plugin-ionicons-api";
   }
 
-  // Consider making this return all steps (don't accept the node)
-  // If the steps include the parent ID (or be indexed by it), then I can save a list of steps to
-  // the
-  // React component state. Then I can cross-reference this when adding the child nodes instead of
-  // making a fetch call - which seems impossible to wait for the result of (maybe fetch is the
-  // wrong thing to use?)
+  // Legacy - leave incase we want to update a sub section of steps (e.g. if a stage if still running).
   @WebMethod(name = "steps")
   public void getSteps(StaplerRequest req, StaplerResponse rsp) throws IOException {
     String nodeId = req.getParameter("nodeId");
@@ -66,12 +63,26 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
       }
       rsp.getWriter().append(stepsJson);
     } else {
-      logger.debug("getSteps was not passed nodeId.");
-      // Consider returning the full map in one go here - the frontend will need to be updated to
-      // handle this.
+      logger.debug("getSteps was not passed nodeId, returning all.");
       rsp.getWriter().append("Error getting console text");
     }
   }
+
+  // Return all steps to:
+  // - reduce number of API calls
+  // - remove dependency of getting list of stages in frontend.
+  @WebMethod(name = "allSteps")
+  public void getAllSteps(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    PipelineStepList steps = stepApi.getAllSteps();
+    String stepsJson = mapper.writeValueAsString(steps);
+    if (logger.isDebugEnabled()) {
+      logger.debug("Steps: '" + stepsJson + "'.");
+    }
+    rsp.getWriter().append(stepsJson);
+  }
+
+
 
   @WebMethod(name = "consoleOutput")
   public void getConsoleOutput(StaplerRequest req, StaplerResponse rsp) throws IOException {

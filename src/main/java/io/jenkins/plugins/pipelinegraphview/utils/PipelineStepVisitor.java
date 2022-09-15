@@ -396,6 +396,10 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
     return stageStepMap.getOrDefault(startNodeId, new ArrayList<>());
   }
 
+  public Map<String, List<FlowNodeWrapper>> getAllSteps() {
+    return stageStepMap;
+  }
+
   public FlowNodeWrapper getStep(String id) {
     return stepMap.get(id);
   }

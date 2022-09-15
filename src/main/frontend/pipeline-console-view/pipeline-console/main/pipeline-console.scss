@@ -60,6 +60,10 @@
   margin: 0;
 }
 
+.console-pane pre {
+  padding-left: 16px;
+}
+
 .ansi-fg-0 {
   color: var(--black, #333);
 }
@@ -144,7 +148,26 @@
   padding-left: 0;
 }
 
+
 .app-page-body--one-column {
   margin-left: 1rem;
   max-width: 95% !important;
+}
+
+a.linenumber {
+  text-align: right;
+  min-width: 40px;
+  margin-left: -21px;
+  cursor: pointer;
+  textcolor: #777777;
+  white-space: nowrap;
+  background: #eee;
+}
+
+.console-output-item {
+  display: inline-block;
+}
+
+.console-pane {
+  margin-left: 5px;
 }

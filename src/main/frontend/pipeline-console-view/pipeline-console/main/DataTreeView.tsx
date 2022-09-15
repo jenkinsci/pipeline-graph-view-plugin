@@ -24,16 +24,9 @@ export interface StepInfo {
   stageId: string;
 }
 
-export interface TreeItemData {
-  id: string;
-  name: string;
-  children: TreeItemData[];
-}
-
 interface StageTreeItemProps extends TreeItemProps {
   synthetic?: boolean;
 }
-
 export interface StepTreeItemProps extends TreeItemProps {
   stageId: string;
 }

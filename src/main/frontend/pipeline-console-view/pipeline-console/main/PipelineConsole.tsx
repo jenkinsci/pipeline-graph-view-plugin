@@ -30,22 +30,21 @@ export interface ConsoleLineProps {
 
 // Tree Item for stages
 const ConsoleLine = ((prop: ConsoleLineProps) => 
-  <p className="log-line" key={prop.lineNumber} id={`log-${prop.lineNumber}`}>
-    <a
-      className="linenumber console-output-item"
-      href={`?selected-node=${prop.stepId}#log-${prop.lineNumber}`}
-      //name={`log-${prop.lineNumber}`}
-    >
-      {prop.lineNumber}
-    </a>
-    <pre className="console-pane console-output-item">
-        {React.createElement(
-          Linkify,
-          { options: { className: "line ansi-color" } },
-          prop.text
-        )}
-    </pre>
-  </p>
+  //<p className="log-line" key={prop.lineNumber} id={`log-${prop.lineNumber}`}>
+    <div className="console-output-item">
+      <a
+        className="console-line-number console-output-item"
+        href={`?selected-node=${prop.stepId}#log-${prop.lineNumber}`}
+        id={`log-${prop.lineNumber}`}
+      >
+        {prop.lineNumber}
+      </a>
+      {React.createElement(
+        Linkify,
+        { options: { className: "line ansi-color" } },
+        prop.text
+      )}
+    </div>
 );
 
 const debugLog = (text: string) => {
@@ -229,17 +228,19 @@ export class PipelineConsole extends React.Component<PipelineConsoleProps, Pipel
               />
             </div>
             <div className="console-output">
-              {lineChunks.map((line, index) => {
-                let text = String(line)
-                let lineNumber = String(index + 1)
-                return (
-                  <ConsoleLine
-                    text={text}
-                    lineNumber={lineNumber}
-                    stepId={this.state.selected}
-                  />
-                );
-              })}
+              <pre className="console-pane console-output-item">
+                {lineChunks.map((line, index) => {
+                  let text = String(line)
+                  let lineNumber = String(index + 1)
+                  return (
+                    <ConsoleLine
+                      text={text}
+                      lineNumber={lineNumber}
+                      stepId={this.state.selected}
+                    />
+                  );
+                })}
+              </pre>
             </div>
           </SplitPane>
         </div>

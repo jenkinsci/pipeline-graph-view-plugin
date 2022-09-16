@@ -157,14 +157,14 @@
 a.linenumber {
   text-align: right;
   min-width: 40px;
-  margin-left: -21px;
-  cursor: pointer;
-  textcolor: #777777;
+  max-width: 40px;
+  margin-left: -15px;
+  margin-right: 5px;
+  color: var(--medium-grey);
   white-space: nowrap;
-  background: #eee;
 }
 
-.console-output-item {
+a.console-output-item {
   display: inline-block;
 }
 

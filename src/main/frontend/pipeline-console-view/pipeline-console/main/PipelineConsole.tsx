@@ -172,7 +172,7 @@ export class PipelineConsole extends React.Component<PipelineConsoleProps, Pipel
     return foundStep;
   }
 
-  // Gets the node heirarchy of stages in the tree view (a list of child -> parent -> grandparent).#
+  // Gets the node hierarchy of stages in the tree view (a list of child -> parent -> grandparent).#
   // This needs to be given the nodeId of a stage, so call getSelectedStep first to see if the nodeId
   // is a step - and if so pass it step.stageId.
   getStageNodeHierarchy(nodeId: string, stages: StageInfo[]): Array<string> {
@@ -237,7 +237,6 @@ export class PipelineConsole extends React.Component<PipelineConsoleProps, Pipel
                     text={text}
                     lineNumber={lineNumber}
                     stepId={this.state.selected}
-
                   />
                 );
               })}

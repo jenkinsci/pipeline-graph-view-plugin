@@ -7,7 +7,6 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Map;
 import org.jenkinsci.plugins.workflow.actions.LogAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
@@ -43,13 +42,13 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     return "pipeline-console";
   }
 
-
   @Override
   public String getIconClassName() {
     return "symbol-terminal-outline plugin-ionicons-api";
   }
 
-  // Legacy - leave incase we want to update a sub section of steps (e.g. if a stage if still running).
+  // Legacy - leave incase we want to update a sub section of steps (e.g. if a stage if still
+  // running).
   @WebMethod(name = "steps")
   public void getSteps(StaplerRequest req, StaplerResponse rsp) throws IOException {
     String nodeId = req.getParameter("nodeId");
@@ -81,8 +80,6 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     }
     rsp.getWriter().append(stepsJson);
   }
-
-
 
   @WebMethod(name = "consoleOutput")
   public void getConsoleOutput(StaplerRequest req, StaplerResponse rsp) throws IOException {

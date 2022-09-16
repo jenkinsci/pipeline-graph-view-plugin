@@ -1,6 +1,5 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -48,8 +47,7 @@ public class PipelineStepApi {
                       flowNodeWrapper
                           .getDisplayName(), // TODO blue ocean uses timing information: "Passed in
                       // 0s"
-                      stageId
-                  );
+                      stageId);
                 })
             .collect(Collectors.toList());
     return steps;

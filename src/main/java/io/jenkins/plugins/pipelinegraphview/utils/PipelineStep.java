@@ -11,7 +11,13 @@ public class PipelineStep {
   private String stageId;
 
   public PipelineStep(
-      int id, String name, String state, int completePercent, String type, String title, String stageId) {
+      int id,
+      String name,
+      String state,
+      int completePercent,
+      String type,
+      String title,
+      String stageId) {
     this.id = id;
     this.name = name;
     this.state = state;

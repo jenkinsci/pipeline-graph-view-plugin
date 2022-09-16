@@ -160,12 +160,20 @@ a.linenumber {
   max-width: 40px;
   margin-left: -15px;
   margin-right: 5px;
-  color: var(--medium-grey);
+  color: var(--text-color-secondary);
   white-space: nowrap;
 }
 
 a.console-output-item {
   display: inline-block;
+}
+
+div.console-output-line-anchor {
+  display: block;
+  position: relative;
+  // This is the width of the '.jenkins-breadcrumbs' div + a little extra.
+  top: -50px;
+  visibility: hidden;
 }
 
 .console-pane {

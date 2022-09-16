@@ -32,10 +32,10 @@ export interface ConsoleLineProps {
 const ConsoleLine = ((prop: ConsoleLineProps) => 
   //<p className="log-line" key={prop.lineNumber} id={`log-${prop.lineNumber}`}>
     <div className="console-output-item">
+      <div className="console-output-line-anchor" id={`log-${prop.lineNumber}`}/>
       <a
         className="console-line-number console-output-item"
         href={`?selected-node=${prop.stepId}#log-${prop.lineNumber}`}
-        id={`log-${prop.lineNumber}`}
       >
         {prop.lineNumber}
       </a>

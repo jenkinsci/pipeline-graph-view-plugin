@@ -47,7 +47,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     return "symbol-terminal-outline plugin-ionicons-api";
   }
 
-  // Legacy - leave incase we want to update a sub section of steps (e.g. if a stage if still
+  // Legacy - leave in case we want to update a sub section of steps (e.g. if a stage is still
   // running).
   @WebMethod(name = "steps")
   public void getSteps(StaplerRequest req, StaplerResponse rsp) throws IOException {

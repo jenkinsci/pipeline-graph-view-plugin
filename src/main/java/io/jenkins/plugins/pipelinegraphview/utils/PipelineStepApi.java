@@ -63,8 +63,8 @@ public class PipelineStepApi {
     PipelineStepVisitor builder = new PipelineStepVisitor(run, null);
     Map<String, List<FlowNodeWrapper>> stepNodes = builder.getAllSteps();
     PipelineStepList allSteps = new PipelineStepList();
-    for (String stageNodeId : stepNodes.keySet()) {
-      allSteps.addAll(parseSteps(stepNodes.get(stageNodeId), stageNodeId));
+    for (Map.Entry<String, List<FlowNodeWrapper>> entry : stepNodes.entrySet()) {
+      allSteps.addAll(parseSteps(entry.getValue(), entry.getKey()));
     }
     return allSteps;
   }

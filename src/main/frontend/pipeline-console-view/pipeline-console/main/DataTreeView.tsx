@@ -11,6 +11,12 @@ import {
   Result,
 } from "../../../pipeline-graph-view/pipeline-graph/main/";
 
+import {
+  fade,
+  withStyles,
+  Theme,
+  createStyles,
+} from "@material-ui/core/styles";
 /**
  * StageInfo is the input, in the form of an Array<StageInfo> of the top-level stages of a pipeline
  */
@@ -45,13 +51,21 @@ const StageTreeItem = withStyles((theme: Theme) =>
       paddingLeft: 18,
       borderLeft: `1px dashed ${fade(theme.palette.text.primary, 0.4)}`,
     },
-    label: {},
+    label: {
+      fontStyle: (props: StageTreeItemProps) =>
+      props.synthetic ? "italic" : "inherit",
+    },
   })
 )((props: StageTreeItemProps) => <TreeItem {...props} />);
 
-
 // Tree Item for steps
-const StepTreeItem = ((props: StepTreeItemProps) => <TreeItem {...props} />);
+const StepTreeItem = withStyles((theme: Theme) =>
+  createStyles({
+    label: {
+      textDecoration: "underline",
+    },
+  })
+)((props: TreeItemProps) => <TreeItem {...props} />);
 
 const getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
   return stepsItems.map((stepItemData) => {

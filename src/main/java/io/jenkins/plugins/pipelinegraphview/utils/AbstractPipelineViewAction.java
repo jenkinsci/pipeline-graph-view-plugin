@@ -11,6 +11,7 @@ import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.WebMethod;
+import org.kohsuke.stapler.verb.GET;
 
 public abstract class AbstractPipelineViewAction implements Action, IconSpec {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -37,6 +38,16 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
   protected JSONObject createJson(PipelineGraph pipelineGraph) throws JsonProcessingException {
     String graph = OBJECT_MAPPER.writeValueAsString(pipelineGraph);
     return JSONObject.fromObject(graph);
+  }
+
+  @GET
+  @WebMethod(name = "graph")
+  public HttpResponse getGraph() throws JsonProcessingException {
+    // TODO for automatic json serialisation look at:
+    // https://github.com/jenkinsci/blueocean-plugin/blob/4f2aa260fca22604a087629dc0da5c80735e0548/blueocean-commons/src/main/java/io/jenkins/blueocean/commons/stapler/Export.java#L101
+    // https://github.com/jenkinsci/blueocean-plugin/blob/4f2aa260fca22604a087629dc0da5c80735e0548/blueocean-commons/src/main/java/io/jenkins/blueocean/commons/stapler/TreeResponse.java#L48
+    JSONObject graph = createJson(api.createGraph());
+    return HttpResponses.okJSON(graph);
   }
 
   @WebMethod(name = "tree")

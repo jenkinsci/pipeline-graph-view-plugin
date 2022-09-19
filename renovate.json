@@ -4,8 +4,14 @@
     "config:base",
     ":semanticCommitsDisabled"
   ],
-  "enabledManagers": ["regex"],
+  "reviewers": [
+    "team:pipeline-graph-view-plugin-developers"
+  ],
   "packageRules": [
+    {
+      "matchDatasources": ["npm"],
+      "addLabels": ["javascript"]
+    },
     {
       "matchPackageNames": ["node"],
       "allowedVersions": "/16.[0-9]+.[0-9]+(.[0-9]+)?$/"

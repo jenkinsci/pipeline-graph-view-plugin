@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.jenkins.ui.icon.Icon;
-import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;

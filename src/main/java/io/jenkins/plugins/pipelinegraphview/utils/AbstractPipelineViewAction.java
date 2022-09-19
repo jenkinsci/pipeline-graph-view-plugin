@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.model.Action;
 import hudson.util.HttpResponses;
 import net.sf.json.JSONObject;
-import org.jenkins.ui.icon.Icon;
-import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.kohsuke.stapler.HttpResponse;

@@ -281,27 +281,27 @@ describe("PipelineGraphLayout", () => {
 
     it("returns proper columns (GH#18)", () => {
       const columns = createNodeColumns(
-          [
-            makeStage(6, "Stage 1"),
-            makeStage(11, "Stage 2"),
-            makeStage(31, "Stage6, When anyOf", [
-              makeStage(12, "Stage 3"),
-              makeStage(33, "Parallel", [
-                makeParallel(36, "Parallel Stage 1", [
-                  makeStage(43, "Parallel Stage 1.1"),
-                  makeStage(61, "Parallel Stage 1.2"),
-                ]),
-                makeParallel(37, "Parallel Stage 2", [
-                  makeStage(45, "Parallel Stage 2.1"),
-                  makeStage(63, "Parallel Stage 2.2"),
-                ]),
+        [
+          makeStage(6, "Stage 1"),
+          makeStage(11, "Stage 2"),
+          makeStage(31, "Stage6, When anyOf", [
+            makeStage(12, "Stage 3"),
+            makeStage(33, "Parallel", [
+              makeParallel(36, "Parallel Stage 1", [
+                makeStage(43, "Parallel Stage 1.1"),
+                makeStage(61, "Parallel Stage 1.2"),
               ]),
-              makeStage(13, "Stage 4", [
-                makeStage(14, "Stage 5", [makeStage(15, "Stage 7")]),
+              makeParallel(37, "Parallel Stage 2", [
+                makeStage(45, "Parallel Stage 2.1"),
+                makeStage(63, "Parallel Stage 2.2"),
               ]),
             ]),
-          ],
-          false
+            makeStage(13, "Stage 4", [
+              makeStage(14, "Stage 5", [makeStage(15, "Stage 7")]),
+            ]),
+          ]),
+        ],
+        false
       );
 
       expect(columns).toMatchObject([

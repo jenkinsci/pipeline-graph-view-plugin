@@ -16,19 +16,6 @@ import org.kohsuke.stapler.verb.GET;
 public abstract class AbstractPipelineViewAction implements Action, IconSpec {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-  static {
-    IconSet.icons.addIcon(
-        new Icon(
-            "icon-pipeline-graph icon-md",
-            "plugin/pipeline-graph-view/images/24x24/blueocean.png",
-            Icon.ICON_MEDIUM_STYLE));
-    IconSet.icons.addIcon(
-        new Icon(
-            "icon-pipeline-graph icon-xl",
-            "plugin/pipeline-graph-view/images/48x48/blueocean.png",
-            Icon.ICON_XLARGE_STYLE));
-  }
-
   protected final transient PipelineGraphApi api;
 
   public AbstractPipelineViewAction(WorkflowRun target) {
@@ -62,13 +49,11 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
 
   @Override
   public String getIconFileName() {
-    String iconClassName = getIconClassName();
-    Icon icon = IconSet.icons.getIconByClassSpec(iconClassName + " icon-md");
-    return "/plugin/" + icon.getUrl();
+    return null;
   }
 
   @Override
   public String getIconClassName() {
-    return "icon-pipeline-graph";
+    return "symbol-pipeline plugin-ionicons-api";
   }
 }

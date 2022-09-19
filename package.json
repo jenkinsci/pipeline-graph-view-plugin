@@ -26,7 +26,7 @@
     "@material-ui/core": "4.11.4",
     "@material-ui/icons": "4.11.2",
     "@material-ui/lab": "4.0.0-alpha.58",
-    "@react-spring/web": "9.1.2",
+    "@react-spring/web": "9.5.4",
     "html-react-parser": "1.2.7",
     "linkifyjs": "3.0.5",
     "react": "16.14.0",

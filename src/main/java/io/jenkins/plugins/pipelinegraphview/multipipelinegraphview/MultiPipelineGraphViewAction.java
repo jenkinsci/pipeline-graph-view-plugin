@@ -81,6 +81,6 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
 
   @Override
   public String getIconClassName() {
-    return "symbol-options-outline plugin-ionicons-api";
+    return "symbol-layers-outline plugin-ionicons-api";
   }
 }

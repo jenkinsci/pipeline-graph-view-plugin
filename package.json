@@ -39,7 +39,7 @@
     "@types/enzyme": "3.10.12",
     "@types/jest": "26.0.24",
     "@types/linkifyjs": "2.1.4",
-    "@types/node": "10.17.60",
+    "@types/node": "16.11.59",
     "@types/react": "16.14.32",
     "@types/react-dom": "16.9.16",
     "css-loader": "3.6.0",

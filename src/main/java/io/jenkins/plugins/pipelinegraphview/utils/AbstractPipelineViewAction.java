@@ -52,6 +52,6 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
 
   @Override
   public String getIconClassName() {
-    return "symbol-pipeline plugin-ionicons-api";
+    return "symbol-file-tray-stacked-outline plugin-ionicons-api";
   }
 }

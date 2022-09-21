@@ -42,6 +42,11 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     return "pipeline-console";
   }
 
+  @Override
+  public String getIconClassName() {
+    return "symbol-terminal-outline plugin-ionicons-api";
+  }
+
   // Consider making this return all steps (don't accept the node)
   // If the steps include the parent ID (or be indexed by it), then I can save a list of steps to
   // the

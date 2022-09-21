@@ -5,8 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.model.Action;
 import hudson.util.HttpResponses;
 import net.sf.json.JSONObject;
-import org.jenkins.ui.icon.Icon;
-import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.kohsuke.stapler.HttpResponse;
@@ -15,19 +13,6 @@ import org.kohsuke.stapler.verb.GET;
 
 public abstract class AbstractPipelineViewAction implements Action, IconSpec {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-
-  static {
-    IconSet.icons.addIcon(
-        new Icon(
-            "icon-pipeline-graph icon-md",
-            "plugin/pipeline-graph-view/images/24x24/blueocean.png",
-            Icon.ICON_MEDIUM_STYLE));
-    IconSet.icons.addIcon(
-        new Icon(
-            "icon-pipeline-graph icon-xl",
-            "plugin/pipeline-graph-view/images/48x48/blueocean.png",
-            Icon.ICON_XLARGE_STYLE));
-  }
 
   protected final transient PipelineGraphApi api;
 
@@ -62,13 +47,11 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
 
   @Override
   public String getIconFileName() {
-    String iconClassName = getIconClassName();
-    Icon icon = IconSet.icons.getIconByClassSpec(iconClassName + " icon-md");
-    return "/plugin/" + icon.getUrl();
+    return null;
   }
 
   @Override
   public String getIconClassName() {
-    return "icon-pipeline-graph";
+    return "symbol-file-tray-stacked-outline plugin-ionicons-api";
   }
 }

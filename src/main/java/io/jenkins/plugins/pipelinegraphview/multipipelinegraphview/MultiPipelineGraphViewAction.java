@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-import org.jenkins.ui.icon.Icon;
-import org.jenkins.ui.icon.IconSet;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -24,19 +22,6 @@ import org.kohsuke.stapler.verb.GET;
 public class MultiPipelineGraphViewAction implements Action, IconSpec {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   private static final int MaxNumberOfElements = 10;
-
-  static {
-    IconSet.icons.addIcon(
-        new Icon(
-            "icon-pipeline-graph icon-md",
-            "plugin/pipeline-graph-view/images/24x24/blueocean.png",
-            Icon.ICON_MEDIUM_STYLE));
-    IconSet.icons.addIcon(
-        new Icon(
-            "icon-pipeline-graph icon-xl",
-            "plugin/pipeline-graph-view/images/48x48/blueocean.png",
-            Icon.ICON_XLARGE_STYLE));
-  }
 
   private final WorkflowJob target;
 
@@ -79,9 +64,7 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
 
   @Override
   public String getIconFileName() {
-    String iconClassName = getIconClassName();
-    Icon icon = IconSet.icons.getIconByClassSpec(iconClassName + " icon-md");
-    return "/plugin/" + icon.getUrl();
+    return null;
   }
 
   @Override
@@ -96,6 +79,6 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
 
   @Override
   public String getIconClassName() {
-    return "icon-pipeline-graph";
+    return "symbol-layers-outline plugin-ionicons-api";
   }
 }

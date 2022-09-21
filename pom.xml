@@ -15,7 +15,7 @@
         <changelist>999999-SNAPSHOT</changelist>
         <gitHubRepo>jenkinsci/pipeline-graph-view-plugin</gitHubRepo>
         <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
-        <jenkins.version>2.332.4</jenkins.version>
+        <jenkins.version>2.346.1</jenkins.version>
         <node.version>16.17.0</node.version>
         <npm.version>8.19.2</npm.version>
     </properties>
@@ -27,7 +27,7 @@
             <dependency>
                 <!-- Pick up common dependencies for the selected LTS line: https://github.com/jenkinsci/bom#usage -->
                 <groupId>io.jenkins.tools.bom</groupId>
-                <artifactId>bom-2.332.x</artifactId>
+                <artifactId>bom-2.346.x</artifactId>
                 <version>1607.va_c1576527071</version>
                 <scope>import</scope>
                 <type>pom</type>
@@ -103,11 +103,15 @@
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>pipeline-build-step</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>pipeline-milestone-step</artifactId>
             <version>101.vd572fef9d926</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jenkins.plugins</groupId>
+            <artifactId>ionicons-api</artifactId>
+            <version>24.va_745a_b_a_97fc3</version>
         </dependency>
     </dependencies>
 

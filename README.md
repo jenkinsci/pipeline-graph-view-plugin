@@ -46,4 +46,4 @@ The plugin should be lightweight, using or providing extension points where poss
 
 Any help is much appreciated, the frontend code is written in React, the backend code is in Java, designers would be greatly appreciated as well.
 
-Refer to our [contribution guidelines](https://github.com/jenkinsci/.github/blob/master/CONTRIBUTING.md)
+Refer to our [contribution guidelines](./CONTRIBUTING.md)

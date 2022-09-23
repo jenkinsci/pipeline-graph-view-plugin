@@ -65,7 +65,7 @@ const StepTreeItem = withStyles((theme: Theme) =>
       textDecoration: "underline",
     },
   })
-)((props: TreeItemProps) => <TreeItem {...props} />);
+)((props: StepTreeItemProps) => <TreeItem {...props} />);
 
 const getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
   return stepsItems.map((stepItemData) => {

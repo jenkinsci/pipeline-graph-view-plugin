@@ -154,12 +154,12 @@
   max-width: 95% !important;
 }
 
-a.linenumber {
+a.console-line-number {
   text-align: right;
   min-width: 40px;
   max-width: 40px;
   margin-left: -15px;
-  margin-right: 5px;
+  margin-right: 27px;
   color: var(--text-color-secondary);
   white-space: nowrap;
 }

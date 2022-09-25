@@ -94,7 +94,11 @@ const getTreeItemsFromStage = (
         nodeId={String(stageItemData.id)}
         label={stageItemData.name}
         children={children}
-        classes={{ label: stageItemData.synthetic ? "synthetic" : undefined }}
+        classes={{
+          label: stageItemData.synthetic
+            ? "pgw-graph-node--synthetic"
+            : undefined,
+        }}
       />
     );
   });

@@ -35,10 +35,6 @@ export interface TreeItemData {
   children: TreeItemData[];
 }
 
-interface StageTreeItemProps extends TreeItemProps {
-  synthetic?: boolean;
-}
-
 // Tree Item for stages
 const StageTreeItem = withStyles((theme: Theme) =>
   createStyles({
@@ -53,12 +49,9 @@ const StageTreeItem = withStyles((theme: Theme) =>
       paddingLeft: 18,
       borderLeft: `1px dashed ${fade(theme.palette.text.primary, 0.4)}`,
     },
-    label: {
-      fontStyle: (props: StageTreeItemProps) =>
-        props.synthetic ? "italic" : "inherit",
-    },
+    label: {},
   })
-)((props: StageTreeItemProps) => <TreeItem {...props} />);
+)((props: TreeItemProps) => <TreeItem {...props} />);
 
 // Tree Item for steps
 const StepTreeItem = withStyles((theme: Theme) =>
@@ -101,7 +94,11 @@ const getTreeItemsFromStage = (
         nodeId={String(stageItemData.id)}
         label={stageItemData.name}
         children={children}
-        synthetic={stageItemData.synthetic}
+        classes={{
+          label: stageItemData.synthetic
+            ? "pgw-graph-node--synthetic"
+            : undefined,
+        }}
       />
     );
   });

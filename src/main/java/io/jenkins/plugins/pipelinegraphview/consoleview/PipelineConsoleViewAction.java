@@ -62,7 +62,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
       }
       rsp.getWriter().append(stepsJson);
     } else {
-      logger.debug("getSteps was not passed nodeId, returning all.");
+      logger.debug("getSteps was not passed nodeId.");
       rsp.getWriter().append("Error getting console text");
     }
   }

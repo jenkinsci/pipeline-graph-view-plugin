@@ -9,9 +9,6 @@ import { StepInfo } from "./DataTreeView";
 
 import "./pipeline-console.scss";
 
-// Set to true to get debug output in console
-const DEBUG_LOGGING=true
-
 interface PipelineConsoleProps {}
 interface PipelineConsoleState {
   consoleText: string;
@@ -19,6 +16,8 @@ interface PipelineConsoleState {
   expanded: string[];
   stages: Array<StageInfo>;
   steps: Array<StepInfo>;
+  anchor: string;
+  hasScrolled: boolean;
 }
 
 export interface ConsoleLineProps {
@@ -46,12 +45,6 @@ const ConsoleLine = ((prop: ConsoleLineProps) =>
     </div>
 );
 
-const debugLog = (text: string) => {
-    if (DEBUG_LOGGING) {
-      console.log("Debug: ".concat(text))
-    }
-}
-
 export class PipelineConsole extends React.Component<PipelineConsoleProps, PipelineConsoleState>  {
   constructor(props: PipelineConsoleProps) {
     super(props);
@@ -65,7 +58,10 @@ export class PipelineConsole extends React.Component<PipelineConsoleProps, Pipel
       expanded: [] as string[],
       stages: [] as StageInfo[],
       steps: [] as StepInfo[],
+      anchor: window.location.hash.replace('#', ''),
+      hasScrolled: false,
     };
+    console.debug(`Anchor: ${this.state.anchor}`)
     this.updateState();
   }
 
@@ -84,7 +80,7 @@ export class PipelineConsole extends React.Component<PipelineConsoleProps, Pipel
     return fetch("tree")
       .then((res) => res.json())
       .then((result) => {
-        debugLog("Updating stages")
+        console.debug("Updating stages")
         this.setState({
           stages: result.data.stages
         })
@@ -96,8 +92,8 @@ export class PipelineConsole extends React.Component<PipelineConsoleProps, Pipel
     return fetch(`allSteps`)
       .then((step_res) => step_res.json())
       .then((step_result) => {
-        debugLog("Updating steps");
-        debugLog(JSON.stringify(step_result));
+        console.debug("Updating steps");
+        console.debug(JSON.stringify(step_result));
         this.setState({
           steps: step_result.steps,
         });
@@ -114,7 +110,7 @@ export class PipelineConsole extends React.Component<PipelineConsoleProps, Pipel
       return ''
     })
     .then((text) => {
-      debugLog("Updating consoleText")
+      console.debug("Updating consoleText")
       this.setState({
         // Strip trailing whitespace.
         consoleText: text.replace(/\s+$/, "")
@@ -124,20 +120,20 @@ export class PipelineConsole extends React.Component<PipelineConsoleProps, Pipel
   }
 
   handleUrlParams() {
-    debugLog(`In handleUrlParams.`)
+    console.debug(`In handleUrlParams.`)
     let params = new URLSearchParams(document.location.search.substring(1));
     let selected = params.get("selected-node") || "";
     if (selected) {
-      debugLog(`Node '${selected}' selected.`)
+      console.debug(`Node '${selected}' selected.`)
       let expanded = [];
       let step = this.getStepWithId(selected, this.state.steps);
       if (step) {
-        debugLog(`Found step with id '${selected}`)
+        console.debug(`Found step with id '${selected}`)
         this.setConsoleText(String(step.id));
         selected = String(step.id);
         expanded = this.getStageNodeHierarchy(step.stageId, this.state.stages);
       } else {
-        debugLog(`Didn't find step with id '${selected}, must be a stasge.`)
+        console.debug(`Didn't find step with id '${selected}, must be a stasge.`)
         expanded = this.getStageNodeHierarchy(selected, this.state.stages);
       }
       this.setState({
@@ -145,9 +141,27 @@ export class PipelineConsole extends React.Component<PipelineConsoleProps, Pipel
         expanded: expanded,
       })
     } else {
-      debugLog("No node selected.")
+      console.debug("No node selected.")
     }
   }
+
+  componentDidUpdate() {
+    console.debug(`In componentDidUpdate.`)
+    // only attempt to scroll if we haven't yet (this could have just reset above if hash changed)
+    if (this.state.anchor && !this.state.hasScrolled) {
+      console.debug(`Trying to scroll to ${this.state.anchor}`)
+      const element = document.getElementById(this.state.anchor);
+      if (element !== null) {
+        console.debug(`Found element '${this.state.anchor}', scrolling...`)
+        element.scrollIntoView();
+        this.setState({
+          hasScrolled: true,
+        })
+      } else {
+        console.debug(`Could not find element '${this.state.anchor}'`)
+      }
+    }
+  };
 
   /* Event handlers */
   handleActionNodeSelect(event: React.ChangeEvent<any>, nodeId: string) {
@@ -166,7 +180,7 @@ export class PipelineConsole extends React.Component<PipelineConsoleProps, Pipel
   getStepWithId(nodeId: string, steps: StepInfo[]) {
     let foundStep = steps.find(step => String(step.id) == nodeId);
     if (!foundStep) {
-      debugLog(`No step found with nodeID ${nodeId}`);
+      console.debug(`No step found with nodeID ${nodeId}`);
     }
     return foundStep;
   }

@@ -27,7 +27,6 @@ export interface ConsoleLineProps {
   stepId: string;
 }
 
-
 // Tree Item for stages
 const ConsoleLine = ((prop: ConsoleLineProps) => 
   //<p className="log-line" key={prop.lineNumber} id={`log-${prop.lineNumber}`}>
@@ -117,7 +116,8 @@ export class PipelineConsole extends React.Component<PipelineConsoleProps, Pipel
     .then((text) => {
       debugLog("Updating consoleText")
       this.setState({
-        consoleText: text
+        // Strip trailing whitespace.
+        consoleText: text.replace(/\s+$/, "")
       })
     })
     .catch(console.log);

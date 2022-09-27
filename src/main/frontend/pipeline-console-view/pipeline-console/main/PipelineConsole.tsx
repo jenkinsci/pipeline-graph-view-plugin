@@ -24,23 +24,30 @@ export interface ConsoleLineProps {
   lineNumber: string;
   content: (string | JSX.Element)[];
   stepId: string;
+  key: string;
 }
 
 // Tree Item for stages
-const ConsoleLine = ((prop: ConsoleLineProps) => 
-    <div className="console-output-item" key={prop.lineNumber}>
-      <div className="console-output-line-anchor" id={`log-${prop.lineNumber}`}></div>
+const ConsoleLine = ((props: ConsoleLineProps) => 
+    <div className="console-output-item" key={props.lineNumber}>
+      <div className="console-output-line-anchor" id={`log-${props.lineNumber}`}/>
       <div className="console-output-line">
         <a
           className="console-line-number"
-          href={`?selected-node=${prop.stepId}#log-${prop.lineNumber}`}
+          href={`?selected-node=${props.stepId}#log-${props.lineNumber}`}
         >
-          {prop.lineNumber}
+          {props.lineNumber}
         </a>
-        {React.createElement(
-          Linkify,
-          { options: { className: "line ansi-color" } },
-          prop.content
+        {
+          props.content.map((element, i) => {
+            return React.createElement(
+              Linkify,
+              {
+                options: { className: "line ansi-color"},
+                key: `${props.lineNumber}-${i}`
+              },
+              element
+          )}
         )}
       </div>
     </div>
@@ -256,6 +263,7 @@ export class PipelineConsole extends React.Component<PipelineConsoleProps, Pipel
                       content={line}
                       lineNumber={lineNumber}
                       stepId={this.state.selected}
+                      key={`${this.state.selected}-${lineNumber}`}
                     />
                   );
                 })}

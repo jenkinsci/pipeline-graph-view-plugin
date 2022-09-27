@@ -30,10 +30,6 @@ export interface StepInfo {
   stageId: string;
 }
 
-export interface StepTreeItemProps extends TreeItemProps {
-  stageId: string;
-}
-
 // Tree Item for stages
 const StageTreeItem = withStyles((theme: Theme) =>
   createStyles({
@@ -59,7 +55,7 @@ const StepTreeItem = withStyles((theme: Theme) =>
       textDecoration: "underline",
     },
   })
-)((props: StepTreeItemProps) => <TreeItem {...props} />);
+)((props: TreeItemProps) => <TreeItem {...props} />);
 
 const getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
   return stepsItems.map((stepItemData) => {
@@ -68,7 +64,6 @@ const getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
         key={stepItemData.id}
         nodeId={String(stepItemData.id)}
         label={stepItemData.name}
-        stageId={String(stepItemData.stageId)}
       />
     );
   });

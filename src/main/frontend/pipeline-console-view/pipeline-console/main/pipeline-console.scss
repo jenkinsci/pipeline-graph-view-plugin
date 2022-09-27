@@ -162,14 +162,10 @@ a.console-line-number {
   margin-right: 27px;
   color: var(--text-color-secondary);
   white-space: nowrap;
-}
-
-a.console-output-item {
   display: inline-block;
 }
 
 div.console-output-line-anchor {
-  display: block;
   position: relative;
   // This is the width of the '.jenkins-breadcrumbs' div + a little extra.
   top: -50px;
@@ -178,4 +174,8 @@ div.console-output-line-anchor {
 
 .console-pane {
   margin-left: 5px;
+}
+
+div.console-output-line {
+  display: flex;
 }

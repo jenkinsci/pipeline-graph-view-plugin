@@ -30,18 +30,20 @@ export interface ConsoleLineProps {
 const ConsoleLine = ((prop: ConsoleLineProps) => 
   //<p className="log-line" key={prop.lineNumber} id={`log-${prop.lineNumber}`}>
     <div className="console-output-item">
-      <div className="console-output-line-anchor" id={`log-${prop.lineNumber}`}/>
-      <a
-        className="console-line-number console-output-item"
-        href={`?selected-node=${prop.stepId}#log-${prop.lineNumber}`}
-      >
-        {prop.lineNumber}
-      </a>
-      {React.createElement(
-        Linkify,
-        { options: { className: "line ansi-color" } },
-        prop.text
-      )}
+      <div className="console-output-line-anchor" id={`log-${prop.lineNumber}`}></div>
+      <div className="console-output-line">
+        <a
+          className="console-line-number"
+          href={`?selected-node=${prop.stepId}#log-${prop.lineNumber}`}
+        >
+          {prop.lineNumber}
+        </a>
+        {React.createElement(
+          Linkify,
+          { options: { className: "line ansi-color" } },
+          prop.text
+        )}
+      </div>
     </div>
 );
 

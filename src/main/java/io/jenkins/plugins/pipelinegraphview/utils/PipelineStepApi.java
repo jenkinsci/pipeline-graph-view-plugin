@@ -2,6 +2,7 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.slf4j.Logger;
@@ -17,7 +18,7 @@ public class PipelineStepApi {
     this.run = run;
   }
 
-  private List<PipelineStep> parseSteps(List<FlowNodeWrapper> stepNodes) {
+  private List<PipelineStep> parseSteps(List<FlowNodeWrapper> stepNodes, String stageId) {
     if (logger.isDebugEnabled()) {
       logger.debug("PipelineStepApi steps: '" + stepNodes + "'.");
     }
@@ -34,6 +35,10 @@ public class PipelineStepApi {
                   if (stepArguments != null && !stepArguments.isEmpty()) {
                     displayName = stepArguments + " - " + displayName;
                   }
+                  // Remove non-printable chars (e.g. ANSI color codes).
+                  logger.debug("DisplayName Before: '" + displayName + "'.");
+                  displayName = cleanTextContent(displayName);
+                  logger.debug("DisplayName After: '" + displayName + "'.");
                   return new PipelineStep(
                       Integer.parseInt(
                           flowNodeWrapper
@@ -44,17 +49,33 @@ public class PipelineStepApi {
                       50, // TODO how ???
                       flowNodeWrapper.getType().name(),
                       flowNodeWrapper
-                          .getDisplayName() // TODO blue ocean uses timing information: "Passed in
+                          .getDisplayName(), // TODO blue ocean uses timing information: "Passed in
                       // 0s"
-                      );
+                      stageId);
                 })
             .collect(Collectors.toList());
     return steps;
   }
 
+  private static String cleanTextContent(String text) {
+    // strips off all ANSI color codes
+    text = text.replaceAll("\\[\\d+m", "");
+    return text.trim();
+  }
+
   public PipelineStepList getSteps(String stageId) {
     PipelineStepVisitor builder = new PipelineStepVisitor(run, null);
     List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
-    return new PipelineStepList(parseSteps(stepNodes));
+    return new PipelineStepList(parseSteps(stepNodes, stageId));
+  }
+
+  public PipelineStepList getAllSteps() {
+    PipelineStepVisitor builder = new PipelineStepVisitor(run, null);
+    Map<String, List<FlowNodeWrapper>> stepNodes = builder.getAllSteps();
+    PipelineStepList allSteps = new PipelineStepList();
+    for (Map.Entry<String, List<FlowNodeWrapper>> entry : stepNodes.entrySet()) {
+      allSteps.addAll(parseSteps(entry.getValue(), entry.getKey()));
+    }
+    return allSteps;
   }
 }

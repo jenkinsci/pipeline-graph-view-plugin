@@ -1,14 +1,8 @@
-import React, { useEffect, useState } from "react";
 
-import TreeView from "@material-ui/lab/TreeView";
+import React from "react";
 
-import {
-  fade,
-  makeStyles,
-  withStyles,
-  Theme,
-  createStyles,
-} from "@material-ui/core/styles";
+import TreeView from "@material-ui/lab/TreeView/";
+
 import TreeItem, { TreeItemProps } from "@material-ui/lab/TreeItem";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
@@ -17,6 +11,12 @@ import {
   Result,
 } from "../../../pipeline-graph-view/pipeline-graph/main/";
 
+import {
+  fade,
+  withStyles,
+  Theme,
+  createStyles,
+} from "@material-ui/core/styles";
 /**
  * StageInfo is the input, in the form of an Array<StageInfo> of the top-level stages of a pipeline
  */
@@ -27,12 +27,7 @@ export interface StepInfo {
   completePercent: number;
   id: number;
   type: string;
-}
-
-export interface TreeItemData {
-  id: string;
-  name: string;
-  children: TreeItemData[];
+  stageId: string;
 }
 
 // Tree Item for stages
@@ -68,7 +63,7 @@ const getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
       <StepTreeItem
         key={stepItemData.id}
         nodeId={String(stepItemData.id)}
-        label={stepItemData.name}
+        label={stepItemData.name.replace(/[^ -~]+/g, "")}
       />
     );
   });
@@ -76,16 +71,30 @@ const getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
 
 const getTreeItemsFromStage = (
   stageItems: StageInfo[],
-  stageSteps: Map<string, StepInfo[]>
+  steps: StepInfo[],
 ) => {
+  // Copy steps so we don't affect props.steps.
+  let stepsCopy = [...steps];
   return stageItems.map((stageItemData) => {
     let children: JSX.Element[] = [];
+    let stageSteps = [] as StepInfo[];
+    // Handle leaf nodes first.
     if (stageItemData.children && stageItemData.children.length > 0) {
-      children = [...getTreeItemsFromStage(stageItemData.children, stageSteps)];
+      children = getTreeItemsFromStage(stageItemData.children, stepsCopy);
     }
-    let steps = stageSteps.get(`${stageItemData.id}`);
-    if (steps) {
-      let stepsItems = getTreeItemsFromStepList(steps);
+    var i = stepsCopy.length
+    while (i--) {
+      let step = stepsCopy[i];
+      if (step.stageId == String(stageItemData.id)) {
+        // Prepend to array (as we are iterating in reverse).
+        stageSteps.unshift(step);
+        // Remove step from local copy - can only have one parent.
+        // This should reduce the total number of loops required.
+        stepsCopy.splice(i, 1);
+      }
+    };
+    if (stageSteps) {
+      let stepsItems = getTreeItemsFromStepList(stageSteps);
       children = [...children, ...stepsItems];
     }
     return (
@@ -106,96 +115,18 @@ const getTreeItemsFromStage = (
 
 interface DataTreeViewProps {
   stages: Array<StageInfo>;
-  onActionNodeSelect: (event: React.ChangeEvent<any>, nodeIds: string) => void;
-}
-
-interface State {
-  stages: Array<StageInfo>;
-  steps: Map<string, StepInfo[]>;
-  expanded: Array<string>;
+  onNodeSelect: (event: React.ChangeEvent<any>, nodeId: string) => void;
+  onNodeToggle: (event: React.ChangeEvent<any>, nodeIds: string[]) => void;
+  selected: string;
+  expanded: string[];
+  steps: StepInfo[];
 }
 
 export class DataTreeView extends React.Component {
   props!: DataTreeViewProps;
-  state: State;
 
   constructor(props: DataTreeViewProps) {
     super(props);
-    this.state = {
-      stages: [],
-      steps: new Map(),
-      expanded: [],
-    };
-    this.handleToggle = this.handleToggle.bind(this);
-  }
-
-  handleToggle(event: React.ChangeEvent<{}>, nodeIds: string[]): void {
-    this.setState({
-      expanded: nodeIds,
-    });
-  }
-
-  getStepsForStageTree(stage: StageInfo): void {
-    // TODO: This should change to getting all the steps in one API call.
-    // Otherwise large Pipelines will make a lot of API calls (one per stage).
-    fetch(`steps?nodeId=${stage.id}`)
-      .then((step_res) => step_res.json())
-      .then((step_result) => {
-        this.setState({
-          steps: new Map(
-            this.state.steps.set(`${stage.id}`, step_result.steps)
-          ),
-        });
-      });
-    if (stage.children && stage.children.length > 0) {
-      stage.children.forEach((childStage) => {
-        this.getStepsForStageTree(childStage);
-      });
-    }
-  }
-
-  getNodeHierarchy(nodeId: string, stages: StageInfo[]): Array<string> {
-    for (let i = 0; i < stages.length; i++) {
-      let stage = stages[i];
-      if (String(stage.id) == nodeId) {
-        // Found the node, so start a list of expanded nodes - it will be this and it's ancestors.
-        return [String(stage.id)];
-      } else if (stage.children && stage.children.length > 0) {
-        let expandedNodes = this.getNodeHierarchy(nodeId, stage.children);
-        if (expandedNodes.length > 0) {
-          // Our child is expanded, so we need to be expanded too.
-          expandedNodes.push(String(stage.id));
-          return expandedNodes;
-        }
-      }
-    }
-    return [];
-  }
-
-  componentDidMount() {
-    let params = new URLSearchParams(document.location.search.substring(1));
-    let selectedNode = params.get("selected-node") || "";
-    fetch("tree")
-      .then((res) => res.json())
-      .then((result) => {
-        // Get steps for a each stage and add to 'steps' state
-        this.setState(
-          {
-            stages: result.data.stages,
-            expanded: this.getNodeHierarchy(selectedNode, result.data.stages),
-          },
-          () => {
-            this.state.stages.forEach((stageData) => {
-              this.getStepsForStageTree(stageData);
-            });
-          }
-        );
-      })
-      .catch(console.log);
-  }
-
-  handleOnNodeSelect() {
-    this.props.onActionNodeSelect;
   }
 
   render() {
@@ -203,11 +134,12 @@ export class DataTreeView extends React.Component {
       <TreeView
         defaultCollapseIcon={<ExpandMoreIcon />}
         defaultExpandIcon={<ChevronRightIcon />}
-        onNodeSelect={this.props.onActionNodeSelect}
-        expanded={this.state.expanded}
-        onNodeToggle={this.handleToggle}
+        onNodeSelect={this.props.onNodeSelect}
+        expanded={this.props.expanded}
+        selected={this.props.selected}
+        onNodeToggle={this.props.onNodeToggle}
       >
-        {getTreeItemsFromStage(this.state.stages, this.state.steps)}
+        {getTreeItemsFromStage(this.props.stages, this.props.steps)}
       </TreeView>
     );
   }

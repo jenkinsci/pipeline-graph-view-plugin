@@ -60,6 +60,10 @@
   margin: 0;
 }
 
+.console-pane pre {
+  padding-left: 16px;
+}
+
 .ansi-fg-0 {
   color: var(--black, #333);
 }
@@ -144,7 +148,34 @@
   padding-left: 0;
 }
 
+
 .app-page-body--one-column {
   margin-left: 1rem;
   max-width: 95% !important;
+}
+
+a.console-line-number {
+  text-align: right;
+  min-width: 40px;
+  max-width: 40px;
+  margin-left: -15px;
+  margin-right: 27px;
+  color: var(--text-color-secondary);
+  white-space: nowrap;
+  display: inline-block;
+}
+
+div.console-output-line-anchor {
+  position: relative;
+  // This is the width of the '.jenkins-breadcrumbs' div + a little extra.
+  top: -50px;
+  visibility: hidden;
+}
+
+.console-pane {
+  margin-left: 5px;
+}
+
+div.console-output-line {
+  display: flex;
 }

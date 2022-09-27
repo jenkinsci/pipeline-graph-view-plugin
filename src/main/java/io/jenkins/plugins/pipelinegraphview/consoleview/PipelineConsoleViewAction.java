@@ -2,20 +2,24 @@ package io.jenkins.plugins.pipelinegraphview.consoleview;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.console.AnnotatedLargeText;
+import hudson.util.HttpResponses;
 import io.jenkins.plugins.pipelinegraphview.utils.AbstractPipelineViewAction;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import java.io.IOException;
 import java.io.Writer;
+import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.workflow.actions.LogAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.framework.io.CharSpool;
 import org.kohsuke.stapler.framework.io.LineEndNormalizingWriter;
+import org.kohsuke.stapler.verb.GET;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,14 +51,11 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     return "symbol-terminal-outline plugin-ionicons-api";
   }
 
-  // Consider making this return all steps (don't accept the node)
-  // If the steps include the parent ID (or be indexed by it), then I can save a list of steps to
-  // the
-  // React component state. Then I can cross-reference this when adding the child nodes instead of
-  // making a fetch call - which seems impossible to wait for the result of (maybe fetch is the
-  // wrong thing to use?)
+  // Legacy - leave in case we want to update a sub section of steps (e.g. if a stage is still
+  // running).
+  @GET
   @WebMethod(name = "steps")
-  public void getSteps(StaplerRequest req, StaplerResponse rsp) throws IOException {
+  public HttpResponse getSteps(StaplerRequest req) throws IOException {
     String nodeId = req.getParameter("nodeId");
     if (nodeId != null) {
       logger.debug("getSteps was passed nodeId '" + nodeId + "'.");
@@ -64,13 +65,25 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
       if (logger.isDebugEnabled()) {
         logger.debug("Steps: '" + stepsJson + "'.");
       }
-      rsp.getWriter().append(stepsJson);
+      return HttpResponses.okJSON(JSONObject.fromObject(stepsJson));
     } else {
-      logger.debug("getSteps was not passed nodeId.");
-      // Consider returning the full map in one go here - the frontend will need to be updated to
-      // handle this.
-      rsp.getWriter().append("Error getting console text");
+      return HttpResponses.errorJSON("Error getting console text");
     }
+  }
+
+  // Return all steps to:
+  // - reduce number of API calls
+  // - remove dependency of getting list of stages in frontend.
+  @GET
+  @WebMethod(name = "allSteps")
+  public HttpResponse getAllSteps(StaplerRequest req) throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    PipelineStepList steps = stepApi.getAllSteps();
+    String stepsJson = mapper.writeValueAsString(steps);
+    if (logger.isDebugEnabled()) {
+      logger.debug("Steps: '" + stepsJson + "'.");
+    }
+    return HttpResponses.okJSON(JSONObject.fromObject(stepsJson));
   }
 
   @WebMethod(name = "consoleOutput")

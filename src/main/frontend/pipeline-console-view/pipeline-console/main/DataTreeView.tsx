@@ -86,7 +86,7 @@ const getTreeItemsFromStage = (
     while (i--) {
       let step = stepsCopy[i];
       if (step.stageId == String(stageItemData.id)) {
-        // Prepend to array (as we are itterating in reverse).
+        // Prepend to array (as we are iterating in reverse).
         stageSteps.unshift(step);
         // Remove step from local copy - can only have one parent.
         // This should reduce the total number of loops required.

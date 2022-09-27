@@ -226,6 +226,7 @@ export class PipelineConsole extends React.Component<PipelineConsoleProps, Pipel
       .split("\n")
       .map(tokenizeANSIString)
       .map(makeReactChildren);
+
     return (
       <React.Fragment>
         <div className="App">
@@ -249,8 +250,6 @@ export class PipelineConsole extends React.Component<PipelineConsoleProps, Pipel
             <div className="console-output">
               <pre className="console-pane console-output-item">
                 {lineChunks.map((line, index) => {
-                  console.log(typeof line);
-                  //let text = String(line)
                   let lineNumber = String(index + 1)
                   return (
                     <ConsoleLine

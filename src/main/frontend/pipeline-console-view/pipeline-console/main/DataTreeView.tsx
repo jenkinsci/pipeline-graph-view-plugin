@@ -63,7 +63,7 @@ const getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
       <StepTreeItem
         key={stepItemData.id}
         nodeId={String(stepItemData.id)}
-        label={stepItemData.name}
+        label={stepItemData.name.replace(/[^ -~]+/g, "")}
       />
     );
   });
@@ -86,7 +86,8 @@ const getTreeItemsFromStage = (
     while (i--) {
       let step = stepsCopy[i];
       if (step.stageId == String(stageItemData.id)) {
-        stageSteps.push(step);
+        // Prepend to array (as we are itterating in reverse).
+        stageSteps.unshift(step);
         // Remove step from local copy - can only have one parent.
         // This should reduce the total number of loops required.
         stepsCopy.splice(i, 1);

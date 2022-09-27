@@ -35,6 +35,10 @@ public class PipelineStepApi {
                   if (stepArguments != null && !stepArguments.isEmpty()) {
                     displayName = stepArguments + " - " + displayName;
                   }
+                  // Remove non-printable chars (e.g. ANSI color codes).
+                  logger.debug("DisplayName Before: '" + displayName + "'.");
+                  displayName = cleanTextContent(displayName);
+                  logger.debug("DisplayName After: '" + displayName + "'.");
                   return new PipelineStep(
                       Integer.parseInt(
                           flowNodeWrapper
@@ -51,6 +55,13 @@ public class PipelineStepApi {
                 })
             .collect(Collectors.toList());
     return steps;
+  }
+
+  private static String cleanTextContent(String text)
+  {
+    // strips off all ANSI color codes
+    text = text.replaceAll("\\[\\d+m", "");
+    return text.trim();
   }
 
   public PipelineStepList getSteps(String stageId) {

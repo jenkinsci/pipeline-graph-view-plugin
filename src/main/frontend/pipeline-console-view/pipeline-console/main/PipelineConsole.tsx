@@ -22,14 +22,13 @@ interface PipelineConsoleState {
 
 export interface ConsoleLineProps {
   lineNumber: string;
-  text: string;
+  content: (string | JSX.Element)[];
   stepId: string;
 }
 
 // Tree Item for stages
 const ConsoleLine = ((prop: ConsoleLineProps) => 
-  //<p className="log-line" key={prop.lineNumber} id={`log-${prop.lineNumber}`}>
-    <div className="console-output-item">
+    <div className="console-output-item" key={prop.lineNumber}>
       <div className="console-output-line-anchor" id={`log-${prop.lineNumber}`}></div>
       <div className="console-output-line">
         <a
@@ -41,7 +40,7 @@ const ConsoleLine = ((prop: ConsoleLineProps) =>
         {React.createElement(
           Linkify,
           { options: { className: "line ansi-color" } },
-          prop.text
+          prop.content
         )}
       </div>
     </div>
@@ -95,30 +94,34 @@ export class PipelineConsole extends React.Component<PipelineConsoleProps, Pipel
       .then((step_res) => step_res.json())
       .then((step_result) => {
         console.debug("Updating steps");
-        console.debug(JSON.stringify(step_result));
+        console.debug(JSON.stringify(step_result.data));
         this.setState({
-          steps: step_result.steps,
+          steps: step_result.data.steps,
         });
       })
       .catch(console.log);
   }
 
   setConsoleText(stepId: string) {
-    fetch(`consoleOutput?nodeId=${stepId}`)
-    .then((res) => {
-      if (res.ok) {
-        return res.text()
-      }
-      return ''
-    })
-    .then((text) => {
-      console.debug("Updating consoleText")
-      this.setState({
-        // Strip trailing whitespace.
-        consoleText: text.replace(/\s+$/, "")
-      })
-    })
-    .catch(console.log);
+    if (stepId !== this.state.selected) {
+      fetch(`consoleOutput?nodeId=${stepId}`)
+        .then((res) => {
+          if (res.ok) {
+            return res.text()
+          }
+          return ''
+        })
+        .then((text) => {
+          console.debug("Updating consoleText")
+          this.setState({
+            // Strip trailing whitespace.
+            consoleText: text.replace(/\s+$/, "")
+          })
+        })
+        .catch(console.log);
+    } else {
+      console.debug("Skipping consoleText update (node already selected).")
+    }
   }
 
   handleUrlParams() {
@@ -246,11 +249,12 @@ export class PipelineConsole extends React.Component<PipelineConsoleProps, Pipel
             <div className="console-output">
               <pre className="console-pane console-output-item">
                 {lineChunks.map((line, index) => {
-                  let text = String(line)
+                  console.log(typeof line);
+                  //let text = String(line)
                   let lineNumber = String(index + 1)
                   return (
                     <ConsoleLine
-                      text={text}
+                      content={line}
                       lineNumber={lineNumber}
                       stepId={this.state.selected}
                     />

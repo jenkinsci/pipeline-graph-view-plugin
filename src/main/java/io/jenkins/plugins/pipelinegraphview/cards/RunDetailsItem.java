@@ -7,11 +7,13 @@ public class RunDetailsItem {
   private final String icon;
   private final String text;
   private final String href;
+  private final boolean separator;
 
-  private RunDetailsItem(String icon, String text, String href) {
+  RunDetailsItem(String icon, String text, String href, boolean separator) {
     this.icon = icon;
     this.text = text;
     this.href = href;
+    this.separator = separator;
   }
 
   public String getIcon() {
@@ -26,11 +28,16 @@ public class RunDetailsItem {
     return href;
   }
 
+  public boolean isSeparator() {
+    return separator;
+  }
+
   public static class Builder {
 
     private String icon;
     private String text;
     private String href;
+    private boolean separator;
 
     public Builder text(String text) {
       this.text = text;
@@ -52,9 +59,16 @@ public class RunDetailsItem {
       return this;
     }
 
+    public Builder separator() {
+      this.separator = true;
+      return this;
+    }
+
     public RunDetailsItem build() {
-      requireNonNull(icon);
-      return new RunDetailsItem(icon, text, href);
+      if (!separator) {
+        requireNonNull(icon);
+      }
+      return new RunDetailsItem(icon, text, href, separator);
     }
   }
 }

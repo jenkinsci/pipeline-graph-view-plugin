@@ -30,10 +30,15 @@ public class PipelineGraphViewAction extends AbstractPipelineViewAction {
 
     List<RunDetailsItem> runDetailsItems = new ArrayList<>();
 
+    runDetailsItems.addAll(SCMRunDetailsItems.get(run));
+
+    if (!runDetailsItems.isEmpty()) {
+      runDetailsItems.add(new RunDetailsItem.Builder().separator().build());
+    }
+
     CauseRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
 
     runDetailsItems.addAll(TimingRunDetailsItems.get(run));
-    runDetailsItems.addAll(SCMRunDetailsItems.get(run));
 
     return new RunDetailsCard(runDetailsItems);
   }

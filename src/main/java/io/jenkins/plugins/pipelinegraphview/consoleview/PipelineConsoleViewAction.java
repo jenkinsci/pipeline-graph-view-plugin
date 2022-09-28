@@ -102,7 +102,8 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         } else {
           offset = 0;
         }
-        logText.writeHtmlTo(offset, stringWriter);
+        long receivedBytes = logText.writeHtmlTo(offset, stringWriter);
+        logger.debug("Received " + receivedBytes + " of console output.");
         String text = stringWriter.toString();
         if (offset > 0) {
           text =

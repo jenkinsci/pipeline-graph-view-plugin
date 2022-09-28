@@ -78,7 +78,7 @@ export function BigLabel({
     classNames.push("selected");
   }
   if (details.stage && details.stage.synthetic) {
-    classNames.push("pgw-graph-node--synthetic");
+    classNames.push("pgv-graph-node--synthetic");
   }
 
   return (

@@ -3,21 +3,51 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.model.Action;
+import hudson.model.BallColor;
+import hudson.security.Permission;
 import hudson.util.HttpResponses;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.sf.json.JSONObject;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.verb.GET;
 
 public abstract class AbstractPipelineViewAction implements Action, IconSpec {
   private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+  private static final Logger LOGGER = Logger.getLogger(AbstractPipelineViewAction.class.getName());
 
   protected final transient PipelineGraphApi api;
+  protected final transient WorkflowRun run;
 
   public AbstractPipelineViewAction(WorkflowRun target) {
     this.api = new PipelineGraphApi(target);
+    this.run = target;
+  }
+
+  public boolean isBuildable() {
+    return run.getParent().isBuildable();
+  }
+
+  public Permission getPermission() {
+    return run.getParent().BUILD;
+  }
+
+  public String getBuildDisplayName() {
+    return run.getFullDisplayName();
+  }
+
+  public BallColor getIconColor() {
+    return run.getIconColor();
+  }
+
+  public String getBuildStatusIconClassName() {
+    return run.getBuildStatusIconClassName();
   }
 
   protected JSONObject createJson(PipelineGraph pipelineGraph) throws JsonProcessingException {
@@ -43,6 +73,42 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
     JSONObject graph = createJson(api.createTree());
 
     return HttpResponses.okJSON(graph);
+  }
+
+  @WebMethod(name = "replay")
+  public HttpResponse replayRun(StaplerRequest req) {
+
+    JSONObject result = new JSONObject();
+
+    Integer estimatedNextBuildNumber;
+    try {
+      estimatedNextBuildNumber = api.replay();
+    } catch (ExecutionException | InterruptedException | TimeoutException e) {
+      LOGGER.log(Level.SEVERE, "Failed to queue item", e);
+      return HttpResponses.errorJSON("failed to queue item: " + e.getMessage());
+    }
+
+    if (estimatedNextBuildNumber == null) {
+      return HttpResponses.errorJSON("failed to get next build number");
+    }
+
+    result.put(
+        "url",
+        appendTrailingSlashIfRequired(req.getContextPath())
+            + run.getUrl()
+                .replace("/" + run.getNumber() + "/", "/" + estimatedNextBuildNumber + "/")
+            + "pipeline-graph/");
+
+    result.put("success", true);
+    return HttpResponses.okJSON(result);
+  }
+
+  private static String appendTrailingSlashIfRequired(String string) {
+    if (string.endsWith("/")) {
+      return string;
+    }
+
+    return string + "/";
   }
 
   @Override

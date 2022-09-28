@@ -41,21 +41,21 @@ module.exports = [
   wrapWithDefaultModule({
     entry: './src/main/frontend/pipeline-graph-view',
     output: {
-      path: path.resolve(__dirname, 'src/main/webapp/js'),
+      path: path.resolve(__dirname, 'src/main/webapp/js/bundles'),
       filename: 'pipeline-graph-view-bundle.js',
     }
   }),
   wrapWithDefaultModule({
     entry: './src/main/frontend/pipeline-console-view',
     output: {
-      path: path.resolve(__dirname, 'src/main/webapp/js'),
+      path: path.resolve(__dirname, 'src/main/webapp/js/bundles'),
       filename: 'pipeline-console-view-bundle.js',
     }
   }),
   wrapWithDefaultModule({
     entry: './src/main/frontend/multi-pipeline-graph-view',
     output: {
-      path: path.resolve(__dirname, 'src/main/webapp/js'),
+      path: path.resolve(__dirname, 'src/main/webapp/js/bundles'),
       filename: 'multi-pipeline-graph-view-bundle.js',
     }
   }),

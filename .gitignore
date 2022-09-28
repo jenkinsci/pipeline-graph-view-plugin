@@ -6,7 +6,7 @@ target
 work
 
 # frontend build output
-src/main/webapp/js
+src/main/webapp/js/bundles
 
 # IntelliJ IDEA project files
 *.iml

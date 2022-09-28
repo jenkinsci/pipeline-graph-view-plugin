@@ -37,8 +37,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Gives steps inside
  *
- * <p>- Stage boundary: Stage boundary ends where another another stage start or this stage block
- * ends - branch boundary: branch block boundary
+ * <p>- Stage boundary: Stage boundary ends where another stage start or this stage block ends -
+ * branch boundary: branch block boundary
  *
  * <p>Original source:
  * https://github.com/jenkinsci/blueocean-plugin/blob/master/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/PipelineStepVisitor.java

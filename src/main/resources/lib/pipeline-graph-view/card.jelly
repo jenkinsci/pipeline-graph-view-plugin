@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout">
+  <st:documentation>
+    Creates a card
+    <st:attribute name="type">
+      Use 'wide' for a larger card
+    </st:attribute>
+    <st:attribute name="title" use="required">
+      The title for the card
+    </st:attribute>
+    <st:attribute name="expandable">
+      Set true if you want to allow users to click a button to pop out a larger version of the card
+    </st:attribute>
+  </st:documentation>
+  <div class="pgv-cards__item${attrs.type == 'wide' ? ' pgv-cards__item--wide' : ''}${attrs.expandable == 'true' ? ' pgv-modal' : ''}">
+    <j:choose>
+      <j:when test="${attrs.expandable == 'true'}">
+        <div class="pgv-modal__content">
+          <p class="pgv-cards__item__title">${attrs.title}
+            <a href="#" class="pgv-modal__expander">
+              <span class="icon-sm">
+                <l:icon src="symbol-resize-outline plugin-ionicons-api" tooltip="${%Expand} ${attrs.title}"/>
+              </span>
+            </a>
+            <a href="#" class="pgv-modal__closer">
+              <span class="icon-sm">
+                <l:icon src="symbol-close-circle-outline plugin-ionicons-api" tooltip="${%Close} ${attrs.title}"/>
+              </span>
+            </a>
+          </p>
+          <d:invokeBody/>
+        </div>
+      </j:when>
+      <j:otherwise>
+        <p class="pgv-cards__item__title">${attrs.title}</p>
+        <d:invokeBody/>
+      </j:otherwise>
+    </j:choose>
+  </div>
+  <st:once>
+    <script src="${resURL}/plugin/pipeline-graph-view/js/card.js" type="text/javascript"/>
+  </st:once>
+</j:jelly>

@@ -2,17 +2,30 @@
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-    <l:layout title="${it.displayName}" type="one-column">
+    <l:layout title="Stages [${it.jobDisplayName}]" type="one-column">
         <l:main-panel>
-              <div class="jenkins-app-bar">
-                <div class="jenkins-app-bar__content">
-                    <h1>
-                        ${it.displayName}
-                    </h1>
-                </div>
+          <div class="jenkins-app-bar">
+            <div class="jenkins-app-bar__content">
+              <h1>${it.jobDisplayName}</h1>
             </div>
+            <div class="jenkins-app-bar__controls">
+              <j:if test="${it.buildable}">
+                <l:hasPermission permission="${it.permission}">
+                  <button id="pgv-rebuild" data-success-message="${%Build scheduled}" data-build-path="../build"
+                          class="jenkins-button jenkins-!-build-color">
+                    <l:icon src="symbol-play-outline plugin-ionicons-api"/>
+                    ${%Build}
+                  </button>
+                </l:hasPermission>
+              </j:if>
+              <a href="../configure" class="jenkins-button">
+                ${%Configure}
+              </a>
+            </div>
+          </div>
             <div id="multiple-pipeline-root"/>
-            <script src="${rootURL}/plugin/pipeline-graph-view/js/multi-pipeline-graph-view-bundle.js"/>
+            <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/multi-pipeline-graph-view-bundle.js"/>
+            <script src="${rootURL}/plugin/pipeline-graph-view/js/build.js"/>
         </l:main-panel>
     </l:layout>
 </j:jelly>

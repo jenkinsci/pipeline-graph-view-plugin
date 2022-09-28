@@ -1,11 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-    <l:layout title="Pipeline Console" type="one-column">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+    <l:layout title="${%Build log} [${it.buildDisplayName}]" type="one-column">
         <l:main-panel>
+            <div class="jenkins-app-bar">
+                <div class="jenkins-app-bar__content">
+                    <h1>
+                        <l:icon alt="${it.iconColor.description}" class="${it.buildStatusIconClassName} icon-xlg" tooltip="${it.iconColor.description}"/>
+                        ${it.buildDisplayName}
+                    </h1>
+                </div>
+                <div class="jenkins-app-bar__controls">
+                    <j:if test="${it.buildable}">
+                        <l:hasPermission permission="${it.permission}">
+                            <button id="pgv-rebuild" data-success-message="${%Build scheduled}"
+                                    data-build-path="../../build" class="jenkins-button jenkins-!-build-color">
+                                <l:icon src="symbol-play-outline plugin-ionicons-api"/>
+                                ${%Rebuild}
+                            </button>
+                        </l:hasPermission>
+                    </j:if>
+                    <a href="../../configure" class="jenkins-button">
+                        ${%Configure}
+                    </a>
+                </div>
+                <script src="${rootURL}/plugin/pipeline-graph-view/js/build.js"/>
+            </div>
+
             <div id="root"/>
-            <script src="${rootURL}/plugin/pipeline-graph-view/js/pipeline-console-view-bundle.js"/>
+            <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/pipeline-console-view-bundle.js"/>
         </l:main-panel>
     </l:layout>
 </j:jelly>

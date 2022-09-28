@@ -30,7 +30,7 @@ interface PipelineConsoleState {
 
 export interface ConsoleLineProps {
   lineNumber: string;
-  content: (string | JSX.Element)[];
+  content: string;
   stepId: string;
   key: string;
 }
@@ -189,18 +189,13 @@ export class PipelineConsole extends React.Component<
   setConsoleText(stepId: string) {
     if (stepId !== this.state.selected) {
       fetch(`consoleOutput?nodeId=${stepId}`)
+        .then((res) => res.json())
         .then((res) => {
-          if (res.ok) {
-            return res.text();
-          }
-          return "";
-        })
-        .then((text) => {
-          console.debug("Updating consoleText");
+          console.debug("Updating consoleText")
           this.setState({
             // Strip trailing whitespace.
-            consoleText: text.replace(/\s+$/, ""),
-          });
+            consoleText: res.data.text.replace(/\s+$/, "")
+          })
         })
         .catch(console.log);
     } else {

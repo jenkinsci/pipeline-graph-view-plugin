@@ -8,25 +8,20 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.HashMap;
 import net.sf.json.JSONObject;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.jenkinsci.plugins.workflow.actions.LogAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
-import org.kohsuke.stapler.framework.io.CharSpool;
-import org.kohsuke.stapler.framework.io.LineEndNormalizingWriter;
 import org.kohsuke.stapler.verb.GET;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.commons.io.output.StringBuilderWriter;
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
   public static final long LOG_THRESHOLD = 150 * 1024; // 150KB
 
@@ -92,12 +87,12 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
 
   @GET
   @WebMethod(name = "consoleOutput")
-  public HttpResponse getConsoleOutput(StaplerRequest req)  throws IOException {
+  public HttpResponse getConsoleOutput(StaplerRequest req) throws IOException {
     String nodeId = req.getParameter("nodeId");
     if (nodeId != null) {
       logger.debug("getConsoleOutput was passed node id '" + nodeId + "'.");
-      CharSpool spool = new CharSpool();
-      //ByteArrayOutputStream stream = new ByteArrayOutputStream();
+      Writer stringWriter = new StringBuilderWriter();
+      // ByteArrayOutputStream stream = new ByteArrayOutputStream();
       AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
       HashMap<String, String> response = new HashMap<String, String>();
       if (logText != null) {
@@ -107,18 +102,12 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         } else {
           offset = 0;
         }
-
-        //long receivedBytes = logText.writeRawLogTo(offset, stream);
-        //logger.debug("Received " + receivedBytes + " of console output.");
-        //logText.length();
-        //String text = stream.toString("UTF-8");
-        //stream.toString("UTF-8");
-        logText.writeHtmlTo(offset, spool);
-        Writer stringWriter = new StringBuilderWriter();
-        spool.writeTo(stringWriter);
+        logText.writeHtmlTo(offset, stringWriter);
         String text = stringWriter.toString();
         if (offset > 0) {
-          text = text + "Output is truncated for performance, only showing the last 150KB of logs for this step...\n";
+          text =
+              text
+                  + "Output is truncated for performance, only showing the last 150KB of logs for this step...\n";
         }
         response.put("text", text);
       } else {

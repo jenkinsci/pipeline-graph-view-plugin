@@ -92,7 +92,6 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     if (nodeId != null) {
       logger.debug("getConsoleOutput was passed node id '" + nodeId + "'.");
       Writer stringWriter = new StringBuilderWriter();
-      // ByteArrayOutputStream stream = new ByteArrayOutputStream();
       AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
       HashMap<String, String> response = new HashMap<String, String>();
       if (logText != null) {

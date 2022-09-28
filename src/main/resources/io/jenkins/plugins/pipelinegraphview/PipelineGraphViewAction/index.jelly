@@ -35,22 +35,29 @@
         </p:card>
         <p:card title="${it.runDetailsCard.title}">
           <j:forEach var="card" items="${it.runDetailsCard.items}">
-            <p class="app-details__item">
-              <l:icon src="${card.icon}"/>
-              <j:choose>
-                <j:when test="${!empty(card.href)}">
-                  <a
-                      class="app-details__item--link"
-                      href="${card.href}"
-                  >
-                    ${card.text}
-                  </a>
-                </j:when>
-                <j:otherwise>
-                  ${card.text}
-                </j:otherwise>
-              </j:choose>
-            </p>
+            <j:choose>
+              <j:when test="${card.separator}">
+                <hr/>
+              </j:when>
+              <j:otherwise>
+                <p class="app-details__item">
+                  <l:icon src="${card.icon}"/>
+                  <j:choose>
+                    <j:when test="${!empty(card.href)}">
+                      <a
+                          class="app-details__item--link"
+                          href="${card.href}"
+                      >
+                        ${card.text}
+                      </a>
+                    </j:when>
+                    <j:otherwise>
+                      ${card.text}
+                    </j:otherwise>
+                  </j:choose>
+                </p>
+              </j:otherwise>
+            </j:choose>
           </j:forEach>
         </p:card>
       </div>

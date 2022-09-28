@@ -29,6 +29,14 @@
     min-height: 400px;
     max-height: 400px;
 
+    hr {
+      background: var(--secondary);
+      border: none;
+      height: 2px;
+      margin: 0.4rem 0 calc(0.4rem + 15px);
+      opacity: 0.2;
+    }
+
     &:hover {
       .pgv-cards__item__title__actions {
         opacity: 1;

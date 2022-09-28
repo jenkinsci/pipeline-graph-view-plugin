@@ -1,3 +1,18 @@
+:root {
+  --card-background: hsl(212, 30%, 96%);
+}
+
+[data-theme="dark"] {
+  --card-background: hsl(230deg 14% 23%);
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="dark-system"],
+  [data-theme="dark-system"] {
+    --card-background: hsl(230deg 14% 23%);
+  }
+}
+
 .App {
   font-family: sans-serif;
   text-align: center;
@@ -136,11 +151,11 @@
   margin: 0 0 5px 0 !important;
   padding-left: 1rem !important;
   padding-right: 1rem !important;
-  background: var(--pre-background);
+  background: var(--card-background);
   box-shadow: 0 0 1px rgb(0 0 0 / 6%);
 }
 
-.MuiTreeItem-label.pgw-graph-node--synthetic {
+.MuiTreeItem-label.pgv-graph-node--synthetic {
   font-style: italic;
 }
 
@@ -148,10 +163,10 @@
   padding-left: 0;
 }
 
-
-.app-page-body--one-column {
-  margin-left: 1rem;
-  max-width: 95% !important;
+.jenkins-button svg {
+  width: 20px !important;
+  height: 20px !important;
+  color: currentColor !important;
 }
 
 a.console-line-number {
@@ -174,6 +189,10 @@ div.console-output-line-anchor {
 
 .console-pane {
   margin-left: 5px;
+}
+
+pre.console-pane {
+  background-color: var(--card-background);
 }
 
 div.console-output-line {

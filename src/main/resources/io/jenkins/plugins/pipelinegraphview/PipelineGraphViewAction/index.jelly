@@ -1,11 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-    <l:layout title="Pipeline Graph" type="one-column">
-        <l:main-panel>
-            <div id="root"/>
-            <script src="${rootURL}/plugin/pipeline-graph-view/js/pipeline-graph-view-bundle.js"/>
-        </l:main-panel>
-    </l:layout>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:p="/lib/pipeline-graph-view">
+  <l:layout title="${%Graph} [${it.buildDisplayName}]" type="one-column">
+    <l:main-panel>
+      <div class="jenkins-app-bar">
+        <div class="jenkins-app-bar__content">
+          <h1>
+            <l:icon alt="${it.iconColor.description}" class="${it.buildStatusIconClassName} icon-xlg"
+                    tooltip="${it.iconColor.description}"/>
+            ${it.buildDisplayName}
+          </h1>
+        </div>
+        <div class="jenkins-app-bar__controls">
+          <j:if test="${it.buildable}">
+            <l:hasPermission permission="${it.permission}">
+              <button id="pgv-rebuild" data-success-message="${%Build scheduled}" data-build-path="../../build"
+                      class="jenkins-button jenkins-!-build-color">
+                <l:icon src="symbol-play-outline plugin-ionicons-api"/>
+                ${%Rebuild}
+              </button>
+            </l:hasPermission>
+          </j:if>
+          <a href="../../configure" class="jenkins-button">
+            ${%Configure}
+          </a>
+        </div>
+        <script src="${rootURL}/plugin/pipeline-graph-view/js/build.js"/>
+      </div>
+      <div class="pgv-cards">
+        <p:card title="${%Pipeline}" type="wide" expandable="true">
+          <div id="graph"/>
+          <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/pipeline-graph-view-bundle.js"/>
+        </p:card>
+        <p:card title="${it.runDetailsCard.title}">
+          <j:forEach var="card" items="${it.runDetailsCard.items}">
+            <p class="app-details__item">
+              <l:icon src="${card.icon}"/>
+              <j:choose>
+                <j:when test="${!empty(card.href)}">
+                  <a
+                      class="app-details__item--link"
+                      href="${card.href}"
+                  >
+                    ${card.text}
+                  </a>
+                </j:when>
+                <j:otherwise>
+                  ${card.text}
+                </j:otherwise>
+              </j:choose>
+            </p>
+          </j:forEach>
+        </p:card>
+      </div>
+    </l:main-panel>
+  </l:layout>
 </j:jelly>

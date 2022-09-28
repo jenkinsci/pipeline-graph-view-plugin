@@ -1,15 +1,5 @@
-
 import React from "react";
-
 import TreeView from "@material-ui/lab/TreeView/";
-
-import TreeItem, { TreeItemProps } from "@material-ui/lab/TreeItem";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import ChevronRightIcon from "@material-ui/icons/ChevronRight";
-import {
-  StageInfo,
-  Result,
-} from "../../../pipeline-graph-view/pipeline-graph/main/";
 
 import {
   fade,
@@ -17,6 +7,16 @@ import {
   Theme,
   createStyles,
 } from "@material-ui/core/styles";
+import TreeItem, { TreeItemProps } from "@material-ui/lab/TreeItem";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import ChevronRightIcon from "@material-ui/icons/ChevronRight";
+import {
+  StageInfo,
+  Result,
+} from "../../../pipeline-graph-view/pipeline-graph/main/";
+import StepStatus from "../../../step-status/StepStatus";
+import { decodeResultValue } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
+
 /**
  * StageInfo is the input, in the form of an Array<StageInfo> of the top-level stages of a pipeline
  */
@@ -63,16 +63,18 @@ const getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
       <StepTreeItem
         key={stepItemData.id}
         nodeId={String(stepItemData.id)}
-        label={stepItemData.name.replace(/[^ -~]+/g, "")}
+        label={
+          <StepStatus
+            status={decodeResultValue(stepItemData.state)}
+            text={stepItemData.name.replace(/[^ -~]+/g, "")}
+          />
+        }
       />
     );
   });
 };
 
-const getTreeItemsFromStage = (
-  stageItems: StageInfo[],
-  steps: StepInfo[],
-) => {
+const getTreeItemsFromStage = (stageItems: StageInfo[], steps: StepInfo[]) => {
   // Copy steps so we don't affect props.steps.
   let stepsCopy = [...steps];
   return stageItems.map((stageItemData) => {
@@ -82,7 +84,7 @@ const getTreeItemsFromStage = (
     if (stageItemData.children && stageItemData.children.length > 0) {
       children = getTreeItemsFromStage(stageItemData.children, stepsCopy);
     }
-    var i = stepsCopy.length
+    var i = stepsCopy.length;
     while (i--) {
       let step = stepsCopy[i];
       if (step.stageId == String(stageItemData.id)) {
@@ -92,7 +94,7 @@ const getTreeItemsFromStage = (
         // This should reduce the total number of loops required.
         stepsCopy.splice(i, 1);
       }
-    };
+    }
     if (stageSteps) {
       let stepsItems = getTreeItemsFromStepList(stageSteps);
       children = [...children, ...stepsItems];
@@ -101,11 +103,16 @@ const getTreeItemsFromStage = (
       <StageTreeItem
         key={stageItemData.id}
         nodeId={String(stageItemData.id)}
-        label={stageItemData.name}
+        label={
+          <StepStatus
+            status={decodeResultValue(stageItemData.state)}
+            text={stageItemData.name}
+          />
+        }
         children={children}
         classes={{
           label: stageItemData.synthetic
-            ? "pgw-graph-node--synthetic"
+            ? "pgv-graph-node--synthetic"
             : undefined,
         }}
       />
@@ -127,6 +134,18 @@ export class DataTreeView extends React.Component {
 
   constructor(props: DataTreeViewProps) {
     super(props);
+    this.state = {
+      stages: [],
+      steps: new Map(),
+      expanded: [],
+    };
+    this.handleToggle = this.handleToggle.bind(this);
+  }
+
+  handleToggle(event: React.ChangeEvent<{}>, nodeIds: string[]): void {
+    this.setState({
+      expanded: nodeIds,
+    });
   }
 
   render() {

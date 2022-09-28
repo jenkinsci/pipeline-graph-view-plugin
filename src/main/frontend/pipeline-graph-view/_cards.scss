@@ -1,0 +1,156 @@
+.pgv-cards {
+  @media (max-width: 699px) {
+    &__item {
+      margin-bottom: var(--card-gap);
+    }
+  }
+
+  @media (min-width: 700px) {
+    display: grid;
+    grid-gap: var(--card-gap);
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media (min-width: 1200px) {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  @media (min-width: 1700px) {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+  }
+
+  &__item {
+    position: relative;
+    border-radius: 15px;
+    padding: 20px;
+    background: var(--card-background);
+    overflow: auto;
+    box-shadow: 0 0 1px rgba(black, 0.06);
+    min-height: 400px;
+    max-height: 400px;
+
+    &:hover {
+      .pgv-cards__item__title__actions {
+        opacity: 1;
+      }
+    }
+
+    &--wide {
+      grid-column: span 2;
+    }
+  }
+
+  &__item__title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 0 20px 0;
+    padding: 0;
+    font-weight: 600;
+    font-size: 1rem;
+
+    a {
+      margin-left: auto;
+
+      svg {
+        width: 18px;
+        height: 18px;
+        color: var(--text-color) !important;
+      }
+    }
+  }
+
+  &__item__title__actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    opacity: 0.5;
+    transition: 0.3s ease;
+  }
+
+  &__item__title-float {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 20px 20px 0 20px;
+    z-index: 1;
+
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      bottom: -20px;
+      backdrop-filter: blur(20px);
+      z-index: -1;
+      border-radius: 15px 15px 0 0;
+      mask-image: linear-gradient(white 25%, transparent);
+      pointer-events: none;
+    }
+  }
+}
+
+/* Modal */
+.pgv-modal__open.pgv-cards__item {
+  max-height: unset;
+}
+
+.pgv-modal__open {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  max-height: unset;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+  transition: visibility 0s linear 0s, opacity 0.25s 0s, transform 0.25s;
+}
+.pgv-modal__open > .pgv-modal__content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: var(--card-background);
+  padding: 1rem 1.5rem;
+  width: 90%;
+  height: 80%;
+  border-radius: 0.5rem;
+  overflow: auto;
+}
+.pgv-modal__close_button {
+  float: right;
+  width: 1.5rem;
+  line-height: 1.5rem;
+  text-align: center;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  background-color: var(--card-background);
+}
+
+.pgv-modal__close_button:hover {
+  background-color: darkgray;
+}
+
+.pgv-modal__closer {
+  display: none;
+}
+
+.pgv-modal__open .pgv-modal__closer {
+  display: flex;
+}
+
+.pgv-modal__open .pgv-modal__expander {
+  display: none;
+}
+
+.pgv-modal__expander:hover,
+.pgv-modal__closer:hover {
+  background: var(--item-background--hover);
+  border-radius: 14px;
+}

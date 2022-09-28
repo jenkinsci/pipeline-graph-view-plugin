@@ -3,6 +3,7 @@ package io.jenkins.plugins.pipelinegraphview.multipipelinegraphview;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.model.Action;
+import hudson.security.Permission;
 import hudson.util.HttpResponses;
 import hudson.util.RunList;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
@@ -27,6 +28,18 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
 
   public MultiPipelineGraphViewAction(WorkflowJob target) {
     this.target = target;
+  }
+
+  public String getJobDisplayName() {
+    return target.getFullDisplayName();
+  }
+
+  public boolean isBuildable() {
+    return target.isBuildable();
+  }
+
+  public Permission getPermission() {
+    return target.BUILD;
   }
 
   @GET

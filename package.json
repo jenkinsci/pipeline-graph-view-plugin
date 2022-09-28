@@ -27,6 +27,7 @@
     "@material-ui/icons": "4.11.2",
     "@material-ui/lab": "4.0.0-alpha.58",
     "@react-spring/web": "9.5.4",
+    "@reacticons/ionicons": "^6.0.3",
     "html-react-parser": "1.4.14",
     "linkifyjs": "3.0.0-beta.3",
     "react": "16.14.0",

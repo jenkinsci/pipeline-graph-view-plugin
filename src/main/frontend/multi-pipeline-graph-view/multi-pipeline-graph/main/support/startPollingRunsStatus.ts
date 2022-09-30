@@ -6,8 +6,7 @@ import { RunInfo } from "../MultiPipelineGraphModel";
  */
 export default function startPollingRunsStatus(
   onFetchSuccess: (data: Array<RunInfo>) => void,
-  onFetchError: (err: Error) => void,
-  interval = 10000
+  onFetchError: (err: Error) => void
 ) {
   const path = "runs";
   async function fetchPipelineData() {
@@ -19,7 +18,8 @@ export default function startPollingRunsStatus(
       // TODO: implement exponential backoff of the timeout interval
       onFetchError(err);
     } finally {
-      setTimeout(() => fetchPipelineData(), interval);
+      // TODO reimplement live loading but only while run is actually running, we don't want to be continuously hitting the controller for this
+      // setTimeout(() => fetchPipelineData(), interval);
     }
   }
   fetchPipelineData();

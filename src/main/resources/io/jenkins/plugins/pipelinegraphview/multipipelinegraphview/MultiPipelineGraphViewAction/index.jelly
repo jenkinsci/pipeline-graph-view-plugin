@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
-    <l:layout title="Stages [${it.jobDisplayName}]" type="one-column">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:p="/lib/pipeline-graph-view">
+    <l:layout title="${%Stages} [${it.jobDisplayName}]" type="one-column">
         <l:main-panel>
           <div class="jenkins-app-bar">
             <div class="jenkins-app-bar__content">
@@ -23,8 +23,12 @@
               </a>
             </div>
           </div>
-            <div id="multiple-pipeline-root"/>
-            <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/multi-pipeline-graph-view-bundle.js"/>
+          <div class="pgv-cards">
+            <p:card title="${%Stages}" type="wide" expandable="true">
+              <div id="multiple-pipeline-root"/>
+              <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/multi-pipeline-graph-view-bundle.js"/>
+            </p:card>
+          </div>
             <script src="${rootURL}/plugin/pipeline-graph-view/js/build.js"/>
         </l:main-panel>
     </l:layout>

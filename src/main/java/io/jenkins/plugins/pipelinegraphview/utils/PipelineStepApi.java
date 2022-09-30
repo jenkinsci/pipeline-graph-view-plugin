@@ -90,6 +90,7 @@ public class PipelineStepApi {
     return new PipelineStepList(parseSteps(stepNodes, stageId));
   }
 
+  /* Returns a PipelineStepList, sorted by stageId and Id. */
   public PipelineStepList getAllSteps() {
     PipelineStepVisitor builder = new PipelineStepVisitor(run, null);
     Map<String, List<FlowNodeWrapper>> stepNodes = builder.getAllSteps();
@@ -97,6 +98,7 @@ public class PipelineStepApi {
     for (Map.Entry<String, List<FlowNodeWrapper>> entry : stepNodes.entrySet()) {
       allSteps.addAll(parseSteps(entry.getValue(), entry.getKey()));
     }
+    allSteps.sort();
     return allSteps;
   }
 }

@@ -48,7 +48,7 @@
     "enzyme-adapter-react-16": "1.15.6",
     "jest": "27.5.1",
     "prettier": "2.7.1",
-    "sass": "1.54.9",
+    "sass": "1.55.0",
     "sass-loader": "10.3.1",
     "source-map-loader": "0.2.4",
     "style-loader": "1.2.1",

@@ -32,6 +32,7 @@ const HtmlTooltip = withStyles((theme) => ({
     maxWidth: 220,
     fontSize: theme.typography.pxToRem(12),
     border: '1px solid #dadde9',
+    opacity: '0.7 !important',
   },
 }))(Tooltip);
 
@@ -127,10 +128,12 @@ const getTreeItemsFromStage = (stageItems: StageInfo[], steps: StepInfo[]) => {
             <p><TimerIcon/> Took 7.5 sec</p>
           </React.Fragment>
         }
-        placement="bottom"
+        placement="right-start"
         enterDelay={500}
-        disableFocusListener
-        arrow
+        leaveDelay={200}
+        disableFocusListener={true}
+        arrow={true}
+        interactive={true}
       >
         <div>
           <StageTreeItem

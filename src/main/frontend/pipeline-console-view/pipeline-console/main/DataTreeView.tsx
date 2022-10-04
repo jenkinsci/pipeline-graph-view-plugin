@@ -127,24 +127,29 @@ const getTreeItemsFromStage = (stageItems: StageInfo[], steps: StepInfo[]) => {
             <p><TimerIcon/> Took 7.5 sec</p>
           </React.Fragment>
         }
-        placement="right-start"
+        placement="bottom"
+        enterDelay={500}
+        disableFocusListener
+        arrow
       >
-        <StageTreeItem
-          key={stageItemData.id}
-          nodeId={String(stageItemData.id)}
-          label={
-            <StepStatus
-              status={decodeResultValue(stageItemData.state)}
-              text={stageItemData.name}
-            />
-          }
-          children={children}
-          classes={{
-            label: stageItemData.synthetic
-              ? "pgv-graph-node--synthetic"
-              : undefined,
-          }}
-        />
+        <div>
+          <StageTreeItem
+            key={stageItemData.id}
+            nodeId={String(stageItemData.id)}
+            label={
+              <StepStatus
+                status={decodeResultValue(stageItemData.state)}
+                text={stageItemData.name}
+              />
+            }
+            children={children}
+            classes={{
+              label: stageItemData.synthetic
+                ? "pgv-graph-node--synthetic"
+                : undefined,
+            }}
+          />
+        </div>
       </HtmlTooltip>
     );
   });

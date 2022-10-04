@@ -10,12 +10,30 @@ import {
 import TreeItem, { TreeItemProps } from "@material-ui/lab/TreeItem";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
+import Tooltip from '@material-ui/core/Tooltip';
+import Typography from '@material-ui/core/Typography';
+
+import HourglassEmptyIcon from '@material-ui/icons/HourglassEmpty';
+import ScheduleIcon from '@material-ui/icons/Schedule';
+import TimerIcon from '@material-ui/icons/Timer';
+
 import {
   StageInfo,
   Result,
 } from "../../../pipeline-graph-view/pipeline-graph/main/";
 import StepStatus from "../../../step-status/StepStatus";
 import { decodeResultValue } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
+import { Icon } from "@material-ui/core";
+
+const HtmlTooltip = withStyles((theme) => ({
+  tooltip: {
+    backgroundColor: '#f5f5f9',
+    color: 'rgba(0, 0, 0, 0.87)',
+    maxWidth: 220,
+    fontSize: theme.typography.pxToRem(12),
+    border: '1px solid #dadde9',
+  },
+}))(Tooltip);
 
 /**
  * StageInfo is the input, in the form of an Array<StageInfo> of the top-level stages of a pipeline
@@ -100,22 +118,34 @@ const getTreeItemsFromStage = (stageItems: StageInfo[], steps: StepInfo[]) => {
       children = [...children, ...stepsItems];
     }
     return (
-      <StageTreeItem
-        key={stageItemData.id}
-        nodeId={String(stageItemData.id)}
-        label={
-          <StepStatus
-            status={decodeResultValue(stageItemData.state)}
-            text={stageItemData.name}
-          />
+      <HtmlTooltip
+        title={
+          <React.Fragment>
+            <Typography color="inherit">Details</Typography>
+            <p><ScheduleIcon/> Started 6 days 23 hr ago</p>
+            <p><HourglassEmptyIcon/> Queued 4 ms</p>
+            <p><TimerIcon/> Took 7.5 sec</p>
+          </React.Fragment>
         }
-        children={children}
-        classes={{
-          label: stageItemData.synthetic
-            ? "pgv-graph-node--synthetic"
-            : undefined,
-        }}
-      />
+        placement="right-start"
+      >
+        <StageTreeItem
+          key={stageItemData.id}
+          nodeId={String(stageItemData.id)}
+          label={
+            <StepStatus
+              status={decodeResultValue(stageItemData.state)}
+              text={stageItemData.name}
+            />
+          }
+          children={children}
+          classes={{
+            label: stageItemData.synthetic
+              ? "pgv-graph-node--synthetic"
+              : undefined,
+          }}
+        />
+      </HtmlTooltip>
     );
   });
 };

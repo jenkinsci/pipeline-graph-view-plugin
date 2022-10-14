@@ -25,14 +25,15 @@ import StepStatus from "../../../step-status/StepStatus";
 import { decodeResultValue } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
 import { Icon } from "@material-ui/core";
 
+
 const HtmlTooltip = withStyles((theme) => ({
   tooltip: {
-    backgroundColor: '#f5f5f9',
+    backgroundColor: 'var(--card-background)',
     color: 'rgba(0, 0, 0, 0.87)',
     maxWidth: 220,
     fontSize: theme.typography.pxToRem(12),
     border: '1px solid #dadde9',
-    opacity: '0.7 !important',
+    opacity: '0.8 !important',
   },
 }))(Tooltip);
 
@@ -79,16 +80,28 @@ const StepTreeItem = withStyles((theme: Theme) =>
 const getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
   return stepsItems.map((stepItemData) => {
     return (
-      <StepTreeItem
-        key={stepItemData.id}
-        nodeId={String(stepItemData.id)}
-        label={
-          <StepStatus
-            status={decodeResultValue(stepItemData.state)}
-            text={stepItemData.name.replace(/[^ -~]+/g, "")}
+      <HtmlTooltip
+        title={stepItemData.name}
+        placement="right-start"
+        enterDelay={500}
+        leaveDelay={200}
+        disableFocusListener={true}
+        arrow={true}
+        interactive={true}
+      >
+        <div>
+          <StepTreeItem
+            key={stepItemData.id}
+            nodeId={String(stepItemData.id)}
+            label={
+              <StepStatus
+                status={decodeResultValue(stepItemData.state)}
+                text={stepItemData.name.replace(/[^ -~]+/g, "")}
+              />
+            }
           />
-        }
-      />
+        </div>
+      </HtmlTooltip>
     );
   });
 };
@@ -120,14 +133,7 @@ const getTreeItemsFromStage = (stageItems: StageInfo[], steps: StepInfo[]) => {
     }
     return (
       <HtmlTooltip
-        title={
-          <React.Fragment>
-            <Typography color="inherit">Details</Typography>
-            <p><ScheduleIcon/> Started 6 days 23 hr ago</p>
-            <p><HourglassEmptyIcon/> Queued 4 ms</p>
-            <p><TimerIcon/> Took 7.5 sec</p>
-          </React.Fragment>
-        }
+        title={stageItemData.name}
         placement="right-start"
         enterDelay={500}
         leaveDelay={200}

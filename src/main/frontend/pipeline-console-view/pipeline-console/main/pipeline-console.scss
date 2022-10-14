@@ -147,12 +147,14 @@
 .MuiTreeItem-label {
   overflow: hidden;
   text-overflow: ellipsis;
-  border-radius: 15px;
+  border-radius: 10px;
   margin: 0 0 5px 0 !important;
   padding-left: 1rem !important;
   padding-right: 1rem !important;
   background: var(--card-background);
   box-shadow: 0 0 1px rgb(0 0 0 / 6%);
+  // Move down slightly to avoid curring off the top background.
+  top: 5px;
 }
 
 .MuiTreeItem-label.pgv-graph-node--synthetic {
@@ -187,14 +189,45 @@ div.console-output-line-anchor {
   visibility: hidden;
 }
 
-.console-pane {
-  margin-left: 5px;
-}
-
 pre.console-pane {
   background-color: var(--card-background);
 }
 
 div.console-output-line {
   display: flex;
+}
+
+div.detail-group {
+  display: flex;
+  vertical-align: auto;
+  padding: 5px;
+  background-color: var(--card-background);
+  margin-bottom: 8px;
+  border-radius: 10px;
+  // Move down slightly to avoid curring off the top background.
+  top: 5px;
+  position: relative;
+}
+
+div.detail-element {
+  display: flex;
+  border-right:1px solid black;
+  margin-right: 5px;
+  padding-right: 10px;
+  width:100%;
+}
+
+div.detail-element:last-child {
+  border: none;
+}
+
+div.footer{
+  margin-top: 1rem;
+  //padding: 1rem;
+  //background-color: rgb(235, 195, 64);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: block;
 }

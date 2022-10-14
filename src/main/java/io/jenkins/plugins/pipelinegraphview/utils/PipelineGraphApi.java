@@ -70,7 +70,9 @@ public class PipelineGraphApi {
                   flowNodeWrapper.getType().name(),
                   flowNodeWrapper
                       .getDisplayName(), // TODO blue ocean uses timing information: "Passed in 0s"
-                  flowNodeWrapper.isSynthetic());
+                  flowNodeWrapper.isSynthetic(),
+                  flowNodeWrapper.getTiming()
+                );
             })
         .collect(Collectors.toList());
   }

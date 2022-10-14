@@ -7,6 +7,13 @@ import { Linkify } from "./Linkify";
 import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/";
 import { StepInfo } from "./DataTreeView";
 
+import Typography from '@material-ui/core/Typography';
+
+import HourglassEmptyIcon from '@material-ui/icons/HourglassEmpty';
+import ScheduleIcon from '@material-ui/icons/Schedule';
+import TimerIcon from '@material-ui/icons/Timer';
+
+
 import "./pipeline-console.scss";
 
 interface PipelineConsoleProps {}
@@ -18,7 +25,35 @@ interface PipelineConsoleState {
   steps: Array<StepInfo>;
   anchor: string;
   hasScrolled: boolean;
+  stageDetails: Array<DetailsItem>;
 }
+
+export interface ConsoleLineProps {
+  lineNumber: string;
+  content: (string | JSX.Element)[];
+  stepId: string;
+  key: string;
+}
+
+export interface DetailsItem {
+  icon: string;
+  text: string;
+  href: string;
+  separator: boolean;
+}
+
+//<Typography variant="h6" color="inherit" className="detail-element">Details</Typography>
+// Tree Item for stages
+const StageSummary = (props: StageInfo) => (
+
+  <React.Fragment>
+    <div className="detail-group">
+      <div className="detail-element"><ScheduleIcon/> {props.startTimeMillis}</div>
+      <div className="detail-element"><HourglassEmptyIcon/> {props.pauseDurationMillis}</div>
+      <div className="detail-element"><TimerIcon/> {props.totalDurationMillis}</div>
+    </div>
+  </React.Fragment>
+);
 
 export interface ConsoleLineProps {
   lineNumber: string;
@@ -73,6 +108,7 @@ export class PipelineConsole extends React.Component<
       steps: [] as StepInfo[],
       anchor: window.location.hash.replace("#", ""),
       hasScrolled: false,
+      stageDetails: [] as DetailsItem[],
     };
     console.debug(`Anchor: ${this.state.anchor}`);
     this.updateState();
@@ -135,6 +171,7 @@ export class PipelineConsole extends React.Component<
       console.debug("Skipping consoleText update (node already selected).");
     }
   }
+
 
   handleUrlParams() {
     console.debug(`In handleUrlParams.`);
@@ -210,7 +247,6 @@ export class PipelineConsole extends React.Component<
   getStageNodeHierarchy(nodeId: string, stages: StageInfo[]): Array<string> {
     for (let i = 0; i < stages.length; i++) {
       let stage = stages[i];
-      console.log(`Checking node id ${stage.id}`);
       if (String(stage.id) == nodeId) {
         // Found the node, so start a list of expanded nodes - it will be this and it's ancestors.
         return [String(stage.id)];
@@ -224,6 +260,26 @@ export class PipelineConsole extends React.Component<
       }
     }
     return [];
+  }
+
+  renderStageDetails() {
+    let focusedStage = null;
+    for (let i = 0; i < this.state.stages.length; i++) {
+      let stage = this.state.stages[i];
+      if ('' + stage == this.state.selected) {
+        // Users has selected a stage node.
+        focusedStage = stage;
+        return (
+          <div className="console-output">
+            <StageSummary {...focusedStage}/>
+          </div>
+        )
+      }
+    }
+    return (
+      // Return empty div
+      <div></div>
+    )
   }
 
   render() {
@@ -261,20 +317,25 @@ export class PipelineConsole extends React.Component<
                 steps={this.state.steps}
               />
             </div>
-            <div className="console-output">
-              <pre className="console-pane console-output-item">
-                {lineChunks.map((line, index) => {
-                  let lineNumber = String(index + 1);
-                  return (
-                    <ConsoleLine
-                      content={line}
-                      lineNumber={lineNumber}
-                      stepId={this.state.selected}
-                      key={`${this.state.selected}-${lineNumber}`}
-                    />
-                  );
-                })}
-              </pre>
+            
+            <div>
+              {this.renderStageDetails()}
+              <div className="console-output">
+                <pre className="console-pane console-output-item">
+                  {
+                  lineChunks.map((line, index) => {
+                    let lineNumber = String(index + 1);
+                    return (
+                      <ConsoleLine
+                        content={line}
+                        lineNumber={lineNumber}
+                        stepId={this.state.selected}
+                        key={`${this.state.selected}-${lineNumber}`}
+                      />
+                    );
+                  })}
+                </pre>
+              </div>
             </div>
           </SplitPane>
         </div>

@@ -15,6 +15,9 @@ public class PipelineStage {
   private final PipelineStage nextSibling;
   private boolean sequential;
   private boolean synthetic;
+  private Long pauseDurationMillis;
+  private Long startTimeMillis;
+  private Long totalDurationMillis;
 
   public PipelineStage(
       String id,
@@ -27,7 +30,10 @@ public class PipelineStage {
       String seqContainerName,
       PipelineStage nextSibling,
       boolean sequential,
-      boolean synthetic) {
+      boolean synthetic,
+      Long pauseDurationMillis,
+      Long startTimeMillis,
+      Long totalDurationMillis) {
     this.id = id;
     this.name = name;
     this.children = children;
@@ -39,6 +45,21 @@ public class PipelineStage {
     this.nextSibling = nextSibling;
     this.sequential = sequential;
     this.synthetic = synthetic;
+    this.pauseDurationMillis = pauseDurationMillis;
+    this.startTimeMillis = startTimeMillis;
+    this.totalDurationMillis = totalDurationMillis;
+  }
+
+  public Long getPauseDurationMillis() {
+    return pauseDurationMillis;
+  }
+
+  public Long getStartTimeMillis() {
+    return startTimeMillis;
+  }
+
+  public Long getTotalDurationMillis() {
+    return totalDurationMillis;
   }
 
   public PipelineStage getNextSibling() {

@@ -198,23 +198,32 @@ div.console-output-line {
 }
 
 div.detail-group {
-  display: flex;
+  //display: flex;
   vertical-align: auto;
-  padding: 5px;
   background-color: var(--card-background);
   margin-bottom: 8px;
   border-radius: 10px;
   // Move down slightly to avoid curring off the top background.
-  top: 5px;
   position: relative;
+  padding: 0.8rem 1rem;
 }
 
-div.detail-element {
+div.detail-element{
   display: flex;
-  border-right:1px solid black;
-  margin-right: 5px;
-  padding-right: 10px;
+  //border-right:1px solid black;
+  //margin-right: 5px;
+  //padding: 0.8rem 1rem;
   width:100%;
+  font-size: var(--font-size-monospace);
+  vertical-align: middle;
+  margin-left: 10px;
+  line-height: 1.66 !important;
+  padding: 3px;
+}
+
+p.detail-element-header {
+  font-weight: 600;
+  margin-left: 15px;
 }
 
 div.detail-element:last-child {
@@ -230,4 +239,8 @@ div.footer{
   left: 0;
   width: 100%;
   display: block;
+}
+
+svg.detail-icon {
+  margin-right: 10px;
 }

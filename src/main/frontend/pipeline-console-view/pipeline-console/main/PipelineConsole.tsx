@@ -42,15 +42,16 @@ export interface DetailsItem {
   separator: boolean;
 }
 
-//<Typography variant="h6" color="inherit" className="detail-element">Details</Typography>
+//
 // Tree Item for stages
 const StageSummary = (props: StageInfo) => (
 
   <React.Fragment>
     <div className="detail-group">
-      <div className="detail-element"><ScheduleIcon/> {props.startTimeMillis}</div>
-      <div className="detail-element"><HourglassEmptyIcon/> {props.pauseDurationMillis}</div>
-      <div className="detail-element"><TimerIcon/> {props.totalDurationMillis}</div>
+      <Typography color="inherit" className="detail-element-header">Stage '{props.name}' Details</Typography>  
+      <div className="detail-element"><ScheduleIcon className="detail-icon"/> {props.startTimeMillis}</div>
+      <div className="detail-element"><HourglassEmptyIcon className="detail-icon"/> {props.pauseDurationMillis}</div>
+      <div className="detail-element"><TimerIcon className="detail-icon"/> {props.totalDurationMillis}</div>
     </div>
   </React.Fragment>
 );
@@ -266,14 +267,15 @@ export class PipelineConsole extends React.Component<
     let focusedStage = null;
     for (let i = 0; i < this.state.stages.length; i++) {
       let stage = this.state.stages[i];
-      if ('' + stage == this.state.selected) {
+      if ('' + stage.id == this.state.selected) {
+        console.log(`Found stage node with id ${stage.id}`)
         // Users has selected a stage node.
         focusedStage = stage;
         return (
           <div className="console-output">
             <StageSummary {...focusedStage}/>
           </div>
-        )
+        );
       }
     }
     return (
@@ -282,6 +284,38 @@ export class PipelineConsole extends React.Component<
     )
   }
 
+
+  renderConsoleOutput() {
+    if (this.state.consoleText.length > 0) {
+      const lineChunks = this.state.consoleText
+        .split("\n")
+        .map(tokenizeANSIString)
+        .map(makeReactChildren);
+      return (
+        <div className="console-output">
+          <pre className="console-pane console-output-item">
+            {
+            lineChunks.map((line, index) => {
+              let lineNumber = String(index + 1);
+              return (
+                <ConsoleLine
+                  content={line}
+                  lineNumber={lineNumber}
+                  stepId={this.state.selected}
+                  key={`${this.state.selected}-${lineNumber}`}
+                />
+              );
+            })}
+          </pre>
+        </div>
+      )
+    } else {
+      // Return empty div if no text.
+      return (
+        <div></div>
+      )
+    }
+  }
   render() {
     const splitPaneStyle: React.CSSProperties = {
       position: "relative",
@@ -292,16 +326,10 @@ export class PipelineConsole extends React.Component<
       textAlign: "left",
     };
 
-    const lineChunks = this.state.consoleText
-      .split("\n")
-      .map(tokenizeANSIString)
-      .map(makeReactChildren);
-
     return (
       <React.Fragment>
         <div className="App">
           <SplitPane
-            split="vertical"
             minSize={150}
             defaultSize={parseInt(localStorage.getItem("splitPos") || "250")}
             onChange={(size) => localStorage.setItem("splitPos", `${size}`)}
@@ -320,22 +348,7 @@ export class PipelineConsole extends React.Component<
             
             <div>
               {this.renderStageDetails()}
-              <div className="console-output">
-                <pre className="console-pane console-output-item">
-                  {
-                  lineChunks.map((line, index) => {
-                    let lineNumber = String(index + 1);
-                    return (
-                      <ConsoleLine
-                        content={line}
-                        lineNumber={lineNumber}
-                        stepId={this.state.selected}
-                        key={`${this.state.selected}-${lineNumber}`}
-                      />
-                    );
-                  })}
-                </pre>
-              </div>
+              {this.renderConsoleOutput()}
             </div>
           </SplitPane>
         </div>

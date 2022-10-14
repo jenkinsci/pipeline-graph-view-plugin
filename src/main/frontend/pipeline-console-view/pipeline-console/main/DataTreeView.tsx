@@ -10,7 +10,6 @@ import {
 import TreeItem, { TreeItemProps } from "@material-ui/lab/TreeItem";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
-import Tooltip from '@material-ui/core/Tooltip';
 
 import {
   StageInfo,
@@ -18,18 +17,6 @@ import {
 } from "../../../pipeline-graph-view/pipeline-graph/main/";
 import StepStatus from "../../../step-status/StepStatus";
 import { decodeResultValue } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
-
-
-const HtmlTooltip = withStyles((theme) => ({
-  tooltip: {
-    backgroundColor: 'var(--card-background)',
-    color: 'rgba(0, 0, 0, 0.87)',
-    maxWidth: 220,
-    fontSize: theme.typography.pxToRem(14),
-    border: '1px solid #dadde9',
-    opacity: '0.8 !important',
-  },
-}))(Tooltip);
 
 /**
  * StageInfo is the input, in the form of an Array<StageInfo> of the top-level stages of a pipeline
@@ -74,28 +61,18 @@ const StepTreeItem = withStyles((theme: Theme) =>
 const getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
   return stepsItems.map((stepItemData) => {
     return (
-      <HtmlTooltip
-        title={stepItemData.name}
-        placement="right-start"
-        enterDelay={500}
-        leaveDelay={200}
-        disableFocusListener={true}
-        arrow={true}
-        interactive={true}
-      >
-        <div>
-          <StepTreeItem
-            key={stepItemData.id}
-            nodeId={String(stepItemData.id)}
-            label={
-              <StepStatus
-                status={decodeResultValue(stepItemData.state)}
-                text={stepItemData.name.replace(/[^ -~]+/g, "")}
-              />
-            }
-          />
-        </div>
-      </HtmlTooltip>
+      <div>
+        <StepTreeItem
+          key={stepItemData.id}
+          nodeId={String(stepItemData.id)}
+          label={
+            <StepStatus
+              status={decodeResultValue(stepItemData.state)}
+              text={stepItemData.name.replace(/[^ -~]+/g, "")}
+            />
+          }
+        />
+      </div>
     );
   });
 };

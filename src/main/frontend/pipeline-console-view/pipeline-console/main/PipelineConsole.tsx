@@ -4,7 +4,7 @@ import SplitPane from "react-split-pane";
 import { DataTreeView } from "./DataTreeView";
 import { makeReactChildren, tokenizeANSIString } from "./Ansi";
 import { Linkify } from "./Linkify";
-import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/";
+import { StageInfo, Result } from "../../../pipeline-graph-view/pipeline-graph/main/";
 import { StepInfo } from "./DataTreeView";
 
 import Typography from '@material-ui/core/Typography';
@@ -12,7 +12,8 @@ import Typography from '@material-ui/core/Typography';
 import HourglassEmptyIcon from '@material-ui/icons/HourglassEmpty';
 import ScheduleIcon from '@material-ui/icons/Schedule';
 import TimerIcon from '@material-ui/icons/Timer';
-
+import InfoIcon from '@material-ui/icons/Info';
+import LinkIcon from '@material-ui/icons/Link';
 
 import "./pipeline-console.scss";
 
@@ -42,18 +43,45 @@ export interface DetailsItem {
   separator: boolean;
 }
 
-//
-// Tree Item for stages
-const StageSummary = (props: StageInfo) => (
+export interface StageSummaryProps {
+  stage: StageInfo,
+  failedSteps: StepInfo[]
+}
 
+
+// Tree Item for stages
+const StageSummary = (props: StageSummaryProps) => (
   <React.Fragment>
     <div className="detail-group">
-      <Typography color="inherit" className="detail-element-header">Stage '{props.name}' Details</Typography>  
-      <div className="detail-element"><ScheduleIcon className="detail-icon"/> {props.startTimeMillis}</div>
-      <div className="detail-element"><HourglassEmptyIcon className="detail-icon"/> {props.pauseDurationMillis}</div>
-      <div className="detail-element"><TimerIcon className="detail-icon"/> {props.totalDurationMillis}</div>
+      <Typography color="inherit" className="detail-element-header">Stage '{props.stage.name}'</Typography>  
+      <div className="detail-element" key="start-time"><ScheduleIcon className="detail-icon"/> {props.stage.startTimeMillis}</div>
+      <div className="detail-element" key="paused-duration"><HourglassEmptyIcon className="detail-icon"/> {props.stage.pauseDurationMillis}</div>
+      <div className="detail-element" key="duration"><TimerIcon className="detail-icon"/> {props.stage.totalDurationMillis}</div>
+      <div className="detail-element" key="status"><InfoIcon className="detail-icon"/> {props.stage.state}</div>
+      {
+        props.failedSteps.map((value: StepInfo) => {
+          console.log(`Found failed step ${value}`)
+          return (<FailedStepLink step={value} key={`failed-step-link-${value.id}`}/>);
+        })
+      }
     </div>
   </React.Fragment>
+);
+
+export interface FailedStepLinkProps {
+  step: StepInfo,
+}
+
+const FailedStepLink = (props: FailedStepLinkProps) => (
+  <div className="detail-element">
+    <LinkIcon className="detail-icon"/>
+    <a
+      className="detail-element"
+      href={`?selected-node=${props.step.id}`}
+    >
+      Failed step: {props.step.name}
+    </a>
+  </div>
 );
 
 export interface ConsoleLineProps {
@@ -271,9 +299,20 @@ export class PipelineConsole extends React.Component<
         console.log(`Found stage node with id ${stage.id}`)
         // Users has selected a stage node.
         focusedStage = stage;
+        let failedSteps = [] as StepInfo[];
+        for (let i = 0; i < this.state.steps.length; i++) {
+          let step = this.state.steps[i];
+          if (step.stageId === this.state.selected) {
+            console.log(`Checking status of step ${step.id} - ${step.state.toLowerCase()}`)
+            if (step.state.toLowerCase() === "unstable") {
+              console.log(`Found failed step steps ${step}`)
+              failedSteps.push(step);
+            }
+          }
+        }
         return (
           <div className="console-output">
-            <StageSummary {...focusedStage}/>
+            <StageSummary stage={focusedStage} failedSteps={failedSteps}/>
           </div>
         );
       }

@@ -23,9 +23,8 @@ public class PipelineStep {
       String stageId,
       String pauseDurationMillis,
       String startTimeMillis,
-      String totalDurationMillis
-    
-      ) {
+      String totalDurationMillis) {
+
     this.id = id;
     this.name = name;
     this.state = state;
@@ -34,8 +33,8 @@ public class PipelineStep {
     this.title = title;
     this.stageId = stageId;
     this.pauseDurationMillis = pauseDurationMillis;
-    this.startTimeMillis =  startTimeMillis;
-    this.totalDurationMillis =  totalDurationMillis;
+    this.startTimeMillis = startTimeMillis;
+    this.totalDurationMillis = totalDurationMillis;
   }
 
   public String getPauseDurationMillis() {

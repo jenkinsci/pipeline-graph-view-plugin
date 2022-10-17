@@ -1,10 +1,10 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import hudson.Util;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
-import hudson.Util;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +28,8 @@ public class PipelineStepApi {
             .map(
                 flowNodeWrapper -> {
                   String state = flowNodeWrapper.getStatus().getResult().name();
-                  // TODO: Why do we do this? Seems like it will return uppercase for some states and lowercase for others?
+                  // TODO: Why do we do this? Seems like it will return uppercase for some states
+                  // and lowercase for others?
                   if (flowNodeWrapper.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
                     state = flowNodeWrapper.getStatus().getState().name().toLowerCase(Locale.ROOT);
                   }
@@ -55,11 +56,17 @@ public class PipelineStepApi {
                           .getDisplayName(), // TODO blue ocean uses timing information: "Passed in
                       // 0s"
                       stageId,
-                      "Queued " + Util.getTimeSpanString(flowNodeWrapper.getTiming().getPauseDurationMillis()),
-                      "Started " + Util.getTimeSpanString(System.currentTimeMillis() - flowNodeWrapper.getTiming().getStartTimeMillis()) + " ago",
-                      "Took " + Util.getTimeSpanString(flowNodeWrapper.getTiming().getTotalDurationMillis())
-                  );
-
+                      "Queued "
+                          + Util.getTimeSpanString(
+                              flowNodeWrapper.getTiming().getPauseDurationMillis()),
+                      "Started "
+                          + Util.getTimeSpanString(
+                              System.currentTimeMillis()
+                                  - flowNodeWrapper.getTiming().getStartTimeMillis())
+                          + " ago",
+                      "Took "
+                          + Util.getTimeSpanString(
+                              flowNodeWrapper.getTiming().getTotalDurationMillis()));
                 })
             .collect(Collectors.toList());
     return steps;

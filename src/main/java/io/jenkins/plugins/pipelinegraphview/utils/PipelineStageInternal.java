@@ -1,8 +1,8 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
-import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 import java.util.Collections;
 import java.util.List;
+import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 
 public class PipelineStageInternal {
 
@@ -139,7 +139,6 @@ public class PipelineStageInternal {
         synthetic,
         pauseDurationMillis,
         startTimeMillis,
-        totalDurationMillis
-        );
+        totalDurationMillis);
   }
 }

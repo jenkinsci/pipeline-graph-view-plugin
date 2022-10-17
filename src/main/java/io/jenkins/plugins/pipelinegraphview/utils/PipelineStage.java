@@ -1,8 +1,9 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
 import hudson.Util;
-import java.util.List;
 import java.util.Date;
+import java.util.List;
+
 public class PipelineStage {
 
   private String name;
@@ -47,10 +48,10 @@ public class PipelineStage {
     this.sequential = sequential;
     this.synthetic = synthetic;
     this.pauseDurationMillis = "Queued " + Util.getTimeSpanString(pauseDurationMillis);
-    this.startTimeMillis = "Started "
-        + Util.getTimeSpanString(
-            Math.abs(startTimeMillis - new Date().getTime()))
-        + " ago";
+    this.startTimeMillis =
+        "Started "
+            + Util.getTimeSpanString(Math.abs(startTimeMillis - new Date().getTime()))
+            + " ago";
     this.totalDurationMillis = "Took " + Util.getTimeSpanString(totalDurationMillis);
   }
 

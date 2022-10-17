@@ -54,10 +54,10 @@ const StageSummary = (props: StageSummaryProps) => (
   <React.Fragment>
     <div className="stage-detail-group">
       <Typography color="inherit" className="detail-element-header">Stage '{props.stage.name}'</Typography>  
-      <div className="detail-element" key="start-time"><ScheduleIcon className="detail-icon"/> {props.stage.startTimeMillis}</div>
-      <div className="detail-element" key="paused-duration"><HourglassEmptyIcon className="detail-icon"/> {props.stage.pauseDurationMillis}</div>
-      <div className="detail-element" key="duration"><TimerIcon className="detail-icon"/> {props.stage.totalDurationMillis}</div>
-      <div className="detail-element" key="status"><InfoIcon className="detail-icon"/> {props.stage.state}</div>
+      <div className="detail-element" key="start-time"><ScheduleIcon className="detail-icon"/>{props.stage.startTimeMillis}</div>
+      <div className="detail-element" key="paused-duration"><HourglassEmptyIcon className="detail-icon"/>{props.stage.pauseDurationMillis}</div>
+      <div className="detail-element" key="duration"><TimerIcon className="detail-icon"/>{props.stage.totalDurationMillis}</div>
+      <div className="detail-element" key="status"><InfoIcon className="detail-icon "/><span className="capitalize">{props.stage.state}</span></div>
       {
         props.failedSteps.map((value: StepInfo) => {
           console.log(`Found failed step ${value}`)
@@ -76,10 +76,10 @@ export interface StepSummaryProps {
 const StepSummary = (props: StepSummaryProps) => (
   <React.Fragment>
     <div className="step-detail-group">
-      <div className="detail-element" key="start-time"><ScheduleIcon className="detail-icon"/> {props.step.startTimeMillis}</div>
-      <div className="detail-element" key="paused-duration"><HourglassEmptyIcon className="detail-icon"/> {props.step.pauseDurationMillis}</div>
-      <div className="detail-element" key="duration"><TimerIcon className="detail-icon"/> {props.step.totalDurationMillis}</div>
-      <div className="detail-element" key="status"><InfoIcon className="detail-icon"/> {props.step.state}</div>
+      <div className="detail-element" key="start-time"><ScheduleIcon className="detail-icon"/>{props.step.startTimeMillis}</div>
+      <div className="detail-element" key="paused-duration"><HourglassEmptyIcon className="detail-icon"/>{props.step.pauseDurationMillis}</div>
+      <div className="detail-element" key="duration"><TimerIcon className="detail-icon"/>{props.step.totalDurationMillis}</div>
+      <div className="detail-element capitalize" key="status"><InfoIcon className="detail-icon"/><span className="capitalize">{props.step.state}</span></div>
     </div>
   </React.Fragment>
 );
@@ -320,6 +320,7 @@ export class PipelineConsole extends React.Component<
           let step = this.state.steps[i];
           if (step.stageId === this.state.selected) {
             console.log(`Checking status of step ${step.id} - ${step.state.toLowerCase()}`)
+            // We seem to get a mix of upper and lower case states, so normalise on lowercase.
             if (step.state.toLowerCase() === "unstable") {
               console.log(`Found failed step steps ${step}`)
               failedSteps.push(step);

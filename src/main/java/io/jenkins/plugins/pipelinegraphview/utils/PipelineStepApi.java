@@ -28,6 +28,7 @@ public class PipelineStepApi {
             .map(
                 flowNodeWrapper -> {
                   String state = flowNodeWrapper.getStatus().getResult().name();
+                  // TODO: Why do we do this? Seems like it will return uppercase for some states and lowercase for others?
                   if (flowNodeWrapper.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
                     state = flowNodeWrapper.getStatus().getState().name().toLowerCase(Locale.ROOT);
                   }

@@ -222,7 +222,14 @@ div.detail-element{
   margin-left: 10px;
   line-height: 1.66 !important;
   padding: 3px;
-  
+}
+
+.capitalize  {
+  text-transform: lowercase;
+}
+
+.capitalize:first-letter {
+  text-transform: capitalize;
 }
 
 p.detail-element-header {

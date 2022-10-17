@@ -37,16 +37,10 @@ public class PipelineStepApi {
                     displayName = stepArguments + " - " + displayName;
                   }
                   // Remove non-printable chars (e.g. ANSI color codes).
-                  logger.error("DisplayName Before: '" + displayName + "'.");
+                  logger.debug("DisplayName Before: '" + displayName + "'.");
                   displayName = cleanTextContent(displayName);
-                  logger.error("DisplayName After: '" + displayName + "'.");
+                  logger.debug("DisplayName After: '" + displayName + "'.");
 
-                  logger.error("getPauseDurationMillis: '" + flowNodeWrapper.getTiming().getPauseDurationMillis() + "'.");
-                  logger.error("getStartTimeMillis: '" + flowNodeWrapper.getTiming().getStartTimeMillis() + "'.");
-                  logger.error("getTotalDurationMillis: '" + flowNodeWrapper.getTiming().getTotalDurationMillis() + "'.");
-                  logger.error("Queued " + Util.getTimeSpanString(flowNodeWrapper.getTiming().getPauseDurationMillis()));
-                  logger.error("Started " + Util.getTimeSpanString(flowNodeWrapper.getTiming().getStartTimeMillis() - System.currentTimeMillis()) + " ago");
-                  logger.error("Took " + Util.getTimeSpanString(flowNodeWrapper.getTiming().getTotalDurationMillis()));
                   return new PipelineStep(
                       Integer.parseInt(
                           flowNodeWrapper
@@ -61,7 +55,7 @@ public class PipelineStepApi {
                       // 0s"
                       stageId,
                       "Queued " + Util.getTimeSpanString(flowNodeWrapper.getTiming().getPauseDurationMillis()),
-                      "Started " + Util.getTimeSpanString(flowNodeWrapper.getTiming().getStartTimeMillis() - System.currentTimeMillis()) + " ago",
+                      "Started " + Util.getTimeSpanString(System.currentTimeMillis() - flowNodeWrapper.getTiming().getStartTimeMillis()) + " ago",
                       "Took " + Util.getTimeSpanString(flowNodeWrapper.getTiming().getTotalDurationMillis())
                   );
 

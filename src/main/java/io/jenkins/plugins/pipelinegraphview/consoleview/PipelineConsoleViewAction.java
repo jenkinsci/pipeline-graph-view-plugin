@@ -117,7 +117,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
 
         spool.writeTo(new LineEndNormalizingWriter(writer));
       } else {
-        rsp.getWriter().append("No console output for node: ").append(nodeId);
+        rsp.getWriter().append("");
       }
     } else {
       logger.debug("getConsoleOutput was not passed nodeId.");

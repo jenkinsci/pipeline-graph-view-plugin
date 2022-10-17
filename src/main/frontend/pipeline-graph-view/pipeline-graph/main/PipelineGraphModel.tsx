@@ -54,6 +54,9 @@ export interface StageInfo {
   nextSibling?: StageInfo; // Used within a parallel branch to denote sequential stages
   isSequential?: boolean;
   synthetic?: boolean;
+  pauseDurationMillis: string;
+  startTimeMillis: string;
+  totalDurationMillis: string;
 }
 
 interface BaseNodeInfo {

@@ -1,5 +1,6 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import hudson.Util;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -27,6 +28,8 @@ public class PipelineStepApi {
             .map(
                 flowNodeWrapper -> {
                   String state = flowNodeWrapper.getStatus().getResult().name();
+                  // TODO: Why do we do this? Seems like it will return uppercase for some states
+                  // and lowercase for others?
                   if (flowNodeWrapper.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
                     state = flowNodeWrapper.getStatus().getState().name().toLowerCase(Locale.ROOT);
                   }
@@ -39,6 +42,7 @@ public class PipelineStepApi {
                   logger.debug("DisplayName Before: '" + displayName + "'.");
                   displayName = cleanTextContent(displayName);
                   logger.debug("DisplayName After: '" + displayName + "'.");
+
                   return new PipelineStep(
                       Integer.parseInt(
                           flowNodeWrapper
@@ -51,7 +55,18 @@ public class PipelineStepApi {
                       flowNodeWrapper
                           .getDisplayName(), // TODO blue ocean uses timing information: "Passed in
                       // 0s"
-                      stageId);
+                      stageId,
+                      "Queued "
+                          + Util.getTimeSpanString(
+                              flowNodeWrapper.getTiming().getPauseDurationMillis()),
+                      "Started "
+                          + Util.getTimeSpanString(
+                              System.currentTimeMillis()
+                                  - flowNodeWrapper.getTiming().getStartTimeMillis())
+                          + " ago",
+                      "Took "
+                          + Util.getTimeSpanString(
+                              flowNodeWrapper.getTiming().getTotalDurationMillis()));
                 })
             .collect(Collectors.toList());
     return steps;

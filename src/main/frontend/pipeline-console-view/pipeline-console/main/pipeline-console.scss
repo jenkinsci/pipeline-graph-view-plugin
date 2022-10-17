@@ -147,12 +147,14 @@
 .MuiTreeItem-label {
   overflow: hidden;
   text-overflow: ellipsis;
-  border-radius: 15px;
+  border-radius: 10px;
   margin: 0 0 5px 0 !important;
   padding-left: 1rem !important;
   padding-right: 1rem !important;
   background: var(--card-background);
   box-shadow: 0 0 1px rgb(0 0 0 / 6%);
+  // Move down slightly to avoid curring off the top background.
+  top: 5px;
 }
 
 .MuiTreeItem-label.pgv-graph-node--synthetic {
@@ -187,10 +189,6 @@ div.console-output-line-anchor {
   visibility: hidden;
 }
 
-.console-pane {
-  margin-left: 5px;
-}
-
 pre.console-pane {
   background-color: var(--card-background);
   word-break: break-word;
@@ -198,4 +196,52 @@ pre.console-pane {
 
 div.console-output-line {
   display: flex;
+}
+
+div.stage-detail-group {
+  vertical-align: auto;
+  background-color: var(--card-background);
+  margin-bottom: 8px;
+  border-radius: 10px;
+  // Move down slightly to avoid curring off the top background.
+  position: relative;
+  padding: 0.8rem 1rem;
+  white-space: nowrap;
+}
+
+div.step-detail-group {
+  @extend div, .stage-detail-group;
+  display: flex;
+}
+
+
+div.detail-element{
+  display: flex;
+  width:100%;
+  font-size: var(--font-size-monospace);
+  vertical-align: middle;
+  margin-left: 10px;
+  line-height: 1.66 !important;
+  padding: 3px;
+}
+
+.capitalize  {
+  text-transform: lowercase;
+}
+
+.capitalize:first-letter {
+  text-transform: capitalize;
+}
+
+p.detail-element-header {
+  font-weight: 600;
+  margin-left: 15px;
+}
+
+div.detail-element:last-child {
+  border: none;
+}
+
+svg.detail-icon {
+  margin-right: 10px;
 }

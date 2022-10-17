@@ -10,6 +10,7 @@ import {
 import TreeItem, { TreeItemProps } from "@material-ui/lab/TreeItem";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
+
 import {
   StageInfo,
   Result,
@@ -28,6 +29,9 @@ export interface StepInfo {
   id: number;
   type: string;
   stageId: string;
+  pauseDurationMillis: string;
+  startTimeMillis: string;
+  totalDurationMillis: string;
 }
 
 // Tree Item for stages
@@ -60,16 +64,18 @@ const StepTreeItem = withStyles((theme: Theme) =>
 const getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
   return stepsItems.map((stepItemData) => {
     return (
-      <StepTreeItem
-        key={stepItemData.id}
-        nodeId={String(stepItemData.id)}
-        label={
-          <StepStatus
-            status={decodeResultValue(stepItemData.state)}
-            text={stepItemData.name.replace(/[^ -~]+/g, "")}
-          />
-        }
-      />
+      <div>
+        <StepTreeItem
+          key={stepItemData.id}
+          nodeId={String(stepItemData.id)}
+          label={
+            <StepStatus
+              status={decodeResultValue(stepItemData.state)}
+              text={stepItemData.name.replace(/[^ -~]+/g, "")}
+            />
+          }
+        />
+      </div>
     );
   });
 };
@@ -100,22 +106,24 @@ const getTreeItemsFromStage = (stageItems: StageInfo[], steps: StepInfo[]) => {
       children = [...children, ...stepsItems];
     }
     return (
-      <StageTreeItem
-        key={stageItemData.id}
-        nodeId={String(stageItemData.id)}
-        label={
-          <StepStatus
-            status={decodeResultValue(stageItemData.state)}
-            text={stageItemData.name}
-          />
-        }
-        children={children}
-        classes={{
-          label: stageItemData.synthetic
-            ? "pgv-graph-node--synthetic"
-            : undefined,
-        }}
-      />
+      <div>
+        <StageTreeItem
+          key={stageItemData.id}
+          nodeId={String(stageItemData.id)}
+          label={
+            <StepStatus
+              status={decodeResultValue(stageItemData.state)}
+              text={stageItemData.name}
+            />
+          }
+          children={children}
+          classes={{
+            label: stageItemData.synthetic
+              ? "pgv-graph-node--synthetic"
+              : undefined,
+          }}
+        />
+      </div>
     );
   });
 };

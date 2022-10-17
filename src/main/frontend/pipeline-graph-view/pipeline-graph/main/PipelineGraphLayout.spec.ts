@@ -11,6 +11,9 @@ describe("PipelineGraphLayout", () => {
       id: 0,
       type: "STAGE",
       children: [],
+      pauseDurationMillis: "",
+      startTimeMillis: "",
+      totalDurationMillis: "",
     };
 
     const makeStage = (

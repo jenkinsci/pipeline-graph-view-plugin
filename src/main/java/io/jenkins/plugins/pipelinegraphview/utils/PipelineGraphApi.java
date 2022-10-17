@@ -53,6 +53,8 @@ public class PipelineGraphApi {
         .map(
             flowNodeWrapper -> {
               String state = flowNodeWrapper.getStatus().getResult().name();
+              // TODO: Why do we do this? Seems like it will return uppercase for some states and
+              // lowercase for others?
               if (flowNodeWrapper.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
                 state = flowNodeWrapper.getStatus().getState().name().toLowerCase(Locale.ROOT);
               }
@@ -70,7 +72,8 @@ public class PipelineGraphApi {
                   flowNodeWrapper.getType().name(),
                   flowNodeWrapper
                       .getDisplayName(), // TODO blue ocean uses timing information: "Passed in 0s"
-                  flowNodeWrapper.isSynthetic());
+                  flowNodeWrapper.isSynthetic(),
+                  flowNodeWrapper.getTiming());
             })
         .collect(Collectors.toList());
   }

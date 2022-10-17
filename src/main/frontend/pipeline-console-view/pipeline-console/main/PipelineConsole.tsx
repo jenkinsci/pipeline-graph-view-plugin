@@ -229,11 +229,12 @@ export class PipelineConsole extends React.Component<
   render() {
     const splitPaneStyle: React.CSSProperties = {
       position: "relative",
-      height: "100%",
     };
     const paneStyle: React.CSSProperties = {
       paddingLeft: "8px",
       textAlign: "left",
+      height: "calc(100vh - 300px)",
+      overflowY: "scroll",
     };
 
     const lineChunks = this.state.consoleText

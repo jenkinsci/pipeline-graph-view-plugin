@@ -26,7 +26,6 @@ interface PipelineConsoleState {
   steps: Array<StepInfo>;
   anchor: string;
   hasScrolled: boolean;
-  stageDetails: Array<DetailsItem>;
 }
 
 export interface ConsoleLineProps {
@@ -34,13 +33,6 @@ export interface ConsoleLineProps {
   content: (string | JSX.Element)[];
   stepId: string;
   key: string;
-}
-
-export interface DetailsItem {
-  icon: string;
-  text: string;
-  href: string;
-  separator: boolean;
 }
 
 export interface StageSummaryProps {
@@ -153,7 +145,6 @@ export class PipelineConsole extends React.Component<
       steps: [] as StepInfo[],
       anchor: window.location.hash.replace("#", ""),
       hasScrolled: false,
-      stageDetails: [] as DetailsItem[],
     };
     console.debug(`Anchor: ${this.state.anchor}`);
     this.updateState();

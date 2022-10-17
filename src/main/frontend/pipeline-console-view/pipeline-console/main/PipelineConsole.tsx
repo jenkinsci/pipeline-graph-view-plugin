@@ -303,17 +303,14 @@ export class PipelineConsole extends React.Component<
     for (let i = 0; i < this.state.stages.length; i++) {
       let stage = this.state.stages[i];
       if ('' + stage.id == this.state.selected) {
-        console.log(`Found stage node with id ${stage.id}`)
         // User has selected a stage node.
         focusedStage = stage;
         let failedSteps = [] as StepInfo[];
         for (let i = 0; i < this.state.steps.length; i++) {
           let step = this.state.steps[i];
           if (step.stageId === this.state.selected) {
-            console.log(`Checking status of step ${step.id} - ${step.state.toLowerCase()}`)
             // We seem to get a mix of upper and lower case states, so normalise on lowercase.
             if (step.state.toLowerCase() === "unstable") {
-              console.log(`Found failed step steps ${step}`)
               failedSteps.push(step);
             }
           }
@@ -335,7 +332,6 @@ export class PipelineConsole extends React.Component<
     for (let i = 0; i < this.state.steps.length; i++) {
       let step = this.state.steps[i];
       if ('' + step.id == this.state.selected) {
-        console.log(`Found steps node with id ${step.id}`)
         return (
           <div className="console-output">
             <StepSummary step={step}/>

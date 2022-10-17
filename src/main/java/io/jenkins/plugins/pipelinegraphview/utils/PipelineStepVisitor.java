@@ -263,7 +263,7 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
             new FlowNodeWrapper(
                 step,
                 new NodeRunStatus(BlueRun.BlueRunResult.UNKNOWN, BlueRun.BlueRunState.QUEUED),
-                // This is a fake AtomNode to help track the cause of a blockage, timeing info is
+                // This is a fake AtomNode to help track the cause of a blockage, timing info is
                 // not meaningful.
                 new TimingInfo(0, 0, 0),
                 run);

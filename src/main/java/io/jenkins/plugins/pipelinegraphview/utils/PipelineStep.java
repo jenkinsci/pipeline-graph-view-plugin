@@ -9,6 +9,9 @@ public class PipelineStep {
   private String title;
   private int id;
   private String stageId;
+  private String pauseDurationMillis;
+  private String startTimeMillis;
+  private String totalDurationMillis;
 
   public PipelineStep(
       int id,
@@ -17,7 +20,12 @@ public class PipelineStep {
       int completePercent,
       String type,
       String title,
-      String stageId) {
+      String stageId,
+      String pauseDurationMillis,
+      String startTimeMillis,
+      String totalDurationMillis
+    
+      ) {
     this.id = id;
     this.name = name;
     this.state = state;
@@ -25,6 +33,21 @@ public class PipelineStep {
     this.type = type;
     this.title = title;
     this.stageId = stageId;
+    this.pauseDurationMillis = pauseDurationMillis;
+    this.startTimeMillis =  startTimeMillis;
+    this.totalDurationMillis =  totalDurationMillis;
+  }
+
+  public String getPauseDurationMillis() {
+    return pauseDurationMillis;
+  }
+
+  public String getStartTimeMillis() {
+    return startTimeMillis;
+  }
+
+  public String getTotalDurationMillis() {
+    return totalDurationMillis;
   }
 
   public int getId() {

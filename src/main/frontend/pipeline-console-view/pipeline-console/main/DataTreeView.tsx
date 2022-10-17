@@ -29,6 +29,9 @@ export interface StepInfo {
   id: number;
   type: string;
   stageId: string;
+  pauseDurationMillis: string;
+  startTimeMillis: string;
+  totalDurationMillis: string;
 }
 
 // Tree Item for stages

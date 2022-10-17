@@ -197,8 +197,7 @@ div.console-output-line {
   display: flex;
 }
 
-div.detail-group {
-  //display: flex;
+div.stage-detail-group {
   vertical-align: auto;
   background-color: var(--card-background);
   margin-bottom: 8px;
@@ -206,19 +205,24 @@ div.detail-group {
   // Move down slightly to avoid curring off the top background.
   position: relative;
   padding: 0.8rem 1rem;
+  white-space: nowrap;
 }
+
+div.step-detail-group {
+  @extend div, .stage-detail-group;
+  display: flex;
+}
+
 
 div.detail-element{
   display: flex;
-  //border-right:1px solid black;
-  //margin-right: 5px;
-  //padding: 0.8rem 1rem;
   width:100%;
   font-size: var(--font-size-monospace);
   vertical-align: middle;
   margin-left: 10px;
   line-height: 1.66 !important;
   padding: 3px;
+  
 }
 
 p.detail-element-header {
@@ -228,17 +232,6 @@ p.detail-element-header {
 
 div.detail-element:last-child {
   border: none;
-}
-
-div.footer{
-  margin-top: 1rem;
-  //padding: 1rem;
-  //background-color: rgb(235, 195, 64);
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  display: block;
 }
 
 svg.detail-icon {

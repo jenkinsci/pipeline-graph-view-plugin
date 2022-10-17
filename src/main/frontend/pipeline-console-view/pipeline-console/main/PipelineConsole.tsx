@@ -52,7 +52,7 @@ export interface StageSummaryProps {
 // Tree Item for stages
 const StageSummary = (props: StageSummaryProps) => (
   <React.Fragment>
-    <div className="detail-group">
+    <div className="stage-detail-group">
       <Typography color="inherit" className="detail-element-header">Stage '{props.stage.name}'</Typography>  
       <div className="detail-element" key="start-time"><ScheduleIcon className="detail-icon"/> {props.stage.startTimeMillis}</div>
       <div className="detail-element" key="paused-duration"><HourglassEmptyIcon className="detail-icon"/> {props.stage.pauseDurationMillis}</div>
@@ -64,6 +64,22 @@ const StageSummary = (props: StageSummaryProps) => (
           return (<FailedStepLink step={value} key={`failed-step-link-${value.id}`}/>);
         })
       }
+    </div>
+  </React.Fragment>
+);
+
+export interface StepSummaryProps {
+  step: StepInfo,
+}
+
+// Tree Item for stages
+const StepSummary = (props: StepSummaryProps) => (
+  <React.Fragment>
+    <div className="step-detail-group">
+      <div className="detail-element" key="start-time"><ScheduleIcon className="detail-icon"/> {props.step.startTimeMillis}</div>
+      <div className="detail-element" key="paused-duration"><HourglassEmptyIcon className="detail-icon"/> {props.step.pauseDurationMillis}</div>
+      <div className="detail-element" key="duration"><TimerIcon className="detail-icon"/> {props.step.totalDurationMillis}</div>
+      <div className="detail-element" key="status"><InfoIcon className="detail-icon"/> {props.step.state}</div>
     </div>
   </React.Fragment>
 );
@@ -297,7 +313,7 @@ export class PipelineConsole extends React.Component<
       let stage = this.state.stages[i];
       if ('' + stage.id == this.state.selected) {
         console.log(`Found stage node with id ${stage.id}`)
-        // Users has selected a stage node.
+        // User has selected a stage node.
         focusedStage = stage;
         let failedSteps = [] as StepInfo[];
         for (let i = 0; i < this.state.steps.length; i++) {
@@ -323,6 +339,23 @@ export class PipelineConsole extends React.Component<
     )
   }
 
+  renderStepDetails() {
+    for (let i = 0; i < this.state.steps.length; i++) {
+      let step = this.state.steps[i];
+      if ('' + step.id == this.state.selected) {
+        console.log(`Found steps node with id ${step.id}`)
+        return (
+          <div className="console-output">
+            <StepSummary step={step}/>
+          </div>
+        );
+      }
+    }
+    return (
+      // Return empty div
+      <div></div>
+    )
+  }
 
   renderConsoleOutput() {
     if (this.state.consoleText.length > 0) {
@@ -387,6 +420,7 @@ export class PipelineConsole extends React.Component<
             
             <div>
               {this.renderStageDetails()}
+              {this.renderStepDetails()}
               {this.renderConsoleOutput()}
             </div>
           </SplitPane>

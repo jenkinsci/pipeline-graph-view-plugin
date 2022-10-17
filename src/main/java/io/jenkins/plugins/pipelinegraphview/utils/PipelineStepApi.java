@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
+import hudson.Util;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +52,12 @@ public class PipelineStepApi {
                       flowNodeWrapper
                           .getDisplayName(), // TODO blue ocean uses timing information: "Passed in
                       // 0s"
-                      stageId);
+                      stageId,
+                      "Queued " + Util.getTimeSpanString(flowNodeWrapper.getTiming().getPauseDurationMillis()),
+                      "Started " + Util.getTimeSpanString(flowNodeWrapper.getTiming().getStartTimeMillis()) + " ago",
+                      "Took " + Util.getTimeSpanString(flowNodeWrapper.getTiming().getTotalDurationMillis())
+                  );
+
                 })
             .collect(Collectors.toList());
     return steps;

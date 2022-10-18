@@ -109,15 +109,15 @@ public class PipelineStepApiTest {
     // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
     // long time)
     WorkflowRun run =
-        TestUtils.createAndRunJob(
-            j, "nestedStages", "nestedStages.jenkinsfile", Result.SUCCESS);
+        TestUtils.createAndRunJob(j, "nestedStages", "nestedStages.jenkinsfile", Result.SUCCESS);
 
     String childAId = TestUtils.getNodesByDisplayName(run, "Child A").get(0).getId();
     String childBId = TestUtils.getNodesByDisplayName(run, "Child B").get(0).getId();
     String grandchildBId = TestUtils.getNodesByDisplayName(run, "Grandchild B").get(0).getId();
     String childCId = TestUtils.getNodesByDisplayName(run, "Child C").get(0).getId();
     String grandchildCId = TestUtils.getNodesByDisplayName(run, "Grandchild C").get(0).getId();
-    String greatGrandchildCId = TestUtils.getNodesByDisplayName(run, "Great-grandchild C").get(0).getId();
+    String greatGrandchildCId =
+        TestUtils.getNodesByDisplayName(run, "Great-grandchild C").get(0).getId();
 
     PipelineStepApi api = new PipelineStepApi(run);
 
@@ -139,7 +139,7 @@ public class PipelineStepApiTest {
     steps = api.getSteps(childCId).getSteps();
     assertThat(steps, hasSize(0));
 
-        // Check 'Grandchild C'
+    // Check 'Grandchild C'
     steps = api.getSteps(grandchildCId).getSteps();
     assertThat(steps, hasSize(0));
 
@@ -148,7 +148,6 @@ public class PipelineStepApiTest {
     assertThat(steps, hasSize(1));
     assertThat(steps.get(0).getName(), is("In great-grandchild C - Print Message"));
   }
-
 
   @Test
   public void getAllStepsReturnsStepsForComplexParallelBranches() throws Exception {
@@ -181,8 +180,7 @@ public class PipelineStepApiTest {
     // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
     // long time)
     WorkflowRun run =
-        TestUtils.createAndRunJob(
-            j, "nestedStages", "nestedStages.jenkinsfile", Result.SUCCESS);
+        TestUtils.createAndRunJob(j, "nestedStages", "nestedStages.jenkinsfile", Result.SUCCESS);
 
     PipelineStepApi api = new PipelineStepApi(run);
 

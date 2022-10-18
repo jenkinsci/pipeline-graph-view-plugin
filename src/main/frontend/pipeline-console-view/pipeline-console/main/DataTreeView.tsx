@@ -64,18 +64,17 @@ const StepTreeItem = withStyles((theme: Theme) =>
 const getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
   return stepsItems.map((stepItemData) => {
     return (
-      <div>
-        <StepTreeItem
-          key={stepItemData.id}
-          nodeId={String(stepItemData.id)}
-          label={
-            <StepStatus
-              status={decodeResultValue(stepItemData.state)}
-              text={stepItemData.name.replace(/[^ -~]+/g, "")}
-            />
-          }
-        />
-      </div>
+      <StepTreeItem
+        key={stepItemData.id}
+        nodeId={String(stepItemData.id)}
+        label={
+          <StepStatus
+            status={decodeResultValue(stepItemData.state)}
+            text={stepItemData.name.replace(/[^ -~]+/g, "")}
+            key={`status-${stepItemData.id}`}
+          />
+        }
+      />
     );
   });
 };
@@ -106,24 +105,23 @@ const getTreeItemsFromStage = (stageItems: StageInfo[], steps: StepInfo[]) => {
       children = [...children, ...stepsItems];
     }
     return (
-      <div>
-        <StageTreeItem
-          key={stageItemData.id}
-          nodeId={String(stageItemData.id)}
-          label={
-            <StepStatus
-              status={decodeResultValue(stageItemData.state)}
-              text={stageItemData.name}
-            />
-          }
-          children={children}
-          classes={{
-            label: stageItemData.synthetic
-              ? "pgv-graph-node--synthetic"
-              : undefined,
-          }}
-        />
-      </div>
+      <StageTreeItem
+        key={stageItemData.id}
+        nodeId={String(stageItemData.id)}
+        label={
+          <StepStatus
+            status={decodeResultValue(stageItemData.state)}
+            text={stageItemData.name}
+            key={`status-${stageItemData.id}`}
+          />
+        }
+        children={children}
+        classes={{
+          label: stageItemData.synthetic
+            ? "pgv-graph-node--synthetic"
+            : undefined,
+        }}
+      />
     );
   });
 };
@@ -165,6 +163,7 @@ export class DataTreeView extends React.Component {
         expanded={this.props.expanded}
         selected={this.props.selected}
         onNodeToggle={this.props.onNodeToggle}
+        key="console-tree-view"
       >
         {getTreeItemsFromStage(this.props.stages, this.props.steps)}
       </TreeView>

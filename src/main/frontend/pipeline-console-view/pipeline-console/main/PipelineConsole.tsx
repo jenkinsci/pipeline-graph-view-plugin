@@ -94,7 +94,7 @@ const FailedStepLink = (props: FailedStepLinkProps) => (
 
 export interface ConsoleLineProps {
   lineNumber: string;
-  content: (string | JSX.Element)[];
+  content: string;
   stepId: string;
   key: string;
 }
@@ -113,16 +113,7 @@ const ConsoleLine = (props: ConsoleLineProps) => (
       >
         {props.lineNumber}
       </a>
-      {props.content.map((element, i) => {
-        return React.createElement(
-          Linkify,
-          {
-            options: { className: "line ansi-color" },
-            key: `${props.lineNumber}-${i}`,
-          },
-          element
-        );
-      })}
+      <div dangerouslySetInnerHTML={{__html: props.content}}/>
     </div>
   </div>
 );
@@ -342,10 +333,7 @@ export class PipelineConsole extends React.Component<
 
   renderConsoleOutput() {
     if (this.state.consoleText.length > 0) {
-      const lineChunks = this.state.consoleText
-        .split("\n")
-        .map(tokenizeANSIString)
-        .map(makeReactChildren);
+      const lineChunks = this.state.consoleText.split("\n");
       return (
         <div className="console-output">
           <pre className="console-pane console-output-item">

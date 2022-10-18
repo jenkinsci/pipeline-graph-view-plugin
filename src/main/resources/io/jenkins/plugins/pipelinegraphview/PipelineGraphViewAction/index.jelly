@@ -22,7 +22,7 @@
               </button>
             </l:hasPermission>
           </j:if>
-          <l:hasPermission permission="${it.conmfigurePermission}">
+          <l:hasPermission permission="${it.configurePermission}">
             <a href="../../configure" class="jenkins-button">
               ${%Configure}
             </a>

@@ -42,6 +42,10 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
     return target.BUILD;
   }
 
+  public Permission getConfigurePermission() {
+    return target.CONFIGURE;
+  }
+
   @GET
   @WebMethod(name = "graph")
   public HttpResponse getGraph(StaplerRequest req) throws JsonProcessingException {

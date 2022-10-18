@@ -22,9 +22,11 @@
               </button>
             </l:hasPermission>
           </j:if>
-          <a href="../../configure" class="jenkins-button">
-            ${%Configure}
-          </a>
+          <l:hasPermission permission="${it.conmfigurePermission}">
+            <a href="../../configure" class="jenkins-button">
+              ${%Configure}
+            </a>
+          </l:hasPermission>
         </div>
         <script src="${rootURL}/plugin/pipeline-graph-view/js/build.js"/>
       </div>

@@ -214,10 +214,9 @@ div.step-detail-group {
   display: flex;
 }
 
-
-div.detail-element{
+div.detail-element {
   display: flex;
-  width:100%;
+  width: 100%;
   font-size: var(--font-size-monospace);
   vertical-align: middle;
   margin-left: 10px;
@@ -225,7 +224,7 @@ div.detail-element{
   padding: 3px;
 }
 
-.capitalize  {
+.capitalize {
   text-transform: lowercase;
 }
 

@@ -384,7 +384,7 @@ export class PipelineConsole extends React.Component<
       paddingLeft: "8px",
       textAlign: "left",
       height: "calc(100vh - 300px)",
-      overflowY: "scroll",
+      overflowY: "auto",
     };
 
     return (
@@ -407,7 +407,7 @@ export class PipelineConsole extends React.Component<
               />
             </div>
             
-            <div>
+            <div style={paneStyle}>
               {this.renderStageDetails()}
               {this.renderStepDetails()}
               {this.renderConsoleOutput()}

@@ -38,6 +38,10 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
     return run.getParent().BUILD;
   }
 
+  public Permission getConfigurePermission() {
+    return run.getParent().CONFIGURE;
+  }
+
   public String getBuildDisplayName() {
     return run.getFullDisplayName();
   }

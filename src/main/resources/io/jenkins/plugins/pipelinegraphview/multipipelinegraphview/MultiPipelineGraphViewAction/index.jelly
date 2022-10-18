@@ -18,9 +18,11 @@
                   </button>
                 </l:hasPermission>
               </j:if>
-              <a href="../configure" class="jenkins-button">
-                ${%Configure}
-              </a>
+              <l:hasPermission permission="${it.configurePermission}">
+                <a href="../configure" class="jenkins-button">
+                  ${%Configure}
+                </a>
+              </l:hasPermission>
             </div>
           </div>
             <div id="multiple-pipeline-root"/>

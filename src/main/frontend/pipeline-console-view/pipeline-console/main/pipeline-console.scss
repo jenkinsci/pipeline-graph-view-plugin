@@ -17,6 +17,7 @@
   font-family: sans-serif;
   text-align: center;
   height: 80%;
+  display: flex;
 }
 .Resizer {
   background: #000;
@@ -243,4 +244,12 @@ div.detail-element:last-child {
 
 svg.detail-icon {
   margin-right: 10px;
+}
+
+div.split-pane {
+  position: relative;
+  padding-left: 8px;
+  text-align: left;
+  height: calc(100vh - 300px);
+  overflow-y: auto;
 }

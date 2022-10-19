@@ -1,18 +1,17 @@
 import React from "react";
 
-import SplitPane from "react-split-pane";
-import { DataTreeView } from "./DataTreeView";
+import { SplitPane } from "react-collapse-pane";
 import { makeReactChildren, tokenizeANSIString } from "./Ansi";
 import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/";
-import { StepInfo } from "./DataTreeView";
+import { DataTreeView, StepInfo } from "./DataTreeView";
 
-import Typography from "@material-ui/core/Typography";
+import Typography from '@mui/material/Typography';
 
-import HourglassEmptyIcon from "@material-ui/icons/HourglassEmpty";
-import ScheduleIcon from "@material-ui/icons/Schedule";
-import TimerIcon from "@material-ui/icons/Timer";
-import InfoIcon from "@material-ui/icons/Info";
-import LinkIcon from "@material-ui/icons/Link";
+import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+import TimerIcon from '@mui/icons-material/Timer';
+import InfoIcon from '@mui/icons-material/Info';
+import LinkIcon from '@mui/icons-material/Link';
 
 import "./pipeline-console.scss";
 
@@ -380,35 +379,36 @@ export class PipelineConsole extends React.Component<
       height: "calc(100vh - 300px)",
       overflowY: "auto",
     };
-
     return (
       <React.Fragment>
-        <div className="App">
-          <SplitPane
-            minSize={150}
-            defaultSize={parseInt(localStorage.getItem("splitPos") || "250")}
-            onChange={(size) => localStorage.setItem("splitPos", `${size}`)}
-            style={splitPaneStyle}
-          >
-            <div style={paneStyle}>
-              <DataTreeView
-                onNodeSelect={this.handleActionNodeSelect}
-                onNodeToggle={this.handleToggle}
-                selected={this.state.selected}
-                expanded={this.state.expanded}
-                stages={this.state.stages}
-                steps={this.state.steps}
-              />
-            </div>
-
-            <div style={paneStyle}>
-              {this.renderStageDetails()}
-              {this.renderStepDetails()}
-              {this.renderConsoleOutput()}
-            </div>
-          </SplitPane>
-        </div>
-      </React.Fragment>
-    );
+      <div className="App">
+        <SplitPane
+          // intialSize ratio
+          initialSizes={[3, 7]}
+          // minSize in Pixels (for all panes)
+          minSizes={250}
+          className="split-pane"
+          split="vertical"
+        >
+          <div className="split-pane" key="tree-view">
+            <DataTreeView
+              onNodeSelect={this.handleActionNodeSelect}
+              onNodeToggle={this.handleToggle}
+              selected={this.state.selected}
+              expanded={this.state.expanded}
+              stages={this.state.stages}
+              steps={this.state.steps}
+            />
+          </div>
+          
+          <div className="split-pane" key="console-view">
+            {this.renderStageDetails()}
+            {this.renderStepDetails()}
+            {this.renderConsoleOutput()}
+          </div>
+        </SplitPane>
+      </div>
+    </React.Fragment>
+    )
   }
 }

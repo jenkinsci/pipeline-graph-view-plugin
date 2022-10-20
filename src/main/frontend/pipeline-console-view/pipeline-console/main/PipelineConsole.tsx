@@ -3,8 +3,7 @@ import React from "react";
 import SplitPane from "react-split-pane";
 import { DataTreeView } from "./DataTreeView";
 import { makeReactChildren, tokenizeANSIString } from "./Ansi";
-import { Linkify } from "./Linkify";
-import { StageInfo, Result } from "../../../pipeline-graph-view/pipeline-graph/main/";
+import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/";
 import { StepInfo } from "./DataTreeView";
 
 import Typography from '@material-ui/core/Typography';
@@ -26,13 +25,6 @@ interface PipelineConsoleState {
   steps: Array<StepInfo>;
   anchor: string;
   hasScrolled: boolean;
-}
-
-export interface ConsoleLineProps {
-  lineNumber: string;
-  content: string;
-  stepId: string;
-  key: string;
 }
 
 export interface StageSummaryProps {
@@ -94,7 +86,7 @@ const FailedStepLink = (props: FailedStepLinkProps) => (
 
 export interface ConsoleLineProps {
   lineNumber: string;
-  content: string;
+  content: (string[] | Ansi.Result[]);
   stepId: string;
   key: string;
 }
@@ -113,10 +105,12 @@ const ConsoleLine = (props: ConsoleLineProps) => (
       >
         {props.lineNumber}
       </a>
-      <div dangerouslySetInnerHTML={{__html: props.content}}/>
+      {makeReactChildren(props.content)}
     </div>
   </div>
 );
+
+
 
 export class PipelineConsole extends React.Component<
   PipelineConsoleProps,
@@ -342,7 +336,7 @@ export class PipelineConsole extends React.Component<
               let lineNumber = String(index + 1);
               return (
                 <ConsoleLine
-                  content={line}
+                  content={tokenizeANSIString(line)}
                   lineNumber={lineNumber}
                   stepId={this.state.selected}
                   key={`${this.state.selected}-${lineNumber}`}
@@ -359,6 +353,9 @@ export class PipelineConsole extends React.Component<
       )
     }
   }
+
+
+
   render() {
     const splitPaneStyle: React.CSSProperties = {
       position: "relative",

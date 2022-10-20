@@ -160,7 +160,7 @@ export function makeReactChildren(tokenizedInput: string[] | Result[]) {
       // Need to output a <span> or plain text if there's no interesting current state
 
       if (!currentState.setFG && !currentState.setBG) {
-        result.push(codeOrString);
+        result.push(<div dangerouslySetInnerHTML={{__html: codeOrString}}/>);
       } else {
         const classNames = [];
 

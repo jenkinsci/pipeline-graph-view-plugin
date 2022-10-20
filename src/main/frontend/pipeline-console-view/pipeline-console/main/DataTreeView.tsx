@@ -42,9 +42,6 @@ const getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
             key={`status-${stepItemData.id}`}
           />
         }
-        sx={{
-          textDecoration: "underline",
-        }}
       />
     );
   });

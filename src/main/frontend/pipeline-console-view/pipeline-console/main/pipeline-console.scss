@@ -18,6 +18,7 @@
   text-align: center;
   height: 80%;
   display: flex;
+  background: transparent;
 }
 .Resizer {
   background: #000;
@@ -145,6 +146,7 @@
   background: var(--white, #fff);
 }
 
+// TreeView styling
 .MuiTreeItem-label {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -158,8 +160,39 @@
   top: 5px;
 }
 
+// Hover TreeItem style.
+.MuiTreeItem-label:hover {
+  background: var(--very-light-grey);
+}
+
+// Selected tree item style.
+.Mui-selected > .MuiTreeItem-label {
+  background: var(--header-link-color-active) !important;
+}
+
+.step-tree-item > .MuiTreeItem-content > .MuiTreeItem-label {
+  text-decoration: underline;
+  text-underline-position: under;
+}
+
 .MuiTreeItem-label.pgv-graph-node--synthetic {
   font-style: italic;
+}
+
+// Remove highlighting
+.Mui-selected {
+  background-color: var(--white) !important;
+  text-decoration: bold !important;
+  font-weight: 700;
+}
+
+.Mui-focused {
+  background-color: var(--white) !important;
+  text-decoration: bold;
+}
+
+.MuiTreeItem-content:hover {
+  background-color: var(--white) !important;
 }
 
 #main-panel {
@@ -172,6 +205,7 @@
   color: currentColor !important;
 }
 
+// Console styling
 a.console-line-number {
   text-align: right;
   min-width: 40px;

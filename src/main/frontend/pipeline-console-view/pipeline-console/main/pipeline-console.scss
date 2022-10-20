@@ -224,18 +224,12 @@ div.console-output-line-anchor {
   visibility: hidden;
 }
 
-
-div.console-output {
-  padding: 5px 7px !important;
-}  
-
 div.console-output-line {
   display: flex;
 }
 
 div.stage-detail-group {
   vertical-align: auto;
-  background-color: var(--card-background);
   margin-bottom: 8px;
   border-radius: 10px;
   // Move down slightly to avoid curring off the top background.

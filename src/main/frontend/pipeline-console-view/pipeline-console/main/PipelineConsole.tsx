@@ -315,17 +315,12 @@ export class PipelineConsole extends React.Component<
         }
         return (
           <pre className="console-output">
-            <div className="console-output">
-              <StageSummary stage={focusedStage} failedSteps={failedSteps}/>
-            </div>
+            <StageSummary stage={focusedStage} failedSteps={failedSteps}/>
           </pre>
         );
       }
     }
-    return (
-      // Return empty div
-      <div></div>
-    );
+    return null
   }
 
   renderStepDetails() {
@@ -334,17 +329,12 @@ export class PipelineConsole extends React.Component<
       if ("" + step.id == this.state.selected) {
         return (
           <pre className="console-output">
-            <div className="console-output">
-              <StepSummary step={step}/>
-            </div>
+            <StepSummary step={step}/>
           </pre>
         );
       }
     }
-    return (
-      // Return empty div
-      <div></div>
-    );
+    return null
   }
 
   renderConsoleOutput() {
@@ -352,25 +342,22 @@ export class PipelineConsole extends React.Component<
       const lineChunks = this.state.consoleText.split("\n");
       return (
         <pre className="console-output">
-          <div className="console-output">
-            {
-            lineChunks.map((line, index) => {
-              let lineNumber = String(index + 1);
-              return (
-                <ConsoleLine
-                  content={line}
-                  lineNumber={lineNumber}
-                  stepId={this.state.selected}
-                  key={`${this.state.selected}-${lineNumber}`}
-                />
-              );
-            })}
-          </div>
+          {
+          lineChunks.map((line, index) => {
+            let lineNumber = String(index + 1);
+            return (
+              <ConsoleLine
+                content={line}
+                lineNumber={lineNumber}
+                stepId={this.state.selected}
+                key={`${this.state.selected}-${lineNumber}`}
+              />
+            );
+          })}
         </pre>
       )
     } else {
-      // Return empty div if no text.
-      return <div></div>;
+      return null
     }
   }
 

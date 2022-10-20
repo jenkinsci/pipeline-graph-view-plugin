@@ -314,9 +314,11 @@ export class PipelineConsole extends React.Component<
           }
         }
         return (
-          <div className="console-output">
-            <StageSummary stage={focusedStage} failedSteps={failedSteps} />
-          </div>
+          <pre className="console-output">
+            <div className="console-output">
+              <StageSummary stage={focusedStage} failedSteps={failedSteps}/>
+            </div>
+          </pre>
         );
       }
     }
@@ -331,9 +333,11 @@ export class PipelineConsole extends React.Component<
       let step = this.state.steps[i];
       if ("" + step.id == this.state.selected) {
         return (
-          <div className="console-output">
-            <StepSummary step={step} />
-          </div>
+          <pre className="console-output">
+            <div className="console-output">
+              <StepSummary step={step}/>
+            </div>
+          </pre>
         );
       }
     }
@@ -347,9 +351,10 @@ export class PipelineConsole extends React.Component<
     if (this.state.consoleText.length > 0) {
       const lineChunks = this.state.consoleText.split("\n");
       return (
-        <div className="console-output">
-          <pre className="console-pane console-output-item">
-            {lineChunks.map((line, index) => {
+        <pre className="console-output">
+          <div className="console-output">
+            {
+            lineChunks.map((line, index) => {
               let lineNumber = String(index + 1);
               return (
                 <ConsoleLine
@@ -360,9 +365,9 @@ export class PipelineConsole extends React.Component<
                 />
               );
             })}
-          </pre>
-        </div>
-      );
+          </div>
+        </pre>
+      )
     } else {
       // Return empty div if no text.
       return <div></div>;

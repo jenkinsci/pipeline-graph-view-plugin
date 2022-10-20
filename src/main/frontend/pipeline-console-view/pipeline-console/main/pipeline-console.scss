@@ -167,7 +167,7 @@
 
 // Selected tree item style.
 .Mui-selected > .MuiTreeItem-label {
-  background: var(--header-link-color-active) !important;
+  background: var(--light-grey) !important;
 }
 
 .step-tree-item > .MuiTreeItem-content > .MuiTreeItem-label {
@@ -181,18 +181,18 @@
 
 // Remove highlighting
 .Mui-selected {
-  background-color: var(--white) !important;
+  background: transparent !important;
   text-decoration: bold !important;
   font-weight: 700;
 }
 
 .Mui-focused {
-  background-color: var(--white) !important;
+  background: transparent !important;
   text-decoration: bold;
 }
 
 .MuiTreeItem-content:hover {
-  background-color: var(--white) !important;
+  background: transparent !important;
 }
 
 #main-panel {
@@ -212,7 +212,7 @@ a.console-line-number {
   max-width: 40px;
   margin-left: -15px;
   margin-right: 27px;
-  color: var(--text-color-secondary);
+  color: var(--link-color);
   white-space: nowrap;
   display: inline-block;
 }
@@ -224,10 +224,10 @@ div.console-output-line-anchor {
   visibility: hidden;
 }
 
-pre.console-pane {
-  background-color: var(--card-background);
-  word-break: break-word;
-}
+
+div.console-output {
+  padding: 5px 7px !important;
+}  
 
 div.console-output-line {
   display: flex;
@@ -240,7 +240,6 @@ div.stage-detail-group {
   border-radius: 10px;
   // Move down slightly to avoid curring off the top background.
   position: relative;
-  padding: 0.8rem 1rem;
   white-space: nowrap;
 }
 
@@ -278,6 +277,7 @@ div.detail-element:last-child {
 
 svg.detail-icon {
   margin-right: 10px;
+  font-size: 1.5rem !important;
 }
 
 div.split-pane {

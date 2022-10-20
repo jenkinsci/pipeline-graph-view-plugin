@@ -108,7 +108,7 @@ const FailedStepLink = (props: FailedStepLinkProps) => (
 
 export interface ConsoleLineProps {
   lineNumber: string;
-  content: string[] | Ansi.Result[];
+  content: string;
   stepId: string;
   key: string;
 }
@@ -127,7 +127,7 @@ const ConsoleLine = (props: ConsoleLineProps) => (
       >
         {props.lineNumber}
       </a>
-      {makeReactChildren(props.content)}
+      {makeReactChildren(tokenizeANSIString(props.content))}
     </div>
   </div>
 );
@@ -354,7 +354,7 @@ export class PipelineConsole extends React.Component<
               let lineNumber = String(index + 1);
               return (
                 <ConsoleLine
-                  content={tokenizeANSIString(line)}
+                  content={line}
                   lineNumber={lineNumber}
                   stepId={this.state.selected}
                   key={`${this.state.selected}-${lineNumber}`}

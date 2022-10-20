@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
+import org.jenkinsci.plugins.workflow.actions.LabelAction;
 import org.jenkinsci.plugins.workflow.graph.AtomNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -104,6 +105,14 @@ public class FlowNodeWrapper {
 
   public @NonNull String getDisplayName() {
     return displayName;
+  }
+
+  public @CheckForNull String getLabelDisplayName() {
+    LabelAction labelAction = node.getAction(LabelAction.class);
+    if (labelAction != null) {
+      return labelAction.getDisplayName();
+    }
+    return null;
   }
 
   private static NodeType getNodeType(FlowNode node) {

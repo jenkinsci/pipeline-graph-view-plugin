@@ -71,6 +71,9 @@
 .console-output {
   text-align: left;
   padding-left: 16px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  margin-bottom: 10px;
 }
 
 .console-output p {
@@ -230,7 +233,6 @@ div.console-output-line {
 
 div.stage-detail-group {
   vertical-align: auto;
-  margin-bottom: 8px;
   border-radius: 10px;
   // Move down slightly to avoid curring off the top background.
   position: relative;

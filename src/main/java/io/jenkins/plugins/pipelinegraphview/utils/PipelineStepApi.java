@@ -38,6 +38,12 @@ public class PipelineStepApi {
                   if (stepArguments != null && !stepArguments.isEmpty()) {
                     displayName = stepArguments + " - " + displayName;
                   }
+
+                  // Use the step label as the displayName if set
+                  String labelDisplayName = flowNodeWrapper.getLabelDisplayName();
+                  if (labelDisplayName != null && !labelDisplayName.isEmpty()) {
+                    displayName = labelDisplayName;
+                  }
                   // Remove non-printable chars (e.g. ANSI color codes).
                   logger.debug("DisplayName Before: '" + displayName + "'.");
                   displayName = cleanTextContent(displayName);

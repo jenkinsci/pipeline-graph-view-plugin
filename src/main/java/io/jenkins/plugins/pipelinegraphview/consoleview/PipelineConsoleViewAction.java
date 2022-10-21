@@ -8,17 +8,16 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.HashMap;
 import net.sf.json.JSONObject;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.jenkinsci.plugins.workflow.actions.LogAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
-import org.kohsuke.stapler.framework.io.CharSpool;
-import org.kohsuke.stapler.framework.io.LineEndNormalizingWriter;
 import org.kohsuke.stapler.verb.GET;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,14 +85,15 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     return HttpResponses.okJSON(JSONObject.fromObject(stepsJson));
   }
 
+  @GET
   @WebMethod(name = "consoleOutput")
-  public void getConsoleOutput(StaplerRequest req, StaplerResponse rsp) throws IOException {
+  public HttpResponse getConsoleOutput(StaplerRequest req) throws IOException {
     String nodeId = req.getParameter("nodeId");
     if (nodeId != null) {
       logger.debug("getConsoleOutput was passed node id '" + nodeId + "'.");
-      CharSpool spool = new CharSpool();
+      Writer stringWriter = new StringBuilderWriter();
       AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
-
+      HashMap<String, String> response = new HashMap<String, String>();
       if (logText != null) {
         long offset;
         if (logText.length() > LOG_THRESHOLD) {
@@ -101,27 +101,22 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         } else {
           offset = 0;
         }
-
-        long receivedBytes = logText.writeLogTo(offset, spool);
+        long receivedBytes = logText.writeHtmlTo(offset, stringWriter);
         logger.debug("Received " + receivedBytes + " of console output.");
-
-        logText.length();
-        Writer writer = rsp.getWriter();
-
+        String text = stringWriter.toString();
         if (offset > 0) {
-          writer
-              .append(
-                  "Output is truncated for performance, only showing the last 150KB of logs for this step...")
-              .append("\n");
+          text =
+              text
+                  + "Output is truncated for performance, only showing the last 150KB of logs for this step...\n";
         }
-
-        spool.writeTo(new LineEndNormalizingWriter(writer));
+        response.put("text", text);
       } else {
-        rsp.getWriter().append("");
+        response.put("text", "");
       }
+      return HttpResponses.okJSON(JSONObject.fromObject(response));
     } else {
       logger.debug("getConsoleOutput was not passed nodeId.");
-      rsp.getWriter().append("Error getting console text");
+      return HttpResponses.errorJSON("Error getting console text");
     }
   }
 

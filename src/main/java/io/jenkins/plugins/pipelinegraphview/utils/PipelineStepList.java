@@ -19,6 +19,19 @@ public class PipelineStepList {
     return steps;
   }
 
+  /* Sorts the list of PipelineSteps by stageId and Id. */
+  public void sort() {
+    this.steps.sort(
+        (lhs, rhs) -> {
+          if (lhs.getStageId().equals(rhs.getStageId())) {
+            return Integer.compare(
+                Integer.parseInt(lhs.getStageId()), Integer.parseInt(rhs.getStageId()));
+          } else {
+            return Integer.compare(lhs.getId(), rhs.getId());
+          }
+        });
+  }
+
   public void addAll(List<PipelineStep> steps) {
     this.steps.addAll(steps);
   }

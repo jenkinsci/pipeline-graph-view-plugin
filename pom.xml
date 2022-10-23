@@ -16,7 +16,7 @@
         <gitHubRepo>jenkinsci/pipeline-graph-view-plugin</gitHubRepo>
         <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
         <jenkins.version>2.346.1</jenkins.version>
-        <node.version>16.17.1</node.version>
+        <node.version>16.18.0</node.version>
         <npm.version>8.19.2</npm.version>
     </properties>
     <name>Pipeline Graph View Plugin</name>

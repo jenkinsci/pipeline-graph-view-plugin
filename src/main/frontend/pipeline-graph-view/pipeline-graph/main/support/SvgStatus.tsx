@@ -1,8 +1,6 @@
 import * as React from "react";
-
 import { Result } from "../PipelineGraphModel";
-
-import { nodeStrokeWidth } from "./StatusIcons";
+import { getClassForResult } from "./StatusIcons";
 
 // These were mostly taken from SVG and pre-translated
 const questionMarkPath =
@@ -15,15 +13,7 @@ const questionMarkPath =
   "C-0.660,-3.76 -1.21,-3.47 -1.52,-2.87 C-1.69,-2.54 -1.79,-2.07 -1.81,-1.45 L-3.09,-1.45 " +
   "C-3.09,-2.48 -2.80,-3.31 -2.21,-3.94 L-2.21,-3.94 Z";
 
-const hollowCirclePath =
-  "M 0,-6 A 6,6 0 0 1 0,6 A 6,6 0 0 1 0,-6 m 0,1.3 A 4,4 0 0 0 0,4.7 A 4,4 0 0 0 0,-4.7";
-
-const checkMarkPoints =
-  "-2.00 2.80 -4.80 0.00 -5.73 0.933 -2.00 4.67 6.00 -3.33 5.07 -4.27";
-
-const crossPoints =
-  "4.67 -3.73 3.73 -4.67 0 -0.94 -3.73 -4.67 -4.67 -3.73 -0.94 0 -4.67 3.73 -3.73 4.67 0 0.94 " +
-  "3.73 4.67 4.67 3.73 0.94 0";
+const imagesPath = "/jenkins/images";
 
 interface Props {
   result: Result;
@@ -32,105 +22,151 @@ interface Props {
 
 export class SvgStatus extends React.PureComponent<Props> {
   render() {
+    const baseWrapperClasses = "build-status-icon__wrapper icon-md";
     const { result, radius = 12 } = this.props;
+    const diameter = radius * 2;
+    const iconOuterClassName =
+      result === Result.running ? "in-progress" : "static";
+    const iconSuffix = result === Result.running ? "-anime" : "";
 
-    if (result === Result.not_built || result === Result.skipped) {
-      // Basic grey circle
-
-      const innerRadius = radius - 0.5 * nodeStrokeWidth; // No "inside" stroking in SVG
-
-      return (
-        <g>
-          <circle
-            cx="0"
-            cy="0"
-            r={radius}
-            className="halo"
-            strokeWidth={nodeStrokeWidth}
-          />
-          <circle
-            cx="0"
-            cy="0"
-            r={innerRadius}
-            strokeWidth={nodeStrokeWidth}
-            className="PWGx-svgResultStatusOutline"
-          />
+    return (
+      <g
+        className={`${baseWrapperClasses} ${getClassForResult(
+          result
+        )}${iconSuffix}`}
+      >
+        <g
+          className="build-status-icon__outer"
+          style={{ transform: `translate(0,0)` }}
+        >
+          <svg
+            focusable="false"
+            className="svg-icon "
+            width={diameter}
+            height={diameter}
+            x={-radius}
+            y={-radius}
+          >
+            <use
+              className="svg-icon"
+              style={{ transformOrigin: "50% 50%" }}
+              href={`${imagesPath}/build-status/build-status-sprite.svg#build-status-${iconOuterClassName}`}
+            />
+          </svg>
         </g>
-      );
-    } else {
-      // Otherwise solid-bg circle with a glyph on it
-
-      return (
-        <g className="PWGx-svgResultStatusSolid">
-          <circle
-            cx="0"
-            cy="0"
-            r={radius}
-            className="halo"
-            strokeWidth={nodeStrokeWidth}
-          />
-          <circle
-            cx="0"
-            cy="0"
-            r={radius}
-            className={`statusColor circle-bg ${result}`}
-          />
-          {getGlyphFor(result)}
-        </g>
-      );
-    }
+        {getGlyphFor(result)}
+      </g>
+    );
   }
 }
 
 /**
-    Returns a glyph (as <g>) for specified result type. Centered at 0,0, scaled for 24px icons.
+ Returns a glyph (as <g>) for specified result type. Centered at 0,0, scaled for 24px icons.
  */
-function getGlyphFor(result: Result) {
+function getGlyphFor(result: Result, radius: number = 12) {
   // NB: If we start resizing these things, we'll need to use radius/12 to
   // generate a "scale" transform for the group
-
+  const diameter = radius * 2;
   switch (result) {
     case Result.aborted:
       return (
-        <g className="PWGx-result-status-glyph">
-          <polygon points="-5 -1 5 -1 5 1 -5 1" />
-        </g>
+        <svg
+          x={-radius}
+          y={-radius}
+          width={diameter}
+          height={diameter}
+          focusable="false"
+          className={`svg-icon icon-md`}
+        >
+          <use
+            href={`${imagesPath}/build-status/build-status-sprite.svg#last-aborted`}
+          />
+        </svg>
       );
     case Result.paused:
       // "||"
       // 8px 9.3px
       return (
-        <g className="PWGx-result-status-glyph">
+        <svg
+          x={-radius}
+          y={-radius}
+          width={diameter}
+          height={diameter}
+          focusable="false"
+          className={`svg-icon icon-md`}
+          viewBox={`${-radius} ${-radius} ${diameter} ${diameter}`}
+        >
           <polygon points="-4,-4.65 -4,4.65 -4,4.65 -1.5,4.65 -1.5,-4.65" />
           <polygon points="4,-4.65 1.5,-4.65 1.5,-4.65 1.5,4.65 4,4.65" />
-        </g>
+        </svg>
       );
     case Result.unstable:
       // "!"
       return (
-        <g className="PWGx-result-status-glyph">
-          <polygon points="-1 -5 1 -5 1 1 -1 1" />
-          <polygon points="-1 3 1 3 1 5 -1 5" />
-        </g>
+        <svg
+          x={-radius}
+          y={-radius}
+          width={diameter}
+          height={diameter}
+          focusable="false"
+          className={`svg-icon icon-md`}
+        >
+          <use
+            href={`${imagesPath}/build-status/build-status-sprite.svg#last-unstable`}
+          />
+        </svg>
       );
     case Result.success:
       // check-mark
       return (
-        <g className="PWGx-result-status-glyph">
-          <polygon points={checkMarkPoints} />
-        </g>
+        <svg
+          x={-radius}
+          y={-radius}
+          width={diameter}
+          height={diameter}
+          focusable="false"
+          className={`svg-icon icon-md`}
+        >
+          <use
+            href={`${imagesPath}/build-status/build-status-sprite.svg#last-successful`}
+          />
+        </svg>
       );
     case Result.failure:
       // "X"
       return (
-        <g className="PWGx-result-status-glyph">
-          <polygon points={crossPoints} />
-        </g>
+        <svg
+          x={-radius}
+          y={-radius}
+          width={diameter}
+          height={diameter}
+          focusable="false"
+          className={`svg-icon icon-md`}
+        >
+          <use
+            href={`${imagesPath}/build-status/build-status-sprite.svg#last-failed`}
+          />
+        </svg>
       );
-    case Result.not_built: // Handled directly by SvgStatus component above
-    case Result.skipped: // Handled directly by SvgStatus component above
-    case Result.queued: // Handled by spinner
-    case Result.running: // Handled by spinner
+    case Result.not_built:
+      return (
+        <svg
+          x={-radius}
+          y={-radius}
+          width={diameter}
+          height={diameter}
+          focusable="false"
+          className={`svg-icon icon-md`}
+        >
+          <use
+            href={`${imagesPath}/build-status/build-status-sprite.svg#never-built`}
+          />
+        </svg>
+      );
+    case Result.skipped:
+    case Result.queued:
+    case Result.running:
+      return null;
     case Result.unknown:
       break; // Continue on to the "unknown render"
 
@@ -139,9 +175,16 @@ function getGlyphFor(result: Result) {
   }
   // "?" for Result.unknown or for bad input
   return (
-    <g className="PWGx-result-status-glyph">
+    <svg
+      className={`svg-icon icon-md`}
+      x={-radius}
+      y={-radius}
+      width={diameter}
+      height={diameter}
+      viewBox={`${-radius} ${-radius} ${diameter} ${diameter}`}
+    >
       <path d={questionMarkPath} />
-    </g>
+    </svg>
   );
 }
 

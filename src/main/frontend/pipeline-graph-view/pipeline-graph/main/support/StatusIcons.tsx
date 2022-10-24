@@ -1,6 +1,5 @@
 import * as React from "react";
 import { Result } from "../PipelineGraphModel";
-import { SvgSpinner } from "./SvgSpinner";
 import { SvgStatus } from "./SvgStatus";
 
 export const nodeStrokeWidth = 3.5; // px.
@@ -10,13 +9,10 @@ export function getGroupForResult(
   result: Result,
   percentage: number,
   radius: number
-): React.ReactElement<SvgSpinner> | React.ReactElement<SvgStatus> {
+): React.ReactElement<SvgStatus> {
   switch (result) {
     case Result.running:
     case Result.queued:
-      return (
-        <SvgSpinner radius={radius} result={result} percentage={percentage} />
-      );
     case Result.not_built:
     case Result.skipped:
     case Result.success:
@@ -35,3 +31,26 @@ export function getGroupForResult(
 function badResult(x: never) {
   console.error("Unexpected Result value", x);
 }
+
+export const getClassForResult = (result: Result) => {
+  // These come from the themes icons.less
+  switch (result) {
+    case Result.aborted:
+      return "icon-aborted";
+    case Result.unstable:
+      return "icon-yellow";
+    case Result.failure:
+      return "icon-red";
+    case Result.success:
+      return "icon-blue";
+    case Result.running:
+    case Result.queued:
+      return "icon-grey";
+    case Result.not_built:
+    case Result.paused:
+    case Result.skipped:
+    case Result.unknown:
+    default:
+      return "icon-nobuilt";
+  }
+};

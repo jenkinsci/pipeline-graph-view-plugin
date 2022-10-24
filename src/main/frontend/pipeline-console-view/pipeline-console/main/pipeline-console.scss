@@ -168,8 +168,8 @@
   background: var(--very-light-grey);
 }
 
-// Selected tree item style.
-.Mui-selected > .MuiTreeItem-label {
+// Focused TreeItem style.
+.MuiTreeItem-label:focus {
   background: var(--light-grey) !important;
 }
 

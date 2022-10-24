@@ -15,7 +15,7 @@ import LinkIcon from '@mui/icons-material/Link';
 
 import "./pipeline-console.scss";
 
-interface PipelineConsoleProps {}
+interface PipelineConsoleProps { }
 interface PipelineConsoleState {
   consoleText: string;
   selected: string;
@@ -118,15 +118,16 @@ const ConsoleLine = (props: ConsoleLineProps) => (
     <div
       className="console-output-line-anchor"
       id={`log-${props.lineNumber}`}
+      key={`${props.lineNumber}-anchor`}
     />
-    <div className="console-output-line">
+    <div className="console-output-line" key={`${props.lineNumber}-body`}>
       <a
         className="console-line-number"
         href={`?selected-node=${props.stepId}#log-${props.lineNumber}`}
       >
         {props.lineNumber}
       </a>
-      {makeReactChildren(tokenizeANSIString(props.content))}
+      {makeReactChildren(tokenizeANSIString(props.content), `${props.stepId}-${props.lineNumber}`)}
     </div>
   </div>
 );
@@ -315,7 +316,7 @@ export class PipelineConsole extends React.Component<
         }
         return (
           <pre className="console-output">
-            <StageSummary stage={focusedStage} failedSteps={failedSteps}/>
+            <StageSummary stage={focusedStage} failedSteps={failedSteps} />
           </pre>
         );
       }
@@ -329,7 +330,7 @@ export class PipelineConsole extends React.Component<
       if ("" + step.id == this.state.selected) {
         return (
           <pre className="console-output">
-            <StepSummary step={step}/>
+            <StepSummary step={step} />
           </pre>
         );
       }
@@ -343,17 +344,17 @@ export class PipelineConsole extends React.Component<
       return (
         <pre className="console-output">
           {
-          lineChunks.map((line, index) => {
-            let lineNumber = String(index + 1);
-            return (
-              <ConsoleLine
-                content={line}
-                lineNumber={lineNumber}
-                stepId={this.state.selected}
-                key={`${this.state.selected}-${lineNumber}`}
-              />
-            );
-          })}
+            lineChunks.map((line, index) => {
+              let lineNumber = String(index + 1);
+              return (
+                <ConsoleLine
+                  content={line}
+                  lineNumber={lineNumber}
+                  stepId={this.state.selected}
+                  key={`${this.state.selected}-${lineNumber}`}
+                />
+              );
+            })}
         </pre>
       )
     } else {
@@ -373,34 +374,34 @@ export class PipelineConsole extends React.Component<
     };
     return (
       <React.Fragment>
-      <div className="App">
-        <SplitPane
-          // intialSize ratio
-          initialSizes={[3, 7]}
-          // minSize in Pixels (for all panes)
-          minSizes={250}
-          className="split-pane"
-          split="vertical"
-        >
-          <div className="split-pane" key="tree-view">
-            <DataTreeView
-              onNodeSelect={this.handleActionNodeSelect}
-              onNodeToggle={this.handleToggle}
-              selected={this.state.selected}
-              expanded={this.state.expanded}
-              stages={this.state.stages}
-              steps={this.state.steps}
-            />
-          </div>
-          
-          <div className="split-pane" key="console-view">
-            {this.renderStageDetails()}
-            {this.renderStepDetails()}
-            {this.renderConsoleOutput()}
-          </div>
-        </SplitPane>
-      </div>
-    </React.Fragment>
+        <div className="App">
+          <SplitPane
+            // intialSize ratio
+            initialSizes={[3, 7]}
+            // minSize in Pixels (for all panes)
+            minSizes={250}
+            className="split-pane"
+            split="vertical"
+          >
+            <div className="split-pane" key="tree-view">
+              <DataTreeView
+                onNodeSelect={this.handleActionNodeSelect}
+                onNodeToggle={this.handleToggle}
+                selected={this.state.selected}
+                expanded={this.state.expanded}
+                stages={this.state.stages}
+                steps={this.state.steps}
+              />
+            </div>
+
+            <div className="split-pane" key="console-view">
+              {this.renderStageDetails()}
+              {this.renderStepDetails()}
+              {this.renderConsoleOutput()}
+            </div>
+          </SplitPane>
+        </div>
+      </React.Fragment>
     )
   }
 }

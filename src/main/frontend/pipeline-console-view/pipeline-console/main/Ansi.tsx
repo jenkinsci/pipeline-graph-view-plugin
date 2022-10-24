@@ -148,7 +148,10 @@ export function tokenizeANSIString(input?: string): string[] | Result[] {
  * Takes an array of string snippets and parsed escape codes produced bv tokenizeANSIString, and creates
  * an array of strings and spans with classNames for attributes.
  */
-export function makeReactChildren(tokenizedInput: string[] | Result[], key: string) {
+export function makeReactChildren(
+  tokenizedInput: string[] | Result[],
+  key: string
+) {
   const result = [];
   let currentState: Result = {
     setFG: false,
@@ -161,7 +164,12 @@ export function makeReactChildren(tokenizedInput: string[] | Result[], key: stri
       // Need to output a <span> or plain text if there's no interesting current state
 
       if (!currentState.setFG && !currentState.setBG) {
-        result.push(<div dangerouslySetInnerHTML={{ __html: codeOrString }} key={`${key}-${i}`} />);
+        result.push(
+          <div
+            dangerouslySetInnerHTML={{ __html: codeOrString }}
+            key={`${key}-${i}`}
+          />
+        );
       } else {
         const classNames = [];
 

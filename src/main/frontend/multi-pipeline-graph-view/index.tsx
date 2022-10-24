@@ -10,4 +10,4 @@ if (!rootElement) throw new Error("Failed to find the 'multiple-pipeline-root' e
 const root = ReactDOMClient.createRoot(rootElement);
 
 // Render App
-root.render(<App/>);
+root.render(<App />);

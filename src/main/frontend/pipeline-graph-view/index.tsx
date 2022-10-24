@@ -10,4 +10,4 @@ if (!rootElement) throw new Error("Failed to find the 'graph' element");
 const root = ReactDOMClient.createRoot(rootElement);
 
 // Render App
-root.render(<App/>);
+root.render(<App />);

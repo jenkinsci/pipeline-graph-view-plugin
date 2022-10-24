@@ -8,7 +8,7 @@
     "mvntest": "npm run test",
     "build": "webpack --mode production",
     "build:dev": "webpack --mode development --watch",
-    "test": "npm run prettier-check && jest",
+    "test": "npm run jest prettier-check",
     "prettier-check": "prettier --check src/main/frontend/",
     "prettier": "prettier --write src/main/frontend/"
   },
@@ -29,6 +29,7 @@
     "@react-spring/web": "9.5.4",
     "@reacticons/ionicons": "6.0.4",
     "html-react-parser": "1.4.14",
+    "jest-cli": "^29.2.1",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
@@ -46,7 +47,7 @@
     "@types/react-dom": "18.0.6",
     "css-loader": "3.6.0",
     "import": "^0.0.6",
-    "jest": "27.5.1",
+    "jest": "^27.5.1",
     "prettier": "2.7.1",
     "react-collapse-pane": "^3.0.1",
     "sass": "1.55.0",

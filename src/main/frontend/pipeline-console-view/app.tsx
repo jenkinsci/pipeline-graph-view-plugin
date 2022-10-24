@@ -3,7 +3,7 @@ import { FunctionComponent } from "react";
 
 import { PipelineConsole } from "./pipeline-console/main/";
 
-import { createTheme } from '@mui/material/styles';
+import { createTheme } from "@mui/material/styles";
 
 export const theme = createTheme();
 

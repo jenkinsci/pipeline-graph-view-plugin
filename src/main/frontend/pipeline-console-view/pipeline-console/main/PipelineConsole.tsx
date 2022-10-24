@@ -5,17 +5,17 @@ import { makeReactChildren, tokenizeANSIString } from "./Ansi";
 import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/";
 import { DataTreeView, StepInfo } from "./DataTreeView";
 
-import Typography from '@mui/material/Typography';
+import Typography from "@mui/material/Typography";
 
-import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
-import ScheduleIcon from '@mui/icons-material/Schedule';
-import TimerIcon from '@mui/icons-material/Timer';
-import InfoIcon from '@mui/icons-material/Info';
-import LinkIcon from '@mui/icons-material/Link';
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+import TimerIcon from "@mui/icons-material/Timer";
+import InfoIcon from "@mui/icons-material/Info";
+import LinkIcon from "@mui/icons-material/Link";
 
 import "./pipeline-console.scss";
 
-interface PipelineConsoleProps { }
+interface PipelineConsoleProps {}
 interface PipelineConsoleState {
   consoleText: string;
   selected: string;
@@ -127,7 +127,10 @@ const ConsoleLine = (props: ConsoleLineProps) => (
       >
         {props.lineNumber}
       </a>
-      {makeReactChildren(tokenizeANSIString(props.content), `${props.stepId}-${props.lineNumber}`)}
+      {makeReactChildren(
+        tokenizeANSIString(props.content),
+        `${props.stepId}-${props.lineNumber}`
+      )}
     </div>
   </div>
 );
@@ -321,7 +324,7 @@ export class PipelineConsole extends React.Component<
         );
       }
     }
-    return null
+    return null;
   }
 
   renderStepDetails() {
@@ -335,7 +338,7 @@ export class PipelineConsole extends React.Component<
         );
       }
     }
-    return null
+    return null;
   }
 
   renderConsoleOutput() {
@@ -343,22 +346,21 @@ export class PipelineConsole extends React.Component<
       const lineChunks = this.state.consoleText.split("\n");
       return (
         <pre className="console-output">
-          {
-            lineChunks.map((line, index) => {
-              let lineNumber = String(index + 1);
-              return (
-                <ConsoleLine
-                  content={line}
-                  lineNumber={lineNumber}
-                  stepId={this.state.selected}
-                  key={`${this.state.selected}-${lineNumber}`}
-                />
-              );
-            })}
+          {lineChunks.map((line, index) => {
+            let lineNumber = String(index + 1);
+            return (
+              <ConsoleLine
+                content={line}
+                lineNumber={lineNumber}
+                stepId={this.state.selected}
+                key={`${this.state.selected}-${lineNumber}`}
+              />
+            );
+          })}
         </pre>
-      )
+      );
     } else {
-      return null
+      return null;
     }
   }
 
@@ -402,6 +404,6 @@ export class PipelineConsole extends React.Component<
           </SplitPane>
         </div>
       </React.Fragment>
-    )
+    );
   }
 }

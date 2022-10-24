@@ -168,8 +168,7 @@
   background: var(--very-light-grey);
 }
 
-// Focused TreeItem style.
-.MuiTreeItem-label:focus {
+.Mui-focused > .MuiTreeItem-label {
   background: var(--light-grey) !important;
 }
 

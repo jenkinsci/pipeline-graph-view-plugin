@@ -71,7 +71,7 @@ describe("PipelineGraphLayout", () => {
         {
           hasBranchLabels: false,
           topStage: { name: "unstable-one", id: 4 },
-          rows: [[makeNode(4, "DO_NOT_ACCEPT_PR")]],
+          rows: [[makeNode(4, "unstable-one")]],
         },
         {
           hasBranchLabels: false,

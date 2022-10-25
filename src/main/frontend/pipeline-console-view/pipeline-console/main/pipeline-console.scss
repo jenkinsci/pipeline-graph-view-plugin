@@ -173,8 +173,23 @@
   background: var(--very-light-grey);
 }
 
+:root {
+  --active-card-background: var(--light-yellow);
+}
+
+[data-theme="dark"] {
+  --active-card-background: var(--dark-yellow);
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="dark-system"],
+  [data-theme="dark-system"] {
+    --active-card-background: var(--dark-yellow);
+  }
+}
+
 .Mui-focused > .MuiTreeItem-label {
-  background: var(--light-grey) !important;
+  background: var(--active-card-background) !important;
 }
 
 .step-tree-item > .MuiTreeItem-content > .MuiTreeItem-label {

@@ -1,15 +1,9 @@
 import React from "react";
-import TreeView from "@material-ui/lab/TreeView/";
+import TreeView from "@mui/lab/TreeView/";
 
-import {
-  fade,
-  withStyles,
-  Theme,
-  createStyles,
-} from "@material-ui/core/styles";
-import TreeItem, { TreeItemProps } from "@material-ui/lab/TreeItem";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import ChevronRightIcon from "@material-ui/icons/ChevronRight";
+import TreeItem from "@mui/lab/TreeItem";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
 import {
   StageInfo,
@@ -34,37 +28,11 @@ export interface StepInfo {
   totalDurationMillis: string;
 }
 
-// Tree Item for stages
-const StageTreeItem = withStyles((theme: Theme) =>
-  createStyles({
-    iconContainer: {
-      "& .close": {
-        opacity: 0.3,
-      },
-    },
-    // TODO: Make line show status of block (green = passed, red = failed, etc.)
-    group: {
-      marginLeft: 7,
-      paddingLeft: 18,
-      borderLeft: `1px dashed ${fade(theme.palette.text.primary, 0.4)}`,
-    },
-    label: {},
-  })
-)((props: TreeItemProps) => <TreeItem {...props} />);
-
-// Tree Item for steps
-const StepTreeItem = withStyles((theme: Theme) =>
-  createStyles({
-    label: {
-      textDecoration: "underline",
-    },
-  })
-)((props: TreeItemProps) => <TreeItem {...props} />);
-
 const getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
   return stepsItems.map((stepItemData) => {
     return (
-      <StepTreeItem
+      <TreeItem
+        className="step-tree-item"
         key={stepItemData.id}
         nodeId={String(stepItemData.id)}
         label={
@@ -105,7 +73,8 @@ const getTreeItemsFromStage = (stageItems: StageInfo[], steps: StepInfo[]) => {
       children = [...children, ...stepsItems];
     }
     return (
-      <StageTreeItem
+      <TreeItem
+        className="stage-tree-item"
         key={stageItemData.id}
         nodeId={String(stageItemData.id)}
         label={

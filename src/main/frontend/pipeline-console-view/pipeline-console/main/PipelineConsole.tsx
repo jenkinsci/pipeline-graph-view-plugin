@@ -1,18 +1,17 @@
 import React from "react";
 
-import SplitPane from "react-split-pane";
-import { DataTreeView } from "./DataTreeView";
+import { SplitPane } from "react-collapse-pane";
 import { makeReactChildren, tokenizeANSIString } from "./Ansi";
 import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/";
-import { StepInfo } from "./DataTreeView";
+import { DataTreeView, StepInfo } from "./DataTreeView";
 
-import Typography from "@material-ui/core/Typography";
+import Typography from "@mui/material/Typography";
 
-import HourglassEmptyIcon from "@material-ui/icons/HourglassEmpty";
-import ScheduleIcon from "@material-ui/icons/Schedule";
-import TimerIcon from "@material-ui/icons/Timer";
-import InfoIcon from "@material-ui/icons/Info";
-import LinkIcon from "@material-ui/icons/Link";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+import TimerIcon from "@mui/icons-material/Timer";
+import InfoIcon from "@mui/icons-material/Info";
+import LinkIcon from "@mui/icons-material/Link";
 
 import "./pipeline-console.scss";
 
@@ -119,15 +118,19 @@ const ConsoleLine = (props: ConsoleLineProps) => (
     <div
       className="console-output-line-anchor"
       id={`log-${props.lineNumber}`}
+      key={`${props.lineNumber}-anchor`}
     />
-    <div className="console-output-line">
+    <div className="console-output-line" key={`${props.lineNumber}-body`}>
       <a
         className="console-line-number"
         href={`?selected-node=${props.stepId}#log-${props.lineNumber}`}
       >
         {props.lineNumber}
       </a>
-      {makeReactChildren(tokenizeANSIString(props.content))}
+      {makeReactChildren(
+        tokenizeANSIString(props.content),
+        `${props.stepId}-${props.lineNumber}`
+      )}
     </div>
   </div>
 );
@@ -315,16 +318,13 @@ export class PipelineConsole extends React.Component<
           }
         }
         return (
-          <div className="console-output">
+          <pre className="console-output">
             <StageSummary stage={focusedStage} failedSteps={failedSteps} />
-          </div>
+          </pre>
         );
       }
     }
-    return (
-      // Return empty div
-      <div></div>
-    );
+    return null;
   }
 
   renderStepDetails() {
@@ -332,41 +332,35 @@ export class PipelineConsole extends React.Component<
       let step = this.state.steps[i];
       if ("" + step.id == this.state.selected) {
         return (
-          <div className="console-output">
+          <pre className="console-output">
             <StepSummary step={step} />
-          </div>
+          </pre>
         );
       }
     }
-    return (
-      // Return empty div
-      <div></div>
-    );
+    return null;
   }
 
   renderConsoleOutput() {
     if (this.state.consoleText.length > 0) {
       const lineChunks = this.state.consoleText.split("\n");
       return (
-        <div className="console-output">
-          <pre className="console-pane console-output-item">
-            {lineChunks.map((line, index) => {
-              let lineNumber = String(index + 1);
-              return (
-                <ConsoleLine
-                  content={line}
-                  lineNumber={lineNumber}
-                  stepId={this.state.selected}
-                  key={`${this.state.selected}-${lineNumber}`}
-                />
-              );
-            })}
-          </pre>
-        </div>
+        <pre className="console-output">
+          {lineChunks.map((line, index) => {
+            let lineNumber = String(index + 1);
+            return (
+              <ConsoleLine
+                content={line}
+                lineNumber={lineNumber}
+                stepId={this.state.selected}
+                key={`${this.state.selected}-${lineNumber}`}
+              />
+            );
+          })}
+        </pre>
       );
     } else {
-      // Return empty div if no text.
-      return <div></div>;
+      return null;
     }
   }
 
@@ -380,17 +374,18 @@ export class PipelineConsole extends React.Component<
       height: "calc(100vh - 300px)",
       overflowY: "auto",
     };
-
     return (
       <React.Fragment>
         <div className="App">
           <SplitPane
-            minSize={150}
-            defaultSize={parseInt(localStorage.getItem("splitPos") || "250")}
-            onChange={(size) => localStorage.setItem("splitPos", `${size}`)}
-            style={splitPaneStyle}
+            // intialSize ratio
+            initialSizes={[3, 7]}
+            // minSize in Pixels (for all panes)
+            minSizes={250}
+            className="split-pane"
+            split="vertical"
           >
-            <div style={paneStyle}>
+            <div className="split-pane" key="tree-view">
               <DataTreeView
                 onNodeSelect={this.handleActionNodeSelect}
                 onNodeToggle={this.handleToggle}
@@ -401,7 +396,7 @@ export class PipelineConsole extends React.Component<
               />
             </div>
 
-            <div style={paneStyle}>
+            <div className="split-pane" key="console-view">
               {this.renderStageDetails()}
               {this.renderStepDetails()}
               {this.renderConsoleOutput()}

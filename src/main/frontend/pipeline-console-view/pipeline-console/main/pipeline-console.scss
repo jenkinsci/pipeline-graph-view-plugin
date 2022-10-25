@@ -17,7 +17,10 @@
   font-family: sans-serif;
   text-align: center;
   height: 80%;
+  display: flex;
+  background: transparent;
 }
+
 .Resizer {
   background: #000;
   opacity: 0.2;
@@ -33,6 +36,7 @@
     transition: all 2s ease;
   }
 }
+
 .Resizer.horizontal {
   height: 11px;
   margin: -5px 0;
@@ -45,6 +49,7 @@
     border-bottom: 5px solid rgba(0, 0, 0, 0.5);
   }
 }
+
 .Resizer.vertical {
   width: 11px;
   margin: 0 0 -5px 4px;
@@ -56,12 +61,14 @@
     border-right: 5px solid rgba(0, 0, 0, 0.5);
   }
 }
+
 .Resizer.disabled {
   cursor: not-allowed;
   &:hover {
     border-color: transparent;
   }
 }
+
 .SplitPane {
   position: relative;
 }
@@ -69,6 +76,9 @@
 .console-output {
   text-align: left;
   padding-left: 16px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  margin-bottom: 10px;
 }
 
 .console-output p {
@@ -144,6 +154,7 @@
   background: var(--white, #fff);
 }
 
+// TreeView styling
 .MuiTreeItem-label {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -157,8 +168,53 @@
   top: 5px;
 }
 
+// Hover TreeItem style.
+.MuiTreeItem-label:hover {
+  background: var(--very-light-grey);
+}
+
+:root {
+  --active-card-background: var(--light-yellow);
+}
+
+[data-theme="dark"] {
+  --active-card-background: var(--dark-yellow);
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="dark-system"],
+  [data-theme="dark-system"] {
+    --active-card-background: var(--dark-yellow);
+  }
+}
+
+.Mui-focused > .MuiTreeItem-label {
+  background: var(--active-card-background) !important;
+}
+
+.step-tree-item > .MuiTreeItem-content > .MuiTreeItem-label {
+  text-decoration: underline;
+  text-underline-position: under;
+}
+
 .MuiTreeItem-label.pgv-graph-node--synthetic {
   font-style: italic;
+}
+
+// Remove highlighting
+.Mui-selected {
+  background: transparent !important;
+  text-decoration: bold !important;
+  font-weight: 700;
+}
+
+.Mui-focused {
+  background: transparent !important;
+  text-decoration: bold;
+}
+
+.MuiTreeItem-content:hover {
+  background: transparent !important;
 }
 
 #main-panel {
@@ -171,13 +227,14 @@
   color: currentColor !important;
 }
 
+// Console styling
 a.console-line-number {
   text-align: right;
   min-width: 40px;
   max-width: 40px;
   margin-left: -15px;
   margin-right: 27px;
-  color: var(--text-color-secondary);
+  color: var(--link-color);
   white-space: nowrap;
   display: inline-block;
 }
@@ -189,23 +246,15 @@ div.console-output-line-anchor {
   visibility: hidden;
 }
 
-pre.console-pane {
-  background-color: var(--card-background);
-  word-break: break-word;
-}
-
 div.console-output-line {
   display: flex;
 }
 
 div.stage-detail-group {
   vertical-align: auto;
-  background-color: var(--card-background);
-  margin-bottom: 8px;
   border-radius: 10px;
   // Move down slightly to avoid curring off the top background.
   position: relative;
-  padding: 0.8rem 1rem;
   white-space: nowrap;
 }
 
@@ -243,4 +292,17 @@ div.detail-element:last-child {
 
 svg.detail-icon {
   margin-right: 10px;
+  font-size: 1.5rem !important;
+}
+
+div.split-pane {
+  position: relative;
+  padding-left: 8px;
+  text-align: left;
+  height: calc(100vh - 300px);
+  overflow-y: auto;
+}
+
+a {
+  cursor: pointer !important;
 }

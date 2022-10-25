@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>4.47</version>
+        <version>4.48</version>
         <relativePath />
     </parent>
     <groupId>io.jenkins.plugins</groupId>
@@ -16,7 +16,7 @@
         <gitHubRepo>jenkinsci/pipeline-graph-view-plugin</gitHubRepo>
         <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
         <jenkins.version>2.346.1</jenkins.version>
-        <node.version>16.17.1</node.version>
+        <node.version>16.18.0</node.version>
         <npm.version>8.19.2</npm.version>
     </properties>
     <name>Pipeline Graph View Plugin</name>
@@ -28,7 +28,7 @@
                 <!-- Pick up common dependencies for the selected LTS line: https://github.com/jenkinsci/bom#usage -->
                 <groupId>io.jenkins.tools.bom</groupId>
                 <artifactId>bom-2.346.x</artifactId>
-                <version>1607.va_c1576527071</version>
+                <version>1643.v1cffef51df73</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -39,7 +39,7 @@
         <dependency>
             <groupId>io.jenkins.plugins</groupId>
             <artifactId>ionicons-api</artifactId>
-            <version>24.va_745a_b_a_97fc3</version>
+            <version>31.v4757b_6987003</version>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
@@ -49,7 +49,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>github-branch-source</artifactId>
-            <version>1598.v91207e9f9b_4a_</version>
+            <version>1695.v88de84e9f6b_9</version>
             <optional>true</optional>
         </dependency>
         <dependency>

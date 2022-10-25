@@ -38,6 +38,12 @@ public class PipelineStepApi {
                   if (stepArguments != null && !stepArguments.isEmpty()) {
                     displayName = stepArguments + " - " + displayName;
                   }
+
+                  // Use the step label as the displayName if set
+                  String labelDisplayName = flowNodeWrapper.getLabelDisplayName();
+                  if (labelDisplayName != null && !labelDisplayName.isEmpty()) {
+                    displayName = labelDisplayName;
+                  }
                   // Remove non-printable chars (e.g. ANSI color codes).
                   logger.debug("DisplayName Before: '" + displayName + "'.");
                   displayName = cleanTextContent(displayName);
@@ -84,6 +90,7 @@ public class PipelineStepApi {
     return new PipelineStepList(parseSteps(stepNodes, stageId));
   }
 
+  /* Returns a PipelineStepList, sorted by stageId and Id. */
   public PipelineStepList getAllSteps() {
     PipelineStepVisitor builder = new PipelineStepVisitor(run, null);
     Map<String, List<FlowNodeWrapper>> stepNodes = builder.getAllSteps();
@@ -91,6 +98,7 @@ public class PipelineStepApi {
     for (Map.Entry<String, List<FlowNodeWrapper>> entry : stepNodes.entrySet()) {
       allSteps.addAll(parseSteps(entry.getValue(), entry.getKey()));
     }
+    allSteps.sort();
     return allSteps;
   }
 }

@@ -27,7 +27,7 @@ const wrapWithDefaultModule = (config) => {
           options: {
             limit: 8192,
           },
-        },
+        }
       ]
     },
     resolve: {

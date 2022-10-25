@@ -103,4 +103,91 @@ public class PipelineStepApiTest {
     assertThat(steps.get(0).getName(), is("In stage Nested 2 - 1 within Branch C - Print Message"));
     assertThat(steps.get(1).getName(), is("In stage Nested 2 - 2 within Branch C - Print Message"));
   }
+
+  @Test
+  public void nestedStagesHaveCorrectSteps() throws Exception {
+    // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+    // long time)
+    WorkflowRun run =
+        TestUtils.createAndRunJob(j, "nestedStages", "nestedStages.jenkinsfile", Result.SUCCESS);
+
+    String childAId = TestUtils.getNodesByDisplayName(run, "Child A").get(0).getId();
+    String childBId = TestUtils.getNodesByDisplayName(run, "Child B").get(0).getId();
+    String grandchildBId = TestUtils.getNodesByDisplayName(run, "Grandchild B").get(0).getId();
+    String childCId = TestUtils.getNodesByDisplayName(run, "Child C").get(0).getId();
+    String grandchildCId = TestUtils.getNodesByDisplayName(run, "Grandchild C").get(0).getId();
+    String greatGrandchildCId =
+        TestUtils.getNodesByDisplayName(run, "Great-grandchild C").get(0).getId();
+
+    PipelineStepApi api = new PipelineStepApi(run);
+
+    // Check 'Child A'
+    List<PipelineStep> steps = api.getSteps(childAId).getSteps();
+    assertThat(steps, hasSize(1));
+    assertThat(steps.get(0).getName(), is("In child A - Print Message"));
+
+    // Check 'Child A'
+    steps = api.getSteps(childBId).getSteps();
+    assertThat(steps, hasSize(0));
+
+    // Check 'Grandchild B'
+    steps = api.getSteps(grandchildBId).getSteps();
+    assertThat(steps, hasSize(1));
+    assertThat(steps.get(0).getName(), is("In grandchild B - Print Message"));
+
+    // Check 'Child C'
+    steps = api.getSteps(childCId).getSteps();
+    assertThat(steps, hasSize(0));
+
+    // Check 'Grandchild C'
+    steps = api.getSteps(grandchildCId).getSteps();
+    assertThat(steps, hasSize(0));
+
+    // Check 'Great-Grandchild C'
+    steps = api.getSteps(greatGrandchildCId).getSteps();
+    assertThat(steps, hasSize(1));
+    assertThat(steps.get(0).getName(), is("In great-grandchild C - Print Message"));
+  }
+
+  @Test
+  public void getAllStepsReturnsStepsForComplexParallelBranches() throws Exception {
+    // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+    // long time)
+    WorkflowRun run =
+        TestUtils.createAndRunJob(
+            j, "complexParallelSmokes", "complexParallelSmokes.jenkinsfile", Result.SUCCESS);
+
+    // Check 'Non-Parallel Stage'
+    PipelineStepApi api = new PipelineStepApi(run);
+
+    List<PipelineStep> steps = api.getAllSteps().getSteps();
+    assertThat(steps, hasSize(10));
+    assertThat(steps.get(0).getName(), is("This stage will be executed first. - Print Message"));
+    assertThat(steps.get(1).getName(), is("Print Message"));
+    assertThat(steps.get(2).getName(), is("On Branch A - 1 - Print Message"));
+    assertThat(steps.get(3).getName(), is("On Branch A - 2 - Print Message"));
+    assertThat(steps.get(4).getName(), is("On Branch B - 1 - Print Message"));
+    assertThat(steps.get(5).getName(), is("On Branch B - 2 - Print Message"));
+
+    assertThat(steps.get(6).getName(), is("In stage Nested 1 - 1 within Branch C - Print Message"));
+    assertThat(steps.get(7).getName(), is("In stage Nested 1 - 2 within Branch C - Print Message"));
+    assertThat(steps.get(8).getName(), is("In stage Nested 2 - 1 within Branch C - Print Message"));
+    assertThat(steps.get(9).getName(), is("In stage Nested 2 - 2 within Branch C - Print Message"));
+  }
+
+  @Test
+  public void getAllStepsReturnsStepsForNestedStages() throws Exception {
+    // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+    // long time)
+    WorkflowRun run =
+        TestUtils.createAndRunJob(j, "nestedStages", "nestedStages.jenkinsfile", Result.SUCCESS);
+
+    PipelineStepApi api = new PipelineStepApi(run);
+
+    List<PipelineStep> steps = api.getAllSteps().getSteps();
+    assertThat(steps, hasSize(3));
+    assertThat(steps.get(0).getName(), is("In child A - Print Message"));
+    assertThat(steps.get(1).getName(), is("In grandchild B - Print Message"));
+    assertThat(steps.get(2).getName(), is("In great-grandchild C - Print Message"));
+  }
 }

@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>4.47</version>
+        <version>4.48</version>
         <relativePath />
     </parent>
     <groupId>io.jenkins.plugins</groupId>
@@ -39,7 +39,7 @@
         <dependency>
             <groupId>io.jenkins.plugins</groupId>
             <artifactId>ionicons-api</artifactId>
-            <version>24.va_745a_b_a_97fc3</version>
+            <version>31.v4757b_6987003</version>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>

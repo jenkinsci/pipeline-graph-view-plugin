@@ -5,13 +5,11 @@
   "private": true,
   "scripts": {
     "mvnbuild": "npm run build",
-    "mvntest": "npm run test",
+    "mvntest": "npm test",
     "build": "webpack --mode production",
     "build:dev": "webpack --mode development --watch",
-    "test": "npm run jest prettier-check",
-    "prettier-check": "prettier --check src/main/frontend/",
-    "prettier": "prettier --write src/main/frontend/",
-    "jest": "./node_modules/.bin/jest src/main/frontend"
+    "test": "jest && prettier --check src/main/frontend/",
+    "prettier": "prettier --write src/main/frontend/"
   },
   "repository": {
     "type": "git",

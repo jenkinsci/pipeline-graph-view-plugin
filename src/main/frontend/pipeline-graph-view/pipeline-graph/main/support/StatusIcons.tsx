@@ -46,9 +46,10 @@ export const getClassForResult = (result: Result) => {
     case Result.running:
     case Result.queued:
       return "icon-grey";
+    case Result.skipped:
+      return "icon-skipped";
     case Result.not_built:
     case Result.paused:
-    case Result.skipped:
     case Result.unknown:
     default:
       return "icon-nobuilt";

@@ -9,6 +9,16 @@ circle.halo {
   fill: none;
 }
 
+.icon-skipped {
+  color: $graph-connector-grey;
+  fill: $graph-connector-grey;
+
+  .svg-icon {
+    color: $graph-connector-grey;
+    fill: $graph-connector-grey;
+  }
+}
+
 .PWGx-result-status-glyph {
   stroke: none;
   fill: #fff;

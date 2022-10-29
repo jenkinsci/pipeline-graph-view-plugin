@@ -2,7 +2,10 @@ import React from "react";
 
 import { SplitPane } from "react-collapse-pane";
 import { makeReactChildren, tokenizeANSIString } from "./Ansi";
-import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/";
+import {
+  StageInfo,
+  Result,
+} from "../../../pipeline-graph-view/pipeline-graph/main/";
 import { DataTreeView, StepInfo } from "./DataTreeView";
 
 import Typography from "@mui/material/Typography";
@@ -160,12 +163,8 @@ export class PipelineConsole extends React.Component<
 
   // State update methods
   async updateState() {
-    let stagesPromse = this.setStages();
-    let stepsPromise = this.setSteps();
-    // Try waiting for
-    await stagesPromse;
-    await stepsPromise;
-    this.handleUrlParams();
+    this.setStages();
+    this.setSteps();
   }
 
   setStages() {
@@ -174,9 +173,14 @@ export class PipelineConsole extends React.Component<
       .then((res) => res.json())
       .then((result) => {
         console.debug("Updating stages");
-        this.setState({
-          stages: result.data.stages,
-        });
+        this.setState(
+          {
+            stages: result.data.stages,
+          },
+          () => {
+            this.handleUrlParams();
+          }
+        );
       });
     // returns Promise
   }
@@ -186,10 +190,14 @@ export class PipelineConsole extends React.Component<
       .then((step_res) => step_res.json())
       .then((step_result) => {
         console.debug("Updating steps");
-        console.debug(JSON.stringify(step_result.data));
-        this.setState({
-          steps: step_result.data.steps,
-        });
+        this.setState(
+          {
+            steps: step_result.data.steps,
+          },
+          () => {
+            this.handleUrlParams();
+          }
+        );
       })
       .catch(console.log);
   }
@@ -235,7 +243,22 @@ export class PipelineConsole extends React.Component<
         expanded: expanded,
       });
     } else {
-      console.debug("No node selected.");
+      let step = this.getDefaultSelectedStep(this.state.steps);
+      if (step) {
+        console.debug(`Selecting step with id '${selected}`);
+        this.setConsoleText(String(step.id));
+        selected = String(step.id);
+        let expanded = this.getStageNodeHierarchy(
+          step.stageId,
+          this.state.stages
+        );
+        this.setState({
+          selected: selected,
+          expanded: expanded,
+        });
+      } else {
+        console.debug("No node selected.");
+      }
     }
   }
 
@@ -298,6 +321,30 @@ export class PipelineConsole extends React.Component<
       }
     }
     return [];
+  }
+
+  // Determines the default selected step in the tree view based
+  getDefaultSelectedStep(steps: StepInfo[]) {
+    let selectedStep = null;
+    for (let i = 0; i < steps.length; i++) {
+      let step = steps[i];
+      let stepResult = step.state.toLowerCase() as Result;
+      switch (stepResult) {
+        case Result.running:
+        case Result.queued:
+        case Result.paused:
+          return step;
+        case Result.unstable:
+        case Result.failure:
+        case Result.aborted:
+          let selectedStepResult = selectedStep?.state.toLowerCase() as Result;
+          if (!selectedStepResult || stepResult > selectedStepResult) {
+            selectedStep = step;
+          }
+          break;
+      }
+    }
+    return selectedStep;
   }
 
   renderStageDetails() {

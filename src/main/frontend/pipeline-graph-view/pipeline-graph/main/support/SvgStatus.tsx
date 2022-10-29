@@ -13,12 +13,12 @@ const questionMarkPath =
   "C-0.660,-3.76 -1.21,-3.47 -1.52,-2.87 C-1.69,-2.54 -1.79,-2.07 -1.81,-1.45 L-3.09,-1.45 " +
   "C-3.09,-2.48 -2.80,-3.31 -2.21,-3.94 L-2.21,-3.94 Z";
 
-const imagesPath = "/jenkins/images";
-
 interface Props {
   result: Result;
   radius: number;
 }
+
+const getImagesPath = () => `${document.head.dataset.imagesurl}`;
 
 export class SvgStatus extends React.PureComponent<Props> {
   render() {
@@ -50,7 +50,7 @@ export class SvgStatus extends React.PureComponent<Props> {
             <use
               className="svg-icon"
               style={{ transformOrigin: "50% 50%" }}
-              href={`${imagesPath}/build-status/build-status-sprite.svg#build-status-${iconOuterClassName}`}
+              href={`${getImagesPath()}/build-status/build-status-sprite.svg#build-status-${iconOuterClassName}`}
             />
           </svg>
         </g>
@@ -79,7 +79,7 @@ function getGlyphFor(result: Result, radius: number = 12) {
           className={`svg-icon icon-md`}
         >
           <use
-            href={`${imagesPath}/build-status/build-status-sprite.svg#last-aborted`}
+            href={`${getImagesPath()}/build-status/build-status-sprite.svg#last-aborted`}
           />
         </svg>
       );
@@ -112,7 +112,7 @@ function getGlyphFor(result: Result, radius: number = 12) {
           className={`svg-icon icon-md`}
         >
           <use
-            href={`${imagesPath}/build-status/build-status-sprite.svg#last-unstable`}
+            href={`${getImagesPath()}/build-status/build-status-sprite.svg#last-unstable`}
           />
         </svg>
       );
@@ -128,7 +128,7 @@ function getGlyphFor(result: Result, radius: number = 12) {
           className={`svg-icon icon-md`}
         >
           <use
-            href={`${imagesPath}/build-status/build-status-sprite.svg#last-successful`}
+            href={`${getImagesPath()}/build-status/build-status-sprite.svg#last-successful`}
           />
         </svg>
       );
@@ -144,7 +144,7 @@ function getGlyphFor(result: Result, radius: number = 12) {
           className={`svg-icon icon-md`}
         >
           <use
-            href={`${imagesPath}/build-status/build-status-sprite.svg#last-failed`}
+            href={`${getImagesPath()}/build-status/build-status-sprite.svg#last-failed`}
           />
         </svg>
       );
@@ -159,7 +159,7 @@ function getGlyphFor(result: Result, radius: number = 12) {
           className={`svg-icon icon-md`}
         >
           <use
-            href={`${imagesPath}/build-status/build-status-sprite.svg#never-built`}
+            href={`${getImagesPath()}/build-status/build-status-sprite.svg#never-built`}
           />
         </svg>
       );

@@ -178,7 +178,7 @@ export class PipelineConsole extends React.Component<
             stages: result.data.stages,
           },
           () => {
-            this.handleUrlParams();
+            this.selectNode();
           }
         );
       });
@@ -195,7 +195,7 @@ export class PipelineConsole extends React.Component<
             steps: step_result.data.steps,
           },
           () => {
-            this.handleUrlParams();
+            this.selectNode();
           }
         );
       })
@@ -219,8 +219,8 @@ export class PipelineConsole extends React.Component<
     }
   }
 
-  handleUrlParams() {
-    console.debug(`In handleUrlParams.`);
+  selectNode() {
+    console.debug(`In selectNode.`);
     let params = new URLSearchParams(document.location.search.substring(1));
     let selected = params.get("selected-node") || "";
     if (selected) {
@@ -325,7 +325,7 @@ export class PipelineConsole extends React.Component<
 
   // Determines the default selected step in the tree view based
   getDefaultSelectedStep(steps: StepInfo[]) {
-    let selectedStep = null;
+    let selectedStep = steps.find(step => step !== undefined)
     for (let i = 0; i < steps.length; i++) {
       let step = steps[i];
       let stepResult = step.state.toLowerCase() as Result;

@@ -64,7 +64,7 @@ export function parseEscapeCode(escapeCode: string): Result {
           result.resetFG = true;
           result.setFG = false;
         }
-
+        
         if (num === 48 || num === 0) {
           result.resetBG = true;
           result.setBG = false;
@@ -90,55 +90,81 @@ export function tokenizeANSIString(input?: string): string[] | Result[] {
     return [];
   }
 
-  let i1 = 0,
-    i2 = 0;
+  /*
+    loopCounter         - Where should the next loop start looping for escape codes.
+    escapeCodeIndex     - The index in the string of the next ANSI escape code or -1.
+    parsedPointer       - The parse pointer how far in the string have we parsed.
+                          This will === loopCounter unless there are commented ANSI escape characters.
+    commentStartIndex   - The start index of the next comment block, or -1.
+    commentEndIndex     - The end index of the next comment block, or -1.
+  */
+  let loopCounter = 0,
+    escapeCodeIndex = 0,
+    parsedPointer = 0,
+    // comment start
+    commentStartIndex = 0,
+    // comment end
+    commentEndIndex = 0;
   const result: string[] | Result[] = [];
 
-  while (i1 < len) {
+  while (loopCounter < len) {
     //--------------------------------------------------------------------------
     //  Find next escape code
+    escapeCodeIndex = input.indexOf("\x1b", loopCounter);
 
-    i2 = input.indexOf("\x1b", i1);
-
-    if (i2 === -1) {
+    if (escapeCodeIndex === -1) {
       // No more escape codes
       break;
+    }
+
+    // Check if escape code is commented
+    commentStartIndex = input.indexOf("<!--", loopCounter);
+    commentEndIndex = input.indexOf("-->", commentStartIndex);
+    if (commentEndIndex !== -1) {
+      commentEndIndex += 3;
+    }
+    if (escapeCodeIndex > commentStartIndex && escapeCodeIndex < commentEndIndex) {
+      // Skip past the comment
+      loopCounter = commentEndIndex;
+      continue;
     }
 
     //--------------------------------------------------------------------------
     //  Capture any text between the start pointer and the escape code
 
-    if (i2 > i1) {
-      result.push(input.substring(i1, i2));
-      i1 = i2; // Advance our start pointer to the beginning of the escape code
+    if (escapeCodeIndex > loopCounter) {
+      result.push(input.substring(loopCounter, escapeCodeIndex));
+      loopCounter = escapeCodeIndex; // Advance our start pointer to the beginning of the escape code
     }
 
     //--------------------------------------------------------------------------
     //  Find the end of the escape code (a char from 64 - 126 indicating command)
 
-    i2 += 2; // Skip past ESC and '['
+    escapeCodeIndex += 2; // Skip past ESC and '['
 
-    let code = input.charCodeAt(i2);
-    while (i2 < len && (code < 64 || code > 126)) {
-      i2++;
-      code = input.charCodeAt(i2);
+    let code = input.charCodeAt(escapeCodeIndex);
+    while (escapeCodeIndex < len && (code < 64 || code > 126)) {
+      escapeCodeIndex++;
+      code = input.charCodeAt(escapeCodeIndex);
     }
 
     //--------------------------------------------------------------------------
     //  Create token for the escape code
 
     // TODO fix type checking
-    const parsedEscapeCode: any = parseEscapeCode(input.substring(i1, i2 + 1));
+    const parsedEscapeCode: any = parseEscapeCode(input.substring(loopCounter, escapeCodeIndex + 1));
     result.push(parsedEscapeCode);
 
     //--------------------------------------------------------------------------
     //  Keep looking in the rest of the string
 
-    i1 = i2 + 1;
+    loopCounter = escapeCodeIndex + 1;
+    // Move parsedPointer as we have processes the text to this point.
+    parsedPointer = loopCounter;
   }
 
-  if (i1 < len) {
-    result.push(input.substr(i1));
+  if (parsedPointer < len) {
+    result.push(input.substr(parsedPointer));
   }
 
   return result;
@@ -162,7 +188,6 @@ export function makeReactChildren(
     let codeOrString = tokenizedInput[i];
     if (typeof codeOrString === "string") {
       // Need to output a <span> or plain text if there's no interesting current state
-
       if (!currentState.setFG && !currentState.setBG) {
         result.push(
           <div

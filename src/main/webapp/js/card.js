@@ -1,19 +1,20 @@
 document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.pgv-modal__expander')
     .forEach(expander => {
-      expander.addEventListener('click', (event) => {
-        event.preventDefault();
+      if (expander.getAttribute('href') === '#') {
+        expander.addEventListener('click', (event) => {
+          event.preventDefault();
 
-        const modal = expander.closest('.pgv-modal')
-        modal.classList.add('pgv-modal__open');
+          const modal = expander.closest('.pgv-modal')
+          modal.classList.add('pgv-modal__open');
 
-        window.addEventListener('keydown', (event) => {
-          if (event.key === 'Escape') {
-            modal.classList.remove('pgv-modal__open');
-          }
-        }, { once: true });
-
-      })
+          window.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+              modal.classList.remove('pgv-modal__open');
+            }
+          }, { once: true });
+        })
+      }
     })
 
   document.querySelectorAll('.pgv-modal__closer')

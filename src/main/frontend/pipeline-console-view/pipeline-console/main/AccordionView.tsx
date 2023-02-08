@@ -109,7 +109,6 @@ export class DataTreeView extends React.Component {
 
   constructor(props: DataTreeViewProps) {
     super(props);
-    // Can I drop this state (seems dangerous to store state in multiple palces)
     this.state = {
       stages: [],
       steps: new Map(),

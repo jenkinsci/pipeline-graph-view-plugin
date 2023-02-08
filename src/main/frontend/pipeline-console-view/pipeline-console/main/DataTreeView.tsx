@@ -26,51 +26,14 @@ export interface StepInfo {
   pauseDurationMillis: string;
   startTimeMillis: string;
   totalDurationMillis: string;
+  consoleText: string;
 }
 
-const getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
-  return stepsItems.map((stepItemData) => {
-    return (
-      <TreeItem
-        className="step-tree-item"
-        key={stepItemData.id}
-        nodeId={String(stepItemData.id)}
-        label={
-          <StepStatus
-            status={decodeResultValue(stepItemData.state)}
-            text={stepItemData.name.replace(/[^ -~]+/g, "")}
-            key={`status-${stepItemData.id}`}
-          />
-        }
-      />
-    );
-  });
-};
-
-const getTreeItemsFromStage = (stageItems: StageInfo[], steps: StepInfo[]) => {
-  // Copy steps so we don't affect props.steps.
-  let stepsCopy = [...steps];
+const getTreeItemsFromStage = (stageItems: StageInfo[]) => {
   return stageItems.map((stageItemData) => {
     let children: JSX.Element[] = [];
-    let stageSteps = [] as StepInfo[];
-    // Handle leaf nodes first.
     if (stageItemData.children && stageItemData.children.length > 0) {
-      children = getTreeItemsFromStage(stageItemData.children, stepsCopy);
-    }
-    var i = stepsCopy.length;
-    while (i--) {
-      let step = stepsCopy[i];
-      if (step.stageId == String(stageItemData.id)) {
-        // Prepend to array (as we are iterating in reverse).
-        stageSteps.unshift(step);
-        // Remove step from local copy - can only have one parent.
-        // This should reduce the total number of loops required.
-        stepsCopy.splice(i, 1);
-      }
-    }
-    if (stageSteps) {
-      let stepsItems = getTreeItemsFromStepList(stageSteps);
-      children = [...children, ...stepsItems];
+      children = getTreeItemsFromStage(stageItemData.children);
     }
     return (
       <TreeItem
@@ -109,7 +72,6 @@ export class DataTreeView extends React.Component {
 
   constructor(props: DataTreeViewProps) {
     super(props);
-    // Can I drop this state (seems dangerous to store state in multiple palces)
     this.state = {
       stages: [],
       steps: new Map(),
@@ -135,7 +97,7 @@ export class DataTreeView extends React.Component {
         onNodeToggle={this.props.onNodeToggle}
         key="console-tree-view"
       >
-        {getTreeItemsFromStage(this.props.stages, this.props.steps)}
+        {getTreeItemsFromStage(this.props.stages)}
       </TreeView>
     );
   }

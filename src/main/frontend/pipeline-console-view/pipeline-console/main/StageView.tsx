@@ -11,6 +11,7 @@ import LinkIcon from "@mui/icons-material/Link";
 
 import { StepInfo } from "./DataTreeView";
 import { ConsoleLogView } from "./ConsoleLogView"
+import { AccordionView } from "./AccordionView"
 
 import {
   StageInfo,
@@ -101,7 +102,7 @@ interface StageViewProps {
   stage: StageInfo | null;
   steps: Array<StepInfo>;
   selected: string;
-  consoleText: string;
+  updateStepConsoleText: (event: React.SyntheticEvent<{}>, nodeId: string) => void;
 }
 
 export class StageView extends React.Component {
@@ -131,29 +132,18 @@ export class StageView extends React.Component {
     return null;
   }
 
-  renderStepDetails() {
-    for (let i = 0; i < this.props.steps.length; i++) {
-      let step = this.props.steps[i];
-      if ("" + step.id == this.props.selected) {
-        return (
-          <pre className="console-output">
-            <StepSummary step={step} />
-          </pre>
-        );
-      }
-    }
-    return null;
-  }
-
   render() {
     return (
       <React.Fragment>
-        {this.renderStageDetails()}
-        {this.renderStepDetails()}
-        <ConsoleLogView
-          consoleText={this.props.consoleText}
-          nodeId={this.props.selected}
-        />
+        <div key="stage-summary">
+          {this.renderStageDetails()}
+        </div>
+        <div key="exanding-steps">
+          <AccordionView
+            steps={this.props.steps}
+            updateStepConsoleText={this.props.updateStepConsoleText}
+          />
+        </div>
       </React.Fragment>
     )
   }

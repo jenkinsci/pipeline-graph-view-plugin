@@ -1,120 +1,33 @@
 import React from "react";
-import TreeView from "@mui/lab/TreeView/";
 
-import TreeItem from "@mui/lab/TreeItem";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import Accordion from '@mui/material/Accordion';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import Typography from '@mui/material/Typography';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { Fade } from '@mui/material';
 
-import {
-  StageInfo,
-  Result,
-} from "../../../pipeline-graph-view/pipeline-graph/main/";
-import StepStatus from "../../../step-status/StepStatus";
-import { decodeResultValue } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
+import { StepInfo } from "./DataTreeView"
+import { ConsoleLogView } from "./ConsoleLogView";
 
-/**
- * StageInfo is the input, in the form of an Array<StageInfo> of the top-level stages of a pipeline
- */
-export interface StepInfo {
-  name: string;
-  title: string;
-  state: Result;
-  completePercent: number;
-  id: number;
-  type: string;
-  stageId: string;
-  pauseDurationMillis: string;
-  startTimeMillis: string;
-  totalDurationMillis: string;
-}
+import { Result } from "../../../pipeline-graph-view/pipeline-graph/main/";
 
-const getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
-  return stepsItems.map((stepItemData) => {
-    return (
-      <TreeItem
-        className="step-tree-item"
-        key={stepItemData.id}
-        nodeId={String(stepItemData.id)}
-        label={
-          <StepStatus
-            status={decodeResultValue(stepItemData.state)}
-            text={stepItemData.name.replace(/[^ -~]+/g, "")}
-            key={`status-${stepItemData.id}`}
-          />
-        }
-      />
-    );
-  });
-};
-
-const getTreeItemsFromStage = (stageItems: StageInfo[], steps: StepInfo[]) => {
-  // Copy steps so we don't affect props.steps.
-  let stepsCopy = [...steps];
-  return stageItems.map((stageItemData) => {
-    let children: JSX.Element[] = [];
-    let stageSteps = [] as StepInfo[];
-    // Handle leaf nodes first.
-    if (stageItemData.children && stageItemData.children.length > 0) {
-      children = getTreeItemsFromStage(stageItemData.children, stepsCopy);
-    }
-    var i = stepsCopy.length;
-    while (i--) {
-      let step = stepsCopy[i];
-      if (step.stageId == String(stageItemData.id)) {
-        // Prepend to array (as we are iterating in reverse).
-        stageSteps.unshift(step);
-        // Remove step from local copy - can only have one parent.
-        // This should reduce the total number of loops required.
-        stepsCopy.splice(i, 1);
-      }
-    }
-    if (stageSteps) {
-      let stepsItems = getTreeItemsFromStepList(stageSteps);
-      children = [...children, ...stepsItems];
-    }
-    return (
-      <TreeItem
-        className="stage-tree-item"
-        key={stageItemData.id}
-        nodeId={String(stageItemData.id)}
-        label={
-          <StepStatus
-            status={decodeResultValue(stageItemData.state)}
-            text={stageItemData.name}
-            key={`status-${stageItemData.id}`}
-          />
-        }
-        children={children}
-        classes={{
-          label: stageItemData.synthetic
-            ? "pgv-graph-node--synthetic"
-            : undefined,
-        }}
-      />
-    );
-  });
-};
-
-interface DataTreeViewProps {
-  stages: Array<StageInfo>;
-  onNodeSelect: (event: React.ChangeEvent<any>, nodeId: string) => void;
-  onNodeToggle: (event: React.ChangeEvent<any>, nodeIds: string[]) => void;
-  selected: string;
-  expanded: string[];
+interface AccordonViewProps {
   steps: StepInfo[];
+  updateStepConsoleText: (event: React.SyntheticEvent<{}>, nodeId: string) => void;
 }
 
-export class DataTreeView extends React.Component {
-  props!: DataTreeViewProps;
+const fadeProps = {
+  mountOnEnter: true,
+  unmountOnExit: true,
+  timeout: { enter: 225, exit: 195 }
+}
 
-  constructor(props: DataTreeViewProps) {
+export class AccordionView extends React.Component {
+  props!: AccordonViewProps;
+
+  constructor(props: AccordonViewProps) {
     super(props);
-    this.state = {
-      stages: [],
-      steps: new Map(),
-      expanded: [],
-    };
-    this.handleToggle = this.handleToggle.bind(this);
   }
 
   handleToggle(event: React.ChangeEvent<{}>, nodeIds: string[]): void {
@@ -123,19 +36,44 @@ export class DataTreeView extends React.Component {
     });
   }
 
+  handleChange =
+  (nodeId: string) => (event: React.SyntheticEvent, expanded: boolean) => {
+    if (expanded) {
+      this.props.updateStepConsoleText(event, nodeId)
+    }
+  };
+
+  getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
+    return stepsItems.map((stepItemData) => {
+      return (
+        <Accordion 
+        key={stepItemData.id}
+        onChange={this.handleChange(String(stepItemData.id))}
+        TransitionProps={{ mountOnEnter: false, unmountOnExit: false, timeout: { exit: 500 } }}
+        disableGutters={true}
+      >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel1bh-content"
+            id="panel1bh-header"
+          >
+            <Typography sx={{ color: 'text.secondary' }}>{stepItemData.name}</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <ConsoleLogView
+              step={stepItemData}
+            />
+          </AccordionDetails>
+        </Accordion>
+      );
+    });
+  };
+  
   render() {
     return (
-      <TreeView
-        defaultCollapseIcon={<ExpandMoreIcon />}
-        defaultExpandIcon={<ChevronRightIcon />}
-        onNodeSelect={this.props.onNodeSelect}
-        expanded={this.props.expanded}
-        selected={this.props.selected}
-        onNodeToggle={this.props.onNodeToggle}
-        key="console-tree-view"
-      >
-        {getTreeItemsFromStage(this.props.stages, this.props.steps)}
-      </TreeView>
+      <React.Fragment>
+        {this.getTreeItemsFromStepList(this.props.steps)}
+      </React.Fragment>
     );
   }
 }

@@ -1,11 +1,10 @@
 
 import React from "react";
 
+import { StepInfo } from "./DataTreeView"
 import { ConsoleLine } from "./ConsoleLine"
-
 interface ConsoleLogViewProps {
-  consoleText: string;
-  nodeId: string;
+  step: StepInfo;
 }
 
 export class ConsoleLogView extends React.Component {
@@ -16,25 +15,27 @@ export class ConsoleLogView extends React.Component {
   }
 
   renderConsoleOutput() {
-    if (this.props.consoleText.length > 0) {
-      const lineChunks = this.props.consoleText.split("\n");
-      return (
-        <pre className="console-output">
-          {lineChunks.map((line, index) => {
-            let lineNumber = String(index + 1);
-            return (
-              <ConsoleLine
-                content={line}
-                lineNumber={lineNumber}
-                stepId={this.props.nodeId}
-                key={`${this.props.nodeId}-${lineNumber}`}
-              />
-            );
-          })}
-        </pre>
-      );
-    } else {
-      return null;
+    if (this.props.step.consoleText) {
+      if (this.props.step.consoleText.length > 0) {
+        const lineChunks = this.props.step.consoleText.split("\n") || [];
+        return (
+          <pre className="console-output">
+            {lineChunks.map((line, index) => {
+              let lineNumber = String(index + 1);
+              return (
+                <ConsoleLine
+                  content={line}
+                  lineNumber={lineNumber}
+                  stepId={String(this.props.step.id)}
+                  key={`${String(this.props.step.id)}-${lineNumber}`}
+                />
+              );
+            })}
+          </pre>
+        );
+      } else {
+        return null;
+      }
     }
   }
 

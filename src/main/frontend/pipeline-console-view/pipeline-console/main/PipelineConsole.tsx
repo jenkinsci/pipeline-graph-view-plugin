@@ -1,13 +1,12 @@
 import React from "react";
 
 import { SplitPane } from "react-collapse-pane";
-import { makeReactChildren, tokenizeANSIString } from "./Ansi";
 import {
   StageInfo,
   Result,
 } from "../../../pipeline-graph-view/pipeline-graph/main/";
 import { DataTreeView, StepInfo } from "./DataTreeView";
-
+import { StageView } from "./StageView";
 
 import "./pipeline-console.scss";
 
@@ -22,13 +21,6 @@ interface PipelineConsoleState {
   hasScrolled: boolean;
 }
 
-
-export interface ConsoleLineProps {
-  lineNumber: string;
-  content: string;
-  stepId: string;
-  key: string;
-}
 
 
 export class PipelineConsole extends React.Component<
@@ -240,6 +232,15 @@ export class PipelineConsole extends React.Component<
     return selectedStep;
   }
 
+  getSelectedStage() {
+    for (let stage of this.state.stages) {
+      if (stage.id == parseInt(this.state.selected)) {
+        return stage;
+      }
+    }
+    return null
+  }
+
   render() {
     const splitPaneStyle: React.CSSProperties = {
       position: "relative",
@@ -273,7 +274,12 @@ export class PipelineConsole extends React.Component<
             </div>
 
             <div className="split-pane" key="console-view">
-
+              <StageView
+                stage={this.getSelectedStage()}
+                steps={this.state.steps}
+                selected={this.state.selected}
+                consoleText={this.state.consoleText}
+              />
             </div>
           </SplitPane>
         </div>

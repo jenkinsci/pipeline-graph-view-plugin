@@ -1,4 +1,6 @@
 
+import React from "react";
+
 import Typography from "@mui/material/Typography";
 
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
@@ -6,12 +8,19 @@ import ScheduleIcon from "@mui/icons-material/Schedule";
 import TimerIcon from "@mui/icons-material/Timer";
 import InfoIcon from "@mui/icons-material/Info";
 import LinkIcon from "@mui/icons-material/Link";
+
 import { StepInfo } from "./DataTreeView";
+import { ConsoleLogView } from "./ConsoleLogView"
+
+import {
+  StageInfo,
+} from "../../../pipeline-graph-view/pipeline-graph/main/";
 
 export interface StageSummaryProps {
   stage: StageInfo;
   failedSteps: StepInfo[];
 }
+
 
 // Tree Item for stages
 const StageSummary = (props: StageSummaryProps) => (
@@ -88,32 +97,11 @@ const FailedStepLink = (props: FailedStepLinkProps) => (
 );
 
 
-// Console output line
-const ConsoleLine = (props: ConsoleLineProps) => (
-  <div className="console-output-item" key={props.lineNumber}>
-    <div
-      className="console-output-line-anchor"
-      id={`log-${props.lineNumber}`}
-      key={`${props.lineNumber}-anchor`}
-    />
-    <div className="console-output-line" key={`${props.lineNumber}-body`}>
-      <a
-        className="console-line-number"
-        href={`?selected-node=${props.stepId}#log-${props.lineNumber}`}
-      >
-        {props.lineNumber}
-      </a>
-      {makeReactChildren(
-        tokenizeANSIString(props.content),
-        `${props.stepId}-${props.lineNumber}`
-      )}
-    </div>
-  </div>
-);
-
 interface StageViewProps {
-  stage: StageInfo;
-  steps: Array<StageInfo>;
+  stage: StageInfo | null;
+  steps: Array<StepInfo>;
+  selected: string;
+  consoleText: string;
 }
 
 export class StageView extends React.Component {
@@ -123,12 +111,11 @@ export class StageView extends React.Component {
     super(props);
   }
   renderStageDetails() {
-    let focusedStage = null;
     if (this.props.stage) {
       let failedSteps = [] as StepInfo[];
       for (let i = 0; i < this.props.steps.length; i++) {
         let step = this.props.steps[i];
-        if (step.stageId === this.props.stage.selected) {
+        if (step.stageId === this.props.selected) {
           // We seem to get a mix of upper and lower case states, so normalise on lowercase.
           if (step.state.toLowerCase() === "unstable") {
             failedSteps.push(step);
@@ -137,7 +124,7 @@ export class StageView extends React.Component {
       }
       return (
         <pre className="console-output">
-          <StageSummary stage={focusedStage} failedSteps={failedSteps} />
+          <StageSummary stage={this.props.stage} failedSteps={failedSteps} />
         </pre>
       );
     }
@@ -158,31 +145,16 @@ export class StageView extends React.Component {
     return null;
   }
 
-  renderConsoleOutput() {
-    if (this.props.consoleText.length > 0) {
-      const lineChunks = this.props.consoleText.split("\n");
-      return (
-        <pre className="console-output">
-          {lineChunks.map((line, index) => {
-            let lineNumber = String(index + 1);
-            return (
-              <ConsoleLine
-                content={line}
-                lineNumber={lineNumber}
-                stepId={this.props.selected}
-                key={`${this.props.selected}-${lineNumber}`}
-              />
-            );
-          })}
-        </pre>
-      );
-    } else {
-      return null;
-    }
-  }
   render() {
-    {this.renderStageDetails()}
-    {this.renderStepDetails()}
-    {this.renderConsoleOutput()}
+    return (
+      <React.Fragment>
+        {this.renderStageDetails()}
+        {this.renderStepDetails()}
+        <ConsoleLogView
+          consoleText={this.props.consoleText}
+          nodeId={this.props.selected}
+        />
+      </React.Fragment>
+    )
   }
 }

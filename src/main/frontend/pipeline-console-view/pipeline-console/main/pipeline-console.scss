@@ -262,9 +262,21 @@ div.stage-detail-group {
   white-space: nowrap;
 }
 
-div.step-detail-group {
+.step-content {
+  padding: 0px !important;
+  padding-bottom: 0px !important;
+}
+.step-detail-group {
   @extend div, .stage-detail-group;
-  display: flex;
+  background: var(--table-background) !important;
+  margin: 0px;
+  padding: 0px;
+  color: var(--text-color) !important;
+}
+
+span .MuiCardHeader-avatar {
+  height: 5em;
+  width: 5em;
 }
 
 div.detail-element {

@@ -10,7 +10,6 @@ import InfoIcon from "@mui/icons-material/Info";
 import LinkIcon from "@mui/icons-material/Link";
 
 import { StepInfo } from "./DataTreeView";
-import { ConsoleLogView } from "./ConsoleLogView"
 import { AccordionView } from "./AccordionView"
 
 import {

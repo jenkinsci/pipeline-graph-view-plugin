@@ -1,16 +1,7 @@
 import React from "react";
 
-import Accordion from '@mui/material/Accordion';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import Typography from '@mui/material/Typography';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Fade } from '@mui/material';
-
 import { StepInfo } from "./DataTreeView"
-import { ConsoleLogView } from "./ConsoleLogView";
-
-import { Result } from "../../../pipeline-graph-view/pipeline-graph/main/";
+import { ConsoleLogCard } from "./ConsoleLogCard";
 
 interface AccordonViewProps {
   steps: StepInfo[];
@@ -46,32 +37,17 @@ export class AccordionView extends React.Component {
   getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
     return stepsItems.map((stepItemData) => {
       return (
-        <Accordion 
-        key={stepItemData.id}
-        onChange={this.handleChange(String(stepItemData.id))}
-        TransitionProps={{ mountOnEnter: false, unmountOnExit: false, timeout: { exit: 500 } }}
-        disableGutters={true}
-      >
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            aria-controls="panel1bh-content"
-            id="panel1bh-header"
-          >
-            <Typography sx={{ color: 'text.secondary' }}>{stepItemData.name}</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <ConsoleLogView
-              step={stepItemData}
-            />
-          </AccordionDetails>
-        </Accordion>
+        <ConsoleLogCard
+          step={stepItemData}
+          updateStepConsoleText={this.props.updateStepConsoleText}
+        />
       );
     });
   };
   
   render() {
     return (
-      <React.Fragment>
+      <React.Fragment key={`accordion-1`}>
         {this.getTreeItemsFromStepList(this.props.steps)}
       </React.Fragment>
     );

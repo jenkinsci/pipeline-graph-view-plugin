@@ -1,18 +1,21 @@
 import React from "react";
 
-import { StepInfo } from "./DataTreeView"
+import { StepInfo } from "./DataTreeView";
 import { ConsoleLogCard } from "./ConsoleLogCard";
 
 interface AccordonViewProps {
   steps: StepInfo[];
-  updateStepConsoleText: (event: React.SyntheticEvent<{}>, nodeId: string) => void;
+  updateStepConsoleText: (
+    event: React.SyntheticEvent<{}>,
+    nodeId: string
+  ) => void;
 }
 
 const fadeProps = {
   mountOnEnter: true,
   unmountOnExit: true,
-  timeout: { enter: 225, exit: 195 }
-}
+  timeout: { enter: 225, exit: 195 },
+};
 
 export class AccordionView extends React.Component {
   props!: AccordonViewProps;
@@ -28,11 +31,11 @@ export class AccordionView extends React.Component {
   }
 
   handleChange =
-  (nodeId: string) => (event: React.SyntheticEvent, expanded: boolean) => {
-    if (expanded) {
-      this.props.updateStepConsoleText(event, nodeId)
-    }
-  };
+    (nodeId: string) => (event: React.SyntheticEvent, expanded: boolean) => {
+      if (expanded) {
+        this.props.updateStepConsoleText(event, nodeId);
+      }
+    };
 
   getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
     return stepsItems.map((stepItemData) => {
@@ -44,7 +47,7 @@ export class AccordionView extends React.Component {
       );
     });
   };
-  
+
   render() {
     return (
       <React.Fragment key={`accordion-1`}>

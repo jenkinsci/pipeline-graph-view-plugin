@@ -1,4 +1,3 @@
-
 import React from "react";
 
 import Typography from "@mui/material/Typography";
@@ -10,17 +9,14 @@ import InfoIcon from "@mui/icons-material/Info";
 import LinkIcon from "@mui/icons-material/Link";
 
 import { StepInfo } from "./DataTreeView";
-import { AccordionView } from "./AccordionView"
+import { AccordionView } from "./AccordionView";
 
-import {
-  StageInfo,
-} from "../../../pipeline-graph-view/pipeline-graph/main/";
+import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/";
 
 export interface StageSummaryProps {
   stage: StageInfo;
   failedSteps: StepInfo[];
 }
-
 
 // Tree Item for stages
 const StageSummary = (props: StageSummaryProps) => (
@@ -96,12 +92,14 @@ const FailedStepLink = (props: FailedStepLinkProps) => (
   </div>
 );
 
-
 interface StageViewProps {
   stage: StageInfo | null;
   steps: Array<StepInfo>;
   selected: string;
-  updateStepConsoleText: (event: React.SyntheticEvent<{}>, nodeId: string) => void;
+  updateStepConsoleText: (
+    event: React.SyntheticEvent<{}>,
+    nodeId: string
+  ) => void;
 }
 
 export class StageView extends React.Component {
@@ -134,9 +132,7 @@ export class StageView extends React.Component {
   render() {
     return (
       <React.Fragment>
-        <div key="stage-summary">
-          {this.renderStageDetails()}
-        </div>
+        <div key="stage-summary">{this.renderStageDetails()}</div>
         <div key="exanding-steps">
           <AccordionView
             steps={this.props.steps}
@@ -144,6 +140,6 @@ export class StageView extends React.Component {
           />
         </div>
       </React.Fragment>
-    )
+    );
   }
 }

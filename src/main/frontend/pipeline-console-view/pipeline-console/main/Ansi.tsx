@@ -64,7 +64,7 @@ export function parseEscapeCode(escapeCode: string): Result {
           result.resetFG = true;
           result.setFG = false;
         }
-        
+
         if (num === 48 || num === 0) {
           result.resetBG = true;
           result.setBG = false;
@@ -123,7 +123,10 @@ export function tokenizeANSIString(input?: string): string[] | Result[] {
     if (commentEndIndex !== -1) {
       commentEndIndex += 3;
     }
-    if (escapeCodeIndex > commentStartIndex && escapeCodeIndex < commentEndIndex) {
+    if (
+      escapeCodeIndex > commentStartIndex &&
+      escapeCodeIndex < commentEndIndex
+    ) {
       // Skip past the comment
       loopCounter = commentEndIndex;
       continue;
@@ -152,7 +155,9 @@ export function tokenizeANSIString(input?: string): string[] | Result[] {
     //  Create token for the escape code
 
     // TODO fix type checking
-    const parsedEscapeCode: any = parseEscapeCode(input.substring(loopCounter, escapeCodeIndex + 1));
+    const parsedEscapeCode: any = parseEscapeCode(
+      input.substring(loopCounter, escapeCodeIndex + 1)
+    );
     result.push(parsedEscapeCode);
 
     //--------------------------------------------------------------------------

@@ -20,8 +20,6 @@ interface PipelineConsoleState {
   hasScrolled: boolean;
 }
 
-
-
 export class PipelineConsole extends React.Component<
   PipelineConsoleProps,
   PipelineConsoleState
@@ -30,8 +28,8 @@ export class PipelineConsole extends React.Component<
     super(props);
     this.handleActionNodeSelect = this.handleActionNodeSelect.bind(this);
     this.handleToggle = this.handleToggle.bind(this);
-    this.updateStepConsoleText = this.updateStepConsoleText.bind(this); 
-  
+    this.updateStepConsoleText = this.updateStepConsoleText.bind(this);
+
     // set default values of state
     this.state = {
       // Need to update dynamically
@@ -54,7 +52,7 @@ export class PipelineConsole extends React.Component<
 
   // Determines the default selected step in the tree view based
   getDefaultSelectedStep(steps: StepInfo[]) {
-    let selectedStep = steps.find(step => step !== undefined)
+    let selectedStep = steps.find((step) => step !== undefined);
     for (let i = 0; i < steps.length; i++) {
       let step = steps[i];
       let stepResult = step.state.toLowerCase() as Result;
@@ -111,7 +109,7 @@ export class PipelineConsole extends React.Component<
   }
 
   getStageSteps(stageId: string) {
-    let stepsCopy = [... this.state.steps]
+    let stepsCopy = [...this.state.steps];
     let i = stepsCopy.length;
     while (i--) {
       let step = stepsCopy[i];
@@ -200,21 +198,22 @@ export class PipelineConsole extends React.Component<
     for (let step of updatedSteps) {
       if (nodeId == String(step.id)) {
         if (!step.consoleText) {
-          console.debug(`Updating console text for step ${step.id}`)
+          console.debug(`Updating console text for step ${step.id}`);
           let promise = this.getConsoleText(String(step.id));
           promise.then((res) => {
-            step.consoleText = res
+            step.consoleText = res;
             this.setState({
               steps: updatedSteps,
             });
           });
         } else {
-          console.debug(`Skipping update of console text for step ${step.id} - already set.`)
+          console.debug(
+            `Skipping update of console text for step ${step.id} - already set.`
+          );
         }
         break;
       }
     }
-
   }
 
   // Gets the selected step in the tree view (or none if not selected).
@@ -247,13 +246,16 @@ export class PipelineConsole extends React.Component<
     return [];
   }
 
-  getSelectedStage(): StageInfo | null  {
-    let selectedStage = this.getStageFromList(this.state.stages, this.state.selected)
+  getSelectedStage(): StageInfo | null {
+    let selectedStage = this.getStageFromList(
+      this.state.stages,
+      this.state.selected
+    );
     if (selectedStage) {
-      return selectedStage
+      return selectedStage;
     }
-    console.debug(`Couldn't find stage '${this.state.selected}'`)
-    return null
+    console.debug(`Couldn't find stage '${this.state.selected}'`);
+    return null;
   }
 
   getStageFromList(stages: StageInfo[], nodeId: String): StageInfo | null {
@@ -264,7 +266,7 @@ export class PipelineConsole extends React.Component<
       if (stage.children.length > 0) {
         let selectedStage = this.getStageFromList(stage.children, nodeId);
         if (selectedStage) {
-          return selectedStage
+          return selectedStage;
         }
       }
     }

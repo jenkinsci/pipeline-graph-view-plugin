@@ -119,46 +119,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
       return HttpResponses.errorJSON("Error getting console text");
     }
   }
-/*
-  @GET
-  @WebMethod(name = "consoleOutputOffset")
-  public HttpResponse getConsoleOutput(StaplerRequest req) throws IOException {
-    String nodeId = req.getParameter("nodeId");
-    int startOffset = Integer.parseInt(req.getParameter("offset"));
-    int length = Integer.parseInt(req.getParameter("length"))
 
-    if (nodeId != null) {
-      logger.debug("getConsoleOutput was passed node id '" + nodeId + "'.");
-      Writer stringWriter = new StringBuilderWriter();
-      AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
-      HashMap<String, String> response = new HashMap<String, String>();
-      if (logText != null) {
-        long offset;
-        if (logText.length() > LOG_THRESHOLD) {
-          offset = logText.length() - LOG_THRESHOLD;
-        } else {
-          offset = 0;
-        }
-        long receivedBytes = logText.writeHtmlTo(offset, stringWriter);
-        logger.debug("Received " + receivedBytes + " of console output.");
-        String text = stringWriter.toString();
-        if (offset > 0) {
-          text =
-              text
-                  + "Output is truncated for performance, only showing the last 150KB of logs for this step...\n";
-        }
-        response.put("text", text);
-      } else {
-        response.put("text", "");
-      }
-      return HttpResponses.okJSON(JSONObject.fromObject(response));
-    } else {
-      logger.debug("getConsoleOutput was not passed nodeId.");
-      return HttpResponses.errorJSON("Error getting console text");
-    }
-  }
-
-   */
   private AnnotatedLargeText<? extends FlowNode> getLogForNode(String nodeId) throws IOException {
     FlowExecution execution = target.getExecution();
     if (execution != null) {

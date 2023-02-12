@@ -4,7 +4,7 @@
   --step-bg-unstable: var(--alert-warning-bg-color);
   --step-bg-failure: var(--alert-danger-bg-color);
   --orange: 253, 166, 60;
-  --orange-light: rgba(var(--orange), 0.44);  
+  --orange-light: rgba(var(--orange), 0.44);
 }
 
 [data-theme="dark"] {
@@ -293,12 +293,12 @@ div.stage-detail-group {
 }
 
 .step-header-unstable {
-  @extend div,  .step-detail-group;
+  @extend div, .step-detail-group;
   background: var(--step-bg-unstable) !important;
 }
 
 .step-header-failure {
-  @extend div,  .step-detail-group;
+  @extend div, .step-detail-group;
   background: var(--step-bg-failure) !important;
 }
 

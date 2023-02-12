@@ -8,7 +8,7 @@ import TimerIcon from "@mui/icons-material/Timer";
 import InfoIcon from "@mui/icons-material/Info";
 import LinkIcon from "@mui/icons-material/Link";
 
-import { StepInfo } from "./PipelineConsoleModel"
+import { StepInfo } from "./PipelineConsoleModel";
 import { ConsoleLogCard } from "./ConsoleLogCard";
 
 import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/";
@@ -69,10 +69,7 @@ interface StageViewProps {
   steps: Array<StepInfo>;
   selectedStage: string;
   expandedSteps: string[];
-  handleStepToggle: (
-    event: React.SyntheticEvent<{}>,
-    nodeId: string
-  ) => void;
+  handleStepToggle: (event: React.SyntheticEvent<{}>, nodeId: string) => void;
 }
 
 export class StageView extends React.Component {
@@ -103,14 +100,20 @@ export class StageView extends React.Component {
   }
 
   getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
-    console.debug(`Passed expandedSteps: ${this.props.expandedSteps}`)
+    console.debug(`Passed expandedSteps: ${this.props.expandedSteps}`);
     return stepsItems.map((stepItemData) => {
-      console.debug(`Is expanded (${stepItemData.id}): ${this.props.expandedSteps.includes(String(stepItemData.id))}`)
+      console.debug(
+        `Is expanded (${stepItemData.id}): ${this.props.expandedSteps.includes(
+          String(stepItemData.id)
+        )}`
+      );
       return (
         <ConsoleLogCard
           step={stepItemData}
           handleStepToggle={this.props.handleStepToggle}
-          isExpanded={this.props.expandedSteps.includes(String(stepItemData.id))}
+          isExpanded={this.props.expandedSteps.includes(
+            String(stepItemData.id)
+          )}
         />
       );
     });

@@ -12,7 +12,7 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import ShareIcon from "@mui/icons-material/Share";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { StepInfo } from "./PipelineConsoleModel"
+import { StepInfo } from "./PipelineConsoleModel";
 import { ConsoleLine } from "./ConsoleLine";
 import StepStatus from "../../../step-status/StepStatus";
 import { decodeResultValue } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
@@ -21,7 +21,6 @@ import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import TimerIcon from "@mui/icons-material/Timer";
 import InfoIcon from "@mui/icons-material/Info";
-
 
 export interface StepSummaryProps {
   step: StepInfo;
@@ -54,10 +53,7 @@ const StepSummary = (props: StepSummaryProps) => (
 interface ConsoleLogCardProps {
   step: StepInfo;
   isExpanded: boolean;
-  handleStepToggle: (
-    event: React.SyntheticEvent<{}>,
-    nodeId: string
-  ) => void;
+  handleStepToggle: (event: React.SyntheticEvent<{}>, nodeId: string) => void;
 }
 
 interface ExpandMoreProps extends IconButtonProps {
@@ -75,9 +71,7 @@ const ExpandMore = styled((props: ExpandMoreProps) => {
   }),
 }));
 
-export class ConsoleLogCard extends React.Component<
-  ConsoleLogCardProps
-> {
+export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
   constructor(props: ConsoleLogCardProps) {
     super(props);
     this.handleStepToggle = this.handleStepToggle.bind(this);

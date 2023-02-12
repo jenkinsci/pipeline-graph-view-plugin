@@ -7,8 +7,7 @@ import {
 } from "../../../pipeline-graph-view/pipeline-graph/main/";
 import { DataTreeView } from "./DataTreeView";
 import { StageView } from "./StageView";
-import { StepInfo } from "./PipelineConsoleModel"
-
+import { StepInfo } from "./PipelineConsoleModel";
 
 import "./pipeline-console.scss";
 
@@ -148,14 +147,20 @@ export class PipelineConsole extends React.Component<
       if (step) {
         console.debug(`Found step with id '${selectedStage}`);
         selectedStage = step.stageId;
-        expandedSteps = [String(step.id)]
-        expandedStages = this.getStageNodeHierarchy(step.stageId, this.state.stages);
-        this.updateStepConsole(String(step.id), false)
+        expandedSteps = [String(step.id)];
+        expandedStages = this.getStageNodeHierarchy(
+          step.stageId,
+          this.state.stages
+        );
+        this.updateStepConsole(String(step.id), false);
       } else {
         console.debug(
           `Didn't find step with id '${selectedStage}, must be a stage.`
         );
-        expandedStages = this.getStageNodeHierarchy(selectedStage, this.state.stages);
+        expandedStages = this.getStageNodeHierarchy(
+          selectedStage,
+          this.state.stages
+        );
       }
     } else {
       // If we weren't told what steps to expand, expand some steps by default (e.g.first failed steps).
@@ -163,18 +168,18 @@ export class PipelineConsole extends React.Component<
       if (step) {
         console.debug(`Expanding default steps '${selectedStage}`);
         selectedStage = String(step.stageId);
-        expandedSteps = [String(step.id)]
+        expandedSteps = [String(step.id)];
         expandedStages = this.getStageNodeHierarchy(
           step.stageId,
           this.state.stages
         );
-        this.updateStepConsole(String(step.id), false)
+        this.updateStepConsole(String(step.id), false);
       } else {
         console.debug("No node selected.");
       }
     }
-    console.debug(`Updating expandedStages to: ${expandedStages}`)
-    console.debug(`Updating expandedSteps to: ${expandedSteps}`)
+    console.debug(`Updating expandedStages to: ${expandedStages}`);
+    console.debug(`Updating expandedSteps to: ${expandedSteps}`);
     this.setState({
       selectedStage: selectedStage,
       expandedSteps: expandedSteps,
@@ -213,7 +218,7 @@ export class PipelineConsole extends React.Component<
   }
 
   updateStepConsole(stepId: string, forceUpdate: boolean) {
-    let updatedSteps = [... this.state.steps];
+    let updatedSteps = [...this.state.steps];
     for (let step of updatedSteps) {
       if (stepId === String(step.id)) {
         if (!step.consoleText || forceUpdate) {
@@ -235,21 +240,21 @@ export class PipelineConsole extends React.Component<
   }
 
   handleStepToggle(event: React.SyntheticEvent<{}>, nodeId: string): void {
-    let expandedSteps = [... this.state.expandedSteps];
+    let expandedSteps = [...this.state.expandedSteps];
     console.info(`Checking if '${nodeId}' in expanded list ${expandedSteps}`);
     if (!expandedSteps.includes(nodeId)) {
       console.info(`Step '${nodeId}' not in expanded list ${expandedSteps}`);
       expandedSteps.push(nodeId);
-      this.updateStepConsole(nodeId, false)
+      this.updateStepConsole(nodeId, false);
     } else {
       console.info(`Step '${nodeId}' collapsed`);
       // Step untoggled.
-      expandedSteps = expandedSteps.filter(v => v !== nodeId); 
+      expandedSteps = expandedSteps.filter((v) => v !== nodeId);
     }
     console.debug(`Setting 'expandedSteps' to ${expandedSteps}`);
     this.setState({
-      expandedSteps: expandedSteps
-    })
+      expandedSteps: expandedSteps,
+    });
   }
 
   // Gets the selected step in the tree view (or none if not selected).

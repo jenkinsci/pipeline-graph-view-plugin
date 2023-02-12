@@ -7,14 +7,14 @@ public class PipelineStep {
   private int completePercent; // TODO int is fine?
   private String type; // TODO enum
   private String title;
-  private String id;
+  private int id;
   private String stageId;
   private String pauseDurationMillis;
   private String startTimeMillis;
   private String totalDurationMillis;
 
   public PipelineStep(
-      String id,
+      int id,
       String name,
       String state,
       int completePercent,
@@ -49,7 +49,7 @@ public class PipelineStep {
     return totalDurationMillis;
   }
 
-  public String getId() {
+  public int getId() {
     return id;
   }
 

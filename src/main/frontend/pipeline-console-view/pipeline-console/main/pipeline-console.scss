@@ -281,24 +281,24 @@ div.stage-detail-group {
 .step-detail-group {
   @extend div, .stage-detail-group;
   background-color: transparent !important;
-  margin: 0px;
-  padding: 0px;
+  text-indent: 15px;
+  padding: 0px !important;
   color: var(--text-color) !important;
+  box-shadow: none !important;
 }
 
 .step-header-success {
-  @extend div, .stage-detail-group;
+  @extend div, .step-detail-group;
   background: var(--step-bg-success) !important;
-
 }
 
 .step-header-unstable {
-  @extend div, .stage-detail-group;
+  @extend div,  .step-detail-group;
   background: var(--step-bg-unstable) !important;
 }
 
 .step-header-failure {
-  @extend div, .stage-detail-group;
+  @extend div,  .step-detail-group;
   background: var(--step-bg-failure) !important;
 }
 

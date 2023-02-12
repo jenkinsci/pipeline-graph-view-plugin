@@ -9,7 +9,6 @@ import InfoIcon from "@mui/icons-material/Info";
 import LinkIcon from "@mui/icons-material/Link";
 
 import { StepInfo } from "./PipelineConsoleModel"
-import { AccordionView } from "./AccordionView";
 import { ConsoleLogCard } from "./ConsoleLogCard";
 
 import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/";
@@ -106,12 +105,12 @@ export class StageView extends React.Component {
   getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
     console.debug(`Passed expandedSteps: ${this.props.expandedSteps}`)
     return stepsItems.map((stepItemData) => {
-      console.debug(`Is expanded (${stepItemData.id}): ${this.props.expandedSteps.includes(stepItemData.id)}`)
+      console.debug(`Is expanded (${stepItemData.id}): ${this.props.expandedSteps.includes(String(stepItemData.id))}`)
       return (
         <ConsoleLogCard
           step={stepItemData}
           handleStepToggle={this.props.handleStepToggle}
-          isExpanded={this.props.expandedSteps.includes(stepItemData.id)}
+          isExpanded={this.props.expandedSteps.includes(String(stepItemData.id))}
         />
       );
     });

@@ -150,7 +150,7 @@ export class PipelineConsole extends React.Component<
         selectedStage = step.stageId;
         expandedSteps = [String(step.id)]
         expandedStages = this.getStageNodeHierarchy(step.stageId, this.state.stages);
-        this.updateStepConsole(step.id, false)
+        this.updateStepConsole(String(step.id), false)
       } else {
         console.debug(
           `Didn't find step with id '${selectedStage}, must be a stage.`
@@ -168,7 +168,7 @@ export class PipelineConsole extends React.Component<
           step.stageId,
           this.state.stages
         );
-        this.updateStepConsole(step.id, false)
+        this.updateStepConsole(String(step.id), false)
       } else {
         console.debug("No node selected.");
       }

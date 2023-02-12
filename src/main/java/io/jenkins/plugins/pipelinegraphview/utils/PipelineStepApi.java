@@ -50,7 +50,7 @@ public class PipelineStepApi {
                   logger.debug("DisplayName After: '" + displayName + "'.");
 
                   return new PipelineStep(
-                      flowNodeWrapper.getId(),
+                      Integer.parseInt(flowNodeWrapper.getId()),
                       displayName,
                       state,
                       50, // TODO how ???

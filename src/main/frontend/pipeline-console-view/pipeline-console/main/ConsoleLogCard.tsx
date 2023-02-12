@@ -12,15 +12,49 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import ShareIcon from "@mui/icons-material/Share";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { StepInfo } from "./DataTreeView";
+import { StepInfo } from "./PipelineConsoleModel"
 import { ConsoleLine } from "./ConsoleLine";
 import StepStatus from "../../../step-status/StepStatus";
 import { decodeResultValue } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
 import { Expand } from "@mui/icons-material";
+import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+import TimerIcon from "@mui/icons-material/Timer";
+import InfoIcon from "@mui/icons-material/Info";
+
+
+export interface StepSummaryProps {
+  step: StepInfo;
+}
+
+// Tree Item for steps
+const StepSummary = (props: StepSummaryProps) => (
+  <React.Fragment>
+    <div className="step-detail-group">
+      <div className="detail-element" key="start-time">
+        <ScheduleIcon className="detail-icon" />
+        {props.step.startTimeMillis}
+      </div>
+      <div className="detail-element" key="paused-duration">
+        <HourglassEmptyIcon className="detail-icon" />
+        {props.step.pauseDurationMillis}
+      </div>
+      <div className="detail-element" key="duration">
+        <TimerIcon className="detail-icon" />
+        {props.step.totalDurationMillis}
+      </div>
+      <div className="detail-element capitalize" key="status">
+        <InfoIcon className="detail-icon" />
+        <span className="capitalize">{props.step.state}</span>
+      </div>
+    </div>
+  </React.Fragment>
+);
 
 interface ConsoleLogCardProps {
   step: StepInfo;
-  updateStepConsoleText: (
+  isExpanded: boolean;
+  handleStepToggle: (
     event: React.SyntheticEvent<{}>,
     nodeId: string
   ) => void;
@@ -41,35 +75,20 @@ const ExpandMore = styled((props: ExpandMoreProps) => {
   }),
 }));
 
-interface ConsoleLogCardState {
-  expanded: boolean;
-}
-
 export class ConsoleLogCard extends React.Component<
-  ConsoleLogCardProps,
-  ConsoleLogCardState
+  ConsoleLogCardProps
 > {
   constructor(props: ConsoleLogCardProps) {
     super(props);
-    this.state = {
-      expanded: false,
-    };
-    this.handleExpandClick = this.handleExpandClick.bind(this);
-    this.handleExpandClick = this.handleExpandClick.bind(this);
+    this.handleStepToggle = this.handleStepToggle.bind(this);
   }
 
-  handleExpandClick(event: React.MouseEvent<HTMLElement>) {
-    let isExanded = this.state.expanded || false;
-    if (!isExanded && !this.props.step.consoleText) {
-      console.debug(`Fetching log for: ${this.props.step.id}`);
-      this.props.updateStepConsoleText(event, String(this.props.step.id));
-    }
-    this.setState({
-      expanded: !isExanded,
-    });
+  handleStepToggle(event: React.MouseEvent<HTMLElement>) {
+    this.props.handleStepToggle(event, String(this.props.step.id));
   }
 
   renderConsoleOutput() {
+    // TODO: Consider if we need to render each time a step is opened (maybe just if it's opened and the console has been updated since)?
     if (this.props.step.consoleText && this.props.step.consoleText.length > 0) {
       console.debug("Generating console log");
       const lineChunks = this.props.step.consoleText.split("\n") || [];
@@ -97,8 +116,9 @@ export class ConsoleLogCard extends React.Component<
     return (
       <Card className="step-detail-group">
         <CardActionArea
-          onClick={this.handleExpandClick}
+          onClick={this.handleStepToggle}
           aria-label="Show console log."
+          className={`step-header-${this.props.step.state.toLowerCase()}`}
         >
           <StepStatus
             status={decodeResultValue(this.props.step.state)}
@@ -108,11 +128,11 @@ export class ConsoleLogCard extends React.Component<
           <Typography className="detail-element">
             {this.props.step.name}
           </Typography>
-          <ExpandMore expand={this.state.expanded} aria-expanded>
+          <ExpandMore expand={this.props.isExpanded} aria-expanded>
             <ExpandMoreIcon />
           </ExpandMore>
         </CardActionArea>
-        <Collapse in={this.state.expanded} timeout={50} unmountOnExit>
+        <Collapse in={this.props.isExpanded} timeout={50} unmountOnExit>
           <CardContent className="step-content">
             {this.renderConsoleOutput()}
           </CardContent>

@@ -1,11 +1,12 @@
 import React from "react";
 
-import { StepInfo } from "./DataTreeView";
+import { StepInfo } from "./PipelineConsoleModel";
 import { ConsoleLogCard } from "./ConsoleLogCard";
 
 interface AccordonViewProps {
   steps: StepInfo[];
-  updateStepConsoleText: (
+  expandedSteps: string[];
+  handleStepToggle: (
     event: React.SyntheticEvent<{}>,
     nodeId: string
   ) => void;
@@ -24,17 +25,9 @@ export class AccordionView extends React.Component {
     super(props);
   }
 
-  handleToggle(event: React.ChangeEvent<{}>, nodeIds: string[]): void {
-    this.setState({
-      expanded: nodeIds,
-    });
-  }
-
   handleChange =
     (nodeId: string) => (event: React.SyntheticEvent, expanded: boolean) => {
-      if (expanded) {
-        this.props.updateStepConsoleText(event, nodeId);
-      }
+      this.props.handleStepToggle(event, nodeId);
     };
 
   getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
@@ -42,7 +35,8 @@ export class AccordionView extends React.Component {
       return (
         <ConsoleLogCard
           step={stepItemData}
-          updateStepConsoleText={this.props.updateStepConsoleText}
+          handleStepToggle={this.props.handleStepToggle}
+          isExpanded={String(stepItemData.id) in this.props.expandedSteps}
         />
       );
     });

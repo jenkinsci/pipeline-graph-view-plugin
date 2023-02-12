@@ -50,10 +50,7 @@ public class PipelineStepApi {
                   logger.debug("DisplayName After: '" + displayName + "'.");
 
                   return new PipelineStep(
-                      Integer.parseInt(
-                          flowNodeWrapper
-                              .getId()), // TODO no need to parse it BO returns a string even though
-                      // the datatype is number on the frontend
+                      flowNodeWrapper.getId(),
                       displayName,
                       state,
                       50, // TODO how ???

@@ -12,23 +12,6 @@ import {
 import StepStatus from "../../../step-status/StepStatus";
 import { decodeResultValue } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
 
-/**
- * StageInfo is the input, in the form of an Array<StageInfo> of the top-level stages of a pipeline
- */
-export interface StepInfo {
-  name: string;
-  title: string;
-  state: Result;
-  completePercent: number;
-  id: number;
-  type: string;
-  stageId: string;
-  pauseDurationMillis: string;
-  startTimeMillis: string;
-  totalDurationMillis: string;
-  consoleText: string;
-}
-
 const getTreeItemsFromStage = (stageItems: StageInfo[]) => {
   return stageItems.map((stageItemData) => {
     let children: JSX.Element[] = [];
@@ -64,7 +47,6 @@ interface DataTreeViewProps {
   onNodeToggle: (event: React.ChangeEvent<any>, nodeIds: string[]) => void;
   selected: string;
   expanded: string[];
-  steps: StepInfo[];
 }
 
 export class DataTreeView extends React.Component {

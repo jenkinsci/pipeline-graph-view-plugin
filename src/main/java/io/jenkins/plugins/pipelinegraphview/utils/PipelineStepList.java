@@ -27,7 +27,7 @@ public class PipelineStepList {
             return Integer.compare(
                 Integer.parseInt(lhs.getStageId()), Integer.parseInt(rhs.getStageId()));
           } else {
-            return Integer.compare(lhs.getId(), rhs.getId());
+            return Integer.compare(Integer.parseInt(lhs.getId()), Integer.parseInt(rhs.getId()));
           }
         });
   }

@@ -8,8 +8,9 @@ import TimerIcon from "@mui/icons-material/Timer";
 import InfoIcon from "@mui/icons-material/Info";
 import LinkIcon from "@mui/icons-material/Link";
 
-import { StepInfo } from "./DataTreeView";
+import { StepInfo } from "./PipelineConsoleModel"
 import { AccordionView } from "./AccordionView";
+import { ConsoleLogCard } from "./ConsoleLogCard";
 
 import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/";
 
@@ -51,34 +52,6 @@ const StageSummary = (props: StageSummaryProps) => (
   </React.Fragment>
 );
 
-export interface StepSummaryProps {
-  step: StepInfo;
-}
-
-// Tree Item for steps
-const StepSummary = (props: StepSummaryProps) => (
-  <React.Fragment>
-    <div className="step-detail-group">
-      <div className="detail-element" key="start-time">
-        <ScheduleIcon className="detail-icon" />
-        {props.step.startTimeMillis}
-      </div>
-      <div className="detail-element" key="paused-duration">
-        <HourglassEmptyIcon className="detail-icon" />
-        {props.step.pauseDurationMillis}
-      </div>
-      <div className="detail-element" key="duration">
-        <TimerIcon className="detail-icon" />
-        {props.step.totalDurationMillis}
-      </div>
-      <div className="detail-element capitalize" key="status">
-        <InfoIcon className="detail-icon" />
-        <span className="capitalize">{props.step.state}</span>
-      </div>
-    </div>
-  </React.Fragment>
-);
-
 export interface FailedStepLinkProps {
   step: StepInfo;
 }
@@ -95,8 +68,9 @@ const FailedStepLink = (props: FailedStepLinkProps) => (
 interface StageViewProps {
   stage: StageInfo | null;
   steps: Array<StepInfo>;
-  selected: string;
-  updateStepConsoleText: (
+  selectedStage: string;
+  expandedSteps: string[];
+  handleStepToggle: (
     event: React.SyntheticEvent<{}>,
     nodeId: string
   ) => void;
@@ -113,7 +87,7 @@ export class StageView extends React.Component {
       let failedSteps = [] as StepInfo[];
       for (let i = 0; i < this.props.steps.length; i++) {
         let step = this.props.steps[i];
-        if (step.stageId === this.props.selected) {
+        if (step.stageId === this.props.selectedStage) {
           // We seem to get a mix of upper and lower case states, so normalise on lowercase.
           if (step.state.toLowerCase() === "unstable") {
             failedSteps.push(step);
@@ -129,15 +103,26 @@ export class StageView extends React.Component {
     return null;
   }
 
+  getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
+    console.debug(`Passed expandedSteps: ${this.props.expandedSteps}`)
+    return stepsItems.map((stepItemData) => {
+      console.debug(`Is expanded (${stepItemData.id}): ${this.props.expandedSteps.includes(stepItemData.id)}`)
+      return (
+        <ConsoleLogCard
+          step={stepItemData}
+          handleStepToggle={this.props.handleStepToggle}
+          isExpanded={this.props.expandedSteps.includes(stepItemData.id)}
+        />
+      );
+    });
+  };
+
   render() {
     return (
       <React.Fragment>
         <div key="stage-summary">{this.renderStageDetails()}</div>
         <div key="exanding-steps">
-          <AccordionView
-            steps={this.props.steps}
-            updateStepConsoleText={this.props.updateStepConsoleText}
-          />
+          {this.getTreeItemsFromStepList(this.props.steps)}
         </div>
       </React.Fragment>
     );

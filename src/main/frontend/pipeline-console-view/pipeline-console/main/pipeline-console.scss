@@ -1,15 +1,26 @@
 :root {
   --card-background: hsl(212, 30%, 96%);
+  --step-bg-success: var(--alert-success-bg-color);
+  --step-bg-unstable: var(--alert-warning-bg-color);
+  --step-bg-failure: var(--alert-danger-bg-color);
+  --orange: 253, 166, 60;
+  --orange-light: rgba(var(--orange), 0.44);  
 }
 
 [data-theme="dark"] {
   --card-background: hsl(230deg 14% 23%);
+  //--step-bg-success: var(--dark-green);
+  //--step-bg-unstable: var(--dark-orange);
+  //--step-bg-failure: var(--dark-red);
 }
 
 @media (prefers-color-scheme: dark) {
   [data-theme="dark-system"],
   [data-theme="dark-system"] {
     --card-background: hsl(230deg 14% 23%);
+    //--step-bg-success: var(--dark-green);
+    //--step-bg-unstable: var(--dark-orange);
+    //--step-bg-failure: var(--dark-red);
   }
 }
 
@@ -266,17 +277,29 @@ div.stage-detail-group {
   padding: 0px !important;
   padding-bottom: 0px !important;
 }
+
 .step-detail-group {
   @extend div, .stage-detail-group;
-  background: var(--table-background) !important;
+  background-color: transparent !important;
   margin: 0px;
   padding: 0px;
   color: var(--text-color) !important;
 }
 
-span .MuiCardHeader-avatar {
-  height: 5em;
-  width: 5em;
+.step-header-success {
+  @extend div, .stage-detail-group;
+  background: var(--step-bg-success) !important;
+
+}
+
+.step-header-unstable {
+  @extend div, .stage-detail-group;
+  background: var(--step-bg-unstable) !important;
+}
+
+.step-header-failure {
+  @extend div, .stage-detail-group;
+  background: var(--step-bg-failure) !important;
 }
 
 div.detail-element {

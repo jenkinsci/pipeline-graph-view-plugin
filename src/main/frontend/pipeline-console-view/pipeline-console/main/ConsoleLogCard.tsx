@@ -21,34 +21,11 @@ import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import TimerIcon from "@mui/icons-material/Timer";
 import InfoIcon from "@mui/icons-material/Info";
+import Grid from "@mui/material/Grid";
 
 export interface StepSummaryProps {
   step: StepInfo;
 }
-
-// Tree Item for steps
-const StepSummary = (props: StepSummaryProps) => (
-  <React.Fragment>
-    <div className="step-detail-group">
-      <div className="detail-element" key="start-time">
-        <ScheduleIcon className="detail-icon" />
-        {props.step.startTimeMillis}
-      </div>
-      <div className="detail-element" key="paused-duration">
-        <HourglassEmptyIcon className="detail-icon" />
-        {props.step.pauseDurationMillis}
-      </div>
-      <div className="detail-element" key="duration">
-        <TimerIcon className="detail-icon" />
-        {props.step.totalDurationMillis}
-      </div>
-      <div className="detail-element capitalize" key="status">
-        <InfoIcon className="detail-icon" />
-        <span className="capitalize">{props.step.state}</span>
-      </div>
-    </div>
-  </React.Fragment>
-);
 
 interface ConsoleLogCardProps {
   step: StepInfo;
@@ -114,14 +91,51 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
           aria-label="Show console log."
           className={`step-header-${this.props.step.state.toLowerCase()}`}
         >
-          <StepStatus
-            status={decodeResultValue(this.props.step.state)}
-            text=""
-            key={`status-${this.props.step.id}`}
-          />
-          <Typography className="detail-element">
-            {this.props.step.name}
-          </Typography>
+          <Grid container zeroMinWidth xs={12}>
+            <Grid item zeroMinWidth xs={11} sm container>
+              <Grid
+                item
+                xs
+                container
+                zeroMinWidth
+                direction="column"
+                spacing={2}
+              >
+                <Grid item xs zeroMinWidth width="100%">
+                  <Typography className="detail-element-header" noWrap={true}>
+                    {this.props.step.name.substring(
+                      0,
+                      this.props.step.name.lastIndexOf("-") - 1
+                    )}
+                  </Typography>
+                  <Typography
+                    className="detail-element"
+                    component="div"
+                    color="text.secondary"
+                  >
+                    {this.props.step.name.substring(
+                      this.props.step.name.lastIndexOf("-") + 1,
+                      this.props.step.name.length
+                    )}
+                  </Typography>
+                </Grid>
+              </Grid>
+              <Grid item zeroMinWidth xs={1}>
+                <Typography
+                  className="detail-element"
+                  align="right"
+                  component="div"
+                  color="text.secondary"
+                  width="80%"
+                >
+                  {this.props.step.totalDurationMillis.substring(
+                    this.props.step.totalDurationMillis.indexOf(" ") + 1,
+                    this.props.step.totalDurationMillis.length
+                  )}
+                </Typography>
+              </Grid>
+            </Grid>
+          </Grid>
           <ExpandMore expand={this.props.isExpanded} aria-expanded>
             <ExpandMoreIcon />
           </ExpandMore>

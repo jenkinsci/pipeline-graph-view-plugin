@@ -52,3 +52,10 @@
   height: 20px !important;
   color: currentColor !important;
 }
+
+.app-details__prev_next {
+  a, a:hover, a:focus, a:active {
+    color: inherit !important;
+    text-decoration: none !important;
+  }
+}

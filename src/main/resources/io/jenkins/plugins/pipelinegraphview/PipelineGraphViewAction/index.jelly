@@ -10,7 +10,7 @@
             <l:icon alt="${it.iconColor.description}"
               class="${it.buildStatusIconClassName} icon-xlg"
               tooltip="${it.iconColor.description}" />
-            ${it.fullProjectName}
+            ${it.fullProjectDisplayName}
             <j:if test="${it.previousBuildNumber!=null}">
               <a href="../../${it.previousBuildNumber}/pipeline-graph" style="text-decoration:none; color:inherit;">
                 <l:icon class="symbol-chevron-back-outline plugin-ionicons-api icon-md" tooltip="${%Previous Build}" />

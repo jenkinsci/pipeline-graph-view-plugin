@@ -70,6 +70,7 @@ interface StageViewProps {
   selectedStage: string;
   expandedSteps: string[];
   handleStepToggle: (event: React.SyntheticEvent<{}>, nodeId: string) => void;
+  handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
 }
 
 export class StageView extends React.Component {
@@ -114,6 +115,7 @@ export class StageView extends React.Component {
           isExpanded={this.props.expandedSteps.includes(
             String(stepItemData.id)
           )}
+          handleMoreConsoleClick={this.props.handleMoreConsoleClick}
         />
       );
     });

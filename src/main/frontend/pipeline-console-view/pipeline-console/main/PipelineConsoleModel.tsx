@@ -14,5 +14,15 @@ export interface StepInfo {
   pauseDurationMillis: string;
   startTimeMillis: string;
   totalDurationMillis: string;
-  consoleText: string;
+  consoleLines: string[];
+  consoleStartByte: number;
+  consoleEndByte: number;
 }
+
+export interface ConsoleLogData {
+  text: string;
+  startByte: number;
+  endByte: number;
+}
+
+export const LOG_FETCH_SIZE = 150 * 1024;

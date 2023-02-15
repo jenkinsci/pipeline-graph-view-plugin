@@ -7,21 +7,13 @@ import CardActionArea from "@mui/material/CardActions";
 import Collapse from "@mui/material/Collapse";
 import IconButton, { IconButtonProps } from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
-import { red } from "@mui/material/colors";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import ShareIcon from "@mui/icons-material/Share";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { StepInfo } from "./PipelineConsoleModel";
 import { ConsoleLine } from "./ConsoleLine";
-import StepStatus from "../../../step-status/StepStatus";
-import { decodeResultValue } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
-import { Expand } from "@mui/icons-material";
-import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
-import ScheduleIcon from "@mui/icons-material/Schedule";
-import TimerIcon from "@mui/icons-material/Timer";
-import InfoIcon from "@mui/icons-material/Info";
 import Grid from "@mui/material/Grid";
+import Button from "@mui/material/Button";
+
+import { LOG_FETCH_SIZE } from "./PipelineConsoleModel";
 
 export interface StepSummaryProps {
   step: StepInfo;
@@ -31,6 +23,7 @@ interface ConsoleLogCardProps {
   step: StepInfo;
   isExpanded: boolean;
   handleStepToggle: (event: React.SyntheticEvent<{}>, nodeId: string) => void;
+  handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
 }
 
 interface ExpandMoreProps extends IconButtonProps {
@@ -58,14 +51,71 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
     this.props.handleStepToggle(event, String(this.props.step.id));
   }
 
+  getTrucatedLogWarning() {
+    if (this.props.step.consoleStartByte != 0) {
+      return (
+        <Grid container xs={12}>
+          <Grid item xs={6} sm>
+            <Typography align="right" className="step-header">
+              {`Missing ${this.prettySizeString(
+                this.props.step.consoleStartByte
+              )} of logs.`}
+            </Typography>
+          </Grid>
+          <Grid item xs={6} sm>
+            <Button
+              variant="text"
+              sx={{padding: "0px"}}
+              onClick={() => {
+                let startByte =
+                  this.props.step.consoleStartByte - LOG_FETCH_SIZE;
+                console.debug(
+                  `startByte '${this.props.step.consoleStartByte}' -> '${startByte}'`
+                );
+                if (startByte < 0) {
+                  startByte = 0;
+                }
+                this.props.handleMoreConsoleClick(
+                  String(this.props.step.id),
+                  startByte
+                );
+              }}
+            >
+              Click to get more logs
+            </Button>
+          </Grid>
+        </Grid>
+      );
+    } else {
+      <div></div>;
+    }
+  }
+
+  prettySizeString(size: number) {
+    let kib = 1024;
+    let mib = 1024 * 1024;
+    let gib = 1024 * 1024 * 1024;
+    if (size < kib) {
+      return `${size}b`;
+    } else if (size < mib) {
+      return `${(size / kib).toFixed(2)}KiB`;
+    } else if (size < gib) {
+      return `${(size / mib).toFixed(2)}MiB`;
+    }
+    return `${(size / gib).toFixed(2)}GiB`;
+  }
+
   renderConsoleOutput() {
     // TODO: Consider if we need to render each time a step is opened (maybe just if it's opened and the console has been updated since)?
-    if (this.props.step.consoleText && this.props.step.consoleText.length > 0) {
+    if (
+      this.props.step.consoleLines &&
+      this.props.step.consoleLines.length > 0
+    ) {
       console.debug("Generating console log");
-      const lineChunks = this.props.step.consoleText.split("\n") || [];
       return (
         <pre className="console-output">
-          {lineChunks.map((line, index) => {
+          {this.getTrucatedLogWarning()}
+          {this.props.step.consoleLines.map((line, index) => {
             let lineNumber = String(index + 1);
             return (
               <ConsoleLine
@@ -91,17 +141,10 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
           aria-label="Show console log."
           className={`step-header-${this.props.step.state.toLowerCase()}`}
         >
-          <Grid container zeroMinWidth xs={12}>
-            <Grid item zeroMinWidth xs={11} sm container>
-              <Grid
-                item
-                xs
-                container
-                zeroMinWidth
-                direction="column"
-                spacing={2}
-              >
-                <Grid item xs zeroMinWidth width="100%">
+          <Grid container xs={12}>
+            <Grid item xs={11} sm container>
+              <Grid item xs container direction="column" spacing={2}>
+                <Grid item xs width="100%">
                   <Typography className="detail-element-header" noWrap={true}>
                     {this.props.step.name.substring(
                       0,
@@ -120,7 +163,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
                   </Typography>
                 </Grid>
               </Grid>
-              <Grid item zeroMinWidth xs={1}>
+              <Grid item xs={1}>
                 <Typography
                   className="detail-element"
                   align="right"

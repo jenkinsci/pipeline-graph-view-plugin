@@ -7,7 +7,8 @@ import {
 } from "../../../pipeline-graph-view/pipeline-graph/main/";
 import { DataTreeView } from "./DataTreeView";
 import { StageView } from "./StageView";
-import { StepInfo } from "./PipelineConsoleModel";
+import { ConsoleLogData, StepInfo } from "./PipelineConsoleModel";
+import { LOG_FETCH_SIZE } from "./PipelineConsoleModel";
 
 import "./pipeline-console.scss";
 
@@ -31,7 +32,7 @@ export class PipelineConsole extends React.Component<
     this.handleActionNodeSelect = this.handleActionNodeSelect.bind(this);
     this.handleToggle = this.handleToggle.bind(this);
     this.handleStepToggle = this.handleStepToggle.bind(this);
-
+    this.handleMoreConsoleClick = this.handleMoreConsoleClick.bind(this);
     // set default values of state
     this.state = {
       // Need to update dynamically
@@ -125,12 +126,16 @@ export class PipelineConsole extends React.Component<
     return stepsCopy;
   }
 
-  getConsoleText(stepId: string): Promise<string> {
-    return fetch(`consoleOutput?nodeId=${stepId}`)
+  getConsoleTextOffset(
+    stepId: string,
+    startByte: number
+  ): Promise<ConsoleLogData> {
+    return fetch(`consoleOutput?nodeId=${stepId}&startByte=${startByte}`)
       .then((res) => res.json())
       .then((res) => {
         // Strip trailing whitespace.
-        return res.data.text.replace(/\s+$/, "");
+        res.data.text = res.data.text.replace(/\s+$/, "");
+        return res.data;
       });
   }
 
@@ -218,14 +223,26 @@ export class PipelineConsole extends React.Component<
   }
 
   updateStepConsole(stepId: string, forceUpdate: boolean) {
+    this.updateStepConsoleOffset(stepId, forceUpdate, 0 - LOG_FETCH_SIZE);
+  }
+
+  updateStepConsoleOffset(
+    stepId: string,
+    forceUpdate: boolean,
+    startByte: number
+  ) {
     let updatedSteps = [...this.state.steps];
     for (let step of updatedSteps) {
       if (stepId === String(step.id)) {
-        if (!step.consoleText || forceUpdate) {
-          console.debug(`Updating console text for step ${stepId}`);
-          let promise = this.getConsoleText(stepId);
+        if (!step.consoleLines || forceUpdate) {
+          console.debug(
+            `Updating console text for step ${stepId} with from '${startByte}'`
+          );
+          let promise = this.getConsoleTextOffset(stepId, startByte);
           promise.then((res) => {
-            step.consoleText = res;
+            step.consoleLines = res.text.split("\n") || [];
+            step.consoleStartByte = res.startByte;
+            step.consoleEndByte = res.endByte;
             this.setState({
               steps: updatedSteps,
             });
@@ -255,6 +272,10 @@ export class PipelineConsole extends React.Component<
     this.setState({
       expandedSteps: expandedSteps,
     });
+  }
+
+  handleMoreConsoleClick(nodeId: string, startByte: number): void {
+    this.updateStepConsoleOffset(nodeId, true, startByte);
   }
 
   // Gets the selected step in the tree view (or none if not selected).
@@ -343,6 +364,7 @@ export class PipelineConsole extends React.Component<
                 expandedSteps={this.state.expandedSteps}
                 selectedStage={this.state.selectedStage}
                 handleStepToggle={this.handleStepToggle}
+                handleMoreConsoleClick={this.handleMoreConsoleClick}
               />
             </div>
           </SplitPane>

@@ -43,7 +43,30 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
   }
 
   public String getBuildDisplayName() {
+    return run.getDisplayName();
+  }
+
+  public String getFullBuildDisplayName() {
     return run.getFullDisplayName();
+  }
+
+  public String getFullProjectName() {
+    return run.getParent().getFullName();
+  }
+
+  private String getBuildNumber(WorkflowRun run) {
+    if (run != null) {
+      return String.valueOf(run.getNumber());
+    }
+    return null;
+  }
+
+  public String getPreviousBuildNumber() {
+    return getBuildNumber(run.getPreviousBuild());
+  }
+
+  public String getNextBuildNumber() {
+    return getBuildNumber(run.getNextBuild());
   }
 
   public BallColor getIconColor() {

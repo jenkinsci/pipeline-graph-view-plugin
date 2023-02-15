@@ -2,14 +2,26 @@
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:p="/lib/pipeline-graph-view">
-  <l:layout title="${%Graph} [${it.buildDisplayName}]" type="one-column">
+  <l:layout title="${%Graph} [${it.fullBuildDisplayName}]" type="one-column">
     <l:main-panel>
       <div class="jenkins-app-bar">
         <div class="jenkins-app-bar__content">
           <h1>
-            <l:icon alt="${it.iconColor.description}" class="${it.buildStatusIconClassName} icon-xlg"
-                    tooltip="${it.iconColor.description}"/>
+            <l:icon alt="${it.iconColor.description}"
+              class="${it.buildStatusIconClassName} icon-xlg"
+              tooltip="${it.iconColor.description}" />
+            ${it.fullProjectName}
+          <j:if test="${it.previousBuildNumber!=null}">
+                <a href="../../${it.previousBuildNumber}/pipeline-graph" style="text-decoration:none; color:inherit;">
+                  <l:icon class="symbol-chevron-back-outline plugin-ionicons-api icon-md" tooltip="${%Previous Build}" />
+              </a>
+            </j:if>
             ${it.buildDisplayName}
+          <j:if test="${it.nextBuildNumber!=null}">
+                <a href="../../${it.nextBuildNumber}/pipeline-graph" style="text-decoration:none; color:inherit;">
+                  <l:icon class="symbol-chevron-forward-outline plugin-ionicons-api icon-md" tooltip="${%Next Build}"/>
+              </a>
+            </j:if>
           </h1>
         </div>
         <div class="jenkins-app-bar__controls">

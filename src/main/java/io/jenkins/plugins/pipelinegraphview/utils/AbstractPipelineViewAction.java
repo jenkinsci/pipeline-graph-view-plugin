@@ -50,8 +50,8 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
     return run.getFullDisplayName();
   }
 
-  public String getFullProjectName() {
-    return run.getParent().getFullName();
+  public String getFullProjectDisplayName() {
+    return run.getParent().getFullDisplayName();
   }
 
   private String getBuildNumber(WorkflowRun run) {

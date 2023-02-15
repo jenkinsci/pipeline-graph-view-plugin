@@ -143,6 +143,7 @@ export class PipelineConsole extends React.Component<
     console.debug(`In selectNode.`);
     let params = new URLSearchParams(document.location.search.substring(1));
     let selectedStage = params.get("selected-node") || "";
+    let startByte = parseInt(params.get("start-byte") || `${LOG_FETCH_SIZE}`);
     let expandedSteps = [] as string[];
     let expandedStages = [] as string[];
     if (selectedStage) {
@@ -160,7 +161,7 @@ export class PipelineConsole extends React.Component<
         this.updateStepConsole(String(step.id), false);
       } else {
         console.debug(
-          `Didn't find step with id '${selectedStage}, must be a stage.`
+          `Didn't find step with id '${selectedStage}', must be a stage.`
         );
         expandedStages = this.getStageNodeHierarchy(
           selectedStage,
@@ -178,7 +179,7 @@ export class PipelineConsole extends React.Component<
           step.stageId,
           this.state.stages
         );
-        this.updateStepConsole(String(step.id), false);
+        this.updateStepConsoleOffset(String(step.id), false, startByte);
       } else {
         console.debug("No node selected.");
       }

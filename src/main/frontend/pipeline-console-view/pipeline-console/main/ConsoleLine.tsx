@@ -7,6 +7,7 @@ export interface ConsoleLineProps {
   content: string;
   stepId: string;
   key: string;
+  startByte: number;
 }
 
 // Console output line
@@ -20,7 +21,7 @@ export const ConsoleLine = (props: ConsoleLineProps) => (
     <div className="console-output-line" key={`${props.lineNumber}-body`}>
       <a
         className="console-line-number"
-        href={`?selected-node=${props.stepId}#log-${props.lineNumber}`}
+        href={`?start-byte=${props.startByte}&selected-node=${props.stepId}#log-${props.lineNumber}`}//`}
       >
         {props.lineNumber}
       </a>

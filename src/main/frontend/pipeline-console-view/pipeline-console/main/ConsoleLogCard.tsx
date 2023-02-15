@@ -65,7 +65,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
           <Grid item xs={6} sm>
             <Button
               variant="text"
-              sx={{padding: "0px"}}
+              sx={{ padding: "0px" }}
               onClick={() => {
                 let startByte =
                   this.props.step.consoleStartByte - LOG_FETCH_SIZE;
@@ -123,6 +123,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
                 lineNumber={lineNumber}
                 stepId={String(this.props.step.id)}
                 key={`${String(this.props.step.id)}-${lineNumber}`}
+                startByte={this.props.step.consoleEndByte || LOG_FETCH_SIZE}
               />
             );
           })}

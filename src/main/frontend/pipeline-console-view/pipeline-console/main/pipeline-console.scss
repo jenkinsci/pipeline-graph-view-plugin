@@ -96,6 +96,10 @@
   padding-left: 16px;
 }
 
+div.show-more-console {
+  background-color: var(--alert-warning-bg-color);
+}
+
 pre.console-output-line {
   padding: 0px;
   margin: 0px;
@@ -285,6 +289,7 @@ div.stage-detail-group {
   background-color: transparent !important;
   text-indent: 15px;
   padding: 0px !important;
+  padding-bottom: 5px !important;
   color: var(--text-color) !important;
   box-shadow: none !important;
 }

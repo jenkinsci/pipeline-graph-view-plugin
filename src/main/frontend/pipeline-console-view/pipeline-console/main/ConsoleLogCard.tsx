@@ -57,20 +57,20 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
   }
 
   getTrucatedLogWarning() {
-    if (this.props.step.consoleStartByte != 0) {
+    if (this.props.step.consoleLines && this.props.step.consoleStartByte != 0) {
       return (
         <Grid container>
-          <Grid item xs={6} sm>
+          <Grid item xs={6} sm className="show-more-console">
             <Typography align="right" className="step-header">
               {`Missing ${this.prettySizeString(
                 this.props.step.consoleStartByte
               )} of logs.`}
             </Typography>
           </Grid>
-          <Grid item xs={6} sm>
+          <Grid item xs={6} sm className="show-more-console">
             <Button
               variant="text"
-              sx={{ padding: "0px" }}
+              sx={{ padding: "0px", textTransform: "none" }}
               onClick={() => {
                 let startByte =
                   this.props.step.consoleStartByte - LOG_FETCH_SIZE;
@@ -86,7 +86,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
                 );
               }}
             >
-              Click to get more logs
+              Show more logs
             </Button>
           </Grid>
         </Grid>
@@ -161,7 +161,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
     let lineHeight = 25;
     // More lines than this will reult in something bigger than maxHeight.
     if (consoleLines < maxHeight/lineHeight)  {
-      let charWidth = 7;
+      let charWidth = 10;
       let viewWidth = this.getViewWidth();
       let cumulativeHeight = 0;
       for (let i = 0; i < consoleLines; i++) {
@@ -181,6 +181,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
       <Card
         className="step-detail-group"
         key={`step-card-${this.props.step.id}`}
+        sx={{ padding: "5px" }}
       >
         <CardActionArea
           onClick={this.handleStepToggle}
@@ -246,6 +247,9 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
             className="step-content"
             key={`step-console-content-${this.props.step.id}`}
           >
+            <div>
+              {this.getTrucatedLogWarning()}
+            </div>
             <Virtuoso
               style={{ height: `${this.getCalculateHeight()}px`}}
               totalCount={this.getNumConsoleLines()}

@@ -49,7 +49,7 @@ interface DataTreeViewProps {
   expanded: string[];
 }
 
-export class DataTreeView extends React.Component {
+export default class DataTreeView extends React.Component {
   props!: DataTreeViewProps;
 
   constructor(props: DataTreeViewProps) {

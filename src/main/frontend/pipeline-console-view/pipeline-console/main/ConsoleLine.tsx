@@ -6,13 +6,12 @@ export interface ConsoleLineProps {
   lineNumber: string;
   content: string;
   stepId: string;
-  key: string;
   startByte: number;
 }
 
 // Console output line
 export const ConsoleLine = (props: ConsoleLineProps) => (
-  <div className="console-output-item" key={props.lineNumber}>
+  <pre className="console-output-line" key={`console-line-pre${props.lineNumber}`}>
     <div
       className="console-output-line-anchor"
       id={`log-${props.lineNumber}`}
@@ -30,5 +29,5 @@ export const ConsoleLine = (props: ConsoleLineProps) => (
         `${props.stepId}-${props.lineNumber}`
       )}
     </div>
-  </div>
+  </pre>
 );

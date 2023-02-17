@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { memo } from 'react';
 import { styled } from "@mui/material/styles";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -15,16 +15,7 @@ import Button from "@mui/material/Button";
 
 import { LOG_FETCH_SIZE } from "./PipelineConsoleModel";
 
-export interface StepSummaryProps {
-  step: StepInfo;
-}
-
-interface ConsoleLogCardProps {
-  step: StepInfo;
-  isExpanded: boolean;
-  handleStepToggle: (event: React.SyntheticEvent<{}>, nodeId: string) => void;
-  handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
-}
+import { Virtuoso } from 'react-virtuoso'
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
@@ -41,20 +32,34 @@ const ExpandMore = styled((props: ExpandMoreProps) => {
   }),
 }));
 
+type ConsoleLogCardProps = {
+  step: StepInfo;
+  isExpanded: boolean;
+  width: number;
+  height: number;
+  handleStepToggle: (event: React.SyntheticEvent<{}>, nodeId: string) => void;
+  handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
+};
+
 export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
   constructor(props: ConsoleLogCardProps) {
     super(props);
-    this.handleStepToggle = this.handleStepToggle.bind(this);
+    this.handleStepToggle = this.handleStepToggle.bind(this);  
   }
 
   handleStepToggle(event: React.MouseEvent<HTMLElement>) {
     this.props.handleStepToggle(event, String(this.props.step.id));
   }
 
+
+  getRowHeight(index: number) {
+    return 20;
+  }
+
   getTrucatedLogWarning() {
     if (this.props.step.consoleStartByte != 0) {
       return (
-        <Grid container xs={12}>
+        <Grid container>
           <Grid item xs={6} sm>
             <Typography align="right" className="step-header">
               {`Missing ${this.prettySizeString(
@@ -105,88 +110,147 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
     return `${(size / gib).toFixed(2)}GiB`;
   }
 
-  renderConsoleOutput() {
-    // TODO: Consider if we need to render each time a step is opened (maybe just if it's opened and the console has been updated since)?
-    if (
-      this.props.step.consoleLines &&
-      this.props.step.consoleLines.length > 0
-    ) {
-      console.debug("Generating console log");
+  renderSimpleConsoleLines() {
+    if (this.props.step.consoleLines) {
+      return this.props.step.consoleLines.map((content: string, index: number) => {
+        return (
+          <ConsoleLine
+            lineNumber={String(index)}
+            content={content}
+            stepId={String(this.props.step.id)}
+            startByte={this.props.step.consoleStartByte}
+          />
+        )
+      })
+    } else {
       return (
-        <pre className="console-output">
-          {this.getTrucatedLogWarning()}
-          {this.props.step.consoleLines.map((line, index) => {
-            let lineNumber = String(index + 1);
-            return (
-              <ConsoleLine
-                content={line}
-                lineNumber={lineNumber}
-                stepId={String(this.props.step.id)}
-                key={`${String(this.props.step.id)}-${lineNumber}`}
-                startByte={this.props.step.consoleEndByte || LOG_FETCH_SIZE}
-              />
-            );
-          })}
-        </pre>
-      );
+        <div></div>
+      )
     }
-    console.debug("Empty console text");
-    return "";
   }
+
+  renderConsoleLine(index: number) {
+    if (this.props.step.consoleLines) {
+      return (
+        <ConsoleLine
+          lineNumber={String(index)}
+          content={this.props.step.consoleLines[index]}
+          stepId={String(this.props.step.id)}
+          startByte={this.props.step.consoleStartByte}
+        />
+      )
+    }
+  }
+
+  getNumConsoleLines() {
+    return this.props.step.consoleLines ? this.props.step.consoleLines.length: 0;
+  }
+
+  getViewWidth(): number {
+    let stageDetailElement = document.getElementById(`console-root-${this.props.step.stageId}`)
+    if (stageDetailElement) {
+      return stageDetailElement.getBoundingClientRect().width
+    }
+    return 50;
+  }
+
+  getCalculateHeight(): number {
+    // This is a bad solution until we can find a better one.
+    let consoleLines = this.getNumConsoleLines()
+    let maxHeight = 800
+    let lineHeight = 25;
+    // More lines than this will reult in something bigger than maxHeight.
+    if (consoleLines < maxHeight/lineHeight)  {
+      let charWidth = 7;
+      let viewWidth = this.getViewWidth();
+      let cumulativeHeight = 0;
+      for (let i = 0; i < consoleLines; i++) {
+        let lineLength = this.props.step.consoleLines[i].length;
+        cumulativeHeight += (Math.floor((lineLength*charWidth)/viewWidth) + 1) * lineHeight;
+      }
+      if (cumulativeHeight < maxHeight) {
+        return cumulativeHeight;
+      }
+    }
+    return maxHeight;
+  }
+
 
   render() {
     return (
-      <Card className="step-detail-group">
+      <Card
+        className="step-detail-group"
+        key={`step-card-${this.props.step.id}`}
+      >
         <CardActionArea
           onClick={this.handleStepToggle}
           aria-label="Show console log."
           className={`step-header-${this.props.step.state.toLowerCase()}`}
+          key={`step-action-area-${this.props.step.id}`}
         >
-          <Grid container xs={12}>
-            <Grid item xs={11} sm container>
-              <Grid item xs container direction="column" spacing={2}>
-                <Grid item xs width="100%">
-                  <Typography className="detail-element-header" noWrap={true}>
-                    {this.props.step.name.substring(
-                      0,
-                      this.props.step.name.lastIndexOf("-") - 1
-                    )}
-                  </Typography>
-                  <Typography
-                    className="detail-element"
-                    component="div"
-                    color="text.secondary"
-                  >
-                    {this.props.step.name.substring(
-                      this.props.step.name.lastIndexOf("-") + 1,
-                      this.props.step.name.length
-                    )}
-                  </Typography>
-                </Grid>
-              </Grid>
-              <Grid item xs={1}>
-                <Typography
-                  className="detail-element"
-                  align="right"
-                  component="div"
-                  color="text.secondary"
-                  width="80%"
-                >
-                  {this.props.step.totalDurationMillis.substring(
-                    this.props.step.totalDurationMillis.indexOf(" ") + 1,
-                    this.props.step.totalDurationMillis.length
-                  )}
-                </Typography>
-              </Grid>
+          <Grid container key={`step-root-container-${this.props.step.id}`}>
+            <Grid item container xs={10}>
+              <Typography
+                className="detail-element-header"
+                noWrap={true}
+                component="div"
+                key={`step-name-text-${this.props.step.id}`}
+              >
+                {this.props.step.name.substring(
+                  0,
+                  this.props.step.name.lastIndexOf("-")
+                ).trimEnd()}
+              </Typography>
+              <Typography
+                className="detail-element-text"
+                component="div"
+                key={`step-duration-text-${this.props.step.id}`}
+              >
+                {this.props.step.name.substring(
+                  this.props.step.name.lastIndexOf("-") + 1,
+                  this.props.step.name.length
+                ).trimStart()}
+              </Typography>
+            </Grid>
+            <Grid item xs={1}>
+              <Typography
+                className="detail-element-text"
+                align="right"
+                component="div"
+                key={`step-duration-text-${this.props.step.id}`}
+              >
+                {this.props.step.totalDurationMillis.substring(
+                  this.props.step.totalDurationMillis.indexOf(" ") + 1,
+                  this.props.step.totalDurationMillis.length
+                )}
+              </Typography>
+            </Grid>
+            <Grid item xs={1}>
+              <ExpandMore
+                expand={this.props.isExpanded}
+                aria-expanded
+                key={`step-expand-button-${this.props.step.id}`}
+              >
+                <ExpandMoreIcon key={`step-expand-icon-${this.props.step.id}`}/>
+              </ExpandMore>
             </Grid>
           </Grid>
-          <ExpandMore expand={this.props.isExpanded} aria-expanded>
-            <ExpandMoreIcon />
-          </ExpandMore>
         </CardActionArea>
-        <Collapse in={this.props.isExpanded} timeout={50} unmountOnExit>
-          <CardContent className="step-content">
-            {this.renderConsoleOutput()}
+        <Collapse
+          in={this.props.isExpanded}
+          timeout={50}
+          unmountOnExit
+          key={`step-colapsable-console-${this.props.step.id}`}
+        >
+          <CardContent
+            className="step-content"
+            key={`step-console-content-${this.props.step.id}`}
+          >
+            <Virtuoso
+              style={{ height: `${this.getCalculateHeight()}px`}}
+              totalCount={this.getNumConsoleLines()}
+              itemContent={(index: number) => this.renderConsoleLine(index)}
+            />
           </CardContent>
         </Collapse>
       </Card>

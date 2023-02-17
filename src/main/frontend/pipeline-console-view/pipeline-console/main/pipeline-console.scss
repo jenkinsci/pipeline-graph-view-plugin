@@ -3,24 +3,20 @@
   --step-bg-success: var(--alert-success-bg-color);
   --step-bg-unstable: var(--alert-warning-bg-color);
   --step-bg-failure: var(--alert-danger-bg-color);
+  --step-bg-aborted: var(--medium-grey);
+  --step-bg-paused: var(--alert-info-bg-color);
   --orange: 253, 166, 60;
   --orange-light: rgba(var(--orange), 0.44);
 }
 
 [data-theme="dark"] {
   --card-background: hsl(230deg 14% 23%);
-  //--step-bg-success: var(--dark-green);
-  //--step-bg-unstable: var(--dark-orange);
-  //--step-bg-failure: var(--dark-red);
 }
 
 @media (prefers-color-scheme: dark) {
   [data-theme="dark-system"],
   [data-theme="dark-system"] {
     --card-background: hsl(230deg 14% 23%);
-    //--step-bg-success: var(--dark-green);
-    //--step-bg-unstable: var(--dark-orange);
-    //--step-bg-failure: var(--dark-red);
   }
 }
 
@@ -98,6 +94,12 @@
 
 .console-pane pre {
   padding-left: 16px;
+}
+
+pre.console-output-line {
+  padding: 0px;
+  margin: 0px;
+  border-radius: 0px;
 }
 
 .ansi-fg-0 {
@@ -287,7 +289,17 @@ div.stage-detail-group {
   box-shadow: none !important;
 }
 
-.step-header-success {
+div.detail-element {
+  display: flex;
+  width: 100%;
+  font-size: var(--font-size-monospace);
+  vertical-align: middle;
+  margin-left: 10px;
+  line-height: 1.66 !important;
+  padding: 3px;
+}
+
+.step-header-success, .step-header-running {
   @extend div, .step-detail-group;
   background: var(--step-bg-success) !important;
 }
@@ -302,15 +314,20 @@ div.stage-detail-group {
   background: var(--step-bg-failure) !important;
 }
 
-div.detail-element {
-  display: flex;
-  width: 100%;
-  font-size: var(--font-size-monospace);
-  vertical-align: middle;
-  margin-left: 10px;
-  line-height: 1.66 !important;
-  padding: 3px;
+.step-header-aborted, .step-header-not_built {
+  @extend div, .step-detail-group;
+  background: var(--step-bg-aborted) !important;
 }
+
+.step-header-queued, .step-header-paused, .step-header-not-built, .step-header-skipped {
+  @extend div, .step-detail-group;
+  background: var(--step-bg-paused) !important;
+}
+
+p.detail-element-text > step-header-aborted, p.detail-element-text > step-header-not-built {
+  color: blue;
+}
+
 
 .capitalize {
   text-transform: lowercase;
@@ -320,9 +337,15 @@ div.detail-element {
   text-transform: capitalize;
 }
 
-p.detail-element-header {
-  font-weight: 600;
-  margin-left: 15px;
+div.detail-element-header {
+  font-weight: 700;
+  font-family: var(--font-family-sans);
+}
+
+div.detail-element-text {
+  font-weight: 300;
+  font-family: var(--font-family-sans-mono);
+  line-height: 1.66 !important;
 }
 
 div.detail-element:last-child {

@@ -1,16 +1,15 @@
 import React from "react";
-
+import { lazy, Suspense } from 'react';
 import { SplitPane } from "react-collapse-pane";
-import {
-  StageInfo,
-  Result,
-} from "../../../pipeline-graph-view/pipeline-graph/main/";
-import { DataTreeView } from "./DataTreeView";
-import { StageView } from "./StageView";
-import { ConsoleLogData, StepInfo } from "./PipelineConsoleModel";
-import { LOG_FETCH_SIZE } from "./PipelineConsoleModel";
 
+import { LOG_FETCH_SIZE } from "./PipelineConsoleModel";
+import { CircularProgress } from '@mui/material';
 import "./pipeline-console.scss";
+import { StageInfo, StepInfo, Result, ConsoleLogData } from "./PipelineConsoleModel";
+
+const DataTreeView = lazy(() => import('./DataTreeView'));
+const StageView = lazy(() => import('./StageView'));
+
 
 interface PipelineConsoleProps {}
 interface PipelineConsoleState {
@@ -133,9 +132,13 @@ export class PipelineConsole extends React.Component<
     return fetch(`consoleOutput?nodeId=${stepId}&startByte=${startByte}`)
       .then((res) => res.json())
       .then((res) => {
+        //console.log(`'stepId': '${stepId}', 'startByte': '${startByte}', 'res': ${JSON.stringify(res)}`)
         // Strip trailing whitespace.
         res.data.text = res.data.text.replace(/\s+$/, "");
+        res.data.stepId = stepId
         return res.data;
+      }).catch((reason) => {
+        console.error(`Caught error when fetching console: '${reason}'`)
       });
   }
 
@@ -143,7 +146,7 @@ export class PipelineConsole extends React.Component<
     console.debug(`In selectNode.`);
     let params = new URLSearchParams(document.location.search.substring(1));
     let selectedStage = params.get("selected-node") || "";
-    let startByte = parseInt(params.get("start-byte") || `${LOG_FETCH_SIZE}`);
+    let startByte = parseInt(params.get("start-byte") || `${0 - LOG_FETCH_SIZE}`);
     let expandedSteps = [] as string[];
     let expandedStages = [] as string[];
     if (selectedStage) {
@@ -349,26 +352,30 @@ export class PipelineConsole extends React.Component<
             split="vertical"
           >
             <div className="split-pane" key="tree-view">
-              <DataTreeView
-                onNodeSelect={this.handleActionNodeSelect}
-                onNodeToggle={this.handleToggle}
-                selected={this.state.selectedStage}
-                expanded={this.state.expandedStages}
-                stages={this.state.stages}
-              />
+              <Suspense fallback={<CircularProgress />}>
+                <DataTreeView
+                  onNodeSelect={this.handleActionNodeSelect}
+                  onNodeToggle={this.handleToggle}
+                  selected={this.state.selectedStage}
+                  expanded={this.state.expandedStages}
+                  stages={this.state.stages}
+                />
+              </Suspense>
             </div>
 
             <div className="split-pane" key="console-view">
-              <StageView
-                stage={this.getSelectedStage()}
-                steps={this.getStageSteps(this.state.selectedStage)}
-                expandedSteps={this.state.expandedSteps}
-                selectedStage={this.state.selectedStage}
-                handleStepToggle={this.handleStepToggle}
-                handleMoreConsoleClick={this.handleMoreConsoleClick}
-              />
+              <Suspense fallback={<CircularProgress />}>
+                <StageView
+                  stage={this.getSelectedStage()}
+                  steps={this.getStageSteps(this.state.selectedStage)}
+                  expandedSteps={this.state.expandedSteps}
+                  selectedStage={this.state.selectedStage}
+                  handleStepToggle={this.handleStepToggle}
+                  handleMoreConsoleClick={this.handleMoreConsoleClick}
+                />
+              </Suspense>
             </div>
-          </SplitPane>
+            </SplitPane>
         </div>
       </React.Fragment>
     );

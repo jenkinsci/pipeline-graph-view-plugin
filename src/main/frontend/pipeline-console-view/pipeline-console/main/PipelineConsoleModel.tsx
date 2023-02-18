@@ -1,7 +1,11 @@
 import { Result } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
 
 // re-export Result so the relative path exists in one location.
-export { Result, decodeResultValue, StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
+export {
+  Result,
+  decodeResultValue,
+  StageInfo,
+} from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
 
 /**
  * StageInfo is the input, in the form of an Array<StageInfo> of the top-level stages of a pipeline

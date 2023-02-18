@@ -302,7 +302,8 @@ div.detail-element {
   padding: 3px;
 }
 
-.step-header-success, .step-header-running {
+.step-header-success,
+.step-header-running {
   @extend div, .step-detail-group;
   background: var(--step-bg-success) !important;
 }
@@ -322,15 +323,18 @@ div.detail-element {
   background: var(--step-bg-aborted) !important;
 }
 
-.step-header-queued, .step-header-paused, .step-header-not-built, .step-header-skipped {
+.step-header-queued,
+.step-header-paused,
+.step-header-not-built,
+.step-header-skipped {
   @extend div, .step-detail-group;
   background: var(--step-bg-paused) !important;
 }
 
-p.detail-element-text > step-header-aborted, p.detail-element-text > step-header-not-built {
+p.detail-element-text > step-header-aborted,
+p.detail-element-text > step-header-not-built {
   color: blue;
 }
-
 
 .capitalize {
   text-transform: lowercase;

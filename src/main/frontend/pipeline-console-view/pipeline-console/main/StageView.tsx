@@ -18,30 +18,69 @@ export interface StageSummaryProps {
 // Tree Item for stages
 const StageSummary = (props: StageSummaryProps) => (
   <React.Fragment>
-    <div className="stage-detail-group" key={`stage-detail-root-${props.stage.id}`}>
-      <Typography color="inherit" className="detail-element-header" key={`stage-detail-name-text-${props.stage.id}`}>
+    <div
+      className="stage-detail-group"
+      key={`stage-detail-root-${props.stage.id}`}
+    >
+      <Typography
+        color="inherit"
+        className="detail-element-header"
+        key={`stage-detail-name-text-${props.stage.id}`}
+      >
         Stage '{props.stage.name}'
       </Typography>
-      <div className="detail-element" key={`stage-detail-start-time-container-${props.stage.id}`}>
-        <ScheduleIcon className="detail-icon" key={`stage-detail-start-time-icon-${props.stage.id}`} />
+      <div
+        className="detail-element"
+        key={`stage-detail-start-time-container-${props.stage.id}`}
+      >
+        <ScheduleIcon
+          className="detail-icon"
+          key={`stage-detail-start-time-icon-${props.stage.id}`}
+        />
         {props.stage.startTimeMillis}
       </div>
-      <div className="detail-element" key={`stage-detail-pause-duration-container-${props.stage.id}`}>
-        <HourglassEmptyIcon className="detail-icon" key={`stage-detail-pause-duration-icon-${props.stage.id}`} />
+      <div
+        className="detail-element"
+        key={`stage-detail-pause-duration-container-${props.stage.id}`}
+      >
+        <HourglassEmptyIcon
+          className="detail-icon"
+          key={`stage-detail-pause-duration-icon-${props.stage.id}`}
+        />
         {props.stage.pauseDurationMillis}
       </div>
-      <div className="detail-element" key={`stage-detail-duration-container-${props.stage.id}`}>
-        <TimerIcon className="detail-icon" key={`stage-detail-duration-icon-${props.stage.id}`} />
+      <div
+        className="detail-element"
+        key={`stage-detail-duration-container-${props.stage.id}`}
+      >
+        <TimerIcon
+          className="detail-icon"
+          key={`stage-detail-duration-icon-${props.stage.id}`}
+        />
         {props.stage.totalDurationMillis}
       </div>
-      <div className="detail-element" key={`stage-detail-status-container-${props.stage.id}`}>
-        <InfoIcon className="detail-icon" key={`stage-detail-status-icon-${props.stage.id}`} />
-        <span className="capitalize" key={`stage-detail-status-text-${props.stage.id}`}>{props.stage.state}</span>
+      <div
+        className="detail-element"
+        key={`stage-detail-status-container-${props.stage.id}`}
+      >
+        <InfoIcon
+          className="detail-icon"
+          key={`stage-detail-status-icon-${props.stage.id}`}
+        />
+        <span
+          className="capitalize"
+          key={`stage-detail-status-text-${props.stage.id}`}
+        >
+          {props.stage.state}
+        </span>
       </div>
       {props.failedSteps.map((value: StepInfo) => {
         console.log(`Found failed step ${value}`);
         return (
-          <FailedStepLink step={value} key={`stage-detail-failed-step-link-${props.stage.id}-${value.id}`} />
+          <FailedStepLink
+            step={value}
+            key={`stage-detail-failed-step-link-${props.stage.id}-${value.id}`}
+          />
         );
       })}
     </div>
@@ -91,16 +130,21 @@ export default class StageView extends React.Component {
         }
       }
       return (
-        <pre className="console-output" id={`console-root-${this.props.stage ? this.props.stage.id : 'unk'}`}>
+        <pre
+          className="console-output"
+          id={`console-root-${this.props.stage ? this.props.stage.id : "unk"}`}
+        >
           <StageSummary stage={this.props.stage} failedSteps={failedSteps} />
         </pre>
       );
     }
     return null;
   }
-  
+
   getWidth() {
-    let rootElement = document.getElementById(`console-root-${this.props.stage ? this.props.stage.id : 'unk'}`);
+    let rootElement = document.getElementById(
+      `console-root-${this.props.stage ? this.props.stage.id : "unk"}`
+    );
     if (rootElement) {
       return rootElement.clientWidth;
     }
@@ -109,7 +153,9 @@ export default class StageView extends React.Component {
   }
 
   getHeight() {
-    let rootElement = document.getElementById(`console-root-${this.props.stage ? this.props.stage.id : 'unk'}`);
+    let rootElement = document.getElementById(
+      `console-root-${this.props.stage ? this.props.stage.id : "unk"}`
+    );
     if (rootElement) {
       return rootElement.clientHeight;
     }
@@ -145,8 +191,18 @@ export default class StageView extends React.Component {
   render() {
     return (
       <React.Fragment>
-        <div key={`stage-summary-${this.props.stage ? this.props.stage.id : 'unk'}`}>{this.renderStageDetails()}</div>
-        <div key={`stage-steps-container-${this.props.stage ? this.props.stage.id : 'unk'}`}>
+        <div
+          key={`stage-summary-${
+            this.props.stage ? this.props.stage.id : "unk"
+          }`}
+        >
+          {this.renderStageDetails()}
+        </div>
+        <div
+          key={`stage-steps-container-${
+            this.props.stage ? this.props.stage.id : "unk"
+          }`}
+        >
           {this.getTreeItemsFromStepList(this.props.steps)}
         </div>
       </React.Fragment>

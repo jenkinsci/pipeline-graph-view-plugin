@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo } from "react";
 import { styled } from "@mui/material/styles";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -15,7 +15,7 @@ import Button from "@mui/material/Button";
 
 import { LOG_FETCH_SIZE } from "./PipelineConsoleModel";
 
-import { Virtuoso } from 'react-virtuoso'
+import { Virtuoso } from "react-virtuoso";
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
@@ -32,11 +32,9 @@ const ExpandMore = styled((props: ExpandMoreProps) => {
   }),
 }));
 
-type ConsoleLogCardProps = {
+export type ConsoleLogCardProps = {
   step: StepInfo;
   isExpanded: boolean;
-  width: number;
-  height: number;
   handleStepToggle: (event: React.SyntheticEvent<{}>, nodeId: string) => void;
   handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
   // Id of the element whose scroll bar we wish to use.
@@ -46,13 +44,12 @@ type ConsoleLogCardProps = {
 export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
   constructor(props: ConsoleLogCardProps) {
     super(props);
-    this.handleStepToggle = this.handleStepToggle.bind(this);  
+    this.handleStepToggle = this.handleStepToggle.bind(this);
   }
 
   handleStepToggle(event: React.MouseEvent<HTMLElement>) {
     this.props.handleStepToggle(event, String(this.props.step.id));
   }
-
 
   getRowHeight(index: number) {
     return 20;
@@ -114,20 +111,20 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
 
   renderSimpleConsoleLines() {
     if (this.props.step.consoleLines) {
-      return this.props.step.consoleLines.map((content: string, index: number) => {
-        return (
-          <ConsoleLine
-            lineNumber={String(index)}
-            content={content}
-            stepId={String(this.props.step.id)}
-            startByte={this.props.step.consoleStartByte}
-          />
-        )
-      })
+      return this.props.step.consoleLines.map(
+        (content: string, index: number) => {
+          return (
+            <ConsoleLine
+              lineNumber={String(index)}
+              content={content}
+              stepId={String(this.props.step.id)}
+              startByte={this.props.step.consoleStartByte}
+            />
+          );
+        }
+      );
     } else {
-      return (
-        <div></div>
-      )
+      return <div></div>;
     }
   }
 
@@ -140,12 +137,14 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
           stepId={String(this.props.step.id)}
           startByte={this.props.step.consoleStartByte}
         />
-      )
+      );
     }
   }
 
   getNumConsoleLines() {
-    return this.props.step.consoleLines ? this.props.step.consoleLines.length: 0;
+    return this.props.step.consoleLines
+      ? this.props.step.consoleLines.length
+      : 0;
   }
 
   render() {
@@ -161,27 +160,28 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
           key={`step-action-area-${this.props.step.id}`}
         >
           <Grid container key={`step-root-container-${this.props.step.id}`}>
-            <Grid item container xs={10} sx={{display: "block"}}>
+            <Grid item container xs={10} sx={{ display: "block" }}>
               <Typography
                 className="detail-element-header"
                 noWrap={true}
                 component="div"
                 key={`step-name-text-${this.props.step.id}`}
               >
-                {this.props.step.name.substring(
-                  0,
-                  this.props.step.name.lastIndexOf("-")
-                ).trimEnd()}
+                {this.props.step.name
+                  .substring(0, this.props.step.name.lastIndexOf("-"))
+                  .trimEnd()}
               </Typography>
               <Typography
                 className="detail-element-text"
                 component="div"
                 key={`step-duration-text-${this.props.step.id}`}
               >
-                {this.props.step.name.substring(
-                  this.props.step.name.lastIndexOf("-") + 1,
-                  this.props.step.name.length
-                ).trimStart()}
+                {this.props.step.name
+                  .substring(
+                    this.props.step.name.lastIndexOf("-") + 1,
+                    this.props.step.name.length
+                  )
+                  .trimStart()}
               </Typography>
             </Grid>
             <Grid item xs={1}>
@@ -203,7 +203,9 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
                 aria-expanded
                 key={`step-expand-button-${this.props.step.id}`}
               >
-                <ExpandMoreIcon key={`step-expand-icon-${this.props.step.id}`}/>
+                <ExpandMoreIcon
+                  key={`step-expand-icon-${this.props.step.id}`}
+                />
               </ExpandMore>
             </Grid>
           </Grid>
@@ -218,15 +220,15 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
             className="step-content"
             key={`step-console-content-${this.props.step.id}`}
           >
-            <div>
-              {this.getTrucatedLogWarning()}
-            </div>
+            <div>{this.getTrucatedLogWarning()}</div>
             <Virtuoso
               totalCount={this.getNumConsoleLines()}
               itemContent={(index: number) => this.renderConsoleLine(index)}
               // This ID comes from PipelineConsole.
               // Pass in The parent split-pane element to use it's scroll base instead of a new one.
-              customScrollParent={document.getElementById(this.props.scrollParentId) || undefined}
+              customScrollParent={
+                document.getElementById(this.props.scrollParentId) || undefined
+              }
             />
           </CardContent>
         </Collapse>

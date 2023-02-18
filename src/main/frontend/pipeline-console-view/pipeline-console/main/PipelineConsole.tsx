@@ -351,7 +351,7 @@ export class PipelineConsole extends React.Component<
             className="split-pane"
             split="vertical"
           >
-            <div className="split-pane" key="tree-view">
+            <div className="split-pane" key="tree-view" id="tree-view-pane">
               <Suspense fallback={<CircularProgress />}>
                 <DataTreeView
                   onNodeSelect={this.handleActionNodeSelect}
@@ -363,7 +363,7 @@ export class PipelineConsole extends React.Component<
               </Suspense>
             </div>
 
-            <div className="split-pane" key="console-view">
+            <div className="split-pane" key="stage-view" id="stage-view-pane">
               <Suspense fallback={<CircularProgress />}>
                 <StageView
                   stage={this.getSelectedStage()}
@@ -372,6 +372,7 @@ export class PipelineConsole extends React.Component<
                   selectedStage={this.state.selectedStage}
                   handleStepToggle={this.handleStepToggle}
                   handleMoreConsoleClick={this.handleMoreConsoleClick}
+                  scrollParentId="stage-view-pane"
                 />
               </Suspense>
             </div>

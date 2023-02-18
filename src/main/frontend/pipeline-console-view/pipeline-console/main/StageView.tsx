@@ -68,6 +68,8 @@ interface StageViewProps {
   expandedSteps: string[];
   handleStepToggle: (event: React.SyntheticEvent<{}>, nodeId: string) => void;
   handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
+  // Id of the element whose scroll bar we wish to use.
+  scrollParentId: string;
 }
 
 export default class StageView extends React.Component {
@@ -134,6 +136,7 @@ export default class StageView extends React.Component {
           key={`step-console-card-${stepItemData.id}`}
           width={this.getWidth()}
           height={this.getHeight()}
+          scrollParentId={this.props.scrollParentId}
         />
       );
     });

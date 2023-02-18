@@ -39,6 +39,8 @@ type ConsoleLogCardProps = {
   height: number;
   handleStepToggle: (event: React.SyntheticEvent<{}>, nodeId: string) => void;
   handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
+  // Id of the element whose scroll bar we wish to use.
+  scrollParentId: string;
 };
 
 export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
@@ -146,42 +148,11 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
     return this.props.step.consoleLines ? this.props.step.consoleLines.length: 0;
   }
 
-  getViewWidth(): number {
-    let stageDetailElement = document.getElementById(`console-root-${this.props.step.stageId}`)
-    if (stageDetailElement) {
-      return stageDetailElement.getBoundingClientRect().width
-    }
-    return 50;
-  }
-
-  getCalculateHeight(): number {
-    // This is a bad solution until we can find a better one.
-    let consoleLines = this.getNumConsoleLines()
-    let maxHeight = 800
-    let lineHeight = 25;
-    // More lines than this will reult in something bigger than maxHeight.
-    if (consoleLines < maxHeight/lineHeight)  {
-      let charWidth = 10;
-      let viewWidth = this.getViewWidth();
-      let cumulativeHeight = 0;
-      for (let i = 0; i < consoleLines; i++) {
-        let lineLength = this.props.step.consoleLines[i].length;
-        cumulativeHeight += (Math.floor((lineLength*charWidth)/viewWidth) + 1) * lineHeight;
-      }
-      if (cumulativeHeight < maxHeight) {
-        return cumulativeHeight;
-      }
-    }
-    return maxHeight;
-  }
-
-
   render() {
     return (
       <Card
         className="step-detail-group"
         key={`step-card-${this.props.step.id}`}
-        sx={{ padding: "5px" }}
       >
         <CardActionArea
           onClick={this.handleStepToggle}
@@ -190,7 +161,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
           key={`step-action-area-${this.props.step.id}`}
         >
           <Grid container key={`step-root-container-${this.props.step.id}`}>
-            <Grid item container xs={10}>
+            <Grid item container xs={10} sx={{display: "block"}}>
               <Typography
                 className="detail-element-header"
                 noWrap={true}
@@ -251,9 +222,11 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
               {this.getTrucatedLogWarning()}
             </div>
             <Virtuoso
-              style={{ height: `${this.getCalculateHeight()}px`}}
               totalCount={this.getNumConsoleLines()}
               itemContent={(index: number) => this.renderConsoleLine(index)}
+              // This ID comes from PipelineConsole.
+              // Pass in The parent split-pane element to use it's scroll base instead of a new one.
+              customScrollParent={document.getElementById(this.props.scrollParentId) || undefined}
             />
           </CardContent>
         </Collapse>

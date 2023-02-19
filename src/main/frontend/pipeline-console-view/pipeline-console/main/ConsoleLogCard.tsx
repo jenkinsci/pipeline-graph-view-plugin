@@ -42,16 +42,6 @@ export type ConsoleLogCardProps = {
   scrollParentId: string;
 };
 
-const ListParent: Components['List'] = React.forwardRef(({ style, children }, ref) => {
-  return (
-    <pre className="console-output">
-      <div style={style} ref={ref}>
-          {children}
-      </div>
-    </pre>
-  )
-})
-
 export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
   constructor(props: ConsoleLogCardProps) {
     super(props);
@@ -240,7 +230,6 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
               customScrollParent={
                 document.getElementById(this.props.scrollParentId) || undefined
               }
-              components={{ List: ListParent }}
             />
           </CardContent>
         </Collapse>

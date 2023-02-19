@@ -99,6 +99,7 @@ div.show-more-console {
 }
 
 pre.console-output-line {
+  @extend pre, .console-output;
   padding: 0px;
   margin: 0px;
   border-radius: 0px;

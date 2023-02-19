@@ -141,28 +141,6 @@ export default class StageView extends React.Component {
     return null;
   }
 
-  getWidth() {
-    let rootElement = document.getElementById(
-      `console-root-${this.props.stage ? this.props.stage.id : "unk"}`
-    );
-    if (rootElement) {
-      return rootElement.clientWidth;
-    }
-    // default width;
-    return 1000;
-  }
-
-  getHeight() {
-    let rootElement = document.getElementById(
-      `console-root-${this.props.stage ? this.props.stage.id : "unk"}`
-    );
-    if (rootElement) {
-      return rootElement.clientHeight;
-    }
-    // default height;
-    return 800;
-  }
-
   getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
     console.debug(`Passed expandedSteps: ${this.props.expandedSteps}`);
     return stepsItems.map((stepItemData) => {
@@ -180,8 +158,6 @@ export default class StageView extends React.Component {
           )}
           handleMoreConsoleClick={this.props.handleMoreConsoleClick}
           key={`step-console-card-${stepItemData.id}`}
-          width={this.getWidth()}
-          height={this.getHeight()}
           scrollParentId={this.props.scrollParentId}
         />
       );

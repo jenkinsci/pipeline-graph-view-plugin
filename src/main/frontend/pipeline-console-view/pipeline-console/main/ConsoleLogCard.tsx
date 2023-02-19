@@ -12,6 +12,7 @@ import { StepInfo } from "./PipelineConsoleModel";
 import { ConsoleLine } from "./ConsoleLine";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
+import { Components } from 'react-virtuoso'
 
 import { LOG_FETCH_SIZE } from "./PipelineConsoleModel";
 
@@ -40,6 +41,16 @@ export type ConsoleLogCardProps = {
   // Id of the element whose scroll bar we wish to use.
   scrollParentId: string;
 };
+
+const ListParent: Components['List'] = React.forwardRef(({ style, children }, ref) => {
+  return (
+    <pre className="console-output">
+      <div style={style} ref={ref}>
+          {children}
+      </div>
+    </pre>
+  )
+})
 
 export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
   constructor(props: ConsoleLogCardProps) {
@@ -229,6 +240,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
               customScrollParent={
                 document.getElementById(this.props.scrollParentId) || undefined
               }
+              components={{ List: ListParent }}
             />
           </CardContent>
         </Collapse>

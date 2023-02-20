@@ -1,7 +1,7 @@
 pipeline {
     agent any
     stages {
-        stage("Parennt") {
+        stage("Parent") {
             stages {
                 stage ("Child A") {
                     steps {

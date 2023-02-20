@@ -198,7 +198,6 @@ public class PipelineStepApiTest {
     PipelineStepApi api = new PipelineStepApi(run);
 
     // Linux 8
-    String linux8BranchId = TestUtils.getNodesByDisplayName(run, "linux-8").get(0).getId();
     String linux8CheckoutId =
         TestUtils.getNodesByDisplayName(run, "Checkout (linux-8)").get(0).getId();
     String linux8BuildId = TestUtils.getNodesByDisplayName(run, "Build (linux-8)").get(0).getId();
@@ -206,7 +205,6 @@ public class PipelineStepApiTest {
         TestUtils.getNodesByDisplayName(run, "Archive (linux-8)").get(0).getId();
 
     // Linux 11
-    String linux11BranchId = TestUtils.getNodesByDisplayName(run, "linux-11").get(0).getId();
     String linux11CheckoutId =
         TestUtils.getNodesByDisplayName(run, "Checkout (linux-11)").get(0).getId();
     String linux11BuildId = TestUtils.getNodesByDisplayName(run, "Build (linux-11)").get(0).getId();

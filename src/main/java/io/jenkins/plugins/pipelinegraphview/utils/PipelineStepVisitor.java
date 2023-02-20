@@ -179,22 +179,8 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
               + PipelineNodeUtil.isSyntheticStage(startNode)
               + " .");
     }
-    // Do not add steps to this stage if it's parent is a parallel block (it should get addded to
+    // Do not add steps to this stage if it's parent is a parallel block  and it's a declarative step - (it should get addded to
     // that instead).
-
-    if (finishedBlock != null) {
-      logger.debug("Finished block:");
-      logger.debug(String.valueOf(PipelineNodeUtil.isParallelBranch(finishedBlock)));
-      logger.debug(String.valueOf(PipelineNodeUtil.isPreSyntheticStage(finishedBlock)));
-      logger.debug(String.valueOf(PipelineNodeUtil.isSyntheticStage(finishedBlock)));
-      logger.debug(String.valueOf(PipelineNodeUtil.isStage(finishedBlock)));
-    }
-
-    logger.debug("Next pending block:");
-    logger.debug(String.valueOf(PipelineNodeUtil.isParallelBranch(pendingBlocks.peek())));
-    logger.debug(String.valueOf(PipelineNodeUtil.isPreSyntheticStage(pendingBlocks.peek())));
-    logger.debug(String.valueOf(PipelineNodeUtil.isSyntheticStage(pendingBlocks.peek())));
-    logger.debug(String.valueOf(PipelineNodeUtil.isStage(pendingBlocks.peek())));
     if (PipelineNodeUtil.isParallelBranch(pendingBlocks.peek()) && isDeclarative()) {
       if (logger.isDebugEnabled()) {
         logger.debug(

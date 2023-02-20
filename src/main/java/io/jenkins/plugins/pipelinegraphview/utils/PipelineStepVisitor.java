@@ -179,9 +179,10 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
               + PipelineNodeUtil.isSyntheticStage(startNode)
               + " .");
     }
-    // Do not add steps to this stage if it's parent is a parallel block  and it's a declarative step - (it should get addded to
+    // Do not add steps to this stage if it's parent is a parallel block  and it's a declarative
+    // step - (it should get addded to
     // that instead).
-    // This could be a quirk of how the GraphVisitor works - possible 
+    // This could be a quirk of how the GraphVisitor works - possible
     if (PipelineNodeUtil.isParallelBranch(pendingBlocks.peek()) && isDeclarative()) {
       if (logger.isDebugEnabled()) {
         logger.debug(

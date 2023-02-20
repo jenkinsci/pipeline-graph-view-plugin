@@ -163,7 +163,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
           <Grid container key={`step-root-container-${this.props.step.id}`}>
             <Grid item container xs={10} sx={{ display: "block" }}>
               <Typography
-                className="detail-element-header"
+                className="log-card-header"
                 noWrap={true}
                 component="div"
                 key={`step-name-text-${this.props.step.id}`}
@@ -173,7 +173,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
                   .trimEnd()}
               </Typography>
               <Typography
-                className="detail-element-text"
+                className="log-card-text"
                 component="div"
                 key={`step-duration-text-${this.props.step.id}`}
               >
@@ -187,7 +187,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
             </Grid>
             <Grid item xs={1}>
               <Typography
-                className="detail-element-text"
+                className="log-card-text"
                 align="right"
                 component="div"
                 key={`step-duration-text-${this.props.step.id}`}

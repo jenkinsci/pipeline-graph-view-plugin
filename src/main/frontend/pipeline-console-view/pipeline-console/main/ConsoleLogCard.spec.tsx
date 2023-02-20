@@ -49,7 +49,7 @@ describe("ConsoleLogCard", () => {
     scrollParentId: "test-parent",
   } as ConsoleLogCardProps;
 
-  function rednerInContext(element: ReactElement) {
+  function renderInContext(element: ReactElement) {
     return render(element, {
       wrapper: ({ children }) => (
         <VirtuosoMockContext.Provider
@@ -62,14 +62,14 @@ describe("ConsoleLogCard", () => {
   }
 
   it("renders step header only when not expanded", async () => {
-    const { getByText } = rednerInContext(
+    const { getByText } = renderInContext(
       TestComponent({ ...DefaultTestProps })
     );
     expect(getByText(/This is a step/));
   });
 
   it("renders step console when expanded", async () => {
-    const { getByText } = rednerInContext(
+    const { getByText } = renderInContext(
       TestComponent({ ...DefaultTestProps, isExpanded: true })
     );
     expect(getByText(/This is a step/));

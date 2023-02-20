@@ -51,6 +51,7 @@ const getTreeItemsFromStage = (stageItems: StageInfo[], steps: StepInfo[]) => {
   // Copy steps so we don't affect props.steps.
   let stepsCopy = [...steps];
   return stageItems.map((stageItemData) => {
+    console.info(`Generating stage item(s) for '${stageItemData.name} - ${stageItemData.id}'.`)
     let children: JSX.Element[] = [];
     let stageSteps = [] as StepInfo[];
     // Handle leaf nodes first.

@@ -19,13 +19,13 @@ node {
 			retry(3) {
 				timeout(time: 60, unit: 'SECONDS') {
 					stage ("Checkout (linux-11)") {
-						echo "Checking out linux-8"
+						echo "Checking out linux-11"
 					}
 					stage ("Build (linux-11)") {
-						echo "Building linux-8"
+						echo "Building linux-11"
 					}
 					stage ("Archive (linux-11)") {
-						echo "Archiving linux-8"
+						echo "Archiving linux-11"
 					}
 				}
 			}

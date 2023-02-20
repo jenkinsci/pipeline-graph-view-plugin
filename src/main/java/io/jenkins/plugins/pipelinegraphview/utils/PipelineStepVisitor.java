@@ -95,8 +95,8 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
     }
   }
 
-  @Override
-  public void parallelBranchStart(
+  //@Override
+  public void xxxparallelBranchStart(
       @NonNull FlowNode parallelStartNode,
       @NonNull FlowNode branchStartNode,
       @NonNull ForkScanner scanner) {
@@ -104,13 +104,15 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
       // Finished processing atom nodes in this block
       FlowNode finishedBlock = pendingBlocks.pop();
       if (logger.isDebugEnabled()) {
-        logger.debug("Removed Node ID: " + finishedBlock.getId() + " from pendingBlocks.");
+        logger.debug("parallelBranchStart. Removed Node ID: " + finishedBlock.getId() + "(" + finishedBlock.getDisplayName() + "-" + ") from pendingBlocks.");
       }
     }
     if (logger.isDebugEnabled()) {
       logger.debug(
-          "Node ID: "
+          "parallelBranchStart. Node ID: "
               + branchStartNode.getId()
+              + " - "
+              + branchStartNode.getDisplayName()
               + " - "
               + PipelineNodeUtil.isStage(branchStartNode)
               + " - "
@@ -128,11 +130,6 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
     } else if (PipelineNodeUtil.isParallelBranch(node) && !branchStartNode.equals(node)) {
       resetSteps();
     }
-    if (logger.isDebugEnabled()) {
-      logger.debug("Pushing steps to stage in parallelBranchStart.");
-    }
-    // Record which stage the steps belong to.
-    pushStageStepsToMap(branchStartNode);
   }
 
   @Override
@@ -144,8 +141,10 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
       FlowNode branchStartNode = ((StepEndNode) branchEndNode).getStartNode();
       if (logger.isDebugEnabled()) {
         logger.debug(
-            "Node ID: "
+            "parallelBranchEnd. Node ID: "
                 + branchStartNode.getId()
+                + " - "
+                + branchStartNode.getDisplayName()
                 + " - "
                 + PipelineNodeUtil.isStage(branchStartNode)
                 + " - "
@@ -174,6 +173,8 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
           "Node ID: "
               + startNode.getId()
               + " - "
+              + startNode.getDisplayName()
+              + " - "
               + PipelineNodeUtil.isStage(startNode)
               + " - "
               + PipelineNodeUtil.isParallelBranch(startNode)
@@ -185,6 +186,11 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
     if (PipelineNodeUtil.isStage(startNode)) {
       stages.push(startNode);
     }
+    if (logger.isDebugEnabled()) {
+      logger.debug("Pushing steps to stage in chunkStart.");
+    }
+    // Record which stage the steps belong to.
+    pushStageStepsToMap(startNode);
   }
 
   @Override
@@ -194,8 +200,10 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
       FlowNode startNode = ((StepEndNode) endNode).getStartNode();
       if (logger.isDebugEnabled()) {
         logger.debug(
-            "Node ID: "
+            "chunkEnd. Node ID: "
                 + startNode.getId()
+                + " - "
+                + startNode.getDisplayName()
                 + " - "
                 + PipelineNodeUtil.isStage(startNode)
                 + " - "
@@ -242,7 +250,7 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
       // Finished processing atom nodes in this block
       FlowNode finishedBlock = pendingBlocks.pop();
       if (logger.isDebugEnabled()) {
-        logger.debug("Removed Node ID: " + finishedBlock.getId() + " from pendingBlocks.");
+        logger.debug("handleChunkDone. Removed Node ID: " + finishedBlock.getId() + "(" + finishedBlock.getDisplayName() + "} from pendingBlocks.");
       }
     }
     if (stageStepsCollectionCompleted) { // if its completed no further action
@@ -276,13 +284,13 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
     // that instead).
     if (!PipelineNodeUtil.isParallelBranch(pendingBlocks.peek())) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Pushing steps to stage in handleChunkDone.");
+        logger.debug("Pushing step to stage in handleChunkDone.");
       }
       // Record which stage the steps belong to.
       pushStageStepsToMap(chunk.getFirstNode());
     } else {
       if (logger.isDebugEnabled()) {
-        logger.debug("Not pushing steps to stage in handleChunkDone as parent is parallel block.");
+        logger.debug("Not pushing steps to stage '" + pendingBlocks.peek().getDisplayName() + "' in handleChunkDone as parent is parallel block.");
       }
     }
     if (PipelineNodeUtil.isStage(node) && !inStageScope && !chunk.getFirstNode().equals(node)) {
@@ -348,10 +356,16 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
       }
       stepMap.put(stepNode.getId(), stepNode);
       if (logger.isDebugEnabled()) {
-        logger.debug("Pushing step: " + stepNode.getId() + " to stack.");
+        logger.debug("Pushing step: " + stepNode.getId() + "(" + stepNode.getArgumentsAsString() + ") to stack.");
       }
 
       stageSteps.push(stepNode);
+      if (logger.isDebugEnabled()) {
+        logger.debug("Steps in stack:");
+        for(FlowNodeWrapper step : stageSteps) {
+          logger.debug(" - " + step.getArgumentsAsString());
+        }
+      }
 
       // If there is closest block boundary, we capture it's error to the last step encountered and
       // prepare for next block.
@@ -417,7 +431,7 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
         stageStepMap.getOrDefault(stage.getId(), new ArrayList<>());
     for (FlowNodeWrapper step : stageSteps) {
       if (logger.isDebugEnabled()) {
-        logger.debug("Adding step '" + step.getId() + "' to '" + stage.getId() + "'.");
+        logger.debug("Adding step '" + step.getArgumentsAsString() + "' to '" + stage.getId() + "' " + "(" + stage.getDisplayName() + ") .");
       }
 
       stageStepsList.add(step);

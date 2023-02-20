@@ -13,8 +13,6 @@ public class PipelineStepApi {
   private static final Logger logger = LoggerFactory.getLogger(PipelineStepApi.class);
   private final transient WorkflowRun run;
 
-  private static final Object mutex = new Object();
-
   public PipelineStepApi(WorkflowRun run) {
     this.run = run;
   }

@@ -1,0 +1,37 @@
+node {
+	stage("Build all") {
+		parallel "linux-8": {
+			retry(3) {
+				timeout(time: 60, unit: 'SECONDS') {
+					stage ("Checkout (linux-8)") {
+						echo "Checking out linux-8"
+					}
+					stage ("Build (linux-8)") {
+						echo "Building linux-8"
+					}
+					stage ("Archive (linux-8)") {
+						echo "Archiving linux-8"
+					}
+				}
+			}
+		},
+		"linux-11": {
+			retry(3) {
+				timeout(time: 60, unit: 'SECONDS') {
+					stage ("Checkout (linux-11)") {
+						echo "Checking out linux-8"
+					}
+					stage ("Build (linux-11)") {
+						echo "Building linux-8"
+					}
+					stage ("Archive (linux-11)") {
+						echo "Archiving linux-8"
+					}
+				}
+			}
+		}
+	}
+	stage ("Deploy") {
+		echo "Deploying..."
+	}
+}

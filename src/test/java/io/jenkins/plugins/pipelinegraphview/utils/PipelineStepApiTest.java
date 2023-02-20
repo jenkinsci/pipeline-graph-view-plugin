@@ -190,4 +190,57 @@ public class PipelineStepApiTest {
     assertThat(steps.get(1).getName(), is("In grandchild B - Print Message"));
     assertThat(steps.get(2).getName(), is("In great-grandchild C - Print Message"));
   }
+
+  @Test
+  public void githubIssue92RegressionTest() throws Exception {
+    // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+    // long time)
+    WorkflowRun run =
+        TestUtils.createAndRunJob(j, "githubIssue92", "githubIssue92.jenkinsfile", Result.SUCCESS);
+
+    PipelineStepApi api = new PipelineStepApi(run);
+    
+    // Linux 8
+    String linux8BranchId = TestUtils.getNodesByDisplayName(run, "linux-8").get(0).getId();
+    String linux8CheckoutId = TestUtils.getNodesByDisplayName(run, "Checkout (linux-8)").get(0).getId();
+    String linux8BuildId = TestUtils.getNodesByDisplayName(run, "Build (linux-8)").get(0).getId();
+    String linux8ArchiveId = TestUtils.getNodesByDisplayName(run, "Archive (linux-8)").get(0).getId();
+    
+    // Linux 11
+    String linux11BranchId = TestUtils.getNodesByDisplayName(run, "linux-11").get(0).getId();
+    String linux11CheckoutId = TestUtils.getNodesByDisplayName(run, "Checkout (linux-11)").get(0).getId();
+    String linux11BuildId = TestUtils.getNodesByDisplayName(run, "Build (linux-11)").get(0).getId();
+    String linux11ArchiveId = TestUtils.getNodesByDisplayName(run, "Archive (linux-11)").get(0).getId();
+
+    String deployStageId = TestUtils.getNodesByDisplayName(run, "Deploy").get(0).getId();
+
+    
+    // Check that the branches do not container steps.
+    assertThat(api.getSteps(linux8BranchId).getSteps(), hasSize(0));
+    assertThat(api.getSteps(linux11BranchId).getSteps(), hasSize(0));
+
+    List<PipelineStep> steps = api.getAllSteps().getSteps();
+
+    assertThat(steps, hasSize(7));
+    assertThat(steps.get(0).getName(), is("Checking out linux-8"));
+    assertThat(steps.get(0).getStageId(), is(linux8CheckoutId));
+
+    assertThat(steps.get(1).getName(), is("Building linux-8"));
+    assertThat(steps.get(1).getStageId(), is(linux8BuildId));
+
+    assertThat(steps.get(2).getName(), is("Archiving linux-8"));
+    assertThat(steps.get(2).getStageId(), is(linux8ArchiveId));
+
+    assertThat(steps.get(3).getName(), is("Checking out linux-8"));
+    assertThat(steps.get(3).getStageId(), is(linux11CheckoutId));
+
+    assertThat(steps.get(4).getName(), is("Building linux-8"));
+    assertThat(steps.get(4).getStageId(), is(linux11BuildId));
+
+    assertThat(steps.get(5).getName(), is("Archiving linux-8"));
+    assertThat(steps.get(5).getStageId(), is(linux11ArchiveId));
+
+    assertThat(steps.get(6).getName(), is("Deploying..."));
+    assertThat(steps.get(6).getStageId(), is(deployStageId));
+  }
 }

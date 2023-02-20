@@ -19,7 +19,7 @@ import org.jenkinsci.plugins.workflow.support.visualization.table.FlowGraphTable
 import org.jenkinsci.plugins.workflow.support.visualization.table.FlowGraphTable.Row;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import io.jenkins.pipeline.pipelinegraphview.utils.PipelineStage;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineStage;
 
 public class TestUtils {
   private static final Logger LOGGER = Logger.getLogger(TestUtils.class.getName());

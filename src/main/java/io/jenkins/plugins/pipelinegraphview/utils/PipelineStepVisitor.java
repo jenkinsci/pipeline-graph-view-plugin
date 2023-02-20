@@ -133,37 +133,6 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
   }
 
   @Override
-  public void parallelBranchEnd(
-      @NonNull FlowNode parallelStartNode,
-      @NonNull FlowNode branchEndNode,
-      @NonNull ForkScanner scanner) {
-    if (branchEndNode instanceof StepEndNode) {
-      FlowNode branchStartNode = ((StepEndNode) branchEndNode).getStartNode();
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "parallelBranchEnd. Node ID: "
-                + branchStartNode.getId()
-                + " - "
-                + branchStartNode.getDisplayName()
-                + " - "
-                + PipelineNodeUtil.isStage(branchStartNode)
-                + " - "
-                + PipelineNodeUtil.isParallelBranch(branchStartNode)
-                + " - "
-                + PipelineNodeUtil.isSyntheticStage(branchStartNode)
-                + " .");
-      }
-      pendingBlocks.push(branchStartNode);
-    }
-
-    if (!stageStepsCollectionCompleted
-        && PipelineNodeUtil.isParallelBranch(node)
-        && branchEndNode instanceof StepEndNode) {
-      resetSteps();
-    }
-  }
-
-  @Override
   public void chunkStart(
       @NonNull FlowNode startNode,
       @CheckForNull FlowNode beforeBlock,

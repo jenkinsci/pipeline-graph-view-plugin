@@ -13,11 +13,7 @@ import { ConsoleLine } from "./ConsoleLine";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 
-import {
-  decodeResultValue,
-  getGroupForResult,
-  LOG_FETCH_SIZE,
-} from "./PipelineConsoleModel";
+import { LOG_FETCH_SIZE } from "./PipelineConsoleModel";
 
 import { Virtuoso } from "react-virtuoso";
 
@@ -169,14 +165,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
             columns={{ xs: 20 }}
             key={`step-root-container-${this.props.step.id}`}
           >
-            <Grid item container xs={1}>
-              {getGroupForResult(
-                decodeResultValue(this.props.step.state),
-                this.props.step.completePercent,
-                3
-              )}
-            </Grid>
-            <Grid item container xs={15} sx={{ display: "block" }}>
+            <Grid item container xs={16} sx={{ display: "block" }}>
               <Typography
                 className="log-card-header"
                 noWrap={true}

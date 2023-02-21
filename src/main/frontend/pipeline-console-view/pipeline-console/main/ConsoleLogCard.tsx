@@ -201,7 +201,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
                 key={`step-duration-text-${this.props.step.id}`}
                 alignItems="center"
                 justifyContent="center"
-                style={{ paddingTop: "15px", paddingBottom: "0px" }}
+                style={{ paddingTop: "12px", paddingBottom: "0px" }}
               >
                 {this.props.step.totalDurationMillis.substring(
                   this.props.step.totalDurationMillis.indexOf(" ") + 1,
@@ -209,7 +209,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
                 )}
               </Typography>
             </Grid>
-            <Grid item xs={2} alignItems="center" sx={{ paddingTop: "10px" }}>
+            <Grid item xs={2} alignItems="center" sx={{ paddingTop: "5px" }}>
               <ExpandMore
                 expand={this.props.isExpanded}
                 aria-expanded

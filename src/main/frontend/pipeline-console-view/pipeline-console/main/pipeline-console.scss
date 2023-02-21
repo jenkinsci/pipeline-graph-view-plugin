@@ -296,7 +296,6 @@ div.stage-detail-group {
   background-color: transparent !important;
   text-indent: 15px;
   padding: 0px !important;
-  padding-bottom: 5px !important;
   color: var(--text-color) !important;
   box-shadow: none !important;
 }
@@ -305,11 +304,6 @@ div.step-detail-group-expanded {
   @extend div, .stage-detail-group;
   border-bottom-left-radius: 0px;
   border-bottom-right-radius: 0px;
-  border: #000, 5px;
-}
-
-.step-detail-group-collapsed {
-  @extend .stage-detail-group;
 }
 
 div.detail-element {

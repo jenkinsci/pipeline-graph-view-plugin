@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React from "react";
 import { styled } from "@mui/material/styles";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -12,9 +12,8 @@ import { StepInfo } from "./PipelineConsoleModel";
 import { ConsoleLine } from "./ConsoleLine";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
-import { Components } from 'react-virtuoso'
 
-import { LOG_FETCH_SIZE } from "./PipelineConsoleModel";
+import { decodeResultValue, getGroupForResult, LOG_FETCH_SIZE } from "./PipelineConsoleModel";
 
 import { Virtuoso } from "react-virtuoso";
 
@@ -133,7 +132,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
     if (this.props.step.consoleLines) {
       return (
         <ConsoleLine
-          lineNumber={String(index)}
+          lineNumber={String(index + 1)}
           content={this.props.step.consoleLines[index]}
           stepId={String(this.props.step.id)}
           startByte={this.props.step.consoleStartByte}
@@ -160,13 +159,17 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
           className={`step-header-${this.props.step.state.toLowerCase()}`}
           key={`step-action-area-${this.props.step.id}`}
         >
-          <Grid container key={`step-root-container-${this.props.step.id}`}>
-            <Grid item container xs={10} sx={{ display: "block" }}>
+          <Grid container wrap="nowrap" columns={{ xs: 20 }} key={`step-root-container-${this.props.step.id}`}>
+            <Grid item container xs={1}>
+              {getGroupForResult(decodeResultValue(this.props.step.state), this.props.step.completePercent, 3)}
+            </Grid>
+            <Grid item container xs={15} sx={{ display: "block" }}>
               <Typography
                 className="log-card-header"
                 noWrap={true}
                 component="div"
                 key={`step-name-text-${this.props.step.id}`}
+                sx={{flexGrow: 3}}
               >
                 {this.props.step.name
                   .substring(0, this.props.step.name.lastIndexOf("-"))
@@ -185,7 +188,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
                   .trimStart()}
               </Typography>
             </Grid>
-            <Grid item xs={1}>
+            <Grid item xs={2}>
               <Typography
                 className="log-card-text"
                 align="right"
@@ -198,7 +201,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
                 )}
               </Typography>
             </Grid>
-            <Grid item xs={1}>
+            <Grid item xs={2}>
               <ExpandMore
                 expand={this.props.isExpanded}
                 aria-expanded

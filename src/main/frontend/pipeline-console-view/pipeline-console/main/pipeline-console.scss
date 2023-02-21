@@ -5,7 +5,7 @@
   --step-bg-failure: var(--error-color);
   --step-bg-aborted: var(--purple);
   --step-bg-paused: var(--blue);
-  --step-text-color: rgb(233, 237, 237)
+  --step-text-color: rgb(233, 237, 237);
 }
 
 [data-theme="dark"] {
@@ -279,6 +279,11 @@ div.stage-detail-group {
   // Move down slightly to avoid curring off the top background.
   position: relative;
   white-space: nowrap;
+}
+
+.svg-icon {
+  color: var(--step-text-color) !important;
+  fill: var(--step-text-color) !important;
 }
 
 .step-content {

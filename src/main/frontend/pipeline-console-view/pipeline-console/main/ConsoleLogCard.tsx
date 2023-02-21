@@ -222,6 +222,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
               >
                 <ExpandMoreIcon
                   key={`step-expand-icon-${this.props.step.id}`}
+                  className="svg-icon"
                 />
               </ExpandMore>
             </Grid>

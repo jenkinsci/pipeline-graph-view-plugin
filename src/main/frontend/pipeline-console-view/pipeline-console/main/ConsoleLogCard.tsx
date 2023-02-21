@@ -152,11 +152,14 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
       <Card
         className="step-detail-group"
         key={`step-card-${this.props.step.id}`}
+        style={{ margin: "5px", padding: "5px" }}
       >
         <CardActionArea
           onClick={this.handleStepToggle}
           aria-label="Show console log."
-          className={`step-header-${this.props.step.state.toLowerCase()}`}
+          className={`step-header-${this.props.step.state.toLowerCase()} step-detail-group-${
+            this.props.isExpanded ? "expanded" : "collapsed"
+          }`}
           key={`step-action-area-${this.props.step.id}`}
         >
           <Grid
@@ -196,6 +199,9 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
                 align="right"
                 component="div"
                 key={`step-duration-text-${this.props.step.id}`}
+                alignItems="center"
+                justifyContent="center"
+                style={{ paddingTop: "15px", paddingBottom: "0px" }}
               >
                 {this.props.step.totalDurationMillis.substring(
                   this.props.step.totalDurationMillis.indexOf(" ") + 1,
@@ -203,7 +209,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
                 )}
               </Typography>
             </Grid>
-            <Grid item xs={2}>
+            <Grid item xs={2} alignItems="center" sx={{ paddingTop: "10px" }}>
               <ExpandMore
                 expand={this.props.isExpanded}
                 aria-expanded

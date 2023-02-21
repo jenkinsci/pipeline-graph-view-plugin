@@ -301,6 +301,17 @@ div.stage-detail-group {
   box-shadow: none !important;
 }
 
+div.step-detail-group-expanded {
+  @extend div, .stage-detail-group;
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
+  border: #000, 5px;
+}
+
+.step-detail-group-collapsed {
+  @extend .stage-detail-group;
+}
+
 div.detail-element {
   display: flex;
   width: 100%;

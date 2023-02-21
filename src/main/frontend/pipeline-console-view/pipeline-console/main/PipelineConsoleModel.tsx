@@ -7,9 +7,7 @@ export {
   StageInfo,
 } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
 
-export {
-  getGroupForResult
-} from "../../../pipeline-graph-view/pipeline-graph/main/support/StatusIcons"
+export { getGroupForResult } from "../../../pipeline-graph-view/pipeline-graph/main/support/StatusIcons";
 /**
  * StageInfo is the input, in the form of an Array<StageInfo> of the top-level stages of a pipeline
  */

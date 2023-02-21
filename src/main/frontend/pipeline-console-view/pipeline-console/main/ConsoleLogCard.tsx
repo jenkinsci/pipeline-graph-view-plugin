@@ -56,7 +56,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
   }
 
   getTrucatedLogWarning() {
-    if (this.props.step.consoleLines && this.props.step.consoleStartByte != 0) {
+    if (this.props.step.consoleLines && this.props.step.consoleStartByte > 0) {
       return (
         <Grid container>
           <Grid item xs={6} sm className="show-more-console">

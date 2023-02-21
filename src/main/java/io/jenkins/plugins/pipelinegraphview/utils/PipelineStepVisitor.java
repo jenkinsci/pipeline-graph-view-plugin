@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 import org.jenkinsci.plugins.pipeline.modeldefinition.actions.ExecutionModelAction;
+import org.jenkinsci.plugins.workflow.actions.PersistentAction;
+import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepEndNode;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
@@ -57,14 +59,20 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
 
   private final boolean declarative;
 
+  private ErrorAction unhandledException;
+  private FlowNode nodeThatThrewException;
+
+  private boolean isLastNode;
+  private FlowExecution execution;
   private static final Logger logger = LoggerFactory.getLogger(PipelineStepVisitor.class);
 
   public PipelineStepVisitor(WorkflowRun run) {
     this.run = run;
     this.inputAction = run.getAction(InputAction.class);
     declarative = run.getAction(ExecutionModelAction.class) != null;
-    FlowExecution execution = run.getExecution();
-    if (execution != null) {
+    this.isLastNode = true;
+    this.execution = run.getExecution();
+    if (this.execution != null) {
       try {
         ForkScanner.visitSimpleChunks(execution.getCurrentHeads(), this, new StageChunkFinder());
       } catch (final Throwable t) {
@@ -233,6 +241,18 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
               .orElse(null);
     }
 
+    if (this.isLastNode) {
+      this.isLastNode = false;
+      // Check for unhandled exception.
+      NodeRunStatus status;
+      ErrorAction errorAction = endNode.getAction(ErrorAction.class);
+      if (errorAction != null)  {
+        // Store step that threw the exception so we can find it's parent stage.
+        logger.debug("Found unhandled exception: " + errorAction.getError().getMessage());
+        this.nodeThatThrewException = errorAction.findOrigin(errorAction.getError(), this.execution);
+        logger.debug("Found that node '" + this.nodeThatThrewException.getId() + "' threw unhandled exception: " + this.nodeThatThrewException.getDisplayName());
+      }
+    }
     // if we're using marker-based (and not block-scoped) stages, add the last node as part of its
     // contents
     if (!(endNode instanceof BlockEndNode)) {
@@ -247,21 +267,21 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
       @CheckForNull FlowNode after,
       @NonNull ForkScanner scan) {
 
+    long pause = PauseAction.getPauseDuration(atomNode);
+    TimingInfo times = StatusAndTiming.computeChunkTiming(run, pause, atomNode, atomNode, after);
+    if (times == null) {
+      times = new TimingInfo();
+    }
+    NodeRunStatus status;
+    InputStep inputStep = null;
     if (atomNode instanceof StepAtomNode
         && !PipelineNodeUtil.isSkippedStage(
             currentStage)) { // if skipped stage, we don't collect its steps
-
-      long pause = PauseAction.getPauseDuration(atomNode);
-      chunk.setPauseTimeMillis(chunk.getPauseTimeMillis() + pause);
-
-      TimingInfo times = StatusAndTiming.computeChunkTiming(run, pause, atomNode, atomNode, after);
 
       if (times == null) {
         times = new TimingInfo();
       }
 
-      NodeRunStatus status;
-      InputStep inputStep = null;
       if (PipelineNodeUtil.isPausedForInputStep((StepAtomNode) atomNode, inputAction)) {
         status = new NodeRunStatus(BlueRun.BlueRunResult.UNKNOWN, BlueRun.BlueRunState.PAUSED);
         try {
@@ -289,12 +309,38 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
                 + stepNode.getArgumentsAsString()
                 + ") to stack.");
       }
-
-      stageSteps.push(stepNode);
+      if (!stageSteps.contains(stepNode) ) {
+        stageSteps.push(stepNode);
+      }
       if (logger.isDebugEnabled()) {
         logger.debug("Steps in stack:");
         for (FlowNodeWrapper step : stageSteps) {
-          logger.debug(" - " + step.getArgumentsAsString());
+          logger.debug(" - " + step.getArgumentsAsString() + " - " + step.getId());
+        }
+      }
+    }
+    // If this the the node that created the unhandled exception.
+    if (this.nodeThatThrewException == atomNode) {
+      ErrorAction stepErrorAction = atomNode.getAction(ErrorAction.class);
+      status = new NodeRunStatus(atomNode);
+      pause = PauseAction.getPauseDuration(atomNode);
+      times = StatusAndTiming.computeChunkTiming(run, pause, atomNode, atomNode, null);
+      if (times == null) {
+        times = new TimingInfo();
+      }
+      FlowNodeWrapper erroredStep = new FlowNodeWrapper(atomNode, status, times, inputStep, run);
+      stepMap.put(erroredStep.getId(), erroredStep);
+      if (logger.isDebugEnabled()) {
+        logger.debug(
+            "Found step exception from step: "
+                + erroredStep.getId()
+                + "("
+                + erroredStep.getArgumentsAsString()
+                + ") to stack.\nError:\n"
+                + stepErrorAction.getError().getMessage()
+                );
+        if (!stageSteps.contains(erroredStep) ) {
+          stageSteps.push(erroredStep);
         }
       }
     }

@@ -11,6 +11,7 @@ import java.io.Writer;
 import java.util.HashMap;
 import net.sf.json.JSONObject;
 import org.apache.commons.io.output.StringBuilderWriter;
+import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.LogAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
@@ -21,6 +22,9 @@ import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.verb.GET;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
   public static final long LOG_THRESHOLD = 150 * 1024; // 150KB
@@ -113,6 +117,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     long endByte = 0L;
     long textLength = 0L;
     String text = "";
+
     if (logText != null) {
       textLength = logText.length();
       // postitive startByte
@@ -142,6 +147,14 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
           "Returning '"
               + Long.toString(textLength - startByte)
               + "' bytes from 'getConsolOutput'.");
+    } else {
+      // If there is no text then set set startByte to 0 - as we have read from the start, there is just nothing there.
+      startByte = 0L;
+    }
+    // Append any exception text to the end of the log.
+    String exceptionText = getNodeExceptionText(nodeId);
+    if (exceptionText != null) {
+      text += exceptionText;
     }
     response.put("text", text);
     response.put("startByte", startByte);
@@ -152,14 +165,36 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
   private AnnotatedLargeText<? extends FlowNode> getLogForNode(String nodeId) throws IOException {
     FlowExecution execution = target.getExecution();
     if (execution != null) {
-      logger.debug("getConsoleOutput found execution.");
+      logger.debug("getLogForNode found execution.");
       FlowNode node = execution.getNode(nodeId);
       if (node != null) {
-        logger.debug("getConsoleOutput found node.");
+        logger.debug("getLogForNode found node.");
         LogAction log = node.getAction(LogAction.class);
         if (log != null) {
           return log.getLogText();
         }
+      }
+    }
+    return null;
+  }
+
+  private String getNodeExceptionText(String nodeId) throws IOException {
+    FlowExecution execution = target.getExecution();
+    if (execution != null) {
+      logger.debug("getNodeException found execution.");
+      FlowNode node = execution.getNode(nodeId);
+      if (node != null) {
+        logger.debug("getNodeException found node.");
+        String log = null;
+        ErrorAction error = node.getAction(ErrorAction.class);
+        if (error != null) {
+          Throwable exception = error.getError();
+          log = exception.getMessage() + "\n\t";
+          log += Arrays.stream(exception.getStackTrace())
+            .map(s->s.toString())
+            .collect(Collectors.joining("\n\t"));
+        }
+        return log;
       }
     }
     return null;

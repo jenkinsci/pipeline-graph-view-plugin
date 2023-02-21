@@ -10,6 +10,7 @@ import hudson.model.queue.CauseOfBlockage;
 import org.jenkinsci.plugins.pipeline.StageStatus;
 import org.jenkinsci.plugins.pipeline.SyntheticStage;
 import org.jenkinsci.plugins.workflow.actions.ArgumentsAction;
+import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.LabelAction;
 import org.jenkinsci.plugins.workflow.actions.LogAction;
 import org.jenkinsci.plugins.workflow.actions.QueueItemAction;
@@ -110,6 +111,11 @@ public class PipelineNodeUtil {
     return node != null
         && node.getAction(LabelAction.class) != null
         && node.getAction(ThreadNameAction.class) != null;
+  }
+
+  public static boolean isStepThrewException(@Nullable FlowNode node) {
+    return node != null
+        && node.getAction(ErrorAction.class) != null;
   }
 
   public static String getArgumentsAsString(@Nullable FlowNode node) {

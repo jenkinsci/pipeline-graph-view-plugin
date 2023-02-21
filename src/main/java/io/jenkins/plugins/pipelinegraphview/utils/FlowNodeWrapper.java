@@ -58,7 +58,8 @@ public class FlowNodeWrapper {
   public enum NodeType {
     STAGE,
     PARALLEL,
-    STEP
+    STEP,
+    EXCEPTED_STEP,
   }
 
   private final FlowNode node;
@@ -122,6 +123,8 @@ public class FlowNodeWrapper {
       return NodeType.PARALLEL;
     } else if (node instanceof AtomNode) {
       return NodeType.STEP;
+    } else if(PipelineNodeUtil.isStepThrewException(node)) {
+      return NodeType.EXCEPTED_STEP;
     }
     throw new IllegalArgumentException(
         String.format("Unknown FlowNode %s, type: %s", node.getId(), node.getClass()));

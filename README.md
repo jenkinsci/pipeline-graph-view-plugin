@@ -20,7 +20,7 @@ Basic pipeline:
 
 ![Different statuses](./docs/images/different-statuses.png)
 
-Semi complex pipeline:
+Semi-complex pipeline:
 
 ![Semi complex pipeline](./docs/images/semi-complex-pipeline.png)
 
@@ -38,7 +38,7 @@ That means functionality like:
 
 * [x] Pipeline graph
 * [x] Summary of runs in a job (like [Pipeline Stage View Plugin](https://github.com/jenkinsci/pipeline-stage-view-plugin/), but simpler, more modern and more performant)
-* [ ] Modern logs viewing
+* [x] Modern logs viewing
 
 The plugin should be lightweight, using or providing extension points where possible rather than building everything into one plugin.
 

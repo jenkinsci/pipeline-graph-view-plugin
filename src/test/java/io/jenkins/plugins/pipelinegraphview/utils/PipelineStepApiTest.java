@@ -6,15 +6,12 @@ import static org.hamcrest.Matchers.is;
 
 import hudson.model.Result;
 import java.util.List;
-import java.util.logging.Logger;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class PipelineStepApiTest {
-  private static final Logger LOGGER = Logger.getLogger(PipelineStepApiTest.class.getName());
-
   @Rule public JenkinsRule j = new JenkinsRule();
 
   @Test
@@ -189,5 +186,59 @@ public class PipelineStepApiTest {
     assertThat(steps.get(0).getName(), is("In child A - Print Message"));
     assertThat(steps.get(1).getName(), is("In grandchild B - Print Message"));
     assertThat(steps.get(2).getName(), is("In great-grandchild C - Print Message"));
+  }
+
+  @Test
+  public void githubIssue92RegressionTest() throws Exception {
+    // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+    // long time)
+    WorkflowRun run =
+        TestUtils.createAndRunJob(j, "githubIssue92", "githubIssue92.jenkinsfile", Result.SUCCESS);
+
+    PipelineStepApi api = new PipelineStepApi(run);
+
+    // Linux 8
+    String linux8CheckoutId =
+        TestUtils.getNodesByDisplayName(run, "Checkout (linux-8)").get(0).getId();
+    String linux8BuildId = TestUtils.getNodesByDisplayName(run, "Build (linux-8)").get(0).getId();
+    String linux8ArchiveId =
+        TestUtils.getNodesByDisplayName(run, "Archive (linux-8)").get(0).getId();
+
+    // Linux 11
+    String linux11CheckoutId =
+        TestUtils.getNodesByDisplayName(run, "Checkout (linux-11)").get(0).getId();
+    String linux11BuildId = TestUtils.getNodesByDisplayName(run, "Build (linux-11)").get(0).getId();
+    String linux11ArchiveId =
+        TestUtils.getNodesByDisplayName(run, "Archive (linux-11)").get(0).getId();
+
+    String deployStageId = TestUtils.getNodesByDisplayName(run, "Deploy").get(0).getId();
+
+    List<PipelineStep> steps = api.getSteps(linux8CheckoutId).getSteps();
+    assertThat(steps, hasSize(1));
+    assertThat(steps.get(0).getName(), is("Checking out linux-8 - Print Message"));
+
+    steps = api.getSteps(linux8BuildId).getSteps();
+    assertThat(steps, hasSize(1));
+    assertThat(steps.get(0).getName(), is("Building linux-8 - Print Message"));
+
+    steps = api.getSteps(linux8ArchiveId).getSteps();
+    assertThat(steps, hasSize(1));
+    assertThat(steps.get(0).getName(), is("Archiving linux-8 - Print Message"));
+
+    steps = api.getSteps(linux11CheckoutId).getSteps();
+    assertThat(steps, hasSize(1));
+    assertThat(steps.get(0).getName(), is("Checking out linux-11 - Print Message"));
+
+    steps = api.getSteps(linux11BuildId).getSteps();
+    assertThat(steps, hasSize(1));
+    assertThat(steps.get(0).getName(), is("Building linux-11 - Print Message"));
+
+    steps = api.getSteps(linux11ArchiveId).getSteps();
+    assertThat(steps, hasSize(1));
+    assertThat(steps.get(0).getName(), is("Archiving linux-11 - Print Message"));
+
+    steps = api.getSteps(deployStageId).getSteps();
+    assertThat(steps, hasSize(1));
+    assertThat(steps.get(0).getName(), is("Deploying... - Print Message"));
   }
 }

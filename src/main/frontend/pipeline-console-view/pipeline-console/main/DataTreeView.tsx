@@ -14,6 +14,7 @@ import { decodeResultValue } from "../../../pipeline-graph-view/pipeline-graph/m
 
 const getTreeItemsFromStage = (stageItems: StageInfo[]) => {
   return stageItems.map((stageItemData) => {
+    console.debug(`Generating stage item(s) for '${stageItemData.name} - ${stageItemData.id}'.`)
     let children: JSX.Element[] = [];
     if (stageItemData.children && stageItemData.children.length > 0) {
       children = getTreeItemsFromStage(stageItemData.children);

@@ -1,142 +1,30 @@
 import React from "react";
-
+import { lazy, Suspense } from "react";
 import { SplitPane } from "react-collapse-pane";
-import { makeReactChildren, tokenizeANSIString } from "./Ansi";
+
+import { LOG_FETCH_SIZE } from "./PipelineConsoleModel";
+import { CircularProgress } from "@mui/material";
+import "./pipeline-console.scss";
 import {
   StageInfo,
+  StepInfo,
   Result,
-} from "../../../pipeline-graph-view/pipeline-graph/main/";
-import { DataTreeView, StepInfo } from "./DataTreeView";
+  ConsoleLogData,
+} from "./PipelineConsoleModel";
 
-import Typography from "@mui/material/Typography";
-
-import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
-import ScheduleIcon from "@mui/icons-material/Schedule";
-import TimerIcon from "@mui/icons-material/Timer";
-import InfoIcon from "@mui/icons-material/Info";
-import LinkIcon from "@mui/icons-material/Link";
-
-import "./pipeline-console.scss";
+const DataTreeView = lazy(() => import("./DataTreeView"));
+const StageView = lazy(() => import("./StageView"));
 
 interface PipelineConsoleProps {}
 interface PipelineConsoleState {
-  consoleText: string;
-  selected: string;
-  expanded: string[];
+  selectedStage: string;
+  expandedStages: string[];
+  expandedSteps: string[];
   stages: Array<StageInfo>;
   steps: Array<StepInfo>;
   anchor: string;
   hasScrolled: boolean;
 }
-
-export interface StageSummaryProps {
-  stage: StageInfo;
-  failedSteps: StepInfo[];
-}
-
-// Tree Item for stages
-const StageSummary = (props: StageSummaryProps) => (
-  <React.Fragment>
-    <div className="stage-detail-group">
-      <Typography color="inherit" className="detail-element-header">
-        Stage '{props.stage.name}'
-      </Typography>
-      <div className="detail-element" key="start-time">
-        <ScheduleIcon className="detail-icon" />
-        {props.stage.startTimeMillis}
-      </div>
-      <div className="detail-element" key="paused-duration">
-        <HourglassEmptyIcon className="detail-icon" />
-        {props.stage.pauseDurationMillis}
-      </div>
-      <div className="detail-element" key="duration">
-        <TimerIcon className="detail-icon" />
-        {props.stage.totalDurationMillis}
-      </div>
-      <div className="detail-element" key="status">
-        <InfoIcon className="detail-icon " />
-        <span className="capitalize">{props.stage.state}</span>
-      </div>
-      {props.failedSteps.map((value: StepInfo) => {
-        console.log(`Found failed step ${value}`);
-        return (
-          <FailedStepLink step={value} key={`failed-step-link-${value.id}`} />
-        );
-      })}
-    </div>
-  </React.Fragment>
-);
-
-export interface StepSummaryProps {
-  step: StepInfo;
-}
-
-// Tree Item for stages
-const StepSummary = (props: StepSummaryProps) => (
-  <React.Fragment>
-    <div className="step-detail-group">
-      <div className="detail-element" key="start-time">
-        <ScheduleIcon className="detail-icon" />
-        {props.step.startTimeMillis}
-      </div>
-      <div className="detail-element" key="paused-duration">
-        <HourglassEmptyIcon className="detail-icon" />
-        {props.step.pauseDurationMillis}
-      </div>
-      <div className="detail-element" key="duration">
-        <TimerIcon className="detail-icon" />
-        {props.step.totalDurationMillis}
-      </div>
-      <div className="detail-element capitalize" key="status">
-        <InfoIcon className="detail-icon" />
-        <span className="capitalize">{props.step.state}</span>
-      </div>
-    </div>
-  </React.Fragment>
-);
-
-export interface FailedStepLinkProps {
-  step: StepInfo;
-}
-
-const FailedStepLink = (props: FailedStepLinkProps) => (
-  <div className="detail-element">
-    <LinkIcon className="detail-icon" />
-    <a className="detail-element" href={`?selected-node=${props.step.id}`}>
-      Failed step: {props.step.name}
-    </a>
-  </div>
-);
-
-export interface ConsoleLineProps {
-  lineNumber: string;
-  content: string;
-  stepId: string;
-  key: string;
-}
-
-// Tree Item for stages
-const ConsoleLine = (props: ConsoleLineProps) => (
-  <div className="console-output-item" key={props.lineNumber}>
-    <div
-      className="console-output-line-anchor"
-      id={`log-${props.lineNumber}`}
-      key={`${props.lineNumber}-anchor`}
-    />
-    <div className="console-output-line" key={`${props.lineNumber}-body`}>
-      <a
-        className="console-line-number"
-        href={`?selected-node=${props.stepId}#log-${props.lineNumber}`}
-      >
-        {props.lineNumber}
-      </a>
-      {makeReactChildren(
-        tokenizeANSIString(props.content),
-        `${props.stepId}-${props.lineNumber}`
-      )}
-    </div>
-  </div>
-);
 
 export class PipelineConsole extends React.Component<
   PipelineConsoleProps,
@@ -146,12 +34,14 @@ export class PipelineConsole extends React.Component<
     super(props);
     this.handleActionNodeSelect = this.handleActionNodeSelect.bind(this);
     this.handleToggle = this.handleToggle.bind(this);
+    this.handleStepToggle = this.handleStepToggle.bind(this);
+    this.handleMoreConsoleClick = this.handleMoreConsoleClick.bind(this);
     // set default values of state
     this.state = {
       // Need to update dynamically
-      consoleText: "Select a node to view console output.",
-      selected: "",
-      expanded: [] as string[],
+      selectedStage: "",
+      expandedStages: [] as string[],
+      expandedSteps: [] as string[],
       stages: [] as StageInfo[],
       steps: [] as StepInfo[],
       anchor: window.location.hash.replace("#", ""),
@@ -165,6 +55,30 @@ export class PipelineConsole extends React.Component<
   async updateState() {
     this.setStages();
     this.setSteps();
+  }
+
+  // Determines the default selected step in the tree view based
+  getDefaultSelectedStep(steps: StepInfo[]) {
+    let selectedStep = steps.find((step) => step !== undefined);
+    for (let i = 0; i < steps.length; i++) {
+      let step = steps[i];
+      let stepResult = step.state.toLowerCase() as Result;
+      switch (stepResult) {
+        case Result.running:
+        case Result.queued:
+        case Result.paused:
+          return step;
+        case Result.unstable:
+        case Result.failure:
+        case Result.aborted:
+          let selectedStepResult = selectedStep?.state.toLowerCase() as Result;
+          if (!selectedStepResult || stepResult > selectedStepResult) {
+            selectedStep = step;
+          }
+          break;
+      }
+    }
+    return selectedStep;
   }
 
   setStages() {
@@ -182,7 +96,6 @@ export class PipelineConsole extends React.Component<
           }
         );
       });
-    // returns Promise
   }
 
   setSteps() {
@@ -202,64 +115,92 @@ export class PipelineConsole extends React.Component<
       .catch(console.log);
   }
 
-  setConsoleText(stepId: string) {
-    if (stepId !== this.state.selected) {
-      fetch(`consoleOutput?nodeId=${stepId}`)
-        .then((res) => res.json())
-        .then((res) => {
-          console.debug("Updating consoleText");
-          this.setState({
-            // Strip trailing whitespace.
-            consoleText: res.data.text.replace(/\s+$/, ""),
-          });
-        })
-        .catch(console.log);
-    } else {
-      console.debug("Skipping consoleText update (node already selected).");
+  getStageSteps(stageId: string) {
+    let stepsCopy = [...this.state.steps];
+    let i = stepsCopy.length;
+    while (i--) {
+      let step = stepsCopy[i];
+      if (step.stageId != stageId) {
+        // Remove step from local copy - can only have one parent.
+        // This should reduce the total number of loops required.
+        stepsCopy.splice(i, 1);
+      }
     }
+    return stepsCopy;
+  }
+
+  getConsoleTextOffset(
+    stepId: string,
+    startByte: number
+  ): Promise<ConsoleLogData> {
+    return fetch(`consoleOutput?nodeId=${stepId}&startByte=${startByte}`)
+      .then((res) => res.json())
+      .then((res) => {
+        //console.log(`'stepId': '${stepId}', 'startByte': '${startByte}', 'res': ${JSON.stringify(res)}`)
+        // Strip trailing whitespace.
+        res.data.text = res.data.text.replace(/\s+$/, "");
+        res.data.stepId = stepId;
+        return res.data;
+      })
+      .catch((reason) => {
+        console.error(`Caught error when fetching console: '${reason}'`);
+      });
   }
 
   selectNode() {
     console.debug(`In selectNode.`);
     let params = new URLSearchParams(document.location.search.substring(1));
-    let selected = params.get("selected-node") || "";
-    if (selected) {
-      console.debug(`Node '${selected}' selected.`);
-      let expanded = [];
-      let step = this.getStepWithId(selected, this.state.steps);
+    let selectedStage = params.get("selected-node") || "";
+    let startByte = parseInt(
+      params.get("start-byte") || `${0 - LOG_FETCH_SIZE}`
+    );
+    let expandedSteps = [] as string[];
+    let expandedStages = [] as string[];
+    if (selectedStage) {
+      // If we were told what node was selected find then expand it (and it's parents).
+      console.debug(`Node '${selectedStage}' selected.`);
+      let step = this.getStepWithId(selectedStage, this.state.steps);
       if (step) {
-        console.debug(`Found step with id '${selected}`);
-        this.setConsoleText(String(step.id));
-        selected = String(step.id);
-        expanded = this.getStageNodeHierarchy(step.stageId, this.state.stages);
-      } else {
-        console.debug(
-          `Didn't find step with id '${selected}, must be a stasge.`
-        );
-        expanded = this.getStageNodeHierarchy(selected, this.state.stages);
-      }
-      this.setState({
-        selected: selected,
-        expanded: expanded,
-      });
-    } else {
-      let step = this.getDefaultSelectedStep(this.state.steps);
-      if (step) {
-        console.debug(`Selecting step with id '${selected}`);
-        this.setConsoleText(String(step.id));
-        selected = String(step.id);
-        let expanded = this.getStageNodeHierarchy(
+        console.debug(`Found step with id '${selectedStage}`);
+        selectedStage = step.stageId;
+        expandedSteps = [String(step.id)];
+        expandedStages = this.getStageNodeHierarchy(
           step.stageId,
           this.state.stages
         );
-        this.setState({
-          selected: selected,
-          expanded: expanded,
-        });
+        this.updateStepConsole(String(step.id), false);
+      } else {
+        console.debug(
+          `Didn't find step with id '${selectedStage}', must be a stage.`
+        );
+        expandedStages = this.getStageNodeHierarchy(
+          selectedStage,
+          this.state.stages
+        );
+      }
+    } else {
+      // If we weren't told what steps to expand, expand some steps by default (e.g.first failed steps).
+      let step = this.getDefaultSelectedStep(this.state.steps);
+      if (step) {
+        console.debug(`Expanding default steps '${selectedStage}`);
+        selectedStage = String(step.stageId);
+        expandedSteps = [String(step.id)];
+        expandedStages = this.getStageNodeHierarchy(
+          step.stageId,
+          this.state.stages
+        );
+        this.updateStepConsoleOffset(String(step.id), false, startByte);
       } else {
         console.debug("No node selected.");
       }
     }
+    console.debug(`Updating expandedStages to: ${expandedStages}`);
+    console.debug(`Updating expandedSteps to: ${expandedSteps}`);
+    this.setState({
+      selectedStage: selectedStage,
+      expandedSteps: expandedSteps,
+      expandedStages: expandedStages,
+    });
   }
 
   componentDidUpdate() {
@@ -282,15 +223,70 @@ export class PipelineConsole extends React.Component<
 
   /* Event handlers */
   handleActionNodeSelect(event: React.ChangeEvent<any>, nodeId: string) {
-    this.setConsoleText(nodeId);
     // If we get console response, we know that this is a step.
-    this.setState({ selected: nodeId });
+    this.setState({ selectedStage: nodeId });
   }
 
   handleToggle(event: React.ChangeEvent<{}>, nodeIds: string[]): void {
     this.setState({
-      expanded: nodeIds,
+      expandedStages: nodeIds,
     });
+  }
+
+  updateStepConsole(stepId: string, forceUpdate: boolean) {
+    this.updateStepConsoleOffset(stepId, forceUpdate, 0 - LOG_FETCH_SIZE);
+  }
+
+  updateStepConsoleOffset(
+    stepId: string,
+    forceUpdate: boolean,
+    startByte: number
+  ) {
+    let updatedSteps = [...this.state.steps];
+    for (let step of updatedSteps) {
+      if (stepId === String(step.id)) {
+        if (!step.consoleLines || forceUpdate) {
+          console.debug(
+            `Updating console text for step ${stepId} with from '${startByte}'`
+          );
+          let promise = this.getConsoleTextOffset(stepId, startByte);
+          promise.then((res) => {
+            step.consoleLines = res.text.split("\n") || [];
+            step.consoleStartByte = res.startByte;
+            step.consoleEndByte = res.endByte;
+            this.setState({
+              steps: updatedSteps,
+            });
+          });
+        } else {
+          console.debug(
+            `Skipping update of console text for step ${step.id} - already set.`
+          );
+        }
+      }
+    }
+  }
+
+  handleStepToggle(event: React.SyntheticEvent<{}>, nodeId: string): void {
+    let expandedSteps = [...this.state.expandedSteps];
+    console.info(`Checking if '${nodeId}' in expanded list ${expandedSteps}`);
+    if (!expandedSteps.includes(nodeId)) {
+      console.info(`Step '${nodeId}' not in expanded list ${expandedSteps}`);
+      expandedSteps.push(nodeId);
+      this.updateStepConsole(nodeId, false);
+    } else {
+      console.info(`Step '${nodeId}' collapsed`);
+      // Step untoggled.
+      expandedSteps = expandedSteps.filter((v) => v !== nodeId);
+    }
+    console.debug(`Setting 'expandedSteps' to ${expandedSteps}`);
+    this.setState({
+      expandedSteps: expandedSteps,
+    });
+  }
+
+  handleMoreConsoleClick(nodeId: string, startByte: number): void {
+    this.updateStepConsoleOffset(nodeId, true, startByte);
   }
 
   // Gets the selected step in the tree view (or none if not selected).
@@ -302,14 +298,14 @@ export class PipelineConsole extends React.Component<
     return foundStep;
   }
 
-  // Gets the node hierarchy of stages in the tree view (a list of child -> parent -> grandparent).#
+  // Gets the node hierarchy of stages in the tree view (a list of child -> parent -> grandparent).
   // This needs to be given the nodeId of a stage, so call getSelectedStep first to see if the nodeId
   // is a step - and if so pass it step.stageId.
   getStageNodeHierarchy(nodeId: string, stages: StageInfo[]): Array<string> {
     for (let i = 0; i < stages.length; i++) {
       let stage = stages[i];
       if (String(stage.id) == nodeId) {
-        // Found the node, so start a list of expanded nodes - it will be this and it's ancestors.
+        // Found the node, so start a list of expandedStage nodes - it will be this and it's ancestors.
         return [String(stage.id)];
       } else if (stage.children && stage.children.length > 0) {
         let expandedNodes = this.getStageNodeHierarchy(nodeId, stage.children);
@@ -323,104 +319,34 @@ export class PipelineConsole extends React.Component<
     return [];
   }
 
-  // Determines the default selected step in the tree view based
-  getDefaultSelectedStep(steps: StepInfo[]) {
-    let selectedStep = steps.find(step => step !== undefined)
-    for (let i = 0; i < steps.length; i++) {
-      let step = steps[i];
-      let stepResult = step.state.toLowerCase() as Result;
-      switch (stepResult) {
-        case Result.running:
-        case Result.queued:
-        case Result.paused:
-          return step;
-        case Result.unstable:
-        case Result.failure:
-        case Result.aborted:
-          let selectedStepResult = selectedStep?.state.toLowerCase() as Result;
-          if (!selectedStepResult || stepResult > selectedStepResult) {
-            selectedStep = step;
-          }
-          break;
-      }
+  getSelectedStage(): StageInfo | null {
+    let selectedStage = this.getStageFromList(
+      this.state.stages,
+      this.state.selectedStage
+    );
+    if (selectedStage) {
+      return selectedStage;
     }
-    return selectedStep;
+    console.debug(`Couldn't find stage '${this.state.selectedStage}'`);
+    return null;
   }
 
-  renderStageDetails() {
-    let focusedStage = null;
-    for (let i = 0; i < this.state.stages.length; i++) {
-      let stage = this.state.stages[i];
-      if ("" + stage.id == this.state.selected) {
-        // User has selected a stage node.
-        focusedStage = stage;
-        let failedSteps = [] as StepInfo[];
-        for (let i = 0; i < this.state.steps.length; i++) {
-          let step = this.state.steps[i];
-          if (step.stageId === this.state.selected) {
-            // We seem to get a mix of upper and lower case states, so normalise on lowercase.
-            if (step.state.toLowerCase() === "unstable") {
-              failedSteps.push(step);
-            }
-          }
+  getStageFromList(stages: StageInfo[], nodeId: String): StageInfo | null {
+    for (let stage of stages) {
+      if (stage.id == parseInt(this.state.selectedStage)) {
+        return stage;
+      }
+      if (stage.children.length > 0) {
+        let selectedStage = this.getStageFromList(stage.children, nodeId);
+        if (selectedStage) {
+          return selectedStage;
         }
-        return (
-          <pre className="console-output">
-            <StageSummary stage={focusedStage} failedSteps={failedSteps} />
-          </pre>
-        );
       }
     }
     return null;
-  }
-
-  renderStepDetails() {
-    for (let i = 0; i < this.state.steps.length; i++) {
-      let step = this.state.steps[i];
-      if ("" + step.id == this.state.selected) {
-        return (
-          <pre className="console-output">
-            <StepSummary step={step} />
-          </pre>
-        );
-      }
-    }
-    return null;
-  }
-
-  renderConsoleOutput() {
-    if (this.state.consoleText.length > 0) {
-      const lineChunks = this.state.consoleText.split("\n");
-      return (
-        <pre className="console-output">
-          {lineChunks.map((line, index) => {
-            let lineNumber = String(index + 1);
-            return (
-              <ConsoleLine
-                content={line}
-                lineNumber={lineNumber}
-                stepId={this.state.selected}
-                key={`${this.state.selected}-${lineNumber}`}
-              />
-            );
-          })}
-        </pre>
-      );
-    } else {
-      return null;
-    }
   }
 
   render() {
-    const splitPaneStyle: React.CSSProperties = {
-      position: "relative",
-    };
-    const paneStyle: React.CSSProperties = {
-      paddingLeft: "8px",
-      textAlign: "left",
-      height: "calc(100vh - 300px)",
-      overflowY: "auto",
-    };
     return (
       <React.Fragment>
         <div className="App">
@@ -432,21 +358,30 @@ export class PipelineConsole extends React.Component<
             className="split-pane"
             split="vertical"
           >
-            <div className="split-pane" key="tree-view">
-              <DataTreeView
-                onNodeSelect={this.handleActionNodeSelect}
-                onNodeToggle={this.handleToggle}
-                selected={this.state.selected}
-                expanded={this.state.expanded}
-                stages={this.state.stages}
-                steps={this.state.steps}
-              />
+            <div className="split-pane" key="tree-view" id="tree-view-pane">
+              <Suspense fallback={<CircularProgress />}>
+                <DataTreeView
+                  onNodeSelect={this.handleActionNodeSelect}
+                  onNodeToggle={this.handleToggle}
+                  selected={this.state.selectedStage}
+                  expanded={this.state.expandedStages}
+                  stages={this.state.stages}
+                />
+              </Suspense>
             </div>
 
-            <div className="split-pane" key="console-view">
-              {this.renderStageDetails()}
-              {this.renderStepDetails()}
-              {this.renderConsoleOutput()}
+            <div className="split-pane" key="stage-view" id="stage-view-pane">
+              <Suspense fallback={<CircularProgress />}>
+                <StageView
+                  stage={this.getSelectedStage()}
+                  steps={this.getStageSteps(this.state.selectedStage)}
+                  expandedSteps={this.state.expandedSteps}
+                  selectedStage={this.state.selectedStage}
+                  handleStepToggle={this.handleStepToggle}
+                  handleMoreConsoleClick={this.handleMoreConsoleClick}
+                  scrollParentId="stage-view-pane"
+                />
+              </Suspense>
             </div>
           </SplitPane>
         </div>

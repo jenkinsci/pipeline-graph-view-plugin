@@ -12,66 +12,14 @@ import {
 import StepStatus from "../../../step-status/StepStatus";
 import { decodeResultValue } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
 
-/**
- * StageInfo is the input, in the form of an Array<StageInfo> of the top-level stages of a pipeline
- */
-export interface StepInfo {
-  name: string;
-  title: string;
-  state: Result;
-  completePercent: number;
-  id: number;
-  type: string;
-  stageId: string;
-  pauseDurationMillis: string;
-  startTimeMillis: string;
-  totalDurationMillis: string;
-}
-
-const getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
-  return stepsItems.map((stepItemData) => {
-    return (
-      <TreeItem
-        className="step-tree-item"
-        key={stepItemData.id}
-        nodeId={String(stepItemData.id)}
-        label={
-          <StepStatus
-            status={decodeResultValue(stepItemData.state)}
-            text={stepItemData.name.replace(/[^ -~]+/g, "")}
-            key={`status-${stepItemData.id}`}
-          />
-        }
-      />
-    );
-  });
-};
-
-const getTreeItemsFromStage = (stageItems: StageInfo[], steps: StepInfo[]) => {
-  // Copy steps so we don't affect props.steps.
-  let stepsCopy = [...steps];
+const getTreeItemsFromStage = (stageItems: StageInfo[]) => {
   return stageItems.map((stageItemData) => {
-    console.debug(`Generating stage item(s) for '${stageItemData.name} - ${stageItemData.id}'.`)
+    console.debug(
+      `Generating stage item(s) for '${stageItemData.name} - ${stageItemData.id}'.`
+    );
     let children: JSX.Element[] = [];
-    let stageSteps = [] as StepInfo[];
-    // Handle leaf nodes first.
     if (stageItemData.children && stageItemData.children.length > 0) {
-      children = getTreeItemsFromStage(stageItemData.children, stepsCopy);
-    }
-    var i = stepsCopy.length;
-    while (i--) {
-      let step = stepsCopy[i];
-      if (step.stageId == String(stageItemData.id)) {
-        // Prepend to array (as we are iterating in reverse).
-        stageSteps.unshift(step);
-        // Remove step from local copy - can only have one parent.
-        // This should reduce the total number of loops required.
-        stepsCopy.splice(i, 1);
-      }
-    }
-    if (stageSteps) {
-      let stepsItems = getTreeItemsFromStepList(stageSteps);
-      children = [...children, ...stepsItems];
+      children = getTreeItemsFromStage(stageItemData.children);
     }
     return (
       <TreeItem
@@ -102,10 +50,9 @@ interface DataTreeViewProps {
   onNodeToggle: (event: React.ChangeEvent<any>, nodeIds: string[]) => void;
   selected: string;
   expanded: string[];
-  steps: StepInfo[];
 }
 
-export class DataTreeView extends React.Component {
+export default class DataTreeView extends React.Component {
   props!: DataTreeViewProps;
 
   constructor(props: DataTreeViewProps) {
@@ -135,7 +82,7 @@ export class DataTreeView extends React.Component {
         onNodeToggle={this.props.onNodeToggle}
         key="console-tree-view"
       >
-        {getTreeItemsFromStage(this.props.stages, this.props.steps)}
+        {getTreeItemsFromStage(this.props.stages)}
       </TreeView>
     );
   }

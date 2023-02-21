@@ -168,7 +168,12 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
             columns={{ xs: 20 }}
             key={`step-root-container-${this.props.step.id}`}
           >
-            <Grid item container xs={16} sx={{ display: "block" }}>
+            <Grid
+              item
+              container
+              xs={16}
+              sx={{ display: "block", margin: "auto" }}
+            >
               <Typography
                 className="log-card-header"
                 noWrap={true}
@@ -193,15 +198,18 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
                   .trimStart()}
               </Typography>
             </Grid>
-            <Grid item xs={2}>
+            <Grid
+              item
+              xs={2}
+              sx={{ margin: "auto", padding: "0px" }}
+              alignItems="center"
+              justifyContent="center"
+            >
               <Typography
                 className="log-card-text"
                 align="right"
                 component="div"
                 key={`step-duration-text-${this.props.step.id}`}
-                alignItems="center"
-                justifyContent="center"
-                style={{ paddingTop: "12px", paddingBottom: "0px" }}
               >
                 {this.props.step.totalDurationMillis.substring(
                   this.props.step.totalDurationMillis.indexOf(" ") + 1,
@@ -209,11 +217,12 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
                 )}
               </Typography>
             </Grid>
-            <Grid item xs={2} alignItems="center" sx={{ paddingTop: "5px" }}>
+            <Grid item xs={2} alignItems="center" sx={{ margin: "auto" }}>
               <ExpandMore
                 expand={this.props.isExpanded}
                 aria-expanded
                 key={`step-expand-button-${this.props.step.id}`}
+                sx={{ display: "block", marginLeft: "auto" }}
               >
                 <ExpandMoreIcon
                   key={`step-expand-icon-${this.props.step.id}`}

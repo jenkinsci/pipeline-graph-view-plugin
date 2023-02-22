@@ -4,9 +4,16 @@ import com.google.common.base.Predicate;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import hudson.AbortException;
+import hudson.console.AnnotatedLargeText;
 import hudson.model.Action;
 import hudson.model.Queue;
 import hudson.model.queue.CauseOfBlockage;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.jenkinsci.plugins.pipeline.StageStatus;
 import org.jenkinsci.plugins.pipeline.SyntheticStage;
 import org.jenkinsci.plugins.workflow.actions.ArgumentsAction;
@@ -113,9 +120,8 @@ public class PipelineNodeUtil {
         && node.getAction(ThreadNameAction.class) != null;
   }
 
-  public static boolean isStepThrewException(@Nullable FlowNode node) {
-    return node != null
-        && node.getAction(ErrorAction.class) != null;
+  public static boolean isUnhandledException(@Nullable FlowNode node) {
+    return node != null && node.getAction(ErrorAction.class) != null;
   }
 
   public static String getArgumentsAsString(@Nullable FlowNode node) {
@@ -213,6 +219,78 @@ public class PipelineNodeUtil {
       }
     }
 
+    return false;
+  }
+
+  /* Get the AnnotatedLargeText for a given node.
+   * @param node a possibly null {@link FlowNode}
+   * @return The AnnotatedLargeText object representing the log text for this node, or null.
+   */
+  public static AnnotatedLargeText<? extends FlowNode> getLogText(@Nullable FlowNode node) {
+    if (node != null) {
+      LogAction logAction = node.getAction(LogAction.class);
+      if (logAction != null) {
+        return logAction.getLogText();
+      }
+    }
+    return null;
+  }
+
+  /* Get the generated log text for a given node.
+   * @param log The AnnotatedLargeText object for a given node.
+   * @return The AnnotatedLargeText object representing the log text for this node, or null.
+   */
+  public static String convertLogToString(AnnotatedLargeText<? extends FlowNode> log)
+      throws IOException {
+    return convertLogToString(log, 0L);
+  }
+
+  /* Get the generated log text for a given node.
+   * @param log The AnnotatedLargeText object for a given node.
+   * @param startByte The byte to start parsing from.
+   * @return The AnnotatedLargeText object representing the log text for this node, or null.
+   */
+  public static String convertLogToString(
+      AnnotatedLargeText<? extends FlowNode> log, Long startByte) throws IOException {
+    Writer stringWriter = new StringBuilderWriter();
+    // NOTE: This returns the total length of the console log, not the received bytes.
+    long endByte = log.writeHtmlTo(startByte, stringWriter);
+    return stringWriter.toString();
+  }
+
+  /* The exception text from aa FlowNode.
+   * @param node a possibly null {@link FlowNode}
+   * @return A string representing the exception thrown from this node, or null.
+   */
+  public static String getExceptionText(@Nullable FlowNode node) {
+    if (node != null) {
+      String log = null;
+      ErrorAction error = node.getAction(ErrorAction.class);
+      if (error != null) {
+        Throwable exception = error.getError();
+        if (PipelineNodeUtil.isJenkinsFailureException(exception)) {
+          // If this is a Jenkins exception to mark a build failure then only return the mesage -
+          // the stack trace is unimportant as the message will be attached to the step.
+          log = exception.getMessage();
+        } else {
+          // If this is not a Jenkins failure exception, then we should print everything.
+          log = "Found unhandled " + exception.getClass().getName() + " exception:\n";
+          log += exception.getMessage() + "\n\t";
+          log +=
+              Arrays.stream(exception.getStackTrace())
+                  .map(s -> s.toString())
+                  .collect(Collectors.joining("\n\t"));
+        }
+      }
+      return log;
+    }
+    return null;
+  }
+
+  public static boolean isJenkinsFailureException(Throwable exception) {
+    if (exception instanceof AbortException) {
+      return true;
+    }
     return false;
   }
 }

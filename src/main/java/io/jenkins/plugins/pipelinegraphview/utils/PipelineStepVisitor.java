@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 import org.jenkinsci.plugins.pipeline.modeldefinition.actions.ExecutionModelAction;
-import org.jenkinsci.plugins.workflow.actions.PersistentAction;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepEndNode;
@@ -58,6 +57,9 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
   private InputAction inputAction;
 
   private final boolean declarative;
+
+  private ErrorAction unhandledException;
+  private FlowNode nodeThatThrewException;
 
   private boolean isLastNode;
   private FlowExecution execution;
@@ -237,6 +239,39 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
               .findFirst()
               .orElse(null);
     }
+
+    if (this.isLastNode) {
+      this.isLastNode = false;
+      // Check for an unhandled exception.
+      NodeRunStatus status;
+      ErrorAction errorAction = endNode.getAction(ErrorAction.class);
+      // If this is a Jenkins failure exception, then we don't need to add a new node - it will come
+      // from an existing step.
+      if (errorAction != null
+          && !PipelineNodeUtil.isJenkinsFailureException(errorAction.getError())) {
+        // Store node that threw exception as step so we can find it's parent stage later.
+        logger.info("Found unhandled exception: " + errorAction.getError().getMessage());
+        this.nodeThatThrewException =
+            errorAction.findOrigin(errorAction.getError(), this.execution);
+        logger.info(
+            "Found that node '"
+                + this.nodeThatThrewException.getId()
+                + "' threw unhandled exception: "
+                + this.nodeThatThrewException.getDisplayName());
+      }
+    }
+    // If this the the node that created the unhandled exception.
+    if (this.nodeThatThrewException == endNode) {
+      if (logger.isDebugEnabled()) {
+        logger.info("Found endNode that threw exception.");
+      }
+      pushExceptionNodeToStepsMap(endNode);
+    }
+    // if we're using marker-based (and not block-scoped) stages, add the last node as part of its
+    // contents
+    if (!(endNode instanceof BlockEndNode)) {
+      atomNode(null, endNode, afterChunk, scanner);
+    }
   }
 
   @Override
@@ -288,7 +323,7 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
                 + stepNode.getArgumentsAsString()
                 + ") to stack.");
       }
-      if (!stageSteps.contains(stepNode) ) {
+      if (!stageSteps.contains(stepNode)) {
         stageSteps.push(stepNode);
       }
       if (logger.isDebugEnabled()) {
@@ -297,6 +332,13 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
           logger.debug(" - " + step.getArgumentsAsString() + " - " + step.getId());
         }
       }
+    }
+    // If this the the node that created the unhandled exception.
+    if (this.nodeThatThrewException == atomNode) {
+      if (logger.isDebugEnabled()) {
+        logger.info("Found atomNode that threw exception.");
+      }
+      pushExceptionNodeToStepsMap(atomNode);
     }
   }
 
@@ -340,6 +382,35 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
 
     stageSteps.clear();
     stageStepMap.put(stage.getId(), stageStepsList);
+  }
+
+  private void pushExceptionNodeToStepsMap(FlowNode exceptionNode) {
+    long pause = PauseAction.getPauseDuration(exceptionNode);
+    TimingInfo times = StatusAndTiming.computeChunkTiming(run, pause, exceptionNode, exceptionNode, null);
+    if (times == null) {
+      times = new TimingInfo();
+    }
+    NodeRunStatus status;
+    status = new NodeRunStatus(exceptionNode);
+    pause = PauseAction.getPauseDuration(exceptionNode);
+    times = StatusAndTiming.computeChunkTiming(run, pause, exceptionNode, exceptionNode, null);
+    if (times == null) {
+      times = new TimingInfo();
+    }
+    FlowNodeWrapper erroredStep = new FlowNodeWrapper(exceptionNode, status, times, null, run);
+    stepMap.put(erroredStep.getId(), erroredStep);
+    if (logger.isDebugEnabled()) {
+      logger.info(
+          "Found step exception from step: "
+              + erroredStep.getId()
+              + "("
+              + erroredStep.getArgumentsAsString()
+              + ") to stack.\nError:\n"
+              + erroredStep.nodeError());
+    }
+    if (!stageSteps.contains(erroredStep)) {
+      stageSteps.push(erroredStep);
+    }
   }
 
   static class LocalAtomNode extends AtomNode {

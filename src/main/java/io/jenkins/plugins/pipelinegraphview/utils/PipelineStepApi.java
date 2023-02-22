@@ -25,22 +25,25 @@ public class PipelineStepApi {
         stepNodes.stream()
             .map(
                 flowNodeWrapper -> {
-                  String state = flowNodeWrapper.getStatus().getResult().name();
-                  // TODO: Why do we do this? Seems like it will return uppercase for some states
-                  // and lowercase for others?
+                  String state =
+                      flowNodeWrapper.getStatus().getResult().name().toLowerCase(Locale.ROOT);
                   if (flowNodeWrapper.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
                     state = flowNodeWrapper.getStatus().getState().name().toLowerCase(Locale.ROOT);
                   }
                   String displayName = flowNodeWrapper.getDisplayName();
-                  String stepArguments = flowNodeWrapper.getArgumentsAsString();
-                  if (stepArguments != null && !stepArguments.isEmpty()) {
-                    displayName = stepArguments + " - " + displayName;
-                  }
 
-                  // Use the step label as the displayName if set
-                  String labelDisplayName = flowNodeWrapper.getLabelDisplayName();
-                  if (labelDisplayName != null && !labelDisplayName.isEmpty()) {
-                    displayName = labelDisplayName;
+                  if (flowNodeWrapper.getType() == FlowNodeWrapper.NodeType.UNHANDLED_EXCEPTION) {
+                    displayName = "Pipeline error";
+                  } else {
+                    String stepArguments = flowNodeWrapper.getArgumentsAsString();
+                    if (stepArguments != null && !stepArguments.isEmpty()) {
+                      displayName = stepArguments + " - " + displayName;
+                    }
+                    // Use the step label as the displayName if set
+                    String labelDisplayName = flowNodeWrapper.getLabelDisplayName();
+                    if (labelDisplayName != null && !labelDisplayName.isEmpty()) {
+                      displayName = labelDisplayName;
+                    }
                   }
                   // Remove non-printable chars (e.g. ANSI color codes).
                   logger.debug("DisplayName Before: '" + displayName + "'.");

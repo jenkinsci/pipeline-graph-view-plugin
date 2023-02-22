@@ -386,7 +386,8 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
 
   private void pushExceptionNodeToStepsMap(FlowNode exceptionNode) {
     long pause = PauseAction.getPauseDuration(exceptionNode);
-    TimingInfo times = StatusAndTiming.computeChunkTiming(run, pause, exceptionNode, exceptionNode, null);
+    TimingInfo times =
+        StatusAndTiming.computeChunkTiming(run, pause, exceptionNode, exceptionNode, null);
     if (times == null) {
       times = new TimingInfo();
     }

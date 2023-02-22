@@ -311,7 +311,10 @@ public class PipelineStepApiTest {
     // long time)
     WorkflowRun run =
         TestUtils.createAndRunJob(
-            j, "githubIssue213_callsUnknownVariable", "callsUnknownVariable.jenkinsfile", Result.FAILURE);
+            j,
+            "githubIssue213_callsUnknownVariable",
+            "callsUnknownVariable.jenkinsfile",
+            Result.FAILURE);
 
     PipelineStepApi api = new PipelineStepApi(run);
 
@@ -323,6 +326,9 @@ public class PipelineStepApiTest {
     assertThat(errorStep.getName(), is("Pipeline error"));
     FlowNode node = run.getExecution().getNode(String.valueOf(errorStep.getId()));
     String errorText = PipelineNodeUtil.getExceptionText(node);
-    assertThat(errorText, startsWith("Found unhandled groovy.lang.MissingPropertyException exception:\nNo such property: undefined for class: groovy.lang.Binding"));
+    assertThat(
+        errorText,
+        startsWith(
+            "Found unhandled groovy.lang.MissingPropertyException exception:\nNo such property: undefined for class: groovy.lang.Binding"));
   }
 }

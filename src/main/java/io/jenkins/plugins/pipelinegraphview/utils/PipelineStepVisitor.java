@@ -255,11 +255,10 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
             errorAction.findOrigin(errorAction.getError(), this.execution);
         if (this.nodeThatThrewException) {
           logger.debug(
-            "Found that node '"
-                + this.nodeThatThrewException.getId()
-                + "' threw unhandled exception: "
-                + this.nodeThatThrewException.getDisplayName());
-
+              "Found that node '"
+                  + this.nodeThatThrewException.getId()
+                  + "' threw unhandled exception: "
+                  + this.nodeThatThrewException.getDisplayName());
         }
       }
     }

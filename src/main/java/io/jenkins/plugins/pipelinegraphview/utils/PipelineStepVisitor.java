@@ -59,9 +59,6 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
 
   private final boolean declarative;
 
-  private ErrorAction unhandledException;
-  private FlowNode nodeThatThrewException;
-
   private boolean isLastNode;
   private FlowExecution execution;
   private static final Logger logger = LoggerFactory.getLogger(PipelineStepVisitor.class);
@@ -240,24 +237,6 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
               .findFirst()
               .orElse(null);
     }
-
-    if (this.isLastNode) {
-      this.isLastNode = false;
-      // Check for unhandled exception.
-      NodeRunStatus status;
-      ErrorAction errorAction = endNode.getAction(ErrorAction.class);
-      if (errorAction != null)  {
-        // Store step that threw the exception so we can find it's parent stage.
-        logger.debug("Found unhandled exception: " + errorAction.getError().getMessage());
-        this.nodeThatThrewException = errorAction.findOrigin(errorAction.getError(), this.execution);
-        logger.debug("Found that node '" + this.nodeThatThrewException.getId() + "' threw unhandled exception: " + this.nodeThatThrewException.getDisplayName());
-      }
-    }
-    // if we're using marker-based (and not block-scoped) stages, add the last node as part of its
-    // contents
-    if (!(endNode instanceof BlockEndNode)) {
-      atomNode(null, endNode, afterChunk, scanner);
-    }
   }
 
   @Override
@@ -316,31 +295,6 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
         logger.debug("Steps in stack:");
         for (FlowNodeWrapper step : stageSteps) {
           logger.debug(" - " + step.getArgumentsAsString() + " - " + step.getId());
-        }
-      }
-    }
-    // If this the the node that created the unhandled exception.
-    if (this.nodeThatThrewException == atomNode) {
-      ErrorAction stepErrorAction = atomNode.getAction(ErrorAction.class);
-      status = new NodeRunStatus(atomNode);
-      pause = PauseAction.getPauseDuration(atomNode);
-      times = StatusAndTiming.computeChunkTiming(run, pause, atomNode, atomNode, null);
-      if (times == null) {
-        times = new TimingInfo();
-      }
-      FlowNodeWrapper erroredStep = new FlowNodeWrapper(atomNode, status, times, inputStep, run);
-      stepMap.put(erroredStep.getId(), erroredStep);
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            "Found step exception from step: "
-                + erroredStep.getId()
-                + "("
-                + erroredStep.getArgumentsAsString()
-                + ") to stack.\nError:\n"
-                + stepErrorAction.getError().getMessage()
-                );
-        if (!stageSteps.contains(erroredStep) ) {
-          stageSteps.push(erroredStep);
         }
       }
     }

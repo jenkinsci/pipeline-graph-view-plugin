@@ -253,7 +253,7 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
         logger.debug("Found unhandled exception: " + errorAction.getError().getMessage());
         this.nodeThatThrewException =
             errorAction.findOrigin(errorAction.getError(), this.execution);
-        if (this.nodeThatThrewException) {
+        if (this.nodeThatThrewException != null) {
           logger.debug(
               "Found that node '"
                   + this.nodeThatThrewException.getId()

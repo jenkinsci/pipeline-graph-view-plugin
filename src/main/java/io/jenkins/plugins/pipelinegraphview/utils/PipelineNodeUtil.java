@@ -254,6 +254,7 @@ public class PipelineNodeUtil {
       AnnotatedLargeText<? extends FlowNode> log, Long startByte) throws IOException {
     Writer stringWriter = new StringBuilderWriter();
     // NOTE: This returns the total length of the console log, not the received bytes.
+    @SuppressWarnings("unused")
     long endByte = log.writeHtmlTo(startByte, stringWriter);
     return stringWriter.toString();
   }

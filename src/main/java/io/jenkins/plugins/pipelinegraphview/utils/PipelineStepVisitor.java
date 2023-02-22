@@ -250,20 +250,23 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
       if (errorAction != null
           && !PipelineNodeUtil.isJenkinsFailureException(errorAction.getError())) {
         // Store node that threw exception as step so we can find it's parent stage later.
-        logger.info("Found unhandled exception: " + errorAction.getError().getMessage());
+        logger.debug("Found unhandled exception: " + errorAction.getError().getMessage());
         this.nodeThatThrewException =
             errorAction.findOrigin(errorAction.getError(), this.execution);
-        logger.info(
+        if (this.nodeThatThrewException) {
+          logger.debug(
             "Found that node '"
                 + this.nodeThatThrewException.getId()
                 + "' threw unhandled exception: "
                 + this.nodeThatThrewException.getDisplayName());
+
+        }
       }
     }
     // If this the the node that created the unhandled exception.
     if (this.nodeThatThrewException == endNode) {
       if (logger.isDebugEnabled()) {
-        logger.info("Found endNode that threw exception.");
+        logger.debug("Found endNode that threw exception.");
       }
       pushExceptionNodeToStepsMap(endNode);
     }
@@ -291,10 +294,6 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
     if (atomNode instanceof StepAtomNode
         && !PipelineNodeUtil.isSkippedStage(
             currentStage)) { // if skipped stage, we don't collect its steps
-
-      if (times == null) {
-        times = new TimingInfo();
-      }
 
       if (PipelineNodeUtil.isPausedForInputStep((StepAtomNode) atomNode, inputAction)) {
         status = new NodeRunStatus(BlueRun.BlueRunResult.UNKNOWN, BlueRun.BlueRunState.PAUSED);
@@ -336,7 +335,7 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
     // If this the the node that created the unhandled exception.
     if (this.nodeThatThrewException == atomNode) {
       if (logger.isDebugEnabled()) {
-        logger.info("Found atomNode that threw exception.");
+        logger.debug("Found atomNode that threw exception.");
       }
       pushExceptionNodeToStepsMap(atomNode);
     }
@@ -401,7 +400,7 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
     FlowNodeWrapper erroredStep = new FlowNodeWrapper(exceptionNode, status, times, null, run);
     stepMap.put(erroredStep.getId(), erroredStep);
     if (logger.isDebugEnabled()) {
-      logger.info(
+      logger.debug(
           "Found step exception from step: "
               + erroredStep.getId()
               + "("

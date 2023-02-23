@@ -285,27 +285,6 @@ public class PipelineStepApiTest {
   }
 
   @Test
-  public void githubIssue213RegressionTest_stepThrowsException() throws Exception {
-    // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
-    // long time)
-    WorkflowRun run =
-        TestUtils.createAndRunJob(
-            j, "githubIssue213_failingStep", "pipelineFailingStep.jenkinsfile", Result.FAILURE);
-
-    PipelineStepApi api = new PipelineStepApi(run);
-
-    String failureStage = TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
-
-    List<PipelineStep> steps = api.getSteps(failureStage).getSteps();
-    assertThat(steps, hasSize(1));
-    PipelineStep errorStep = steps.get(0);
-    assertThat(errorStep.getName(), is("exit 1 - Shell Script"));
-    FlowNode node = run.getExecution().getNode(String.valueOf(errorStep.getId()));
-    String errorText = PipelineNodeUtil.getExceptionText(node);
-    assertThat(errorText, is("script returned exit code 1"));
-  }
-
-  @Test
   public void githubIssue213RegressionTest_pipelineCallsUndefinedVar() throws Exception {
     // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
     // long time)

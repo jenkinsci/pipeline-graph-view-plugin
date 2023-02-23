@@ -173,6 +173,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
               container
               xs={16}
               sx={{ display: "block", margin: "auto" }}
+              width="80%"
             >
               <Typography
                 className="log-card-header"

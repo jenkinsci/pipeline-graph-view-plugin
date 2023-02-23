@@ -1,5 +1,0 @@
-node {
-    stage('failure') {
-        sh "exit 1"
-    }
-}

@@ -95,7 +95,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
    */
   @GET
   @WebMethod(name = "consoleOutput")
-  public HttpResponse getConsolOutput(StaplerRequest req) throws IOException {
+  public HttpResponse getConsoleOutput(StaplerRequest req) throws IOException {
     String nodeId = req.getParameter("nodeId");
     if (nodeId == null) {
       logger.error("'consoleJson' was not passed 'nodeId'.");
@@ -131,11 +131,11 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         }
         // if startByte is negative make sure we don't try and get a byte before 0.
         if (startByte < 0) {
-          logger.info(
+          logger.debug(
               "consoleJson - requested negative startByte '" + Long.toString(startByte) + "'.");
           startByte = textLength + startByte;
           if (startByte < 0) {
-            logger.info(
+            logger.debug(
                 "consoleJson - requested negative startByte '"
                     + Long.toString(startByte)
                     + "' out of bounds, setting to 0.");
@@ -143,10 +143,10 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
           }
         }
 
-        logger.info(
+        logger.debug(
             "Returning '"
                 + Long.toString(textLength - startByte)
-                + "' bytes from 'getConsolOutput'.");
+                + "' bytes from 'getConsoleOutput'.");
       } else {
         // If there is no text then set set startByte to 0 - as we have read from the start, there
         // is just nothing there.
@@ -188,10 +188,10 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
 
   private static long parseIntWithDefault(String s, long default_value) {
     try {
-      logger.info("Parsing user provided value of '" + s + "'");
+      logger.debug("Parsing user provided value of '" + s + "'");
       return Long.parseLong(s);
     } catch (NumberFormatException e) {
-      logger.info("Using default value of '" + default_value + "'");
+      logger.debug("Using default value of '" + default_value + "'");
       return default_value;
     }
   }

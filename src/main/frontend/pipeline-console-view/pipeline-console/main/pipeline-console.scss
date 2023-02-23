@@ -246,6 +246,10 @@ pre.console-output-line {
   color: currentColor !important;
 }
 
+.svg-icon--expand {
+  color: var(--step-text-color);
+}
+
 // Console styling
 a.console-line-number {
   text-align: right;

@@ -58,7 +58,8 @@ public class FlowNodeWrapper {
   public enum NodeType {
     STAGE,
     PARALLEL,
-    STEP
+    STEP,
+    UNHANDLED_EXCEPTION,
   }
 
   private final FlowNode node;
@@ -122,6 +123,8 @@ public class FlowNodeWrapper {
       return NodeType.PARALLEL;
     } else if (node instanceof AtomNode) {
       return NodeType.STEP;
+    } else if (PipelineNodeUtil.isUnhandledException(node)) {
+      return NodeType.UNHANDLED_EXCEPTION;
     }
     throw new IllegalArgumentException(
         String.format("Unknown FlowNode %s, type: %s", node.getId(), node.getClass()));
@@ -289,5 +292,9 @@ public class FlowNodeWrapper {
 
   public boolean isSynthetic() {
     return PipelineNodeUtil.isSyntheticStage(node);
+  }
+
+  public boolean isUnhandledException() {
+    return PipelineNodeUtil.isUnhandledException(node);
   }
 }

@@ -1,0 +1,4 @@
+stage('failure') {
+    echo "This will work"
+    echo "THis won't - calling an undefined variable ${undefined}"
+}

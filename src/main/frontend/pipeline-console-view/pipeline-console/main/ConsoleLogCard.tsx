@@ -152,6 +152,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
       <Card
         className="step-detail-group"
         key={`step-card-${this.props.step.id}`}
+        style={{ marginBottom: "5px" }}
       >
         <CardActionArea
           onClick={this.handleStepToggle}

@@ -152,7 +152,6 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
       <Card
         className="step-detail-group"
         key={`step-card-${this.props.step.id}`}
-        style={{ margin: "5px", padding: "5px" }}
       >
         <CardActionArea
           onClick={this.handleStepToggle}
@@ -226,7 +225,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
               >
                 <ExpandMoreIcon
                   key={`step-expand-icon-${this.props.step.id}`}
-                  className="svg-icon"
+                  className="svg-icon svg-icon--expand"
                 />
               </ExpandMore>
             </Grid>

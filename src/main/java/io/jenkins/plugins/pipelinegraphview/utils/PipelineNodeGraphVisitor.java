@@ -322,9 +322,7 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
           dump(
               String.format(
                   "handleChunkDone=> WARNING: nextStage is null! Unable for assign parent stage for stage [id: %s, name: %s, function: %s]",
-                  stage.getId(),
-                  stage.getDisplayName(),
-                  stage.getNode().getDisplayFunctionName()));
+                  stage.getId(), stage.getDisplayName(), stage.getNode().getDisplayFunctionName()));
         }
       }
       for (FlowNodeWrapper p : parallelBranches) {
@@ -338,9 +336,7 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
         dump(
             String.format(
                 "handleChunkDone=> setting nextStage to: [id: %s, name: %s, function: %s]",
-                stage.getId(),
-                stage.getDisplayName(),
-                stage.getNode().getDisplayFunctionName()));
+                stage.getId(), stage.getDisplayName(), stage.getNode().getDisplayFunctionName()));
       }
       this.nextStage = stage;
     }

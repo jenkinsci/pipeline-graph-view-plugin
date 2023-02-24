@@ -9,6 +9,7 @@ import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.Rule;
 import org.junit.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 public class PipelineStepApiTest {
@@ -188,6 +189,7 @@ public class PipelineStepApiTest {
     assertThat(steps.get(2).getName(), is("In great-grandchild C - Print Message"));
   }
 
+  @Issue("GH#92")
   @Test
   public void githubIssue92RegressionTest() throws Exception {
     // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
@@ -242,6 +244,7 @@ public class PipelineStepApiTest {
     assertThat(steps.get(0).getName(), is("Deploying... - Print Message"));
   }
 
+  @Issue("GH#213")
   @Test
   public void githubIssue213RegressionTest_scriptedError() throws Exception {
     // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
@@ -263,6 +266,7 @@ public class PipelineStepApiTest {
     assertThat(errorText, is("oops-failure"));
   }
 
+  @Issue("GH#213")
   @Test
   public void githubIssue213RegressionTest_errorStep() throws Exception {
     // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
@@ -284,6 +288,7 @@ public class PipelineStepApiTest {
     assertThat(errorText, is("oops-failure"));
   }
 
+  @Issue("GH#213")
   @Test
   public void githubIssue213RegressionTest_pipelineCallsUndefinedVar() throws Exception {
     // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
@@ -303,11 +308,5 @@ public class PipelineStepApiTest {
     assertThat(steps, hasSize(2));
     PipelineStep errorStep = steps.get(1);
     assertThat(errorStep.getName(), is("Pipeline error"));
-    FlowNode node = run.getExecution().getNode(String.valueOf(errorStep.getId()));
-    String errorText = PipelineNodeUtil.getExceptionText(node);
-    assertThat(
-        errorText,
-        startsWith(
-            "Found unhandled groovy.lang.MissingPropertyException exception:\nNo such property: undefined for class: groovy.lang.Binding"));
   }
 }

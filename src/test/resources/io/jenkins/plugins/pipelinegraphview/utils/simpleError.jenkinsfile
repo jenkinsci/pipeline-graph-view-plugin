@@ -1,0 +1,3 @@
+stage("A") {
+    error("This is an error")
+}

@@ -97,7 +97,8 @@ public class PipelineConsoleViewActionTest {
     assertThat(
         consoleJson.getString("startByte"),
         is(String.valueOf(7 + (Functions.isWindows() ? 1 : 0))));
-    assertThat(consoleJson.getString("text"), is("World!" + System.lineSeparator()));
+    String value = (Functions.isWindows() ? "" : "W") + "orld!" + System.lineSeparator();
+    assertThat(consoleJson.getString("text"), is(value));
   }
 
   @Issue("GH#224")

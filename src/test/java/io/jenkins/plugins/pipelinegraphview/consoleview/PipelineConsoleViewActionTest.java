@@ -3,6 +3,7 @@ package io.jenkins.plugins.pipelinegraphview.consoleview;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
+import hudson.Functions;
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepVisitor;
@@ -93,7 +94,7 @@ public class PipelineConsoleViewActionTest {
     JSONObject consoleJson = consoleAction.getConsoleOutputJson(echoStep.getId(), -7L);
     // 14-7
     assertThat(consoleJson.getString("endByte"), is(String.valueOf(TEXT.length())));
-    assertThat(consoleJson.getString("startByte"), is("7"));
+    assertThat(consoleJson.getString("startByte"), is(String.valueOf(7 + (Functions.isWindows() ? 1 : 0))));
     assertThat(consoleJson.getString("text"), is("World!" + System.lineSeparator()));
   }
 

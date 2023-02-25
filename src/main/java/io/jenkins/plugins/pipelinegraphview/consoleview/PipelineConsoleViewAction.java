@@ -125,7 +125,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
       throws IOException {
     Long startByte = 0L;
     long endByte = 0L;
-    long textLength = 0L;
+    long textLength;
     String text = "";
     // If this is an exception, return the exception text (inc. stacktrace).
     if (isUnhandledException(nodeId)) {
@@ -137,7 +137,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
       AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
 
       if (logText != null) {
-        textLength = (long) logText.length();
+        textLength = logText.length();
         // postitive startByte
         if (requestStartByte > textLength) {
           // Avoid resource leak.
@@ -148,13 +148,13 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         if (requestStartByte < 0L) {
           logger.debug(
               "consoleJson - requested negative startByte '"
-                  + Long.toString(requestStartByte)
+                  + requestStartByte
                   + "'.");
           startByte = textLength + requestStartByte;
           if (startByte < 0L) {
             logger.debug(
                 "consoleJson - requested negative startByte '"
-                    + Long.toString(requestStartByte)
+                    + requestStartByte
                     + "' out of bounds, starting at 0.");
             startByte = 0L;
           }
@@ -163,13 +163,13 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         }
         logger.debug(
             "Returning '"
-                + Long.toString(textLength - startByte)
+                + (textLength - startByte)
                 + "' bytes from 'getConsoleOutput'.");
         text = PipelineNodeUtil.convertLogToString(logText, startByte);
         endByte = textLength;
       }
     }
-    HashMap<String, Object> response = new HashMap<String, Object>();
+    HashMap<String, Object> response = new HashMap<>();
     response.put("text", text);
     response.put("startByte", startByte);
     response.put("endByte", endByte);
@@ -202,13 +202,13 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     return false;
   }
 
-  private static long parseIntWithDefault(String s, long default_value) {
+  private static long parseIntWithDefault(String s, long defaultValue) {
     try {
       logger.debug("Parsing user provided value of '" + s + "'");
       return Long.parseLong(s);
     } catch (NumberFormatException e) {
-      logger.debug("Using default value of '" + default_value + "'");
-      return default_value;
+      logger.debug("Using default value of '" + defaultValue + "'");
+      return defaultValue;
     }
   }
 }

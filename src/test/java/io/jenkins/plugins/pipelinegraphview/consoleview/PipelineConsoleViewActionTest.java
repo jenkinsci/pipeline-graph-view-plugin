@@ -18,6 +18,8 @@ import org.jvnet.hudson.test.JenkinsRule;
 public class PipelineConsoleViewActionTest {
   @Rule public JenkinsRule j = new JenkinsRule();
 
+  private static final String TEXT = "Hello, World!" + System.lineSeparator();
+
   @Issue("GH#224")
   @Test
   public void getConsoleLogReturnLogText() throws Exception {
@@ -32,9 +34,9 @@ public class PipelineConsoleViewActionTest {
 
     PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
     JSONObject consoleJson = consoleAction.getConsoleOutputJson(echoStep.getId(), 0L);
-    assertThat(consoleJson.getString("endByte"), is("14"));
+    assertThat(consoleJson.getString("endByte"), is(TEXT.length()));
     assertThat(consoleJson.getString("startByte"), is("0"));
-    assertThat(consoleJson.getString("text"), is("Hello, World!\n"));
+    assertThat(consoleJson.getString("text"), is(TEXT));
   }
 
   @Issue("GH#224")
@@ -70,14 +72,14 @@ public class PipelineConsoleViewActionTest {
 
     PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
     JSONObject consoleJson = consoleAction.getConsoleOutputJson(echoStep.getId(), 7L);
-    assertThat(consoleJson.getString("endByte"), is("14"));
+    assertThat(consoleJson.getString("endByte"), is(TEXT.length()));
     assertThat(consoleJson.getString("startByte"), is("7"));
-    assertThat(consoleJson.getString("text"), is("World!\n"));
+    assertThat(consoleJson.getString("text"), is("World!" + System.lineSeparator()));
   }
 
   @Issue("GH#224")
   @Test
-  public void cgetConsoleLogReturnLogTextWithNegativeOffset() throws Exception {
+  public void getConsoleLogReturnLogTextWithNegativeOffset() throws Exception {
     WorkflowRun run =
         TestUtils.createAndRunJob(
             j, "hello_world_scripted", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
@@ -90,9 +92,9 @@ public class PipelineConsoleViewActionTest {
     PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
     JSONObject consoleJson = consoleAction.getConsoleOutputJson(echoStep.getId(), -7L);
     // 14-7
-    assertThat(consoleJson.getString("endByte"), is("14"));
+    assertThat(consoleJson.getString("endByte"), is(TEXT.length()));
     assertThat(consoleJson.getString("startByte"), is("7"));
-    assertThat(consoleJson.getString("text"), is("World!\n"));
+    assertThat(consoleJson.getString("text"), is("World!" + System.lineSeparator()));
   }
 
   @Issue("GH#224")
@@ -109,9 +111,9 @@ public class PipelineConsoleViewActionTest {
 
     PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
     JSONObject consoleJson = consoleAction.getConsoleOutputJson(echoStep.getId(), -1000L);
-    assertThat(consoleJson.getString("endByte"), is("14"));
+    assertThat(consoleJson.getString("endByte"), is(TEXT.length()));
     assertThat(consoleJson.getString("startByte"), is("0"));
-    assertThat(consoleJson.getString("text"), is("Hello, World!\n"));
+    assertThat(consoleJson.getString("text"), is(TEXT));
   }
 
   @Issue("GH#224")

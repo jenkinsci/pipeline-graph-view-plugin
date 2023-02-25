@@ -30,7 +30,7 @@ public class PipelineNodeUtilTest {
     AnnotatedLargeText<? extends FlowNode> logText =
         PipelineNodeUtil.getLogText(echoStep.getNode());
     String logString = PipelineNodeUtil.convertLogToString(logText);
-    assertThat(logString, is("Hello, World!\n"));
+    assertThat(logString, is("Hello, World!" + System.lineSeparator()));
   }
 
   @Issue("GH#224")

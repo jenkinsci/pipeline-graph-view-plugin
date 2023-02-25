@@ -27,6 +27,8 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
   private final WorkflowRun target;
   private final PipelineStepApi stepApi;
 
+  private static final ObjectMapper MAPPER = new ObjectMapper();
+
   public PipelineConsoleViewAction(WorkflowRun target) {
     super(target);
     this.target = target;
@@ -61,12 +63,10 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     }
   }
 
-  // Private method for testing.
-  protected JSONObject getSteps(String nodeId) throws IOException {
+  private JSONObject getSteps(String nodeId) throws IOException {
     logger.debug("getSteps was passed nodeId '" + nodeId + "'.");
-    ObjectMapper mapper = new ObjectMapper();
     PipelineStepList steps = stepApi.getSteps(nodeId);
-    String stepsJson = mapper.writeValueAsString(steps);
+    String stepsJson = MAPPER.writeValueAsString(steps);
     if (logger.isDebugEnabled()) {
       logger.debug("Steps: '" + stepsJson + "'.");
     }
@@ -83,9 +83,8 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
 
   // Private method for testing.
   protected JSONObject getAllSteps() throws IOException {
-    ObjectMapper mapper = new ObjectMapper();
     PipelineStepList steps = stepApi.getAllSteps();
-    String stepsJson = mapper.writeValueAsString(steps);
+    String stepsJson = MAPPER.writeValueAsString(steps);
     if (logger.isDebugEnabled()) {
       logger.debug("Steps: '" + stepsJson + "'.");
     }

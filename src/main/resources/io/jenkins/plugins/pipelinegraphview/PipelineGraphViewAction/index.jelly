@@ -34,6 +34,10 @@
               </button>
             </l:hasPermission>
           </j:if>
+          <a href="../pipeline-console" class="jenkins-button">
+            <l:icon src="symbol-terminal-outline plugin-ionicons-api"/>
+            ${%Console}
+          </a>
           <l:hasPermission permission="${it.configurePermission}">
             <a href="../../configure" class="jenkins-button">
               ${%Configure}

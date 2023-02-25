@@ -34,7 +34,7 @@ public class PipelineConsoleViewActionTest {
 
     PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
     JSONObject consoleJson = consoleAction.getConsoleOutputJson(echoStep.getId(), 0L);
-    assertThat(consoleJson.getString("endByte"), is(TEXT.length()));
+    assertThat(consoleJson.getString("endByte"), is(String.valueOf(TEXT.length())));
     assertThat(consoleJson.getString("startByte"), is("0"));
     assertThat(consoleJson.getString("text"), is(TEXT));
   }
@@ -72,7 +72,7 @@ public class PipelineConsoleViewActionTest {
 
     PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
     JSONObject consoleJson = consoleAction.getConsoleOutputJson(echoStep.getId(), 7L);
-    assertThat(consoleJson.getString("endByte"), is(TEXT.length()));
+    assertThat(consoleJson.getString("endByte"), is(String.valueOf(TEXT.length())));
     assertThat(consoleJson.getString("startByte"), is("7"));
     assertThat(consoleJson.getString("text"), is("World!" + System.lineSeparator()));
   }
@@ -92,7 +92,7 @@ public class PipelineConsoleViewActionTest {
     PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
     JSONObject consoleJson = consoleAction.getConsoleOutputJson(echoStep.getId(), -7L);
     // 14-7
-    assertThat(consoleJson.getString("endByte"), is(TEXT.length()));
+    assertThat(consoleJson.getString("endByte"), is(String.valueOf(TEXT.length())));
     assertThat(consoleJson.getString("startByte"), is("7"));
     assertThat(consoleJson.getString("text"), is("World!" + System.lineSeparator()));
   }
@@ -111,7 +111,7 @@ public class PipelineConsoleViewActionTest {
 
     PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
     JSONObject consoleJson = consoleAction.getConsoleOutputJson(echoStep.getId(), -1000L);
-    assertThat(consoleJson.getString("endByte"), is(TEXT.length()));
+    assertThat(consoleJson.getString("endByte"), is(String.valueOf(TEXT.length())));
     assertThat(consoleJson.getString("startByte"), is("0"));
     assertThat(consoleJson.getString("text"), is(TEXT));
   }

@@ -146,10 +146,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         }
         // if startByte is negative make sure we don't try and get a byte before 0.
         if (requestStartByte < 0L) {
-          logger.debug(
-              "consoleJson - requested negative startByte '"
-                  + requestStartByte
-                  + "'.");
+          logger.debug("consoleJson - requested negative startByte '" + requestStartByte + "'.");
           startByte = textLength + requestStartByte;
           if (startByte < 0L) {
             logger.debug(
@@ -161,10 +158,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         } else {
           startByte = requestStartByte;
         }
-        logger.debug(
-            "Returning '"
-                + (textLength - startByte)
-                + "' bytes from 'getConsoleOutput'.");
+        logger.debug("Returning '" + (textLength - startByte) + "' bytes from 'getConsoleOutput'.");
         text = PipelineNodeUtil.convertLogToString(logText, startByte);
         endByte = textLength;
       }

@@ -103,7 +103,7 @@ export class TruncatingLabel extends React.Component<Props> {
       <div
         style={mergedStyle}
         className={"TruncatingLabel " + className}
-        title={this.innerText}
+        title={this.completeText}
       >
         {this.innerText}
       </div>

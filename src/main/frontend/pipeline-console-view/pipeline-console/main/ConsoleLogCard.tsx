@@ -100,7 +100,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
     let mib = 1024 * 1024;
     let gib = 1024 * 1024 * 1024;
     if (size < kib) {
-      return `${size}b`;
+      return `${size}B`;
     } else if (size < mib) {
       return `${(size / kib).toFixed(2)}KiB`;
     } else if (size < gib) {

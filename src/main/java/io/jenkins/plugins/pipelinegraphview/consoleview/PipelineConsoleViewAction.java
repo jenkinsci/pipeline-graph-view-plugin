@@ -27,6 +27,8 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
   private final WorkflowRun target;
   private final PipelineStepApi stepApi;
 
+  private static final ObjectMapper MAPPER = new ObjectMapper();
+
   public PipelineConsoleViewAction(WorkflowRun target) {
     super(target);
     this.target = target;
@@ -55,35 +57,41 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
   public HttpResponse getSteps(StaplerRequest req) throws IOException {
     String nodeId = req.getParameter("nodeId");
     if (nodeId != null) {
-      logger.debug("getSteps was passed nodeId '" + nodeId + "'.");
-      ObjectMapper mapper = new ObjectMapper();
-      PipelineStepList steps = stepApi.getSteps(nodeId);
-      String stepsJson = mapper.writeValueAsString(steps);
-      if (logger.isDebugEnabled()) {
-        logger.debug("Steps: '" + stepsJson + "'.");
-      }
-      return HttpResponses.okJSON(JSONObject.fromObject(stepsJson));
+      return HttpResponses.okJSON(getSteps(nodeId));
     } else {
       return HttpResponses.errorJSON("Error getting console text");
     }
   }
 
+  private JSONObject getSteps(String nodeId) throws IOException {
+    logger.debug("getSteps was passed nodeId '" + nodeId + "'.");
+    PipelineStepList steps = stepApi.getSteps(nodeId);
+    String stepsJson = MAPPER.writeValueAsString(steps);
+    if (logger.isDebugEnabled()) {
+      logger.debug("Steps: '" + stepsJson + "'.");
+    }
+    return JSONObject.fromObject(stepsJson);
+  }
   // Return all steps to:
   // - reduce number of API calls
   // - remove dependency of getting list of stages in frontend.
   @GET
   @WebMethod(name = "allSteps")
   public HttpResponse getAllSteps(StaplerRequest req) throws IOException {
-    ObjectMapper mapper = new ObjectMapper();
+    return HttpResponses.okJSON(getAllSteps());
+  }
+
+  // Private method for testing.
+  protected JSONObject getAllSteps() throws IOException {
     PipelineStepList steps = stepApi.getAllSteps();
-    String stepsJson = mapper.writeValueAsString(steps);
+    String stepsJson = MAPPER.writeValueAsString(steps);
     if (logger.isDebugEnabled()) {
       logger.debug("Steps: '" + stepsJson + "'.");
     }
-    return HttpResponses.okJSON(JSONObject.fromObject(stepsJson));
+    return JSONObject.fromObject(stepsJson);
   }
 
-  /* Get pre-parsed console output in json format.
+  /*
    * The default behavior of this functions differs from 'getConsoleOutput' in that it will use LOG_THRESHOLD from the end of the string.
    * Note: if 'startByte' is negative and falls outside of the console text then we will start from byte 0.
    * Example:
@@ -102,10 +110,22 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
       return HttpResponses.errorJSON("Error getting console json");
     }
     logger.debug("getConsoleOutput was passed node id '" + nodeId + "'.");
+    // This will be a step, so return it's log output.
+    // startByte to start getting data from. If negative will startByte from end of string with
+    // LOG_THRESHOLD.
+    Long startByte = parseIntWithDefault(req.getParameter("startByte"), -LOG_THRESHOLD);
+    JSONObject data = getConsoleOutputJson(nodeId, startByte);
+    if (data == null) {
+      return HttpResponses.errorJSON("Something went wrong - check Jenkins logs.");
+    }
+    return HttpResponses.okJSON(data);
+  }
 
+  protected JSONObject getConsoleOutputJson(String nodeId, Long requestStartByte)
+      throws IOException {
     Long startByte = 0L;
     long endByte = 0L;
-    long textLength = 0L;
+    long textLength;
     String text = "";
     // If this is an exception, return the exception text (inc. stacktrace).
     if (isUnhandledException(nodeId)) {
@@ -114,57 +134,47 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
       text = getNodeExceptionText(nodeId);
       endByte = text.length();
     } else {
-      // This will be a step, so return it's log output.
-      // startByte to start getting data from. If negative will startByte from end of string with
-      // LOG_THRESHOLD.
-      startByte = parseIntWithDefault(req.getParameter("startByte"), -LOG_THRESHOLD);
-
       AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
 
       if (logText != null) {
         textLength = logText.length();
         // postitive startByte
-        if (startByte > textLength) {
+        if (requestStartByte > textLength) {
           // Avoid resource leak.
           logger.error("consoleJson - user requested startByte larger than console output.");
-          return HttpResponses.errorJSON("startByte too large.");
+          return null;
         }
         // if startByte is negative make sure we don't try and get a byte before 0.
-        if (startByte < 0) {
-          logger.debug(
-              "consoleJson - requested negative startByte '" + Long.toString(startByte) + "'.");
-          startByte = textLength + startByte;
-          if (startByte < 0) {
+        if (requestStartByte < 0L) {
+          logger.debug("consoleJson - requested negative startByte '" + requestStartByte + "'.");
+          startByte = textLength + requestStartByte;
+          if (startByte < 0L) {
             logger.debug(
                 "consoleJson - requested negative startByte '"
-                    + Long.toString(startByte)
-                    + "' out of bounds, setting to 0.");
+                    + requestStartByte
+                    + "' out of bounds, starting at 0.");
             startByte = 0L;
           }
+        } else {
+          startByte = requestStartByte;
         }
-
-        logger.debug(
-            "Returning '"
-                + Long.toString(textLength - startByte)
-                + "' bytes from 'getConsoleOutput'.");
-      } else {
-        // If there is no text then set set startByte to 0 - as we have read from the start, there
-        // is just nothing there.
-        startByte = 0L;
+        logger.debug("Returning '" + (textLength - startByte) + "' bytes from 'getConsoleOutput'.");
+        text = PipelineNodeUtil.convertLogToString(logText, startByte);
+        endByte = textLength;
       }
     }
-    HashMap<String, Object> response = new HashMap<String, Object>();
+    HashMap<String, Object> response = new HashMap<>();
     response.put("text", text);
     response.put("startByte", startByte);
     response.put("endByte", endByte);
-    return HttpResponses.okJSON(JSONObject.fromObject(response));
+    return JSONObject.fromObject(response);
   }
 
   private AnnotatedLargeText<? extends FlowNode> getLogForNode(String nodeId) throws IOException {
     FlowExecution execution = target.getExecution();
     if (execution != null) {
       logger.debug("getLogForNode found execution.");
-      PipelineNodeUtil.getLogText(execution.getNode(nodeId));
+      return PipelineNodeUtil.getLogText(execution.getNode(nodeId));
     }
     return null;
   }
@@ -186,13 +196,13 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     return false;
   }
 
-  private static long parseIntWithDefault(String s, long default_value) {
+  private static long parseIntWithDefault(String s, long defaultValue) {
     try {
       logger.debug("Parsing user provided value of '" + s + "'");
       return Long.parseLong(s);
     } catch (NumberFormatException e) {
-      logger.debug("Using default value of '" + default_value + "'");
-      return default_value;
+      logger.debug("Using default value of '" + defaultValue + "'");
+      return defaultValue;
     }
   }
 }

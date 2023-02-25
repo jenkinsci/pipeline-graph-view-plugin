@@ -251,7 +251,7 @@ export class PipelineConsole extends React.Component<
           );
           let promise = this.getConsoleTextOffset(stepId, startByte);
           promise.then((res) => {
-            step.consoleLines = res.text.split("\n") || [];
+            step.consoleLines = res.text.trimEnd().split("\n") || [];
             step.consoleStartByte = res.startByte;
             step.consoleEndByte = res.endByte;
             this.setState({

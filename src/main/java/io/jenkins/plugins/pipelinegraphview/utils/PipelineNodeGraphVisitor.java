@@ -73,8 +73,7 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
 
   private static final Logger logger = LoggerFactory.getLogger(PipelineNodeGraphVisitor.class);
 
-  private final boolean isNodeVisitorDumpEnabled =
-      Boolean.getBoolean("NODE-DUMP-ENABLED") && logger.isDebugEnabled();
+  private final boolean isNodeVisitorDumpEnabled = logger.isTraceEnabled();
 
   private final Stack<FlowNode> nestedStages = new Stack<>();
   private final Stack<FlowNode> nestedbranches = new Stack<>();
@@ -146,7 +145,6 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
   public void chunkEnd(
       @NonNull FlowNode endNode, @CheckForNull FlowNode afterBlock, @NonNull ForkScanner scanner) {
     super.chunkEnd(endNode, afterBlock, scanner);
-
     if (isNodeVisitorDumpEnabled) {
       dump(
           String.format(
@@ -199,7 +197,6 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
           "chunk.getLastNode() is marked non null but is null sometimes, when JENKINS-40200 is fixed we will remove this check ")
   @Override
   protected void handleChunkDone(@NonNull MemoryFlowChunk chunk) {
-
     if (isNodeVisitorDumpEnabled) {
       dump(
           String.format(
@@ -214,14 +211,6 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
     // it's nested stages inside parallel so let's collect them later
     if (!parallelEnds.isEmpty()) {
       parallelNestedStages = true;
-    }
-
-    if (!nestedStages.empty()) {
-      FlowNode discarded = nestedStages.pop(); // we throw away first nested stage
-      // nested stages not supported in scripted pipeline.
-      if (!nestedStages.isEmpty() && !isDeclarative()) {
-        return;
-      }
     }
 
     TimingInfo times = null;
@@ -289,6 +278,17 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
       Iterator<FlowNodeWrapper> branches = parallelBranches.descendingIterator();
       while (branches.hasNext()) {
         FlowNodeWrapper p = branches.next();
+        if (isNodeVisitorDumpEnabled) {
+          dump(
+              String.format(
+                  "handleChunkDone=> found node [id: %s, name: %s, function: %s] is child of [id: %s, name: %s, function: %s] - parallelBranches",
+                  p.getId(),
+                  p.getDisplayName(),
+                  p.getNode().getDisplayFunctionName(),
+                  stage.getId(),
+                  stage.getDisplayName(),
+                  stage.getNode().getDisplayFunctionName()));
+        }
         p.addParent(stage);
         stage.addEdge(p);
       }
@@ -303,8 +303,27 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
         }
       }
       if (nextStage != null && !parallelNestedStages) {
+        if (isNodeVisitorDumpEnabled) {
+          dump(
+              String.format(
+                  "handleChunkDone=> found node [id: %s, name: %s, function: %s] is child of [id: %s, name: %s, function: %s]",
+                  nextStage.getId(),
+                  nextStage.getDisplayName(),
+                  nextStage.getNode().getDisplayFunctionName(),
+                  stage.getId(),
+                  stage.getDisplayName(),
+                  stage.getNode().getDisplayFunctionName()));
+        }
         nextStage.addParent(stage);
         stage.addEdge(nextStage);
+      }
+      if (nextStage == null) {
+        if (isNodeVisitorDumpEnabled) {
+          dump(
+              String.format(
+                  "handleChunkDone=> WARNING: nextStage is null! Unable for assign parent stage for stage [id: %s, name: %s, function: %s]",
+                  stage.getId(), stage.getDisplayName(), stage.getNode().getDisplayFunctionName()));
+        }
       }
       for (FlowNodeWrapper p : parallelBranches) {
         nodes.remove(p);
@@ -313,6 +332,12 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
     }
     parallelBranches.clear();
     if (!parallelNestedStages) {
+      if (isNodeVisitorDumpEnabled) {
+        dump(
+            String.format(
+                "handleChunkDone=> setting nextStage to: [id: %s, name: %s, function: %s]",
+                stage.getId(), stage.getDisplayName(), stage.getNode().getDisplayFunctionName()));
+      }
       this.nextStage = stage;
     }
   }
@@ -462,6 +487,17 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
               if (isNodeVisitorDumpEnabled) {
                 dump("\t\tNested labelling stage detected");
               }
+              if (isNodeVisitorDumpEnabled) {
+                dump(
+                    String.format(
+                        "parallelStart=> found node [id: %s, name: %s, function: %s] is child of [id: %s, name: %s, function: %s] - declarative",
+                        firstNodeWrapper.getId(),
+                        firstNodeWrapper.getDisplayName(),
+                        firstNodeWrapper.getNode().getDisplayFunctionName(),
+                        branch.getId(),
+                        branch.getDisplayName(),
+                        branch.getNode().getDisplayFunctionName()));
+              }
               branch.addEdge(firstNodeWrapper);
               firstNodeWrapper.addParent(branch);
               nodes.add(firstNodeWrapper);
@@ -473,6 +509,17 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
           while (!stack.isEmpty()) {
             // Grab next, link to prev, add to result
             FlowNodeWrapper currentStage = stack.pop();
+            if (isNodeVisitorDumpEnabled) {
+              dump(
+                  String.format(
+                      "parallelStart=> found node [id: %s, name: %s, function: %s] is child of [id: %s, name: %s, function: %s]",
+                      currentStage.getId(),
+                      currentStage.getDisplayName(),
+                      currentStage.getNode().getDisplayFunctionName(),
+                      previousNode.getId(),
+                      previousNode.getDisplayName(),
+                      previousNode.getNode().getDisplayFunctionName()));
+            }
             previousNode.addEdge(currentStage);
             currentStage.addParent(previousNode);
             nodes.add(currentStage);
@@ -629,7 +676,7 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
   }
 
   private void dump(String str) {
-    logger.info(System.identityHashCode(this) + ": " + str);
+    logger.trace(System.identityHashCode(this) + ": " + str);
   }
 
   /**
@@ -705,6 +752,14 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
         nodes.push(synStage);
         nodeMap.put(synStage.getId(), synStage);
         parallelBranches.clear();
+        if (isNodeVisitorDumpEnabled) {
+          dump(
+              String.format(
+                  "captureOrphanParallelBranches=> setting nextStage to: [id: %s, name: %s, function: %s]",
+                  synStage.getId(),
+                  synStage.getDisplayName(),
+                  synStage.getNode().getDisplayFunctionName()));
+        }
         this.nextStage = synStage;
       }
     }
@@ -799,6 +854,17 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
     Iterator<FlowNodeWrapper> sortedBranches = parallelBranches.descendingIterator();
     while (sortedBranches.hasNext()) {
       FlowNodeWrapper p = sortedBranches.next();
+      if (isNodeVisitorDumpEnabled) {
+        dump(
+            String.format(
+                "createParallelSyntheticNode=> found node [id: %s, name: %s, function: %s] is child of [id: %s, name: %s, function: %s]",
+                p.getId(),
+                p.getDisplayName(),
+                p.getNode().getDisplayFunctionName(),
+                synStage.getId(),
+                synStage.getDisplayName(),
+                synStage.getNode().getDisplayFunctionName()));
+      }
       p.addParent(synStage);
       synStage.addEdge(p);
     }

@@ -47,12 +47,12 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
   }
 
   @GET
-  @WebMethod(name = "graph")
+  @WebMethod(name = "tree")
   public HttpResponse getGraph(StaplerRequest req) throws JsonProcessingException {
     String runId = req.getParameter("runId");
     WorkflowRun run = target.getBuildByNumber(Integer.parseInt(runId));
     PipelineGraphApi api = new PipelineGraphApi(run);
-    JSONObject graph = createGraphJson(api.createGraph());
+    JSONObject graph = createGraphJson(api.createTree());
     return HttpResponses.okJSON(graph);
   }
 

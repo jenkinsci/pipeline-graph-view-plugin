@@ -12,10 +12,6 @@
                     </h1>
                 </div>
                 <div class="jenkins-app-bar__controls">
-                    <a href="../pipeline-graph" class="jenkins-button">
-                        <l:icon src="symbol-file-tray-stacked-outline plugin-ionicons-api"/>
-                        ${%Pipeline Graph}
-                    </a>
                     <j:if test="${it.buildable}">
                         <l:hasPermission permission="${it.permission}">
                             <button id="pgv-rebuild" data-success-message="${%Build scheduled}"
@@ -25,6 +21,10 @@
                             </button>
                         </l:hasPermission>
                     </j:if>
+                    <a href="../pipeline-graph" class="jenkins-button">
+                        <l:icon src="symbol-file-tray-stacked-outline plugin-ionicons-api"/>
+                        ${%Details}
+                    </a>
                     <l:hasPermission permission="${it.configurePermission}">
                         <a href="../../configure" class="jenkins-button">
                             ${%Configure}

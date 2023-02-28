@@ -48,7 +48,7 @@ public class PipelineGraphApi {
   }
 
   private List<PipelineStageInternal> getPipelineNodes() {
-    PipelineNodeGraphVisitor builder = new PipelineNodeGraphVisitor(run);
+    PipelineStepVisitor builder = new PipelineStepVisitor(run);
     return builder.getPipelineNodes().stream()
         .map(
             flowNodeWrapper -> {

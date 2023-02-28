@@ -60,6 +60,7 @@ public class FlowNodeWrapper {
     PARALLEL,
     STEP,
     UNHANDLED_EXCEPTION,
+    STEPS_BLOCK,
   }
 
   private final FlowNode node;
@@ -125,6 +126,8 @@ public class FlowNodeWrapper {
       return NodeType.STEP;
     } else if (PipelineNodeUtil.isUnhandledException(node)) {
       return NodeType.UNHANDLED_EXCEPTION;
+    } else if (PipelineNodeUtil.isStepBlock(node)) {
+      return NodeType.STEPS_BLOCK;
     }
     throw new IllegalArgumentException(
         String.format("Unknown FlowNode %s, type: %s", node.getId(), node.getClass()));

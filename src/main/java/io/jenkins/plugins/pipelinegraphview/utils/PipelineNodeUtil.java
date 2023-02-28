@@ -27,7 +27,10 @@ import org.jenkinsci.plugins.workflow.actions.TagsAction;
 import org.jenkinsci.plugins.workflow.actions.ThreadNameAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
+import org.jenkinsci.plugins.workflow.cps.nodes.StepEndNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
+import org.jenkinsci.plugins.workflow.graph.FlowEndNode;
+import org.jenkinsci.plugins.workflow.graph.FlowStartNode;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 import org.jenkinsci.plugins.workflow.support.actions.PauseAction;
 import org.jenkinsci.plugins.workflow.support.steps.ExecutorStep;
@@ -119,6 +122,22 @@ public class PipelineNodeUtil {
     return node != null
         && node.getAction(LabelAction.class) != null
         && node.getAction(ThreadNameAction.class) != null;
+  }
+
+  public static boolean isPipelineStartNode(@Nullable FlowNode node) {
+    return node != null && node instanceof FlowStartNode;
+  }
+
+  /* Is this FlowNode a start/end block fo the Pipeline.
+  */
+  public static boolean isPipelineBlock(@Nullable FlowNode node) {
+    return node != null && (node instanceof FlowStartNode || node instanceof FlowEndNode);
+  }
+
+  /* Is this FlowNode a step that has a closure.
+  */
+  public static boolean isStepBlock(@Nullable FlowNode node) {
+    return node != null && (node instanceof StepStartNode || node instanceof StepEndNode);
   }
 
   public static boolean isUnhandledException(@Nullable FlowNode node) {

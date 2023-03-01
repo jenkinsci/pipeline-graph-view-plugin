@@ -366,39 +366,7 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
             PipelineNodeUtil.isStage(startNode),
             PipelineNodeUtil.isParallelBranch(startNode),
             PipelineNodeUtil.isSyntheticStage(startNode)));
-
-    FlowNode parentNode = startNode.getParents().get(0).getParents().get(0);
-
-    dump(
-        String.format(
-            "chunkStart => Parent : %s, %s", parentNode.getId(), parentNode.getDisplayName()));
-
-    // Determine if the stage has a parent parallel branch- if so we want to assign any children to
-    // that branch.
-    // instead of the stage.
-    // This is for compatability with PipelineNodeGraphVisitor.
-    if (parentNode != null
-        && (PipelineNodeUtil.isStage(startNode))
-        && PipelineNodeUtil.isParallelBranch(parentNode)) {
-      dump(
-          "chunkStart => Parent of Stage is a Parallel Branch Node, assigning children to parent's stack.");
-      // Assign children to parent.
-      for (String childId : childBlockIdStacks.removeLast()) {
-        childBlockIdStacks.peekLast().addLast(childId);
-      }
-    } else {
-      dump(
-          String.format(
-              "chunkStart => Parent Node ID: {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSythetic: %s, class: %s}.",
-              parentNode.getId(),
-              parentNode.getDisplayName(),
-              PipelineNodeUtil.isStage(parentNode),
-              PipelineNodeUtil.isParallelBranch(parentNode),
-              PipelineNodeUtil.isSyntheticStage(parentNode),
-              parentNode.getClass()));
-      // If the parent isn't a parallel branch we will wrap the children in a stage.
-      handleBlockStartNode(startNode, null);
-    }
+    handleBlockStartNode(startNode, null);
   }
 
   @Override

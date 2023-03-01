@@ -89,6 +89,10 @@ public class PipelineStage {
     return name;
   }
 
+  public String getUniqueName() {
+    return String.format("{id: %s, name: %s}", id, name);
+  }
+
   public List<PipelineStage> getChildren() {
     return children;
   }

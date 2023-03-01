@@ -126,4 +126,19 @@ public class PipelineGraphApiTest {
             (PipelineStage stage) -> String.format("{%s,%s}", stage.getName(), stage.getState()));
     assertThat(stagesString, is("{Stage 1,SUCCESS},{Parallel stage,skipped},{Stage 2,SUCCESS}"));
   }
+
+  @Issue("GH#51")
+  @Test
+  public void createTree_nestedSciptedParallel() throws Exception {
+    WorkflowRun run =
+        TestUtils.createAndRunJob(
+            j, "nestedSciptedParallel", "nestedSciptedParallel.jenkinsfile", Result.SUCCESS);
+    PipelineGraphApi api = new PipelineGraphApi(run);
+    PipelineGraph graph = api.createTree();
+
+    List<PipelineStage> stages = graph.getStages();
+
+    String stagesString = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
+    assertThat(stagesString, is("Parallel[A[Build,Test[A1,A2]],B[Build,Parallel[B1,B2]]]"));
+  }
 }

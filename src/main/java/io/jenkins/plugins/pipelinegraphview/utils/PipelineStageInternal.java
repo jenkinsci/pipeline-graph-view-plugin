@@ -116,6 +116,10 @@ public class PipelineStageInternal {
     return title;
   }
 
+  public String getUniqueName() {
+    return String.format("{id: %s, name: %s}", id, name);
+  }
+
   public boolean isSynthetic() {
     return synthetic;
   }

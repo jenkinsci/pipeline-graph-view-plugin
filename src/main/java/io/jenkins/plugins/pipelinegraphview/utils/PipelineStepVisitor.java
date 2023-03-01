@@ -3,29 +3,30 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.model.Action;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
-import org.jenkinsci.plugins.pipeline.modeldefinition.actions.ExecutionModelAction;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
-import org.jenkinsci.plugins.workflow.actions.LabelAction;
+import org.jenkinsci.plugins.workflow.actions.NotExecutedNodeAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
-import org.jenkinsci.plugins.workflow.cps.nodes.StepEndNode;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.AtomNode;
 import org.jenkinsci.plugins.workflow.graph.BlockEndNode;
+import org.jenkinsci.plugins.workflow.graph.BlockStartNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.graphanalysis.ForkScanner;
 import org.jenkinsci.plugins.workflow.graphanalysis.MemoryFlowChunk;
 import org.jenkinsci.plugins.workflow.graphanalysis.StandardChunkVisitor;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.GenericStatus;
 import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.StageChunkFinder;
 import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.StatusAndTiming;
 import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
@@ -37,56 +38,51 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Gives steps in a given FlowGraph and assigned them to the nearing stage or parallel block
- * boundary.
- *
- * <p>Original source:
- * https://github.com/jenkinsci/blueocean-plugin/blob/master/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/PipelineStepVisitor.java
- *
- * @author Vivek Pandey
  * @author Tim Brown
+ * @author Vivek Pandey Records the Stages and steps for a given FlowNodeGraph. Will return children
+ *     under the first BlockStartNode. This means Parallel branches will exist inside a
+ *     ParallelStartNdde, not in a Stage. Reimplmentation of:
+ *     https://github.com/jenkinsci/blueocean-plugin/blob/master/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/PipelineStepVisitor.java
  */
 public class PipelineStepVisitor extends StandardChunkVisitor {
   private final WorkflowRun run;
 
-  // Stores all the blocks that we have reached the end of but have yet to reach the start of.
-  // BEWARE: these could be null values.
-  private final ArrayDeque<FlowNodeWrapper> pendingBlocks = new ArrayDeque<>();
+  // Maps a node ID to a given node wrapper.
+  public final Map<String, FlowNodeWrapper> nodeMap = new TreeMap<String, FlowNodeWrapper>();
 
-  // Stored all the start stage, parallel and parallel block nodes.
-  public final ArrayDeque<FlowNodeWrapper> startNodes = new ArrayDeque<>();
+  // We need to determine the status of nodes in handleChunkDone, so store these until we find the
+  // start node, then move to nodeMap.
+  public final Map<String, FlowNodeWrapper> handledChunkMap =
+      new TreeMap<String, FlowNodeWrapper>();
 
-  // Stores all the steps of the stage currently being processed.
-  private final ArrayDeque<FlowNodeWrapper> stageSteps = new ArrayDeque<>();
+  // Stores the id(s) of all the steps currently being processed.
+  private final ArrayDeque<String> pendingStepIds = new ArrayDeque<>();
 
-  // Stores all the nodes (non-steps) of the node currently being processed.
-  private final ArrayDeque<FlowNodeWrapper> childNodes = new ArrayDeque<>();
+  // Stores the IDs of all the blocks (non-steps) of the nodes that we are still processing.
+  // Switched to this method as it wasn't always possible to get a start node from an end node.
+  private final ArrayDeque<ArrayDeque<String>> childBlockIdStacks = new ArrayDeque<>();
+  private FlowNode firstExecuted = null;
 
-  // Maps steps to a given stage.
-  private final Map<String, List<FlowNodeWrapper>> stageStepMap = new HashMap<>();
+  // We can remove these is we hanlde all children the same.
+  // Maps a node ID to a given step node wrapper.
+  public final Map<String, FlowNodeWrapper> stepMap = new TreeMap<String, FlowNodeWrapper>();
 
-  // For Sythetic Stages:
-  private static final String PARALLEL_SYNTHETIC_STAGE_NAME = "Parallel";
-  // Stores parallel branches in the current scope. These will be added to a Synthetic stage if not
-  // wrapped by a stage.
-  private final ArrayDeque<FlowNodeWrapper> parallelBranches = new ArrayDeque<>();
+  // Maps stageId to a list of child steps.
+  private final Map<String, List<String>> stageStepIdMap = new TreeMap<>();
 
-  private FlowNodeWrapper currentStage;
-
-  private InputAction inputAction;
-
-  private final boolean declarative;
-
+  // Used to store the origating node of an unhandled exception.
   private FlowNode nodeThatThrewException;
 
+  private InputAction inputAction;
   private boolean isLastNode;
   private FlowExecution execution;
   private static final Logger logger = LoggerFactory.getLogger(PipelineStepVisitor.class);
 
+  private boolean isDebugEnabled = logger.isDebugEnabled();
+
   public PipelineStepVisitor(WorkflowRun run) {
     this.run = run;
     this.inputAction = run.getAction(InputAction.class);
-    declarative = run.getAction(ExecutionModelAction.class) != null;
     this.isLastNode = true;
     this.execution = run.getExecution();
     if (this.execution != null) {
@@ -94,28 +90,51 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
         ForkScanner.visitSimpleChunks(execution.getCurrentHeads(), this, new StageChunkFinder());
       } catch (final Throwable t) {
         // Log run ID, because the eventual exception handler (probably Stapler) isn't specific
-        // enough to do so
-        logger.debug(
+        // enough to do so.
+        dump(
             String.format(
                 "constructor => Caught a '%s' traversing the graph for run %s",
                 t.getClass().getSimpleName(), run.getExternalizableId()));
         throw t;
       }
     } else {
-      logger.debug(
+      dump(
           String.format(
               "constructor => Could not find execution for run %s", run.getExternalizableId()));
     }
   }
 
+  // Print debug message if 'isDebugEnabled' is true.
+  private void dump(String message) {
+    if (isDebugEnabled) {
+      logger.debug(message);
+    }
+  }
+
   private FlowNodeWrapper wrapFlowNode(@Nullable FlowNode nodeToWrap) {
-    return wrapFlowNode(nodeToWrap, null);
+    return wrapFlowNode(nodeToWrap, null, null);
   }
 
   private FlowNodeWrapper wrapFlowNode(@Nullable FlowNode nodeToWrap, @Nullable FlowNode after) {
+    return wrapFlowNode(nodeToWrap, after, null);
+  }
+
+  private FlowNodeWrapper wrapFlowNode(
+      @Nullable FlowNode nodeToWrap,
+      @Nullable FlowNode after,
+      @Nullable FlowNodeWrapper.NodeType nodeType) {
     if (nodeToWrap == null) {
       return null;
     }
+    // If we created this node in handleChunkDone, then return that value.
+    if (handledChunkMap.containsKey(nodeToWrap.getId())) {
+      dump(
+          String.format(
+              "Found we have parsed this node {id: %s, name: %s} in handleChunkDone, so returning that.",
+              nodeToWrap.getId(), nodeToWrap.getDisplayName()));
+      return handledChunkMap.get(nodeToWrap.getId());
+    }
+
     long pause = PauseAction.getPauseDuration(nodeToWrap);
     TimingInfo times =
         StatusAndTiming.computeChunkTiming(run, pause, nodeToWrap, nodeToWrap, after);
@@ -140,39 +159,111 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
         }
       }
     }
-    return new FlowNodeWrapper(nodeToWrap, status, times, inputStep, run);
-  }
-
-  private void addChildrenToNode(FlowNodeWrapper node, FlowNodeWrapper parent) {
-    addChildrenToNode(node, parent, true);
-  }
-
-  private void debugLog() {
-
-  }
-
-  private void addChildrenToNode(FlowNodeWrapper node, FlowNodeWrapper parent, Boolean pushSteps) {
-    // Add parent to the current node.
-    if (parent != null) {
-      node.addParent(parent);
+    // Set node staus is FlowNode errored.
+    // Do we need to manually handle Unstable as well??
+    ErrorAction error = nodeToWrap.getError();
+    FlowNodeWrapper wrappedNode =
+        new FlowNodeWrapper(nodeToWrap, status, times, inputStep, run, nodeType);
+    if (error != null) {
+      wrappedNode.setBlockErrorAction(error);
     }
+    return wrappedNode;
+  }
+
+  private void addChildrenToNode(FlowNodeWrapper node, ArrayDeque<String> childNodeIds) {
+    addChildrenToNode(node, childNodeIds, true);
+  }
+
+  private void addChildrenToNode(
+      FlowNodeWrapper node, ArrayDeque<String> childNodeIds, Boolean pushSteps) {
+    nodeMap.put(node.getId(), node);
     // Add any pending steps to the current node.
-    if (pushSteps && stageSteps != null && !stageSteps.isEmpty()) {
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            String.format(
-                "addChildrenToNode => Pushing steps to stage {id: %s, name %s} in addChildrenToNode.",
-                node.getId(), node.getDisplayName()));
-      }
-      pushStageStepsToMap(node);
+    if (pushSteps && pendingStepIds != null && !pendingStepIds.isEmpty()) {
+      dump(
+          String.format(
+              "addChildrenToNode => Pushing steps to stage {id: %s, name %s} in addChildrenToNode.",
+              node.getId(), node.getDisplayName()));
+      assignStepsToParent(node);
     }
     // Add any pending child nodes to the current node.
-    if (childNodes != null && !childNodes.isEmpty()) {
-      for (FlowNodeWrapper childNode : childNodes) {
+    if (childNodeIds != null && !childNodeIds.isEmpty()) {
+      for (String childNodeId : childNodeIds) {
+        FlowNodeWrapper childNode = nodeMap.get(childNodeId);
+        dump(
+            String.format(
+                "addChildrenToNode => Assigning parent {id: %s, name: %s} to node {id: %s, name: %s}.",
+                node.getId(),
+                node.getDisplayName(),
+                childNode.getId(),
+                childNode.getDisplayName()));
         childNode.addParent(node);
+        childNode.addEdge(node);
       }
     }
-    startNodes.add(node);
+  }
+
+  // Call when we get to an end block.
+  private void handleBlockEndNode(FlowNode endNode) {
+    if (endNode instanceof BlockEndNode) {
+      childBlockIdStacks.addLast(new ArrayDeque<String>());
+      dump(
+          String.format(
+              "handleBlockEndNode => Found BlockEndNode {{id: %s, name: %s}, pushed new childStack to stack {size: %s}.",
+              endNode.getId(), endNode.getDisplayName(), childBlockIdStacks.size()));
+    }
+  }
+
+  // Call when we get to a start block.
+  private void handleBlockStartNode(FlowNode startNode, @Nullable FlowNodeWrapper.NodeType type) {
+    if (startNode instanceof BlockStartNode) {
+      ArrayDeque<String> childIdStack = childBlockIdStacks.removeLast();
+      dump(
+          String.format(
+              "handleBlockStartNode => Found BlockStartNode {id: %s, name: %s}, removed last childStack from stack {size: %s}.",
+              startNode.getId(), startNode.getDisplayName(), childBlockIdStacks.size()));
+      // Push start node to parent node's childStack. We do this here as we can't always get the
+      // start node from the endNode in chunkEnd.
+      FlowNodeWrapper wrappedNode = wrapFlowNode(startNode, null, type);
+      childBlockIdStacks.peekLast().addLast(wrappedNode.getId());
+      addChildrenToNode(wrappedNode, childIdStack);
+    }
+  }
+
+  // Updates the step map to map all steps in 'pendingStepIds' to the given stage.
+  private void assignStepsToParent(FlowNodeWrapper stage) {
+    List<String> stageStepsIdList = stageStepIdMap.getOrDefault(stage.getId(), new ArrayList<>());
+    // Add check outside to reduce the number of checks isDebugEnabled checks - we don't want to
+    // check on each loop iteration.
+    for (String stepId : pendingStepIds) {
+      FlowNodeWrapper step = stepMap.get(stepId);
+      dump(
+          String.format(
+              "assignStepsToParent => Adding step {id: %s, args: %s} to stage {id: %s, name: %s}",
+              step.getNode().getId(),
+              step.getArgumentsAsString(),
+              stage.getNode().getId(),
+              stage.getNode().getDisplayName()));
+      stageStepsIdList.add(step.getId());
+    }
+    dump(
+        String.format(
+            "assignStepsToParent => Assigning parent stage for %s steps.", pendingStepIds.size()));
+    pendingStepIds.clear();
+    stageStepIdMap.put(stage.getNode().getId(), stageStepsIdList);
+  }
+
+  // Call this when we have reached the node that caused an unhandled exception. This will add the
+  // node to the list of pending steps so it can be displayed in the console view.
+  private void pushExceptionNodeToStepsMap(FlowNode exceptionNode) {
+    FlowNodeWrapper erroredStep = wrapFlowNode(exceptionNode);
+    dump(
+        String.format(
+            "pushExceptionNodeToStepsMap => Found step exception from step {id: %s, name: %s} to stack.%nError:%n",
+            erroredStep.getId(), erroredStep.getArgumentsAsString(), erroredStep.nodeError()));
+    if (!pendingStepIds.contains(erroredStep.getId())) {
+      pendingStepIds.addLast(erroredStep.getId());
+      stepMap.put(erroredStep.getId(), erroredStep);
+    }
   }
 
   @Override
@@ -181,43 +272,32 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
       @NonNull FlowNode branchNode,
       @NonNull ForkScanner scanner) {
     super.parallelStart(parallelStartNode, branchNode, scanner);
-    FlowNodeWrapper finishedBlock = null;
-    if (!pendingBlocks.isEmpty()) {
-      finishedBlock = pendingBlocks.pop();
-      // Finished processing atom nodes in this block
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            String.format(
-                "parallelStart => Removed Node {id: %s, name: %s}",
-                finishedBlock.getId(), finishedBlock.getDisplayName()));
+    dump(
+        String.format(
+            "parallelStart => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSythetic: %s} ",
+            parallelStartNode.getId(),
+            parallelStartNode.getDisplayName(),
+            PipelineNodeUtil.isStage(parallelStartNode),
+            PipelineNodeUtil.isParallelBranch(parallelStartNode),
+            PipelineNodeUtil.isSyntheticStage(parallelStartNode)));
+    // Determine if the parent is a stage - if so we want to assign any children to that stage
+    // instead of the parallel start block.
+    // This is for compatability with PipelineNodeGraphVisitor.
+    FlowNode parentNode = parallelStartNode.getParents().get(0);
+    if (parentNode != null && PipelineNodeUtil.isStage(parentNode)) {
+      dump(
+          "parallelStart => Parent of Parallel start is a stage, assigning children to parent's stack.");
+      // Assign children to parent.
+      for (String childId : childBlockIdStacks.removeLast()) {
+        childBlockIdStacks.peekLast().addLast(childId);
       }
-    }
-    if (logger.isDebugEnabled()) {
-      logger.debug(
-          String.format(
-              "parallelStart. Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSythetic: %s} ",
-              parallelStartNode.getId(),
-              parallelStartNode.getDisplayName(),
-              PipelineNodeUtil.isStage(parallelStartNode),
-              PipelineNodeUtil.isParallelBranch(parallelStartNode),
-              PipelineNodeUtil.isSyntheticStage(parallelStartNode)));
-    }
-
-    
-    for (FlowNodeWrapper branch : parallelBranches) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("parallelStart => Adding parallel branch {} to stage {}.");
-      }
-    }
-    
-    // Add the pending parallel nodes to this start nodes paranet stage (if there is one).
-    if (pendingBlocks.peek() != null) {
-      addParallelBlocksToNode(pendingBlocks.peek());
     } else {
-      captureOrphanParallelBranches();
+      // If the parent isn't a stage we will wrap the children in a parallel block - this removes
+      // the need for Synthetic parallel blocks.
+      // Specify NodeType here as we know this is a Parallel start block. I couldn't find a good way
+      // to determine this after the fact (not sure I like relying on that anyway).
+      handleBlockStartNode(parallelStartNode, FlowNodeWrapper.NodeType.PARALLEL_BLOCK);
     }
-    // Record which stage the steps belong to this parallel block.
-    addChildrenToNode(wrapFlowNode(parallelStartNode), pendingBlocks.peek());
   }
 
   @Override
@@ -226,18 +306,15 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
       @NonNull FlowNode parallelEndNode,
       @NonNull ForkScanner scanner) {
     super.parallelEnd(parallelStartNode, parallelEndNode, scanner);
-    if (logger.isDebugEnabled()) {
-      logger.debug(
-          String.format(
-              "parallelEnd => Block start Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSythetic: %s} ",
-              parallelStartNode.getId(),
-              parallelStartNode.getDisplayName(),
-              PipelineNodeUtil.isStage(parallelStartNode),
-              PipelineNodeUtil.isParallelBranch(parallelStartNode),
-              PipelineNodeUtil.isSyntheticStage(parallelStartNode)));
-      logger.debug("parallelEnd => Pushing parallelStart Node to stack.");
-    }
-    pendingBlocks.push(wrapFlowNode(parallelStartNode));
+    dump(
+        String.format(
+            "parallelEnd => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSythetic: %s}.",
+            parallelEndNode.getId(),
+            parallelEndNode.getDisplayName(),
+            PipelineNodeUtil.isStage(parallelEndNode),
+            PipelineNodeUtil.isParallelBranch(parallelEndNode),
+            PipelineNodeUtil.isSyntheticStage(parallelEndNode)));
+    handleBlockEndNode(parallelEndNode);
   }
 
   @Override
@@ -246,30 +323,15 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
       @NonNull FlowNode branchStartNode,
       @NonNull ForkScanner scanner) {
     super.parallelBranchStart(parallelStartNode, branchStartNode, scanner);
-    FlowNodeWrapper finishedBlock = null;
-    if (!pendingBlocks.isEmpty()) {
-      finishedBlock = pendingBlocks.pop();
-      // Finished processing atom nodes in this block
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            String.format(
-                "parallelBranchStart => Removed Node {id: %s, name: %s} from pending blocks.",
-                finishedBlock.getId(), finishedBlock.getDisplayName()));
-      }
-    }
-    if (logger.isDebugEnabled()) {
-      logger.debug(
-          String.format(
-              "parallelBranchStart => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSythetic: %s}.",
-              branchStartNode.getId(),
-              branchStartNode.getDisplayName(),
-              PipelineNodeUtil.isStage(branchStartNode),
-              PipelineNodeUtil.isParallelBranch(branchStartNode),
-              PipelineNodeUtil.isSyntheticStage(branchStartNode)));
-      logger.debug("parallelBranchStart => Pushing steps to stage in parallelBranchStart.");
-    }
-    // Record which stage the steps belong to this parallel block.
-    addChildrenToNode(wrapFlowNode(branchStartNode), pendingBlocks.peek());
+    dump(
+        String.format(
+            "parallelBranchStart => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSythetic: %s}.",
+            branchStartNode.getId(),
+            branchStartNode.getDisplayName(),
+            PipelineNodeUtil.isStage(branchStartNode),
+            PipelineNodeUtil.isParallelBranch(branchStartNode),
+            PipelineNodeUtil.isSyntheticStage(branchStartNode)));
+    handleBlockStartNode(branchStartNode, null);
   }
 
   @Override
@@ -277,142 +339,99 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
       @NonNull FlowNode parallelStartNode,
       @NonNull FlowNode branchEndNode,
       @NonNull ForkScanner scanner) {
+    dump(
+        String.format(
+            "parallelBranchEnd => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSythetic: %s}.",
+            branchEndNode.getId(),
+            branchEndNode.getDisplayName(),
+            PipelineNodeUtil.isStage(branchEndNode),
+            PipelineNodeUtil.isParallelBranch(branchEndNode),
+            PipelineNodeUtil.isSyntheticStage(branchEndNode)));
     super.parallelBranchEnd(parallelStartNode, branchEndNode, scanner);
-    FlowNode branchStartNode = ((StepEndNode) branchEndNode).getStartNode();
-    if (logger.isDebugEnabled()) {
-      logger.debug(
-          String.format(
-              "parallelBranchEnd => Storing pendingBlock Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSythetic: %s}.",
-              branchStartNode.getId(),
-              branchStartNode.getDisplayName(),
-              PipelineNodeUtil.isStage(branchStartNode),
-              PipelineNodeUtil.isParallelBranch(branchStartNode),
-              PipelineNodeUtil.isSyntheticStage(branchStartNode)));
-    }
-    // Store parallel branches incase we need to add a Synthetic node to wrap them - i.e. they
-    // aren't wrapped in a stage.
-    if (logger.isDebugEnabled()) {
-      logger.debug("parallelBranchEnd => Pushing to parallelBranches in parallelBranchEnd.");
-    }
-    pendingBlocks.push(wrapFlowNode(branchStartNode));
+    handleBlockEndNode(branchEndNode);
   }
 
-  @SuppressWarnings("RV_RETURN_VALUE_IGNORED")
+  @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED")
   @Override
   public void chunkStart(
       @NonNull FlowNode startNode,
       @CheckForNull FlowNode beforeBlock,
       @NonNull ForkScanner scanner) {
     super.chunkStart(startNode, beforeBlock, scanner);
-    // Ignore stepStart nodes as we don't display them in any of the views - we expect steps to
-    // belong to one of the other block types.
-    if (PipelineNodeUtil.isPipelineBlock(startNode)) {
-      logger.debug(
-          String.format(
-              "chunkStart => Found uninteresting node {id: %s, name: %s, type: %s}, returning.",
-              startNode.getId(), startNode.getDisplayName(), startNode.getClass().getSimpleName()));
-      return;
-    }
-    FlowNodeWrapper finishedBlock = null;
-    if (!pendingBlocks.isEmpty()) {
-      finishedBlock = pendingBlocks.pop();
-    } else {
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            String.format(
-                "chunkStart => pendingBlock emptry, returning.",
-                finishedBlock.getId(),
-                finishedBlock.getDisplayName()));
-      }
-      return;
-    }
-    if (logger.isDebugEnabled()) {
-      logger.debug(
-          String.format(
-              "chunkStart => Node ID: {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSythetic: %s}.",
-              startNode.getId(),
-              startNode.getDisplayName(),
-              PipelineNodeUtil.isStage(startNode),
-              PipelineNodeUtil.isParallelBranch(startNode),
-              PipelineNodeUtil.isSyntheticStage(startNode)));
-    }
+    dump(
+        String.format(
+            "chunkStart => Node ID: {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSythetic: %s}.",
+            startNode.getId(),
+            startNode.getDisplayName(),
+            PipelineNodeUtil.isStage(startNode),
+            PipelineNodeUtil.isParallelBranch(startNode),
+            PipelineNodeUtil.isSyntheticStage(startNode)));
 
-    Boolean stepsBelongToBlock = true;
-    // Do not add steps to this stage if it's parent is a parallel block and it's a declarative
-    // step - (it should get addded to the parent instead).
-    if (PipelineNodeUtil.isParallelBranch(pendingBlocks.peek().getNode()) && isDeclarative()) {
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            String.format(
-                "chunkStart => Not pushing steps to stage '%s' as parent is parallel block in declarative pipeline.",
-                startNode.getDisplayName()));
+    FlowNode parentNode = startNode.getParents().get(0).getParents().get(0);
+
+    dump(
+        String.format(
+            "chunkStart => Parent : %s, %s", parentNode.getId(), parentNode.getDisplayName()));
+
+    // Determine if the stage has a parent parallel branch- if so we want to assign any children to
+    // that branch.
+    // instead of the stage.
+    // This is for compatability with PipelineNodeGraphVisitor.
+    if (parentNode != null
+        && (PipelineNodeUtil.isStage(startNode))
+        && PipelineNodeUtil.isParallelBranch(parentNode)) {
+      dump(
+          "chunkStart => Parent of Stage is a Parallel Branch Node, assigning children to parent's stack.");
+      // Assign children to parent.
+      for (String childId : childBlockIdStacks.removeLast()) {
+        childBlockIdStacks.peekLast().addLast(childId);
       }
-      stepsBelongToBlock = false;
+    } else {
+      dump(
+          String.format(
+              "chunkStart => Parent Node ID: {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSythetic: %s, class: %s}.",
+              parentNode.getId(),
+              parentNode.getDisplayName(),
+              PipelineNodeUtil.isStage(parentNode),
+              PipelineNodeUtil.isParallelBranch(parentNode),
+              PipelineNodeUtil.isSyntheticStage(parentNode),
+              parentNode.getClass()));
+      // If the parent isn't a parallel branch we will wrap the children in a stage.
+      handleBlockStartNode(startNode, null);
     }
-    addChildrenToNode(
-        wrapFlowNode(startNode), wrapFlowNode(pendingBlocks.peek().getNode()), stepsBelongToBlock);
   }
 
   @Override
   public void chunkEnd(
       @NonNull FlowNode endNode, @CheckForNull FlowNode afterChunk, @NonNull ForkScanner scanner) {
     super.chunkEnd(endNode, afterChunk, scanner);
-    FlowNode startNode = null;
-    if (PipelineNodeUtil.isPipelineBlock(endNode)) {
-      logger.debug(
-          String.format(
-              "chunkEnd => Found uninteresting node {id: %s, name: %s, type: %s}, returning.",
-              endNode.getId(), endNode.getDisplayName(), endNode.getClass().getSimpleName()));
-      return;
-    }
-    if (endNode instanceof BlockEndNode) {
-      startNode = ((BlockEndNode) endNode).getStartNode();
-      if (startNode != null) {
-        // This can happen with StageEnd nodes in Declarative Pipelines.
-        logger.debug(
-            String.format(
-                "chunkEnd => Could not find startNode for {id: %s, name: %s}.",
-                endNode.getId(), endNode.getDisplayName()));
-        // Wrap orphaned parallel branches in Syntehtic stage.
-        //captureOrphanParallelBranches();
-      }
-      // This will push null to 'pendingBlocks'.
-      pendingBlocks.push(wrapFlowNode(startNode));
-    }
-
-    if (PipelineNodeUtil.isStage(startNode)) {
-      currentStage = wrapFlowNode(startNode);
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            String.format(
-                "chunkEnd => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSythetic: %s}.",
-                startNode.getId(),
-                startNode.getDisplayName(),
-                PipelineNodeUtil.isStage(startNode),
-                PipelineNodeUtil.isParallelBranch(startNode),
-                PipelineNodeUtil.isSyntheticStage(startNode)));
-      }
-    }
-
+    dump(
+        String.format(
+            "chunkEnd => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSythetic: %s}.",
+            endNode.getId(),
+            endNode.getDisplayName(),
+            PipelineNodeUtil.isStage(endNode),
+            PipelineNodeUtil.isParallelBranch(endNode),
+            PipelineNodeUtil.isSyntheticStage(endNode)));
+    firstExecuted = null;
     // Check if the Pipeline exited with an unhandled exception. If so, we will try and attach it to
     // the originating block.
     if (this.isLastNode) {
       this.isLastNode = false;
       // Check for an unhandled exception.
-      NodeRunStatus status;
       ErrorAction errorAction = endNode.getAction(ErrorAction.class);
       // If this is a Jenkins failure exception, then we don't need to add a new node - it will come
       // from an existing step.
       if (errorAction != null
           && !PipelineNodeUtil.isJenkinsFailureException(errorAction.getError())) {
         // Store node that threw exception as step so we can find it's parent stage later.
-        logger.debug(
+        dump(
             String.format(
                 "chunkEnd => Found unhandled exception: %s", errorAction.getError().getMessage()));
         this.nodeThatThrewException =
             errorAction.findOrigin(errorAction.getError(), this.execution);
         if (this.nodeThatThrewException != null) {
-          logger.debug(
+          dump(
               String.format(
                   "chunkEnd => Found that node '%s' threw unhandled exception: %s.",
                   this.nodeThatThrewException.getId(),
@@ -422,9 +441,7 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
     }
     // If this the the node that created the unhandled exception.
     if (this.nodeThatThrewException == endNode) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("chunkEnd => Found endNode that threw exception.");
-      }
+      dump("chunkEnd => Found endNode that threw exception.");
       pushExceptionNodeToStepsMap(endNode);
     }
     // if we're using marker-based (and not block-scoped) stages, add the last node as part of its
@@ -432,6 +449,64 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
     if (!(endNode instanceof BlockEndNode)) {
       atomNode(null, endNode, afterChunk, scanner);
     }
+    handleBlockEndNode(endNode);
+  }
+
+  @Override
+  protected void resetChunk(@NonNull MemoryFlowChunk chunk) {
+    super.resetChunk(chunk);
+    firstExecuted = null;
+  }
+
+  // This gets triggered on encountering a new chunk (stage or branch)
+  @SuppressFBWarnings(
+      value = "RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE",
+      justification =
+          "chunk.getLastNode() is marked non null but is null sometimes, when JENKINS-40200 is fixed we will remove this check ")
+  @Override
+  protected void handleChunkDone(@NonNull MemoryFlowChunk chunk) {
+    // Create nodes here so we can more accurately get the status.
+    dump(
+        String.format(
+            "handleChunkDone=> id: %s, name: %s, function: %s",
+            chunk.getFirstNode().getId(),
+            chunk.getFirstNode().getDisplayName(),
+            chunk.getFirstNode().getDisplayFunctionName()));
+
+    TimingInfo times = null;
+
+    // TODO: remove chunk.getLastNode() != null check based on how JENKINS-40200 gets resolved
+    if (firstExecuted != null && chunk.getLastNode() != null) {
+      times =
+          StatusAndTiming.computeChunkTiming(
+              run,
+              chunk.getPauseTimeMillis(),
+              firstExecuted,
+              chunk.getLastNode(),
+              chunk.getNodeAfter());
+    }
+
+    if (times == null) {
+      times = new TimingInfo();
+    }
+
+    NodeRunStatus status;
+    boolean skippedStage = PipelineNodeUtil.isSkippedStage(chunk.getFirstNode());
+    if (skippedStage) {
+      status = new NodeRunStatus(BlueRun.BlueRunResult.NOT_BUILT, BlueRun.BlueRunState.SKIPPED);
+    } else if (firstExecuted == null) {
+      status = new NodeRunStatus(GenericStatus.NOT_EXECUTED);
+    } else if (chunk.getLastNode() != null) {
+      status = new NodeRunStatus(StatusAndTiming.computeChunkStatus2(run, chunk));
+    } else {
+      status = new NodeRunStatus(firstExecuted);
+    }
+    if (PipelineNodeUtil.isPaused(chunk.getFirstNode())) {
+      status = new NodeRunStatus(BlueRun.BlueRunResult.UNKNOWN, BlueRun.BlueRunState.PAUSED);
+    }
+    handledChunkMap.put(
+        chunk.getFirstNode().getId(),
+        new FlowNodeWrapper(chunk.getFirstNode(), status, times, run));
   }
 
   @Override
@@ -441,212 +516,57 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
       @CheckForNull FlowNode after,
       @NonNull ForkScanner scan) {
     super.atomNode(before, atomNode, after, scan);
-    if (atomNode instanceof StepAtomNode
-        && currentStage != null
-        && !PipelineNodeUtil.isSkippedStage(
-            currentStage.getNode())) { // if skipped stage, we don't collect its steps
-      FlowNodeWrapper stepNode = wrapFlowNode(atomNode, after);
-      if (logger.isDebugEnabled()) {
+    if (atomNode instanceof StepAtomNode) {
+      if (NotExecutedNodeAction.isExecuted(atomNode)) {
+        firstExecuted = atomNode;
+      }
+      for (Action action : atomNode.getActions()) {
         logger.debug(
             String.format(
-                "atomNode => Pushing step: {id: %s, args: %s} to stack.",
-                stepNode.getId(), stepNode.getArgumentsAsString()));
+                "atomNode => step action: %s - %s", action.getDisplayName(), action.getClass()));
       }
-      if (!stageSteps.contains(stepNode)) {
-        stageSteps.push(stepNode);
+      FlowNodeWrapper stepNode = wrapFlowNode(atomNode, after);
+      stepMap.put(atomNode.getId(), stepNode);
+      dump(
+          String.format(
+              "atomNode => Pushing step: {id: %s, args: %s} to stack.",
+              stepNode.getId(), stepNode.getArgumentsAsString()));
+      if (!pendingStepIds.contains(stepNode.getId())) {
+        pendingStepIds.addLast(stepNode.getId());
       }
-      if (logger.isDebugEnabled()) {
-        logger.debug("atomNode => Steps in stack:");
-        for (FlowNodeWrapper step : stageSteps) {
-          logger.debug(
-              String.format(" - {id: %s, args: %s}.", step.getId(), step.getArgumentsAsString()));
-        }
-      }
-    }
-
-    // If we've reached the start of the graph and have orphaned parallel branches, wrap them in a
-    // Synthetic node.
-    if (PipelineNodeUtil.isPipelineStartNode(atomNode)) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("atomNode => Reached start of graph and have orphaned parallel branches.");
-      }
-      captureOrphanParallelBranches();
-      return;
     }
 
     // If this the the node that created the unhandled exception.
     if (this.nodeThatThrewException == atomNode) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("atomNode => Found atomNode that threw exception.");
-      }
+      dump("atomNode => Found atomNode that threw exception.");
       pushExceptionNodeToStepsMap(atomNode);
     }
   }
 
   public List<FlowNodeWrapper> getStageSteps(String startNodeId) {
-    return stageStepMap.getOrDefault(startNodeId, new ArrayList<>());
+    List<FlowNodeWrapper> stageSteps = new ArrayList<FlowNodeWrapper>();
+    for (String stepId : stageStepIdMap.getOrDefault(startNodeId, new ArrayList<>())) {
+      stageSteps.add(stepMap.get(stepId));
+    }
+    Collections.sort(stageSteps, new FlowNodeWrapper.NodeComparator());
+    dump(String.format("Returning %s steps for node '%s'", stageSteps.size(), startNodeId));
+    return stageSteps;
   }
 
   public Map<String, List<FlowNodeWrapper>> getAllSteps() {
-    return stageStepMap;
-  }
-
-  private void captureOrphanParallelBranches() {
-    if (!parallelBranches.isEmpty()) {
-      FlowNodeWrapper synStage = createParallelSyntheticNode();
-      if (synStage != null) {
-        startNodes.push(synStage);
-        parallelBranches.clear();
-        this.currentStage = synStage;
-      }
+    Map<String, List<FlowNodeWrapper>> stageNodeStepMap =
+        new TreeMap<String, List<FlowNodeWrapper>>();
+    for (String stageId : stageStepIdMap.keySet()) {
+      stageNodeStepMap.put(stageId, getStageSteps(stageId));
     }
-  }
-
-  /**
-   * Create synthetic stage that wraps a parallel block at top level, that is not enclosed inside a
-   * stage.
-   */
-  private @Nullable FlowNodeWrapper createParallelSyntheticNode() {
-
-    if (parallelBranches.isEmpty()) {
-      return null;
-    }
-
-    FlowNodeWrapper firstBranch = parallelBranches.getLast();
-    FlowNodeWrapper parallel = firstBranch.getFirstParent();
-
-    if (logger.isDebugEnabled()) {
-      logger.debug(
-          String.format(
-              "createParallelSyntheticNode=> firstBranch: %s, parallel:%s",
-              firstBranch.getId(), (parallel == null ? "(none)" : parallel.getId())));
-    }
-
-    String syntheticNodeId =
-        firstBranch.getNode().getParents().stream()
-            .map((node) -> node.getId())
-            .findFirst()
-            .orElseGet(
-                () -> createSyntheticStageId(firstBranch.getId(), PARALLEL_SYNTHETIC_STAGE_NAME));
-    List<FlowNode> parents;
-    if (parallel != null) {
-      parents = parallel.getNode().getParents();
-    } else {
-      parents = new ArrayList<>();
-    }
-    FlowNode syntheticNode =
-        new FlowNode(firstBranch.getNode().getExecution(), syntheticNodeId, parents) {
-          @Override
-          public void save() throws IOException {
-            // no-op to avoid JENKINS-45892 violations from serializing the synthetic FlowNode.
-          }
-
-          @Override
-          protected String getTypeDisplayName() {
-            return PARALLEL_SYNTHETIC_STAGE_NAME;
-          }
-        };
-
-    syntheticNode.addAction(new LabelAction(PARALLEL_SYNTHETIC_STAGE_NAME));
-
-    long duration = 0;
-    long pauseDuration = 0;
-    long startTime = System.currentTimeMillis();
-    boolean isCompleted = true;
-    boolean isPaused = false;
-    boolean isFailure = false;
-    boolean isUnknown = false;
-    for (FlowNodeWrapper pb : parallelBranches) {
-      if (!isPaused && pb.getStatus().getState() == BlueRun.BlueRunState.PAUSED) {
-        isPaused = true;
-      }
-      if (isCompleted && pb.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
-        isCompleted = false;
-      }
-
-      if (!isFailure && pb.getStatus().getResult() == BlueRun.BlueRunResult.FAILURE) {
-        isFailure = true;
-      }
-      if (!isUnknown && pb.getStatus().getResult() == BlueRun.BlueRunResult.UNKNOWN) {
-        isUnknown = true;
-      }
-      duration += pb.getTiming().getTotalDurationMillis();
-      pauseDuration += pb.getTiming().getPauseDurationMillis();
-    }
-
-    BlueRun.BlueRunState state =
-        isCompleted
-            ? BlueRun.BlueRunState.FINISHED
-            : (isPaused ? BlueRun.BlueRunState.PAUSED : BlueRun.BlueRunState.RUNNING);
-    BlueRun.BlueRunResult result =
-        isFailure
-            ? BlueRun.BlueRunResult.FAILURE
-            : (isUnknown ? BlueRun.BlueRunResult.UNKNOWN : BlueRun.BlueRunResult.SUCCESS);
-
-    TimingInfo timingInfo = new TimingInfo(duration, pauseDuration, startTime);
-
-    FlowNodeWrapper synStage =
-        new FlowNodeWrapper(syntheticNode, new NodeRunStatus(result, state), timingInfo, run);
-    addParallelBlocksToNode(synStage);
-    return synStage;
-  }
-
-  // Add the recorded parallel blocks to a given node.
-  private void addParallelBlocksToNode(FlowNodeWrapper node) {
-    Iterator<FlowNodeWrapper> sortedBranches = parallelBranches.descendingIterator();
-    while (sortedBranches.hasNext()) {
-      FlowNodeWrapper p = sortedBranches.next();
-      p.addParent(node);
-      node.addEdge(p);
-    }
-    parallelBranches.clear();
-  }
-
-  public boolean isDeclarative() {
-    return declarative;
+    dump(String.format("Returning %s steps in total", stageNodeStepMap.values().size()));
+    return stageNodeStepMap;
   }
 
   public List<FlowNodeWrapper> getPipelineNodes() {
-    return new ArrayList<>(startNodes);
-  }
-
-  private void pushStageStepsToMap(FlowNodeWrapper stage) {
-    List<FlowNodeWrapper> stageStepsList =
-        stageStepMap.getOrDefault(stage.getNode().getId(), new ArrayList<>());
-    for (FlowNodeWrapper step : stageSteps) {
-      if (logger.isDebugEnabled()) {
-        logger.debug(
-            String.format(
-                "pushStageStepsToMap => Adding step {id: %s, args: %s} to stage {id: %s, name: %s}",
-                step.getNode().getId(),
-                step.getArgumentsAsString(),
-                stage.getNode().getId(),
-                stage.getNode().getDisplayName()));
-      }
-
-      stageStepsList.add(step);
-    }
-    if (logger.isDebugEnabled()) {
-      logger.debug(
-          String.format(
-              "pushStageStepsToMap => Assigning parent stage for %s steps.", stageSteps.size()));
-    }
-
-    stageSteps.clear();
-    stageStepMap.put(stage.getNode().getId(), stageStepsList);
-  }
-
-  private void pushExceptionNodeToStepsMap(FlowNode exceptionNode) {
-    FlowNodeWrapper erroredStep = wrapFlowNode(exceptionNode);
-    if (logger.isDebugEnabled()) {
-      logger.debug(
-          String.format(
-              "pushExceptionNodeToStepsMap => Found step exception from step {id: %s, name: %s} to stack.\nError:\n",
-              erroredStep.getId(), erroredStep.getArgumentsAsString(), erroredStep.nodeError()));
-    }
-    if (!stageSteps.contains(erroredStep)) {
-      stageSteps.push(erroredStep);
-    }
+    List<FlowNodeWrapper> stageNodes = new ArrayList<FlowNodeWrapper>(nodeMap.values());
+    Collections.sort(stageNodes, new FlowNodeWrapper.NodeComparator());
+    return stageNodes;
   }
 
   static class LocalAtomNode extends AtomNode {
@@ -662,18 +582,5 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
     protected String getTypeDisplayName() {
       return cause;
     }
-  }
-
-  /**
-   * Create id of synthetic stage in a deterministic base.
-   *
-   * <p>For example, an orphan parallel block with id 12 (appears top level not wrapped inside a
-   * stage) gets wrapped in a synthetic stage with id: 12-parallel-synthetic. Later client calls
-   * nodes API using this id: /nodes/12-parallel-synthetic/ would correctly pick the synthetic stage
-   * wrapping parallel block 12 by doing a lookup nodeMap.get("12-parallel-synthetic")
-   */
-  private @NonNull String createSyntheticStageId(
-      @NonNull String firstNodeId, @NonNull String syntheticStageName) {
-    return String.format("%s-%s-synthetic", firstNodeId, syntheticStageName.toLowerCase());
   }
 }

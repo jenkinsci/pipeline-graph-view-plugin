@@ -127,7 +127,7 @@ public class PipelineGraphApiTest {
     assertThat(stagesString, is("{Stage 1,SUCCESS},{Parallel stage,skipped},{Stage 2,SUCCESS}"));
   }
 
-  @Issue("GH#51")
+  @Issue("GH#213")
   @Test
   public void createTree_nestedSciptedParallel() throws Exception {
     WorkflowRun run =
@@ -140,5 +140,20 @@ public class PipelineGraphApiTest {
 
     String stagesString = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
     assertThat(stagesString, is("Parallel[A[Build,Test[A1,A2]],B[Build,Parallel[B1,B2]]]"));
+  }
+
+  @Issue("GH#213")
+  @Test
+  public void createTree_nestedDeclarativeParallel() throws Exception {
+    WorkflowRun run =
+        TestUtils.createAndRunJob(
+            j, "nestedDeclarativeParallel", "nestedDeclarativeParallel.jenkinsfile", Result.SUCCESS);
+    PipelineGraphApi api = new PipelineGraphApi(run);
+    PipelineGraph graph = api.createTree();
+
+    List<PipelineStage> stages = graph.getStages();
+
+    String stagesString = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
+    assertThat(stagesString, is("A[Build,Test[A1,A2]],B[Build,Test[B1,B2]]]"));
   }
 }

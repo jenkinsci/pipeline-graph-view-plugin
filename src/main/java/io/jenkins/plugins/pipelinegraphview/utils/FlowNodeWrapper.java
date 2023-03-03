@@ -28,7 +28,7 @@ public class FlowNodeWrapper {
   /**
    * Checks to see if `this` and `that` probably represent the same underlying pipeline graph node
    * as far as the user is concerned. This is sloppier than an exact name and ID match because
-   * {@link PipelineNodeGraphVisitor} as of 2019-05-17 can return some nodes with different IDs
+   * {@link PipelineNodeGraphAdapter} as of 2019-05-17 can return some nodes with different IDs
    * during a build as opposed to once the build is complete. As such we check name, type, and
    * firstParent. But we need to check firstParent the same way for the same reason.
    *
@@ -179,16 +179,24 @@ public class FlowNodeWrapper {
     this.edges.add(edge);
   }
 
+  public void removeEdge(FlowNodeWrapper edge) {
+    this.edges.remove(edge);
+  }
+
   public void addEdges(List<FlowNodeWrapper> edges) {
     this.edges.addAll(edges);
   }
 
   public void addParent(FlowNodeWrapper parent) {
-    parents.add(parent);
+    this.parents.add(parent);
   }
 
   public void addParents(Collection<FlowNodeWrapper> parents) {
     this.parents.addAll(parents);
+  }
+
+  public void removeParent(FlowNodeWrapper parent) {
+    this.parents.remove(parent);
   }
 
   public @CheckForNull FlowNodeWrapper getFirstParent() {

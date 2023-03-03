@@ -4,6 +4,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.jenkinsci.plugins.pipeline.modeldefinition.actions.ExecutionModelAction;
 import hudson.model.Action;
 import java.io.IOException;
 import java.util.ArrayDeque;
@@ -43,9 +44,9 @@ import org.slf4j.LoggerFactory;
  * @author Vivek Pandey Records the Stages and steps for a given FlowNodeGraph. Will return children
  *     under the first BlockStartNode. This means Parallel branches will exist inside a
  *     ParallelStartNdde, not in a Stage. Reimplmentation of:
- *     https://github.com/jenkinsci/blueocean-plugin/blob/master/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/PipelineStepVisitor.java
+ *     https://github.com/jenkinsci/blueocean-plugin/blob/master/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/PipelineNodeTreeVisitor.java
  */
-public class PipelineStepVisitor extends StandardChunkVisitor {
+public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
   private final WorkflowRun run;
 
   // Maps a node ID to a given node wrapper.
@@ -74,18 +75,20 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
   // Used to store the origating node of an unhandled exception.
   private FlowNode nodeThatThrewException;
 
+  private Boolean declarative;
   private InputAction inputAction;
   private boolean isLastNode;
   private FlowExecution execution;
-  private static final Logger logger = LoggerFactory.getLogger(PipelineStepVisitor.class);
+  private static final Logger logger = LoggerFactory.getLogger(PipelineNodeTreeVisitor.class);
 
   private boolean isDebugEnabled = logger.isDebugEnabled();
 
-  public PipelineStepVisitor(WorkflowRun run) {
+  public PipelineNodeTreeVisitor(WorkflowRun run) {
     this.run = run;
     this.inputAction = run.getAction(InputAction.class);
     this.isLastNode = true;
     this.execution = run.getExecution();
+    this.declarative = run.getAction(ExecutionModelAction.class) != null;
     if (this.execution != null) {
       try {
         ForkScanner.visitSimpleChunks(execution.getCurrentHeads(), this, new StageChunkFinder());
@@ -281,24 +284,9 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
             PipelineNodeUtil.isStage(parallelStartNode),
             PipelineNodeUtil.isParallelBranch(parallelStartNode),
             PipelineNodeUtil.isSyntheticStage(parallelStartNode)));
-    // Determine if the parent is a stage - if so we want to assign any children to that stage
-    // instead of the parallel start block.
-    // This is for compatability with PipelineNodeGraphVisitor.
-    FlowNode parentNode = parallelStartNode.getParents().get(0);
-    if (parentNode != null && PipelineNodeUtil.isStage(parentNode)) {
-      dump(
-          "parallelStart => Parent of Parallel start is a stage, assigning children to parent's stack.");
-      // Assign children to parent.
-      for (String childId : childBlockIdStacks.removeLast()) {
-        childBlockIdStacks.peekLast().addLast(childId);
-      }
-    } else {
-      // If the parent isn't a stage we will wrap the children in a parallel block - this removes
-      // the need for Synthetic parallel blocks.
-      // Specify NodeType here as we know this is a Parallel start block. I couldn't find a good way
-      // to determine this after the fact (not sure I like relying on that anyway).
-      handleBlockStartNode(parallelStartNode, FlowNodeWrapper.NodeType.PARALLEL_BLOCK);
-    }
+    // Specify NodeType here as we know this is a Parallel start block. I couldn't find a good way
+    // to determine this after the fact (not sure I like relying on that anyway).
+    handleBlockStartNode(parallelStartNode, FlowNodeWrapper.NodeType.PARALLEL_BLOCK);
   }
 
   @Override
@@ -537,12 +525,16 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
 
   public List<FlowNodeWrapper> getPipelineNodes() {
     List<FlowNodeWrapper> stageNodes = new ArrayList<FlowNodeWrapper>(nodeMap.values());
-    stageNodes = stageNodes.stream()
-      // Remove children whoes parents were skipped. This is to match PipelineGraphVisitor behavior.
-      .filter(s -> s.getParents().isEmpty() || s.getParents().get(0).getStatus().wasExecuted())
-      .collect(Collectors.toList());
     Collections.sort(stageNodes, new FlowNodeWrapper.NodeComparator());
     return stageNodes;
+  }
+
+  public Map<String, FlowNodeWrapper> getPipelineNodeMap() {
+    return nodeMap;
+  }
+
+  public Boolean isDeclarative() {
+    return this.declarative;
   }
 
   static class LocalAtomNode extends AtomNode {

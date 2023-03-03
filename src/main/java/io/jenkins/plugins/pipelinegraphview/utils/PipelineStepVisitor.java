@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.NotExecutedNodeAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
@@ -462,10 +463,13 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
     boolean skippedStage = PipelineNodeUtil.isSkippedStage(chunk.getFirstNode());
     if (skippedStage) {
       status = new NodeRunStatus(BlueRun.BlueRunResult.NOT_BUILT, BlueRun.BlueRunState.SKIPPED);
+    } else if (chunk.getLastNode() != null) {
+      status = new NodeRunStatus(
+        StatusAndTiming.coerceStatusApi​(
+          StatusAndTiming.computeChunkStatus2(run, chunk),
+          StatusAndTiming.API_V2));
     } else if (firstExecuted == null) {
       status = new NodeRunStatus(GenericStatus.NOT_EXECUTED);
-    } else if (chunk.getLastNode() != null) {
-      status = new NodeRunStatus(StatusAndTiming.computeChunkStatus2(run, chunk));
     } else {
       status = new NodeRunStatus(firstExecuted);
     }
@@ -533,6 +537,10 @@ public class PipelineStepVisitor extends StandardChunkVisitor {
 
   public List<FlowNodeWrapper> getPipelineNodes() {
     List<FlowNodeWrapper> stageNodes = new ArrayList<FlowNodeWrapper>(nodeMap.values());
+    stageNodes = stageNodes.stream()
+      // Remove children whoes parents were skipped. This is to match PipelineGraphVisitor behavior.
+      .filter(s -> s.getParents().isEmpty() || s.getParents().get(0).getStatus().wasExecuted())
+      .collect(Collectors.toList());
     Collections.sort(stageNodes, new FlowNodeWrapper.NodeComparator());
     return stageNodes;
   }

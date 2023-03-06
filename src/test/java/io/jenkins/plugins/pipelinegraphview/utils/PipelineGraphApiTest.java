@@ -154,6 +154,6 @@ public class PipelineGraphApiTest {
     List<PipelineStage> stages = graph.getStages();
 
     String stagesString = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
-    assertThat(stagesString, is("A[Build,Test[A1,A2]],B[Build,Test[B1,B2]]]"));
+    assertThat(stagesString, is("A[Build,Test[A1,A2]],B[Build,Test[B1,B2]]"));
   }
 }

@@ -47,9 +47,7 @@ public class PipelineGraphApi {
     return run.getParent().getNextBuildNumber();
   }
 
-  private List<PipelineStageInternal> getPipelineNodes() {
-    PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
-    //PipelineNodeGraphVisitor builder = new PipelineNodeGraphVisitor(run);
+  private List<PipelineStageInternal> getPipelineNodes(PipelineNodeGraphAdapter builder) {
     return builder.getPipelineNodes().stream()
         .map(
             flowNodeWrapper -> {
@@ -93,9 +91,10 @@ public class PipelineGraphApi {
     };
   }
 
-
   public PipelineGraph createTree() {
-    List<PipelineStageInternal> stages = getPipelineNodes();
+    PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
+    // We want to remap children here, so we don't update the parents of the original objects - as these are completely new representations.
+    List<PipelineStageInternal> stages = getPipelineNodes(builder);
 
     // id => stage
     Map<String, PipelineStageInternal> stageMap =
@@ -103,9 +102,16 @@ public class PipelineGraphApi {
             .collect(
                 Collectors.toMap(
                     PipelineStageInternal::getId, stage -> stage, (u, v) -> u, LinkedHashMap::new));
+
     Map<String, List<String>> stageToChildrenMap = new HashMap<>();
     List<String> childNodes = new ArrayList<>();
 
+    FlowExecution execution = run.getExecution();
+    if (execution == null) {
+      // If we don't have an execution - e.g. if the Pipeline has a syntax error - then return an
+      // empty graph.
+      return new PipelineGraph(new ArrayList<>(), false);
+    }
     stages.forEach(
         stage -> {
           if (stage.getParents().isEmpty()) {
@@ -132,8 +138,6 @@ public class PipelineGraphApi {
                 })
             .filter(stage -> !childNodes.contains(stage.getId()))
             .collect(Collectors.toList());
-
-    FlowExecution execution = run.getExecution();
     return new PipelineGraph(stageResults, execution != null && execution.isComplete());
   }
 }

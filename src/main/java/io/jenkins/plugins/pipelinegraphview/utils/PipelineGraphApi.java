@@ -17,7 +17,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
-import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,7 +92,8 @@ public class PipelineGraphApi {
 
   public PipelineGraph createTree() {
     PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
-    // We want to remap children here, so we don't update the parents of the original objects - as these are completely new representations.
+    // We want to remap children here, so we don't update the parents of the original objects - as
+    // these are completely new representations.
     List<PipelineStageInternal> stages = getPipelineNodes(builder);
 
     // id => stage
@@ -117,7 +117,8 @@ public class PipelineGraphApi {
           if (stage.getParents().isEmpty()) {
             stageToChildrenMap.put(stage.getId(), new ArrayList<>());
           } else {
-            List<String> parentChildren = stageToChildrenMap.getOrDefault(stage.getParents().get(0), new ArrayList<String>());
+            List<String> parentChildren =
+                stageToChildrenMap.getOrDefault(stage.getParents().get(0), new ArrayList<String>());
             parentChildren.add(stage.getId());
             childNodes.add(stage.getId());
             stageToChildrenMap.put(stage.getParents().get(0), parentChildren);

@@ -147,7 +147,10 @@ public class PipelineGraphApiTest {
   public void createTree_nestedDeclarativeParallel() throws Exception {
     WorkflowRun run =
         TestUtils.createAndRunJob(
-            j, "nestedDeclarativeParallel", "nestedDeclarativeParallel.jenkinsfile", Result.SUCCESS);
+            j,
+            "nestedDeclarativeParallel",
+            "nestedDeclarativeParallel.jenkinsfile",
+            Result.SUCCESS);
     PipelineGraphApi api = new PipelineGraphApi(run);
     PipelineGraph graph = api.createTree();
 

@@ -4,7 +4,6 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.jenkinsci.plugins.pipeline.modeldefinition.actions.ExecutionModelAction;
 import hudson.model.Action;
 import java.io.IOException;
 import java.util.ArrayDeque;
@@ -15,7 +14,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
+import org.jenkinsci.plugins.pipeline.modeldefinition.actions.ExecutionModelAction;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.NotExecutedNodeAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
@@ -452,10 +451,7 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
     if (skippedStage) {
       status = new NodeRunStatus(BlueRun.BlueRunResult.NOT_BUILT, BlueRun.BlueRunState.SKIPPED);
     } else if (chunk.getLastNode() != null) {
-      status = new NodeRunStatus(
-        StatusAndTiming.coerceStatusApi​(
-          StatusAndTiming.computeChunkStatus2(run, chunk),
-          StatusAndTiming.API_V2));
+      status = new NodeRunStatus(StatusAndTiming.computeChunkStatus2(run, chunk));
     } else if (firstExecuted == null) {
       status = new NodeRunStatus(GenericStatus.NOT_EXECUTED);
     } else {

@@ -9,6 +9,7 @@
     "build": "webpack --mode production",
     "build:dev": "webpack --mode development --watch",
     "test": "jest && prettier --check src/main/frontend/",
+    "jest": "jest",
     "prettier": "prettier --write src/main/frontend/"
   },
   "repository": {

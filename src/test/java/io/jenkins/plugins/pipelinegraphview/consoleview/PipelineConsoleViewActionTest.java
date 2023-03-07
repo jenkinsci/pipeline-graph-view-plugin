@@ -136,4 +136,25 @@ public class PipelineConsoleViewActionTest {
     JSONObject consoleJson = consoleAction.getConsoleOutputJson(echoStep.getId(), 1000L);
     assertThat(consoleJson, is(nullValue()));
   }
+
+  @Issue("GH#224")
+  @Test
+  public void getConsoleLogOfStepWithOutputAndException() throws Exception {
+    WorkflowRun run =
+        TestUtils.createAndRunJob(
+            j, "exec_returns_error", "execStepReturnsError.jenkinsfile", Result.FAILURE);
+
+    PipelineStepVisitor builder = new PipelineStepVisitor(run);
+    String stageId = TestUtils.getNodesByDisplayName(run, "Say Hello").get(0).getId();
+    List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
+    // There is an 'isUnix()' step before this.
+    FlowNodeWrapper execStep = stepNodes.get(1);
+
+    PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
+    JSONObject consoleJson = consoleAction.getConsoleOutputJson(execStep.getId(), 0L);
+    assertThat(consoleJson.getString("startByte"), is("0"));
+    assertThat(
+        consoleJson.getString("text"),
+        stringContainsInOrder("echo", "Hello, world!", "script returned exit code 1"));
+  }
 }

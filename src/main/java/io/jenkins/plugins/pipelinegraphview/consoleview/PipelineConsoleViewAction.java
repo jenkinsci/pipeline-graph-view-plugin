@@ -127,41 +127,40 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     long endByte = 0L;
     long textLength;
     String text = "";
-    // If this is an exception, return the exception text (inc. stacktrace).
+    AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
+
+    if (logText != null) {
+      textLength = logText.length();
+      // postitive startByte
+      if (requestStartByte > textLength) {
+        // Avoid resource leak.
+        logger.error("consoleJson - user requested startByte larger than console output.");
+        return null;
+      }
+      // if startByte is negative make sure we don't try and get a byte before 0.
+      if (requestStartByte < 0L) {
+        logger.debug("consoleJson - requested negative startByte '" + requestStartByte + "'.");
+        startByte = textLength + requestStartByte;
+        if (startByte < 0L) {
+          logger.debug(
+              "consoleJson - requested negative startByte '"
+                  + requestStartByte
+                  + "' out of bounds, starting at 0.");
+          startByte = 0L;
+        }
+      } else {
+        startByte = requestStartByte;
+      }
+      logger.debug("Returning '" + (textLength - startByte) + "' bytes from 'getConsoleOutput'.");
+      text = PipelineNodeUtil.convertLogToString(logText, startByte);
+      endByte = textLength;
+    }
+    // If has an exception, return the exception text (inc. stacktrace).
     if (isUnhandledException(nodeId)) {
       // Set logText to exception text. This is a little hacky - maybe it would be better update the
       // frontend to handle steps and exceptions differently?
-      text = getNodeExceptionText(nodeId);
-      endByte = text.length();
-    } else {
-      AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
-
-      if (logText != null) {
-        textLength = logText.length();
-        // postitive startByte
-        if (requestStartByte > textLength) {
-          // Avoid resource leak.
-          logger.error("consoleJson - user requested startByte larger than console output.");
-          return null;
-        }
-        // if startByte is negative make sure we don't try and get a byte before 0.
-        if (requestStartByte < 0L) {
-          logger.debug("consoleJson - requested negative startByte '" + requestStartByte + "'.");
-          startByte = textLength + requestStartByte;
-          if (startByte < 0L) {
-            logger.debug(
-                "consoleJson - requested negative startByte '"
-                    + requestStartByte
-                    + "' out of bounds, starting at 0.");
-            startByte = 0L;
-          }
-        } else {
-          startByte = requestStartByte;
-        }
-        logger.debug("Returning '" + (textLength - startByte) + "' bytes from 'getConsoleOutput'.");
-        text = PipelineNodeUtil.convertLogToString(logText, startByte);
-        endByte = textLength;
-      }
+      text += getNodeExceptionText(nodeId);
+      endByte += text.length();
     }
     HashMap<String, Object> response = new HashMap<>();
     response.put("text", text);

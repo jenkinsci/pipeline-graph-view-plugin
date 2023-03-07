@@ -137,7 +137,6 @@ public class PipelineConsoleViewActionTest {
     assertThat(consoleJson, is(nullValue()));
   }
 
-
   @Issue("GH#224")
   @Test
   public void getConsoleLogOfStepWithOutputAndException() throws Exception {

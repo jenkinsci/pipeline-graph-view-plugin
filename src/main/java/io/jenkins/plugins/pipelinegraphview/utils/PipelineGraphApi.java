@@ -107,11 +107,6 @@ public class PipelineGraphApi {
     List<String> childNodes = new ArrayList<>();
 
     FlowExecution execution = run.getExecution();
-    if (execution == null) {
-      // If we don't have an execution - e.g. if the Pipeline has a syntax error - then return an
-      // empty graph.
-      return new PipelineGraph(new ArrayList<>(), false);
-    }
     stages.forEach(
         stage -> {
           if (stage.getParents().isEmpty()) {

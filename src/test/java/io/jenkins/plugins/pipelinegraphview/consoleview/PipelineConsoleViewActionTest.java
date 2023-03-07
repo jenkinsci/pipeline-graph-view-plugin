@@ -144,7 +144,7 @@ public class PipelineConsoleViewActionTest {
         TestUtils.createAndRunJob(
             j, "exec_returns_error", "execStepReturnsError.jenkinsfile", Result.FAILURE);
 
-    PipelineStepVisitor builder = new PipelineStepVisitor(run);
+    PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
     String stageId = TestUtils.getNodesByDisplayName(run, "Say Hello").get(0).getId();
     List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
     // There is an 'isUnix()' step before this.

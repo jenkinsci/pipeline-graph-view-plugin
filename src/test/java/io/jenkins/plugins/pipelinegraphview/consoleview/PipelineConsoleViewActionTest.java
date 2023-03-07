@@ -155,6 +155,6 @@ public class PipelineConsoleViewActionTest {
     assertThat(consoleJson.getString("startByte"), is("0"));
     assertThat(
         consoleJson.getString("text"),
-        stringContainsInOrder("+ echo", "Hello, world!", "script returned exit code 1"));
+        stringContainsInOrder("echo", "Hello, world!", "script returned exit code 1"));
   }
 }

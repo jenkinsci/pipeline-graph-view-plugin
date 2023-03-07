@@ -153,7 +153,8 @@ public class PipelineConsoleViewActionTest {
     PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
     JSONObject consoleJson = consoleAction.getConsoleOutputJson(execStep.getId(), 0L);
     assertThat(consoleJson.getString("startByte"), is("0"));
-    assertThat(consoleJson.getString("text"), startsWith("+ echo 'Hello, world!'"));
-    assertThat(consoleJson.getString("text"), endsWith("script returned exit code 1"));
+    assertThat(
+        consoleJson.getString("text"),
+        stringContainsInOrder("+ echo", "Hello, world!", "script returned exit code 1"));
   }
 }

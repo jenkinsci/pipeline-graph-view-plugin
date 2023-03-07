@@ -3,7 +3,7 @@ node {
         if (isUnix()) {
             sh "echo 'Hello, world!' && exit 1"
         } else {
-            bat "ECHO 'Hello, world!' && exit /b 1"
+            bat "echo 'Hello, world!' && exit /b 1"
         }
     }
 }

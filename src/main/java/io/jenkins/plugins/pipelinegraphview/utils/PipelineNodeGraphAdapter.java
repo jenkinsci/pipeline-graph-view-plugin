@@ -12,7 +12,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Tim Brown Adapter class that runs a 'PipelineNodeTreeVisitor' and adapts the outputs to
- *     look more like that of the PipelineGraphNodeVisitor.
+ *     look more like that of the original PipelineGraphNodeVisitor. The original
+ *     PipelineGraphNodeVisitor code can be found here:
+ *     https://github.com/jenkinsci/blueocean-plugin/blob/master/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/PipelineNodeTreeVisitor.java
  */
 public class PipelineNodeGraphAdapter {
 
@@ -80,7 +82,7 @@ public class PipelineNodeGraphAdapter {
     if (nodesToRemap.containsKey(nodeId)) {
       // We only want to calculate this once if we do it after remapping the nods it will causes
       // issues.
-      // So store the result in the class and return it if we have alterady calculated.
+      // So store the result in the class and return it if we have already calculated.
       return getFinalParent(nodesToRemap.get(nodeId), nodesToRemap);
     }
     return nodeId;
@@ -98,7 +100,6 @@ public class PipelineNodeGraphAdapter {
       Map<String, List<FlowNodeWrapper>> localStepsMap) {
     List<FlowNodeWrapper> nodes = new ArrayList<FlowNodeWrapper>();
     nodes.addAll(localPipelineNodesList);
-    // localStepsMap.values().forEach(nodes::addAll);
     dumpNodeGraphviz(nodes);
   }
 
@@ -132,7 +133,7 @@ public class PipelineNodeGraphAdapter {
 
   private void remapStageParentage() {
     // We only want to remap nodes once, otherwise we could cause issues.
-    // So store the result in the object and return it if we have alterady done this.
+    // So store the result in the object and return it if we have already done this.
     if (pipelineNodesList != null) {
       return;
     }
@@ -140,7 +141,7 @@ public class PipelineNodeGraphAdapter {
 
     this.pipelineNodesList = new ArrayList<FlowNodeWrapper>(pipelineNodeMap.values());
     Collections.sort(this.pipelineNodesList, new FlowNodeWrapper.NodeComparator());
-    // Remove children whoes parents were skipped.
+    // Remove children whose parents were skipped.
     Map<String, String> nodesToRemap = getNodesToRemap(this.pipelineNodesList);
     dump(
         String.format(
@@ -149,10 +150,8 @@ public class PipelineNodeGraphAdapter {
                 .map(entrySet -> entrySet.getKey() + ":" + entrySet.getValue())
                 .collect(Collectors.joining(",", "[", "]"))));
     dumpNodeGraphviz(this.pipelineNodesList);
-    List<String> obsoleteParallelBlocks = new ArrayList<String>();
     // Find all nodes that have a parent to remap (see 'getNodesToRemap') and change their parentage
     // to the designated parent.
-    List<String> alreadyRemapped = new ArrayList<>();
     for (int i = this.pipelineNodesList.size() - 1; i >= 0; i--) {
       FlowNodeWrapper node = this.pipelineNodesList.get(i);
       List<String> parentIds =
@@ -179,13 +178,12 @@ public class PipelineNodeGraphAdapter {
                   newParent.getType()));
         }
       }
-      alreadyRemapped.add(node.getId());
     }
     // Remove remapped nodes from the tree
     this.pipelineNodesList =
         this.pipelineNodesList.stream()
             .
-            // Filter out obsolete Parallel block nodes - ones whoes children were remapped to a
+            // Filter out obsolete Parallel block nodes - ones whose children were remapped to a
             // stage.
             filter(n -> !nodesToRemap.containsKey(n.getId()))
             .
@@ -196,16 +194,17 @@ public class PipelineNodeGraphAdapter {
   }
 
   private void remapStepParentage() {
-    // We only want to do this once, so return early if we jhave an existing value.
+    // We only want to do this once, so return early if we have an existing value.
     if (this.stepsMap != null) {
       return;
     }
     this.stepsMap = treeVisitor.getAllSteps();
     dumpNodeGraphviz(getPipelineNodes(), this.stepsMap);
     Map<String, String> nodesToRemap = getNodesToRemap(getPipelineNodes());
-    for (String originalParentId : nodesToRemap.keySet()) {
+    for (Map.Entry<String, String> remapEntry : nodesToRemap.entrySet()) {
+      String originalParentId = remapEntry.getKey();
       if (this.stepsMap.containsKey(originalParentId)) {
-        String remappedParentId = nodesToRemap.get(originalParentId);
+        String remappedParentId = remapEntry.getValue();
         dump(
             String.format(
                 "remapStepParentage => Remapping %s steps from stage %s to %s.",

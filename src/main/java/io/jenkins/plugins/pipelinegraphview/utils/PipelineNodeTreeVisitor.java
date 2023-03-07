@@ -40,10 +40,11 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Tim Brown
- * @author Vivek Pandey Records the Stages and steps for a given FlowNodeGraph. Will return children
- *     under the first BlockStartNode. This means Parallel branches will exist inside a
- *     ParallelStartNdde, not in a Stage. Reimplmentation of:
- *     https://github.com/jenkinsci/blueocean-plugin/blob/master/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/PipelineNodeTreeVisitor.java
+ * @author Vivek Pandey Records the Stages and steps for a given FlowNodeGraph. The records the
+ *     actual structure of the FlowGraph, including all ParallelBlock, ParallelBranch, Stage, and
+ *     Step nodes (steps are recorded in a separate map). This means it's more verbose that the
+ *     original PipelineNodeGraphVisitor, but is also less esoteric. If you want something more akin
+ *     to the behavior of PipelineNodeGraphVisitor, then call PipelineNodeGraphAdapter.
  */
 public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
   private final WorkflowRun run;

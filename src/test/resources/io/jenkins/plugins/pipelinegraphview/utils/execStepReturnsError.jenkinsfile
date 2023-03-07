@@ -1,9 +1,9 @@
 node {
     stage("Say Hello") {
         if (isUnix()) {
-            sh 'echo "Hello, world!" && exit 1'
+            sh "echo 'Hello, world!' && exit 1"
         } else {
-            sh 'ECHO "Hello, world!" && exit /b 1'
+            sh "ECHO 'Hello, world!' && exit /b 1"
         }
     }
 }

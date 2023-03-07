@@ -160,6 +160,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
       // Set logText to exception text. This is a little hacky - maybe it would be better update the
       // frontend to handle steps and exceptions differently?
       text += getNodeExceptionText(nodeId);
+      endByte += text.length();
     }
     HashMap<String, Object> response = new HashMap<>();
     response.put("text", text);

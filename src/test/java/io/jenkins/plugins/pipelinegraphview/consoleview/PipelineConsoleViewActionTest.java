@@ -143,7 +143,6 @@ public class PipelineConsoleViewActionTest {
     WorkflowRun run =
         TestUtils.createAndRunJob(
             j, "exec_returns_error", "execStepReturnsError.jenkinsfile", Result.FAILURE);
-
     PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
     String stageId = TestUtils.getNodesByDisplayName(run, "Say Hello").get(0).getId();
     List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);

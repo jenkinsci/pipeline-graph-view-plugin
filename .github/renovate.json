@@ -2,10 +2,8 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:base",
-    ":semanticCommitsDisabled"
-  ],
-  "reviewers": [
-    "team:pipeline-graph-view-plugin-developers"
+    ":semanticCommitsDisabled",
+    "schedule:earlyMondays"
   ],
   "packageRules": [
     {

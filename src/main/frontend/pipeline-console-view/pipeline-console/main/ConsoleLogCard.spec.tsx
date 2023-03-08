@@ -5,7 +5,7 @@ import { waitFor } from "@testing-library/react";
 import React, { ReactElement } from "react";
 import { ConsoleLogCard } from "./ConsoleLogCard";
 import type { ConsoleLogCardProps } from "./ConsoleLogCard";
-import { Result, StepInfo } from "./PipelineConsoleModel";
+import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
 import { render } from "@testing-library/react";
 import { VirtuosoMockContext } from "react-virtuoso";
 
@@ -18,12 +18,15 @@ describe("ConsoleLogCard", () => {
     title: "This is a title",
     state: Result.success,
     completePercent: 50,
-    id: 2,
+    id: "2",
     type: "STAGE",
     pauseDurationMillis: "",
     startTimeMillis: "",
     totalDurationMillis: "",
     stageId: "1",
+  }
+  
+  const baseBuffer: StepLogBufferInfo = {
     consoleLines: ["Hello, world!"],
     consoleStartByte: 0,
     consoleEndByte: 13,
@@ -39,6 +42,7 @@ describe("ConsoleLogCard", () => {
 
   const DefaultTestProps = {
     step: baseStep,
+    stepBuffer: baseBuffer,
     isExpanded: false,
     handleStepToggle: () => {
       console.log("handleStepToggle triggered");

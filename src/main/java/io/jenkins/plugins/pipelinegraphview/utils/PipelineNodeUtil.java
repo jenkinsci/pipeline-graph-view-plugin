@@ -123,20 +123,6 @@ public class PipelineNodeUtil {
         && node.getAction(ThreadNameAction.class) != null;
   }
 
-  public static boolean isParallelParentBlock(@Nullable FlowNode node) {
-    return node != null && node.getDisplayName() == "Execute in parallel : Start";
-  }
-
-  public static boolean isPipelineStartNode(@Nullable FlowNode node) {
-    return node != null && node instanceof FlowStartNode;
-  }
-
-  /* Is this FlowNode a start/end block fo the Pipeline.
-   */
-  public static boolean isPipelineBlock(@Nullable FlowNode node) {
-    return node != null && (node instanceof FlowStartNode || node instanceof FlowEndNode);
-  }
-
   public static boolean isUnhandledException(@Nullable FlowNode node) {
     return node != null && node.getAction(ErrorAction.class) != null;
   }

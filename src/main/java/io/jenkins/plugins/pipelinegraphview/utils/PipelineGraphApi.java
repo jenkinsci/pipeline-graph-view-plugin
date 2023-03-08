@@ -56,15 +56,11 @@ public class PipelineGraphApi {
               if (flowNodeWrapper.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
                 state = flowNodeWrapper.getStatus().getState().name().toLowerCase(Locale.ROOT);
               }
-              String displayName = flowNodeWrapper.getDisplayName();
-              if (flowNodeWrapper.getType() == FlowNodeWrapper.NodeType.PARALLEL_BLOCK) {
-                displayName = "Parallel";
-              }
               return new PipelineStageInternal(
                   flowNodeWrapper
                       .getId(), // TODO no need to parse it BO returns a string even though the
                   // datatype is number on the frontend
-                  displayName,
+                  flowNodeWrapper.getDisplayName(),
                   flowNodeWrapper.getParents().stream()
                       .map(FlowNodeWrapper::getId)
                       .collect(Collectors.toList()),

@@ -5,7 +5,30 @@
     ":semanticCommitsDisabled",
     "schedule:earlyMondays"
   ],
-  "automerge": true,
+  "packageRules": [
+    {
+      "matchDatasources": ["npm"],
+      "addLabels": ["javascript"]
+    },
+    {
+      "matchPackageNames": ["node"],
+      "allowedVersions": "/16.[0-9]+.[0-9]+(.[0-9]+)?$/"
+    }
+  ],
+  "regexManagers": [
+    {
+      "fileMatch": ["pom.xml"],
+      "matchStrings": ["<node.version>(?<currentValue>.*?)<\/node.version>"],
+      "depNameTemplate": "node",
+      "datasourceTemplate": "npm"
+    },
+    {
+      "fileMatch": ["pom.xml"],
+      "matchStrings": ["<npm.version>(?<currentValue>.*?)<\/npm.version>"],
+      "depNameTemplate": "npm",
+      "datasourceTemplate": "npm"
+    }
+  ],
   "labels": [
     "dependencies"
   ],

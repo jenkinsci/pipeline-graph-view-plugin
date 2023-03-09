@@ -51,11 +51,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
     this.props.handleStepToggle(event, String(this.props.step.id));
   }
 
-  getRowHeight(index: number) {
-    return 20;
-  }
-
-  getTrucatedLogWarning() {
+  getTruncatedLogWarning() {
     if (this.props.step.consoleLines && this.props.step.consoleStartByte > 0) {
       return (
         <Grid container>
@@ -243,7 +239,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
             className="step-content"
             key={`step-console-content-${this.props.step.id}`}
           >
-            <div>{this.getTrucatedLogWarning()}</div>
+            <div>{this.getTruncatedLogWarning()}</div>
             <Virtuoso
               totalCount={this.getNumConsoleLines()}
               itemContent={(index: number) => this.renderConsoleLine(index)}

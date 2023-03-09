@@ -250,6 +250,10 @@ pre.console-output-line {
   color: var(--step-text-color);
 }
 
+.svg-icon--step-card-status {
+  color: var(--step-text-color) !important;
+}
+
 // Console styling
 a.console-line-number {
   text-align: right;

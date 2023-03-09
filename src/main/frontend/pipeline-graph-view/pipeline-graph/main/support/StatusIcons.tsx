@@ -8,7 +8,8 @@ export const nodeStrokeWidth = 3.5; // px.
 export function getGroupForResult(
   result: Result,
   percentage: number,
-  radius: number
+  radius: number,
+  outerStyle: React.CSSProperties
 ): React.ReactElement<SvgStatus> {
   switch (result) {
     case Result.running:
@@ -21,10 +22,18 @@ export function getGroupForResult(
     case Result.unstable:
     case Result.aborted:
     case Result.unknown:
-      return <SvgStatus radius={radius} result={result} />;
+      return (
+        <SvgStatus radius={radius} result={result} outerStyle={outerStyle} />
+      );
     default:
       badResult(result);
-      return <SvgStatus radius={radius} result={Result.unknown} />;
+      return (
+        <SvgStatus
+          radius={radius}
+          result={Result.unknown}
+          outerStyle={outerStyle}
+        />
+      );
   }
 }
 

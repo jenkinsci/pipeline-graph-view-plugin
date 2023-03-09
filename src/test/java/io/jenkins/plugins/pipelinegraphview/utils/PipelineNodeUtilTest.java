@@ -23,7 +23,7 @@ public class PipelineNodeUtilTest {
         TestUtils.createAndRunJob(
             j, "hello_world_scripted", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
-    PipelineStepVisitor builder = new PipelineStepVisitor(run);
+    PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
     String stageId = TestUtils.getNodesByDisplayName(run, "Say Hello").get(0).getId();
     List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
     FlowNodeWrapper echoStep = stepNodes.get(0);
@@ -38,7 +38,7 @@ public class PipelineNodeUtilTest {
   public void canGetErrorTextFromStep() throws Exception {
     WorkflowRun run =
         TestUtils.createAndRunJob(j, "simple_error", "simpleError.jenkinsfile", Result.FAILURE);
-    PipelineStepVisitor builder = new PipelineStepVisitor(run);
+    PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
     String stageId = TestUtils.getNodesByDisplayName(run, "A").get(0).getId();
     List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
     FlowNodeWrapper errorStep = stepNodes.get(0);
@@ -57,7 +57,7 @@ public class PipelineNodeUtilTest {
             "callsUnknownVariable.jenkinsfile",
             Result.FAILURE);
 
-    PipelineStepVisitor builder = new PipelineStepVisitor(run);
+    PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
     String stageId = TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
     List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
     FlowNodeWrapper errorStep = stepNodes.get(1);

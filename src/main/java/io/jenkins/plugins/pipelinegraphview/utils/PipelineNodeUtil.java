@@ -200,6 +200,11 @@ public class PipelineNodeUtil {
         && pauseAction.getCause().equals("Input"));
   }
 
+  public static boolean isPaused(@NonNull FlowNode step) {
+    PauseAction pauseAction = step.getAction(PauseAction.class);
+    return (pauseAction != null && pauseAction.isPaused());
+  }
+
   /**
    * Determine if the given {@link FlowNode} is the initial {@link StepStartNode} for an {@link
    * ExecutorStep}.

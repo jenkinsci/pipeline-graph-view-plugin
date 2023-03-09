@@ -111,4 +111,8 @@ public class NodeRunStatus {
         this.state = BlueRun.BlueRunState.QUEUED;
     }
   }
+
+  public boolean wasExecuted() {
+    return state != BlueRun.BlueRunState.NOT_BUILT && state != BlueRun.BlueRunState.SKIPPED;
+  }
 }

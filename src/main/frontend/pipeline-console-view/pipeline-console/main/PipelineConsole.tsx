@@ -2,7 +2,7 @@ import React from "react";
 import { lazy, Suspense } from "react";
 import { SplitPane } from "react-collapse-pane";
 
-import { LOG_FETCH_SIZE } from "./PipelineConsoleModel";
+import { LOG_FETCH_SIZE, StepLogBufferInfo } from "./PipelineConsoleModel";
 import { CircularProgress } from "@mui/material";
 import "./pipeline-console.scss";
 import {
@@ -10,20 +10,24 @@ import {
   StepInfo,
   Result,
   ConsoleLogData,
+  POLL_INTERVAL,
 } from "./PipelineConsoleModel";
 
 const DataTreeView = lazy(() => import("./DataTreeView"));
 const StageView = lazy(() => import("./StageView"));
 
 interface PipelineConsoleProps {}
+
 interface PipelineConsoleState {
   selectedStage: string;
   expandedStages: string[];
   expandedSteps: string[];
   stages: Array<StageInfo>;
   steps: Array<StepInfo>;
+  stepBuffers: Map<string, StepLogBufferInfo>;
   anchor: string;
   hasScrolled: boolean;
+  isComplete: boolean;
 }
 
 export default class PipelineConsole extends React.Component<
@@ -36,6 +40,7 @@ export default class PipelineConsole extends React.Component<
     this.handleToggle = this.handleToggle.bind(this);
     this.handleStepToggle = this.handleStepToggle.bind(this);
     this.handleMoreConsoleClick = this.handleMoreConsoleClick.bind(this);
+    
     // set default values of state
     this.state = {
       // Need to update dynamically
@@ -44,8 +49,10 @@ export default class PipelineConsole extends React.Component<
       expandedSteps: [] as string[],
       stages: [] as StageInfo[],
       steps: [] as StepInfo[],
+      stepBuffers: new Map<string, StepLogBufferInfo>(),
       anchor: window.location.hash.replace("#", ""),
       hasScrolled: false,
+      isComplete: false,
     };
     console.debug(`Anchor: ${this.state.anchor}`);
     this.updateState();
@@ -53,8 +60,34 @@ export default class PipelineConsole extends React.Component<
 
   // State update methods
   async updateState() {
-    this.setStages();
-    this.setSteps();
+    // Call functions in parallel.
+    const updateStages = async () => {
+      this.setStages();
+    }
+    const updateSteps = async () => {
+      this.setSteps();
+    }
+    await Promise.allSettled([updateStages(), updateSteps()])
+  }
+  
+  // Trigger poller when component mounts.
+  componentDidMount() {
+    this.pollForUpdates();
+  }
+
+  pollForUpdates() {
+    // Poll for updates every  second until the Pipeline is complete.
+    // This updates the structure of the DataTreeView and the steps, not the console log.
+    this.updateState();
+    if (this.state.isComplete) {
+      this.onPipelineComplete();
+    } else {
+      setTimeout(() => this.pollForUpdates(), 1000);
+    }
+  }
+
+  onPipelineComplete () {
+    console.debug("Pipeline completed.");
   }
 
   // Determines the default selected step in the tree view based
@@ -86,10 +119,10 @@ export default class PipelineConsole extends React.Component<
     return fetch("tree")
       .then((res) => res.json())
       .then((result) => {
-        console.debug("Updating stages");
         this.setState(
           {
             stages: result.data.stages,
+            isComplete: result.data.complete,
           },
           () => {
             this.selectNode();
@@ -102,7 +135,6 @@ export default class PipelineConsole extends React.Component<
     return fetch(`allSteps`)
       .then((step_res) => step_res.json())
       .then((step_result) => {
-        console.debug("Updating steps");
         this.setState(
           {
             steps: step_result.data.steps,
@@ -129,6 +161,23 @@ export default class PipelineConsole extends React.Component<
     return stepsCopy;
   }
 
+  getStageStepBuffers(stageId: string) {
+    let stepsBuffersCopy = new Map<string, StepLogBufferInfo>();
+    let i = this.state.steps.length;
+    while (i--) {
+      let step = this.state.steps[i];
+      if (step.stageId == stageId) {
+        // Remove step buffer from local copy - can only have one parent.
+        // This should reduce the total number of loops required.
+        let stepBuffer = this.state.stepBuffers.get(step.id);
+        if (stepBuffer !== undefined) {
+          stepsBuffersCopy.set(step.id, stepBuffer);
+        }
+      }
+    };
+    return stepsBuffersCopy;
+  }
+
   getConsoleTextOffset(
     stepId: string,
     startByte: number
@@ -148,6 +197,9 @@ export default class PipelineConsole extends React.Component<
   }
 
   selectNode() {
+    if (this.state.selectedStage) {
+      return;
+    }
     console.debug(`In selectNode.`);
     let params = new URLSearchParams(document.location.search.substring(1));
     let selectedStage = params.get("selected-node") || "";
@@ -163,12 +215,12 @@ export default class PipelineConsole extends React.Component<
       if (step) {
         console.debug(`Found step with id '${selectedStage}`);
         selectedStage = step.stageId;
-        expandedSteps = [String(step.id)];
+        expandedSteps = [step.id];
         expandedStages = this.getStageNodeHierarchy(
           step.stageId,
           this.state.stages
         );
-        this.updateStepConsole(String(step.id), false);
+        this.updateStepConsole(step.id, false);
       } else {
         console.debug(
           `Didn't find step with id '${selectedStage}', must be a stage.`
@@ -184,12 +236,12 @@ export default class PipelineConsole extends React.Component<
       if (step) {
         console.debug(`Expanding default steps '${selectedStage}`);
         selectedStage = String(step.stageId);
-        expandedSteps = [String(step.id)];
+        expandedSteps = [step.id];
         expandedStages = this.getStageNodeHierarchy(
           step.stageId,
           this.state.stages
         );
-        this.updateStepConsoleOffset(String(step.id), false, startByte);
+        this.updateStepConsoleOffset(step.id, false, startByte);
       } else {
         console.debug("No node selected.");
       }
@@ -204,7 +256,6 @@ export default class PipelineConsole extends React.Component<
   }
 
   componentDidUpdate() {
-    console.debug(`In componentDidUpdate.`);
     // only attempt to scroll if we haven't yet (this could have just reset above if hash changed)
     if (this.state.anchor && !this.state.hasScrolled) {
       console.debug(`Trying to scroll to ${this.state.anchor}`);
@@ -242,28 +293,36 @@ export default class PipelineConsole extends React.Component<
     forceUpdate: boolean,
     startByte: number
   ) {
-    let updatedSteps = [...this.state.steps];
-    for (let step of updatedSteps) {
-      if (stepId === String(step.id)) {
-        if (!step.consoleLines || forceUpdate) {
-          console.debug(
-            `Updating console text for step ${stepId} with from '${startByte}'`
-          );
-          let promise = this.getConsoleTextOffset(stepId, startByte);
-          promise.then((res) => {
-            step.consoleLines = res.text.trimEnd().split("\n") || [];
-            step.consoleStartByte = res.startByte;
-            step.consoleEndByte = res.endByte;
-            this.setState({
-              steps: updatedSteps,
-            });
-          });
+    let stepBuffer = this.state.stepBuffers.get(stepId) ?? {
+      consoleLines: [] as string[],
+      consoleStartByte: 0 - LOG_FETCH_SIZE,
+      consoleEndByte: -1
+    } as StepLogBufferInfo;
+    if (stepBuffer.consoleStartByte < 0 || forceUpdate) {
+      let promise = this.getConsoleTextOffset(stepId, startByte);
+      promise.then((res) => {
+        let newLogLines = res.text.trim().split("\n") || [];
+        // Check if we are requesting a log update. 'startByte > 0' is because the first update normally requests a negative log offset.
+        if (stepBuffer.consoleEndByte <= startByte && startByte > 0) {
+          if (stepBuffer.consoleEndByte < startByte) {
+            console.warn(`Log update requested, but there will be a gap of '${startByte - stepBuffer.consoleEndByte}'B in logs.`)
+          }
+          if (newLogLines.length > 0) {
+            stepBuffer.consoleLines = [...stepBuffer.consoleLines, ...newLogLines];
+          }
         } else {
-          console.debug(
-            `Skipping update of console text for step ${step.id} - already set.`
-          );
+          // If we are not appending, we are replacing. The Jenkins don't have a stopByte (just a start byte) so we will get all of the logs.
+          stepBuffer.consoleLines = newLogLines
+          // Only update start byte of we requested something before the only startByte.
+          stepBuffer.consoleStartByte = res.startByte;
         }
-      }
+        stepBuffer.consoleEndByte = res.endByte;
+        this.state.stepBuffers.set(stepId, stepBuffer);
+      });
+    } else {
+      console.debug(
+        `Skipping update of console text for step ${stepId} - already set.`
+      );
     }
   }
 
@@ -291,7 +350,7 @@ export default class PipelineConsole extends React.Component<
 
   // Gets the selected step in the tree view (or none if not selected).
   getStepWithId(nodeId: string, steps: StepInfo[]) {
-    let foundStep = steps.find((step) => String(step.id) == nodeId);
+    let foundStep = steps.find((step) => step.id == nodeId);
     if (!foundStep) {
       console.debug(`No step found with nodeID ${nodeId}`);
     }
@@ -370,11 +429,22 @@ export default class PipelineConsole extends React.Component<
               </Suspense>
             </div>
 
-            <div className="split-pane" key="stage-view" id="stage-view-pane">
+            <div
+              className="split-pane split-pane--stage-view"
+              key="stage-view"
+              id="stage-view-pane"
+              style={{
+                height: "100vh",
+                margin: 0,
+                padding: 0,
+                overflow: "scroll"
+              }}
+            >
               <Suspense fallback={<CircularProgress />}>
                 <StageView
                   stage={this.getSelectedStage()}
                   steps={this.getStageSteps(this.state.selectedStage)}
+                  stepBuffers={this.getStageStepBuffers(this.state.selectedStage)}
                   expandedSteps={this.state.expandedSteps}
                   selectedStage={this.state.selectedStage}
                   handleStepToggle={this.handleStepToggle}

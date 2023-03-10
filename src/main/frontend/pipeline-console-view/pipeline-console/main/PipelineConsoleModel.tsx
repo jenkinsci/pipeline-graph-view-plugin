@@ -5,6 +5,7 @@ export {
   Result,
   decodeResultValue,
 } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
+
 export type {
   StageInfo,
 } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
@@ -19,12 +20,15 @@ export interface StepInfo {
   title: string;
   state: Result;
   completePercent: number;
-  id: number;
+  id: string;
   type: string;
   stageId: string;
   pauseDurationMillis: string;
   startTimeMillis: string;
   totalDurationMillis: string;
+}
+
+export interface StepLogBufferInfo {
   consoleLines: string[];
   consoleStartByte: number;
   consoleEndByte: number;
@@ -38,3 +42,4 @@ export interface ConsoleLogData {
 }
 
 export const LOG_FETCH_SIZE = 150 * 1024;
+export const POLL_INTERVAL = 3000;

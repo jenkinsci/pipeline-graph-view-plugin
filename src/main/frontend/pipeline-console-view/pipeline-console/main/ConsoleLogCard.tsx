@@ -8,7 +8,7 @@ import Collapse from "@mui/material/Collapse";
 import IconButton, { IconButtonProps } from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { StepInfo } from "./PipelineConsoleModel";
+import { StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
 import { ConsoleLine } from "./ConsoleLine";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
@@ -34,6 +34,7 @@ const ExpandMore = styled((props: ExpandMoreProps) => {
 
 export type ConsoleLogCardProps = {
   step: StepInfo;
+  stepBuffer: StepLogBufferInfo;
   isExpanded: boolean;
   handleStepToggle: (event: React.SyntheticEvent<{}>, nodeId: string) => void;
   handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
@@ -48,17 +49,53 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
   }
 
   handleStepToggle(event: React.MouseEvent<HTMLElement>) {
-    this.props.handleStepToggle(event, String(this.props.step.id));
+    this.props.handleStepToggle(event, this.props.step.id);
+  }
+
+
+  componentDidMount() {
+    // If we are passed a running expanded step, then start polling.
+    if (this.props.isExpanded && this.props.step.state == 'running') {
+      this.pollForUpdates();
+    }
+  }
+
+
+  componentDidUpdate(prevProps: ConsoleLogCardProps) {
+    // If step has just been expanded and is running then start polling.
+    if (!prevProps.isExpanded && this.props.isExpanded && this.props.step.state == 'running') {
+      this.pollForUpdates();
+    }
+  }
+
+  pollForUpdates() {
+    // Poll for updates every 1 second until the Pipeline is complete.
+    // This updates the console log text, not the list of stages or steps.
+    let requestedStartByte = this.props.stepBuffer.consoleStartByte
+    // If we have already logs, then only ask for logs since endByte.
+    if (this.props.stepBuffer.consoleLines.length > 0) {
+      requestedStartByte = this.props.stepBuffer.consoleEndByte;
+    }
+    this.props.handleMoreConsoleClick(this.props.step.id, requestedStartByte);
+    if (this.props.step.state != 'running') {
+      this.onStepComplete();
+    } else {
+      setTimeout(() => this.pollForUpdates(), 1000);
+    }
+  }
+
+  onStepComplete () {
+    console.debug(`Step '${this.props.step.name}' (${this.props.step.id}) completed.`);
   }
 
   getTruncatedLogWarning() {
-    if (this.props.step.consoleLines && this.props.step.consoleStartByte > 0) {
+    if (this.props.stepBuffer.consoleLines && this.props.stepBuffer.consoleStartByte > 0) {
       return (
         <Grid container>
           <Grid item xs={6} sm className="show-more-console">
             <Typography align="right" className="step-header">
               {`Missing ${this.prettySizeString(
-                this.props.step.consoleStartByte
+                this.props.stepBuffer.consoleStartByte
               )} of logs.`}
             </Typography>
           </Grid>
@@ -68,15 +105,15 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
               sx={{ padding: "0px", textTransform: "none" }}
               onClick={() => {
                 let startByte =
-                  this.props.step.consoleStartByte - LOG_FETCH_SIZE;
+                  this.props.stepBuffer.consoleStartByte - LOG_FETCH_SIZE;
                 console.debug(
-                  `startByte '${this.props.step.consoleStartByte}' -> '${startByte}'`
+                  `startByte '${this.props.stepBuffer.consoleStartByte}' -> '${startByte}'`
                 );
                 if (startByte < 0) {
                   startByte = 0;
                 }
                 this.props.handleMoreConsoleClick(
-                  String(this.props.step.id),
+                  this.props.step.id,
                   startByte
                 );
               }}
@@ -106,15 +143,15 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
   }
 
   renderSimpleConsoleLines() {
-    if (this.props.step.consoleLines) {
-      return this.props.step.consoleLines.map(
+    if (this.props.stepBuffer.consoleLines) {
+      return this.props.stepBuffer.consoleLines.map(
         (content: string, index: number) => {
           return (
             <ConsoleLine
               lineNumber={String(index)}
               content={content}
-              stepId={String(this.props.step.id)}
-              startByte={this.props.step.consoleStartByte}
+              stepId={this.props.step.id}
+              startByte={this.props.stepBuffer.consoleStartByte}
             />
           );
         }
@@ -125,21 +162,21 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
   }
 
   renderConsoleLine(index: number) {
-    if (this.props.step.consoleLines) {
+    if (this.props.stepBuffer.consoleLines) {
       return (
         <ConsoleLine
           lineNumber={String(index + 1)}
-          content={this.props.step.consoleLines[index]}
-          stepId={String(this.props.step.id)}
-          startByte={this.props.step.consoleStartByte}
+          content={this.props.stepBuffer.consoleLines[index]}
+          stepId={this.props.step.id}
+          startByte={this.props.stepBuffer.consoleStartByte}
         />
       );
     }
   }
 
   getNumConsoleLines() {
-    return this.props.step.consoleLines
-      ? this.props.step.consoleLines.length
+    return this.props.stepBuffer.consoleLines
+      ? this.props.stepBuffer.consoleLines.length
       : 0;
   }
 
@@ -248,6 +285,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
               customScrollParent={
                 document.getElementById(this.props.scrollParentId) || undefined
               }
+              followOutput={"auto"}
             />
           </CardContent>
         </Collapse>

@@ -394,3 +394,10 @@ a {
   color: inherit !important;
   text-decoration: none !important;
 }
+
+.split-pane--stage-view {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  overflow: scroll;
+}

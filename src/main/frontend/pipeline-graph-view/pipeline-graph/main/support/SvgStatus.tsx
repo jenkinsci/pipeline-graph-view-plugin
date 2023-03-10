@@ -30,7 +30,7 @@ export class SvgStatus extends React.PureComponent<Props> {
     const iconOuterClassName =
       result === Result.running ? "in-progress" : "static";
     const iconSuffix = result === Result.running ? "-anime" : "";
-    const style = { ...{ width: diameter, height: diameter } };
+    const style = {width: diameter, height: diameter};
     return (
       <g
         className={`${baseWrapperClasses} ${getClassForResult(
@@ -40,9 +40,16 @@ export class SvgStatus extends React.PureComponent<Props> {
       >
         <g
           className="build-status-icon__outer"
-          style={outerStyle ?? { transform: `translate(0,0)` }}
+          style={outerStyle ?? { transform: `translate(0, 0)` }}
         >
-          <svg focusable="false" className="svg-icon " x={-radius} y={-radius}>
+          <svg
+            focusable="false"
+            className="svg-icon "
+            x={-radius}
+            y={-radius}
+            width={diameter}
+            height={diameter}
+          >
             <use
               className="svg-icon"
               style={{ transformOrigin: "50% 50%" }}
@@ -73,6 +80,8 @@ function getGlyphFor(
         <svg
           x={-radius}
           y={-radius}
+          width={diameter}
+          height={diameter}
           focusable="false"
           className={`svg-icon icon-md`}
           style={{ ...style, ...{ width: diameter, height: diameter } }}
@@ -89,6 +98,8 @@ function getGlyphFor(
         <svg
           x={-radius}
           y={-radius}
+          width={diameter}
+          height={diameter}
           focusable="false"
           className={`svg-icon icon-md`}
           viewBox={`${-radius} ${-radius} ${"100%"} ${"100%"}`}
@@ -104,6 +115,8 @@ function getGlyphFor(
         <svg
           x={-radius}
           y={-radius}
+          width={diameter}
+          height={diameter}
           focusable="false"
           className={`svg-icon icon-md`}
           style={{ ...style, ...{ width: diameter, height: diameter } }}
@@ -119,6 +132,8 @@ function getGlyphFor(
         <svg
           x={-radius}
           y={-radius}
+          width={diameter}
+          height={diameter}
           focusable="false"
           className={`svg-icon icon-md`}
           style={{ ...style, ...{ width: diameter, height: diameter } }}
@@ -134,6 +149,8 @@ function getGlyphFor(
         <svg
           x={-radius}
           y={-radius}
+          width={diameter}
+          height={diameter}
           focusable="false"
           className={`svg-icon icon-md`}
           style={{ ...style, ...{ width: diameter, height: diameter } }}
@@ -148,6 +165,8 @@ function getGlyphFor(
         <svg
           x={-radius}
           y={-radius}
+          width={diameter}
+          height={diameter}
           focusable="false"
           className={`svg-icon icon-md`}
           style={{ ...style, ...{ width: diameter, height: diameter } }}
@@ -173,6 +192,8 @@ function getGlyphFor(
       className={`svg-icon icon-md`}
       x={-radius}
       y={-radius}
+      width={diameter}
+      height={diameter}
       viewBox={`${-radius} ${-radius} ${"100%"} ${"100%"}`}
       style={{ ...style, ...{ width: diameter, height: diameter } }}
     >

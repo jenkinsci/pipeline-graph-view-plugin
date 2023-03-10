@@ -143,13 +143,7 @@ export default class StageView extends React.Component {
   }
 
   getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
-    console.debug(`Passed expandedSteps: ${this.props.expandedSteps}`);
     return stepsItems.map((stepItemData, index) => {
-      console.debug(
-        `Is expanded (${stepItemData.id}): ${this.props.expandedSteps.includes(
-          stepItemData.id
-        )}`
-      );
       return (
         <ConsoleLogCard
           step={stepItemData}

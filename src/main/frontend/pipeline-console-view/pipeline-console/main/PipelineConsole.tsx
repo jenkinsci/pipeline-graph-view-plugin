@@ -10,11 +10,11 @@ import {
   StepInfo,
   Result,
   ConsoleLogData,
+  POLL_INTERVAL,
 } from "./PipelineConsoleModel";
 
 const DataTreeView = lazy(() => import("./DataTreeView"));
 const StageView = lazy(() => import("./StageView"));
-const POLL_INTERVAL = 3000;
 
 interface PipelineConsoleProps {}
 
@@ -78,13 +78,13 @@ export default class PipelineConsole extends React.Component<
   }
 
   pollForUpdates() {
-    // Poll for updates every 'POLL_INTERVAL' until the Pipeline is complete.
+    // Poll for updates every  second until the Pipeline is complete.
     // This updates the structure of the DataTreeVie and the steps, not the console log.
     this.updateState();
     if (this.state.isComplete) {
       this.onPipelineComplete();
     } else {
-      setTimeout(() => this.pollForUpdates(), POLL_INTERVAL);
+      setTimeout(() => this.pollForUpdates(), 1000);
     }
   }
 
@@ -121,7 +121,6 @@ export default class PipelineConsole extends React.Component<
     return fetch("tree")
       .then((res) => res.json())
       .then((result) => {
-        console.debug("Updating stages");
         this.setState(
           {
             stages: result.data.stages,
@@ -138,7 +137,6 @@ export default class PipelineConsole extends React.Component<
     return fetch(`allSteps`)
       .then((step_res) => step_res.json())
       .then((step_result) => {
-        console.debug("Updating steps");
         this.setState(
           {
             steps: step_result.data.steps,
@@ -260,7 +258,6 @@ export default class PipelineConsole extends React.Component<
   }
 
   componentDidUpdate() {
-    console.debug(`In componentDidUpdate.`);
     // only attempt to scroll if we haven't yet (this could have just reset above if hash changed)
     if (this.state.anchor && !this.state.hasScrolled) {
       console.debug(`Trying to scroll to ${this.state.anchor}`);
@@ -300,17 +297,27 @@ export default class PipelineConsole extends React.Component<
   ) {
     let stepBuffer = this.state.stepBuffers.get(stepId) ?? {
       consoleLines: [] as string[],
-      consoleStartByte: -(128*1024),
+      consoleStartByte: - LOG_FETCH_SIZE,
       consoleEndByte: -1
     } as StepLogBufferInfo;
     if (stepBuffer.consoleStartByte < 0 || forceUpdate) {
-      console.debug(
-        `Updating console text for step ${stepId} with from '${startByte}'`
-      );
       let promise = this.getConsoleTextOffset(stepId, startByte);
       promise.then((res) => {
-        stepBuffer.consoleLines = res.text.trimEnd().split("\n") || [];
-        stepBuffer.consoleStartByte = res.startByte;
+        let newLogLines = res.text.trim().split("\n") || [];
+        // Check if we are requesting a log update. 'startByte > 0' is because the first update normally requests a negative log offset.
+        if (stepBuffer.consoleEndByte <= startByte && startByte > 0) {
+          if (stepBuffer.consoleEndByte < startByte) {
+            console.warn(`Log update requested, but there will be a gap of '${startByte - stepBuffer.consoleEndByte}'B in logs.`)
+          }
+          if (newLogLines.length > 0) {
+            stepBuffer.consoleLines = [...stepBuffer.consoleLines, ...newLogLines];
+          }
+        } else {
+          // If we are not appending, we are replacing. The Jenkins don't have a stopByte (just a start byte) so we will get all of the logs.
+          stepBuffer.consoleLines = newLogLines
+          // Only update start byte of we requested something before the only startByte.
+          stepBuffer.consoleStartByte = res.startByte;
+        }
         stepBuffer.consoleEndByte = res.endByte;
         this.state.stepBuffers.set(stepId, stepBuffer);
       });
@@ -428,7 +435,17 @@ export default class PipelineConsole extends React.Component<
               </Suspense>
             </div>
 
-            <div className="split-pane" key="stage-view" id="stage-view-pane">
+            <div
+              className="split-pane split-pane--stage-view"
+              key="stage-view"
+              id="stage-view-pane"
+              style={{
+                height: "100vh",
+                margin: 0,
+                padding: 0,
+                overflow: "scroll"
+              }}
+            >
               <Suspense fallback={<CircularProgress />}>
                 <StageView
                   stage={this.getSelectedStage()}

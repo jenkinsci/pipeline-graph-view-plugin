@@ -52,7 +52,43 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
     this.props.handleStepToggle(event, this.props.step.id);
   }
 
-  getTrucatedLogWarning() {
+
+  componentDidMount() {
+    // If we are passed a running expanded step, then start polling.
+    if (this.props.isExpanded && this.props.step.state == 'running') {
+      this.pollForUpdates();
+    }
+  }
+
+
+  componentDidUpdate(prevProps: ConsoleLogCardProps) {
+    // If step has just been expanded and is running then start polling.
+    if (!prevProps.isExpanded && this.props.isExpanded && this.props.step.state == 'running') {
+      this.pollForUpdates();
+    }
+  }
+
+  pollForUpdates() {
+    // Poll for updates every 1 second until the Pipeline is complete.
+    // This updates the structure of the DataTreeVie and the steps, not the console log.
+    let requestedStartByte = this.props.stepBuffer.consoleStartByte
+    // If we have already logs, then only ask for logs since endByte.
+    if (this.props.stepBuffer.consoleLines.length > 0) {
+      requestedStartByte = this.props.stepBuffer.consoleEndByte;
+    }
+    this.props.handleMoreConsoleClick(this.props.step.id, requestedStartByte);
+    if (this.props.step.state != 'running') {
+      this.onStepComplete();
+    } else {
+      setTimeout(() => this.pollForUpdates(), 1000);
+    }
+  }
+
+  onStepComplete () {
+    console.debug(`Step '${this.props.step.name}' (${this.props.step.id}) completed.`);
+  }
+
+  getTruncatedLogWarning() {
     if (this.props.stepBuffer.consoleLines && this.props.stepBuffer.consoleStartByte > 0) {
       return (
         <Grid container>
@@ -243,17 +279,13 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
             <div>{this.getTruncatedLogWarning()}</div>
             <Virtuoso
               totalCount={this.getNumConsoleLines()}
-              atBottomStateChange={(bottom) => {
-                if (bottom) {
-                  console.debug(`At te bottom of step ${this.props.step.id}`)
-                }
-              }}
               itemContent={(index: number) => this.renderConsoleLine(index)}
               // This ID comes from PipelineConsole.
               // Pass in The parent split-pane element to use it's scroll base instead of a new one.
               customScrollParent={
                 document.getElementById(this.props.scrollParentId) || undefined
               }
+              followOutput={"auto"}
             />
           </CardContent>
         </Collapse>

@@ -49,8 +49,6 @@ export default class PipelineConsole extends React.Component<
       expandedSteps: [] as string[],
       stages: [] as StageInfo[],
       steps: [] as StepInfo[],
-      // Use string as key so we don't need to look through steps when we update console log.
-      // Should really make StepInfo id a string.
       stepBuffers: new Map<string, StepLogBufferInfo>(),
       anchor: window.location.hash.replace("#", ""),
       hasScrolled: false,
@@ -79,7 +77,7 @@ export default class PipelineConsole extends React.Component<
 
   pollForUpdates() {
     // Poll for updates every  second until the Pipeline is complete.
-    // This updates the structure of the DataTreeVie and the steps, not the console log.
+    // This updates the structure of the DataTreeView and the steps, not the console log.
     this.updateState();
     if (this.state.isComplete) {
       this.onPipelineComplete();
@@ -297,7 +295,7 @@ export default class PipelineConsole extends React.Component<
   ) {
     let stepBuffer = this.state.stepBuffers.get(stepId) ?? {
       consoleLines: [] as string[],
-      consoleStartByte: - LOG_FETCH_SIZE,
+      consoleStartByte: 0 - LOG_FETCH_SIZE,
       consoleEndByte: -1
     } as StepLogBufferInfo;
     if (stepBuffer.consoleStartByte < 0 || forceUpdate) {
@@ -349,10 +347,6 @@ export default class PipelineConsole extends React.Component<
   handleMoreConsoleClick(nodeId: string, startByte: number): void {
     this.updateStepConsoleOffset(nodeId, true, startByte);
   }
-
-  //handleFollowLog(nodeId: string) {
-
-  //}
 
   // Gets the selected step in the tree view (or none if not selected).
   getStepWithId(nodeId: string, steps: StepInfo[]) {

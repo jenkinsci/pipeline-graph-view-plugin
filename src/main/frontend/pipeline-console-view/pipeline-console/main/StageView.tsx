@@ -149,7 +149,7 @@ export default class StageView extends React.Component {
           step={stepItemData}
           stepBuffer={this.props.stepBuffers.get(stepItemData.id) ?? {
             consoleLines: [] as string[],
-            consoleStartByte: - LOG_FETCH_SIZE,
+            consoleStartByte: 0 - LOG_FETCH_SIZE,
             consoleEndByte: -1
           } as StepLogBufferInfo}
           handleStepToggle={this.props.handleStepToggle}

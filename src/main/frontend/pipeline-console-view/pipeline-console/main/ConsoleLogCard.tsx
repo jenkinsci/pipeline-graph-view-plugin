@@ -70,7 +70,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
 
   pollForUpdates() {
     // Poll for updates every 1 second until the Pipeline is complete.
-    // This updates the structure of the DataTreeVie and the steps, not the console log.
+    // This updates the console log text, not the list of stages or steps.
     let requestedStartByte = this.props.stepBuffer.consoleStartByte
     // If we have already logs, then only ask for logs since endByte.
     if (this.props.stepBuffer.consoleLines.length > 0) {

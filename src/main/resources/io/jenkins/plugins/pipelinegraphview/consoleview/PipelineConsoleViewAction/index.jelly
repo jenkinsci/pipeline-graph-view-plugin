@@ -34,7 +34,7 @@
                     </j:if>
                     <a href="../pipeline-graph" class="jenkins-button">
                         <l:icon src="symbol-file-tray-stacked-outline plugin-ionicons-api"/>
-                        ${%Details}
+                        ${%Graph}
                     </a>
                     <l:hasPermission permission="${it.configurePermission}">
                         <a href="../../configure" class="jenkins-button">

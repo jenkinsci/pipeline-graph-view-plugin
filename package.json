@@ -23,19 +23,25 @@
   },
   "homepage": "https://github.com/jenkinsci/pipeline-graph-view-plugin/#readme",
   "dependencies": {
+    "@babel/helpers": "^7.20.7",
+    "@babel/traverse": "^7.20.7",
+    "@babel/preset-typescript": "^7.21.0",
     "@mui/icons-material": "5.10.9",
     "@mui/lab": "5.0.0-alpha.104",
     "@mui/material": "5.10.10",
     "@react-spring/web": "9.7.1",
-    "@reacticons/ionicons": "6.0.4",
+    "babel-loader": "^9.1.2",
+    "babel-plugin-import": "^1.13.6",
     "html-react-parser": "3.0.12",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-virtuoso": "^4.1.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.21.0",
     "@babel/preset-env": "7.20.2",
     "@babel/preset-react": "7.18.6",
+    "@babel/preset-typescript": "^7.21.0",
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
     "@testing-library/jest-dom": "^5.16.5",
@@ -45,6 +51,8 @@
     "@types/node": "18.11.14",
     "@types/react": "18.0.28",
     "@types/react-dom": "18.0.11",
+    "babel-loader": "^9.1.2",
+    "babel-plugin-import": "^1.13.6",
     "css-loader": "4.0.0",
     "import": "^0.0.6",
     "jest": "^27.5.1",
@@ -60,6 +68,7 @@
     "ts-loader": "^8.0.0",
     "typescript": "4.1.5",
     "webpack": "5.74.0",
+    "webpack-bundle-analyzer": "^4.8.0",
     "webpack-cli": "4.10.0"
   },
   "jest": {

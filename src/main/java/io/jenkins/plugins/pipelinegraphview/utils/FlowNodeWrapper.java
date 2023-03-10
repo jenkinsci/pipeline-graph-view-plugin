@@ -7,9 +7,11 @@ import hudson.model.Action;
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunResult;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunState;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.LabelAction;
@@ -26,7 +28,7 @@ public class FlowNodeWrapper {
   /**
    * Checks to see if `this` and `that` probably represent the same underlying pipeline graph node
    * as far as the user is concerned. This is sloppier than an exact name and ID match because
-   * {@link PipelineNodeGraphVisitor} as of 2019-05-17 can return some nodes with different IDs
+   * {@link PipelineNodeGraphAdapter} as of 2019-05-17 can return some nodes with different IDs
    * during a build as opposed to once the build is complete. As such we check name, type, and
    * firstParent. But we need to check firstParent the same way for the same reason.
    *
@@ -58,8 +60,10 @@ public class FlowNodeWrapper {
   public enum NodeType {
     STAGE,
     PARALLEL,
+    PARALLEL_BLOCK,
     STEP,
     UNHANDLED_EXCEPTION,
+    STEPS_BLOCK,
   }
 
   private final FlowNode node;
@@ -82,7 +86,7 @@ public class FlowNodeWrapper {
       @NonNull NodeRunStatus status,
       @NonNull TimingInfo timingInfo,
       @NonNull WorkflowRun run) {
-    this(node, status, timingInfo, null, run);
+    this(node, status, timingInfo, null, run, null);
   }
 
   public FlowNodeWrapper(
@@ -91,10 +95,20 @@ public class FlowNodeWrapper {
       @NonNull TimingInfo timingInfo,
       @Nullable InputStep inputStep,
       @NonNull WorkflowRun run) {
+    this(node, status, timingInfo, inputStep, run, null);
+  }
+
+  public FlowNodeWrapper(
+      @NonNull FlowNode node,
+      @NonNull NodeRunStatus status,
+      @NonNull TimingInfo timingInfo,
+      @Nullable InputStep inputStep,
+      @NonNull WorkflowRun run,
+      @Nullable NodeType type) {
     this.node = node;
     this.status = status;
     this.timingInfo = timingInfo;
-    this.type = getNodeType(node);
+    this.type = type == null ? getNodeType(node) : type;
     this.displayName = PipelineNodeUtil.getDisplayName(node);
     this.inputStep = inputStep;
     this.run = run;
@@ -105,6 +119,10 @@ public class FlowNodeWrapper {
   }
 
   public @NonNull String getDisplayName() {
+    // Make 'PARALLEL_BLOCK' types have the display name as SytheticNodes used to.
+    if (type == NodeType.PARALLEL_BLOCK) {
+      return "Parallel";
+    }
     return displayName;
   }
 
@@ -161,16 +179,24 @@ public class FlowNodeWrapper {
     this.edges.add(edge);
   }
 
+  public void removeEdge(FlowNodeWrapper edge) {
+    this.edges.remove(edge);
+  }
+
   public void addEdges(List<FlowNodeWrapper> edges) {
     this.edges.addAll(edges);
   }
 
   public void addParent(FlowNodeWrapper parent) {
-    parents.add(parent);
+    this.parents.add(parent);
   }
 
   public void addParents(Collection<FlowNodeWrapper> parents) {
     this.parents.addAll(parents);
+  }
+
+  public void removeParent(FlowNodeWrapper parent) {
+    this.parents.remove(parent);
   }
 
   public @CheckForNull FlowNodeWrapper getFirstParent() {
@@ -296,5 +322,14 @@ public class FlowNodeWrapper {
 
   public boolean isUnhandledException() {
     return PipelineNodeUtil.isUnhandledException(node);
+  }
+
+  public static class NodeComparator implements Comparator<FlowNodeWrapper>, Serializable {
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public int compare(FlowNodeWrapper a, FlowNodeWrapper b) {
+      return Integer.compare(Integer.parseInt(a.getId()), Integer.parseInt(b.getId()));
+    }
   }
 }

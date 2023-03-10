@@ -28,9 +28,11 @@ const getTreeItemsFromStage = (stageItems: StageInfo[]) => {
         nodeId={String(stageItemData.id)}
         label={
           <StepStatus
-            status={decodeResultValue(stageItemData.state)}
+            status={stageItemData.state}
             text={stageItemData.name}
             key={`status-${stageItemData.id}`}
+            percent={stageItemData.completePercent}
+            radius={10}
           />
         }
         children={children}

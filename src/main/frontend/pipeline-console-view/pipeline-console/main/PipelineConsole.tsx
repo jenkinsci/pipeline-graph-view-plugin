@@ -29,7 +29,8 @@ interface PipelineConsoleState {
   hasScrolled: boolean;
   isComplete: boolean;
 }
-export class PipelineConsole extends React.Component<
+
+export default class PipelineConsole extends React.Component<
   PipelineConsoleProps,
   PipelineConsoleState
 > {

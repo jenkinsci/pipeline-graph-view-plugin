@@ -1,17 +1,20 @@
 import React from "react";
+import { lazy, Suspense } from "react";
 import { FunctionComponent } from "react";
 
-import { PipelineConsole } from "./pipeline-console/main/";
+import { CircularProgress } from "@mui/material";
 
-import { createTheme } from "@mui/material/styles";
-
-export const theme = createTheme();
+const PipelineConsole = lazy(
+  () => import("./pipeline-console/main/PipelineConsole")
+);
 
 const App: FunctionComponent = () => {
   return (
     <React.Fragment>
       <div>
-        <PipelineConsole />
+        <Suspense fallback={<CircularProgress />}>
+          <PipelineConsole />
+        </Suspense>
       </div>
     </React.Fragment>
   );

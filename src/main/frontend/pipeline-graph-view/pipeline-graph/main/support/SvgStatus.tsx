@@ -30,11 +30,13 @@ export class SvgStatus extends React.PureComponent<Props> {
     const iconOuterClassName =
       result === Result.running ? "in-progress" : "static";
     const iconSuffix = result === Result.running ? "-anime" : "";
+    const style = {width: diameter, height: diameter};
     return (
       <g
         className={`${baseWrapperClasses} ${getClassForResult(
           result
         )}${iconSuffix}`}
+        style={style}
       >
         <g
           className="build-status-icon__outer"
@@ -55,7 +57,7 @@ export class SvgStatus extends React.PureComponent<Props> {
             />
           </svg>
         </g>
-        {getGlyphFor(result, radius)}
+        {getGlyphFor(result, radius, style)}
       </g>
     );
   }
@@ -64,7 +66,11 @@ export class SvgStatus extends React.PureComponent<Props> {
 /**
  Returns a glyph (as <g>) for specified result type. Centered at 0,0, scaled for 24px icons.
  */
-function getGlyphFor(result: Result, radius: number) {
+function getGlyphFor(
+  result: Result,
+  radius: number,
+  style: React.CSSProperties
+) {
   // NB: If we start resizing these things, we'll need to use radius/12 to
   // generate a "scale" transform for the group
   const diameter = radius * 2;
@@ -78,6 +84,7 @@ function getGlyphFor(result: Result, radius: number) {
           height={diameter}
           focusable="false"
           className={`svg-icon icon-md`}
+          style={{ ...style, ...{ width: diameter, height: diameter } }}
         >
           <use
             href={`${imagesPath}/build-status/build-status-sprite.svg#last-aborted`}
@@ -96,6 +103,7 @@ function getGlyphFor(result: Result, radius: number) {
           focusable="false"
           className={`svg-icon icon-md`}
           viewBox={`${-radius} ${-radius} ${"100%"} ${"100%"}`}
+          style={{ ...style, ...{ width: diameter, height: diameter } }}
         >
           <polygon points="-4,-4.65 -4,4.65 -4,4.65 -1.5,4.65 -1.5,-4.65" />
           <polygon points="4,-4.65 1.5,-4.65 1.5,-4.65 1.5,4.65 4,4.65" />
@@ -111,6 +119,7 @@ function getGlyphFor(result: Result, radius: number) {
           height={diameter}
           focusable="false"
           className={`svg-icon icon-md`}
+          style={{ ...style, ...{ width: diameter, height: diameter } }}
         >
           <use
             href={`${imagesPath}/build-status/build-status-sprite.svg#last-unstable`}
@@ -127,6 +136,7 @@ function getGlyphFor(result: Result, radius: number) {
           height={diameter}
           focusable="false"
           className={`svg-icon icon-md`}
+          style={{ ...style, ...{ width: diameter, height: diameter } }}
         >
           <use
             href={`${imagesPath}/build-status/build-status-sprite.svg#last-successful`}
@@ -143,6 +153,7 @@ function getGlyphFor(result: Result, radius: number) {
           height={diameter}
           focusable="false"
           className={`svg-icon icon-md`}
+          style={{ ...style, ...{ width: diameter, height: diameter } }}
         >
           <use
             href={`${imagesPath}/build-status/build-status-sprite.svg#last-failed`}
@@ -158,6 +169,7 @@ function getGlyphFor(result: Result, radius: number) {
           height={diameter}
           focusable="false"
           className={`svg-icon icon-md`}
+          style={{ ...style, ...{ width: diameter, height: diameter } }}
         >
           <use
             href={`${imagesPath}/build-status/build-status-sprite.svg#never-built`}
@@ -183,6 +195,7 @@ function getGlyphFor(result: Result, radius: number) {
       width={diameter}
       height={diameter}
       viewBox={`${-radius} ${-radius} ${"100%"} ${"100%"}`}
+      style={{ ...style, ...{ width: diameter, height: diameter } }}
     >
       <path d={questionMarkPath} />
     </svg>

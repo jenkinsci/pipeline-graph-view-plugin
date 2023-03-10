@@ -4,6 +4,8 @@ import { Result } from "../../../pipeline-graph-view/pipeline-graph/main/Pipelin
 export {
   Result,
   decodeResultValue,
+} from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
+export type {
   StageInfo,
 } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
 

@@ -278,6 +278,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
           >
             <div>{this.getTruncatedLogWarning()}</div>
             <Virtuoso
+              style={{maxHeight: "50vh"}}
               totalCount={this.getNumConsoleLines()}
               itemContent={(index: number) => this.renderConsoleLine(index)}
               // This ID comes from PipelineConsole.

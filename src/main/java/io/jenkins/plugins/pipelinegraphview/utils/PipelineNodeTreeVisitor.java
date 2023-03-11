@@ -65,14 +65,14 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
   private final ArrayDeque<ArrayDeque<String>> childBlockIdStacks = new ArrayDeque<>();
   private FlowNode firstExecuted = null;
 
-  // We can remove these is we hanlde all children the same.
+  // We can remove these is we handle all children the same.
   // Maps a node ID to a given step node wrapper.
   public final Map<String, FlowNodeWrapper> stepMap = new TreeMap<String, FlowNodeWrapper>();
 
   // Maps stageId to a list of child steps.
   private final Map<String, List<String>> stageStepIdMap = new TreeMap<>();
 
-  // Used to store the origating node of an unhandled exception.
+  // Used to store the originating node of an unhandled exception.
   private FlowNode nodeThatThrewException;
 
   private Boolean declarative;
@@ -163,7 +163,7 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
         }
       }
     }
-    // Set node staus is FlowNode errored.
+    // Set node status is FlowNode errored.
     // Do we need to manually handle Unstable as well??
     ErrorAction error = nodeToWrap.getError();
     FlowNodeWrapper wrappedNode =
@@ -208,18 +208,25 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
 
   // Call when we get to an end block.
   private void handleBlockEndNode(FlowNode endNode) {
-    if (endNode instanceof BlockEndNode) {
-      childBlockIdStacks.addLast(new ArrayDeque<String>());
-      dump(
-          String.format(
-              "handleBlockEndNode => Found BlockEndNode {{id: %s, name: %s}, pushed new childStack to stack {size: %s}.",
-              endNode.getId(), endNode.getDisplayName(), childBlockIdStacks.size()));
-    }
+    childBlockIdStacks.addLast(new ArrayDeque<String>());
+    dump(
+        String.format(
+            "handleBlockEndNode => Found BlockEndNode {id: %s, name: %s}, pushed new childStack to stack {size: %s}.",
+            endNode.getId(), endNode.getDisplayName(), childBlockIdStacks.size()));
   }
 
   // Call when we get to a start block.
   private void handleBlockStartNode(FlowNode startNode, @Nullable FlowNodeWrapper.NodeType type) {
     if (startNode instanceof BlockStartNode) {
+      if (childBlockIdStacks.isEmpty()) {
+        // This is unexpected, but has happened during testing.
+        logger.error(String.format(
+          "handleBlockStartNode => 'childBlockIdStacks' is empty - this is unexpected. No children to assign for {id: %s, name: %s} - returning early.",
+          startNode.getId(),
+          startNode.getDisplayName()
+        ));
+        return;
+      }
       ArrayDeque<String> childIdStack = childBlockIdStacks.removeLast();
       dump(
           String.format(
@@ -228,7 +235,9 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
       // Push start node to parent node's childStack. We do this here as we can't always get the
       // start node from the endNode in chunkEnd.
       FlowNodeWrapper wrappedNode = wrapFlowNode(startNode, null, type);
-      childBlockIdStacks.peekLast().addLast(wrappedNode.getId());
+      if (!childBlockIdStacks.isEmpty()) {
+        childBlockIdStacks.peekLast().addLast(wrappedNode.getId());
+      }
       addChildrenToNode(wrappedNode, childIdStack);
     }
   }
@@ -278,7 +287,7 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
     super.parallelStart(parallelStartNode, branchNode, scanner);
     dump(
         String.format(
-            "parallelStart => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSythetic: %s} ",
+            "parallelStart => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSynthetic: %s} ",
             parallelStartNode.getId(),
             parallelStartNode.getDisplayName(),
             PipelineNodeUtil.isStage(parallelStartNode),
@@ -297,7 +306,7 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
     super.parallelEnd(parallelStartNode, parallelEndNode, scanner);
     dump(
         String.format(
-            "parallelEnd => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSythetic: %s}.",
+            "parallelEnd => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSynthetic: %s}.",
             parallelEndNode.getId(),
             parallelEndNode.getDisplayName(),
             PipelineNodeUtil.isStage(parallelEndNode),
@@ -314,7 +323,7 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
     super.parallelBranchStart(parallelStartNode, branchStartNode, scanner);
     dump(
         String.format(
-            "parallelBranchStart => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSythetic: %s}.",
+            "parallelBranchStart => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSynthetic: %s}.",
             branchStartNode.getId(),
             branchStartNode.getDisplayName(),
             PipelineNodeUtil.isStage(branchStartNode),
@@ -330,7 +339,7 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
       @NonNull ForkScanner scanner) {
     dump(
         String.format(
-            "parallelBranchEnd => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSythetic: %s}.",
+            "parallelBranchEnd => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSynthetic: %s}.",
             branchEndNode.getId(),
             branchEndNode.getDisplayName(),
             PipelineNodeUtil.isStage(branchEndNode),
@@ -349,7 +358,7 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
     super.chunkStart(startNode, beforeBlock, scanner);
     dump(
         String.format(
-            "chunkStart => Node ID: {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSythetic: %s}.",
+            "chunkStart => Node ID: {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSynthetic: %s}.",
             startNode.getId(),
             startNode.getDisplayName(),
             PipelineNodeUtil.isStage(startNode),
@@ -364,7 +373,7 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
     super.chunkEnd(endNode, afterChunk, scanner);
     dump(
         String.format(
-            "chunkEnd => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSythetic: %s}.",
+            "chunkEnd => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSynthetic: %s}.",
             endNode.getId(),
             endNode.getDisplayName(),
             PipelineNodeUtil.isStage(endNode),
@@ -425,7 +434,7 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
     // Create nodes here so we can more accurately get the status.
     dump(
         String.format(
-            "handleChunkDone=> id: %s, name: %s, function: %s",
+            "handleChunkDone=> {id: %s, name: %s, function: %s}",
             chunk.getFirstNode().getId(),
             chunk.getFirstNode().getDisplayName(),
             chunk.getFirstNode().getDisplayFunctionName()));

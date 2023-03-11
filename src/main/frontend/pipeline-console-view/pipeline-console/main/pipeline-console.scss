@@ -122,6 +122,19 @@ g.build-status-icon__outer {
   transform: translate(0, 0) !important;
 }
 
+.icon-blue-anime .build-status-icon__outer,
+.icon-red-anime .build-status-icon__outer,
+.icon-yellow-anime .build-status-icon__outer,
+.icon-aborted-anime .build-status-icon__outer,
+.icon-disabled-anime .build-status-icon__outer,
+.icon-grey-anime .build-status-icon__outer,
+.icon-nobuilt-anime .build-status-icon__outer {
+  .svg-icon {
+    // Ensures spinning icons spin around the center.
+    transform-origin: center !important;
+  }
+}
+
 .ansi-fg-0 {
   color: var(--black, #333);
 }

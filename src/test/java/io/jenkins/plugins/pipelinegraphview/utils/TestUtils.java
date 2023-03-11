@@ -54,13 +54,24 @@ public class TestUtils {
         return matchingNodes;
     }
 
-    public static String collectStagesAsString(List<PipelineStage> stages, Function<PipelineStage, String> converter) {
-        return stages.stream()
-                .map((PipelineStage stage) -> stage.getChildren().isEmpty()
-                        ? converter.apply(stage)
-                        : String.format(
-                                "%s[%s]",
-                                converter.apply(stage), collectStagesAsString(stage.getChildren(), converter)))
-                .collect(Collectors.joining(","));
-    }
+  public static String collectStagesAsString(
+      List<PipelineStage> stages, Function<PipelineStage, String> converter) {
+    return stages.stream()
+        .map(
+            (PipelineStage stage) ->
+                stage.getChildren().isEmpty()
+                    ? converter.apply(stage)
+                    : String.format(
+                        "%s[%s]",
+                        converter.apply(stage),
+                        collectStagesAsString(stage.getChildren(), converter)))
+        .collect(Collectors.joining(","));
+  }
+
+  public static String collectStageStepsAsString(
+      List<PipelineStep> steps, Function<PipelineStep, String> converter) {
+    return steps.stream()
+        .map((PipelineStep step) -> converter.apply(step))
+        .collect(Collectors.joining(","));
+  }
 }

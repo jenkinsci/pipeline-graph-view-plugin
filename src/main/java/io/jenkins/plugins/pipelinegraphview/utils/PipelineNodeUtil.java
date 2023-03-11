@@ -196,6 +196,11 @@ public class PipelineNodeUtil {
                 && pauseAction.getCause().equals("Input"));
     }
 
+    public static boolean isPaused(@NonNull FlowNode step) {
+        PauseAction pauseAction = step.getAction(PauseAction.class);
+        return (pauseAction != null && pauseAction.isPaused());
+    }
+
     /**
      * Determine if the given {@link FlowNode} is the initial {@link StepStartNode} for an {@link
      * ExecutorStep}.
@@ -204,18 +209,15 @@ public class PipelineNodeUtil {
      * @return true if {@code node} is the non-body start of the agent execution.
      */
     public static boolean isAgentStart(@Nullable FlowNode node) {
-        if (node != null) {
-            if (node instanceof StepStartNode) {
-                StepStartNode stepStartNode = (StepStartNode) node;
-                if (stepStartNode.getDescriptor() != null) {
-                    StepDescriptor sd = stepStartNode.getDescriptor();
-                    return sd != null
-                            && ExecutorStep.DescriptorImpl.class.equals(sd.getClass())
-                            && !stepStartNode.isBody();
-                }
+        if (node != null && node instanceof StepStartNode) {
+            StepStartNode stepStartNode = (StepStartNode) node;
+            if (stepStartNode.getDescriptor() != null) {
+            StepDescriptor sd = stepStartNode.getDescriptor();
+            return sd != null
+                && ExecutorStep.DescriptorImpl.class.equals(sd.getClass())
+                && !stepStartNode.isBody();
             }
         }
-
         return false;
     }
 

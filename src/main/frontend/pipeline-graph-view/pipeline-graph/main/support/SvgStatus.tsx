@@ -59,7 +59,7 @@ export class SvgStatus extends React.PureComponent<Props> {
           >
             <use
               className="svg-icon"
-              style={{ transformOrigin: "50% 50%" }}
+              style={{ transformOrigin: "center !important" }}
               href={`${imagesPath}/build-status/build-status-sprite.svg#build-status-${iconOuterClassName}`}
             />
           </svg>

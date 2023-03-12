@@ -70,11 +70,4 @@ public class TestUtils {
                         collectStagesAsString(stage.getChildren(), converter)))
         .collect(Collectors.joining(","));
   }
-
-  public static String collectStageStepsAsString(
-      List<PipelineStep> steps, Function<PipelineStep, String> converter) {
-    return steps.stream()
-        .map((PipelineStep step) -> converter.apply(step))
-        .collect(Collectors.joining(","));
-  }
 }

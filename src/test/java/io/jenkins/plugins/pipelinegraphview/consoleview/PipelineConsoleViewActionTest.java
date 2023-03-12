@@ -6,7 +6,7 @@ import static org.hamcrest.Matchers.*;
 import hudson.Functions;
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
-import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeGraphAdapter;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepVisitor;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import java.util.List;
 import net.sf.json.JSONObject;
@@ -28,7 +28,7 @@ public class PipelineConsoleViewActionTest {
         TestUtils.createAndRunJob(
             j, "hello_world_scripted", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
-    PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
+    PipelineStepVisitor builder = new PipelineStepVisitor(run);
     String stageId = TestUtils.getNodesByDisplayName(run, "Say Hello").get(0).getId();
     List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
     FlowNodeWrapper echoStep = stepNodes.get(0);
@@ -47,7 +47,7 @@ public class PipelineConsoleViewActionTest {
         TestUtils.createAndRunJob(
             j, "hello_world_scripted", "simpleError.jenkinsfile", Result.FAILURE);
 
-    PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
+    PipelineStepVisitor builder = new PipelineStepVisitor(run);
     String stageId = TestUtils.getNodesByDisplayName(run, "A").get(0).getId();
     List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
     FlowNodeWrapper errorStep = stepNodes.get(0);
@@ -66,7 +66,7 @@ public class PipelineConsoleViewActionTest {
         TestUtils.createAndRunJob(
             j, "hello_world_scripted", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
-    PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
+    PipelineStepVisitor builder = new PipelineStepVisitor(run);
     String stageId = TestUtils.getNodesByDisplayName(run, "Say Hello").get(0).getId();
     List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
     FlowNodeWrapper echoStep = stepNodes.get(0);
@@ -85,7 +85,7 @@ public class PipelineConsoleViewActionTest {
         TestUtils.createAndRunJob(
             j, "hello_world_scripted", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
-    PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
+    PipelineStepVisitor builder = new PipelineStepVisitor(run);
     String stageId = TestUtils.getNodesByDisplayName(run, "Say Hello").get(0).getId();
     List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
     FlowNodeWrapper echoStep = stepNodes.get(0);
@@ -108,7 +108,7 @@ public class PipelineConsoleViewActionTest {
         TestUtils.createAndRunJob(
             j, "hello_world_scripted", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
-    PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
+    PipelineStepVisitor builder = new PipelineStepVisitor(run);
     String stageId = TestUtils.getNodesByDisplayName(run, "Say Hello").get(0).getId();
     List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
     FlowNodeWrapper echoStep = stepNodes.get(0);
@@ -127,7 +127,7 @@ public class PipelineConsoleViewActionTest {
         TestUtils.createAndRunJob(
             j, "hello_world_scripted", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
-    PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
+    PipelineStepVisitor builder = new PipelineStepVisitor(run);
     String stageId = TestUtils.getNodesByDisplayName(run, "Say Hello").get(0).getId();
     List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
     FlowNodeWrapper echoStep = stepNodes.get(0);
@@ -143,7 +143,8 @@ public class PipelineConsoleViewActionTest {
     WorkflowRun run =
         TestUtils.createAndRunJob(
             j, "exec_returns_error", "execStepReturnsError.jenkinsfile", Result.FAILURE);
-    PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
+
+    PipelineStepVisitor builder = new PipelineStepVisitor(run);
     String stageId = TestUtils.getNodesByDisplayName(run, "Say Hello").get(0).getId();
     List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
     // There is an 'isUnix()' step before this.

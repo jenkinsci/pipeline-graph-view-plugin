@@ -83,14 +83,14 @@ public class PipelineStepApi {
   }
 
   public PipelineStepList getSteps(String stageId) {
-    PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
+    PipelineStepVisitor builder = new PipelineStepVisitor(run);
     List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
     return new PipelineStepList(parseSteps(stepNodes, stageId));
   }
 
   /* Returns a PipelineStepList, sorted by stageId and Id. */
   public PipelineStepList getAllSteps() {
-    PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
+    PipelineStepVisitor builder = new PipelineStepVisitor(run);
     Map<String, List<FlowNodeWrapper>> stepNodes = builder.getAllSteps();
     PipelineStepList allSteps = new PipelineStepList();
     for (Map.Entry<String, List<FlowNodeWrapper>> entry : stepNodes.entrySet()) {

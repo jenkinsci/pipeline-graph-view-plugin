@@ -4,13 +4,13 @@ import { SplitPane } from "react-collapse-pane";
 
 import { LOG_FETCH_SIZE, StepLogBufferInfo } from "./PipelineConsoleModel";
 import { CircularProgress } from "@mui/material";
+
 import "./pipeline-console.scss";
 import {
   StageInfo,
   StepInfo,
   Result,
   ConsoleLogData,
-  POLL_INTERVAL,
 } from "./PipelineConsoleModel";
 
 const DataTreeView = lazy(() => import("./DataTreeView"));
@@ -55,7 +55,6 @@ export default class PipelineConsole extends React.Component<
       isComplete: false,
     };
     console.debug(`Anchor: ${this.state.anchor}`);
-    this.updateState();
   }
 
   // State update methods
@@ -90,25 +89,32 @@ export default class PipelineConsole extends React.Component<
     console.debug("Pipeline completed.");
   }
 
-  // Determines the default selected step in the tree view based
+  // Determines the default selected step.
   getDefaultSelectedStep(steps: StepInfo[]) {
     let selectedStep = steps.find((step) => step !== undefined);
     for (let i = 0; i < steps.length; i++) {
       let step = steps[i];
       let stepResult = step.state.toLowerCase() as Result;
+      let selectedStepResult = selectedStep?.state.toLowerCase() as Result;
       switch (stepResult) {
         case Result.running:
         case Result.queued:
         case Result.paused:
+          // Return first running/queued/paused step.
           return step;
         case Result.unstable:
         case Result.failure:
         case Result.aborted:
-          let selectedStepResult = selectedStep?.state.toLowerCase() as Result;
+          if (!selectedStepResult || stepResult > selectedStepResult) {
+            // Return first unstable/failed/aborted step which has a state worse than the selectedStep.
+            // E.g. if the first step state is failure we want to return that over a later unstable step.
+            return step;
+          }
+        default:
+          // Otherwise select the step with the worst result with the largest id - e.g. (last step if all successful).
           if (!selectedStepResult || stepResult > selectedStepResult) {
             selectedStep = step;
           }
-          break;
       }
     }
     return selectedStep;
@@ -299,6 +305,7 @@ export default class PipelineConsole extends React.Component<
         consoleLines: [] as string[],
         consoleStartByte: 0 - LOG_FETCH_SIZE,
         consoleEndByte: -1,
+        stepId: stepId,
       } as StepLogBufferInfo);
     if (stepBuffer.consoleStartByte < 0 || forceUpdate) {
       let promise = this.getConsoleTextOffset(stepId, startByte);
@@ -357,7 +364,7 @@ export default class PipelineConsole extends React.Component<
     this.updateStepConsoleOffset(nodeId, true, startByte);
   }
 
-  // Gets the selected step in the tree view (or none if not selected).
+  // Gets the step with the given id (or none if not selected).
   getStepWithId(nodeId: string, steps: StepInfo[]) {
     let foundStep = steps.find((step) => step.id == nodeId);
     if (!foundStep) {
@@ -388,14 +395,16 @@ export default class PipelineConsole extends React.Component<
   }
 
   getSelectedStage(): StageInfo | null {
-    let selectedStage = this.getStageFromList(
-      this.state.stages,
-      this.state.selectedStage
-    );
-    if (selectedStage) {
-      return selectedStage;
+    if (this.state.selectedStage) {
+      let selectedStage = this.getStageFromList(
+        this.state.stages,
+        this.state.selectedStage
+      );
+      if (selectedStage) {
+        return selectedStage;
+      }
+      console.debug(`Couldn't find stage '${this.state.selectedStage}'`);
     }
-    console.debug(`Couldn't find stage '${this.state.selectedStage}'`);
     return null;
   }
 
@@ -419,7 +428,7 @@ export default class PipelineConsole extends React.Component<
       <React.Fragment>
         <div className="App">
           <SplitPane
-            // intialSize ratio
+            // initialSize ratio
             initialSizes={[3, 7]}
             // minSize in Pixels (for all panes)
             minSizes={250}
@@ -442,12 +451,6 @@ export default class PipelineConsole extends React.Component<
               className="split-pane split-pane--stage-view"
               key="stage-view"
               id="stage-view-pane"
-              style={{
-                height: "100vh",
-                margin: 0,
-                padding: 0,
-                overflow: "scroll",
-              }}
             >
               <Suspense fallback={<CircularProgress />}>
                 <StageView
@@ -466,6 +469,40 @@ export default class PipelineConsole extends React.Component<
             </div>
           </SplitPane>
         </div>
+      </React.Fragment>
+    );
+  }
+
+  getConsoleStream() {
+    if (this.state.steps && this.state.steps.length > 0) {
+      let stepId = this.state.steps[0].id;
+      let stepBuffer = this.state.stepBuffers.get(stepId);
+      if (!stepBuffer) {
+        stepBuffer = {
+          consoleEndByte: 0,
+          consoleStartByte: 0 - LOG_FETCH_SIZE,
+          stepId: stepId,
+          consoleLines: [],
+        } as StepLogBufferInfo;
+      }
+      return (
+        <ConsoleLogStream
+          logBuffer={stepBuffer}
+          handleMoreConsoleClick={this.handleMoreConsoleClick}
+          scrollParentId="scroll-parent"
+          stepId={stepId}
+          key={`console-log-${stepId}`}
+        />
+      );
+    } else {
+      return <div>Placeholder...</div>;
+    }
+  }
+
+  zzrender() {
+    return (
+      <React.Fragment>
+        <div id="scroll-parent">{this.getConsoleStream()}</div>
       </React.Fragment>
     );
   }

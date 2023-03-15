@@ -1,9 +1,10 @@
 import React from "react";
+import { lazy, Suspense } from "react";
 import { styled } from "@mui/material/styles";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import CardActionArea from "@mui/material/CardActions";
-
+import { CircularProgress } from "@mui/material";
 import Collapse from "@mui/material/Collapse";
 import IconButton, { IconButtonProps } from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
@@ -15,7 +16,7 @@ import Button from "@mui/material/Button";
 
 import { LOG_FETCH_SIZE } from "./PipelineConsoleModel";
 
-import { Virtuoso } from "react-virtuoso";
+const ConsoleLogStream = lazy(() => import("./ConsoleLogStream"));
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
@@ -50,46 +51,6 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
 
   handleStepToggle(event: React.MouseEvent<HTMLElement>) {
     this.props.handleStepToggle(event, this.props.step.id);
-  }
-
-  componentDidMount() {
-    // If we are passed a running expanded step, then start polling.
-    if (this.props.isExpanded && this.props.step.state == "running") {
-      this.pollForUpdates();
-    }
-  }
-
-  componentDidUpdate(prevProps: ConsoleLogCardProps) {
-    // If step has just been expanded and is running then start polling.
-    if (
-      !prevProps.isExpanded &&
-      this.props.isExpanded &&
-      this.props.step.state == "running"
-    ) {
-      this.pollForUpdates();
-    }
-  }
-
-  pollForUpdates() {
-    // Poll for updates every 1 second until the Pipeline is complete.
-    // This updates the console log text, not the list of stages or steps.
-    let requestedStartByte = this.props.stepBuffer.consoleStartByte;
-    // If we have already logs, then only ask for logs since endByte.
-    if (this.props.stepBuffer.consoleLines.length > 0) {
-      requestedStartByte = this.props.stepBuffer.consoleEndByte;
-    }
-    this.props.handleMoreConsoleClick(this.props.step.id, requestedStartByte);
-    if (this.props.step.state != "running") {
-      this.onStepComplete();
-    } else {
-      setTimeout(() => this.pollForUpdates(), 1000);
-    }
-  }
-
-  onStepComplete() {
-    console.debug(
-      `Step '${this.props.step.name}' (${this.props.step.id}) completed.`
-    );
   }
 
   getTruncatedLogWarning() {
@@ -284,16 +245,13 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
             key={`step-console-content-${this.props.step.id}`}
           >
             <div>{this.getTruncatedLogWarning()}</div>
-            <Virtuoso
-              totalCount={this.getNumConsoleLines()}
-              itemContent={(index: number) => this.renderConsoleLine(index)}
-              // This ID comes from PipelineConsole.
-              // Pass in The parent split-pane element to use it's scroll base instead of a new one.
-              customScrollParent={
-                document.getElementById(this.props.scrollParentId) || undefined
-              }
-              followOutput={"auto"}
-            />
+            <Suspense fallback={<CircularProgress />}>
+              <ConsoleLogStream
+                logBuffer={this.props.stepBuffer}
+                handleMoreConsoleClick={this.props.handleMoreConsoleClick}
+                stepId={this.props.step.id}
+              />
+            </Suspense>
           </CardContent>
         </Collapse>
       </Card>

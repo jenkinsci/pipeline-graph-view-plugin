@@ -307,13 +307,7 @@ jest.mock("../../../common/RestClient", () => {
   };
 });
 
-jest.mock("./DataTreeView", () => (props: DataTreeViewProps) => {
-  return {
-    render: () => {
-      (<div>{JSON.stringify(props.stages)}</div>)
-    }
-  }
-});
+jest.mock("./DataTreeView");
 jest.mock("./StageView");
 
 describe("getDefaultSelectedStep", () => {
@@ -409,11 +403,3 @@ describe("updateStepBuffer", () => {
     expect(stepBuffer?.lines).toEqual([previousConsoleText]);
   });
 });
-
-/*describe("PipelineConsole", () => {
-  it("DataTreeView passed stages", async () => {
-    const { getByText, findByText } = render(<div><PipelineConsole/></div>)
-    await findByText("testing");
-    //await waitFor(() => expect(getByText('I am lazy !' )).toBeInTheDocument())
-  });
-});*/

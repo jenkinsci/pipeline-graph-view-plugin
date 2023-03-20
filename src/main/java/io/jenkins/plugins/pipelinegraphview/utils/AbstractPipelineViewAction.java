@@ -83,9 +83,6 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
 
   @WebMethod(name = "tree")
   public HttpResponse getTree() throws JsonProcessingException {
-    // TODO: This need to be updated to return a tree representation of the graph, not the graph.
-    // Here is how FlowGraphTree does it:
-    // https://github.com/jenkinsci/workflow-support-plugin/blob/master/src/main/java/org/jenkinsci/plugins/workflow/support/visualization/table/FlowGraphTable.java#L126
     JSONObject graph = createJson(api.createTree());
 
     return HttpResponses.okJSON(graph);

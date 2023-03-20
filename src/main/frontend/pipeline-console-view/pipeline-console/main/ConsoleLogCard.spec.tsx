@@ -27,9 +27,9 @@ describe("ConsoleLogCard", () => {
   };
 
   const baseBuffer: StepLogBufferInfo = {
-    consoleLines: ["Hello, world!"],
-    consoleStartByte: 0,
-    consoleEndByte: 13,
+    lines: ["Hello, world!"],
+    startByte: 0,
+    endByte: 13,
   };
 
   const TestComponent = (props: ConsoleLogCardProps) => {

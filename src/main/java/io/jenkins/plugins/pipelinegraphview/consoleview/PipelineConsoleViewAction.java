@@ -131,7 +131,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
 
     if (logText != null) {
       textLength = logText.length();
-      // postitive startByte
+      // positive startByte
       if (requestStartByte > textLength) {
         // Avoid resource leak.
         logger.error("consoleJson - user requested startByte larger than console output.");

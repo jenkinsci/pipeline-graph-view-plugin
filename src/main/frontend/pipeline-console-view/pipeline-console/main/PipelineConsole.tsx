@@ -2,24 +2,33 @@ import React from "react";
 import { lazy, Suspense } from "react";
 import { SplitPane } from "react-collapse-pane";
 
-import { LOG_FETCH_SIZE, StepLogBufferInfo } from "./PipelineConsoleModel";
+import {
+  LOG_FETCH_SIZE,
+  StepLogBufferInfo,
+  getRunStatus,
+  getRunSteps,
+  getConsoleTextOffset,
+  POLL_INTERVAL,
+  pollUntilComplete,
+  RunStatus,
+} from "./PipelineConsoleModel";
 import { CircularProgress } from "@mui/material";
 
 import "./pipeline-console.scss";
-import {
-  StageInfo,
-  StepInfo,
-  Result,
-  ConsoleLogData,
-} from "./PipelineConsoleModel";
+import { StageInfo, StepInfo, Result } from "./PipelineConsoleModel";
 
 const DataTreeView = lazy(() => import("./DataTreeView"));
 const StageView = lazy(() => import("./StageView"));
+
+interface PipelineStatusInfo extends RunStatus {
+  steps: StepInfo[];
+}
 
 interface PipelineConsoleProps {}
 
 interface PipelineConsoleState {
   selectedStage: string;
+  focusedStage: string;
   expandedStages: string[];
   expandedSteps: string[];
   stages: Array<StageInfo>;
@@ -28,7 +37,76 @@ interface PipelineConsoleState {
   anchor: string;
   hasScrolled: boolean;
   isComplete: boolean;
+  hasUnmounted: boolean;
 }
+
+// Determines the default selected step.
+export const getDefaultSelectedStep = (steps: StepInfo[]) => {
+  let selectedStep = steps.find((step) => step !== undefined);
+  if (!steps || steps.length == 0 || !selectedStep) {
+    return null;
+  }
+  for (let step of steps) {
+    let stepResult = step.state.toLowerCase() as Result;
+    let selectedStepResult = selectedStep?.state.toLowerCase() as Result;
+    switch (stepResult) {
+      case Result.running:
+      case Result.queued:
+      case Result.paused:
+        // Return first running/queued/paused step.
+        return step;
+      case Result.unstable:
+      case Result.failure:
+      case Result.aborted:
+        if (selectedStepResult && stepResult < selectedStepResult) {
+          // Return first unstable/failed/aborted step which has a state worse than the selectedStep.
+          // E.g. if the first step state is failure we want to return that over a later unstable step.
+          return step;
+        }
+        continue;
+      default:
+        // Otherwise select the step with the worst result with the largest id - e.g. (last step if all successful).
+        if (selectedStepResult && stepResult <= selectedStepResult) {
+          selectedStep = step;
+        }
+    }
+  }
+  return selectedStep;
+};
+
+export const updateStepBuffer = (
+  stepId: string,
+  startByte: number,
+  stepBuffer: StepLogBufferInfo
+): StepLogBufferInfo => {
+  getConsoleTextOffset(stepId, stepBuffer.startByte).then((response) => {
+    if (!response) {
+      console.warn(`Skipping update of console text as client returned null.`);
+      return;
+    }
+    let newLogLines = response.text.trim().split("\n") || [];
+    // Check if we are requesting a log update - 'endByte' should only be negative when on the first call.
+    if (stepBuffer.endByte > 0 && stepBuffer.endByte <= startByte) {
+      if (stepBuffer.endByte < startByte) {
+        console.warn(
+          `Log update requested, but there will be a gap of '${
+            startByte - stepBuffer.endByte
+          }'B in logs.`
+        );
+      }
+      if (newLogLines.length > 0) {
+        stepBuffer.lines = [...stepBuffer.lines, ...newLogLines];
+      }
+    } else {
+      // If we are not appending, we are replacing. The Jenkins don't have a stopByte (just a start byte) so we will get all of the logs.
+      stepBuffer.lines = newLogLines;
+      // Only update start byte of we requested something before the only startByte.
+      stepBuffer.startByte = response.startByte;
+    }
+    stepBuffer.endByte = response.endByte;
+  });
+  return stepBuffer;
+};
 
 export default class PipelineConsole extends React.Component<
   PipelineConsoleProps,
@@ -36,15 +114,17 @@ export default class PipelineConsole extends React.Component<
 > {
   constructor(props: PipelineConsoleProps) {
     super(props);
-    this.handleActionNodeSelect = this.handleActionNodeSelect.bind(this);
+    this.handleActionNodeFocus = this.handleActionNodeFocus.bind(this);
     this.handleToggle = this.handleToggle.bind(this);
     this.handleStepToggle = this.handleStepToggle.bind(this);
     this.handleMoreConsoleClick = this.handleMoreConsoleClick.bind(this);
 
     // set default values of state
     this.state = {
-      // Need to update dynamically
+      // Store the stage that is selected - either by the user or URL params.
       selectedStage: "",
+      // Store the stage that should be open in the stage view.
+      focusedStage: "",
       expandedStages: [] as string[],
       expandedSteps: [] as string[],
       stages: [] as StageInfo[],
@@ -53,104 +133,83 @@ export default class PipelineConsole extends React.Component<
       anchor: window.location.hash.replace("#", ""),
       hasScrolled: false,
       isComplete: false,
+      hasUnmounted: false,
     };
-    console.debug(`Anchor: ${this.state.anchor}`);
   }
 
   // State update methods
-  async updateState() {
+  async getStateUpdate(): Promise<PipelineStatusInfo> {
     // Call functions in parallel.
     const updateStages = async () => {
-      this.setStages();
+      return await getRunStatus();
     };
     const updateSteps = async () => {
-      this.setSteps();
+      return await getRunSteps();
     };
-    await Promise.allSettled([updateStages(), updateSteps()]);
+    let stages = await updateStages();
+    let steps = await updateSteps();
+    return {
+      // Default 'isComplete' to false and 'stages' to empty array incase 'updateStages' returns null.
+      ...(stages ?? { isComplete: false, stages: [] }),
+      ...(steps ?? { steps: [] }),
+    } as PipelineStatusInfo;
+  }
+
+  setStagesAndSteps(newStatus: PipelineStatusInfo) {
+    this.setState(
+      (prevState) => {
+        return {
+          ...prevState,
+          ...newStatus,
+        };
+      },
+      () => {
+        this.selectNode();
+      }
+    );
   }
 
   // Trigger poller when component mounts.
-  componentDidMount() {
+  componentDidMount(): void {
+    // Setup poller to update stages.
     this.pollForUpdates();
   }
 
+  // Stop poller from running.
+  componentWillUnmount(): void {
+    this.setState((prevState) => {
+      return {
+        ...prevState,
+        hasUnmounted: true,
+      };
+    });
+  }
+
   pollForUpdates() {
-    // Poll for updates every  second until the Pipeline is complete.
-    // This updates the structure of the DataTreeView and the steps, not the console log.
-    this.updateState();
-    if (this.state.isComplete) {
-      this.onPipelineComplete();
-    } else {
-      setTimeout(() => this.pollForUpdates(), 1000);
-    }
+    // Setup poller to update stages and steps.
+    pollUntilComplete<PipelineStatusInfo>({
+      functionToPoll: () => {
+        return this.getStateUpdate();
+      },
+      checkSuccess: (data: PipelineStatusInfo) => {
+        return data ? true : false;
+      },
+      onSuccess: (data: PipelineStatusInfo) => {
+        this.setStagesAndSteps(data);
+      },
+      checkComplete: (data: PipelineStatusInfo) => {
+        // Set 'checkComplete' when component unmounted to prevent needless polling.
+        return (data.isComplete ?? false) || this.state.hasUnmounted;
+      },
+      onComplete: () => {
+        this.onPipelineComplete();
+      },
+      interval: 1000,
+    });
   }
 
   onPipelineComplete() {
     console.debug("Pipeline completed.");
-  }
-
-  // Determines the default selected step.
-  getDefaultSelectedStep(steps: StepInfo[]) {
-    let selectedStep = steps.find((step) => step !== undefined);
-    for (let i = 0; i < steps.length; i++) {
-      let step = steps[i];
-      let stepResult = step.state.toLowerCase() as Result;
-      let selectedStepResult = selectedStep?.state.toLowerCase() as Result;
-      switch (stepResult) {
-        case Result.running:
-        case Result.queued:
-        case Result.paused:
-          // Return first running/queued/paused step.
-          return step;
-        case Result.unstable:
-        case Result.failure:
-        case Result.aborted:
-          if (!selectedStepResult || stepResult > selectedStepResult) {
-            // Return first unstable/failed/aborted step which has a state worse than the selectedStep.
-            // E.g. if the first step state is failure we want to return that over a later unstable step.
-            return step;
-          }
-        default:
-          // Otherwise select the step with the worst result with the largest id - e.g. (last step if all successful).
-          if (!selectedStepResult || stepResult > selectedStepResult) {
-            selectedStep = step;
-          }
-      }
-    }
-    return selectedStep;
-  }
-
-  setStages() {
-    // Sets stages state.
-    return fetch("tree")
-      .then((res) => res.json())
-      .then((result) => {
-        this.setState(
-          {
-            stages: result.data.stages,
-            isComplete: result.data.complete,
-          },
-          () => {
-            this.selectNode();
-          }
-        );
-      });
-  }
-
-  setSteps() {
-    return fetch(`allSteps`)
-      .then((step_res) => step_res.json())
-      .then((step_result) => {
-        this.setState(
-          {
-            steps: step_result.data.steps,
-          },
-          () => {
-            this.selectNode();
-          }
-        );
-      })
-      .catch(console.log);
   }
 
   getStageSteps(stageId: string) {
@@ -184,38 +243,23 @@ export default class PipelineConsole extends React.Component<
     return stepsBuffersCopy;
   }
 
-  getConsoleTextOffset(
-    stepId: string,
-    startByte: number
-  ): Promise<ConsoleLogData> {
-    return fetch(`consoleOutput?nodeId=${stepId}&startByte=${startByte}`)
-      .then((res) => res.json())
-      .then((res) => {
-        //console.log(`'stepId': '${stepId}', 'startByte': '${startByte}', 'res': ${JSON.stringify(res)}`)
-        // Strip trailing whitespace.
-        res.data.text = res.data.text.replace(/\s+$/, "");
-        res.data.stepId = stepId;
-        return res.data;
-      })
-      .catch((reason) => {
-        console.error(`Caught error when fetching console: '${reason}'`);
-      });
-  }
-
   selectNode() {
-    if (this.state.selectedStage) {
+    if (this.state.selectedStage && this.state.selectedStage != "") {
+      // Return early as we have already selected a node.
+      // TODO: Give the user a way to unselect the selected node, so the console will follow the output again.
       return;
     }
-    console.debug(`In selectNode.`);
+    let expandedSteps = this.state.expandedSteps;
+    let expandedStages = this.state.expandedStages;
+    // If we haven't recorded a selected a stage - either through URL params or the UI find one.
     let params = new URLSearchParams(document.location.search.substring(1));
     let selectedStage = params.get("selected-node") || "";
     let startByte = parseInt(
       params.get("start-byte") || `${0 - LOG_FETCH_SIZE}`
     );
-    let expandedSteps = [] as string[];
-    let expandedStages = [] as string[];
+    let focusedStage = "";
     if (selectedStage) {
-      // If we were told what node was selected find then expand it (and it's parents).
+      // If we were told what node was selected find  and then expand it (and it's parents).
       console.debug(`Node '${selectedStage}' selected.`);
       let step = this.getStepWithId(selectedStage, this.state.steps);
       if (step) {
@@ -226,7 +270,7 @@ export default class PipelineConsole extends React.Component<
           step.stageId,
           this.state.stages
         );
-        this.updateStepConsole(step.id, false);
+        this.updateStepConsoleOffset(step.id, false, startByte);
       } else {
         console.debug(
           `Didn't find step with id '${selectedStage}', must be a stage.`
@@ -237,11 +281,18 @@ export default class PipelineConsole extends React.Component<
         );
       }
     } else {
-      // If we weren't told what steps to expand, expand some steps by default (e.g.first failed steps).
-      let step = this.getDefaultSelectedStep(this.state.steps);
+      // If we weren't told what to expand, expand a step by default (e.g. first failed step).
+      let step = getDefaultSelectedStep(this.state.steps);
       if (step) {
-        console.debug(`Expanding default steps '${selectedStage}`);
-        selectedStage = String(step.stageId);
+        if (!this.state.isComplete) {
+          // Set 'selectedStage' to empty string, so we follow the running Pipeline.
+          selectedStage = "";
+        } else {
+          // The Pipeline is finish, so we don't need to follow it.
+          selectedStage = step.stageId;
+        }
+        // Always open this step's stage.
+        focusedStage = step.stageId;
         expandedSteps = [step.id];
         expandedStages = this.getStageNodeHierarchy(
           step.stageId,
@@ -252,9 +303,12 @@ export default class PipelineConsole extends React.Component<
         console.debug("No node selected.");
       }
     }
-    console.debug(`Updating expandedStages to: ${expandedStages}`);
-    console.debug(`Updating expandedSteps to: ${expandedSteps}`);
+    // Open selected stage.
+    if (focusedStage == "" && selectedStage != "") {
+      focusedStage = selectedStage;
+    }
     this.setState({
+      focusedStage: focusedStage,
       selectedStage: selectedStage,
       expandedSteps: expandedSteps,
       expandedStages: expandedStages,
@@ -279,9 +333,26 @@ export default class PipelineConsole extends React.Component<
   }
 
   /* Event handlers */
-  handleActionNodeSelect(event: React.ChangeEvent<any>, nodeId: string) {
+  handleActionNodeFocus(event: React.ChangeEvent<any>, nodeId: string) {
+    console.log(`Node '${nodeId} selected.`);
+    let steps = this.getStageSteps(nodeId);
+    let newlyExpandedSteps = [] as string[];
+    if (steps.length > 0) {
+      // Expand last step in newly focused stage.
+      newlyExpandedSteps = [steps[steps.length - 1].id];
+    }
     // If we get console response, we know that this is a step.
-    this.setState({ selectedStage: nodeId });
+    this.setState((prevState) => {
+      return {
+        ...prevState,
+        focusedStage: nodeId,
+        // Allow user to toggle the selected node to start following the running Pipeline.
+        selectedStage: prevState.selectedStage == "" ? nodeId : "",
+        expandedSteps: [...prevState.expandedSteps, ...newlyExpandedSteps],
+        // Expand step if we focus on it.
+        expandedStages: [...prevState.expandedStages, ...[nodeId]],
+      };
+    });
   }
 
   handleToggle(event: React.ChangeEvent<{}>, nodeIds: string[]): void {
@@ -302,44 +373,26 @@ export default class PipelineConsole extends React.Component<
     let stepBuffer =
       this.state.stepBuffers.get(stepId) ??
       ({
-        consoleLines: [] as string[],
-        consoleStartByte: 0 - LOG_FETCH_SIZE,
-        consoleEndByte: -1,
+        lines: [] as string[],
+        startByte: 0 - LOG_FETCH_SIZE,
+        endByte: -1,
         stepId: stepId,
       } as StepLogBufferInfo);
-    if (stepBuffer.consoleStartByte < 0 || forceUpdate) {
-      let promise = this.getConsoleTextOffset(stepId, startByte);
-      promise.then((res) => {
-        let newLogLines = res.text.trim().split("\n") || [];
-        // Check if we are requesting a log update. 'startByte > 0' is because the first update normally requests a negative log offset.
-        if (stepBuffer.consoleEndByte <= startByte && startByte > 0) {
-          if (stepBuffer.consoleEndByte < startByte) {
-            console.warn(
-              `Log update requested, but there will be a gap of '${
-                startByte - stepBuffer.consoleEndByte
-              }'B in logs.`
-            );
-          }
-          if (newLogLines.length > 0) {
-            stepBuffer.consoleLines = [
-              ...stepBuffer.consoleLines,
-              ...newLogLines,
-            ];
-          }
-        } else {
-          // If we are not appending, we are replacing. The Jenkins don't have a stopByte (just a start byte) so we will get all of the logs.
-          stepBuffer.consoleLines = newLogLines;
-          // Only update start byte of we requested something before the only startByte.
-          stepBuffer.consoleStartByte = res.startByte;
-        }
-        stepBuffer.consoleEndByte = res.endByte;
-        this.state.stepBuffers.set(stepId, stepBuffer);
-      });
-    } else {
+    if (stepBuffer.startByte > 0 && !forceUpdate) {
       console.debug(
         `Skipping update of console text for step ${stepId} - already set.`
       );
+      return;
     }
+    stepBuffer = updateStepBuffer(stepId, startByte, stepBuffer) ?? stepBuffer;
+    let stepBuffersCopy = new Map(this.state.stepBuffers);
+    stepBuffersCopy.set(stepId, stepBuffer);
+    this.setState((prevState) => {
+      return {
+        ...prevState,
+        stepBuffers: stepBuffersCopy,
+      };
+    });
   }
 
   handleStepToggle(event: React.SyntheticEvent<{}>, nodeId: string): void {
@@ -351,7 +404,7 @@ export default class PipelineConsole extends React.Component<
       this.updateStepConsole(nodeId, false);
     } else {
       console.info(`Step '${nodeId}' collapsed`);
-      // Step untoggled.
+      // Step un-toggled.
       expandedSteps = expandedSteps.filter((v) => v !== nodeId);
     }
     console.debug(`Setting 'expandedSteps' to ${expandedSteps}`);
@@ -377,8 +430,7 @@ export default class PipelineConsole extends React.Component<
   // This needs to be given the nodeId of a stage, so call getSelectedStep first to see if the nodeId
   // is a step - and if so pass it step.stageId.
   getStageNodeHierarchy(nodeId: string, stages: StageInfo[]): Array<string> {
-    for (let i = 0; i < stages.length; i++) {
-      let stage = stages[i];
+    for (let stage of stages) {
       if (String(stage.id) == nodeId) {
         // Found the node, so start a list of expandedStage nodes - it will be this and it's ancestors.
         return [String(stage.id)];
@@ -394,23 +446,23 @@ export default class PipelineConsole extends React.Component<
     return [];
   }
 
-  getSelectedStage(): StageInfo | null {
-    if (this.state.selectedStage) {
-      let selectedStage = this.getStageFromList(
+  getOpenStage(): StageInfo | null {
+    if (this.state.focusedStage) {
+      let focusedStage = this.getStageFromList(
         this.state.stages,
-        this.state.selectedStage
+        this.state.focusedStage
       );
-      if (selectedStage) {
-        return selectedStage;
+      if (focusedStage) {
+        return focusedStage;
       }
-      console.debug(`Couldn't find stage '${this.state.selectedStage}'`);
+      console.debug(`Couldn't find open stage '${this.state.focusedStage}'`);
     }
     return null;
   }
 
-  getStageFromList(stages: StageInfo[], nodeId: String): StageInfo | null {
+  getStageFromList(stages: StageInfo[], nodeId: string): StageInfo | null {
     for (let stage of stages) {
-      if (stage.id == parseInt(this.state.selectedStage)) {
+      if (stage.id == parseInt(nodeId)) {
         return stage;
       }
       if (stage.children.length > 0) {
@@ -438,9 +490,9 @@ export default class PipelineConsole extends React.Component<
             <div className="split-pane" key="tree-view" id="tree-view-pane">
               <Suspense fallback={<CircularProgress />}>
                 <DataTreeView
-                  onNodeSelect={this.handleActionNodeSelect}
                   onNodeToggle={this.handleToggle}
-                  selected={this.state.selectedStage}
+                  onNodeFocus={this.handleActionNodeFocus}
+                  selected={this.state.focusedStage}
                   expanded={this.state.expandedStages}
                   stages={this.state.stages}
                 />
@@ -454,13 +506,13 @@ export default class PipelineConsole extends React.Component<
             >
               <Suspense fallback={<CircularProgress />}>
                 <StageView
-                  stage={this.getSelectedStage()}
-                  steps={this.getStageSteps(this.state.selectedStage)}
+                  stage={this.getOpenStage()}
+                  steps={this.getStageSteps(this.state.focusedStage)}
                   stepBuffers={this.getStageStepBuffers(
-                    this.state.selectedStage
+                    this.state.focusedStage
                   )}
                   expandedSteps={this.state.expandedSteps}
-                  selectedStage={this.state.selectedStage}
+                  selectedStage={this.state.focusedStage}
                   handleStepToggle={this.handleStepToggle}
                   handleMoreConsoleClick={this.handleMoreConsoleClick}
                   scrollParentId="stage-view-pane"
@@ -469,40 +521,6 @@ export default class PipelineConsole extends React.Component<
             </div>
           </SplitPane>
         </div>
-      </React.Fragment>
-    );
-  }
-
-  getConsoleStream() {
-    if (this.state.steps && this.state.steps.length > 0) {
-      let stepId = this.state.steps[0].id;
-      let stepBuffer = this.state.stepBuffers.get(stepId);
-      if (!stepBuffer) {
-        stepBuffer = {
-          consoleEndByte: 0,
-          consoleStartByte: 0 - LOG_FETCH_SIZE,
-          stepId: stepId,
-          consoleLines: [],
-        } as StepLogBufferInfo;
-      }
-      return (
-        <ConsoleLogStream
-          logBuffer={stepBuffer}
-          handleMoreConsoleClick={this.handleMoreConsoleClick}
-          scrollParentId="scroll-parent"
-          stepId={stepId}
-          key={`console-log-${stepId}`}
-        />
-      );
-    } else {
-      return <div>Placeholder...</div>;
-    }
-  }
-
-  zzrender() {
-    return (
-      <React.Fragment>
-        <div id="scroll-parent">{this.getConsoleStream()}</div>
       </React.Fragment>
     );
   }

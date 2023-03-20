@@ -80,7 +80,7 @@ const StageSummary = (props: StageSummaryProps) => (
         </span>
       </div>
       {props.failedSteps.map((value: StepInfo) => {
-        console.log(`Found failed step ${value}`);
+        console.debug(`Found failed step ${value}`);
         return (
           <FailedStepLink
             step={value}
@@ -155,9 +155,9 @@ export default class StageView extends React.Component {
           stepBuffer={
             this.props.stepBuffers.get(stepItemData.id) ??
             ({
-              consoleLines: [] as string[],
-              consoleStartByte: 0 - LOG_FETCH_SIZE,
-              consoleEndByte: -1,
+              lines: [] as string[],
+              startByte: 0 - LOG_FETCH_SIZE,
+              endByte: -1,
             } as StepLogBufferInfo)
           }
           handleStepToggle={this.props.handleStepToggle}

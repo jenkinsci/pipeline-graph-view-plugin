@@ -1,14 +1,14 @@
 import React from "react";
 import { Virtuoso, VirtuosoHandle, LogLevel } from "react-virtuoso";
 import { useState, useEffect, useRef } from "react";
-import { StepLogBufferInfo } from "./PipelineConsoleModel";
+import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
 
 import Button from "@mui/material/Button";
 
 interface ConsoleLogStreamProps {
   logBuffer: StepLogBufferInfo;
   handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
-  stepId: string;
+  step: StepInfo;
 }
 
 import { ConsoleLine } from "./ConsoleLine";
@@ -52,10 +52,10 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   const scrollListBottom = () => {
     if (virtuosoRef.current) {
       virtuosoRef.current.scrollBy({
-        top: props.logBuffer.consoleLines.length * 50,
+        top: props.logBuffer.lines.length * 50,
       });
     } else {
-      console.log(`Ref is null, cannot scroll to index!`);
+      console.warn(`virtuosoRef is null, cannot scroll to index!`);
     }
   };
 
@@ -63,18 +63,31 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
     <>
       <Virtuoso
         style={{
-          height: props.logBuffer.consoleLines.length * 22,
-          maxHeight: window.outerHeight / 2,
+          height: "50vh",
+          maxHeight: window.innerHeight / 2,
         }}
         ref={virtuosoRef}
-        data={props.logBuffer.consoleLines}
+        data={props.logBuffer.lines}
+        components={{
+          Footer: () => {
+            return props.step.state === Result.running ? (
+              <div className="lds-ellipsis">
+                <div></div>
+                <div></div>
+                <div></div>
+              </div>
+            ) : (
+              <></>
+            );
+          },
+        }}
         itemContent={(index: number, content: string) => {
           return (
             <ConsoleLine
               lineNumber={String(index)}
               content={content}
-              stepId={props.stepId}
-              startByte={props.logBuffer.consoleStartByte}
+              stepId={props.step.id}
+              startByte={props.logBuffer.startByte}
             />
           );
         }}
@@ -82,18 +95,18 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
           if (appendInterval.current) {
             clearInterval(appendInterval.current);
           }
-          console.log(`'atBottomStateChange' called with '${bottom}'`);
+          console.debug(`'atBottomStateChange' called with '${bottom}'`);
           if (bottom) {
-            console.log(`Fetching more log text`);
+            console.debug(`Fetching more log text`);
             appendInterval.current = setInterval(() => {
               props.handleMoreConsoleClick(
-                props.stepId,
-                props.logBuffer.consoleStartByte
+                props.step.id,
+                props.logBuffer.startByte
               );
             }, 1000);
-            console.log(`Received more text '${bottom} - ${stickToBottom}'`);
+            console.debug(`Received more text '${bottom} - ${stickToBottom}'`);
           }
-          console.log(`Setting stickToBottom to '${bottom}'`);
+          console.debug(`Setting stickToBottom to '${bottom}'`);
           setStickToBottom(bottom);
         }}
         followOutput={(bottom) => {
@@ -109,7 +122,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
           variant="text"
           sx={{ padding: "0px", textTransform: "none" }}
           onClick={() => scrollListBottom()}
-          style={{ float: "right", transform: "translate(-1rem, -2rem)" }}
+          style={{ float: "right", transform: "translate(-2rem, -2rem)" }}
         >
           Scroll to Bottom
         </Button>

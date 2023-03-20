@@ -38,7 +38,7 @@ export const defaultLayout = {
 
 // Typedefs
 
-export type StageType = "STAGE" | "PARALLEL" | "STEP";
+export type StageType = "STAGE" | "PARALLEL" | "PARALLEL_BLOCK" | "STEP";
 
 /**
  * StageInfo is the input, in the form of an Array<StageInfo> of the top-level stages of a pipeline

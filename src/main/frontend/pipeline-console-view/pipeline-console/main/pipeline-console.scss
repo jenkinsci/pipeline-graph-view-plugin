@@ -220,11 +220,11 @@ pre.console-output-line {
   font-style: italic;
 }
 
-// Remove highlighting
 .Mui-selected {
+  // Remove highlighting
   background: transparent !important;
-  text-decoration: bold !important;
-  font-weight: 700;
+  text-decoration: underline;
+  font-weight: 900 !important;
 }
 
 .Mui-focused {
@@ -257,10 +257,8 @@ pre.console-output-line {
 // Console styling
 a.console-line-number {
   text-align: right;
-  min-width: 40px;
-  max-width: 40px;
-  margin-left: -15px;
-  margin-right: 27px;
+  width: 50px;
+  padding-left: 10px;
   color: var(--link-color);
   white-space: nowrap;
   display: inline-block;
@@ -363,7 +361,7 @@ div.log-card-header {
 }
 
 div.log-card-text {
-  font-weight: 400;
+  //font-weight: 400;
   font-family: var(--font-family-sans-mono);
   line-height: 1.66 !important;
   color: var(--step-text-color);

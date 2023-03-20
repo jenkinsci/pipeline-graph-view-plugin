@@ -54,16 +54,13 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
   }
 
   getTruncatedLogWarning() {
-    if (
-      this.props.stepBuffer.consoleLines &&
-      this.props.stepBuffer.consoleStartByte > 0
-    ) {
+    if (this.props.stepBuffer.lines && this.props.stepBuffer.startByte > 0) {
       return (
         <Grid container>
           <Grid item xs={6} sm className="show-more-console">
             <Typography align="right" className="step-header">
               {`Missing ${this.prettySizeString(
-                this.props.stepBuffer.consoleStartByte
+                this.props.stepBuffer.startByte
               )} of logs.`}
             </Typography>
           </Grid>
@@ -73,9 +70,9 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
               sx={{ padding: "0px", textTransform: "none" }}
               onClick={() => {
                 let startByte =
-                  this.props.stepBuffer.consoleStartByte - LOG_FETCH_SIZE;
+                  this.props.stepBuffer.startByte - LOG_FETCH_SIZE;
                 console.debug(
-                  `startByte '${this.props.stepBuffer.consoleStartByte}' -> '${startByte}'`
+                  `startByte '${this.props.stepBuffer.startByte}' -> '${startByte}'`
                 );
                 if (startByte < 0) {
                   startByte = 0;
@@ -110,16 +107,16 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
     return `${(size / gib).toFixed(2)}GiB`;
   }
 
-  renderSimpleConsoleLines() {
-    if (this.props.stepBuffer.consoleLines) {
-      return this.props.stepBuffer.consoleLines.map(
+  renderSimplelines() {
+    if (this.props.stepBuffer.lines) {
+      return this.props.stepBuffer.lines.map(
         (content: string, index: number) => {
           return (
             <ConsoleLine
               lineNumber={String(index)}
               content={content}
               stepId={this.props.step.id}
-              startByte={this.props.stepBuffer.consoleStartByte}
+              startByte={this.props.stepBuffer.startByte}
             />
           );
         }
@@ -130,22 +127,20 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
   }
 
   renderConsoleLine(index: number) {
-    if (this.props.stepBuffer.consoleLines) {
+    if (this.props.stepBuffer.lines) {
       return (
         <ConsoleLine
           lineNumber={String(index + 1)}
-          content={this.props.stepBuffer.consoleLines[index]}
+          content={this.props.stepBuffer.lines[index]}
           stepId={this.props.step.id}
-          startByte={this.props.stepBuffer.consoleStartByte}
+          startByte={this.props.stepBuffer.startByte}
         />
       );
     }
   }
 
-  getNumConsoleLines() {
-    return this.props.stepBuffer.consoleLines
-      ? this.props.stepBuffer.consoleLines.length
-      : 0;
+  getNumlines() {
+    return this.props.stepBuffer.lines ? this.props.stepBuffer.lines.length : 0;
   }
 
   render() {
@@ -249,7 +244,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
               <ConsoleLogStream
                 logBuffer={this.props.stepBuffer}
                 handleMoreConsoleClick={this.props.handleMoreConsoleClick}
-                stepId={this.props.step.id}
+                step={this.props.step}
               />
             </Suspense>
           </CardContent>

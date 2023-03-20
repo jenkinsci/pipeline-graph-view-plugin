@@ -43,10 +43,10 @@ const getTreeItemsFromStage = (stageItems: StageInfo[]) => {
   });
 };
 
-interface DataTreeViewProps {
+export interface DataTreeViewProps {
   stages: Array<StageInfo>;
-  onNodeSelect: (event: React.ChangeEvent<any>, nodeId: string) => void;
   onNodeToggle: (event: React.ChangeEvent<any>, nodeIds: string[]) => void;
+  onNodeFocus: (event: React.ChangeEvent<any>, nodeIds: string) => void;
   selected: string;
   expanded: string[];
 }
@@ -75,7 +75,7 @@ export default class DataTreeView extends React.Component {
       <TreeView
         defaultCollapseIcon={<ExpandMoreIcon />}
         defaultExpandIcon={<ChevronRightIcon />}
-        onNodeSelect={this.props.onNodeSelect}
+        onNodeFocus={this.props.onNodeFocus}
         expanded={this.props.expanded}
         selected={this.props.selected}
         onNodeToggle={this.props.onNodeToggle}

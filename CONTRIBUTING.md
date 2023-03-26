@@ -33,17 +33,13 @@ If you are a newcomer contributor and have any questions, please do not hesitate
 
 Prerequisites: _Java_ and _Maven_.
 
-- Ensure Java 8 or 11 is available.
+- Ensure Java 11 or 17 is available.
 
   ```console	
   $ java -version	
-  ```	
-  - Use the alternate Java 8.	
-
-  ```console	
-  $ export JAVA_HOME=`/usr/libexec/java_home -v 1.8`	
-  $ echo $JAVA_HOME	
-  /Library/Java/JavaVirtualMachines/jdk1.8.0_252.jdk/Contents/Home
+  openjdk version "11.0.18" 2023-01-17
+  OpenJDK Runtime Environment Temurin-11.0.18+10 (build 11.0.18+10)
+  OpenJDK 64-Bit Server VM Temurin-11.0.18+10 (build 11.0.18+10, mixed mode)
   ```	
 
 - Ensure Maven >= 3.8.1 is installed and included in the PATH environment variable.

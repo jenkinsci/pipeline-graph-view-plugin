@@ -24,8 +24,8 @@ describe("ConsoleLogCard", () => {
     startTimeMillis: "",
     totalDurationMillis: "",
     stageId: "1",
-  }
-  
+  };
+
   const baseBuffer: StepLogBufferInfo = {
     consoleLines: ["Hello, world!"],
     consoleStartByte: 0,

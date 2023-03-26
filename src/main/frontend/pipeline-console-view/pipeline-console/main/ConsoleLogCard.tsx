@@ -52,18 +52,20 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
     this.props.handleStepToggle(event, this.props.step.id);
   }
 
-
   componentDidMount() {
     // If we are passed a running expanded step, then start polling.
-    if (this.props.isExpanded && this.props.step.state == 'running') {
+    if (this.props.isExpanded && this.props.step.state == "running") {
       this.pollForUpdates();
     }
   }
 
-
   componentDidUpdate(prevProps: ConsoleLogCardProps) {
     // If step has just been expanded and is running then start polling.
-    if (!prevProps.isExpanded && this.props.isExpanded && this.props.step.state == 'running') {
+    if (
+      !prevProps.isExpanded &&
+      this.props.isExpanded &&
+      this.props.step.state == "running"
+    ) {
       this.pollForUpdates();
     }
   }
@@ -71,25 +73,30 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
   pollForUpdates() {
     // Poll for updates every 1 second until the Pipeline is complete.
     // This updates the console log text, not the list of stages or steps.
-    let requestedStartByte = this.props.stepBuffer.consoleStartByte
+    let requestedStartByte = this.props.stepBuffer.consoleStartByte;
     // If we have already logs, then only ask for logs since endByte.
     if (this.props.stepBuffer.consoleLines.length > 0) {
       requestedStartByte = this.props.stepBuffer.consoleEndByte;
     }
     this.props.handleMoreConsoleClick(this.props.step.id, requestedStartByte);
-    if (this.props.step.state != 'running') {
+    if (this.props.step.state != "running") {
       this.onStepComplete();
     } else {
       setTimeout(() => this.pollForUpdates(), 1000);
     }
   }
 
-  onStepComplete () {
-    console.debug(`Step '${this.props.step.name}' (${this.props.step.id}) completed.`);
+  onStepComplete() {
+    console.debug(
+      `Step '${this.props.step.name}' (${this.props.step.id}) completed.`
+    );
   }
 
   getTruncatedLogWarning() {
-    if (this.props.stepBuffer.consoleLines && this.props.stepBuffer.consoleStartByte > 0) {
+    if (
+      this.props.stepBuffer.consoleLines &&
+      this.props.stepBuffer.consoleStartByte > 0
+    ) {
       return (
         <Grid container>
           <Grid item xs={6} sm className="show-more-console">

@@ -30,7 +30,7 @@ export class SvgStatus extends React.PureComponent<Props> {
     const iconOuterClassName =
       result === Result.running ? "in-progress" : "static";
     const iconSuffix = result === Result.running ? "-anime" : "";
-    const style = {width: diameter, height: diameter};
+    const style = { width: diameter, height: diameter };
     return (
       <g
         className={`${baseWrapperClasses} ${getClassForResult(

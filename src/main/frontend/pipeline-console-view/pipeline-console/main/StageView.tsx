@@ -7,7 +7,12 @@ import TimerIcon from "@mui/icons-material/Timer";
 import InfoIcon from "@mui/icons-material/Info";
 import LinkIcon from "@mui/icons-material/Link";
 
-import { StepInfo, StageInfo, StepLogBufferInfo, LOG_FETCH_SIZE } from "./PipelineConsoleModel";
+import {
+  StepInfo,
+  StageInfo,
+  StepLogBufferInfo,
+  LOG_FETCH_SIZE,
+} from "./PipelineConsoleModel";
 import { ConsoleLogCard } from "./ConsoleLogCard";
 
 export interface StageSummaryProps {
@@ -147,15 +152,16 @@ export default class StageView extends React.Component {
       return (
         <ConsoleLogCard
           step={stepItemData}
-          stepBuffer={this.props.stepBuffers.get(stepItemData.id) ?? {
-            consoleLines: [] as string[],
-            consoleStartByte: 0 - LOG_FETCH_SIZE,
-            consoleEndByte: -1
-          } as StepLogBufferInfo}
+          stepBuffer={
+            this.props.stepBuffers.get(stepItemData.id) ??
+            ({
+              consoleLines: [] as string[],
+              consoleStartByte: 0 - LOG_FETCH_SIZE,
+              consoleEndByte: -1,
+            } as StepLogBufferInfo)
+          }
           handleStepToggle={this.props.handleStepToggle}
-          isExpanded={this.props.expandedSteps.includes(
-            stepItemData.id
-          )}
+          isExpanded={this.props.expandedSteps.includes(stepItemData.id)}
           handleMoreConsoleClick={this.props.handleMoreConsoleClick}
           key={`step-console-card-${stepItemData.id}`}
           scrollParentId={this.props.scrollParentId}

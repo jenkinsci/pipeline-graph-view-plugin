@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>4.52</version>
+        <version>4.57</version>
         <relativePath />
     </parent>
     <groupId>io.jenkins.plugins</groupId>
@@ -28,7 +28,7 @@
                 <!-- Pick up common dependencies for the selected LTS line: https://github.com/jenkinsci/bom#usage -->
                 <groupId>io.jenkins.tools.bom</groupId>
                 <artifactId>bom-2.361.x</artifactId>
-                <version>1723.vcb_9fee52c9fc</version>
+                <version>1945.v13a_1306588ff</version>
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
@@ -48,7 +48,6 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>github-branch-source</artifactId>
-            <version>1696.v3a_7603564d04</version>
             <optional>true</optional>
         </dependency>
         <dependency>

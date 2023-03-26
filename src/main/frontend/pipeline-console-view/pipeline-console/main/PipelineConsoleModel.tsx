@@ -6,9 +6,7 @@ export {
   decodeResultValue,
 } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
 
-export type {
-  StageInfo,
-} from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
+export type { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
 
 export { getGroupForResult } from "../../../pipeline-graph-view/pipeline-graph/main/support/StatusIcons";
 

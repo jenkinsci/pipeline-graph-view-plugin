@@ -40,7 +40,7 @@ export default class PipelineConsole extends React.Component<
     this.handleToggle = this.handleToggle.bind(this);
     this.handleStepToggle = this.handleStepToggle.bind(this);
     this.handleMoreConsoleClick = this.handleMoreConsoleClick.bind(this);
-    
+
     // set default values of state
     this.state = {
       // Need to update dynamically
@@ -63,13 +63,13 @@ export default class PipelineConsole extends React.Component<
     // Call functions in parallel.
     const updateStages = async () => {
       this.setStages();
-    }
+    };
     const updateSteps = async () => {
       this.setSteps();
-    }
-    await Promise.allSettled([updateStages(), updateSteps()])
+    };
+    await Promise.allSettled([updateStages(), updateSteps()]);
   }
-  
+
   // Trigger poller when component mounts.
   componentDidMount() {
     this.pollForUpdates();
@@ -86,7 +86,7 @@ export default class PipelineConsole extends React.Component<
     }
   }
 
-  onPipelineComplete () {
+  onPipelineComplete() {
     console.debug("Pipeline completed.");
   }
 
@@ -174,7 +174,7 @@ export default class PipelineConsole extends React.Component<
           stepsBuffersCopy.set(step.id, stepBuffer);
         }
       }
-    };
+    }
     return stepsBuffersCopy;
   }
 
@@ -293,11 +293,13 @@ export default class PipelineConsole extends React.Component<
     forceUpdate: boolean,
     startByte: number
   ) {
-    let stepBuffer = this.state.stepBuffers.get(stepId) ?? {
-      consoleLines: [] as string[],
-      consoleStartByte: 0 - LOG_FETCH_SIZE,
-      consoleEndByte: -1
-    } as StepLogBufferInfo;
+    let stepBuffer =
+      this.state.stepBuffers.get(stepId) ??
+      ({
+        consoleLines: [] as string[],
+        consoleStartByte: 0 - LOG_FETCH_SIZE,
+        consoleEndByte: -1,
+      } as StepLogBufferInfo);
     if (stepBuffer.consoleStartByte < 0 || forceUpdate) {
       let promise = this.getConsoleTextOffset(stepId, startByte);
       promise.then((res) => {
@@ -305,14 +307,21 @@ export default class PipelineConsole extends React.Component<
         // Check if we are requesting a log update. 'startByte > 0' is because the first update normally requests a negative log offset.
         if (stepBuffer.consoleEndByte <= startByte && startByte > 0) {
           if (stepBuffer.consoleEndByte < startByte) {
-            console.warn(`Log update requested, but there will be a gap of '${startByte - stepBuffer.consoleEndByte}'B in logs.`)
+            console.warn(
+              `Log update requested, but there will be a gap of '${
+                startByte - stepBuffer.consoleEndByte
+              }'B in logs.`
+            );
           }
           if (newLogLines.length > 0) {
-            stepBuffer.consoleLines = [...stepBuffer.consoleLines, ...newLogLines];
+            stepBuffer.consoleLines = [
+              ...stepBuffer.consoleLines,
+              ...newLogLines,
+            ];
           }
         } else {
           // If we are not appending, we are replacing. The Jenkins don't have a stopByte (just a start byte) so we will get all of the logs.
-          stepBuffer.consoleLines = newLogLines
+          stepBuffer.consoleLines = newLogLines;
           // Only update start byte of we requested something before the only startByte.
           stepBuffer.consoleStartByte = res.startByte;
         }
@@ -437,14 +446,16 @@ export default class PipelineConsole extends React.Component<
                 height: "100vh",
                 margin: 0,
                 padding: 0,
-                overflow: "scroll"
+                overflow: "scroll",
               }}
             >
               <Suspense fallback={<CircularProgress />}>
                 <StageView
                   stage={this.getSelectedStage()}
                   steps={this.getStageSteps(this.state.selectedStage)}
-                  stepBuffers={this.getStageStepBuffers(this.state.selectedStage)}
+                  stepBuffers={this.getStageStepBuffers(
+                    this.state.selectedStage
+                  )}
                   expandedSteps={this.state.expandedSteps}
                   selectedStage={this.state.selectedStage}
                   handleStepToggle={this.handleStepToggle}

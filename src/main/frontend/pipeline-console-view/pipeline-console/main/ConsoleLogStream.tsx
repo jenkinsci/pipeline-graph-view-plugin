@@ -5,7 +5,7 @@ import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
 
 import Button from "@mui/material/Button";
 
-interface ConsoleLogStreamProps {
+export interface ConsoleLogStreamProps {
   logBuffer: StepLogBufferInfo;
   handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
   step: StepInfo;
@@ -26,8 +26,9 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
       if (appendInterval.current) {
         clearInterval(appendInterval.current);
       }
-      if (showButtonInterval.current)
-        [clearTimeout(showButtonInterval.current)];
+      if (showButtonInterval.current) {
+        clearTimeout(showButtonInterval.current);
+      }
     };
   }, []);
 
@@ -51,11 +52,17 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
 
   const scrollListBottom = () => {
     if (virtuosoRef.current) {
-      virtuosoRef.current.scrollBy({
-        top: props.logBuffer.lines.length * 50,
-      });
+      if (props.logBuffer.lines) {
+        virtuosoRef.current?.scrollBy({
+          // This needs to be large enough to cover even really long lines.
+          // It doesn't need to worry about being too big.
+          top: props.logBuffer.lines.length * 1000,
+        });
+      } else {
+        console.debug("'logBuffer.lines' not set. Log empty, not scrolling.");
+      }
     } else {
-      console.warn(`virtuosoRef is null, cannot scroll to index!`);
+      console.warn("virtuosoRef is null, cannot scroll to index!");
     }
   };
 
@@ -96,7 +103,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
             clearInterval(appendInterval.current);
           }
           console.debug(`'atBottomStateChange' called with '${bottom}'`);
-          if (bottom) {
+          if (bottom && props.step.state == "running") {
             console.debug(`Fetching more log text`);
             appendInterval.current = setInterval(() => {
               props.handleMoreConsoleClick(

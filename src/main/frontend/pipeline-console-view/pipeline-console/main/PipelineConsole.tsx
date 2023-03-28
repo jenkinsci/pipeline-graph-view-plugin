@@ -315,23 +315,6 @@ export default class PipelineConsole extends React.Component<
     });
   }
 
-  componentDidUpdate() {
-    // only attempt to scroll if we haven't yet (this could have just reset above if hash changed)
-    if (this.state.anchor && !this.state.hasScrolled) {
-      console.debug(`Trying to scroll to ${this.state.anchor}`);
-      const element = document.getElementById(this.state.anchor);
-      if (element !== null) {
-        console.debug(`Found element '${this.state.anchor}', scrolling...`);
-        element.scrollIntoView();
-        this.setState({
-          hasScrolled: true,
-        });
-      } else {
-        console.debug(`Could not find element '${this.state.anchor}'`);
-      }
-    }
-  }
-
   /* Event handlers */
   handleActionNodeFocus(event: React.ChangeEvent<any>, nodeId: string) {
     console.log(`Node '${nodeId} selected.`);
@@ -353,6 +336,10 @@ export default class PipelineConsole extends React.Component<
         expandedStages: [...prevState.expandedStages, ...[nodeId]],
       };
     });
+    if (this.state.selectedStage != "") {
+      // Update newly expanded step console for expanded step - as the expand button wasn't triggered it won't trigger the 'handleStepToggle'.
+      this.updateStepConsole(newlyExpandedSteps[0], false);
+    }
   }
 
   handleToggle(event: React.ChangeEvent<{}>, nodeIds: string[]): void {

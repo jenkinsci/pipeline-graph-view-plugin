@@ -1,271 +1,30 @@
 /** * @jest-environment jsdom */
 
 import "@testing-library/jest-dom/extend-expect";
-import { waitFor } from "@testing-library/react";
-import React, { ReactElement } from "react";
+import React from "react";
 import {
   default as PipelineConsole,
   getDefaultSelectedStep,
   updateStepBuffer,
 } from "./PipelineConsole";
-import DataTreeView from "./DataTreeView";
-import { DataTreeViewProps } from "./DataTreeView";
-import StageView from "./StageView";
+import DataTreeView, { DataTreeViewProps } from "./DataTreeView";
+import StageView, { StageViewProps } from "./StageView";
 import {
-  Result,
   StepInfo,
-  StageType,
-  StageInfo,
   StepLogBufferInfo,
 } from "./PipelineConsoleModel";
 import { render } from "@testing-library/react";
 import { RunStatus } from "../../../common/RestClient";
-const defaultStagesList = [
-  {
-    name: "Stage A",
-    title: "",
-    state: Result.success,
-    completePercent: 50,
-    id: 0,
-    type: "STAGE" as StageType,
-    children: [],
-    pauseDurationMillis: "",
-    startTimeMillis: "",
-    totalDurationMillis: "",
-  },
-  {
-    name: "Stage B",
-    title: "",
-    state: Result.success,
-    completePercent: 50,
-    id: 1,
-    type: "STAGE" as StageType,
-    children: [],
-    pauseDurationMillis: "",
-    startTimeMillis: "",
-    totalDurationMillis: "",
-  },
-  {
-    name: "Parent C",
-    title: "",
-    state: Result.success,
-    completePercent: 50,
-    id: 2,
-    type: "PARALLEL_BLOCK" as StageType,
-    children: [
-      {
-        name: "Child D",
-        title: "",
-        state: Result.success,
-        completePercent: 50,
-        id: 3,
-        type: "PARALLEL" as StageType,
-        children: [] as StageInfo[],
-        pauseDurationMillis: "",
-        startTimeMillis: "",
-        totalDurationMillis: "",
-      },
-    ],
-    pauseDurationMillis: "",
-    startTimeMillis: "",
-    totalDurationMillis: "",
-  },
-];
-
-const allSuccessfulStepList: StepInfo[] = [
-  {
-    name: "This is step 1",
-    title: "Dummy Step 1",
-    state: Result.success,
-    completePercent: 50,
-    id: "10",
-    type: "STAGE",
-    pauseDurationMillis: "",
-    startTimeMillis: "",
-    totalDurationMillis: "",
-    stageId: "1",
-  },
-  {
-    name: "This is step 2",
-    title: "Dummy Step 2",
-    state: Result.success,
-    completePercent: 50,
-    id: "11",
-    type: "STAGE",
-    pauseDurationMillis: "",
-    startTimeMillis: "",
-    totalDurationMillis: "",
-    stageId: "1",
-  },
-  {
-    name: "This is a parallel step",
-    title: "Dummy Parallel Step 1",
-    state: Result.success,
-    completePercent: 50,
-    id: "20",
-    type: "STAGE",
-    pauseDurationMillis: "",
-    startTimeMillis: "",
-    totalDurationMillis: "",
-    stageId: "3",
-  },
-  {
-    name: "This is step 2",
-    title: "Dummy Parallel Step 2",
-    state: Result.success,
-    completePercent: 50,
-    id: "21",
-    type: "STAGE",
-    pauseDurationMillis: "",
-    startTimeMillis: "",
-    totalDurationMillis: "",
-    stageId: "3",
-  },
-];
-
-const multipleErrorsStepList: StepInfo[] = [
-  {
-    name: "This is step 1",
-    title: "Dummy Step 1",
-    state: Result.success,
-    completePercent: 50,
-    id: "10",
-    type: "STAGE",
-    pauseDurationMillis: "",
-    startTimeMillis: "",
-    totalDurationMillis: "",
-    stageId: "1",
-  },
-  {
-    name: "This is step 2",
-    title: "Dummy Step 2",
-    state: Result.failure,
-    completePercent: 50,
-    id: "11",
-    type: "STAGE",
-    pauseDurationMillis: "",
-    startTimeMillis: "",
-    totalDurationMillis: "",
-    stageId: "1",
-  },
-  {
-    name: "This is step 3",
-    title: "Dummy Step 3",
-    state: Result.failure,
-    completePercent: 50,
-    id: "12",
-    type: "STAGE",
-    pauseDurationMillis: "",
-    startTimeMillis: "",
-    totalDurationMillis: "",
-    stageId: "1",
-  },
-];
-
-const unstableThenFailureStepList: StepInfo[] = [
-  {
-    name: "This is step 1",
-    title: "Dummy Step 1",
-    state: Result.unknown,
-    completePercent: 50,
-    id: "10",
-    type: "STAGE",
-    pauseDurationMillis: "",
-    startTimeMillis: "",
-    totalDurationMillis: "",
-    stageId: "1",
-  },
-  {
-    name: "This is step 2",
-    title: "Dummy Step 2",
-    state: Result.unstable,
-    completePercent: 50,
-    id: "11",
-    type: "STAGE",
-    pauseDurationMillis: "",
-    startTimeMillis: "",
-    totalDurationMillis: "",
-    stageId: "1",
-  },
-  {
-    name: "This is step 3",
-    title: "Dummy Step 3",
-    state: Result.failure,
-    completePercent: 50,
-    id: "12",
-    type: "STAGE",
-    pauseDurationMillis: "",
-    startTimeMillis: "",
-    totalDurationMillis: "",
-    stageId: "1",
-  },
-];
-
-const runningStepList: StepInfo[] = [
-  {
-    name: "This is step 1",
-    title: "Dummy Step 1",
-    state: Result.success,
-    completePercent: 50,
-    id: "10",
-    type: "STAGE",
-    pauseDurationMillis: "",
-    startTimeMillis: "",
-    totalDurationMillis: "",
-    stageId: "1",
-  },
-  {
-    name: "This is step 2",
-    title: "Dummy Step 2",
-    state: Result.unstable,
-    completePercent: 50,
-    id: "11",
-    type: "STAGE",
-    pauseDurationMillis: "",
-    startTimeMillis: "",
-    totalDurationMillis: "",
-    stageId: "1",
-  },
-  {
-    name: "This is step 3",
-    title: "Dummy Step 3",
-    state: Result.running,
-    completePercent: 50,
-    id: "12",
-    type: "STAGE",
-    pauseDurationMillis: "",
-    startTimeMillis: "",
-    totalDurationMillis: "",
-    stageId: "1",
-  },
-];
-
-const multipleRunningSteps: StepInfo[] = [
-  {
-    name: "This is step 1",
-    title: "Dummy Step 1",
-    state: Result.running,
-    completePercent: 50,
-    id: "10",
-    type: "STAGE",
-    pauseDurationMillis: "",
-    startTimeMillis: "",
-    totalDurationMillis: "",
-    stageId: "1",
-  },
-  {
-    name: "This is step 2",
-    title: "Dummy Step 2",
-    state: Result.running,
-    completePercent: 50,
-    id: "11",
-    type: "STAGE",
-    pauseDurationMillis: "",
-    startTimeMillis: "",
-    totalDurationMillis: "",
-    stageId: "1",
-  },
-];
+import {
+  defaultStagesList,
+  allSuccessfulStepList,
+  multipleErrorsStepList,
+  multipleRunningSteps,
+  findStage,
+  findStageSteps,
+  runningStepList,
+  unstableThenFailureStepList,
+} from "./TestData"
 
 // This is used to allow 'getConsoleTextOffset' to return different values.
 const getConsoleText = jest
@@ -307,8 +66,21 @@ jest.mock("../../../common/RestClient", () => {
   };
 });
 
-jest.mock("./DataTreeView");
-jest.mock("./StageView");
+jest.mock("./DataTreeView", () => {
+  return jest.fn((props: DataTreeViewProps) => {
+    return (
+      <div>
+        SimpleDataTreeView...<div>{JSON.stringify(props)}</div>
+      </div>
+    );
+  });
+});
+
+jest.mock("./StageView", () => {
+  return jest.fn((props: StageViewProps) => {
+    return <div>SimpleStageView - selected: {props.selectedStage ?? ""}</div>;
+  });
+});
 
 describe("getDefaultSelectedStep", () => {
   it("selects last successful step", async () => {
@@ -401,5 +173,41 @@ describe("updateStepBuffer", () => {
     stepBuffer = updateStepBuffer("1", 0, stepBuffer);
     await Promise.resolve();
     expect(stepBuffer?.lines).toEqual([previousConsoleText]);
+  });
+});
+
+describe("PipelineConsole", () => {
+  it("Passes expected params stages to DataTreeView", async () => {
+    const { findByText } = render(<PipelineConsole />);
+    await findByText("SimpleDataTreeView...");
+    expect(DataTreeView).toHaveBeenLastCalledWith(
+      {
+        expanded: ["3", "2"],
+        onNodeFocus: expect.anything(),
+        onNodeToggle: expect.anything(),
+        selected: "3",
+        stages: defaultStagesList,
+      },
+      {}
+    );
+  });
+
+  it("Passes selected stage to StageView", async () => {
+    const { findByText } = render(<PipelineConsole />);
+    // SimpleStageView will print when when passed the stage.
+    await findByText("SimpleStageView - selected: 3");
+    expect(StageView).toHaveBeenLastCalledWith(
+      {
+        expandedSteps: ["21"],
+        handleMoreConsoleClick: expect.anything(),
+        handleStepToggle: expect.anything(),
+        scrollParentId: "stage-view-pane",
+        selectedStage: "3",
+        stage: findStage(defaultStagesList, 3),
+        stepBuffers: expect.any(Map),
+        steps: findStageSteps(allSuccessfulStepList, 3),
+      },
+      {}
+    );
   });
 });

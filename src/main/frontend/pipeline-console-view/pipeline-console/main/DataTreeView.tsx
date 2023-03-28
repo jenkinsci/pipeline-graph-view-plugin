@@ -1,16 +1,12 @@
 import React from "react";
 import TreeView from "@mui/lab/TreeView/";
-
 import TreeItem from "@mui/lab/TreeItem";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-
 import {
   StageInfo,
-  Result,
 } from "../../../pipeline-graph-view/pipeline-graph/main/";
 import StepStatus from "../../../step-status/StepStatus";
-import { decodeResultValue } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
 
 const getTreeItemsFromStage = (stageItems: StageInfo[]) => {
   return stageItems.map((stageItemData) => {

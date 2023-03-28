@@ -1,17 +1,24 @@
 /** * @jest-environment jsdom */
 
 import "@testing-library/jest-dom/extend-expect";
-import { waitFor } from "@testing-library/react";
-import React, { ReactElement } from "react";
+import React from "react";
 import { ConsoleLogCard } from "./ConsoleLogCard";
 import type { ConsoleLogCardProps } from "./ConsoleLogCard";
+import { ConsoleLogStreamProps } from "./ConsoleLogStream"
 import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
 import { render } from "@testing-library/react";
-import { VirtuosoMockContext } from "react-virtuoso";
 
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+jest.mock("./ConsoleLogStream", () => {
+  return jest.fn((props: ConsoleLogStreamProps) => {
+    return (
+      <div>
+        <div>SimpleConsoleLogStream...</div>
+        <div>Hello, world!</div>
+      </div>
+    );
+  });
+});
+
 describe("ConsoleLogCard", () => {
   const baseStep: StepInfo = {
     name: "This is a step",
@@ -32,14 +39,6 @@ describe("ConsoleLogCard", () => {
     endByte: 13,
   };
 
-  const TestComponent = (props: ConsoleLogCardProps) => {
-    return (
-      <div id="test-parent">
-        <ConsoleLogCard {...props} />
-      </div>
-    );
-  };
-
   const DefaultTestProps = {
     step: baseStep,
     stepBuffer: baseBuffer,
@@ -53,32 +52,18 @@ describe("ConsoleLogCard", () => {
     scrollParentId: "test-parent",
   } as ConsoleLogCardProps;
 
-  function renderInContext(element: ReactElement) {
-    return render(element, {
-      wrapper: ({ children }) => (
-        <VirtuosoMockContext.Provider
-          value={{ viewportHeight: 300, itemHeight: 100 }}
-        >
-          {children}
-        </VirtuosoMockContext.Provider>
-      ),
-    });
-  }
-
   it("renders step header only when not expanded", async () => {
-    const { getByText } = renderInContext(
-      TestComponent({ ...DefaultTestProps })
+    const { getByText } = render(
+      <ConsoleLogCard { ...DefaultTestProps }/>
     );
     expect(getByText(/This is a step/));
   });
 
   it("renders step console when expanded", async () => {
-    const { getByText } = renderInContext(
-      TestComponent({ ...DefaultTestProps, isExpanded: true })
+    const { getByText, findByText } = render(
+      <ConsoleLogCard { ...DefaultTestProps }/>
     );
     expect(getByText(/This is a step/));
-    waitFor(() => {
-      expect(getByText(/Hello, world!/));
-    });
+    expect(findByText(/Hello, world!/));
   });
 });

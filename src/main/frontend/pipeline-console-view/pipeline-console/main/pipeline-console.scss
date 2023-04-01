@@ -207,24 +207,13 @@ pre.console-output-line {
   }
 }
 
-.Mui-focused > .MuiTreeItem-label {
-  background: var(--active-card-background) !important;
-}
-
-.step-tree-item > .MuiTreeItem-content > .MuiTreeItem-label {
-  text-decoration: underline;
-  text-underline-position: under;
-}
-
 .MuiTreeItem-label.pgv-graph-node--synthetic {
   font-style: italic;
 }
 
-.Mui-selected {
+.Mui-selected > .MuiTreeItem-label {
   // Remove highlighting
-  background: transparent !important;
-  text-decoration: underline;
-  font-weight: 900 !important;
+  background: var(--active-card-background) !important;
 }
 
 .Mui-focused {

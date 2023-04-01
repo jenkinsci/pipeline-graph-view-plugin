@@ -3,16 +3,14 @@ import TreeView from "@mui/lab/TreeView/";
 import TreeItem from "@mui/lab/TreeItem";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import {
-  StageInfo,
-} from "../../../pipeline-graph-view/pipeline-graph/main/";
+import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/";
 import StepStatus from "../../../step-status/StepStatus";
 
-const getTreeItemsFromStage = (stageItems: StageInfo[]) => {
+const getTreeItemsFromStage = (stageItems: StageInfo[], onClick: Function) => {
   return stageItems.map((stageItemData) => {
     let children: JSX.Element[] = [];
     if (stageItemData.children && stageItemData.children.length > 0) {
-      children = getTreeItemsFromStage(stageItemData.children);
+      children = getTreeItemsFromStage(stageItemData.children, onClick);
     }
     return (
       <TreeItem
@@ -20,13 +18,16 @@ const getTreeItemsFromStage = (stageItems: StageInfo[]) => {
         key={stageItemData.id}
         nodeId={String(stageItemData.id)}
         label={
-          <StepStatus
-            status={stageItemData.state}
-            text={stageItemData.name}
-            key={`status-${stageItemData.id}`}
-            percent={stageItemData.completePercent}
-            radius={10}
-          />
+          <div
+          onClick={onClick()}>
+            <StepStatus
+              status={stageItemData.state}
+              text={stageItemData.name}
+              key={`status-${stageItemData.id}`}
+              percent={stageItemData.completePercent}
+              radius={10}
+            />
+          </div>
         }
         children={children}
         classes={{
@@ -42,7 +43,7 @@ const getTreeItemsFromStage = (stageItems: StageInfo[]) => {
 export interface DataTreeViewProps {
   stages: Array<StageInfo>;
   onNodeToggle: (event: React.ChangeEvent<any>, nodeIds: string[]) => void;
-  onNodeFocus: (event: React.ChangeEvent<any>, nodeIds: string) => void;
+  onNodeSelect: (event: React.ChangeEvent<any>, nodeIds: string) => void;
   selected: string;
   expanded: string[];
 }
@@ -71,13 +72,12 @@ export default class DataTreeView extends React.Component {
       <TreeView
         defaultCollapseIcon={<ExpandMoreIcon />}
         defaultExpandIcon={<ChevronRightIcon />}
-        onNodeFocus={this.props.onNodeFocus}
         expanded={this.props.expanded}
         selected={this.props.selected}
         onNodeToggle={this.props.onNodeToggle}
         key="console-tree-view"
       >
-        {getTreeItemsFromStage(this.props.stages)}
+        {getTreeItemsFromStage(this.props.stages, this.props.onNodeSelect)}
       </TreeView>
     );
   }

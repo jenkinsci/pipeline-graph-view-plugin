@@ -1,4 +1,4 @@
-import {Result, StageType, StageInfo, StepInfo} from "./PipelineConsoleModel"
+import { Result, StageType, StageInfo, StepInfo } from "./PipelineConsoleModel";
 export const defaultStagesList = [
   {
     name: "Stage A",
@@ -264,7 +264,10 @@ export const findStage = (
   return null;
 };
 
-export const findStageSteps = (stepList: Array<StepInfo>, id: number): StepInfo[] => {
+export const findStageSteps = (
+  stepList: Array<StepInfo>,
+  id: number
+): StepInfo[] => {
   let steps = [] as StepInfo[];
   for (let step of stepList) {
     if (step.stageId == `${id}`) {
@@ -273,4 +276,3 @@ export const findStageSteps = (stepList: Array<StepInfo>, id: number): StepInfo[
   }
   return steps;
 };
-  

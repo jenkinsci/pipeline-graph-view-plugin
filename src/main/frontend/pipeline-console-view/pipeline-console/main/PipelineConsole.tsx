@@ -28,7 +28,7 @@ interface PipelineConsoleProps {}
 
 interface PipelineConsoleState {
   selectedStage: string;
-  focusedStage: string;
+  openStage: string;
   expandedStages: string[];
   expandedSteps: string[];
   stages: Array<StageInfo>;
@@ -114,7 +114,7 @@ export default class PipelineConsole extends React.Component<
 > {
   constructor(props: PipelineConsoleProps) {
     super(props);
-    this.handleActionNodeFocus = this.handleActionNodeFocus.bind(this);
+    this.handleActionNodeSelect = this.handleActionNodeSelect.bind(this);
     this.handleToggle = this.handleToggle.bind(this);
     this.handleStepToggle = this.handleStepToggle.bind(this);
     this.handleMoreConsoleClick = this.handleMoreConsoleClick.bind(this);
@@ -124,7 +124,7 @@ export default class PipelineConsole extends React.Component<
       // Store the stage that is selected - either by the user or URL params.
       selectedStage: "",
       // Store the stage that should be open in the stage view.
-      focusedStage: "",
+      openStage: "",
       expandedStages: [] as string[],
       expandedSteps: [] as string[],
       stages: [] as StageInfo[],
@@ -257,7 +257,7 @@ export default class PipelineConsole extends React.Component<
     let startByte = parseInt(
       params.get("start-byte") || `${0 - LOG_FETCH_SIZE}`
     );
-    let focusedStage = "";
+    let openStage = "";
     if (selectedStage) {
       // If we were told what node was selected find  and then expand it (and it's parents).
       console.debug(`Node '${selectedStage}' selected.`);
@@ -292,7 +292,7 @@ export default class PipelineConsole extends React.Component<
           selectedStage = step.stageId;
         }
         // Always open this step's stage.
-        focusedStage = step.stageId;
+        openStage = step.stageId;
         expandedSteps = [step.id];
         expandedStages = this.getStageNodeHierarchy(
           step.stageId,
@@ -304,11 +304,11 @@ export default class PipelineConsole extends React.Component<
       }
     }
     // Open selected stage.
-    if (focusedStage == "" && selectedStage != "") {
-      focusedStage = selectedStage;
+    if (openStage == "" && selectedStage != "") {
+      openStage = selectedStage;
     }
     this.setState({
-      focusedStage: focusedStage,
+      openStage: openStage,
       selectedStage: selectedStage,
       expandedSteps: expandedSteps,
       expandedStages: expandedStages,
@@ -316,19 +316,18 @@ export default class PipelineConsole extends React.Component<
   }
 
   /* Event handlers */
-  handleActionNodeFocus(event: React.ChangeEvent<any>, nodeId: string) {
-    console.log(`Node '${nodeId} selected.`);
+  handleActionNodeSelect(event: React.ChangeEvent<any>, nodeId: string) {
+    console.log(`Node '${nodeId}' selected.`);
     let steps = this.getStageSteps(nodeId);
     let newlyExpandedSteps = [] as string[];
     if (steps.length > 0) {
       // Expand last step in newly focused stage.
       newlyExpandedSteps = [steps[steps.length - 1].id];
     }
-    // If we get console response, we know that this is a step.
     this.setState((prevState) => {
       return {
         ...prevState,
-        focusedStage: nodeId,
+        openStage: nodeId,
         // Allow user to toggle the selected node to start following the running Pipeline.
         selectedStage: prevState.selectedStage == "" ? nodeId : "",
         expandedSteps: [...prevState.expandedSteps, ...newlyExpandedSteps],
@@ -383,6 +382,7 @@ export default class PipelineConsole extends React.Component<
   }
 
   handleStepToggle(event: React.SyntheticEvent<{}>, nodeId: string): void {
+    console.log(`Node '${nodeId}' toggled.`);
     let expandedSteps = [...this.state.expandedSteps];
     console.info(`Checking if '${nodeId}' in expanded list ${expandedSteps}`);
     if (!expandedSteps.includes(nodeId)) {
@@ -434,15 +434,15 @@ export default class PipelineConsole extends React.Component<
   }
 
   getOpenStage(): StageInfo | null {
-    if (this.state.focusedStage) {
-      let focusedStage = this.getStageFromList(
+    if (this.state.openStage) {
+      let openStage = this.getStageFromList(
         this.state.stages,
-        this.state.focusedStage
+        this.state.openStage
       );
-      if (focusedStage) {
-        return focusedStage;
+      if (openStage) {
+        return openStage;
       }
-      console.debug(`Couldn't find open stage '${this.state.focusedStage}'`);
+      console.debug(`Couldn't find open stage '${this.state.openStage}'`);
     }
     return null;
   }
@@ -478,8 +478,8 @@ export default class PipelineConsole extends React.Component<
               <Suspense fallback={<CircularProgress />}>
                 <DataTreeView
                   onNodeToggle={this.handleToggle}
-                  onNodeFocus={this.handleActionNodeFocus}
-                  selected={this.state.focusedStage}
+                  onNodeSelect={this.handleActionNodeSelect}
+                  selected={this.state.openStage}
                   expanded={this.state.expandedStages}
                   stages={this.state.stages}
                 />
@@ -494,12 +494,12 @@ export default class PipelineConsole extends React.Component<
               <Suspense fallback={<CircularProgress />}>
                 <StageView
                   stage={this.getOpenStage()}
-                  steps={this.getStageSteps(this.state.focusedStage)}
+                  steps={this.getStageSteps(this.state.openStage)}
                   stepBuffers={this.getStageStepBuffers(
-                    this.state.focusedStage
+                    this.state.openStage
                   )}
                   expandedSteps={this.state.expandedSteps}
-                  selectedStage={this.state.focusedStage}
+                  selectedStage={this.state.openStage}
                   handleStepToggle={this.handleStepToggle}
                   handleMoreConsoleClick={this.handleMoreConsoleClick}
                   scrollParentId="stage-view-pane"

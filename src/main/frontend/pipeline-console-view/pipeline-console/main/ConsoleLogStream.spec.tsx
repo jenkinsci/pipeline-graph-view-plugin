@@ -9,13 +9,13 @@ import { VirtuosoMockContext } from "react-virtuoso";
 
 function renderInContext(element: ReactElement) {
   return render(element, {
-      wrapper: ({ children }) => (
+    wrapper: ({ children }) => (
       <VirtuosoMockContext.Provider
-          value={{ viewportHeight: 300, itemHeight: 100 }}
+        value={{ viewportHeight: 300, itemHeight: 100 }}
       >
-          {children}
+        {children}
       </VirtuosoMockContext.Provider>
-      ),
+    ),
   });
 }
 
@@ -27,7 +27,7 @@ const TestComponent = (props: ConsoleLogStreamProps) => {
   );
 };
 
-window.HTMLElement.prototype.scrollBy = jest.fn()
+window.HTMLElement.prototype.scrollBy = jest.fn();
 
 describe("ConsoleLogStream", () => {
   const baseStep: StepInfo = {
@@ -59,9 +59,7 @@ describe("ConsoleLogStream", () => {
   } as ConsoleLogStreamProps;
 
   it("renders step console", async () => {
-    const { findByText } = render(
-      TestComponent({ ...DefaultTestProps })
-    );
+    const { findByText } = render(TestComponent({ ...DefaultTestProps }));
     expect(findByText(/Hello, world!/));
   });
 });

@@ -9,10 +9,7 @@ import {
 } from "./PipelineConsole";
 import DataTreeView, { DataTreeViewProps } from "./DataTreeView";
 import StageView, { StageViewProps } from "./StageView";
-import {
-  StepInfo,
-  StepLogBufferInfo,
-} from "./PipelineConsoleModel";
+import { StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
 import { render } from "@testing-library/react";
 import { RunStatus } from "../../../common/RestClient";
 import {
@@ -24,7 +21,7 @@ import {
   findStageSteps,
   runningStepList,
   unstableThenFailureStepList,
-} from "./TestData"
+} from "./TestData";
 
 // This is used to allow 'getConsoleTextOffset' to return different values.
 const getConsoleText = jest
@@ -183,7 +180,7 @@ describe("PipelineConsole", () => {
     expect(DataTreeView).toHaveBeenLastCalledWith(
       {
         expanded: ["3", "2"],
-        onNodeFocus: expect.anything(),
+        onNodeSelect: expect.anything(),
         onNodeToggle: expect.anything(),
         selected: "3",
         stages: defaultStagesList,

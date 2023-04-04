@@ -207,4 +207,64 @@ describe("PipelineConsole", () => {
       {}
     );
   });
+
+  it("Passes selects user-defined stage", async () => {
+    window.history.pushState({}, "Test Title", "test.html?selected-node=1");
+    const { findByText } = render(<PipelineConsole />);
+    // SimpleStageView will print when when passed the stage.
+    await findByText("SimpleStageView - selected: 1");
+    expect(StageView).toHaveBeenLastCalledWith(
+      {
+        expandedSteps: [],
+        handleMoreConsoleClick: expect.anything(),
+        handleStepToggle: expect.anything(),
+        scrollParentId: "stage-view-pane",
+        selectedStage: "1",
+        stage: findStage(defaultStagesList, 1),
+        stepBuffers: expect.any(Map),
+        steps: findStageSteps(allSuccessfulStepList, 1),
+      },
+      {}
+    );
+  });
+
+  it("Passes selects nested user-defined stage", async () => {
+    window.history.pushState({}, "Test Title", "test.html?selected-node=3");
+    const { findByText } = render(<PipelineConsole />);
+    // SimpleStageView will print when when passed the stage.
+    await findByText("SimpleStageView - selected: 3");
+    expect(StageView).toHaveBeenLastCalledWith(
+      {
+        expandedSteps: [],
+        handleMoreConsoleClick: expect.anything(),
+        handleStepToggle: expect.anything(),
+        scrollParentId: "stage-view-pane",
+        selectedStage: "3",
+        stage: findStage(defaultStagesList, 3),
+        stepBuffers: expect.any(Map),
+        steps: findStageSteps(allSuccessfulStepList, 3),
+      },
+      {}
+    );
+  });
+
+  it("Passes selects user-defined step", async () => {
+    window.history.pushState({}, "Test Title", "test.html?selected-node=10");
+    const { findByText } = render(<PipelineConsole />);
+    // SimpleStageView will print when when passed the stage.
+    await findByText("SimpleStageView - selected: 0");
+    expect(StageView).toHaveBeenLastCalledWith(
+      {
+        expandedSteps: ["10"],
+        handleMoreConsoleClick: expect.anything(),
+        handleStepToggle: expect.anything(),
+        scrollParentId: "stage-view-pane",
+        selectedStage: "0",
+        stage: findStage(defaultStagesList, 0),
+        stepBuffers: expect.any(Map),
+        steps: findStageSteps(allSuccessfulStepList, 0),
+      },
+      {}
+    );
+  });
 });

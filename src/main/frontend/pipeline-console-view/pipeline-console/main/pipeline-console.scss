@@ -211,12 +211,22 @@ pre.console-output-line {
   font-style: italic;
 }
 
-.Mui-selected > .MuiTreeItem-label {
-  // Remove highlighting
+.stage-tree-item-selected > .MuiTreeItem-content > .MuiTreeItem-label {
   background: var(--active-card-background) !important;
 }
 
+.Mui-selected {
+  // Remove highlighting
+  background: transparent !important;
+}
+
 .Mui-focused {
+  background: transparent !important;
+  text-decoration: bold;
+}
+
+.Mui-focused {
+  // Remove highlighting
   background: transparent !important;
   text-decoration: bold;
 }

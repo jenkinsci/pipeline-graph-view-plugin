@@ -114,8 +114,8 @@ export default class PipelineConsole extends React.Component<
 > {
   constructor(props: PipelineConsoleProps) {
     super(props);
-    this.handleActionNodeSelect = this.handleActionNodeSelect.bind(this);
-    this.handleToggle = this.handleToggle.bind(this);
+    this.handleStageSelect = this.handleStageSelect.bind(this);
+    this.handleStageToggle = this.handleStageToggle.bind(this);
     this.handleStepToggle = this.handleStepToggle.bind(this);
     this.handleMoreConsoleClick = this.handleMoreConsoleClick.bind(this);
 
@@ -164,15 +164,35 @@ export default class PipelineConsole extends React.Component<
         };
       },
       () => {
-        this.selectNode();
+        this.followPipeline();
       }
     );
   }
 
   // Trigger poller when component mounts.
   componentDidMount(): void {
-    // Setup poller to update stages.
-    this.pollForUpdates();
+    // First time setup.
+    this.getStateUpdate().then((newState) => {
+      this.setState(
+        (prevState) => {
+          return {
+            ...prevState,
+            ...newState,
+          };
+        },
+        () => {
+          // Handle any URL params.
+          if (!this.parseUrlParams()) {
+            // If we weren't told want node to select, select a default node.
+            this.selectDefaultNode();
+          }
+          if (!this.state.isComplete) {
+            // Setup poller to update stages.
+            this.pollForUpdates();
+          }
+        }
+      );
+    });
   }
 
   // Stop poller from running.
@@ -243,23 +263,16 @@ export default class PipelineConsole extends React.Component<
     return stepsBuffersCopy;
   }
 
-  selectNode() {
-    if (this.state.selectedStage && this.state.selectedStage != "") {
-      // Return early as we have already selected a node.
-      // TODO: Give the user a way to unselect the selected node, so the console will follow the output again.
-      return;
-    }
-    let expandedSteps = this.state.expandedSteps;
-    let expandedStages = this.state.expandedStages;
-    // If we haven't recorded a selected a stage - either through URL params or the UI find one.
+  parseUrlParams(): boolean {
     let params = new URLSearchParams(document.location.search.substring(1));
     let selectedStage = params.get("selected-node") || "";
-    let startByte = parseInt(
-      params.get("start-byte") || `${0 - LOG_FETCH_SIZE}`
-    );
-    let openStage = "";
+    // If we were told what node was selected find and then expand it (and it's parents).
     if (selectedStage) {
-      // If we were told what node was selected find  and then expand it (and it's parents).
+      let startByte = parseInt(
+        params.get("start-byte") || `${0 - LOG_FETCH_SIZE}`
+      );
+      let expandedSteps = [] as string[];
+      let expandedStages = [] as string[];
       console.debug(`Node '${selectedStage}' selected.`);
       let step = this.getStepWithId(selectedStage, this.state.steps);
       if (step) {
@@ -280,43 +293,62 @@ export default class PipelineConsole extends React.Component<
           this.state.stages
         );
       }
-    } else {
-      // If we weren't told what to expand, expand a step by default (e.g. first failed step).
-      let step = getDefaultSelectedStep(this.state.steps);
-      if (step) {
-        if (!this.state.isComplete) {
-          // Set 'selectedStage' to empty string, so we follow the running Pipeline.
-          selectedStage = "";
-        } else {
-          // The Pipeline is finish, so we don't need to follow it.
-          selectedStage = step.stageId;
-        }
-        // Always open this step's stage.
-        openStage = step.stageId;
-        expandedSteps = [step.id];
-        expandedStages = this.getStageNodeHierarchy(
-          step.stageId,
-          this.state.stages
-        );
-        this.updateStepConsoleOffset(step.id, false, startByte);
+      this.setState({
+        openStage: selectedStage,
+        selectedStage: selectedStage,
+        expandedSteps: expandedSteps,
+        expandedStages: expandedStages,
+      });
+      return true;
+    }
+    return false;
+  }
+
+  selectDefaultNode() {
+    let selectedStage = "";
+    let openStage = "";
+    let expandedSteps = [] as string[];
+    let expandedStages = [] as string[];
+    // If we weren't told what to expand, expand a step by default (e.g. first failed step).
+    let step = getDefaultSelectedStep(this.state.steps);
+    if (step) {
+      if (!this.state.isComplete) {
+        // Set 'selectedStage' to empty string, so we follow the running Pipeline.
+        selectedStage = "";
       } else {
-        console.debug("No node selected.");
+        // The Pipeline is finish, so we don't need to follow it.
+        selectedStage = step.stageId;
       }
+      // Always open this step's stage.
+      openStage = step.stageId;
+      expandedSteps = [step.id];
+      expandedStages = this.getStageNodeHierarchy(
+        step.stageId,
+        this.state.stages
+      );
+      this.setState({
+        openStage: openStage,
+        selectedStage: selectedStage,
+        expandedSteps: expandedSteps,
+        expandedStages: expandedStages,
+      });
+    } else {
+      console.debug("No node selected.");
     }
-    // Open selected stage.
-    if (openStage == "" && selectedStage != "") {
-      openStage = selectedStage;
+  }
+
+  followPipeline() {
+    if (this.state.selectedStage == "") {
+      this.selectDefaultNode();
     }
-    this.setState({
-      openStage: openStage,
-      selectedStage: selectedStage,
-      expandedSteps: expandedSteps,
-      expandedStages: expandedStages,
-    });
   }
 
   /* Event handlers */
-  handleActionNodeSelect(event: React.ChangeEvent<any>, nodeId: string) {
+  handleStageSelect(event: React.ChangeEvent<any>, nodeId: string) {
+    if (!nodeId) {
+      console.debug("");
+      return;
+    }
     console.log(`Node '${nodeId}' selected.`);
     let steps = this.getStageSteps(nodeId);
     let newlyExpandedSteps = [] as string[];
@@ -329,21 +361,27 @@ export default class PipelineConsole extends React.Component<
         ...prevState,
         openStage: nodeId,
         // Allow user to toggle the selected node to start following the running Pipeline.
-        selectedStage: prevState.selectedStage == "" ? nodeId : "",
+        // If the node is expanded make sure it is selected.
+        selectedStage:
+          prevState.selectedStage == nodeId &&
+          !prevState.expandedStages.includes(nodeId)
+            ? ""
+            : nodeId,
         expandedSteps: [...prevState.expandedSteps, ...newlyExpandedSteps],
-        // Expand step if we focus on it.
-        expandedStages: [...prevState.expandedStages, ...[nodeId]],
       };
     });
     if (this.state.selectedStage != "") {
       // Update newly expanded step console for expanded step - as the expand button wasn't triggered it won't trigger the 'handleStepToggle'.
+      // This fixes the highlighting of already expanded nodes.
       this.updateStepConsole(newlyExpandedSteps[0], false);
     }
   }
 
-  handleToggle(event: React.ChangeEvent<{}>, nodeIds: string[]): void {
-    this.setState({
-      expandedStages: nodeIds,
+  handleStageToggle(event: React.ChangeEvent<{}>, nodeIds: string[]): void {
+    this.setState((prevState) => {
+      return {
+        expandedStages: nodeIds,
+      };
     });
   }
 
@@ -477,9 +515,9 @@ export default class PipelineConsole extends React.Component<
             <div className="split-pane" key="tree-view" id="tree-view-pane">
               <Suspense fallback={<CircularProgress />}>
                 <DataTreeView
-                  onNodeToggle={this.handleToggle}
-                  onNodeSelect={this.handleActionNodeSelect}
-                  selected={this.state.openStage}
+                  onNodeToggle={this.handleStageToggle}
+                  onNodeSelect={this.handleStageSelect}
+                  selected={this.state.selectedStage}
                   expanded={this.state.expandedStages}
                   stages={this.state.stages}
                 />
@@ -495,9 +533,7 @@ export default class PipelineConsole extends React.Component<
                 <StageView
                   stage={this.getOpenStage()}
                   steps={this.getStageSteps(this.state.openStage)}
-                  stepBuffers={this.getStageStepBuffers(
-                    this.state.openStage
-                  )}
+                  stepBuffers={this.getStageStepBuffers(this.state.openStage)}
                   expandedSteps={this.state.expandedSteps}
                   selectedStage={this.state.openStage}
                   handleStepToggle={this.handleStepToggle}

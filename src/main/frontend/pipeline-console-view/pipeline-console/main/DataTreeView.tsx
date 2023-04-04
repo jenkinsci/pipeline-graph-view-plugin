@@ -6,28 +6,32 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/";
 import StepStatus from "../../../step-status/StepStatus";
 
-const getTreeItemsFromStage = (stageItems: StageInfo[], onClick: Function) => {
+const getTreeItemsFromStage = (
+  stageItems: StageInfo[],
+  selectedStage: string
+) => {
   return stageItems.map((stageItemData) => {
     let children: JSX.Element[] = [];
     if (stageItemData.children && stageItemData.children.length > 0) {
-      children = getTreeItemsFromStage(stageItemData.children, onClick);
+      children = getTreeItemsFromStage(stageItemData.children, selectedStage);
     }
     return (
       <TreeItem
-        className="stage-tree-item"
+        className={
+          String(stageItemData.id) == selectedStage
+            ? "stage-tree-item-selected"
+            : "stage-tree-item"
+        }
         key={stageItemData.id}
         nodeId={String(stageItemData.id)}
         label={
-          <div
-          onClick={onClick()}>
-            <StepStatus
-              status={stageItemData.state}
-              text={stageItemData.name}
-              key={`status-${stageItemData.id}`}
-              percent={stageItemData.completePercent}
-              radius={10}
-            />
-          </div>
+          <StepStatus
+            status={stageItemData.state}
+            text={stageItemData.name}
+            key={`status-${stageItemData.id}`}
+            percent={stageItemData.completePercent}
+            radius={10}
+          />
         }
         children={children}
         classes={{
@@ -75,9 +79,10 @@ export default class DataTreeView extends React.Component {
         expanded={this.props.expanded}
         selected={this.props.selected}
         onNodeToggle={this.props.onNodeToggle}
+        onNodeSelect={this.props.onNodeSelect}
         key="console-tree-view"
       >
-        {getTreeItemsFromStage(this.props.stages, this.props.onNodeSelect)}
+        {getTreeItemsFromStage(this.props.stages, this.props.selected)}
       </TreeView>
     );
   }

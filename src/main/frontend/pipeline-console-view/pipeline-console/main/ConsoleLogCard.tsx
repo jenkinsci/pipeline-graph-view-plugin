@@ -107,42 +107,6 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
     return `${(size / gib).toFixed(2)}GiB`;
   }
 
-  renderSimplelines() {
-    if (this.props.stepBuffer.lines) {
-      return this.props.stepBuffer.lines.map(
-        (content: string, index: number) => {
-          return (
-            <ConsoleLine
-              lineNumber={String(index)}
-              content={content}
-              stepId={this.props.step.id}
-              startByte={this.props.stepBuffer.startByte}
-            />
-          );
-        }
-      );
-    } else {
-      return <div></div>;
-    }
-  }
-
-  renderConsoleLine(index: number) {
-    if (this.props.stepBuffer.lines) {
-      return (
-        <ConsoleLine
-          lineNumber={String(index + 1)}
-          content={this.props.stepBuffer.lines[index]}
-          stepId={this.props.step.id}
-          startByte={this.props.stepBuffer.startByte}
-        />
-      );
-    }
-  }
-
-  getNumlines() {
-    return this.props.stepBuffer.lines ? this.props.stepBuffer.lines.length : 0;
-  }
-
   render() {
     return (
       <Card

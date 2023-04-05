@@ -17,6 +17,8 @@ interface Props {
   result: Result;
   radius: number;
   outerStyle?: React.CSSProperties;
+  centerX?: number;
+  centerY?: number;
 }
 
 const imagesPath = document.head.dataset.imagesurl;
@@ -24,7 +26,12 @@ const imagesPath = document.head.dataset.imagesurl;
 export class SvgStatus extends React.PureComponent<Props> {
   render() {
     const baseWrapperClasses = "build-status-icon__wrapper icon-md";
-    const { result, radius = 12 } = this.props;
+    const {
+      result,
+      radius = 12,
+      centerX = -radius,
+      centerY = -radius,
+    } = this.props;
     const outerStyle = this.props.outerStyle;
     const diameter = radius * 2;
     const iconOuterClassName =
@@ -45,8 +52,8 @@ export class SvgStatus extends React.PureComponent<Props> {
           <svg
             focusable="false"
             className="svg-icon "
-            x={-radius}
-            y={-radius}
+            x={centerX}
+            y={centerY}
             width={diameter}
             height={diameter}
           >
@@ -57,19 +64,21 @@ export class SvgStatus extends React.PureComponent<Props> {
             />
           </svg>
         </g>
-        {getGlyphFor(result, radius, style)}
+        {getGlyphFor(result, radius, style, centerX, centerY)}
       </g>
     );
   }
 }
 
 /**
- Returns a glyph (as <g>) for specified result type. Centered at 0,0, scaled for 24px icons.
+ Returns a glyph (as <g>) for specified result type. Centered at centerX,centerY, scaled for 24px icons.
  */
 function getGlyphFor(
   result: Result,
   radius: number,
-  style: React.CSSProperties
+  style: React.CSSProperties,
+  centerX?: number,
+  centerY?: number
 ) {
   // NB: If we start resizing these things, we'll need to use radius/12 to
   // generate a "scale" transform for the group
@@ -78,8 +87,8 @@ function getGlyphFor(
     case Result.aborted:
       return (
         <svg
-          x={-radius}
-          y={-radius}
+          x={centerX}
+          y={centerY}
           width={diameter}
           height={diameter}
           focusable="false"
@@ -96,8 +105,8 @@ function getGlyphFor(
       // 8px 9.3px
       return (
         <svg
-          x={-radius}
-          y={-radius}
+          x={centerX}
+          y={centerY}
           width={diameter}
           height={diameter}
           focusable="false"
@@ -113,8 +122,8 @@ function getGlyphFor(
       // "!"
       return (
         <svg
-          x={-radius}
-          y={-radius}
+          x={centerX}
+          y={centerY}
           width={diameter}
           height={diameter}
           focusable="false"
@@ -130,8 +139,8 @@ function getGlyphFor(
       // check-mark
       return (
         <svg
-          x={-radius}
-          y={-radius}
+          x={centerX}
+          y={centerY}
           width={diameter}
           height={diameter}
           focusable="false"
@@ -147,8 +156,8 @@ function getGlyphFor(
       // "X"
       return (
         <svg
-          x={-radius}
-          y={-radius}
+          x={centerX}
+          y={centerY}
           width={diameter}
           height={diameter}
           focusable="false"
@@ -163,8 +172,8 @@ function getGlyphFor(
     case Result.not_built:
       return (
         <svg
-          x={-radius}
-          y={-radius}
+          x={centerX}
+          y={centerY}
           width={diameter}
           height={diameter}
           focusable="false"
@@ -190,8 +199,8 @@ function getGlyphFor(
   return (
     <svg
       className={`svg-icon icon-md`}
-      x={-radius}
-      y={-radius}
+      x={centerX}
+      y={centerY}
       width={diameter}
       height={diameter}
       viewBox={`${-radius} ${-radius} ${"100%"} ${"100%"}`}

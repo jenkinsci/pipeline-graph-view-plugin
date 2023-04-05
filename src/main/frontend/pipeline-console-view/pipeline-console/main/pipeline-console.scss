@@ -108,6 +108,10 @@ pre.console-output-line {
   border-radius: 0px;
 }
 
+g.build-status-icon__outer {
+  transform: translate(0, 0) !important;
+}
+
 .ansi-fg-0 {
   color: var(--black, #333);
 }
@@ -353,17 +357,22 @@ div.detail-element {
   text-transform: capitalize;
 }
 
-div.log-card-header {
+div.log-card--header {
   font-weight: 800;
   font-family: var(--font-family-sans);
   color: var(--step-text-color);
 }
 
-div.log-card-text {
+div.log-card--text {
   //font-weight: 400;
   font-family: var(--font-family-sans-mono);
   line-height: 1.66 !important;
   color: var(--step-text-color);
+}
+
+div.log-card--text-duration {
+  overflow-x: hidden;
+  text-indent: 5px;
 }
 
 div.detail-element:last-child {

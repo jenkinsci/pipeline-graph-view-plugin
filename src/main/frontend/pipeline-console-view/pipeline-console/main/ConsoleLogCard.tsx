@@ -136,7 +136,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
               width="80%"
             >
               <Typography
-                className="log-card-header"
+                className="log-card--header"
                 noWrap={true}
                 component="div"
                 key={`step-name-text-${this.props.step.id}`}
@@ -147,7 +147,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
                   .trimEnd()}
               </Typography>
               <Typography
-                className="log-card-text"
+                className="log-card--text"
                 component="div"
                 key={`step-duration-text-${this.props.step.id}`}
               >
@@ -167,7 +167,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
               justifyContent="center"
             >
               <Typography
-                className="log-card-text"
+                className="log-card--text log-card--text-duration"
                 align="right"
                 component="div"
                 key={`step-duration-text-${this.props.step.id}`}

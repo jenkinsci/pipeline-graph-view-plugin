@@ -66,6 +66,10 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
     }
   };
 
+  const shouldRequestMoreLogs = () => {
+    return props.step.state === Result.running || props.logBuffer.startByte < 0;
+  };
+
   return (
     <>
       <Virtuoso
@@ -77,7 +81,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
         data={props.logBuffer.lines}
         components={{
           Footer: () => {
-            return props.step.state === Result.running ? (
+            return shouldRequestMoreLogs() ? (
               <div className="lds-ellipsis">
                 <div></div>
                 <div></div>
@@ -103,7 +107,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
             clearInterval(appendInterval.current);
           }
           console.debug(`'atBottomStateChange' called with '${bottom}'`);
-          if (bottom && props.step.state == "running") {
+          if (bottom && shouldRequestMoreLogs()) {
             console.debug(`Fetching more log text`);
             appendInterval.current = setInterval(() => {
               props.handleMoreConsoleClick(

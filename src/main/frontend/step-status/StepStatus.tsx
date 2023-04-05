@@ -13,10 +13,10 @@ interface Props {
 }
 
 const Component: FunctionComponent<Props> = (props: Props) => {
-  const status = getStepStatus(props.status, props.percent, props.radius);
+  const statusIcon = getStepStatus(props.status, props.percent, props.radius);
   return (
     <>
-      {status}
+      {statusIcon}
       <span style={{ marginLeft: "0.3rem", padding: "auto" }}>
         {props.text}
       </span>
@@ -29,9 +29,29 @@ function getStepStatus(status: Result, complete?: number, radius?: number) {
     decodeResultValue(status),
     complete ?? 100,
     radius ?? 12,
+    0,
+    0,
     {}
   );
-  return <span>{icon}</span>;
+  const diameter = radius ? radius * 2 : 24;
+  return (
+    <div
+      style={{
+        display: "inline-block",
+        paddingTop: "1px",
+        verticalAlign: "middle",
+        lineHeight: "normal",
+      }}
+    >
+      <svg
+        viewBox={`0 0 ${diameter} ${diameter}`}
+        width={`${diameter}px`}
+        height={`${diameter}px`}
+      >
+        {icon}
+      </svg>
+    </div>
+  );
 }
 
 export default Component;

@@ -25,13 +25,18 @@ const getTreeItemsFromStage = (
         key={stageItemData.id}
         nodeId={String(stageItemData.id)}
         label={
-          <StepStatus
-            status={stageItemData.state}
-            text={stageItemData.name}
-            key={`status-${stageItemData.id}`}
-            percent={stageItemData.completePercent}
-            radius={10}
-          />
+          <div
+            id={`stage-tree-icon-${stageItemData.id}`}
+            key={`stage-tree-icon-${stageItemData.id}`}
+          >
+            <StepStatus
+              status={stageItemData.state}
+              text={stageItemData.name}
+              key={`status-${stageItemData.id}`}
+              percent={stageItemData.completePercent}
+              radius={10}
+            />
+          </div>
         }
         children={children}
         classes={{
@@ -80,6 +85,9 @@ export default class DataTreeView extends React.Component {
         selected={this.props.selected}
         onNodeToggle={this.props.onNodeToggle}
         onNodeSelect={this.props.onNodeSelect}
+        onNodeFocus={(event: React.SyntheticEvent, nodeId: string) => {
+          console.debug(`node '${nodeId}' focused.`)
+        }}
         key="console-tree-view"
       >
         {getTreeItemsFromStage(this.props.stages, this.props.selected)}

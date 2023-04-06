@@ -9,6 +9,8 @@ export function getGroupForResult(
   result: Result,
   percentage: number,
   radius: number,
+  centerX: number,
+  centerY: number,
   outerStyle: React.CSSProperties
 ): React.ReactElement<SvgStatus> {
   switch (result) {
@@ -23,7 +25,13 @@ export function getGroupForResult(
     case Result.aborted:
     case Result.unknown:
       return (
-        <SvgStatus radius={radius} result={result} outerStyle={outerStyle} />
+        <SvgStatus
+          radius={radius}
+          result={result}
+          outerStyle={outerStyle}
+          centerX={centerX}
+          centerY={centerY}
+        />
       );
     default:
       badResult(result);
@@ -32,6 +40,8 @@ export function getGroupForResult(
           radius={radius}
           result={Result.unknown}
           outerStyle={outerStyle}
+          centerX={centerX}
+          centerY={centerY}
         />
       );
   }

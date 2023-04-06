@@ -108,6 +108,10 @@ pre.console-output-line {
   border-radius: 0px;
 }
 
+g.build-status-icon__outer {
+  transform: translate(0, 0) !important;
+}
+
 .ansi-fg-0 {
   color: var(--black, #333);
 }
@@ -207,27 +211,26 @@ pre.console-output-line {
   }
 }
 
-.Mui-focused > .MuiTreeItem-label {
-  background: var(--active-card-background) !important;
-}
-
-.step-tree-item > .MuiTreeItem-content > .MuiTreeItem-label {
-  text-decoration: underline;
-  text-underline-position: under;
-}
-
 .MuiTreeItem-label.pgv-graph-node--synthetic {
   font-style: italic;
 }
 
-// Remove highlighting
+.stage-tree-item-selected > .MuiTreeItem-content > .MuiTreeItem-label {
+  background: var(--active-card-background) !important;
+}
+
 .Mui-selected {
+  // Remove highlighting
   background: transparent !important;
-  text-decoration: bold !important;
-  font-weight: 700;
 }
 
 .Mui-focused {
+  background: transparent !important;
+  text-decoration: bold;
+}
+
+.Mui-focused {
+  // Remove highlighting
   background: transparent !important;
   text-decoration: bold;
 }
@@ -257,10 +260,8 @@ pre.console-output-line {
 // Console styling
 a.console-line-number {
   text-align: right;
-  min-width: 40px;
-  max-width: 40px;
-  margin-left: -15px;
-  margin-right: 27px;
+  width: 50px;
+  padding-left: 10px;
   color: var(--link-color);
   white-space: nowrap;
   display: inline-block;
@@ -356,17 +357,22 @@ div.detail-element {
   text-transform: capitalize;
 }
 
-div.log-card-header {
+div.log-card--header {
   font-weight: 800;
   font-family: var(--font-family-sans);
   color: var(--step-text-color);
 }
 
-div.log-card-text {
-  font-weight: 400;
+div.log-card--text {
+  //font-weight: 400;
   font-family: var(--font-family-sans-mono);
   line-height: 1.66 !important;
   color: var(--step-text-color);
+}
+
+div.log-card--text-duration {
+  overflow-x: hidden;
+  text-indent: 5px;
 }
 
 div.detail-element:last-child {

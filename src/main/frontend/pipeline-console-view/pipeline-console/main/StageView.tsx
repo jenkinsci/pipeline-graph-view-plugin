@@ -80,7 +80,7 @@ const StageSummary = (props: StageSummaryProps) => (
         </span>
       </div>
       {props.failedSteps.map((value: StepInfo) => {
-        console.log(`Found failed step ${value}`);
+        console.debug(`Found failed step ${value}`);
         return (
           <FailedStepLink
             step={value}
@@ -105,7 +105,7 @@ const FailedStepLink = (props: FailedStepLinkProps) => (
   </div>
 );
 
-interface StageViewProps {
+export interface StageViewProps {
   stage: StageInfo | null;
   steps: Array<StepInfo>;
   stepBuffers: Map<string, StepLogBufferInfo>;
@@ -126,8 +126,7 @@ export default class StageView extends React.Component {
   renderStageDetails() {
     if (this.props.stage) {
       let failedSteps = [] as StepInfo[];
-      for (let i = 0; i < this.props.steps.length; i++) {
-        let step = this.props.steps[i];
+      for (let step of this.props.steps) {
         if (step.stageId === this.props.selectedStage) {
           // We seem to get a mix of upper and lower case states, so normalise on lowercase.
           if (step.state.toLowerCase() === "unstable") {
@@ -155,9 +154,9 @@ export default class StageView extends React.Component {
           stepBuffer={
             this.props.stepBuffers.get(stepItemData.id) ??
             ({
-              consoleLines: [] as string[],
-              consoleStartByte: 0 - LOG_FETCH_SIZE,
-              consoleEndByte: -1,
+              lines: [] as string[],
+              startByte: 0 - LOG_FETCH_SIZE,
+              endByte: -1,
             } as StepLogBufferInfo)
           }
           handleStepToggle={this.props.handleStepToggle}

@@ -421,7 +421,6 @@ export default class PipelineConsole extends React.Component<
   }
 
   handleStepToggle(event: React.SyntheticEvent<{}>, nodeId: string): void {
-    console.log(`Node '${nodeId}' toggled.`);
     let expandedSteps = [...this.state.expandedSteps];
     console.info(`Checking if '${nodeId}' in expanded list ${expandedSteps}`);
     if (!expandedSteps.includes(nodeId)) {

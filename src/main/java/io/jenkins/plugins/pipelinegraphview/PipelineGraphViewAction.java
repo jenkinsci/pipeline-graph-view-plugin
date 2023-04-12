@@ -11,35 +11,35 @@ import java.util.List;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 public class PipelineGraphViewAction extends AbstractPipelineViewAction {
-  public PipelineGraphViewAction(WorkflowRun target) {
-    super(target);
-  }
-
-  @Override
-  public String getDisplayName() {
-    return "Pipeline Graph";
-  }
-
-  @Override
-  public String getUrlName() {
-    return "pipeline-graph";
-  }
-
-  @SuppressWarnings("unused")
-  public RunDetailsCard getRunDetailsCard() {
-
-    List<RunDetailsItem> runDetailsItems = new ArrayList<>();
-
-    runDetailsItems.addAll(SCMRunDetailsItems.get(run));
-
-    if (!runDetailsItems.isEmpty()) {
-      runDetailsItems.add(new RunDetailsItem.Builder().separator().build());
+    public PipelineGraphViewAction(WorkflowRun target) {
+        super(target);
     }
 
-    CauseRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
+    @Override
+    public String getDisplayName() {
+        return "Pipeline Graph";
+    }
 
-    runDetailsItems.addAll(TimingRunDetailsItems.get(run));
+    @Override
+    public String getUrlName() {
+        return "pipeline-graph";
+    }
 
-    return new RunDetailsCard(runDetailsItems);
-  }
+    @SuppressWarnings("unused")
+    public RunDetailsCard getRunDetailsCard() {
+
+        List<RunDetailsItem> runDetailsItems = new ArrayList<>();
+
+        runDetailsItems.addAll(SCMRunDetailsItems.get(run));
+
+        if (!runDetailsItems.isEmpty()) {
+            runDetailsItems.add(new RunDetailsItem.Builder().separator().build());
+        }
+
+        CauseRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
+
+        runDetailsItems.addAll(TimingRunDetailsItems.get(run));
+
+        return new RunDetailsCard(runDetailsItems);
+    }
 }

@@ -4,18 +4,18 @@ import java.util.List;
 
 public class RunDetailsCard extends Card {
 
-  private List<RunDetailsItem> items;
+    private List<RunDetailsItem> items;
 
-  public RunDetailsCard(List<RunDetailsItem> items) {
-    this.items = items;
-  }
+    public RunDetailsCard(List<RunDetailsItem> items) {
+        this.items = items;
+    }
 
-  public List<RunDetailsItem> getItems() {
-    return items;
-  }
+    public List<RunDetailsItem> getItems() {
+        return items;
+    }
 
-  @Override
-  public String getTitle() {
-    return "Details";
-  }
+    @Override
+    public String getTitle() {
+        return "Details";
+    }
 }

@@ -2,78 +2,78 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 public class PipelineStep {
 
-  private String name;
-  private String state; // TODO enum
-  private int completePercent; // TODO int is fine?
-  private String type; // TODO enum
-  private String title;
-  private int id;
-  private String stageId;
-  private String pauseDurationMillis;
-  private String startTimeMillis;
-  private String totalDurationMillis;
+    private String name;
+    private String state; // TODO enum
+    private int completePercent; // TODO int is fine?
+    private String type; // TODO enum
+    private String title;
+    private int id;
+    private String stageId;
+    private String pauseDurationMillis;
+    private String startTimeMillis;
+    private String totalDurationMillis;
 
-  public PipelineStep(
-      int id,
-      String name,
-      String state,
-      int completePercent,
-      String type,
-      String title,
-      String stageId,
-      String pauseDurationMillis,
-      String startTimeMillis,
-      String totalDurationMillis) {
+    public PipelineStep(
+            int id,
+            String name,
+            String state,
+            int completePercent,
+            String type,
+            String title,
+            String stageId,
+            String pauseDurationMillis,
+            String startTimeMillis,
+            String totalDurationMillis) {
 
-    this.id = id;
-    this.name = name;
-    this.state = state;
-    this.completePercent = completePercent;
-    this.type = type;
-    this.title = title;
-    this.stageId = stageId;
-    this.pauseDurationMillis = pauseDurationMillis;
-    this.startTimeMillis = startTimeMillis;
-    this.totalDurationMillis = totalDurationMillis;
-  }
+        this.id = id;
+        this.name = name;
+        this.state = state;
+        this.completePercent = completePercent;
+        this.type = type;
+        this.title = title;
+        this.stageId = stageId;
+        this.pauseDurationMillis = pauseDurationMillis;
+        this.startTimeMillis = startTimeMillis;
+        this.totalDurationMillis = totalDurationMillis;
+    }
 
-  public String getPauseDurationMillis() {
-    return pauseDurationMillis;
-  }
+    public String getPauseDurationMillis() {
+        return pauseDurationMillis;
+    }
 
-  public String getStartTimeMillis() {
-    return startTimeMillis;
-  }
+    public String getStartTimeMillis() {
+        return startTimeMillis;
+    }
 
-  public String getTotalDurationMillis() {
-    return totalDurationMillis;
-  }
+    public String getTotalDurationMillis() {
+        return totalDurationMillis;
+    }
 
-  public int getId() {
-    return id;
-  }
+    public int getId() {
+        return id;
+    }
 
-  public String getName() {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public String getState() {
-    return state;
-  }
+    public String getState() {
+        return state;
+    }
 
-  public int getCompletePercent() {
-    return completePercent;
-  }
+    public int getCompletePercent() {
+        return completePercent;
+    }
 
-  public String getType() {
-    return type;
-  }
+    public String getType() {
+        return type;
+    }
 
-  public String getTitle() {
-    return title;
-  }
+    public String getTitle() {
+        return title;
+    }
 
-  public String getStageId() {
-    return stageId;
-  }
+    public String getStageId() {
+        return stageId;
+    }
 }

@@ -21,81 +21,81 @@ import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.verb.GET;
 
 public class MultiPipelineGraphViewAction implements Action, IconSpec {
-  private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-  private static final int MaxNumberOfElements = 10;
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final int MaxNumberOfElements = 10;
 
-  private final WorkflowJob target;
+    private final WorkflowJob target;
 
-  public MultiPipelineGraphViewAction(WorkflowJob target) {
-    this.target = target;
-  }
-
-  public String getJobDisplayName() {
-    return target.getFullDisplayName();
-  }
-
-  public boolean isBuildable() {
-    return target.isBuildable();
-  }
-
-  public Permission getPermission() {
-    return target.BUILD;
-  }
-
-  public Permission getConfigurePermission() {
-    return target.CONFIGURE;
-  }
-
-  @GET
-  @WebMethod(name = "tree")
-  public HttpResponse getGraph(StaplerRequest req) throws JsonProcessingException {
-    String runId = req.getParameter("runId");
-    WorkflowRun run = target.getBuildByNumber(Integer.parseInt(runId));
-    PipelineGraphApi api = new PipelineGraphApi(run);
-    JSONObject graph = createGraphJson(api.createTree());
-    return HttpResponses.okJSON(graph);
-  }
-
-  protected JSONObject createGraphJson(PipelineGraph pipelineGraph) throws JsonProcessingException {
-    String graph = OBJECT_MAPPER.writeValueAsString(pipelineGraph);
-    return JSONObject.fromObject(graph);
-  }
-
-  @GET
-  @WebMethod(name = "runs")
-  public HttpResponse getRuns() throws JsonProcessingException {
-    RunList<WorkflowRun> runs = target.getBuilds();
-    List<PipelineRun> pipelineRuns = new ArrayList<>();
-    for (WorkflowRun run : runs) {
-      pipelineRuns.add(new PipelineRun(run));
-      if (pipelineRuns.size() >= MaxNumberOfElements) break;
+    public MultiPipelineGraphViewAction(WorkflowJob target) {
+        this.target = target;
     }
-    JSONArray graph = createJson(pipelineRuns);
-    return HttpResponses.okJSON(graph);
-  }
 
-  protected JSONArray createJson(List<PipelineRun> pipelineRuns) throws JsonProcessingException {
-    String graph = OBJECT_MAPPER.writeValueAsString(pipelineRuns);
-    return JSONArray.fromObject(graph);
-  }
+    public String getJobDisplayName() {
+        return target.getFullDisplayName();
+    }
 
-  @Override
-  public String getIconFileName() {
-    return null;
-  }
+    public boolean isBuildable() {
+        return target.isBuildable();
+    }
 
-  @Override
-  public String getDisplayName() {
-    return "Stages";
-  }
+    public Permission getPermission() {
+        return target.BUILD;
+    }
 
-  @Override
-  public String getUrlName() {
-    return "multi-pipeline-graph";
-  }
+    public Permission getConfigurePermission() {
+        return target.CONFIGURE;
+    }
 
-  @Override
-  public String getIconClassName() {
-    return "symbol-layers-outline plugin-ionicons-api";
-  }
+    @GET
+    @WebMethod(name = "tree")
+    public HttpResponse getGraph(StaplerRequest req) throws JsonProcessingException {
+        String runId = req.getParameter("runId");
+        WorkflowRun run = target.getBuildByNumber(Integer.parseInt(runId));
+        PipelineGraphApi api = new PipelineGraphApi(run);
+        JSONObject graph = createGraphJson(api.createTree());
+        return HttpResponses.okJSON(graph);
+    }
+
+    protected JSONObject createGraphJson(PipelineGraph pipelineGraph) throws JsonProcessingException {
+        String graph = OBJECT_MAPPER.writeValueAsString(pipelineGraph);
+        return JSONObject.fromObject(graph);
+    }
+
+    @GET
+    @WebMethod(name = "runs")
+    public HttpResponse getRuns() throws JsonProcessingException {
+        RunList<WorkflowRun> runs = target.getBuilds();
+        List<PipelineRun> pipelineRuns = new ArrayList<>();
+        for (WorkflowRun run : runs) {
+            pipelineRuns.add(new PipelineRun(run));
+            if (pipelineRuns.size() >= MaxNumberOfElements) break;
+        }
+        JSONArray graph = createJson(pipelineRuns);
+        return HttpResponses.okJSON(graph);
+    }
+
+    protected JSONArray createJson(List<PipelineRun> pipelineRuns) throws JsonProcessingException {
+        String graph = OBJECT_MAPPER.writeValueAsString(pipelineRuns);
+        return JSONArray.fromObject(graph);
+    }
+
+    @Override
+    public String getIconFileName() {
+        return null;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return "Stages";
+    }
+
+    @Override
+    public String getUrlName() {
+        return "multi-pipeline-graph";
+    }
+
+    @Override
+    public String getIconClassName() {
+        return "symbol-layers-outline plugin-ionicons-api";
+    }
 }

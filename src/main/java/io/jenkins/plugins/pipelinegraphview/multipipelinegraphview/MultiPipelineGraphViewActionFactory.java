@@ -11,15 +11,15 @@ import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 @Extension
 public class MultiPipelineGraphViewActionFactory extends TransientActionFactory<WorkflowJob> {
 
-  @Override
-  public Class<WorkflowJob> type() {
-    return WorkflowJob.class;
-  }
+    @Override
+    public Class<WorkflowJob> type() {
+        return WorkflowJob.class;
+    }
 
-  @NonNull
-  @Override
-  public Collection<? extends Action> createFor(@NonNull WorkflowJob target) {
-    MultiPipelineGraphViewAction a = new MultiPipelineGraphViewAction(target);
-    return Collections.singleton(a);
-  }
+    @NonNull
+    @Override
+    public Collection<? extends Action> createFor(@NonNull WorkflowJob target) {
+        MultiPipelineGraphViewAction a = new MultiPipelineGraphViewAction(target);
+        return Collections.singleton(a);
+    }
 }

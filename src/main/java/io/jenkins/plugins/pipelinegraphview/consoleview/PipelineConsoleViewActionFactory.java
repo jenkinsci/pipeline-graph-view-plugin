@@ -11,15 +11,15 @@ import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 @Extension
 public class PipelineConsoleViewActionFactory extends TransientActionFactory<WorkflowRun> {
 
-  @Override
-  public Class<WorkflowRun> type() {
-    return WorkflowRun.class;
-  }
+    @Override
+    public Class<WorkflowRun> type() {
+        return WorkflowRun.class;
+    }
 
-  @NonNull
-  @Override
-  public Collection<? extends Action> createFor(@NonNull WorkflowRun target) {
-    PipelineConsoleViewAction a = new PipelineConsoleViewAction(target);
-    return Collections.singleton(a);
-  }
+    @NonNull
+    @Override
+    public Collection<? extends Action> createFor(@NonNull WorkflowRun target) {
+        PipelineConsoleViewAction a = new PipelineConsoleViewAction(target);
+        return Collections.singleton(a);
+    }
 }

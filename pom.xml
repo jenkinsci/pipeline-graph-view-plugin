@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.59</version>
+    <version>4.61</version>
     <relativePath />
   </parent>
 
@@ -36,6 +36,7 @@
     <jenkins.version>2.361.4</jenkins.version>
     <node.version>16.18.1</node.version>
     <npm.version>8.19.4</npm.version>
+    <spotless.check.skip>false</spotless.check.skip>
   </properties>
 
   <dependencyManagement>

@@ -1,10 +1,8 @@
-# Pipeline Graph View Plugin (alpha)
+# Pipeline Graph View Plugin
 
 ## Introduction
 
 This plugin provides new Action and View to view a `WorkflowRun` via the "Pipeline Graph" visualization that was popularized in the [Blue Ocean plugin](https://github.com/jenkinsci/blueocean-plugin).
-
-_Disclaimer: this is currently an alpha, please raise an issue with any pipelines that don't display correctly (and do work in Blue Ocean)._
 
 ## Getting started
 

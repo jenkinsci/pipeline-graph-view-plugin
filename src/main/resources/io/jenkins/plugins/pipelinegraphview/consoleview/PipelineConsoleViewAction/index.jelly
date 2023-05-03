@@ -33,8 +33,8 @@
                         </l:hasPermission>
                     </j:if>
                     <a href="../pipeline-graph" class="jenkins-button">
-                        <l:icon src="symbol-file-tray-stacked-outline plugin-ionicons-api"/>
-                        ${%Details}
+                        <l:icon src="symbol-git-network-outline plugin-ionicons-api"/>
+                        ${%Overview}
                     </a>
                     <l:hasPermission permission="${it.configurePermission}">
                         <a href="../../configure" class="jenkins-button">

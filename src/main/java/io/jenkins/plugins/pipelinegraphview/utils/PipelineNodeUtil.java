@@ -28,6 +28,7 @@ import org.jenkinsci.plugins.workflow.actions.ThreadNameAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
+import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 import org.jenkinsci.plugins.workflow.support.actions.PauseAction;
 import org.jenkinsci.plugins.workflow.support.steps.ExecutorStep;
@@ -283,7 +284,7 @@ public class PipelineNodeUtil {
     }
 
     public static boolean isJenkinsFailureException(Throwable exception) {
-        if (exception instanceof AbortException) {
+        if (exception instanceof AbortException || exception instanceof FlowInterruptedException) {
             return true;
         }
         return false;

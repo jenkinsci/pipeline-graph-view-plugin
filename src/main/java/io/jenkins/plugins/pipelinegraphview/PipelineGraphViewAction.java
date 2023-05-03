@@ -17,7 +17,7 @@ public class PipelineGraphViewAction extends AbstractPipelineViewAction {
 
     @Override
     public String getDisplayName() {
-        return "Pipeline Graph";
+        return "Pipeline Overview";
     }
 
     @Override

@@ -272,7 +272,10 @@ public class PipelineNodeUtil {
                 } else {
                     // If this is not a Jenkins failure exception, then we should print everything.
                     log = "Found unhandled " + exception.getClass().getName() + " exception:\n";
-                    log += exception.getMessage() + "\n\t";
+                    String message = exception.getMessage();
+                    if (message != null) {
+                        log += message + "\n\t";
+                    }
                     log += Arrays.stream(exception.getStackTrace())
                             .map(s -> s.toString())
                             .collect(Collectors.joining("\n\t"));

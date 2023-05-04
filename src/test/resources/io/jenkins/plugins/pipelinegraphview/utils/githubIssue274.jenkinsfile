@@ -1,0 +1,9 @@
+node {
+	stage("failure") {
+		try {
+			build("simpleError")
+		} finally {
+			echo("post build step")
+		}
+	}
+}

@@ -326,8 +326,7 @@ public class PipelineStepApiTest {
 
         // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
         // long time)
-        WorkflowRun run = TestUtils.createAndRunJob(
-                j, "githubIssue274", "githubIssue274.jenkinsfile", Result.FAILURE);
+        WorkflowRun run = TestUtils.createAndRunJob(j, "githubIssue274", "githubIssue274.jenkinsfile", Result.FAILURE);
 
         PipelineStepApi api = new PipelineStepApi(run);
 
@@ -339,6 +338,9 @@ public class PipelineStepApiTest {
         PipelineStep errorStep = steps.get(0);
         FlowNode node = run.getExecution().getNode(String.valueOf(errorStep.getId()));
         String errorText = PipelineNodeUtil.getExceptionText(node);
-        assertThat(errorText, not(containsString("Found unhandled org.jenkinsci.plugins.workflow.steps.FlowInterruptedException exception")));
+        assertThat(
+                errorText,
+                not(containsString(
+                        "Found unhandled org.jenkinsci.plugins.workflow.steps.FlowInterruptedException exception")));
     }
 }

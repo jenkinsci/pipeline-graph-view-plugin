@@ -318,4 +318,29 @@ public class PipelineStepApiTest {
         PipelineStep errorStep = steps.get(1);
         assertThat(errorStep.getName(), is("Pipeline error"));
     }
+
+    @Issue("GH#274")
+    @Test
+    public void githubIssue274RegressionTest_suppressFlowInterruptedExceptions() throws Exception {
+        TestUtils.createJob(j, "simpleError", "simpleError.jenkinsfile");
+
+        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+        // long time)
+        WorkflowRun run = TestUtils.createAndRunJob(j, "githubIssue274", "githubIssue274.jenkinsfile", Result.FAILURE);
+
+        PipelineStepApi api = new PipelineStepApi(run);
+
+        String failureStage =
+                TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
+
+        List<PipelineStep> steps = api.getSteps(failureStage).getSteps();
+        assertThat(steps, hasSize(2));
+        PipelineStep errorStep = steps.get(0);
+        FlowNode node = run.getExecution().getNode(String.valueOf(errorStep.getId()));
+        String errorText = PipelineNodeUtil.getExceptionText(node);
+        assertThat(
+                errorText,
+                not(containsString(
+                        "Found unhandled org.jenkinsci.plugins.workflow.steps.FlowInterruptedException exception")));
+    }
 }

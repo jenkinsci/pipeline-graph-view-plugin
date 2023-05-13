@@ -170,6 +170,7 @@ function getGlyphFor(
         </svg>
       );
     case Result.not_built:
+    case Result.running:
       return (
         <svg
           x={centerX}
@@ -187,7 +188,6 @@ function getGlyphFor(
       );
     case Result.skipped:
     case Result.queued:
-    case Result.running:
       return null;
     case Result.unknown:
       break; // Continue on to the "unknown render"

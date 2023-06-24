@@ -47,8 +47,7 @@ public class PipelineGraphApi {
         return run.getParent().getNextBuildNumber();
     }
 
-    private List<PipelineStageInternal> getPipelineNodes() {
-      PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
+    private List<PipelineStageInternal> getPipelineNodes(PipelineNodeGraphAdapter builder) {
         return builder.getPipelineNodes().stream()
                 .map(flowNodeWrapper -> {
                     String state = flowNodeWrapper.getStatus().getResult().name();
@@ -57,7 +56,6 @@ public class PipelineGraphApi {
                     if (flowNodeWrapper.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
                         state = flowNodeWrapper.getStatus().getState().name().toLowerCase(Locale.ROOT);
                     }
-
                     return new PipelineStageInternal(
                             flowNodeWrapper.getId(), // TODO no need to parse it BO returns a string even though the
                             // datatype is number on the frontend
@@ -73,76 +71,44 @@ public class PipelineGraphApi {
                             flowNodeWrapper.getTiming());
                 })
                 .collect(Collectors.toList());
-}
+    }
 
-  private List<PipelineStageInternal> getPipelineNodes(PipelineNodeGraphAdapter builder) {
-    return builder.getPipelineNodes().stream()
-        .map(
-            flowNodeWrapper -> {
-              String state = flowNodeWrapper.getStatus().getResult().name();
-              // TODO: Why do we do this? Seems like it will return uppercase for some states and
-              // lowercase for others?
-              if (flowNodeWrapper.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
-                state = flowNodeWrapper.getStatus().getState().name().toLowerCase(Locale.ROOT);
-              }
-              return new PipelineStageInternal(
-                  flowNodeWrapper
-                      .getId(), // TODO no need to parse it BO returns a string even though the
-                  // datatype is number on the frontend
-                  flowNodeWrapper.getDisplayName(),
-                  flowNodeWrapper.getParents().stream()
-                      .map(FlowNodeWrapper::getId)
-                      .collect(Collectors.toList()),
-                  state,
-                  50, // TODO how ???
-                  flowNodeWrapper.getType().name(),
-                  flowNodeWrapper
-                      .getDisplayName(), // TODO blue ocean uses timing information: "Passed in 0s"
-                  flowNodeWrapper.isSynthetic(),
-                  flowNodeWrapper.getTiming());
-            })
-        .collect(Collectors.toList());
-  }
+    private Function<String, PipelineStage> mapper(
+            Map<String, PipelineStageInternal> stageMap, Map<String, List<String>> stageToChildrenMap) {
 
-  private Function<String, PipelineStage> mapper(
-      Map<String, PipelineStageInternal> stageMap, Map<String, List<String>> stageToChildrenMap) {
+        return id -> {
+            List<String> orDefault = stageToChildrenMap.getOrDefault(id, emptyList());
+            List<PipelineStage> children =
+                    orDefault.stream().map(mapper(stageMap, stageToChildrenMap)).collect(Collectors.toList());
+            return stageMap.get(id).toPipelineStage(children);
+        };
+    }
 
-    return id -> {
-      List<String> orDefault = stageToChildrenMap.getOrDefault(id, emptyList());
-      List<PipelineStage> children =
-          orDefault.stream().map(mapper(stageMap, stageToChildrenMap)).collect(Collectors.toList());
-      return stageMap.get(id).toPipelineStage(children);
-    };
-  }
+    public PipelineGraph createTree() {
+        PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
+        // We want to remap children here, so we don't update the parents of the original objects - as
+        // these are completely new representations.
+        List<PipelineStageInternal> stages = getPipelineNodes(builder);
 
-  public PipelineGraph createTree() {
-    PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
-    // We want to remap children here, so we don't update the parents of the original objects - as
-    // these are completely new representations.
-    List<PipelineStageInternal> stages = getPipelineNodes(builder);
+        // id => stage
+        Map<String, PipelineStageInternal> stageMap = stages.stream()
+                .collect(Collectors.toMap(
+                        PipelineStageInternal::getId, stage -> stage, (u, v) -> u, LinkedHashMap::new));
 
-    // id => stage
-    Map<String, PipelineStageInternal> stageMap =
-        stages.stream()
-            .collect(
-                Collectors.toMap(
-                    PipelineStageInternal::getId, stage -> stage, (u, v) -> u, LinkedHashMap::new));
+        Map<String, List<String>> stageToChildrenMap = new HashMap<>();
+        List<String> childNodes = new ArrayList<>();
 
-    Map<String, List<String>> stageToChildrenMap = new HashMap<>();
-    List<String> childNodes = new ArrayList<>();
-
-    FlowExecution execution = run.getExecution();
-    stages.forEach(
-        stage -> {
-          if (stage.getParents().isEmpty()) {
-            stageToChildrenMap.put(stage.getId(), new ArrayList<>());
-          } else {
-            List<String> parentChildren =
-                stageToChildrenMap.getOrDefault(stage.getParents().get(0), new ArrayList<String>());
-            parentChildren.add(stage.getId());
-            childNodes.add(stage.getId());
-            stageToChildrenMap.put(stage.getParents().get(0), parentChildren);
-          }
+        FlowExecution execution = run.getExecution();
+        stages.forEach(stage -> {
+            if (stage.getParents().isEmpty()) {
+                stageToChildrenMap.put(stage.getId(), new ArrayList<>());
+            } else {
+                List<String> parentChildren =
+                        stageToChildrenMap.getOrDefault(stage.getParents().get(0), new ArrayList<String>());
+                parentChildren.add(stage.getId());
+                childNodes.add(stage.getId());
+                stageToChildrenMap.put(stage.getParents().get(0), parentChildren);
+            }
         });
 
         List<PipelineStage> stageResults = stageMap.values().stream()
@@ -154,8 +120,8 @@ public class PipelineGraphApi {
 
                     return pipelineStageInternal.toPipelineStage(children);
                 })
-            .filter(stage -> !childNodes.contains(stage.getId()))
-            .collect(Collectors.toList());
-    return new PipelineGraph(stageResults, execution != null && execution.isComplete());
-  }
+                .filter(stage -> !childNodes.contains(stage.getId()))
+                .collect(Collectors.toList());
+        return new PipelineGraph(stageResults, execution != null && execution.isComplete());
+    }
 }

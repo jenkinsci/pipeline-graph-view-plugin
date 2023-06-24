@@ -25,311 +25,311 @@ import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
 /** @author Vivek Pandey */
 public class FlowNodeWrapper {
 
-  /**
-   * Checks to see if `this` and `that` probably represent the same underlying pipeline graph node
-   * as far as the user is concerned. This is sloppier than an exact name and ID match because
-   * {@link PipelineNodeGraphAdapter} as of 2019-05-17 can return some nodes with different IDs
-   * during a build as opposed to once the build is complete. As such we check name, type, and
-   * firstParent. But we need to check firstParent the same way for the same reason.
-   *
-   * @param that
-   * @return
-   */
-  public boolean probablySameNode(@Nullable FlowNodeWrapper that) {
+    /**
+     * Checks to see if `this` and `that` probably represent the same underlying pipeline graph node
+     * as far as the user is concerned. This is sloppier than an exact name and ID match because
+     * {@link PipelineNodeGraphAdapter} as of 2019-05-17 can return some nodes with different IDs
+     * during a build as opposed to once the build is complete. As such we check name, type, and
+     * firstParent. But we need to check firstParent the same way for the same reason.
+     *
+     * @param that
+     * @return
+     */
+    public boolean probablySameNode(@Nullable FlowNodeWrapper that) {
 
-    if (that == null) {
-      return false;
+        if (that == null) {
+            return false;
+        }
+
+        if (this.type != that.type) {
+            return false;
+        }
+
+        if (!this.displayName.equals(that.displayName)) {
+            return false;
+        }
+
+        final FlowNodeWrapper thisParent = this.getFirstParent();
+        if (thisParent != null) {
+            return thisParent.probablySameNode(that.getFirstParent());
+        } else {
+            return that.getFirstParent() == null;
+        }
     }
 
-    if (this.type != that.type) {
-      return false;
+    public enum NodeType {
+        STAGE,
+        PARALLEL,
+        PARALLEL_BLOCK,
+        STEP,
+        UNHANDLED_EXCEPTION,
+        STEPS_BLOCK,
     }
 
-    if (!this.displayName.equals(that.displayName)) {
-      return false;
+    private final FlowNode node;
+    private final NodeRunStatus status;
+    private final TimingInfo timingInfo;
+    public final List<FlowNodeWrapper> edges = new ArrayList<>();
+    public final NodeType type;
+    private final String displayName;
+    private final InputStep inputStep;
+    private final WorkflowRun run;
+    private String causeOfFailure;
+
+    private List<FlowNodeWrapper> parents = new ArrayList<>();
+
+    private ErrorAction blockErrorAction;
+    private Collection<Action> pipelineActions;
+
+    public FlowNodeWrapper(
+            @NonNull FlowNode node,
+            @NonNull NodeRunStatus status,
+            @NonNull TimingInfo timingInfo,
+            @NonNull WorkflowRun run) {
+        this(node, status, timingInfo, null, run, null);
     }
 
-    final FlowNodeWrapper thisParent = this.getFirstParent();
-    if (thisParent != null) {
-      return thisParent.probablySameNode(that.getFirstParent());
-    } else {
-      return that.getFirstParent() == null;
+    public FlowNodeWrapper(
+            @NonNull FlowNode node,
+            @NonNull NodeRunStatus status,
+            @NonNull TimingInfo timingInfo,
+            @Nullable InputStep inputStep,
+            @NonNull WorkflowRun run) {
+        this(node, status, timingInfo, inputStep, run, null);
     }
-  }
 
-  public enum NodeType {
-    STAGE,
-    PARALLEL,
-    PARALLEL_BLOCK,
-    STEP,
-    UNHANDLED_EXCEPTION,
-    STEPS_BLOCK,
-  }
-
-  private final FlowNode node;
-  private final NodeRunStatus status;
-  private final TimingInfo timingInfo;
-  public final List<FlowNodeWrapper> edges = new ArrayList<>();
-  public final NodeType type;
-  private final String displayName;
-  private final InputStep inputStep;
-  private final WorkflowRun run;
-  private String causeOfFailure;
-
-  private List<FlowNodeWrapper> parents = new ArrayList<>();
-
-  private ErrorAction blockErrorAction;
-  private Collection<Action> pipelineActions;
-
-  public FlowNodeWrapper(
-      @NonNull FlowNode node,
-      @NonNull NodeRunStatus status,
-      @NonNull TimingInfo timingInfo,
-      @NonNull WorkflowRun run) {
-    this(node, status, timingInfo, null, run, null);
-  }
-
-  public FlowNodeWrapper(
-      @NonNull FlowNode node,
-      @NonNull NodeRunStatus status,
-      @NonNull TimingInfo timingInfo,
-      @Nullable InputStep inputStep,
-      @NonNull WorkflowRun run) {
-    this(node, status, timingInfo, inputStep, run, null);
-  }
-
-  public FlowNodeWrapper(
-      @NonNull FlowNode node,
-      @NonNull NodeRunStatus status,
-      @NonNull TimingInfo timingInfo,
-      @Nullable InputStep inputStep,
-      @NonNull WorkflowRun run,
-      @Nullable NodeType type) {
-    this.node = node;
-    this.status = status;
-    this.timingInfo = timingInfo;
-    this.type = type == null ? getNodeType(node) : type;
-    this.displayName = PipelineNodeUtil.getDisplayName(node);
-    this.inputStep = inputStep;
-    this.run = run;
-  }
-
-  public WorkflowRun getRun() {
-    return run;
-  }
-
-  public @NonNull String getDisplayName() {
-    // Make 'PARALLEL_BLOCK' types have the display name as SytheticNodes used to.
-    if (type == NodeType.PARALLEL_BLOCK) {
-      return "Parallel";
+    public FlowNodeWrapper(
+            @NonNull FlowNode node,
+            @NonNull NodeRunStatus status,
+            @NonNull TimingInfo timingInfo,
+            @Nullable InputStep inputStep,
+            @NonNull WorkflowRun run,
+            @Nullable NodeType type) {
+        this.node = node;
+        this.status = status;
+        this.timingInfo = timingInfo;
+        this.type = type == null ? getNodeType(node) : type;
+        this.displayName = PipelineNodeUtil.getDisplayName(node);
+        this.inputStep = inputStep;
+        this.run = run;
     }
-    return displayName;
-  }
 
-  public @CheckForNull String getLabelDisplayName() {
-    LabelAction labelAction = node.getAction(LabelAction.class);
-    if (labelAction != null) {
-      return labelAction.getDisplayName();
+    public WorkflowRun getRun() {
+        return run;
     }
-    return null;
-  }
 
-  private static NodeType getNodeType(FlowNode node) {
-    if (PipelineNodeUtil.isStage(node)) {
-      return NodeType.STAGE;
-    } else if (PipelineNodeUtil.isParallelBranch(node)) {
-      return NodeType.PARALLEL;
-    } else if (node instanceof AtomNode) {
-      return NodeType.STEP;
-    } else if (PipelineNodeUtil.isUnhandledException(node)) {
-      return NodeType.UNHANDLED_EXCEPTION;
+    public @NonNull String getDisplayName() {
+        // Make 'PARALLEL_BLOCK' types have the display name as SytheticNodes used to.
+        if (type == NodeType.PARALLEL_BLOCK) {
+            return "Parallel";
+        }
+        return displayName;
     }
-    throw new IllegalArgumentException(
-        String.format("Unknown FlowNode %s, type: %s", node.getId(), node.getClass()));
-  }
 
-  public @NonNull NodeRunStatus getStatus() {
-    if (hasBlockError()) {
-      if (isBlockErrorInterruptedWithAbort()) {
-        return new NodeRunStatus(BlueRunResult.ABORTED, BlueRunState.FINISHED);
-      } else {
-        return new NodeRunStatus(BlueRunResult.FAILURE, BlueRunState.FINISHED);
-      }
+    public @CheckForNull String getLabelDisplayName() {
+        LabelAction labelAction = node.getAction(LabelAction.class);
+        if (labelAction != null) {
+            return labelAction.getDisplayName();
+        }
+        return null;
     }
-    return status;
-  }
 
-  public @NonNull TimingInfo getTiming() {
-    return timingInfo;
-  }
-
-  public @NonNull String getId() {
-    return node.getId();
-  }
-
-  public @NonNull FlowNode getNode() {
-    return node;
-  }
-
-  public NodeType getType() {
-    return type;
-  }
-
-  public void addEdge(FlowNodeWrapper edge) {
-    this.edges.add(edge);
-  }
-
-  public void removeEdge(FlowNodeWrapper edge) {
-    this.edges.remove(edge);
-  }
-
-  public void addEdges(List<FlowNodeWrapper> edges) {
-    this.edges.addAll(edges);
-  }
-
-  public void addParent(FlowNodeWrapper parent) {
-    this.parents.add(parent);
-  }
-
-  public void addParents(Collection<FlowNodeWrapper> parents) {
-    this.parents.addAll(parents);
-  }
-
-  public void removeParent(FlowNodeWrapper parent) {
-    this.parents.remove(parent);
-  }
-
-  public @CheckForNull FlowNodeWrapper getFirstParent() {
-    return parents.size() > 0 ? parents.get(0) : null;
-  }
-
-  public @NonNull List<FlowNodeWrapper> getParents() {
-    return parents;
-  }
-
-  public String getCauseOfFailure() {
-    return causeOfFailure;
-  }
-
-  public void setCauseOfFailure(String causeOfFailure) {
-    this.causeOfFailure = causeOfFailure;
-  }
-
-  @Override
-  public boolean equals(Object obj) {
-    if (!(obj instanceof FlowNodeWrapper)) {
-      return false;
+    private static NodeType getNodeType(FlowNode node) {
+        if (PipelineNodeUtil.isStage(node)) {
+            return NodeType.STAGE;
+        } else if (PipelineNodeUtil.isParallelBranch(node)) {
+            return NodeType.PARALLEL;
+        } else if (node instanceof AtomNode) {
+            return NodeType.STEP;
+        } else if (PipelineNodeUtil.isUnhandledException(node)) {
+            return NodeType.UNHANDLED_EXCEPTION;
+        }
+        throw new IllegalArgumentException(
+                String.format("Unknown FlowNode %s, type: %s", node.getId(), node.getClass()));
     }
-    return node.equals(((FlowNodeWrapper) obj).node);
-  }
 
-  public @CheckForNull InputStep getInputStep() {
-    return inputStep;
-  }
-
-  @Override
-  public int hashCode() {
-    return node.hashCode();
-  }
-
-  @Override
-  public String toString() {
-    return getClass().getName()
-        + "[id="
-        + node.getId()
-        + ",displayName="
-        + this.displayName
-        + ",type="
-        + this.type
-        + "]";
-  }
-
-  boolean hasBlockError() {
-    return blockErrorAction != null && blockErrorAction.getError() != null;
-  }
-
-  String blockError() {
-    if (hasBlockError()) {
-      return blockErrorAction.getError().getMessage();
+    public @NonNull NodeRunStatus getStatus() {
+        if (hasBlockError()) {
+            if (isBlockErrorInterruptedWithAbort()) {
+                return new NodeRunStatus(BlueRunResult.ABORTED, BlueRunState.FINISHED);
+            } else {
+                return new NodeRunStatus(BlueRunResult.FAILURE, BlueRunState.FINISHED);
+            }
+        }
+        return status;
     }
-    return null;
-  }
 
-  @CheckForNull
-  String nodeError() {
-    ErrorAction errorAction = node.getError();
-    if (errorAction != null) {
-      return errorAction.getError().getMessage();
+    public @NonNull TimingInfo getTiming() {
+        return timingInfo;
     }
-    return null;
-  }
 
-  boolean isBlockErrorInterruptedWithAbort() {
-    if (hasBlockError()) {
-      Throwable error = blockErrorAction.getError();
-      if (error instanceof FlowInterruptedException) {
-        FlowInterruptedException interrupted = (FlowInterruptedException) error;
-        return interrupted.getResult().equals(Result.ABORTED);
-      }
+    public @NonNull String getId() {
+        return node.getId();
     }
-    return false;
-  }
 
-  boolean isLoggable() {
-    return PipelineNodeUtil.isLoggable.apply(node);
-  }
-
-  public void setBlockErrorAction(ErrorAction blockErrorAction) {
-    this.blockErrorAction = blockErrorAction;
-  }
-
-  /**
-   * Returns Action instances that were attached to the associated FlowNode, or to any of its
-   * children not represented in the graph. Filters by class to mimic Item.getActions(class).
-   */
-  public <T extends Action> Collection<T> getPipelineActions(Class<T> clazz) {
-    if (pipelineActions == null) {
-      return Collections.emptyList();
+    public @NonNull FlowNode getNode() {
+        return node;
     }
-    ArrayList<T> filtered = new ArrayList<>();
-    for (Action a : pipelineActions) {
-      if (clazz.isInstance(a)) {
-        filtered.add(clazz.cast(a));
-      }
+
+    public NodeType getType() {
+        return type;
     }
-    return filtered;
-  }
 
-  /**
-   * Returns Action instances that were attached to the associated FlowNode, or to any of its
-   * children not represented in the graph.
-   */
-  public Collection<Action> getPipelineActions() {
-    return Collections.unmodifiableCollection(this.pipelineActions);
-  }
+    public void addEdge(FlowNodeWrapper edge) {
+        this.edges.add(edge);
+    }
 
-  public void setPipelineActions(Collection<Action> pipelineActions) {
-    this.pipelineActions = pipelineActions;
-  }
+    public void removeEdge(FlowNodeWrapper edge) {
+        this.edges.remove(edge);
+    }
 
-  public String getArgumentsAsString() {
-    return PipelineNodeUtil.getArgumentsAsString(node);
-  }
+    public void addEdges(List<FlowNodeWrapper> edges) {
+        this.edges.addAll(edges);
+    }
 
-  public boolean isSynthetic() {
-    return PipelineNodeUtil.isSyntheticStage(node);
-  }
+    public void addParent(FlowNodeWrapper parent) {
+        this.parents.add(parent);
+    }
 
-  public boolean isUnhandledException() {
-    return PipelineNodeUtil.isUnhandledException(node);
-  }
+    public void addParents(Collection<FlowNodeWrapper> parents) {
+        this.parents.addAll(parents);
+    }
 
-  public static class NodeComparator implements Comparator<FlowNodeWrapper>, Serializable {
-    private static final long serialVersionUID = 1L;
+    public void removeParent(FlowNodeWrapper parent) {
+        this.parents.remove(parent);
+    }
+
+    public @CheckForNull FlowNodeWrapper getFirstParent() {
+        return parents.size() > 0 ? parents.get(0) : null;
+    }
+
+    public @NonNull List<FlowNodeWrapper> getParents() {
+        return parents;
+    }
+
+    public String getCauseOfFailure() {
+        return causeOfFailure;
+    }
+
+    public void setCauseOfFailure(String causeOfFailure) {
+        this.causeOfFailure = causeOfFailure;
+    }
 
     @Override
-    public int compare(FlowNodeWrapper a, FlowNodeWrapper b) {
-      return Integer.compare(Integer.parseInt(a.getId()), Integer.parseInt(b.getId()));
+    public boolean equals(Object obj) {
+        if (!(obj instanceof FlowNodeWrapper)) {
+            return false;
+        }
+        return node.equals(((FlowNodeWrapper) obj).node);
     }
-  }
+
+    public @CheckForNull InputStep getInputStep() {
+        return inputStep;
+    }
+
+    @Override
+    public int hashCode() {
+        return node.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getName()
+                + "[id="
+                + node.getId()
+                + ",displayName="
+                + this.displayName
+                + ",type="
+                + this.type
+                + "]";
+    }
+
+    boolean hasBlockError() {
+        return blockErrorAction != null && blockErrorAction.getError() != null;
+    }
+
+    String blockError() {
+        if (hasBlockError()) {
+            return blockErrorAction.getError().getMessage();
+        }
+        return null;
+    }
+
+    @CheckForNull
+    String nodeError() {
+        ErrorAction errorAction = node.getError();
+        if (errorAction != null) {
+            return errorAction.getError().getMessage();
+        }
+        return null;
+    }
+
+    boolean isBlockErrorInterruptedWithAbort() {
+        if (hasBlockError()) {
+            Throwable error = blockErrorAction.getError();
+            if (error instanceof FlowInterruptedException) {
+                FlowInterruptedException interrupted = (FlowInterruptedException) error;
+                return interrupted.getResult().equals(Result.ABORTED);
+            }
+        }
+        return false;
+    }
+
+    boolean isLoggable() {
+        return PipelineNodeUtil.isLoggable.apply(node);
+    }
+
+    public void setBlockErrorAction(ErrorAction blockErrorAction) {
+        this.blockErrorAction = blockErrorAction;
+    }
+
+    /**
+     * Returns Action instances that were attached to the associated FlowNode, or to any of its
+     * children not represented in the graph. Filters by class to mimic Item.getActions(class).
+     */
+    public <T extends Action> Collection<T> getPipelineActions(Class<T> clazz) {
+        if (pipelineActions == null) {
+            return Collections.emptyList();
+        }
+        ArrayList<T> filtered = new ArrayList<>();
+        for (Action a : pipelineActions) {
+            if (clazz.isInstance(a)) {
+                filtered.add(clazz.cast(a));
+            }
+        }
+        return filtered;
+    }
+
+    /**
+     * Returns Action instances that were attached to the associated FlowNode, or to any of its
+     * children not represented in the graph.
+     */
+    public Collection<Action> getPipelineActions() {
+        return Collections.unmodifiableCollection(this.pipelineActions);
+    }
+
+    public void setPipelineActions(Collection<Action> pipelineActions) {
+        this.pipelineActions = pipelineActions;
+    }
+
+    public String getArgumentsAsString() {
+        return PipelineNodeUtil.getArgumentsAsString(node);
+    }
+
+    public boolean isSynthetic() {
+        return PipelineNodeUtil.isSyntheticStage(node);
+    }
+
+    public boolean isUnhandledException() {
+        return PipelineNodeUtil.isUnhandledException(node);
+    }
+
+    public static class NodeComparator implements Comparator<FlowNodeWrapper>, Serializable {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public int compare(FlowNodeWrapper a, FlowNodeWrapper b) {
+            return Integer.compare(Integer.parseInt(a.getId()), Integer.parseInt(b.getId()));
+        }
+    }
 }

@@ -8,6 +8,7 @@ import org.jenkinsci.plugins.workflow.actions.QueueItemAction;
 import org.jenkinsci.plugins.workflow.actions.WarningAction;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.GenericStatus;
+import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.StatusAndTiming;
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException;
 
 /** @author Vivek Pandey */
@@ -65,12 +66,13 @@ public class NodeRunStatus {
     }
 
     public NodeRunStatus(GenericStatus status) {
-        if (status == null) {
+        GenericStatus coercedStatus = StatusAndTiming.coerceStatusApi(status, StatusAndTiming.CURRENT_API_VERSION);
+        if (coercedStatus == null) {
             this.result = BlueRun.BlueRunResult.NOT_BUILT;
             this.state = BlueRun.BlueRunState.QUEUED;
             return;
         }
-        switch (status) {
+        switch (coercedStatus) {
             case PAUSED_PENDING_INPUT:
                 this.result = BlueRun.BlueRunResult.UNKNOWN;
                 this.state = BlueRun.BlueRunState.PAUSED;

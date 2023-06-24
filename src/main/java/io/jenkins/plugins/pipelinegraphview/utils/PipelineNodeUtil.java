@@ -212,10 +212,8 @@ public class PipelineNodeUtil {
         if (node != null && node instanceof StepStartNode) {
             StepStartNode stepStartNode = (StepStartNode) node;
             if (stepStartNode.getDescriptor() != null) {
-            StepDescriptor sd = stepStartNode.getDescriptor();
-            return sd != null
-                && ExecutorStep.DescriptorImpl.class.equals(sd.getClass())
-                && !stepStartNode.isBody();
+                StepDescriptor sd = stepStartNode.getDescriptor();
+                return sd != null && ExecutorStep.DescriptorImpl.class.equals(sd.getClass()) && !stepStartNode.isBody();
             }
         }
         return false;

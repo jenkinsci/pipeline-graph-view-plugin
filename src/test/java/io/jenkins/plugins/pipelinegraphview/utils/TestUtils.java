@@ -3,6 +3,7 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import hudson.model.Result;
+import hudson.model.queue.QueueTaskFuture;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,12 @@ public class TestUtils {
         WorkflowJob job = TestUtils.createJob(jenkins, jobName, jenkinsFileName);
         jenkins.assertBuildStatus(expectedResult, job.scheduleBuild2(0));
         return job.getLastBuild();
+    }
+
+    public static QueueTaskFuture<WorkflowRun> createAndRunJobNoWait(
+            JenkinsRule jenkins, String jobName, String jenkinsFileName) throws Exception {
+        WorkflowJob job = TestUtils.createJob(jenkins, jobName, jenkinsFileName);
+        return job.scheduleBuild2(0);
     }
 
     public static WorkflowJob createJob(JenkinsRule jenkins, String jobName, String jenkinsFileName)
@@ -54,24 +61,17 @@ public class TestUtils {
         return matchingNodes;
     }
 
-  public static String collectStagesAsString(
-      List<PipelineStage> stages, Function<PipelineStage, String> converter) {
-    return stages.stream()
-        .map(
-            (PipelineStage stage) ->
-                stage.getChildren().isEmpty()
-                    ? converter.apply(stage)
-                    : String.format(
-                        "%s[%s]",
-                        converter.apply(stage),
-                        collectStagesAsString(stage.getChildren(), converter)))
-        .collect(Collectors.joining(","));
-  }
+    public static String collectStagesAsString(List<PipelineStage> stages, Function<PipelineStage, String> converter) {
+        return stages.stream()
+                .map((PipelineStage stage) -> stage.getChildren().isEmpty()
+                        ? converter.apply(stage)
+                        : String.format(
+                                "%s[%s]",
+                                converter.apply(stage), collectStagesAsString(stage.getChildren(), converter)))
+                .collect(Collectors.joining(","));
+    }
 
-  public static String collectStageStepsAsString(
-      List<PipelineStep> steps, Function<PipelineStep, String> converter) {
-    return steps.stream()
-        .map((PipelineStep step) -> converter.apply(step))
-        .collect(Collectors.joining(","));
-  }
+    public static String collectStageStepsAsString(List<PipelineStep> steps, Function<PipelineStep, String> converter) {
+        return steps.stream().map((PipelineStep step) -> converter.apply(step)).collect(Collectors.joining(","));
+    }
 }

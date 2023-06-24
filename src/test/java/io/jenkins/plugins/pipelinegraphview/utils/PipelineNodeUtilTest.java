@@ -23,27 +23,26 @@ public class PipelineNodeUtilTest {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "hello_world_scripted", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
-    PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
-    String stageId = TestUtils.getNodesByDisplayName(run, "Say Hello").get(0).getId();
-    List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
-    FlowNodeWrapper echoStep = stepNodes.get(0);
-    AnnotatedLargeText<? extends FlowNode> logText =
-        PipelineNodeUtil.getLogText(echoStep.getNode());
-    String logString = PipelineNodeUtil.convertLogToString(logText);
-    assertThat(logString, is("Hello, World!" + System.lineSeparator()));
-  }
+        PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
+        String stageId =
+                TestUtils.getNodesByDisplayName(run, "Say Hello").get(0).getId();
+        List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
+        FlowNodeWrapper echoStep = stepNodes.get(0);
+        AnnotatedLargeText<? extends FlowNode> logText = PipelineNodeUtil.getLogText(echoStep.getNode());
+        String logString = PipelineNodeUtil.convertLogToString(logText);
+        assertThat(logString, equalTo("Hello, World!" + System.lineSeparator()));
+    }
 
-  @Issue("GH#224")
-  @Test
-  public void canGetErrorTextFromStep() throws Exception {
-    WorkflowRun run =
-        TestUtils.createAndRunJob(j, "simple_error", "simpleError.jenkinsfile", Result.FAILURE);
-    PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
-    String stageId = TestUtils.getNodesByDisplayName(run, "A").get(0).getId();
-    List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
-    FlowNodeWrapper errorStep = stepNodes.get(0);
-    assertThat(PipelineNodeUtil.getExceptionText(errorStep.getNode()), is("This is an error"));
-  }
+    @Issue("GH#224")
+    @Test
+    public void canGetErrorTextFromStep() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(j, "simple_error", "simpleError.jenkinsfile", Result.FAILURE);
+        PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
+        String stageId = TestUtils.getNodesByDisplayName(run, "A").get(0).getId();
+        List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
+        FlowNodeWrapper errorStep = stepNodes.get(0);
+        assertThat(PipelineNodeUtil.getExceptionText(errorStep.getNode()), equalTo("This is an error"));
+    }
 
     @Issue("GH#213")
     @Test
@@ -53,13 +52,13 @@ public class PipelineNodeUtilTest {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "githubIssue213_callsUnknownVariable", "callsUnknownVariable.jenkinsfile", Result.FAILURE);
 
-    PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
-    String stageId = TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
-    List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
-    FlowNodeWrapper errorStep = stepNodes.get(1);
-    assertThat(
-        PipelineNodeUtil.getExceptionText(errorStep.getNode()),
-        startsWith(
-            "Found unhandled groovy.lang.MissingPropertyException exception:\nNo such property: undefined for class: groovy.lang.Binding"));
-  }
+        PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
+        String stageId = TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
+        List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
+        FlowNodeWrapper errorStep = stepNodes.get(1);
+        assertThat(
+                PipelineNodeUtil.getExceptionText(errorStep.getNode()),
+                startsWith(
+                        "Found unhandled groovy.lang.MissingPropertyException exception:\nNo such property: undefined for class: groovy.lang.Binding"));
+    }
 }

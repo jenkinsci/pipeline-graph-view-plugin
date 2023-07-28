@@ -57,6 +57,12 @@
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>ionicons-api</artifactId>
     </dependency>
+    <!-- to remove when display-url-api is released -->
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>display-url-api</artifactId>
+      <version>2.3.8-rc189.5fb_b_a_e317b_6c</version>
+    </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>git</artifactId>
@@ -99,12 +105,6 @@
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>pipeline-build-step</artifactId>
       <scope>test</scope>
-    </dependency>
-    <!-- to remove when display-url-api is released -->
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>display-url-api</artifactId>
-      <version>2.3.8-rc189.5fb_b_a_e317b_6c</version>
     </dependency>
   </dependencies>
 

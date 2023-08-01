@@ -62,7 +62,7 @@
       <!-- TODO: https://github.com/jenkinsci/display-url-api-plugin/pull/194 -->
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>display-url-api</artifactId>
-      <version>2.3.8-rc189.5fb_b_a_e317b_6c</version>
+      <version>2.3.8-rc192.b_b_660e9109f6</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>

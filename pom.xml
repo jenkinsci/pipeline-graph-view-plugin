@@ -57,11 +57,12 @@
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>ionicons-api</artifactId>
     </dependency>
-    <!-- to remove when display-url-api is released -->
     <dependency>
+      <!-- TODO: to remove when display-url-api is released -->
+      <!-- TODO: https://github.com/jenkinsci/display-url-api-plugin/pull/194 -->
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>display-url-api</artifactId>
-      <version>2.3.8-rc189.5fb_b_a_e317b_6c</version> <!-- TODO: https://github.com/jenkinsci/display-url-api-plugin/pull/194 -->
+      <version>2.3.8-rc189.5fb_b_a_e317b_6c</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>

@@ -33,9 +33,7 @@
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/pipeline-graph-view-plugin</gitHubRepo>
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
-    <jenkins.version>2.361.4</jenkins.version>
-    <!-- TODO: to remove https://github.com/jenkinsci/jenkins/pull/8321 -->
-    <jenkins.version>2.418-rc34038.d1f3a_a_29f872</jenkins.version>
+    <jenkins.version>2.418-rc34068.6491cb_b_a_fd22</jenkins.version> <!-- TODO: https://github.com/jenkinsci/jenkins/pull/8321 -->
     <node.version>16.18.1</node.version>
     <npm.version>8.19.4</npm.version>
     <spotless.check.skip>false</spotless.check.skip>
@@ -47,7 +45,7 @@
         <!-- Pick up common dependencies for the selected LTS line: https://github.com/jenkinsci/bom#usage -->
         <groupId>io.jenkins.tools.bom</groupId>
         <artifactId>bom-2.361.x</artifactId>
-        <version>1945.v13a_1306588ff</version>
+        <version>1948.veb_1fd345d3a_e</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -58,13 +56,6 @@
     <dependency>
       <groupId>io.jenkins.plugins</groupId>
       <artifactId>ionicons-api</artifactId>
-    </dependency>
-    <dependency>
-      <!-- TODO: to remove when display-url-api is released -->
-      <!-- TODO: https://github.com/jenkinsci/display-url-api-plugin/pull/194 -->
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>display-url-api</artifactId>
-      <version>2.3.8-rc192.b_b_660e9109f6</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>

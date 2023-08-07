@@ -26,10 +26,4 @@ public class PipelineGraphDisplayURLProvider extends ClassicDisplayURLProvider {
     public String getRunURL(Run<?, ?> run) {
         return getRoot() + Util.encode(run.getUrl()) + "pipeline-graph";
     }
-
-    @Override
-    @NonNull
-    public String getConsoleURL(Run<?, ?> run) {
-        return getRoot() + Util.encode(run.getUrl()) + "pipeline-console";
-    }
 }

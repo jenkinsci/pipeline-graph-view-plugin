@@ -33,7 +33,7 @@
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/pipeline-graph-view-plugin</gitHubRepo>
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
-    <jenkins.version>2.418-rc34068.6491cb_b_a_fd22</jenkins.version> <!-- TODO: https://github.com/jenkinsci/jenkins/pull/8321 -->
+    <jenkins.version>2.418-rc34070.e1b_938b_3d266</jenkins.version> <!-- TODO: https://github.com/jenkinsci/jenkins/pull/8321 -->
     <node.version>16.18.1</node.version>
     <npm.version>8.19.4</npm.version>
     <spotless.check.skip>false</spotless.check.skip>
@@ -44,8 +44,8 @@
       <dependency>
         <!-- Pick up common dependencies for the selected LTS line: https://github.com/jenkinsci/bom#usage -->
         <groupId>io.jenkins.tools.bom</groupId>
-        <artifactId>bom-2.361.x</artifactId>
-        <version>1948.veb_1fd345d3a_e</version>
+        <artifactId>bom-2.414.x</artifactId>
+        <version>2278.v47b_4508e256a</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -90,6 +90,7 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-job</artifactId>
+      <version>1323.vcd95a_b_68110d</version> <!-- TODO https://github.com/jenkinsci/workflow-job-plugin/pull/373 only used here to simplify testing -->
     </dependency>
     <dependency>
       <groupId>org.jenkinsci.plugins</groupId>

@@ -59,6 +59,12 @@
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>display-url-api</artifactId>
+      <!-- TODO: Remove once included in BOM -->
+      <version>2.3.9</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>git</artifactId>
       <optional>true</optional>
     </dependency>

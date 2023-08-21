@@ -11,7 +11,7 @@ import org.kohsuke.stapler.DataBoundConstructor;
 public class PipelineConsoleViewUrlProvider implements ConsoleUrlProvider {
 
     @DataBoundConstructor
-    public PipelineConsoleViewUrlProvider() { }
+    public PipelineConsoleViewUrlProvider() {}
 
     @Override
     public String getConsoleUrl(Run<?, ?> run) {

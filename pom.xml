@@ -34,7 +34,7 @@
     <gitHubRepo>jenkinsci/pipeline-graph-view-plugin</gitHubRepo>
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
     <!-- TODO: https://github.com/jenkinsci/jenkins/pull/8321 -->
-    <jenkins.version>2.418-rc34070.e1b_938b_3d266</jenkins.version>
+    <jenkins.version>2.420-rc34121.c34df9dd8347</jenkins.version>
     <node.version>16.18.1</node.version>
     <npm.version>8.19.4</npm.version>
     <spotless.check.skip>false</spotless.check.skip>
@@ -85,6 +85,8 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>pipeline-input-step</artifactId>
+      <!-- TODO https://github.com/jenkinsci/pipeline-input-step-plugin/pull/145 only used here to simplify testing -->
+      <version>474.v09b_a_fa_911e1c</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -93,12 +95,14 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-durable-task-step</artifactId>
+      <!-- TODO https://github.com/jenkinsci/workflow-durable-task-step-plugin/pull/330 only used here to simplify testing -->
+      <version>1284.v4fcd365b_75b_e</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-job</artifactId>
       <!-- TODO https://github.com/jenkinsci/workflow-job-plugin/pull/373 only used here to simplify testing -->
-      <version>1323.vcd95a_b_68110d</version>
+      <version>1344.ved04d5188993</version>
     </dependency>
     <dependency>
       <groupId>org.jenkinsci.plugins</groupId>

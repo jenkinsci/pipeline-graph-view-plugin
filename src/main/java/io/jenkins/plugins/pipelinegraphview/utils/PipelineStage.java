@@ -48,8 +48,9 @@ public class PipelineStage {
         this.sequential = sequential;
         this.synthetic = synthetic;
         this.pauseDurationMillis = "Queued " + Util.getTimeSpanString(pauseDurationMillis);
-        this.startTimeMillis =
-                "Started " + Util.getTimeSpanString(Math.abs(startTimeMillis - new Date().getTime())) + " ago";
+        this.startTimeMillis = startTimeMillis == 0
+                ? ""
+                : "Started " + Util.getTimeSpanString(Math.abs(startTimeMillis - new Date().getTime())) + " ago";
         this.totalDurationMillis = "Took " + Util.getTimeSpanString(totalDurationMillis);
     }
 

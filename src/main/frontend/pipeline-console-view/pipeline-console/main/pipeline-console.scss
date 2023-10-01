@@ -321,27 +321,24 @@ div.detail-element {
 }
 
 .step-header {
+  @extend div, .step-detail-group;
   cursor: pointer;
 }
 
 .step-header-success,
 .step-header-running {
-  @extend div, .step-detail-group;
   background: var(--step-bg-success) !important;
 }
 
 .step-header-unstable {
-  @extend div, .step-detail-group;
   background: var(--step-bg-unstable) !important;
 }
 
 .step-header-failure {
-  @extend div, .step-detail-group;
   background: var(--step-bg-failure) !important;
 }
 
 .step-header-aborted {
-  @extend div, .step-detail-group;
   background: var(--step-bg-aborted) !important;
 }
 
@@ -349,7 +346,6 @@ div.detail-element {
 .step-header-paused,
 .step-header-not-built,
 .step-header-skipped {
-  @extend div, .step-detail-group;
   background: var(--step-bg-paused) !important;
 }
 

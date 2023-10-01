@@ -320,6 +320,10 @@ div.detail-element {
   padding: 3px;
 }
 
+.step-header {
+  cursor: pointer;
+}
+
 .step-header-success,
 .step-header-running {
   @extend div, .step-detail-group;

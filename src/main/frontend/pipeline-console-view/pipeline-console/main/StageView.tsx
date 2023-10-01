@@ -38,10 +38,10 @@ const StageSummary = (props: StageSummaryProps) => (
         className="detail-element"
         key={`stage-detail-start-time-container-${props.stage.id}`}
       >
-        <ScheduleIcon
+       { props.stage.startTimeMillis && <ScheduleIcon
           className="detail-icon"
           key={`stage-detail-start-time-icon-${props.stage.id}`}
-        />
+        />}
         {props.stage.startTimeMillis}
       </div>
       <div

@@ -8,7 +8,7 @@ This plugin provides new Action and View to view a `WorkflowRun` via the "Pipeli
 
 1. Install the `pipeline-graph-view` plugin
 2. Go to a pipeline run (not a job page)
-3. Click 'Pipeline Graph'
+3. Click 'Pipeline Overview'
 
 ## Screenshots
 

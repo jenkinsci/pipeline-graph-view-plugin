@@ -16,7 +16,7 @@
   }
 
   @media (min-width: 1700px) {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
   }
 
   &__item {
@@ -26,8 +26,8 @@
     background: var(--card-background);
     overflow: auto;
     box-shadow: 0 0 1px rgba(black, 0.06);
-    min-height: 400px;
-    max-height: 400px;
+    min-height: unset;
+    max-height: unset;
 
     hr {
       background: var(--secondary);

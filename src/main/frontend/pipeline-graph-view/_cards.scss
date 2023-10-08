@@ -16,7 +16,7 @@
   }
 
   @media (min-width: 1700px) {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
   }
 
   &__item {
@@ -26,8 +26,8 @@
     background: var(--card-background);
     overflow: auto;
     box-shadow: 0 0 1px rgba(black, 0.06);
-    min-height: 400px;
-    max-height: 400px;
+    min-height: unset;
+    max-height: unset;
 
     hr {
       background: var(--secondary);
@@ -126,8 +126,8 @@
   transform: translate(-50%, -50%);
   background-color: var(--card-background);
   padding: 1rem 1.5rem;
-  width: 90%;
-  height: 80%;
+  width: 95%;
+  height: 90%;
   border-radius: 0.5rem;
   overflow: auto;
 }

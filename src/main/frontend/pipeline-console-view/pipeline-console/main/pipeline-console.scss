@@ -101,6 +101,12 @@
   padding-left: 16px;
 }
 
+.console-text div {
+  text-indent: 0;
+  padding-left: 15px;
+  padding-right: 5px;
+}
+
 div.show-more-console {
   background-color: var(--alert-warning-bg-color);
 }
@@ -269,6 +275,7 @@ a.console-line-number {
   color: var(--link-color);
   white-space: nowrap;
   display: inline-block;
+  flex-shrink: 0;
 }
 
 div.console-output-line-anchor {
@@ -303,6 +310,7 @@ div.stage-detail-group {
   @extend div, .stage-detail-group;
   background-color: transparent !important;
   text-indent: 15px;
+  padding-left: 15px !important;
   padding: 0px !important;
   color: var(--text-color) !important;
   box-shadow: none !important;

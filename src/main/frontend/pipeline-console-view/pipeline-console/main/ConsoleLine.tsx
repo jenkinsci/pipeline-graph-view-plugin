@@ -27,10 +27,14 @@ export const ConsoleLine = (props: ConsoleLineProps) => (
       >
         {props.lineNumber}
       </a>
-      {makeReactChildren(
-        tokenizeANSIString(props.content),
-        `${props.stepId}-${props.lineNumber}`
-      )}
+      <div
+        className="console-text"
+        >
+        {makeReactChildren(
+          tokenizeANSIString(props.content),
+          `${props.stepId}-${props.lineNumber}`
+        )}
+      </div>
     </div>
   </pre>
 );

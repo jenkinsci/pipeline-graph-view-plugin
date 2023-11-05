@@ -4,6 +4,7 @@ import com.google.common.base.Predicate;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
 import hudson.console.AnnotatedLargeText;
 import hudson.model.Action;
@@ -245,7 +246,8 @@ public class PipelineNodeUtil {
      * @param startByte The byte to start parsing from.
      * @return The AnnotatedLargeText object representing the log text for this node, or null.
      */
-    public static String convertLogToString(AnnotatedLargeText<? extends FlowNode> log, Long startByte)
+  @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED")
+  public static String convertLogToString(AnnotatedLargeText<? extends FlowNode> log, Long startByte)
             throws IOException {
         Writer stringWriter = new StringBuilderWriter();
         // NOTE: This returns the total length of the console log, not the received bytes.

@@ -79,7 +79,7 @@ export const updateStepBuffer = (
   startByte: number,
   stepBuffer: StepLogBufferInfo
 ): StepLogBufferInfo => {
-  getConsoleTextOffset(stepId, stepBuffer.startByte).then((response) => {
+  getConsoleTextOffset(stepId, startByte).then((response) => {
     if (!response) {
       console.warn(`Skipping update of console text as client returned null.`);
       return;

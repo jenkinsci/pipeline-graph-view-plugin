@@ -3,6 +3,10 @@
   --card-gap: 1rem;
 }
 
+.app-page-body--one-column {
+  max-width: 95vw;
+}
+
 [data-theme="dark"] {
   --card-background: hsl(230deg 14% 23%);
 }

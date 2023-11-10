@@ -8,6 +8,10 @@
   --step-text-color: rgb(233, 237, 237);
 }
 
+.app-page-body--one-column {
+  max-width: 95vw;
+}
+
 [data-theme="dark"] {
   --card-background: hsl(230deg 14% 23%);
   --step-text-color: hsl(230deg 14% 23%);
@@ -95,6 +99,12 @@
 
 .console-pane pre {
   padding-left: 16px;
+}
+
+.console-text div {
+  text-indent: 0;
+  padding-left: 15px;
+  padding-right: 5px;
 }
 
 div.show-more-console {
@@ -265,6 +275,7 @@ a.console-line-number {
   color: var(--link-color);
   white-space: nowrap;
   display: inline-block;
+  flex-shrink: 0;
 }
 
 div.console-output-line-anchor {
@@ -320,24 +331,25 @@ div.detail-element {
   padding: 3px;
 }
 
+.step-header {
+  @extend div, .step-detail-group;
+  cursor: pointer;
+}
+
 .step-header-success,
 .step-header-running {
-  @extend div, .step-detail-group;
   background: var(--step-bg-success) !important;
 }
 
 .step-header-unstable {
-  @extend div, .step-detail-group;
   background: var(--step-bg-unstable) !important;
 }
 
 .step-header-failure {
-  @extend div, .step-detail-group;
   background: var(--step-bg-failure) !important;
 }
 
 .step-header-aborted {
-  @extend div, .step-detail-group;
   background: var(--step-bg-aborted) !important;
 }
 
@@ -345,7 +357,6 @@ div.detail-element {
 .step-header-paused,
 .step-header-not-built,
 .step-header-skipped {
-  @extend div, .step-detail-group;
   background: var(--step-bg-paused) !important;
 }
 

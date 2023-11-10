@@ -117,7 +117,7 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
         <CardActionArea
           onClick={this.handleStepToggle}
           aria-label="Show console log."
-          className={`step-header-${this.props.step.state.toLowerCase()} step-detail-group-${
+          className={`step-header step-header-${this.props.step.state.toLowerCase()} step-detail-group-${
             this.props.isExpanded ? "expanded" : "collapsed"
           }`}
           key={`step-action-area-${this.props.step.id}`}

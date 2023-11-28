@@ -259,6 +259,11 @@ g.build-status-icon__outer {
   color: currentColor !important;
 }
 
+.svg-icon {
+  // Force rotating icons to rotate about their center.
+  transform-origin: center;
+}
+
 .svg-icon--expand {
   color: var(--step-text-color);
 }
@@ -393,6 +398,7 @@ div.detail-element:last-child {
 svg.detail-icon {
   margin-right: 10px;
   font-size: 1.5rem !important;
+  transform-origin: 50% 50%;
 }
 
 div.split-pane {
@@ -418,3 +424,4 @@ a {
   height: 100vh;
   overflow: scroll;
 }
+

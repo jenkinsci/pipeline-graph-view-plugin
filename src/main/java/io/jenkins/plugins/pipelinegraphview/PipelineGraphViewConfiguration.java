@@ -13,29 +13,29 @@ import org.kohsuke.stapler.DataBoundSetter;
 @Symbol("pipelineGraphView")
 public class PipelineGraphViewConfiguration extends GlobalConfiguration {
 
-  private boolean showGraphOnJobPage;
+    private boolean showGraphOnJobPage;
 
-  public PipelineGraphViewConfiguration() {
-    load();
-  }
+    public PipelineGraphViewConfiguration() {
+        load();
+    }
 
-  public boolean isShowGraphOnJobPage() {
-    return showGraphOnJobPage;
-  }
+    public boolean isShowGraphOnJobPage() {
+        return showGraphOnJobPage;
+    }
 
-  @DataBoundSetter
-  public void setShowGraphOnJobPage(boolean showGraphOnJobPage) {
-    this.showGraphOnJobPage = showGraphOnJobPage;
-    save();
-  }
+    @DataBoundSetter
+    public void setShowGraphOnJobPage(boolean showGraphOnJobPage) {
+        this.showGraphOnJobPage = showGraphOnJobPage;
+        save();
+    }
 
-  public static PipelineGraphViewConfiguration get() {
-    return ExtensionList.lookupSingleton(PipelineGraphViewConfiguration.class);
-  }
+    public static PipelineGraphViewConfiguration get() {
+        return ExtensionList.lookupSingleton(PipelineGraphViewConfiguration.class);
+    }
 
-  @NonNull
-  @Override
-  public GlobalConfigurationCategory getCategory() {
-    return GlobalConfigurationCategory.get(AppearanceCategory.class);
-  }
+    @NonNull
+    @Override
+    public GlobalConfigurationCategory getCategory() {
+        return GlobalConfigurationCategory.get(AppearanceCategory.class);
+    }
 }

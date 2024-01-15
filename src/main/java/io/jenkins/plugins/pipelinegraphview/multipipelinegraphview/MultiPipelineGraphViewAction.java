@@ -48,8 +48,9 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
     }
 
     public boolean isShowGraphOnJobPage() {
-      return PipelineGraphViewConfiguration.get().isShowGraphOnJobPage();
+        return PipelineGraphViewConfiguration.get().isShowGraphOnJobPage();
     }
+
     @GET
     @WebMethod(name = "tree")
     public HttpResponse getGraph(StaplerRequest req) throws JsonProcessingException {

@@ -5,9 +5,11 @@ import hudson.console.AnnotatedLargeText;
 import hudson.util.HttpResponses;
 import io.jenkins.plugins.pipelinegraphview.utils.AbstractPipelineViewAction;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineStep;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.HashMap;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
@@ -15,7 +17,10 @@ import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerResponse;
 import org.kohsuke.stapler.WebMethod;
+import org.kohsuke.stapler.framework.io.CharSpool;
+import org.kohsuke.stapler.framework.io.LineEndNormalizingWriter;
 import org.kohsuke.stapler.verb.GET;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,6 +77,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         }
         return JSONObject.fromObject(stepsJson);
     }
+
     // Return all steps to:
     // - reduce number of API calls
     // - remove dependency of getting list of stages in frontend.
@@ -89,6 +95,40 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
             logger.debug("Steps: '" + stepsJson + "'.");
         }
         return JSONObject.fromObject(stepsJson);
+    }
+
+    @WebMethod(name = "log")
+    public HttpResponse getConsoleText(StaplerRequest req, StaplerResponse rsp) throws IOException {
+        String nodeId = req.getParameter("nodeId");
+        if (nodeId == null) {
+            logger.error("'consoleText' was not passed 'nodeId'.");
+            return HttpResponses.errorJSON("Error getting console text");
+        }
+        logger.debug("getConsoleText was passed node id '" + nodeId + "'.");
+        // This will be a step, so return its log output.
+        AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
+
+        long count = 0;
+        PipelineStepList steps = stepApi.getSteps(nodeId);
+        try (CharSpool spool = new CharSpool()) {
+
+            for (PipelineStep step : steps.getSteps()) {
+                AnnotatedLargeText<? extends FlowNode> logForNode = getLogForNode(String.valueOf(step.getId()));
+                if (logForNode != null) {
+                    count += logForNode.writeLogTo(0, spool);
+                }
+            }
+
+            Writer writer;
+            if (count > 0) {
+                writer = (count > 4096) ? rsp.getCompressedWriter(req) : rsp.getWriter();
+                spool.flush();
+                spool.writeTo(new LineEndNormalizingWriter(writer));
+                writer.close();
+            }
+        }
+
+        return HttpResponses.text(PipelineNodeUtil.convertLogToString(logText));
     }
 
     /*

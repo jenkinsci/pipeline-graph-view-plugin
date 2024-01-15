@@ -90,6 +90,12 @@ const StageSummary = (props: StageSummaryProps) => (
           />
         );
       })}
+      <div className="detail-element">
+        <LinkIcon className="detail-icon" />
+        <a className="detail-element" href={`log?nodeId=${props.stage.id}`}>
+          View as plain text
+        </a>
+      </div>
     </div>
   </React.Fragment>
 );

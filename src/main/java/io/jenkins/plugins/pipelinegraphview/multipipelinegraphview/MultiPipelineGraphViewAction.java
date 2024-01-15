@@ -6,6 +6,7 @@ import hudson.model.Action;
 import hudson.security.Permission;
 import hudson.util.HttpResponses;
 import hudson.util.RunList;
+import io.jenkins.plugins.pipelinegraphview.PipelineGraphViewConfiguration;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
 import java.util.ArrayList;
@@ -44,6 +45,10 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
 
     public Permission getConfigurePermission() {
         return target.CONFIGURE;
+    }
+
+    public boolean isShowGraphOnJobPage() {
+        return PipelineGraphViewConfiguration.get().isShowGraphOnJobPage();
     }
 
     @GET

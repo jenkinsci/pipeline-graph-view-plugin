@@ -9,7 +9,12 @@ export default function startPollingRunsStatus(
   onFetchError: (err: Error) => void,
   interval = 10000
 ) {
-  const path = "runs";
+  let path = "runs";
+
+  if (!window.location.href.endsWith("multi-pipeline-graph/")) {
+    path = `multi-pipeline-graph/${path}`;
+  }
+
   async function fetchPipelineData() {
     try {
       const res = await fetch(path);

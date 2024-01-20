@@ -60,8 +60,6 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>display-url-api</artifactId>
-      <!-- TODO: Remove once included in BOM -->
-      <version>2.3.9</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
@@ -94,8 +92,6 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-durable-task-step</artifactId>
-      <!-- TODO https://github.com/jenkinsci/workflow-durable-task-step-plugin/pull/330 only used here to simplify testing -->
-      <version>1284.v4fcd365b_75b_e</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>

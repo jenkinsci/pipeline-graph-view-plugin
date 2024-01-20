@@ -332,7 +332,9 @@ export default class PipelineConsole extends React.Component<
         expandedSteps: expandedSteps,
         expandedStages: expandedStages,
       });
-      document.getElementById(`stage-tree-icon-${this.state.selectedStage}`)?.scrollIntoView();
+      document
+        .getElementById(`stage-tree-icon-${this.state.selectedStage}`)
+        ?.scrollIntoView();
     } else {
       console.debug("No node selected.");
     }

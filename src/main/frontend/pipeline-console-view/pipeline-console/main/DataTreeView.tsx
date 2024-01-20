@@ -86,7 +86,7 @@ export default class DataTreeView extends React.Component {
         onNodeToggle={this.props.onNodeToggle}
         onNodeSelect={this.props.onNodeSelect}
         onNodeFocus={(event: React.SyntheticEvent, nodeId: string) => {
-          console.debug(`node '${nodeId}' focused.`)
+          console.debug(`node '${nodeId}' focused.`);
         }}
         key="console-tree-view"
       >

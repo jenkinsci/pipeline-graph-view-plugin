@@ -11,18 +11,34 @@ interface Props {
 
 export const SingleRun: (data: Props) => JSX.Element = ({ run }) => {
   const [stages, setStages] = useState<Array<StageInfo>>([]);
-  const path = `tree?runId=${run.id}`;
-  const singleRunPage = `../${run.id}/pipeline-graph/`;
+  let path = `tree?runId=${run.id}`;
+
+  const onJobView = !window.location.href.endsWith("multi-pipeline-graph/");
+  if (onJobView) {
+    path = `multi-pipeline-graph/${path}`;
+  }
+
+  let singleRunPage = `../${run.id}/pipeline-graph/`;
+  if (onJobView) {
+    singleRunPage = `${run.id}/pipeline-graph/`;
+  }
 
   const handleNodeClick = (nodeName: string, id: number) => {
     console.log(nodeName, id);
-    window.location.href = `../${run.id}/pipeline-console?selected-node=${id}`;
+    let redirect = `../${run.id}/pipeline-console?selected-node=${id}`;
+    if (onJobView) {
+      redirect = `${run.id}/pipeline-console?selected-node=${id}`;
+    }
+    window.location.href = redirect;
   };
   return (
     <tr>
       <td>
-        <a href={singleRunPage} className="jenkins-table__link">
-          {run.id}
+        <a
+          href={singleRunPage}
+          className="jenkins-table__link pgw-user-specified-text"
+        >
+          {run.displayName}
         </a>
       </td>
       <td>

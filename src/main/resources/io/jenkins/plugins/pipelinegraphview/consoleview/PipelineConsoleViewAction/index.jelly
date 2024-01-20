@@ -41,6 +41,14 @@
                             ${%Configure}
                         </a>
                     </l:hasPermission>
+                    <l:overflowButton>
+                        <a class="jenkins-dropdown__item" href="../consoleText">
+                            <div class="jenkins-dropdown__item__icon">
+                                <l:icon src="symbol-document-text" />
+                            </div>
+                            ${%View as plain text}
+                        </a>
+                    </l:overflowButton>
                 </div>
                 <script src="${rootURL}/plugin/pipeline-graph-view/js/build.js"/>
             </div>

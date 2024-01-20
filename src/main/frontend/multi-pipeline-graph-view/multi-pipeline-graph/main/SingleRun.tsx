@@ -34,8 +34,11 @@ export const SingleRun: (data: Props) => JSX.Element = ({ run }) => {
   return (
     <tr>
       <td>
-        <a href={singleRunPage} className="jenkins-table__link">
-          {run.id}
+        <a
+          href={singleRunPage}
+          className="jenkins-table__link pgw-user-specified-text"
+        >
+          {run.displayName}
         </a>
       </td>
       <td>

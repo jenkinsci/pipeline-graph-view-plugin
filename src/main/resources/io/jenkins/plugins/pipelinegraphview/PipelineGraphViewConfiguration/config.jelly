@@ -6,5 +6,8 @@
     <f:entry title="${%Show pipeline graph on job page}">
       <f:checkbox field="showGraphOnJobPage"/>
     </f:entry>
+    <f:entry title="${%Show pipeline graph on build page}">
+      <f:checkbox field="showGraphOnBuildPage"/>
+    </f:entry>
   </f:section>
 </j:jelly>

@@ -76,8 +76,16 @@ export class PipelineGraph extends React.Component {
       onPipelineDataReceived,
       onPollingError,
       onPipelineComplete,
-      this.props.path ?? "tree"
+      this.props.path ?? this.getTreePath()
     );
+  }
+
+  getTreePath() {
+    if (!window.location.href.endsWith("pipeline-graph/")) {
+      return `pipeline-graph/tree`;
+    }
+
+    return "tree";
   }
 
   componentWillReceiveProps(nextProps: Props) {

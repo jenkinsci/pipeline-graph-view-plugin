@@ -7,7 +7,12 @@ import "./app.scss";
 import "./pipeline-graph/styles/main.scss";
 
 function handleNodeClick(nodeName: string, id: number) {
-  window.location.href = `../pipeline-console?selected-node=${id}`;
+  let location = `../pipeline-console?selected-node=${id}`;
+  if (!window.location.href.endsWith("pipeline-graph/")) {
+    location = `pipeline-console?selected-node=${id}`;
+  }
+
+  window.location.href = location;
 }
 
 const App: FunctionComponent = () => {

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+  <j:if test="${it.showGraphOnBuildPage}">
+    <div class="pgw-graph-container">
+      <div id="graph"/>
+    </div>
+    <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/pipeline-graph-view-bundle.js"/>
+  </j:if>
+</j:jelly>

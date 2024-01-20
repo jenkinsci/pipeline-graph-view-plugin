@@ -42,6 +42,12 @@
                         </a>
                     </l:hasPermission>
                     <l:overflowButton>
+                        <a class="jenkins-dropdown__item" href="../console">
+                            <div class="jenkins-dropdown__item__icon">
+                                <l:icon src="symbol-terminal" />
+                            </div>
+                            ${%View classic console}
+                        </a>
                         <a class="jenkins-dropdown__item" href="../consoleText">
                             <div class="jenkins-dropdown__item__icon">
                                 <l:icon src="symbol-document-text" />

@@ -55,6 +55,14 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         return "symbol-terminal-outline plugin-ionicons-api";
     }
 
+    public String getDurationString() {
+        return run.getDurationString();
+    }
+
+    public String getStartTimeString() {
+        return run.getTimestampString();
+    }
+
     // Legacy - leave in case we want to update a sub section of steps (e.g. if a stage is still
     // running).
     @GET

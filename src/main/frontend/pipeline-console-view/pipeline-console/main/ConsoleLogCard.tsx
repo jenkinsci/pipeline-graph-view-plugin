@@ -10,12 +10,13 @@ import IconButton, { IconButtonProps } from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
-import { ConsoleLine } from "./ConsoleLine";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 
 import { LOG_FETCH_SIZE } from "./PipelineConsoleModel";
 import LinkIcon from "@mui/icons-material/Link";
+import ConsoleLogModal from "./ConsoleLogModal";
+import ResizeIcon from "./ResizeIcon";
 
 const ConsoleLogStream = lazy(() => import("./ConsoleLogStream"));
 
@@ -44,10 +45,21 @@ export type ConsoleLogCardProps = {
   scrollParentId: string;
 };
 
-export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
+export type ConsoleLogCardState = {
+  open: boolean;
+};
+
+export class ConsoleLogCard extends React.Component<
+  ConsoleLogCardProps,
+  ConsoleLogCardState
+> {
   constructor(props: ConsoleLogCardProps) {
     super(props);
     this.handleStepToggle = this.handleStepToggle.bind(this);
+
+    this.state = {
+      open: false,
+    };
   }
 
   handleStepToggle(event: React.MouseEvent<HTMLElement>) {
@@ -109,6 +121,9 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
   }
 
   render() {
+    const handleOpen = () => this.setState({ open: true });
+    const handleClose = () => this.setState({ open: false });
+
     return (
       <Card
         className="step-detail-group"
@@ -179,18 +194,25 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
                 )}
               </Typography>
             </Grid>
+
             <Grid item xs={1} alignItems="center" sx={{ margin: "auto" }}>
-              <a
-                className={"pgw-step-link"}
-                href={`log?nodeId=${this.props.step.id}`}
-                title="View step as plain text"
+              <IconButton
+                aria-label={"Open console log in full-screen mode"}
+                onClick={handleOpen}
               >
-                <LinkIcon className="detail-icon" />
-              </a>
+                <ResizeIcon />
+              </IconButton>
+              <IconButton
+                onClick={() => window.open(`log?nodeId=${this.props.step.id}`)}
+                aria-label="View step as plain text"
+              >
+                <LinkIcon />
+              </IconButton>
             </Grid>
             <Grid item xs={2} alignItems="center" sx={{ margin: "auto" }}>
               <ExpandMore
                 expand={this.props.isExpanded}
+                aria-label={"Open console log"}
                 aria-expanded
                 key={`step-expand-button-${this.props.step.id}`}
                 sx={{ display: "block", marginLeft: "auto" }}
@@ -203,6 +225,13 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
             </Grid>
           </Grid>
         </CardActionArea>
+        <ConsoleLogModal
+          logBuffer={this.props.stepBuffer}
+          handleMoreConsoleClick={this.props.handleMoreConsoleClick}
+          step={this.props.step}
+          open={this.state.open}
+          setClose={handleClose}
+        />
         <Collapse
           in={this.props.isExpanded}
           timeout={50}

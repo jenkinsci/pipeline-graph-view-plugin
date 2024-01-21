@@ -190,7 +190,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
                 startByte = requestStartByte;
             }
             logger.debug("Returning '" + (textLength - startByte) + "' bytes from 'getConsoleOutput'.");
-            text = PipelineNodeUtil.convertLogToString(logText, startByte);
+            text = PipelineNodeUtil.convertLogToString(logText, startByte, true);
             endByte = textLength;
         }
         // If has an exception, return the exception text (inc. stacktrace).

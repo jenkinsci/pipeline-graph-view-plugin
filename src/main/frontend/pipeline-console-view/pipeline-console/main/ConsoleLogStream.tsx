@@ -70,11 +70,21 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
     return props.step.state === Result.running || props.logBuffer.startByte < 0;
   };
 
+  const minHeight = () => {
+    const numberOfLines = props.logBuffer.lines.length;
+
+    if (numberOfLines > 200) {
+      return 200;
+    }
+
+    return numberOfLines * 3;
+  };
+
   return (
     <>
       <Virtuoso
         style={{
-          height: "50vh",
+          minHeight: `${minHeight()}vh`,
           maxHeight: window.innerHeight / 2,
         }}
         ref={virtuosoRef}

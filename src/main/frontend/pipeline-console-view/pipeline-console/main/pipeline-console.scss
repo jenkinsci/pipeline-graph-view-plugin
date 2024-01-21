@@ -33,54 +33,6 @@
   background: transparent;
 }
 
-.Resizer {
-  background: #000;
-  opacity: 0.2;
-  z-index: 1;
-  -moz-box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  -moz-background-clip: padding;
-  -webkit-background-clip: padding;
-  background-clip: padding-box;
-  &:hover {
-    -webkit-transition: all 2s ease;
-    transition: all 2s ease;
-  }
-}
-
-.Resizer.horizontal {
-  height: 11px;
-  margin: -5px 0;
-  border-top: 5px solid rgba(255, 255, 255, 0);
-  border-bottom: 5px solid rgba(255, 255, 255, 0);
-  cursor: row-resize;
-  width: 100%;
-  &:hover {
-    border-top: 5px solid rgba(0, 0, 0, 0.5);
-    border-bottom: 5px solid rgba(0, 0, 0, 0.5);
-  }
-}
-
-.Resizer.vertical {
-  width: 11px;
-  margin: 0 0 -5px 4px;
-  border-left: 5px solid rgba(255, 255, 255, 0);
-  border-right: 5px solid rgba(255, 255, 255, 0);
-  cursor: col-resize;
-  &:hover {
-    border-left: 5px solid rgba(0, 0, 0, 0.5);
-    border-right: 5px solid rgba(0, 0, 0, 0.5);
-  }
-}
-
-.Resizer.disabled {
-  cursor: not-allowed;
-  &:hover {
-    border-color: transparent;
-  }
-}
-
 .SplitPane {
   position: relative;
 }
@@ -195,7 +147,6 @@ g.build-status-icon__outer {
   margin: 0 0 5px 0 !important;
   padding-left: 1rem !important;
   padding-right: 1rem !important;
-  background: var(--card-background);
   box-shadow: 0 0 1px rgb(0 0 0 / 6%);
   // Move down slightly to avoid curring off the top background.
   top: 5px;
@@ -406,7 +357,6 @@ div.split-pane {
   padding-left: 8px;
   text-align: left;
   height: calc(100vh - 300px);
-  overflow-y: auto;
 }
 
 a {
@@ -423,4 +373,8 @@ a {
   padding: 0;
   height: 100vh;
   overflow: scroll;
+}
+
+a.pgw-step-link {
+  color: var(--step-text-color);
 }

@@ -238,7 +238,7 @@ public class PipelineNodeUtil {
      * @return The AnnotatedLargeText object representing the log text for this node, or null.
      */
     public static String convertLogToString(AnnotatedLargeText<? extends FlowNode> log) throws IOException {
-        return convertLogToString(log, 0L);
+        return convertLogToString(log, 0L, false);
     }
 
     /* Get the generated log text for a given node.
@@ -247,11 +247,15 @@ public class PipelineNodeUtil {
      * @return The AnnotatedLargeText object representing the log text for this node, or null.
      */
     @SuppressWarnings("RV_RETURN_VALUE_IGNORED")
-    public static String convertLogToString(AnnotatedLargeText<? extends FlowNode> log, Long startByte)
+    public static String convertLogToString(AnnotatedLargeText<? extends FlowNode> log, Long startByte, boolean html)
             throws IOException {
         Writer stringWriter = new StringBuilderWriter();
         // NOTE: This returns the total length of the console log, not the received bytes.
-        log.writeHtmlTo(startByte, stringWriter);
+        if (html) {
+            log.writeHtmlTo(startByte, stringWriter);
+        } else {
+            log.writeLogTo(startByte, stringWriter);
+        }
         return stringWriter.toString();
     }
 

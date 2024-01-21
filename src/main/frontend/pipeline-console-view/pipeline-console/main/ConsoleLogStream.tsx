@@ -74,7 +74,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
     const numberOfLines = props.logBuffer.lines.length;
 
     if (numberOfLines > 200) {
-      return 200;
+      return 60;
     }
 
     return numberOfLines * 3;

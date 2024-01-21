@@ -16,6 +16,7 @@ import { CircularProgress } from "@mui/material";
 
 import "./pipeline-console.scss";
 import { StageInfo, StepInfo, Result } from "./PipelineConsoleModel";
+import Button from "@mui/material/Button";
 
 const DataTreeView = lazy(() => import("./DataTreeView"));
 const StageView = lazy(() => import("./StageView"));
@@ -503,16 +504,31 @@ export default class PipelineConsole extends React.Component<
   }
 
   render() {
+    const buttonPositionOffset = 10;
+    const collapseDirection = "left";
+    const collapseTransition = 500;
+    const grabberSize = 10;
+    const buttonTransition = "grow";
+
     return (
       <React.Fragment>
         <div className="App">
           <SplitPane
             // initialSize ratio
-            initialSizes={[3, 7]}
+            initialSizes={[2, 8]}
             // minSize in Pixels (for all panes)
             minSizes={250}
             className="split-pane"
             split="vertical"
+            collapse={{
+              collapseTransitionTimeout: collapseTransition,
+              buttonTransition,
+              collapseDirection,
+              buttonPositionOffset,
+            }}
+            resizerOptions={{
+              grabberSize,
+            }}
           >
             <div className="split-pane" key="tree-view" id="tree-view-pane">
               <Suspense fallback={<CircularProgress />}>

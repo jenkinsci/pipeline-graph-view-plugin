@@ -15,6 +15,7 @@ import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
 
 import { LOG_FETCH_SIZE } from "./PipelineConsoleModel";
+import LinkIcon from "@mui/icons-material/Link";
 
 const ConsoleLogStream = lazy(() => import("./ConsoleLogStream"));
 
@@ -177,6 +178,15 @@ export class ConsoleLogCard extends React.Component<ConsoleLogCardProps> {
                   this.props.step.totalDurationMillis.length
                 )}
               </Typography>
+            </Grid>
+            <Grid item xs={1} alignItems="center" sx={{ margin: "auto" }}>
+              <a
+                className={"pgw-step-link"}
+                href={`log?nodeId=${this.props.step.id}`}
+                title="View step as plain text"
+              >
+                <LinkIcon className="detail-icon" />
+              </a>
             </Grid>
             <Grid item xs={2} alignItems="center" sx={{ margin: "auto" }}>
               <ExpandMore

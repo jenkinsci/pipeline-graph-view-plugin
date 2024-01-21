@@ -35,7 +35,7 @@
     "html-react-parser": "3.0.12",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-virtuoso": "^4.1.0"
+    "react-virtuoso": "^4.6.2"
   },
   "devDependencies": {
     "@babel/core": "^7.21.0",

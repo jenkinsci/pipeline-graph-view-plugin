@@ -4,7 +4,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <l:layout title="Stages [${it.jobDisplayName}]" type="one-column">
     <l:main-panel>
-      <l:app-bar title="${it.jobDisplayName}">
+      <l:app-bar title="${%Build} ${it.jobDisplayName}">
         <j:if test="${it.buildable}">
           <l:hasPermission permission="${it.permission}">
             <button id="pgv-rebuild" data-success-message="${%Build scheduled}" data-build-path="../build"

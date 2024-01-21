@@ -7,14 +7,13 @@
             <div class="jenkins-app-bar">
                 <div class="jenkins-app-bar__content">
                     <h1>
-                        <l:icon alt="${it.iconColor.description}" class="${it.buildStatusIconClassName} icon-xlg" tooltip="${it.iconColor.description}"/>
-                        ${it.fullProjectDisplayName}
+                        <l:icon alt="${it.iconColor.description}" class="${it.buildStatusIconClassName} icon-lg" tooltip="${it.iconColor.description}"/>
                         <j:if test="${it.previousBuildNumber!=null}">
                             <a href="../../${it.previousBuildNumber}/pipeline-console" class="app-details__prev_next">
                                 <l:icon class="symbol-chevron-back-outline plugin-ionicons-api icon-md" tooltip="${%Previous Build}"/>
                             </a>
                         </j:if>
-                        ${it.buildDisplayName}
+                        ${%Build} ${it.buildDisplayName}
                         <j:if test="${it.nextBuildNumber!=null}">
                             <a href="../../${it.nextBuildNumber}/pipeline-console" class="app-details__prev_next">
                                 <l:icon class="symbol-chevron-forward-outline plugin-ionicons-api icon-md" tooltip="${%Next Build}"/>
@@ -52,6 +51,8 @@
                 </div>
                 <script src="${rootURL}/plugin/pipeline-graph-view/js/build.js"/>
             </div>
+
+            <p>${it.iconColor.description} ${it.startTimeString} ago in ${it.durationString}</p>
 
             <div id="root"/>
             <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/pipeline-console-view-bundle.js"/>

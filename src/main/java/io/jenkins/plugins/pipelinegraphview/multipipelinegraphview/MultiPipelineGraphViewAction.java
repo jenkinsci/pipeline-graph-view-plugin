@@ -32,7 +32,7 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
     }
 
     public String getJobDisplayName() {
-        return target.getFullDisplayName();
+        return target.getDisplayName();
     }
 
     public boolean isBuildable() {

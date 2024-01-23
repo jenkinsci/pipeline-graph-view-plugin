@@ -136,7 +136,10 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
             }
         }
 
-        return HttpResponses.text(PipelineNodeUtil.convertLogToString(logText));
+        if (logText != null) {
+            return HttpResponses.text(PipelineNodeUtil.convertLogToString(logText));
+        }
+        return HttpResponses.text("No logs found");
     }
 
     /*

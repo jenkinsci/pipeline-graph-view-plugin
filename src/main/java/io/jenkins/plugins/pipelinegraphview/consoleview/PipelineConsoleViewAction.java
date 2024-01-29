@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     public static final long LOG_THRESHOLD = 150 * 1024; // 150KB
+    public static final String URL_NAME = "pipeline-console";
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineConsoleViewAction.class);
     private final WorkflowRun target;
@@ -47,7 +48,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
 
     @Override
     public String getUrlName() {
-        return "pipeline-console";
+        return URL_NAME;
     }
 
     @Override

@@ -27,6 +27,7 @@ const style = {
   color: "var(--pre-color)",
   backdropFilter: "var(--dialog-backdrop-filter)",
   border: "none",
+  backgroundColor: "var(--background)",
   borderRadius: "0.6rem",
   boxShadow: "var(--dialog-box-shadow)",
   overflowY: "auto",

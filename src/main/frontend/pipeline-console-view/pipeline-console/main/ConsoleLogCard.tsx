@@ -12,6 +12,10 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
+import {
+  Tooltip,
+} from 'react-tippy';
+
 
 import { LOG_FETCH_SIZE } from "./PipelineConsoleModel";
 import LinkIcon from "@mui/icons-material/Link";
@@ -22,6 +26,12 @@ const ConsoleLogStream = lazy(() => import("./ConsoleLogStream"));
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
+}
+
+declare module 'react-tippy' {
+  export interface TooltipProps {
+    children?: React.ReactNode;
+  }
 }
 
 const ExpandMore = styled((props: ExpandMoreProps) => {
@@ -196,32 +206,38 @@ export class ConsoleLogCard extends React.Component<
             </Grid>
 
             <Grid item xs={1} alignItems="center" sx={{ margin: "auto" }}>
-              <IconButton
-                aria-label={"Open console log in full-screen mode"}
-                onClick={handleOpen}
-              >
-                <ResizeIcon />
-              </IconButton>
-              <IconButton
-                onClick={() => window.open(`log?nodeId=${this.props.step.id}`)}
-                aria-label="View step as plain text"
-              >
-                <LinkIcon />
-              </IconButton>
+              <Tooltip title="Open console log in full-screen mode">
+                <IconButton
+                  aria-label={"Open console log in full-screen mode"}
+                  onClick={handleOpen}
+                >
+                  <ResizeIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="View step as plain text">
+                <IconButton
+                  onClick={() => window.open(`log?nodeId=${this.props.step.id}`)}
+                  aria-label="View step as plain text"
+                >
+                  <LinkIcon />
+                </IconButton>
+              </Tooltip>
             </Grid>
             <Grid item xs={2} alignItems="center" sx={{ margin: "auto" }}>
-              <ExpandMore
-                expand={this.props.isExpanded}
-                aria-label={"Open console log"}
-                aria-expanded
-                key={`step-expand-button-${this.props.step.id}`}
-                sx={{ display: "block", marginLeft: "auto" }}
-              >
-                <ExpandMoreIcon
-                  key={`step-expand-icon-${this.props.step.id}`}
-                  className="svg-icon svg-icon--expand"
-                />
-              </ExpandMore>
+              <Tooltip title="Open console log">
+                <ExpandMore
+                  expand={this.props.isExpanded}
+                  aria-label={"Open console log"}
+                  aria-expanded
+                  key={`step-expand-button-${this.props.step.id}`}
+                  sx={{ display: "block", marginLeft: "auto" }}
+                >
+                  <ExpandMoreIcon
+                    key={`step-expand-icon-${this.props.step.id}`}
+                    className="svg-icon svg-icon--expand"
+                  />
+                </ExpandMore>
+              </Tooltip>
             </Grid>
           </Grid>
         </CardActionArea>

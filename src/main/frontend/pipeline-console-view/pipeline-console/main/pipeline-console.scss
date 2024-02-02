@@ -245,6 +245,9 @@ a.console-line-number {
   white-space: nowrap;
   display: inline-block;
   flex-shrink: 0;
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10 and IE 11 */
+  user-select: none; /* Standard syntax */
 }
 
 div.console-output-line-anchor {

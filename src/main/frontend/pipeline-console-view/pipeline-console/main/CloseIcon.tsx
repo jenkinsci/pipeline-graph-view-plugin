@@ -1,4 +1,3 @@
-import { ConsoleLogStreamProps } from "./ConsoleLogModal";
 import React from "react";
 
 export type CloseIconProps = {

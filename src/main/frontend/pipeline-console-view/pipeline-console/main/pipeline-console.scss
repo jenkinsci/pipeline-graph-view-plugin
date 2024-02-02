@@ -357,6 +357,7 @@ div.split-pane {
   padding-left: 8px;
   text-align: left;
   height: calc(100vh - 300px);
+  overflow: auto;
 }
 
 a {

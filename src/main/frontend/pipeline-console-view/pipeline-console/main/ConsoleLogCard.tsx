@@ -12,10 +12,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
 import Grid from "@mui/material/Grid";
 import Button from "@mui/material/Button";
-import {
-  Tooltip,
-} from 'react-tippy';
-
+import { Tooltip } from "react-tippy";
 
 import { LOG_FETCH_SIZE } from "./PipelineConsoleModel";
 import LinkIcon from "@mui/icons-material/Link";
@@ -28,7 +25,7 @@ interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
 }
 
-declare module 'react-tippy' {
+declare module "react-tippy" {
   export interface TooltipProps {
     children?: React.ReactNode;
   }
@@ -216,7 +213,9 @@ export class ConsoleLogCard extends React.Component<
               </Tooltip>
               <Tooltip title="View step as plain text">
                 <IconButton
-                  onClick={() => window.open(`log?nodeId=${this.props.step.id}`)}
+                  onClick={() =>
+                    window.open(`log?nodeId=${this.props.step.id}`)
+                  }
                   aria-label="View step as plain text"
                 >
                   <LinkIcon />

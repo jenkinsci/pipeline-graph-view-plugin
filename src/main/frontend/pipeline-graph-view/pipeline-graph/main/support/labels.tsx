@@ -5,6 +5,8 @@ import { TruncatingLabel } from "../support/TruncatingLabel";
 import { NodeLabelInfo, LayoutInfo, StageInfo } from "../PipelineGraphModel";
 import { sequentialStagesLabelOffset } from "../PipelineGraphLayout";
 
+import { TooltipLabel } from "./convertLabelToTooltip";
+
 interface RenderBigLabelProps {
   details: NodeLabelInfo;
   layout: LayoutInfo;
@@ -12,6 +14,7 @@ interface RenderBigLabelProps {
   selectedStage?: StageInfo;
   isStageSelected: (stage?: StageInfo) => boolean;
 }
+
 /**
  * Generate the Component for a big label
  */
@@ -156,6 +159,7 @@ interface SequentialContainerLabelProps {
   details: NodeLabelInfo;
   layout: LayoutInfo;
 }
+
 /**
  * Generate the Component for a small label denoting the name of the container of a group of sequential parallel stages
  */
@@ -184,8 +188,10 @@ export function SequentialContainerLabel({
   };
 
   return (
-    <div style={containerStyle} key={details.key} title={seqContainerName}>
-      {seqContainerName}
-    </div>
+    <TooltipLabel content={seqContainerName}>
+      <div style={containerStyle} key={details.key}>
+        {seqContainerName}
+      </div>
+    </TooltipLabel>
   );
 }

@@ -166,7 +166,7 @@ export function SequentialContainerLabel({
   const { nodeRadius } = layout;
 
   const seqContainerName = details.text;
-  const y = details.y;
+  const y = details.y - Math.floor(nodeRadius * 2); // Because label Y must be above branch
   const x = details.x - Math.floor(nodeRadius * 2); // Because label X is a "node center"-relative position
 
   const containerStyle: any = {
@@ -174,10 +174,6 @@ export function SequentialContainerLabel({
     left: x,
     marginTop: "-0.5em",
     position: "absolute",
-    maxWidth: sequentialStagesLabelOffset,
-    overflow: "hidden",
-    textOverflow: "ellipsis",
-    background: "var(--background, white)",
     padding: "0 7px",
     lineHeight: "1",
     whiteSpace: "nowrap",

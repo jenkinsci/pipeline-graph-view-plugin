@@ -2,6 +2,7 @@
 
 :root {
   --card-background: hsl(212, 30%, 96%);
+  --step-bg-running: var(--accent-color);
   --step-bg-success: var(--success-color);
   --step-bg-unstable: var(--warning-color);
   --step-bg-failure: var(--error-color);
@@ -310,8 +311,11 @@ div.detail-element {
   cursor: pointer;
 }
 
-.step-header-success,
 .step-header-running {
+  background: var(--step-bg-running) !important;
+}
+
+.step-header-success {
   background: var(--step-bg-success) !important;
 }
 

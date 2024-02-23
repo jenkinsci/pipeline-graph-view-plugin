@@ -19,6 +19,8 @@ import LinkIcon from "@mui/icons-material/Link";
 import ConsoleLogModal from "./ConsoleLogModal";
 import ResizeIcon from "./ResizeIcon";
 
+import { getStepStatus } from "../../../step-status/StepStatus";
+
 const ConsoleLogStream = lazy(() => import("./ConsoleLogStream"));
 
 interface ExpandMoreProps extends IconButtonProps {
@@ -131,6 +133,8 @@ export class ConsoleLogCard extends React.Component<
     const handleOpen = () => this.setState({ open: true });
     const handleClose = () => this.setState({ open: false });
 
+    const statusIcon = getStepStatus(this.props.step.state, this.props.step.completePercent, 10);
+
     return (
       <Card
         className="step-detail-group"
@@ -140,11 +144,12 @@ export class ConsoleLogCard extends React.Component<
         <CardActionArea
           onClick={this.handleStepToggle}
           aria-label="Show console log."
-          className={`step-header step-header-${this.props.step.state.toLowerCase()} step-detail-group-${
+          className={`step-header step-detail-group-${
             this.props.isExpanded ? "expanded" : "collapsed"
           }`}
           key={`step-action-area-${this.props.step.id}`}
         >
+          {statusIcon}
           <Grid
             container
             wrap="nowrap"

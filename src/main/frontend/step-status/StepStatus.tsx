@@ -24,7 +24,7 @@ const Component: FunctionComponent<Props> = (props: Props) => {
   );
 };
 
-function getStepStatus(status: Result, complete?: number, radius?: number) {
+export function getStepStatus(status: Result, complete?: number, radius?: number) {
   const icon = getGroupForResult(
     decodeResultValue(status),
     complete ?? 100,

@@ -1,5 +1,6 @@
 import React from "react";
 import { StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
+import { getStepStatus } from "../../../step-status/StepStatus";
 import CloseIcon from "./CloseIcon";
 
 import Button from "@mui/material/Button";
@@ -36,6 +37,7 @@ const style = {
 
 export default function ConsoleLogModal(props: ConsoleLogModelProps) {
   const handleClose = () => props.setClose();
+  const statusIcon = getStepStatus(props.step.state, props.step.completePercent, 10);
 
   return (
     <>

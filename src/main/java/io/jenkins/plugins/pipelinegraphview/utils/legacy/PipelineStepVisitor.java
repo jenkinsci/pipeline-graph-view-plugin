@@ -1,7 +1,12 @@
-package io.jenkins.plugins.pipelinegraphview.utils;
+package io.jenkins.plugins.pipelinegraphview.utils.legacy;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import io.jenkins.plugins.pipelinegraphview.utils.BlueRun;
+import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
+import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepBuilderApi;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -42,7 +47,7 @@ import org.slf4j.LoggerFactory;
  * @author Vivek Pandey
  * @author Tim Brown
  */
-public class PipelineStepVisitor extends StandardChunkVisitor {
+public class PipelineStepVisitor extends StandardChunkVisitor implements PipelineStepBuilderApi {
     private final WorkflowRun run;
 
     private final ArrayDeque<FlowNodeWrapper> stageSteps = new ArrayDeque<>();

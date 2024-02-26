@@ -17,6 +17,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import org.jenkinsci.plugins.pipeline.modeldefinition.actions.ExecutionModelAction;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
+import org.jenkinsci.plugins.workflow.actions.LabelAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.AtomNode;
@@ -24,6 +25,7 @@ import org.jenkinsci.plugins.workflow.graph.BlockEndNode;
 import org.jenkinsci.plugins.workflow.graph.BlockStartNode;
 import org.jenkinsci.plugins.workflow.graph.FlowEndNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
+import org.jenkinsci.plugins.workflow.graph.FlowStartNode;
 import org.jenkinsci.plugins.workflow.graphanalysis.ForkScanner;
 import org.jenkinsci.plugins.workflow.graphanalysis.MemoryFlowChunk;
 import org.jenkinsci.plugins.workflow.graphanalysis.StandardChunkVisitor;
@@ -49,13 +51,14 @@ import org.slf4j.LoggerFactory;
  */
 public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
     private final WorkflowRun run;
+    private static final String PARALLEL_SYNTHETIC_STAGE_NAME = "Parallel";
 
     // Maps a node ID to a given node wrapper. Stores Stages and parallel blocks - not steps.
-    public Map<String, FlowNodeWrapper> nodeMap = new TreeMap<>();
+    private Map<String, FlowNodeWrapper> nodeMap = new TreeMap<>();
 
     // Determining the status of nodes in handleChunkDone allows us to use whole chunks as a reference, as seems a lot
     // more reliable for determining state. This is a store for those nodes until we find where they come in the graph.
-    public final Map<String, FlowNodeWrapper> handledChunkMap = new TreeMap<String, FlowNodeWrapper>();
+    private final Map<String, FlowNodeWrapper> handledChunkMap = new TreeMap<String, FlowNodeWrapper>();
 
     // Store the IDs of any found children for the block being processed. Each time we hit an end node we push this ack
     // to 'pendingBlockIdStacks' as start with an new empty stack.
@@ -71,9 +74,9 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
     // Store any parallel branch who we haven't found a parent for.
     private ArrayDeque<String> currentParallelBranches = new ArrayDeque<>();
 
-    // Stores the IDs any blocks (non-steps) that we have hit the end of but are still waiting for the start.
-    // Switched to this method as it wasn't always possible to get a start node from an end node.
-    private ArrayDeque<ArrayDeque<String>> pendingParallelBranches = new ArrayDeque<>();
+    // Stores the stacks of any parallel branches that we were processing before we hit the last parallelEnd.
+    // The size of this will tell use how many nester parallel blocks there are.
+    private ArrayDeque<ArrayDeque<String>> pendingBranchStartStacks = new ArrayDeque<>();
 
     // Maps a node ID to a given step node wrapper.
     private Map<String, FlowNodeWrapper> stepMap = new TreeMap<>();
@@ -87,6 +90,29 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
 
     // Used to store the originating node of an unhandled exception.
     private FlowNode nodeThatThrewException;
+
+    // Structures to track end nodes. We use FlowNode as the values (instead of a FlowNodeWrapper id) as we don't return
+    // these to the user
+    // - so don't need to wrap these in a FlowNodeWrapper.
+    // Store any parallel branch ends who we haven't found a parent for.
+    private ArrayDeque<FlowNode> currentParallelBranchEnds = new ArrayDeque<>();
+
+    // Used to track the end node for the parallel branches that we have hit the end of but not the start
+    // (those we are still processing). This allows us to check when an end node isn't of
+    // org.jenkinsci.plugins.workflow.cps.nodes.StepEndNode - and so is still running.
+    private ArrayDeque<FlowNode> pendingBranchEndNodes = new ArrayDeque<>();
+
+    // Used to track the end node for the parallel blocks that we have hit the end of but not the start
+    // (those we are still processing).
+    private ArrayDeque<FlowNode> pendingParallelEndNodes = new ArrayDeque<>();
+
+    // When a parallel branch is running there might be a `parallelBranchStart` call without a prior
+    // `parallelBranchEnd`.
+    // In this case we use the last chunk end node as the branch end node.
+    private FlowNode currentChunkNode = null;
+
+    // Record parallel end nodes. We use a stack of stacks to simplify handling parallel block nesting.
+    private ArrayDeque<ArrayDeque<FlowNode>> pendingBranchEndStacks = new ArrayDeque<>();
 
     private Boolean declarative;
     private InputAction inputAction;
@@ -120,9 +146,9 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
 
     // Print debug message if 'isDebugEnabled' is true.
     private void dump(String message) {
-        if (isDebugEnabled) {
+        if (true) {
             String prefix = "-".repeat(pendingBlockIdStacks.size());
-            logger.debug(prefix + " " + message);
+            logger.info(prefix + " " + message);
         }
     }
 
@@ -196,18 +222,17 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
 
     @NonNull
     private NodeRunStatus getParallelBranchStatus(
-            @NonNull FlowNode parallelStart, @NonNull FlowNode parallelBranchStart) {
+            @NonNull FlowNode parallelStart,
+            @NonNull FlowNode parallelBranchStart,
+            @NonNull FlowNode parallelBranchEnd,
+            @NonNull FlowNode parallelEnd) {
+
         List<BlockStartNode> branchStarts = new ArrayList<>();
         branchStarts.add((BlockStartNode) parallelBranchStart);
-        FlowNode branchEndNode = getEndNode(parallelBranchStart);
-        if (branchEndNode == null) {
-            branchEndNode = parallelBranchStart;
-        }
         List<FlowNode> branchEnds = new ArrayList<>();
-        branchEnds.add(branchEndNode);
-        FlowNode parallelEndNode = getEndNode(parallelStart);
+        branchEnds.add(parallelBranchEnd);
         Map<String, GenericStatus> branchStatuses =
-                StatusAndTiming.computeBranchStatuses2(run, parallelStart, branchStarts, branchEnds, parallelEndNode);
+                StatusAndTiming.computeBranchStatuses2(run, parallelStart, branchStarts, branchEnds, parallelEnd);
         GenericStatus nodeStatus = branchStatuses.get(parallelBranchStart.getDisplayName());
         if (nodeStatus != null) {
             return new NodeRunStatus(nodeStatus);
@@ -216,24 +241,26 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
     }
 
     @NonNull
-    private TimingInfo getParallelBranchTiming(@NonNull FlowNode parallelStart, @NonNull FlowNode parallelBranchStart) {
+    private TimingInfo getParallelBranchTiming(
+            @NonNull FlowNode parallelStart,
+            @NonNull FlowNode parallelBranchStart,
+            @NonNull FlowNode parallelBranchEnd,
+            @NonNull FlowNode parallelEnd) {
+
         List<Long> branchPauses = new ArrayList<>();
         branchPauses.add(PauseAction.getPauseDuration(parallelBranchStart));
+        // Only pass one start and end node to avoid calculating timings that we aren't interested in.
+        // Can switch to passing all the branch start and ends if result.
         List<BlockStartNode> branchStarts = new ArrayList<>();
         branchStarts.add((BlockStartNode) parallelBranchStart);
-        FlowNode branchEndNode = getEndNode(parallelBranchStart);
-        if (branchEndNode == null) {
-            branchEndNode = parallelBranchStart;
-        }
         List<FlowNode> branchEnds = new ArrayList<>();
-        branchEnds.add(branchEndNode);
-        FlowNode parallelEndNode = getEndNode(parallelStart);
+        branchEnds.add(parallelBranchEnd);
         Map<String, TimingInfo> branchTimes = StatusAndTiming.computeParallelBranchTimings(
                 run,
                 parallelStart,
                 branchStarts,
                 branchEnds,
-                parallelEndNode,
+                parallelEnd,
                 branchPauses.stream().mapToLong(l -> l).toArray());
         TimingInfo times = branchTimes.getOrDefault(parallelBranchStart.getDisplayName(), null);
         if (times == null) {
@@ -244,18 +271,13 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
 
     @NonNull
     private NodeRunStatus getParallelStatus(
-            @NonNull FlowNode parallelStart, @NonNull List<BlockStartNode> parallelBranchStarts) {
-        List<FlowNode> branchEnds = new ArrayList<>();
-        for (FlowNode branchStart : parallelBranchStarts) {
-            FlowNode branchEndNode = getEndNode(branchStart);
-            if (branchEndNode == null) {
-                branchEndNode = branchStart;
-            }
-            branchEnds.add(branchEndNode);
-        }
-        FlowNode parallelEndNode = getEndNode(parallelStart);
+            @NonNull FlowNode parallelStart,
+            @NonNull List<BlockStartNode> parallelBranchStarts,
+            @NonNull List<FlowNode> parallelBranchEnds,
+            @NonNull FlowNode parallelEnd) {
+
         Map<String, GenericStatus> branchStatuses = StatusAndTiming.computeBranchStatuses2(
-                run, parallelStart, parallelBranchStarts, branchEnds, parallelEndNode);
+                run, parallelStart, parallelBranchStarts, parallelBranchEnds, parallelEnd);
         GenericStatus parallelStatus = StatusAndTiming.condenseStatus(branchStatuses.values());
         if (parallelStatus != null) {
             return new NodeRunStatus(parallelStatus);
@@ -265,27 +287,17 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
 
     @NonNull
     private TimingInfo getParallelTiming(
-            @NonNull FlowNode parallelStart, @NonNull List<BlockStartNode> parallelBranchStarts) {
-        List<Long> branchPauses = new ArrayList<>();
-        List<FlowNode> branchEnds = new ArrayList<>();
-        for (FlowNode branchStart : parallelBranchStarts) {
-            branchPauses.add(PauseAction.getPauseDuration(branchStart));
-            FlowNode branchEndNode = getEndNode(branchStart);
-            if (branchEndNode == null) {
-                branchEndNode = branchStart;
-            }
-            branchEnds.add(branchEndNode);
-        }
-        FlowNode parallelEndNode = getEndNode(parallelStart);
+            @NonNull FlowNode parallelStart,
+            @NonNull List<BlockStartNode> parallelBranchStarts,
+            @NonNull List<FlowNode> parallelBranchEnds,
+            @NonNull FlowNode parallelEnd) {
+
+        long[] branchPauses = parallelBranchStarts.stream()
+                .mapToLong(n -> PauseAction.getPauseDuration(n))
+                .toArray();
         Map<String, TimingInfo> branchTimes = StatusAndTiming.computeParallelBranchTimings(
-                run,
-                parallelStart,
-                parallelBranchStarts,
-                branchEnds,
-                parallelEndNode,
-                branchPauses.stream().mapToLong(l -> l).toArray());
-        TimingInfo times =
-                StatusAndTiming.computeOverallParallelTiming(run, branchTimes, parallelStart, parallelEndNode);
+                run, parallelStart, parallelBranchStarts, parallelBranchEnds, parallelEnd, branchPauses);
+        TimingInfo times = StatusAndTiming.computeOverallParallelTiming(run, branchTimes, parallelStart, parallelEnd);
         if (times == null) {
             times = new TimingInfo();
         }
@@ -295,7 +307,7 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
     @CheckForNull
     private BlockEndNode getEndNode(@NonNull FlowNode flowNode) {
         if (flowNode instanceof BlockStartNode) {
-            // The status is stored in the end node, so try and get that???
+            // The status is stored in the end node, so try and get that.
             BlockStartNode startNode = (BlockStartNode) flowNode;
             if (startNode != null) {
                 return startNode.getEndNode();
@@ -367,13 +379,16 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
             @NonNull FlowNode parallelStartNode, @NonNull FlowNode branchNode, @NonNull ForkScanner scanner) {
         super.parallelStart(parallelStartNode, branchNode, scanner);
         dump(String.format(
-                "parallelStart => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSynthetic: %s} ",
+                "parallelStart => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSynthetic: %s, parents: %s (%s)} ",
                 parallelStartNode.getId(),
                 parallelStartNode.getDisplayName(),
                 PipelineNodeUtil.isStage(parallelStartNode),
                 PipelineNodeUtil.isParallelBranch(parallelStartNode),
                 PipelineNodeUtil.isSyntheticStage(parallelStartNode),
-                parallelStartNode.getClass()));
+                parallelStartNode.getClass(),
+                parallelStartNode.getParents().get(0).getId(),
+                parallelStartNode.getParents().get(0).getDisplayName()));
+
         // Add any current branches to this parallel start block and reset stack.
         // Set the node type when calling as running Parallel blocks can be 'StepStartNode' - which would throw
         // exception.
@@ -386,18 +401,45 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
                 PipelineNodeUtil.isParallelBranch(parallelStartNode),
                 PipelineNodeUtil.isSyntheticStage(parallelStartNode),
                 parallelStartNode.getClass()));
+
+        // Get Timing and Status info for Parallel block.
+        FlowNode parallelEndNode;
+        // Check if there is a end node on the stack - there might not be one if the branch is running.
+        if (pendingParallelEndNodes.size() > 0) {
+            parallelEndNode = pendingParallelEndNodes.pop();
+        } else {
+            parallelEndNode = getEndNode(parallelStartNode);
+        }
+        // Fall back - if we cannot get the branch end node, use the last chunk node.
+        if (parallelEndNode == null) {
+            parallelEndNode = currentChunkNode;
+        }
         List<BlockStartNode> branchStartNodes = currentParallelBranches.stream()
                 .map(n -> (BlockStartNode) nodeMap.get(n).getNode())
                 .collect(Collectors.toList());
-        TimingInfo times = getParallelTiming(parallelStartNode, branchStartNodes);
-        NodeRunStatus status = getParallelStatus(parallelStartNode, branchStartNodes);
+        List<FlowNode> branchEndNodes = new ArrayList<>();
+        branchEndNodes.addAll(currentParallelBranchEnds);
+        if (branchEndNodes.size() == 0) {
+            branchEndNodes.add(currentChunkNode);
+        }
+        TimingInfo times = getParallelTiming(parallelStartNode, branchStartNodes, branchEndNodes, parallelEndNode);
+        NodeRunStatus status = getParallelStatus(parallelStartNode, branchStartNodes, branchEndNodes, parallelEndNode);
+
         FlowNodeWrapper wrappedParallelStart =
                 wrapFlowNode(parallelStartNode, times, status, FlowNodeWrapper.NodeType.PARALLEL_BLOCK);
         addChildrenToNode(wrappedParallelStart, currentParallelBranches);
-        if (pendingParallelBranches.isEmpty()) {
+
+        // Remove parent's parallel branch start node from stack.
+        if (pendingBranchStartStacks.isEmpty()) {
             currentParallelBranches = new ArrayDeque<>();
         } else {
-            currentParallelBranches = pendingParallelBranches.removeLast();
+            currentParallelBranches = pendingBranchStartStacks.removeLast();
+        }
+        // Remove parent's parallel branch end nodes from stack.
+        if (pendingBranchEndStacks.isEmpty()) {
+            currentParallelBranchEnds = new ArrayDeque<>();
+        } else {
+            currentParallelBranchEnds = pendingBranchEndStacks.removeLast();
         }
         currentBlockChildIds.addLast(wrappedParallelStart.getId());
     }
@@ -413,11 +455,14 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
                 PipelineNodeUtil.isStage(parallelEndNode),
                 PipelineNodeUtil.isParallelBranch(parallelEndNode),
                 PipelineNodeUtil.isSyntheticStage(parallelEndNode),
-                parallelStartNode.getClass()));
-        // Do nothing as we assign the parent node for branches in 'parallelStart'.
-        // This avoids issues in running Pipelines where 'parallelEnd' is not called.
-        pendingParallelBranches.addLast(currentParallelBranches);
+                parallelEndNode.getClass()));
+        // Push the list of current parallel branch start/end nodes to the a stack so we can get them again later.
+        // This makes handling nested parallels and orphaned branches easier.
+        pendingBranchStartStacks.addLast(currentParallelBranches);
         currentParallelBranches = new ArrayDeque<>();
+        pendingBranchEndStacks.addLast(currentParallelBranchEnds);
+        currentParallelBranchEnds = new ArrayDeque<>();
+        pendingParallelEndNodes.push(parallelEndNode);
     }
 
     @Override
@@ -425,15 +470,54 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
             @NonNull FlowNode parallelStartNode, @NonNull FlowNode branchStartNode, @NonNull ForkScanner scanner) {
         super.parallelBranchStart(parallelStartNode, branchStartNode, scanner);
         dump(String.format(
-                "parallelBranchStart => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSynthetic: %s, class: %s}.",
+                "parallelBranchStart => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSynthetic: %s, class: %s, orphaned: %s}.",
                 branchStartNode.getId(),
                 branchStartNode.getDisplayName(),
                 PipelineNodeUtil.isStage(branchStartNode),
                 PipelineNodeUtil.isParallelBranch(branchStartNode),
                 PipelineNodeUtil.isSyntheticStage(branchStartNode),
-                parallelStartNode.getClass()));
-        TimingInfo branchTimes = getParallelBranchTiming(parallelStartNode, branchStartNode);
-        NodeRunStatus branchStatus = getParallelBranchStatus(parallelStartNode, branchStartNode);
+                branchStartNode.getClass(),
+                PipelineNodeUtil.isStage(parallelStartNode)));
+        FlowNode branchEndNode;
+        // Check if there is a end node on the stack - there might not be one if the branch is running.
+        if (pendingBranchEndNodes.size() > 0) {
+            branchEndNode = pendingBranchEndNodes.pop();
+        } else {
+            branchEndNode = getEndNode(branchStartNode);
+        }
+        // Fall back - if we cannot get the branch end node, use the last chunk node.
+        if (branchEndNode == null) {
+            branchEndNode = currentChunkNode;
+        }
+        dump(String.format(
+                "parallelBranchStart parallelStartNode => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSynthetic: %s, class: %s, orphaned: %s}.",
+                branchEndNode.getId(),
+                branchEndNode.getDisplayName(),
+                PipelineNodeUtil.isStage(branchEndNode),
+                PipelineNodeUtil.isParallelBranch(branchEndNode),
+                PipelineNodeUtil.isSyntheticStage(branchEndNode),
+                branchEndNode.getClass(),
+                PipelineNodeUtil.isStage(branchEndNode.getParents().get(0))));
+        FlowNode parallelEndNode = pendingParallelEndNodes.peek();
+        TimingInfo branchTimes =
+                getParallelBranchTiming(parallelStartNode, branchStartNode, branchEndNode, parallelEndNode);
+        NodeRunStatus branchStatus =
+                getParallelBranchStatus(parallelStartNode, branchStartNode, branchEndNode, parallelEndNode);
+        // When there is a single running parallel branch, the graph the doesn't enclose it in a parallel block - it in
+        // it's grandparent.
+        // In this case we need to add a syntheic one.
+        // To check this we can check if the endNode is still running (instance of StepAtomNode) and there are any other
+        // pending parallel branches.
+        if (false) {
+            if (branchEndNode instanceof StepAtomNode && pendingBranchEndNodes.size() == 0) {
+                dump(String.format(
+                        "parallelBranchStart => Found orphaned parallel branch {ID: %s, name: %s}.",
+                        parallelStartNode.getId(), parallelStartNode.getDisplayName()));
+                captureOrphanParallelBranches();
+            }
+        } else {
+            dump("Skipping 'captureOrphanParallelBranches' test...");
+        }
         handleBlockStartNode(branchStartNode, branchTimes, branchStatus);
         currentParallelBranches.add(branchStartNode.getId());
     }
@@ -449,7 +533,19 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
                 PipelineNodeUtil.isStage(branchEndNode),
                 PipelineNodeUtil.isParallelBranch(branchEndNode),
                 PipelineNodeUtil.isSyntheticStage(branchEndNode),
-                parallelStartNode.getClass()));
+                branchEndNode.getClass()));
+        // Record the end node so we can do logic on it later if required.
+        pendingBranchEndNodes.push(branchEndNode);
+        currentParallelBranchEnds.add(branchEndNode);
+        dump(String.format(
+                "Add node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSynthetic: %s, class: %s} to currentParallelBranchEnds, size: %s ",
+                branchEndNode.getId(),
+                branchEndNode.getDisplayName(),
+                PipelineNodeUtil.isStage(branchEndNode),
+                PipelineNodeUtil.isParallelBranch(branchEndNode),
+                PipelineNodeUtil.isSyntheticStage(branchEndNode),
+                branchEndNode.getClass(),
+                currentParallelBranchEnds.size()));
         handleBlockEndNode(branchEndNode);
     }
 
@@ -481,6 +577,7 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
 
     @Override
     public void chunkEnd(@NonNull FlowNode chunkNode, @CheckForNull FlowNode afterChunk, @NonNull ForkScanner scanner) {
+        currentChunkNode = chunkNode;
         super.chunkEnd(chunkNode, afterChunk, scanner);
         if (chunkNode instanceof FlowEndNode) {
             dump(String.format(
@@ -710,6 +807,11 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
             @CheckForNull FlowNode after,
             @NonNull ForkScanner scan) {
         super.atomNode(before, atomNode, after, scan);
+        // If we got to the start of the Graph and still have unprocessed parallel branches, then they are orphaned.
+        if (atomNode instanceof FlowStartNode && currentParallelBranches.isEmpty()) {
+            captureOrphanParallelBranches();
+            return;
+        }
         if (atomNode instanceof StepAtomNode) {
             for (Action action : atomNode.getActions()) {
                 logger.trace(
@@ -770,6 +872,104 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
         return this.declarative;
     }
 
+    /**
+     * Add all pending parallel branches to a syntethic node (one that doesn't exist in the real DAG).
+     * This is needed for instanced where parallel branches aren't enclosed in a parallel block - for instance,
+     * when a parallel block has a single, running branch.
+     */
+    private void captureOrphanParallelBranches() {
+        if (!currentParallelBranches.isEmpty()) {
+            FlowNodeWrapper synStage = createParallelSyntheticNode();
+            if (synStage != null) {
+                nodeMap.put(synStage.getId(), synStage);
+            }
+        }
+    }
+
+    /**
+     * Create synthetic stage that wraps a parallel block at top level, that is not enclosed inside a stage.
+     */
+    private @Nullable FlowNodeWrapper createParallelSyntheticNode() {
+
+        if (currentParallelBranches.isEmpty()) {
+            return null;
+        }
+
+        FlowNodeWrapper firstBranch = nodeMap.get(currentParallelBranches.getLast());
+        FlowNodeWrapper parallel = firstBranch.getFirstParent();
+
+        dump(String.format(
+                "createParallelSyntheticNode=> firstBranch: %s, parallel:%s",
+                firstBranch.getId(), (parallel == null ? "(none)" : parallel.getId())));
+
+        String firstNodeId = firstBranch.getId();
+        List<FlowNode> parents;
+        if (parallel != null) {
+            parents = parallel.getNode().getParents();
+        } else {
+            parents = new ArrayList<>();
+        }
+        FlowNode syntheticNode =
+                new FlowNode(
+                        firstBranch.getNode().getExecution(),
+                        createSyntheticStageId(firstNodeId, PARALLEL_SYNTHETIC_STAGE_NAME),
+                        parents) {
+                    @Override
+                    public void save() throws IOException {
+                        // no-op to avoid JENKINS-45892 violations from serializing the synthetic FlowNode.
+                    }
+
+                    @Override
+                    protected String getTypeDisplayName() {
+                        return PARALLEL_SYNTHETIC_STAGE_NAME;
+                    }
+                };
+
+        syntheticNode.addAction(new LabelAction(PARALLEL_SYNTHETIC_STAGE_NAME));
+
+        long duration = 0;
+        long pauseDuration = 0;
+        long startTime = System.currentTimeMillis();
+        boolean isCompleted = true;
+        boolean isPaused = false;
+        boolean isFailure = false;
+        boolean isUnknown = false;
+        for (String nodeId : currentParallelBranches) {
+            FlowNodeWrapper pb = nodeMap.get(nodeId);
+            if (!isPaused && pb.getStatus().getState() == BlueRun.BlueRunState.PAUSED) {
+                isPaused = true;
+            }
+            if (isCompleted && pb.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
+                isCompleted = false;
+            }
+
+            if (!isFailure && pb.getStatus().getResult() == BlueRun.BlueRunResult.FAILURE) {
+                isFailure = true;
+            }
+            if (!isUnknown && pb.getStatus().getResult() == BlueRun.BlueRunResult.UNKNOWN) {
+                isUnknown = true;
+            }
+            duration += pb.getTiming().getTotalDurationMillis();
+            pauseDuration += pb.getTiming().getPauseDurationMillis();
+        }
+
+        BlueRun.BlueRunState state = isCompleted
+                ? BlueRun.BlueRunState.FINISHED
+                : (isPaused ? BlueRun.BlueRunState.PAUSED : BlueRun.BlueRunState.RUNNING);
+        BlueRun.BlueRunResult result = isFailure
+                ? BlueRun.BlueRunResult.FAILURE
+                : (isUnknown ? BlueRun.BlueRunResult.UNKNOWN : BlueRun.BlueRunResult.SUCCESS);
+
+        TimingInfo timingInfo = new TimingInfo(duration, pauseDuration, startTime);
+
+        FlowNodeWrapper synStage =
+                new FlowNodeWrapper(syntheticNode, new NodeRunStatus(result, state), timingInfo, run);
+
+        // Reverse list of branches
+        addChildrenToNode(synStage, currentParallelBranches);
+        return synStage;
+    }
+
     static class LocalAtomNode extends AtomNode {
         private final String cause;
 
@@ -782,5 +982,16 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
         protected String getTypeDisplayName() {
             return cause;
         }
+    }
+
+    /**
+     * Create id of synthetic stage in a deterministic base.
+     * <p>
+     * For example, an orphan parallel block with id 12 (appears top level not wrapped inside a stage) gets wrapped in a synthetic
+     * stage with id: 12-parallel-synthetic. Later client calls nodes API using this id: /nodes/12-parallel-synthetic/ would
+     * correctly pick the synthetic stage wrapping parallel block 12 by doing a lookup nodeMap.get("12-parallel-synthetic")
+     */
+    private @NonNull String createSyntheticStageId(@NonNull String firstNodeId, @NonNull String syntheticStageName) {
+        return String.format("%s-%s-synthetic", firstNodeId, syntheticStageName.toLowerCase());
     }
 }

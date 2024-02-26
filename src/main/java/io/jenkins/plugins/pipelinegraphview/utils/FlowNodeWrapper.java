@@ -256,7 +256,7 @@ public class FlowNodeWrapper {
     }
 
     @CheckForNull
-    String nodeError() {
+    public String nodeError() {
         ErrorAction errorAction = node.getError();
         if (errorAction != null) {
             return errorAction.getError().getMessage();
@@ -329,7 +329,9 @@ public class FlowNodeWrapper {
 
         @Override
         public int compare(FlowNodeWrapper a, FlowNodeWrapper b) {
-            return Integer.compare(Integer.parseInt(a.getId()), Integer.parseInt(b.getId()));
+            return Integer.compare(
+                    Integer.parseInt(a.getId().split("-")[0]),
+                    Integer.parseInt(b.getId().split("-")[0]));
         }
     }
 }

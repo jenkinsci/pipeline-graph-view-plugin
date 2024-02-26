@@ -62,6 +62,7 @@ public class TestUtils {
     }
 
     public static String collectStagesAsString(List<PipelineStage> stages, Function<PipelineStage, String> converter) {
+
         return stages.stream()
                 .map((PipelineStage stage) -> stage.getChildren().isEmpty()
                         ? converter.apply(stage)

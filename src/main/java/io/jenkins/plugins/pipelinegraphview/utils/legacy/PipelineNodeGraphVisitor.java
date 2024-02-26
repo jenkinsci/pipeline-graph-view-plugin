@@ -1,10 +1,15 @@
-package io.jenkins.plugins.pipelinegraphview.utils;
+package io.jenkins.plugins.pipelinegraphview.utils.legacy;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Action;
+import io.jenkins.plugins.pipelinegraphview.utils.BlueRun;
+import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
+import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphBuilderApi;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -54,7 +59,7 @@ import org.slf4j.LoggerFactory;
  *     set a custom logging properties file from the command line, or do it from within the admin
  *     UI.
  */
-public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
+public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements PipelineGraphBuilderApi {
     private final WorkflowRun run;
 
     private final ArrayDeque<FlowNodeWrapper> parallelBranches = new ArrayDeque<>();
@@ -65,20 +70,20 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
 
     private FlowNodeWrapper nextStage;
 
-    private Stack<FlowNode> parallelEnds = new Stack<>();
-
     public final Map<String, FlowNodeWrapper> nodeMap = new LinkedHashMap<>();
 
     public final Map<String, Stack<FlowNodeWrapper>> stackPerEnd = new HashMap<>();
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineNodeGraphVisitor.class);
 
-    private final boolean isNodeVisitorDumpEnabled = logger.isTraceEnabled();
+    private final boolean isNodeVisitorDumpEnabled = true; // logger.isTraceEnabled();
 
     private final Stack<FlowNode> nestedStages = new Stack<>();
     private final Stack<FlowNode> nestedbranches = new Stack<>();
 
     private final ArrayDeque<FlowNode> pendingInputSteps = new ArrayDeque<>();
+
+    private Stack<FlowNode> parallelEnds = new Stack<>();
 
     private final Stack<FlowNode> pendingBranchEndNodes = new Stack<>();
     private final Stack<FlowNode> parallelBranchEndNodes = new Stack<>();
@@ -632,7 +637,7 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
     }
 
     private void dump(String str) {
-        logger.trace(System.identityHashCode(this) + ": " + str);
+        logger.info(System.identityHashCode(this) + ": " + str);
     }
 
     /**

@@ -146,9 +146,9 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
 
     // Print debug message if 'isDebugEnabled' is true.
     private void dump(String message) {
-        if (true) {
+        if (isDebugEnabled) {
             String prefix = "-".repeat(pendingBlockIdStacks.size());
-            logger.info(prefix + " " + message);
+            logger.trace(prefix + " " + message);
         }
     }
 

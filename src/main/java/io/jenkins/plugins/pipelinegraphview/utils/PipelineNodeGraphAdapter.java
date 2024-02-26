@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, PipelineStepBuilderApi {
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineNodeGraphAdapter.class);
-    private boolean isDebugEnabled = true; // logger.isDebugEnabled();
+    private boolean isDebugEnabled = logger.isDebugEnabled();
     private PipelineNodeTreeVisitor treeVisitor;
     private boolean isChildrenRemapped = false;
     private List<FlowNodeWrapper> pipelineNodesList;
@@ -62,11 +62,9 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
                 // 2. (Declarative) Stages that have a Parallel branch as a parent with the same name as them will be
                 // mapped to that
                 // parent parallel branch id.
-                if (false
-                        && treeVisitor.isDeclarative()
+                if (treeVisitor.isDeclarative()
                         && node.getType() == FlowNodeWrapper.NodeType.STAGE
                         && parent.getType() == FlowNodeWrapper.NodeType.PARALLEL) {
-                    // && parent.getDisplayName() == node.getDisplayName()) {
                     dump(String.format(
                             "getNodesToRemap => (Declarative) Found Stage {id: %s, name: %s, type: %s} that has a Parallel Branch with the name {id: %s, name: %s, type: %s} as a parent. Adding to remap list.",
                             node.getId(),
@@ -79,9 +77,10 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
                     // Skip other checks.
                     continue;
                 }
-                // 3. If the node has a parent has he same name then remap child nodes to that parent. This removes some
-                // superfluous stages.
-                if (node.getDisplayName().equals(parent.getDisplayName())) {
+                // 3. If the node has a parent which is a stage, with the same name and has only one child (this node)
+                // then remap child nodes to that parent. This removes some superfluous stages.
+                if (parent.getType() == FlowNodeWrapper.NodeType.STAGE
+                        && node.getDisplayName().equals(parent.getDisplayName())) {
                     dump(String.format(
                             "getNodesToRemap => (Declarative) Found Stage {id: %s, name: %s, type: %s} that is an only child name has a parnet with the same name {id: %s, name: %s, type: %s}. Adding to remap list.",
                             node.getId(),
@@ -119,7 +118,7 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
     // Print debug message if 'isDebugEnabled' is true.
     private void dump(String message) {
         if (isDebugEnabled) {
-            logger.info(message);
+            logger.trace(message);
         }
     }
 
@@ -133,27 +132,27 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
     // Useful to dumping node maps to console. These can then be viewed in Graphviz, e.g. online via:
     // https://dreampuf.github.io/GraphvizOnline
     private void dumpNodeGraphviz(List<FlowNodeWrapper> nodes) {
-        // if (logger.isTraceEnabled()) {
-        String nodeMapStr = String.format("digraph G {%n");
-        for (FlowNodeWrapper node : nodes) {
-            nodeMapStr += String.format(
-                    "  %s [label=\"{id: %s, name: %s, type: %s}\"]%n",
-                    node.getId(), node.getId(), node.getDisplayName(), node.getType());
-            for (FlowNodeWrapper parent : node.getParents()) {
-                nodeMapStr += String.format("  %s -> %s%n", node.getId(), parent.getId());
-            }
-            if (this.stepsMap != null) {
-                for (FlowNodeWrapper step : stepsMap.getOrDefault(node.getId(), new ArrayList<>())) {
-                    nodeMapStr += String.format(
-                            "  %s [label=\"{id: %s, name: %s, type: %s}\"]%n",
-                            step.getId(), step.getId(), step.getDisplayName(), step.getType());
-                    nodeMapStr += String.format("  %s -> %s%n", step.getId(), node.getId());
+        if (logger.isTraceEnabled()) {
+            String nodeMapStr = String.format("digraph G {%n");
+            for (FlowNodeWrapper node : nodes) {
+                nodeMapStr += String.format(
+                        "  %s [label=\"{id: %s, name: %s, type: %s}\"]%n",
+                        node.getId(), node.getId(), node.getDisplayName(), node.getType());
+                for (FlowNodeWrapper parent : node.getParents()) {
+                    nodeMapStr += String.format("  %s -> %s%n", node.getId(), parent.getId());
+                }
+                if (this.stepsMap != null) {
+                    for (FlowNodeWrapper step : stepsMap.getOrDefault(node.getId(), new ArrayList<>())) {
+                        nodeMapStr += String.format(
+                                "  %s [label=\"{id: %s, name: %s, type: %s}\"]%n",
+                                step.getId(), step.getId(), step.getDisplayName(), step.getType());
+                        nodeMapStr += String.format("  %s -> %s%n", step.getId(), node.getId());
+                    }
                 }
             }
+            nodeMapStr += String.format("}");
+            logger.info(nodeMapStr);
         }
-        nodeMapStr += String.format("}");
-        logger.info(nodeMapStr);
-        // }
     }
 
     private void remapStageParentage() {
@@ -218,9 +217,9 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
 
     private void remapStepParentage() {
         // We only want to do this once, so return early if we have an existing value.
-        // if (this.stepsMap != null) {
-        //  return;
-        // }
+        if (this.stepsMap != null) {
+            return;
+        }
         this.stepsMap = treeVisitor.getAllSteps();
         dumpNodeGraphviz(getPipelineNodes(), this.stepsMap);
         Map<String, String> nodesToRemap = getNodesToRemap(getPipelineNodes());
@@ -259,5 +258,12 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
 
     public List<FlowNodeWrapper> getStageSteps(String startNodeId) {
         return getAllSteps().getOrDefault(startNodeId, new ArrayList<FlowNodeWrapper>());
+    }
+
+    public Map<String, List<FlowNodeWrapper>> getStep() {
+        if (this.stepsMap == null) {
+            remapStepParentage();
+        }
+        return this.stepsMap;
     }
 }

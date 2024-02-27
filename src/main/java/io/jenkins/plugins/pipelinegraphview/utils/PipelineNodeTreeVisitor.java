@@ -109,7 +109,7 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
     // When a parallel branch is running there might be a `parallelBranchStart` call without a prior
     // `parallelBranchEnd`.
     // In this case we use the last chunk end node as the branch end node.
-    private FlowNode currentChunkNode = null;
+    private ArrayDeque<FlowNode> pendingChunkNodes = new ArrayDeque<>();
 
     // Record parallel end nodes. We use a stack of stacks to simplify handling parallel block nesting.
     private ArrayDeque<ArrayDeque<FlowNode>> pendingBranchEndStacks = new ArrayDeque<>();
@@ -374,6 +374,13 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
         stepMap.put(erroredStep.getId(), erroredStep);
     }
 
+    private boolean isCorrectEndNode(FlowNode end, FlowNode start) {
+        if (end instanceof BlockEndNode && start == ((BlockEndNode)end).getStartNode()) {
+            return true;
+        }
+        return false;
+    }
+
     @Override
     public void parallelStart(
             @NonNull FlowNode parallelStartNode, @NonNull FlowNode branchNode, @NonNull ForkScanner scanner) {
@@ -412,15 +419,34 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
         }
         // Fall back - if we cannot get the branch end node, use the last chunk node.
         if (parallelEndNode == null) {
-            parallelEndNode = currentChunkNode;
+            parallelEndNode = pendingChunkNodes.pop();
         }
         List<BlockStartNode> branchStartNodes = currentParallelBranches.stream()
                 .map(n -> (BlockStartNode) nodeMap.get(n).getNode())
                 .collect(Collectors.toList());
         List<FlowNode> branchEndNodes = new ArrayList<>();
-        branchEndNodes.addAll(currentParallelBranchEnds);
-        if (branchEndNodes.size() == 0) {
-            branchEndNodes.add(currentChunkNode);
+        // When there are running branches we can have start node with no end nodes.
+        // We need these to have a matching set, so find the missing end nodes - or use start nodes if none found.
+        if (currentParallelBranchEnds.size() == branchStartNodes.size()) {
+            // This is the regular case - when this set of branches isn't running.
+            branchEndNodes.addAll(currentParallelBranchEnds);
+        } else {
+            // We can't know which branches are are missing end nodes (still running), so go and find all end nodes ourselves.
+            for (int i = 0; i < branchStartNodes.size(); i++) {
+                FlowNode startNode = branchStartNodes.get(i);
+                // If we can't find an end node, then use the start node (it's still running).
+                FlowNode endNode = startNode;
+                for(FlowNode possibleEndNode : currentParallelBranchEnds) {
+                    if (isCorrectEndNode(possibleEndNode, startNode)) {
+                        endNode = possibleEndNode;
+                        continue;
+                    }
+                }
+                branchEndNodes.add(endNode);
+            }
+            // Reset currentParallelBranchEnds to one with a matching number of nodes to start nodes.
+            currentParallelBranchEnds.clear();
+            currentParallelBranchEnds.addAll(branchEndNodes);
         }
         TimingInfo times = getParallelTiming(parallelStartNode, branchStartNodes, branchEndNodes, parallelEndNode);
         NodeRunStatus status = getParallelStatus(parallelStartNode, branchStartNodes, branchEndNodes, parallelEndNode);
@@ -487,7 +513,7 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
         }
         // Fall back - if we cannot get the branch end node, use the last chunk node.
         if (branchEndNode == null) {
-            branchEndNode = currentChunkNode;
+            branchEndNode = pendingChunkNodes.pop();
         }
         dump(String.format(
                 "parallelBranchStart parallelStartNode => Node {id: %s, name: %s, isStage: %s, isParallelBranch: %s, isSynthetic: %s, class: %s, orphaned: %s}.",
@@ -577,7 +603,7 @@ public class PipelineNodeTreeVisitor extends StandardChunkVisitor {
 
     @Override
     public void chunkEnd(@NonNull FlowNode chunkNode, @CheckForNull FlowNode afterChunk, @NonNull ForkScanner scanner) {
-        currentChunkNode = chunkNode;
+        pendingChunkNodes.push(chunkNode);
         super.chunkEnd(chunkNode, afterChunk, scanner);
         if (chunkNode instanceof FlowEndNode) {
             dump(String.format(

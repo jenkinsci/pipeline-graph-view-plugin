@@ -43,7 +43,7 @@ public class PipelineStepApi {
                         String labelDisplayName = flowNodeWrapper.getLabelDisplayName();
                         if (labelDisplayName != null && !labelDisplayName.isEmpty()) {
                             displayName = labelDisplayName;
-                            title = flowNodeWrapper.getDisplayName();
+                            title = "";
                         }
                     }
                     // Remove non-printable chars (e.g. ANSI color codes).

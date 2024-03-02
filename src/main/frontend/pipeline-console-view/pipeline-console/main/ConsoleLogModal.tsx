@@ -3,8 +3,6 @@ import { StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
 import { getStepStatus } from "../../../step-status/StepStatus";
 import CloseIcon from "./CloseIcon";
 
-import Button from "@mui/material/Button";
-
 export interface ConsoleLogModelProps {
   logBuffer: StepLogBufferInfo;
   handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
@@ -14,7 +12,7 @@ export interface ConsoleLogModelProps {
   open: boolean;
 }
 
-import { Box, Modal } from "@mui/material";
+import { Box, Modal, Stack } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import ConsoleLogStream from "./ConsoleLogStream";
 
@@ -37,7 +35,11 @@ const style = {
 
 export default function ConsoleLogModal(props: ConsoleLogModelProps) {
   const handleClose = () => props.setClose();
-  const statusIcon = getStepStatus(props.step.state, props.step.completePercent, 10);
+  const statusIcon = getStepStatus(
+    props.step.state,
+    props.step.completePercent,
+    10
+  );
   const stepDisplayName = props.step.name;
   const stepTitle = props.step.title ? " - " + props.step.title : "";
 
@@ -50,7 +52,6 @@ export default function ConsoleLogModal(props: ConsoleLogModelProps) {
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
-          {statusIcon}
           <Typography
             id="modal-modal-title"
             variant="h6"
@@ -59,13 +60,15 @@ export default function ConsoleLogModal(props: ConsoleLogModelProps) {
             noWrap={true}
             key={`step-name-text-${props.step.id}`}
           >
-            <Box 
-              component="span"
-              fontWeight="bold"
-            >
-              {stepDisplayName}
-            </Box>
-            {stepTitle}
+            <Stack direction="row" alignItems="center" spacing={1}>
+              {statusIcon}
+              <Box component="span">
+                <Box component="span" fontWeight="bold">
+                  {stepDisplayName}
+                </Box>
+                {stepTitle}
+              </Box>
+            </Stack>
           </Typography>
           <CloseIcon onClick={handleClose} />
           <ConsoleLogStream {...props} />

@@ -130,6 +130,22 @@ export class ConsoleLogCard extends React.Component<
     return `${(size / gib).toFixed(2)}GiB`;
   }
 
+  getStepHeaderTitle(stepTitle: string, stepId: string) {
+    if (stepTitle) {
+      return (
+        <Typography
+          className="log-card--text"
+          component="div"
+          key={`step-duration-text-${stepId}`}
+        >
+          {stepTitle}
+        </Typography>
+      );
+    } else {
+      return null;
+    }
+  }
+
   render() {
     const handleOpen = () => this.setState({ open: true });
     const handleClose = () => this.setState({ open: false });
@@ -139,10 +155,6 @@ export class ConsoleLogCard extends React.Component<
       this.props.step.completePercent,
       10
     );
-    const stepDisplayName = this.props.step.name;
-    const stepTitle = this.props.step.title
-      ? " - " + this.props.step.title
-      : "";
 
     return (
       <Card
@@ -179,11 +191,12 @@ export class ConsoleLogCard extends React.Component<
                 key={`step-name-text-${this.props.step.id}`}
                 sx={{ flexGrow: 3 }}
               >
-                <Box component="span" fontWeight="bold">
-                  {stepDisplayName}
-                </Box>
-                {stepTitle}
+                {this.props.step.name}
               </Typography>
+              {this.getStepHeaderTitle(
+                this.props.step.title,
+                this.props.step.id
+              )}
             </Grid>
             <Grid
               item

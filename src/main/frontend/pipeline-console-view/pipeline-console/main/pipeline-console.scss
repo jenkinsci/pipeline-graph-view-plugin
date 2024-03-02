@@ -353,7 +353,15 @@ div.detail-element {
 }
 
 div.log-card--header {
+  font-weight: 800;
   font-family: var(--font-family-sans);
+  color: var(--step-text-color);
+}
+
+div.log-card--text {
+  //font-weight: 400;
+  font-family: var(--font-family-sans-mono);
+  line-height: 1.66 !important;
   color: var(--step-text-color);
 }
 

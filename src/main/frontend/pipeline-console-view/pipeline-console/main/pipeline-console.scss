@@ -2,6 +2,12 @@
 
 :root {
   --card-background: hsl(212, 30%, 96%);
+  --step-bg-running: color-mix(in srgb, var(--accent-color) 50%, white);
+  --step-bg-success: color-mix(in srgb, var(--success-color) 50%, white);
+  --step-bg-unstable: color-mix(in srgb, var(--warning-color) 50%, white);
+  --step-bg-failure: color-mix(in srgb, var(--error-color) 50%, white);
+  --step-bg-aborted: color-mix(in srgb, var(--purple) 50%, white);
+  --step-bg-paused: color-mix(in srgb, var(--blue) 50%, white);
   --step-text-color: rgb(233, 237, 237);
 }
 
@@ -289,8 +295,34 @@ div.detail-element {
 
 .step-header {
   @extend div, .step-detail-group;
-  background-color: var(--card-background) !important;
   cursor: pointer;
+}
+
+.step-header-running {
+  background: var(--step-bg-running) !important;
+}
+
+.step-header-success {
+  background: var(--step-bg-success) !important;
+}
+
+.step-header-unstable {
+  background: var(--step-bg-unstable) !important;
+}
+
+.step-header-failure {
+  background: var(--step-bg-failure) !important;
+}
+
+.step-header-aborted {
+  background: var(--step-bg-aborted) !important;
+}
+
+.step-header-queued,
+.step-header-paused,
+.step-header-not-built,
+.step-header-skipped {
+  background: var(--step-bg-paused) !important;
 }
 
 .capitalize {
@@ -304,14 +336,14 @@ div.detail-element {
 div.log-card--header {
   font-weight: 800;
   font-family: var(--font-family-sans);
-  color: var(--text-color);
+  color: var(--step-text-color);
 }
 
 div.log-card--text {
   //font-weight: 400;
   font-family: var(--font-family-sans-mono);
   line-height: 1.66 !important;
-  color: var(--text-color);
+  color: var(--step-text-color);
 }
 
 div.log-card--text-duration {

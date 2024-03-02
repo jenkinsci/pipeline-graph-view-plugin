@@ -208,7 +208,9 @@ export class ConsoleLogCard extends React.Component<
                   aria-label={"Open console log in full-screen mode"}
                   onClick={handleOpen}
                 >
-                  <ResizeIcon />
+                  <div className="svg-icon--expand">
+                    <ResizeIcon/>
+                  </div>
                 </IconButton>
               </Tooltip>
               <Tooltip title="View step as plain text">
@@ -218,7 +220,9 @@ export class ConsoleLogCard extends React.Component<
                   }
                   aria-label="View step as plain text"
                 >
-                  <LinkIcon />
+                  <LinkIcon 
+                    className="svg-icon--expand"
+                  />
                 </IconButton>
               </Tooltip>
             </Grid>

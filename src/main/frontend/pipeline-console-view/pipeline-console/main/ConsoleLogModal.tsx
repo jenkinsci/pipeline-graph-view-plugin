@@ -38,6 +38,8 @@ const style = {
 export default function ConsoleLogModal(props: ConsoleLogModelProps) {
   const handleClose = () => props.setClose();
   const statusIcon = getStepStatus(props.step.state, props.step.completePercent, 10);
+  const stepDisplayName = props.step.name;
+  const stepTitle = props.step.title ? " - " + props.step.title : "";
 
   return (
     <>
@@ -48,6 +50,7 @@ export default function ConsoleLogModal(props: ConsoleLogModelProps) {
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
+          {statusIcon}
           <Typography
             id="modal-modal-title"
             variant="h6"
@@ -56,25 +59,15 @@ export default function ConsoleLogModal(props: ConsoleLogModelProps) {
             noWrap={true}
             key={`step-name-text-${props.step.id}`}
           >
-            {props.step.name
-              .substring(0, props.step.name.lastIndexOf("-"))
-              .trimEnd()}
+            <Box 
+              component="span"
+              fontWeight="bold"
+            >
+              {stepDisplayName}
+            </Box>
+            {stepTitle}
           </Typography>
           <CloseIcon onClick={handleClose} />
-          <Typography
-            className="log-card--text"
-            id="modal-modal-description"
-            sx={{ mt: 2, mb: 2 }}
-            key={`step-duration-text-${props.step.id}`}
-          >
-            {props.step.name
-              .substring(
-                props.step.name.lastIndexOf("-") + 1,
-                props.step.name.length
-              )
-              .trimStart()}
-          </Typography>
-
           <ConsoleLogStream {...props} />
         </Box>
       </Modal>

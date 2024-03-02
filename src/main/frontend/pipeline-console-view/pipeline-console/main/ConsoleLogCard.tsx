@@ -11,6 +11,7 @@ import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
 import Grid from "@mui/material/Grid";
+import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import { Tooltip } from "react-tippy";
 
@@ -134,6 +135,8 @@ export class ConsoleLogCard extends React.Component<
     const handleClose = () => this.setState({ open: false });
 
     const statusIcon = getStepStatus(this.props.step.state, this.props.step.completePercent, 10);
+    const stepDisplayName = this.props.step.name;
+    const stepTitle = this.props.step.title ? " - " + this.props.step.title : "";
 
     return (
       <Card
@@ -163,29 +166,21 @@ export class ConsoleLogCard extends React.Component<
               sx={{ display: "block", margin: "auto" }}
               width="80%"
             >
-              <Typography
-                className="log-card--header"
-                noWrap={true}
-                component="div"
-                key={`step-name-text-${this.props.step.id}`}
-                sx={{ flexGrow: 3 }}
-              >
-                {this.props.step.name
-                  .substring(0, this.props.step.name.lastIndexOf("-"))
-                  .trimEnd()}
-              </Typography>
-              <Typography
-                className="log-card--text"
-                component="div"
-                key={`step-duration-text-${this.props.step.id}`}
-              >
-                {this.props.step.name
-                  .substring(
-                    this.props.step.name.lastIndexOf("-") + 1,
-                    this.props.step.name.length
-                  )
-                  .trimStart()}
-              </Typography>
+                <Typography
+                  className="log-card--header"
+                  noWrap={true}
+                  component="div"
+                  key={`step-name-text-${this.props.step.id}`}
+                  sx={{ flexGrow: 3 }}
+                >
+                  <Box
+                    component="span"
+                    fontWeight="bold"
+                  >
+                    {stepDisplayName}
+                  </Box>
+                  {stepTitle}
+                </Typography>
             </Grid>
             <Grid
               item

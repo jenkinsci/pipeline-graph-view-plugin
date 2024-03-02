@@ -134,9 +134,15 @@ export class ConsoleLogCard extends React.Component<
     const handleOpen = () => this.setState({ open: true });
     const handleClose = () => this.setState({ open: false });
 
-    const statusIcon = getStepStatus(this.props.step.state, this.props.step.completePercent, 10);
+    const statusIcon = getStepStatus(
+      this.props.step.state,
+      this.props.step.completePercent,
+      10
+    );
     const stepDisplayName = this.props.step.name;
-    const stepTitle = this.props.step.title ? " - " + this.props.step.title : "";
+    const stepTitle = this.props.step.title
+      ? " - " + this.props.step.title
+      : "";
 
     return (
       <Card
@@ -166,21 +172,18 @@ export class ConsoleLogCard extends React.Component<
               sx={{ display: "block", margin: "auto" }}
               width="80%"
             >
-                <Typography
-                  className="log-card--header"
-                  noWrap={true}
-                  component="div"
-                  key={`step-name-text-${this.props.step.id}`}
-                  sx={{ flexGrow: 3 }}
-                >
-                  <Box
-                    component="span"
-                    fontWeight="bold"
-                  >
-                    {stepDisplayName}
-                  </Box>
-                  {stepTitle}
-                </Typography>
+              <Typography
+                className="log-card--header"
+                noWrap={true}
+                component="div"
+                key={`step-name-text-${this.props.step.id}`}
+                sx={{ flexGrow: 3 }}
+              >
+                <Box component="span" fontWeight="bold">
+                  {stepDisplayName}
+                </Box>
+                {stepTitle}
+              </Typography>
             </Grid>
             <Grid
               item
@@ -209,7 +212,7 @@ export class ConsoleLogCard extends React.Component<
                   onClick={handleOpen}
                 >
                   <div className="svg-icon--expand">
-                    <ResizeIcon/>
+                    <ResizeIcon />
                   </div>
                 </IconButton>
               </Tooltip>
@@ -220,9 +223,7 @@ export class ConsoleLogCard extends React.Component<
                   }
                   aria-label="View step as plain text"
                 >
-                  <LinkIcon 
-                    className="svg-icon--expand"
-                  />
+                  <LinkIcon className="svg-icon--expand" />
                 </IconButton>
               </Tooltip>
             </Grid>

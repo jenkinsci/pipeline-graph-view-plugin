@@ -35,7 +35,11 @@ const style = {
 
 export default function ConsoleLogModal(props: ConsoleLogModelProps) {
   const handleClose = () => props.setClose();
-  const statusIcon = getStepStatus(props.step.state, props.step.completePercent, 10);
+  const statusIcon = getStepStatus(
+    props.step.state,
+    props.step.completePercent,
+    10
+  );
   const stepDisplayName = props.step.name;
   const stepTitle = props.step.title ? " - " + props.step.title : "";
 
@@ -56,19 +60,10 @@ export default function ConsoleLogModal(props: ConsoleLogModelProps) {
             noWrap={true}
             key={`step-name-text-${props.step.id}`}
           >
-            <Stack 
-              direction="row"
-              alignItems="center"
-              spacing={1}
-            >            
+            <Stack direction="row" alignItems="center" spacing={1}>
               {statusIcon}
-              <Box
-                component="span"
-              >
-                <Box 
-                  component="span"
-                  fontWeight="bold"
-                >
+              <Box component="span">
+                <Box component="span" fontWeight="bold">
                   {stepDisplayName}
                 </Box>
                 {stepTitle}

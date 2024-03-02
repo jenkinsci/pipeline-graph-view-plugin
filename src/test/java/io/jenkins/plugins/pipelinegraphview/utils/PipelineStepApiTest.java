@@ -57,7 +57,7 @@ public class PipelineStepApiTest {
         assertThat(steps.get(0).getTitle(), is("Set stage result to unstable"));
         assertThat(steps.get(1).getName(), is("oops-failure"));
         assertThat(steps.get(1).getTitle(), is("Error signal"));
-}
+    }
 
     @Test
     public void complexParallelBranchesHaveCorrectSteps() throws Exception {
@@ -211,8 +211,7 @@ public class PipelineStepApiTest {
         assertThat(steps.get(8).getTitle(), is("Print Message"));
         assertThat(steps.get(9).getName(), is("In stage Nested 2 - 2 within Branch C"));
         assertThat(steps.get(9).getTitle(), is("Print Message"));
-
-}
+    }
 
     @Test
     public void getAllStepsReturnsStepsForNestedStages() throws Exception {

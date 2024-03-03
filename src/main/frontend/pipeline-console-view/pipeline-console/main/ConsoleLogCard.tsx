@@ -1,23 +1,30 @@
 import React from "react";
 import { lazy, Suspense } from "react";
 import { styled } from "@mui/material/styles";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
+import {
+  Button,
+  Card,
+  CardContent,
+  CircularProgress,
+  Collapse,
+  Grid,
+  Typography,
+} from "@mui/material";
 import CardActionArea from "@mui/material/CardActions";
-import { CircularProgress } from "@mui/material";
-import Collapse from "@mui/material/Collapse";
 import IconButton, { IconButtonProps } from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
-import Grid from "@mui/material/Grid";
-import Button from "@mui/material/Button";
+import LinkIcon from "@mui/icons-material/Link";
 import { Tooltip } from "react-tippy";
 
-import { LOG_FETCH_SIZE } from "./PipelineConsoleModel";
-import LinkIcon from "@mui/icons-material/Link";
+import {
+  LOG_FETCH_SIZE,
+  StepInfo,
+  StepLogBufferInfo,
+} from "./PipelineConsoleModel";
 import ConsoleLogModal from "./ConsoleLogModal";
 import ResizeIcon from "./ResizeIcon";
+
+import { getStepStatus } from "../../../step-status/StepStatus";
 
 const ConsoleLogStream = lazy(() => import("./ConsoleLogStream"));
 
@@ -127,9 +134,31 @@ export class ConsoleLogCard extends React.Component<
     return `${(size / gib).toFixed(2)}GiB`;
   }
 
+  getStepHeaderTitle(stepTitle: string, stepId: string) {
+    if (stepTitle) {
+      return (
+        <Typography
+          className="log-card--text"
+          component="div"
+          key={`step-duration-text-${stepId}`}
+        >
+          {stepTitle}
+        </Typography>
+      );
+    } else {
+      return null;
+    }
+  }
+
   render() {
     const handleOpen = () => this.setState({ open: true });
     const handleClose = () => this.setState({ open: false });
+
+    const statusIcon = getStepStatus(
+      this.props.step.state,
+      this.props.step.completePercent,
+      10
+    );
 
     return (
       <Card
@@ -145,6 +174,7 @@ export class ConsoleLogCard extends React.Component<
           }`}
           key={`step-action-area-${this.props.step.id}`}
         >
+          {statusIcon}
           <Grid
             container
             wrap="nowrap"
@@ -165,22 +195,12 @@ export class ConsoleLogCard extends React.Component<
                 key={`step-name-text-${this.props.step.id}`}
                 sx={{ flexGrow: 3 }}
               >
-                {this.props.step.name
-                  .substring(0, this.props.step.name.lastIndexOf("-"))
-                  .trimEnd()}
+                {this.props.step.name}
               </Typography>
-              <Typography
-                className="log-card--text"
-                component="div"
-                key={`step-duration-text-${this.props.step.id}`}
-              >
-                {this.props.step.name
-                  .substring(
-                    this.props.step.name.lastIndexOf("-") + 1,
-                    this.props.step.name.length
-                  )
-                  .trimStart()}
-              </Typography>
+              {this.getStepHeaderTitle(
+                this.props.step.title,
+                this.props.step.id
+              )}
             </Grid>
             <Grid
               item
@@ -202,13 +222,15 @@ export class ConsoleLogCard extends React.Component<
               </Typography>
             </Grid>
 
-            <Grid item xs={1} alignItems="center" sx={{ margin: "auto" }}>
+            <Grid item xs={2} alignItems="center" sx={{ margin: "auto" }}>
               <Tooltip title="Open console log in full-screen mode">
                 <IconButton
                   aria-label={"Open console log in full-screen mode"}
                   onClick={handleOpen}
                 >
-                  <ResizeIcon />
+                  <div className="svg-icon--expand">
+                    <ResizeIcon />
+                  </div>
                 </IconButton>
               </Tooltip>
               <Tooltip title="View step as plain text">
@@ -218,11 +240,11 @@ export class ConsoleLogCard extends React.Component<
                   }
                   aria-label="View step as plain text"
                 >
-                  <LinkIcon />
+                  <LinkIcon className="svg-icon--expand" />
                 </IconButton>
               </Tooltip>
             </Grid>
-            <Grid item xs={2} alignItems="center" sx={{ margin: "auto" }}>
+            <Grid item xs={1} alignItems="center" sx={{ margin: "auto" }}>
               <Tooltip title="Open console log">
                 <ExpandMore
                   expand={this.props.isExpanded}

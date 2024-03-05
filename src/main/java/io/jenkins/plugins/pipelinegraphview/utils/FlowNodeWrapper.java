@@ -117,12 +117,12 @@ public class FlowNodeWrapper {
     }
 
     private static NodeType getNodeType(FlowNode node) {
-        if (PipelineNodeUtil.isStage(node)) {
-            return NodeType.STAGE;
+        if (node instanceof AtomNode) {
+            return NodeType.STEP;
         } else if (PipelineNodeUtil.isParallelBranch(node)) {
             return NodeType.PARALLEL;
-        } else if (node instanceof AtomNode) {
-            return NodeType.STEP;
+        } else if (PipelineNodeUtil.isStage(node)) {
+            return NodeType.STAGE;
         } else if (PipelineNodeUtil.isUnhandledException(node)) {
             return NodeType.UNHANDLED_EXCEPTION;
         }

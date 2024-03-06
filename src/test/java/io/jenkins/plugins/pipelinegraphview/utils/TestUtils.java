@@ -75,4 +75,8 @@ public class TestUtils {
     public static String collectStageStepsAsString(List<PipelineStep> steps, Function<PipelineStep, String> converter) {
         return steps.stream().map((PipelineStep step) -> converter.apply(step)).collect(Collectors.joining(","));
     }
+
+    public static Function<PipelineStage, String> stageNameAndStatus = (PipelineStage stage) -> {
+        return String.format("%s{%s}", stage.getName(), stage.getState());
+    };
 }

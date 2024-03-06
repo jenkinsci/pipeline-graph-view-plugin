@@ -1,5 +1,7 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import java.util.Locale;
+
 public class PipelineStep {
 
     private String name;
@@ -27,7 +29,7 @@ public class PipelineStep {
 
         this.id = id;
         this.name = name;
-        this.state = state;
+        this.state = state.toLowerCase(Locale.ROOT);
         this.completePercent = completePercent;
         this.type = type;
         this.title = title;

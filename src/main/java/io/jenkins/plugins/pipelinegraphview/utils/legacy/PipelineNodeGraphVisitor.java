@@ -53,11 +53,16 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author Vivek Pandey
- *     <p>Run your Jenkins instance with <code>-DNODE-DUMP-ENABLED</code> to turn on the logging
- *     when diagnosing bugs! You'll also need to have a logging config that enables debug for (at
- *     least) this class. Use <code>-Djava.util.logging.config.file=./logging.properties</code> to
- *     set a custom logging properties file from the command line, or do it from within the admin
- *     UI.
+ *         <p>
+ *         Run your Jenkins instance with <code>-DNODE-DUMP-ENABLED</code> to
+ *         turn on the logging
+ *         when diagnosing bugs! You'll also need to have a logging config that
+ *         enables debug for (at
+ *         least) this class. Use
+ *         <code>-Djava.util.logging.config.file=./logging.properties</code> to
+ *         set a custom logging properties file from the command line, or do it
+ *         from within the admin
+ *         UI.
  */
 public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements PipelineGraphBuilderApi {
     private final WorkflowRun run;
@@ -93,10 +98,12 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements Pi
 
     private StepStartNode agentNode = null;
 
-    // Collects instances of Action as we walk up the graph, to be drained when appropriate
+    // Collects instances of Action as we walk up the graph, to be drained when
+    // appropriate
     private Set<Action> pipelineActions;
 
-    // Temporary holding for actions waiting to be assigned to the wrapper for a branch
+    // Temporary holding for actions waiting to be assigned to the wrapper for a
+    // branch
     private Map<FlowNode /* is the branchStartNode */, Set<Action>> pendingActionsForBranches;
 
     private static final String PARALLEL_SYNTHETIC_STAGE_NAME = "Parallel";
@@ -114,7 +121,8 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements Pi
             try {
                 ForkScanner.visitSimpleChunks(execution.getCurrentHeads(), this, new StageChunkFinder());
             } catch (final Throwable t) {
-                // Log run ID, because the eventual exception handler (probably Stapler) isn't specific
+                // Log run ID, because the eventual exception handler (probably Stapler) isn't
+                // specific
                 // enough to do so
                 logger.error("Caught a "
                         + t.getClass().getSimpleName()
@@ -167,8 +175,9 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements Pi
                 && endNode instanceof StepEndNode
                 && PipelineNodeUtil.isStage(((StepEndNode) endNode).getStartNode())) {
 
-            // XXX: There seems to be bug in eventing, chunkEnd is sent twice for the same FlowNode
-            //     Lets peek and if the last one is same as this endNode then skip adding it
+            // XXX: There seems to be bug in eventing, chunkEnd is sent twice for the same
+            // FlowNode
+            // Lets peek and if the last one is same as this endNode then skip adding it
             FlowNode node = null;
             if (!nestedStages.empty()) {
                 node = nestedStages.peek();
@@ -179,7 +188,8 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements Pi
         }
         firstExecuted = null;
 
-        // if we're using marker-based (and not block-scoped) stages, add the last node as part of its
+        // if we're using marker-based (and not block-scoped) stages, add the last node
+        // as part of its
         // contents
         if (!(endNode instanceof BlockEndNode)) {
             atomNode(null, endNode, afterBlock, scanner);
@@ -210,7 +220,8 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements Pi
 
         TimingInfo times = null;
 
-        // TODO: remove chunk.getLastNode() != null check based on how JENKINS-40200 gets resolved
+        // TODO: remove chunk.getLastNode() != null check based on how JENKINS-40200
+        // gets resolved
         if (firstExecuted != null && chunk.getLastNode() != null) {
             times = StatusAndTiming.computeChunkTiming(
                     run, chunk.getPauseTimeMillis(), firstExecuted, chunk.getLastNode(), chunk.getNodeAfter());
@@ -227,7 +238,8 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements Pi
         } else if (firstExecuted == null) {
             status = new NodeRunStatus(GenericStatus.NOT_EXECUTED);
         } else if (chunk.getLastNode() != null) {
-            // StatusAndTiming.computeChunkStatus2 seems to return wrong status for parallel sequential
+            // StatusAndTiming.computeChunkStatus2 seems to return wrong status for parallel
+            // sequential
             // stages
             // so check check if active and in the case of nested sequential
             if (parallelNestedStages && chunk.getFirstNode().isActive()) {
@@ -423,7 +435,8 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements Pi
                 dump("\t\tAdding " + branchActions.size() + " actions to branch id: " + branch.getId());
             }
 
-            // Check the stack for this branch, for declarative pipelines it should be non-empty even if
+            // Check the stack for this branch, for declarative pipelines it should be
+            // non-empty even if
             // only 1 stage
             Stack<FlowNodeWrapper> stack = stackPerEnd.get(endNode.getId());
             if (stack != null && !stack.isEmpty()) {
@@ -434,16 +447,19 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements Pi
 
                 if (stack.size() == 1) {
                     FlowNodeWrapper firstNodeWrapper = stack.pop();
-                    // We've got a single non-nested stage for this branch. We're going to discard it from our
+                    // We've got a single non-nested stage for this branch. We're going to discard
+                    // it from our
                     // graph,
-                    // since we use the node for the branch itself, which has been created with the same
+                    // since we use the node for the branch itself, which has been created with the
+                    // same
                     // name...
 
                     if (isNodeVisitorDumpEnabled) {
                         dump("\t\tSingle-stage branch");
                     }
 
-                    // ...but first we need to poach any actions from the stage node we'll be discarding
+                    // ...but first we need to poach any actions from the stage node we'll be
+                    // discarding
                     branchActions.addAll(firstNodeWrapper.getPipelineActions());
 
                     if (nextStage != null) {
@@ -456,7 +472,8 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements Pi
                         // purposes
                         FlowNodeWrapper firstNodeWrapper = stack.pop();
 
-                        // Usually ignore firstNodeWrapper, but if the first stage has a different name...
+                        // Usually ignore firstNodeWrapper, but if the first stage has a different
+                        // name...
                         if (!StringUtils.equals(firstNodeWrapper.getDisplayName(), branch.getDisplayName())) {
                             // we record this node so the UI can show the label for the branch...
                             if (isNodeVisitorDumpEnabled) {
@@ -475,7 +492,8 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements Pi
                             branch.addEdge(firstNodeWrapper);
                             firstNodeWrapper.addParent(branch);
                             nodes.add(firstNodeWrapper);
-                            // Note that there's no edge from this labelling node to the rest of the branch stages
+                            // Note that there's no edge from this labelling node to the rest of the branch
+                            // stages
                         }
                     }
                     // Declarative and scripted parallel pipeline scenario
@@ -641,7 +659,8 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements Pi
     }
 
     /**
-     * Find any Actions on this node, and add them to the pipelineActions collection until we can
+     * Find any Actions on this node, and add them to the pipelineActions collection
+     * until we can
      * attach them to a FlowNodeWrapper.
      */
     protected void accumulatePipelineActions(FlowNode node) {
@@ -682,7 +701,8 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements Pi
     }
 
     /**
-     * Instead of looking up by id, sometimes the IDs are wrong during build, so we look based on the
+     * Instead of looking up by id, sometimes the IDs are wrong during build, so we
+     * look based on the
      * parentage and display name.
      */
     private static Optional<FlowNodeWrapper> findNodeWrapperByParentageIn(
@@ -721,7 +741,8 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements Pi
     }
 
     /**
-     * Create synthetic stage that wraps a parallel block at top level, that is not enclosed inside a
+     * Create synthetic stage that wraps a parallel block at top level, that is not
+     * enclosed inside a
      * stage.
      */
     private @Nullable FlowNodeWrapper createParallelSyntheticNode() {
@@ -752,7 +773,8 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements Pi
         FlowNode syntheticNode = new FlowNode(firstBranch.getNode().getExecution(), syntheticNodeId, parents) {
             @Override
             public void save() throws IOException {
-                // no-op to avoid JENKINS-45892 violations from serializing the synthetic FlowNode.
+                // no-op to avoid JENKINS-45892 violations from serializing the synthetic
+                // FlowNode.
             }
 
             @Override
@@ -826,10 +848,15 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements Pi
     /**
      * Create id of synthetic stage in a deterministic base.
      *
-     * <p>For example, an orphan parallel block with id 12 (appears top level not wrapped inside a
-     * stage) gets wrapped in a synthetic stage with id: 12-parallel-synthetic. Later client calls
-     * nodes API using this id: /nodes/12-parallel-synthetic/ would correctly pick the synthetic stage
-     * wrapping parallel block 12 by doing a lookup nodeMap.get("12-parallel-synthetic")
+     * <p>
+     * For example, an orphan parallel block with id 12 (appears top level not
+     * wrapped inside a
+     * stage) gets wrapped in a synthetic stage with id: 12-parallel-synthetic.
+     * Later client calls
+     * nodes API using this id: /nodes/12-parallel-synthetic/ would correctly pick
+     * the synthetic stage
+     * wrapping parallel block 12 by doing a lookup
+     * nodeMap.get("12-parallel-synthetic")
      */
     private @NonNull String createSyntheticStageId(@NonNull String firstNodeId, @NonNull String syntheticStageName) {
         return String.format("%s-%s-synthetic", firstNodeId, syntheticStageName.toLowerCase());

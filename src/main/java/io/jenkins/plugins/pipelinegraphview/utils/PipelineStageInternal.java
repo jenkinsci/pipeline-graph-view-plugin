@@ -2,6 +2,7 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 
 public class PipelineStageInternal {
@@ -34,7 +35,7 @@ public class PipelineStageInternal {
         this.id = id;
         this.name = name;
         this.parents = parents;
-        this.state = state;
+        this.state = state.toLowerCase(Locale.ROOT);
         this.completePercent = completePercent;
         this.type = type;
         this.title = title;

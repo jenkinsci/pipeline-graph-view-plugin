@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.*;
 
 import hudson.console.AnnotatedLargeText;
 import hudson.model.Result;
+import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import java.util.List;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;

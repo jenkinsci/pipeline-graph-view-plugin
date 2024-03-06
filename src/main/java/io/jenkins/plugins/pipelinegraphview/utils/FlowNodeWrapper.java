@@ -5,6 +5,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.Action;
 import hudson.model.Result;
+import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunResult;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunState;
 import java.io.Serializable;
@@ -15,8 +16,12 @@ import java.util.Comparator;
 import java.util.List;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.LabelAction;
+import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
 import org.jenkinsci.plugins.workflow.graph.AtomNode;
+import org.jenkinsci.plugins.workflow.graph.BlockEndNode;
+import org.jenkinsci.plugins.workflow.graph.BlockStartNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
+import org.jenkinsci.plugins.workflow.graph.FlowStartNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException;
@@ -62,8 +67,9 @@ public class FlowNodeWrapper {
         PARALLEL,
         PARALLEL_BLOCK,
         STEP,
-        UNHANDLED_EXCEPTION,
         STEPS_BLOCK,
+        UNHANDLED_EXCEPTION,
+        PIPELINE_START,
     }
 
     private final FlowNode node;
@@ -139,11 +145,18 @@ public class FlowNodeWrapper {
             return NodeType.STAGE;
         } else if (PipelineNodeUtil.isParallelBranch(node)) {
             return NodeType.PARALLEL;
+        } else if (PipelineNodeUtil.isParallelBlock(node)) {
+            return NodeType.PARALLEL_BLOCK;
         } else if (node instanceof AtomNode) {
             return NodeType.STEP;
+        } else if (node instanceof StepStartNode) {
+            return NodeType.STEPS_BLOCK;
+        } else if (node instanceof FlowStartNode) {
+            return NodeType.PIPELINE_START;
         } else if (PipelineNodeUtil.isUnhandledException(node)) {
             return NodeType.UNHANDLED_EXCEPTION;
         }
+
         throw new IllegalArgumentException(
                 String.format("Unknown FlowNode %s, type: %s", node.getId(), node.getClass()));
     }
@@ -163,6 +176,10 @@ public class FlowNodeWrapper {
         return timingInfo;
     }
 
+    public @NonNull TimingInfo setTiming() {
+        return timingInfo;
+    }
+
     public @NonNull String getId() {
         return node.getId();
     }
@@ -172,6 +189,13 @@ public class FlowNodeWrapper {
     }
 
     public NodeType getType() {
+        return type;
+    }
+
+    /* Parallel block appear as StepStartNodes in the tree. We might know know if it's a  don't kno
+     *
+     */
+    public NodeType setType() {
         return type;
     }
 
@@ -283,6 +307,27 @@ public class FlowNodeWrapper {
         this.blockErrorAction = blockErrorAction;
     }
 
+    public static boolean isStart(FlowNode node) {
+        return node instanceof BlockStartNode;
+    }
+
+    public static boolean isEnd(FlowNode node) {
+        return node instanceof BlockEndNode;
+    }
+
+    public boolean isStep() {
+        return this.type == NodeType.STEP;
+    }
+
+    public boolean isStepsBlock() {
+        return this.type == NodeType.STEPS_BLOCK;
+    }
+
+    /*
+    public boolean isExecuted() {
+        return NotExecutedNodeAction.isExecuted(node);
+    }*/
+
     /**
      * Returns Action instances that were attached to the associated FlowNode, or to any of its
      * children not represented in the graph. Filters by class to mimic Item.getActions(class).
@@ -329,9 +374,29 @@ public class FlowNodeWrapper {
 
         @Override
         public int compare(FlowNodeWrapper a, FlowNodeWrapper b) {
-            return Integer.compare(
-                    Integer.parseInt(a.getId().split("-")[0]),
-                    Integer.parseInt(b.getId().split("-")[0]));
+            return FlowNodeWrapper.compareIds(a.getId(), b.getId());
         }
+    }
+
+    public static class FlowNodeComparator implements Comparator<FlowNode>, Serializable {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public int compare(FlowNode a, FlowNode b) {
+            return FlowNodeWrapper.compareIds(a.getId(), b.getId());
+        }
+    }
+
+    public static class NodeIdComparator implements Comparator<String>, Serializable {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public int compare(String a, String b) {
+            return FlowNodeWrapper.compareIds(a, b);
+        }
+    }
+
+    public static int compareIds(String ida, String idb) {
+        return Integer.compare(Integer.parseInt(ida), Integer.parseInt(idb));
     }
 }

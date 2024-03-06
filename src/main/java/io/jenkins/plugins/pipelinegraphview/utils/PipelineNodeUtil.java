@@ -132,7 +132,8 @@ public class PipelineNodeUtil {
     }
 
     /**
-     * Gives cause of block for declarative style plugin where agent (node block) is declared inside a
+     * Gives cause of block for declarative style plugin where agent (node block) is
+     * declared inside a
      * stage.
      *
      * <pre>
@@ -149,9 +150,9 @@ public class PipelineNodeUtil {
      *          }
      *      }
      *    }
-     *  </pre>
+     * </pre>
      *
-     * @param stage stage's {@link FlowNode}
+     * @param stage     stage's {@link FlowNode}
      * @param nodeBlock agent or node block's {@link FlowNode}
      * @return cause of block if present, nul otherwise
      */
@@ -201,8 +202,18 @@ public class PipelineNodeUtil {
         return (pauseAction != null && pauseAction.isPaused());
     }
 
+    public static boolean isParallelBlock(@NonNull FlowNode node) {
+        /*
+         * TODO: Find a better method - allowed list of labels. Seems to only have:
+         * org.jenkinsci.plugins.workflow.support.actions.LogStorageAction
+         * org.jenkinsci.plugins.workflow.actions.TimingAction
+         */
+        return getDisplayName(node).startsWith("Execute in parallel");
+    }
+
     /**
-     * Determine if the given {@link FlowNode} is the initial {@link StepStartNode} for an {@link
+     * Determine if the given {@link FlowNode} is the initial {@link StepStartNode}
+     * for an {@link
      * ExecutorStep}.
      *
      * @param node a possibly null {@link FlowNode}
@@ -219,9 +230,13 @@ public class PipelineNodeUtil {
         return false;
     }
 
-    /* Get the AnnotatedLargeText for a given node.
+    /*
+     * Get the AnnotatedLargeText for a given node.
+     *
      * @param node a possibly null {@link FlowNode}
-     * @return The AnnotatedLargeText object representing the log text for this node, or null.
+     *
+     * @return The AnnotatedLargeText object representing the log text for this
+     * node, or null.
      */
     public static AnnotatedLargeText<? extends FlowNode> getLogText(@Nullable FlowNode node) {
         if (node != null) {
@@ -233,24 +248,34 @@ public class PipelineNodeUtil {
         return null;
     }
 
-    /* Get the generated log text for a given node.
+    /*
+     * Get the generated log text for a given node.
+     *
      * @param log The AnnotatedLargeText object for a given node.
-     * @return The AnnotatedLargeText object representing the log text for this node, or null.
+     *
+     * @return The AnnotatedLargeText object representing the log text for this
+     * node, or null.
      */
     public static String convertLogToString(AnnotatedLargeText<? extends FlowNode> log) throws IOException {
         return convertLogToString(log, 0L, false);
     }
 
-    /* Get the generated log text for a given node.
+    /*
+     * Get the generated log text for a given node.
+     *
      * @param log The AnnotatedLargeText object for a given node.
+     *
      * @param startByte The byte to start parsing from.
-     * @return The AnnotatedLargeText object representing the log text for this node, or null.
+     *
+     * @return The AnnotatedLargeText object representing the log text for this
+     * node, or null.
      */
     @SuppressWarnings("RV_RETURN_VALUE_IGNORED")
     public static String convertLogToString(AnnotatedLargeText<? extends FlowNode> log, Long startByte, boolean html)
             throws IOException {
         Writer stringWriter = new StringBuilderWriter();
-        // NOTE: This returns the total length of the console log, not the received bytes.
+        // NOTE: This returns the total length of the console log, not the received
+        // bytes.
         if (html) {
             log.writeHtmlTo(startByte, stringWriter);
         } else {
@@ -259,8 +284,11 @@ public class PipelineNodeUtil {
         return stringWriter.toString();
     }
 
-    /* The exception text from aa FlowNode.
+    /*
+     * The exception text from aa FlowNode.
+     *
      * @param node a possibly null {@link FlowNode}
+     *
      * @return A string representing the exception thrown from this node, or null.
      */
     public static String getExceptionText(@Nullable FlowNode node) {
@@ -270,7 +298,8 @@ public class PipelineNodeUtil {
             if (error != null) {
                 Throwable exception = error.getError();
                 if (PipelineNodeUtil.isJenkinsFailureException(exception)) {
-                    // If this is a Jenkins exception to mark a build failure then only return the mesage -
+                    // If this is a Jenkins exception to mark a build failure then only return the
+                    // mesage -
                     // the stack trace is unimportant as the message will be attached to the step.
                     log = exception.getMessage();
                 } else {

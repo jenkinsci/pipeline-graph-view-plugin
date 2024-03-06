@@ -5,8 +5,8 @@ import static org.hamcrest.Matchers.*;
 
 import hudson.Functions;
 import hudson.model.Result;
+import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
-import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import java.util.List;
 import net.sf.json.JSONObject;

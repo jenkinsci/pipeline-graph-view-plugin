@@ -7,7 +7,6 @@ import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
 import java.util.List;
 import java.util.function.Function;
-import java.util.logging.Logger;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.Rule;
@@ -18,8 +17,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 public class PipelineStepApiTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
-
-    private static final Logger LOGGER = Logger.getLogger(PipelineStepApiTest.class.getName());
 
     @Test
     public void unstableSmokes() throws Exception {
@@ -58,7 +55,8 @@ public class PipelineStepApiTest {
 
     @Test
     public void complexParallelBranchesHaveCorrectSteps() throws Exception {
-        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
+        // (as it takes a
         // long time)
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "complexParallelSmokes", "complexParallelSmokes.jenkinsfile", Result.SUCCESS);
@@ -117,7 +115,8 @@ public class PipelineStepApiTest {
 
     @Test
     public void nestedStagesHaveCorrectSteps() throws Exception {
-        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
+        // (as it takes a
         // long time)
         WorkflowRun run = TestUtils.createAndRunJob(j, "nestedStages", "nestedStages.jenkinsfile", Result.SUCCESS);
 
@@ -164,7 +163,8 @@ public class PipelineStepApiTest {
 
     @Test
     public void getAllStepsReturnsStepsForComplexParallelBranches() throws Exception {
-        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
+        // (as it takes a
         // long time)
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "complexParallelSmokes", "complexParallelSmokes.jenkinsfile", Result.SUCCESS);
@@ -189,7 +189,8 @@ public class PipelineStepApiTest {
 
     @Test
     public void getAllStepsReturnsStepsForNestedStages() throws Exception {
-        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
+        // (as it takes a
         // long time)
         WorkflowRun run = TestUtils.createAndRunJob(j, "nestedStages", "nestedStages.jenkinsfile", Result.SUCCESS);
 
@@ -205,7 +206,8 @@ public class PipelineStepApiTest {
     @Issue("GH#92")
     @Test
     public void githubIssue92RegressionTest() throws Exception {
-        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
+        // (as it takes a
         // long time)
         WorkflowRun run = TestUtils.createAndRunJob(j, "githubIssue92", "githubIssue92.jenkinsfile", Result.SUCCESS);
 
@@ -265,7 +267,8 @@ public class PipelineStepApiTest {
     @Issue("GH#213")
     @Test
     public void githubIssue213RegressionTest_scriptedError() throws Exception {
-        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
+        // (as it takes a
         // long time)
         WorkflowRun run = TestUtils.createAndRunJob(j, "githubIssue213", "unstableSmokes.jenkinsfile", Result.FAILURE);
 
@@ -286,7 +289,8 @@ public class PipelineStepApiTest {
     @Issue("GH#213")
     @Test
     public void githubIssue213RegressionTest_errorStep() throws Exception {
-        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
+        // (as it takes a
         // long time)
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "githubIssue213_errorStep", "unstableSmokes.jenkinsfile", Result.FAILURE);
@@ -308,15 +312,13 @@ public class PipelineStepApiTest {
     @Issue("GH#213")
     @Test
     public void githubIssue213RegressionTest_pipelineCallsUndefinedVar() throws Exception {
-        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
+        // (as it takes a
         // long time)
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "githubIssue213_callsUnknownVariable", "callsUnknownVariable.jenkinsfile", Result.FAILURE);
 
         PipelineStepApi api = new PipelineStepApi(run);
-
-        String failureStage =
-                TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
 
         List<PipelineStep> steps = api.getAllSteps().getSteps();
         assertThat(steps, hasSize(2));
@@ -327,7 +329,8 @@ public class PipelineStepApiTest {
     @Issue("GH#274")
     @Test
     public void githubIssue274RegressionTest_suppressFlowInterruptedExceptions() throws Exception {
-        // It's a bit dirty, but do this in one test to avoid reloading and rerunning the job (as it takes a
+        // It's a bit dirty, but do this in one test to avoid reloading and rerunning
+        // the job (as it takes a
         // long time)
         WorkflowRun run = TestUtils.createAndRunJob(j, "githubIssue274", "githubIssue274.jenkinsfile", Result.FAILURE);
 
@@ -359,7 +362,8 @@ public class PipelineStepApiTest {
         Function<PipelineStep, String> converter = s -> s.getStageId() + "->" + s.getName();
         String stepsStringRunning = TestUtils.collectStageStepsAsString(steps, converter);
 
-        // Wait for Pipeline to end (terminating it means end nodes might not be created).
+        // Wait for Pipeline to end (terminating it means end nodes might not be
+        // created).
         j.waitForCompletion(run);
 
         steps = new PipelineStepApi(run).getAllSteps().getSteps();
@@ -367,7 +371,7 @@ public class PipelineStepApiTest {
         String[] expected = stepsStringRunning.split(",");
         String[] actual = stepsStringFinished.split(",");
         for (int i = 0; i < expected.length; i++) {
-            assertThat(expected[i], equalTo(actual[i]));
+            assertThat(actual[i], equalTo(expected[i]));
         }
     }
 
@@ -376,6 +380,6 @@ public class PipelineStepApiTest {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "pipelineWithSyntaxError", "pipelineWithSyntaxError.jenkinsfile", Result.FAILURE);
         List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
-        assertThat(steps, hasSize(0));
+        assertThat(steps, hasSize(1));
     }
 }

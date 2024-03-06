@@ -39,7 +39,7 @@ public class PipelineStage {
         this.id = id;
         this.name = name;
         this.children = children;
-        this.state = state;
+        this.state = state.toLowerCase();
         this.completePercent = completePercent;
         this.type = type;
         this.title = title;

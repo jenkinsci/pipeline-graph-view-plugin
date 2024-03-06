@@ -53,7 +53,8 @@ public class PipelineStepApiLegacyTest {
 
     @Test
     public void complexParallelBranchesHaveCorrectSteps() throws Exception {
-        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
+        // (as it takes a
         // long time)
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "complexParallelSmokes", "complexParallelSmokes.jenkinsfile", Result.SUCCESS);
@@ -112,7 +113,8 @@ public class PipelineStepApiLegacyTest {
 
     @Test
     public void nestedStagesHaveCorrectSteps() throws Exception {
-        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
+        // (as it takes a
         // long time)
         WorkflowRun run = TestUtils.createAndRunJob(j, "nestedStages", "nestedStages.jenkinsfile", Result.SUCCESS);
 
@@ -159,7 +161,8 @@ public class PipelineStepApiLegacyTest {
 
     @Test
     public void getAllStepsReturnsStepsForComplexParallelBranches() throws Exception {
-        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
+        // (as it takes a
         // long time)
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "complexParallelSmokes", "complexParallelSmokes.jenkinsfile", Result.SUCCESS);
@@ -184,7 +187,8 @@ public class PipelineStepApiLegacyTest {
 
     @Test
     public void getAllStepsReturnsStepsForNestedStages() throws Exception {
-        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
+        // (as it takes a
         // long time)
         WorkflowRun run = TestUtils.createAndRunJob(j, "nestedStages", "nestedStages.jenkinsfile", Result.SUCCESS);
 
@@ -200,7 +204,8 @@ public class PipelineStepApiLegacyTest {
     @Issue("GH#92")
     @Test
     public void githubIssue92RegressionTest() throws Exception {
-        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
+        // (as it takes a
         // long time)
         WorkflowRun run = TestUtils.createAndRunJob(j, "githubIssue92", "githubIssue92.jenkinsfile", Result.SUCCESS);
 
@@ -260,7 +265,8 @@ public class PipelineStepApiLegacyTest {
     @Issue("GH#213")
     @Test
     public void githubIssue213RegressionTest_scriptedError() throws Exception {
-        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
+        // (as it takes a
         // long time)
         WorkflowRun run = TestUtils.createAndRunJob(j, "githubIssue213", "unstableSmokes.jenkinsfile", Result.FAILURE);
 
@@ -281,7 +287,8 @@ public class PipelineStepApiLegacyTest {
     @Issue("GH#213")
     @Test
     public void githubIssue213RegressionTest_errorStep() throws Exception {
-        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
+        // (as it takes a
         // long time)
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "githubIssue213_errorStep", "unstableSmokes.jenkinsfile", Result.FAILURE);
@@ -303,15 +310,13 @@ public class PipelineStepApiLegacyTest {
     @Issue("GH#213")
     @Test
     public void githubIssue213RegressionTest_pipelineCallsUndefinedVar() throws Exception {
-        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
+        // (as it takes a
         // long time)
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "githubIssue213_callsUnknownVariable", "callsUnknownVariable.jenkinsfile", Result.FAILURE);
 
         PipelineStepApi api = new PipelineStepApi(run);
-
-        String failureStage =
-                TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
 
         List<PipelineStep> steps = api.getAllSteps().getSteps();
         assertThat(steps, hasSize(2));
@@ -324,7 +329,8 @@ public class PipelineStepApiLegacyTest {
     public void githubIssue274RegressionTest_suppressFlowInterruptedExceptions() throws Exception {
         TestUtils.createJob(j, "simpleError", "simpleError.jenkinsfile");
 
-        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
+        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
+        // (as it takes a
         // long time)
         WorkflowRun run = TestUtils.createAndRunJob(j, "githubIssue274", "githubIssue274.jenkinsfile", Result.FAILURE);
 

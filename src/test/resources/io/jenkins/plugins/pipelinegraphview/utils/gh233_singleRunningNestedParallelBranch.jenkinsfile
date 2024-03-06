@@ -14,7 +14,7 @@ pipeline {
                                     sleep(1)
                                     echo "Starting sleep A1..."
                                     // TODO: replace with some kind of triggers (e.g. loop until EnvVar set).
-                                    sleep(3)
+                                    sleep(1)
                                 }
                             )
                             echo("Finished A")

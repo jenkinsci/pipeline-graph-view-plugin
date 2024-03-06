@@ -1,6 +1,7 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
 import hudson.Util;
+import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.legacy.PipelineStepVisitor;
 import java.util.List;
 import java.util.Locale;

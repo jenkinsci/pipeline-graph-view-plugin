@@ -6,6 +6,7 @@ import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.Item;
 import hudson.model.Queue;
+import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.legacy.PipelineNodeGraphVisitor;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,8 +41,7 @@ public class PipelineGraphApi {
             return null;
         }
 
-        Queue.Item item =
-                Queue.getInstance().schedule2(run.getParent(), 0, causeAction).getItem();
+        Queue.Item item = Queue.getInstance().schedule2(run.getParent(), 0, causeAction).getItem();
         if (item == null) {
             return null;
         }
@@ -52,9 +52,7 @@ public class PipelineGraphApi {
     private List<PipelineStageInternal> getPipelineNodes(PipelineGraphBuilderApi builder) {
         return builder.getPipelineNodes().stream()
                 .map(flowNodeWrapper -> {
-                    String state = flowNodeWrapper.getStatus().getResult().name();
-                    // TODO: Why do we do this? Seems like it will return uppercase for some states and
-                    // lowercase for others?
+                    String state = flowNodeWrapper.getStatus().getResult().name().toLowerCase(Locale.ROOT);
                     if (flowNodeWrapper.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
                         state = flowNodeWrapper.getStatus().getState().name().toLowerCase(Locale.ROOT);
                     }
@@ -80,14 +78,15 @@ public class PipelineGraphApi {
 
         return id -> {
             List<String> orDefault = stageToChildrenMap.getOrDefault(id, emptyList());
-            List<PipelineStage> children =
-                    orDefault.stream().map(mapper(stageMap, stageToChildrenMap)).collect(Collectors.toList());
+            List<PipelineStage> children = orDefault.stream().map(mapper(stageMap, stageToChildrenMap))
+                    .collect(Collectors.toList());
             return stageMap.get(id).toPipelineStage(children);
         };
     }
 
     private PipelineGraph createTree(PipelineGraphBuilderApi builder) {
-        // We want to remap children here, so we don't update the parents of the original objects - as
+        // We want to remap children here, so we don't update the parents of the
+        // original objects - as
         // these are completely new representations.
         List<PipelineStageInternal> stages = getPipelineNodes(builder);
 
@@ -101,7 +100,8 @@ public class PipelineGraphApi {
 
         FlowExecution execution = run.getExecution();
         if (execution == null) {
-            // If we don't have an execution - e.g. if the Pipeline has a syntax error - then return an
+            // If we don't have an execution - e.g. if the Pipeline has a syntax error -
+            // then return an
             // empty graph.
             return new PipelineGraph(new ArrayList<>(), false);
         }
@@ -109,8 +109,8 @@ public class PipelineGraphApi {
             if (stage.getParents().isEmpty()) {
                 stageToChildrenMap.put(stage.getId(), new ArrayList<>());
             } else {
-                List<String> parentChildren =
-                        stageToChildrenMap.getOrDefault(stage.getParents().get(0), new ArrayList<String>());
+                List<String> parentChildren = stageToChildrenMap.getOrDefault(stage.getParents().get(0),
+                        new ArrayList<String>());
                 parentChildren.add(stage.getId());
                 childNodes.add(stage.getId());
                 stageToChildrenMap.put(stage.getParents().get(0), parentChildren);
@@ -119,10 +119,10 @@ public class PipelineGraphApi {
 
         List<PipelineStage> stageResults = stageMap.values().stream()
                 .map(pipelineStageInternal -> {
-                    List<PipelineStage> children =
-                            stageToChildrenMap.getOrDefault(pipelineStageInternal.getId(), emptyList()).stream()
-                                    .map(mapper(stageMap, stageToChildrenMap))
-                                    .collect(Collectors.toList());
+                    List<PipelineStage> children = stageToChildrenMap
+                            .getOrDefault(pipelineStageInternal.getId(), emptyList()).stream()
+                            .map(mapper(stageMap, stageToChildrenMap))
+                            .collect(Collectors.toList());
 
                     return pipelineStageInternal.toPipelineStage(children);
                 })
@@ -133,13 +133,17 @@ public class PipelineGraphApi {
 
     /*
      * Create a shallow Tree from the GraphVisitor.
-     * This creates a shallower representation of the DAG - similar to . Here children stages will become siblings of the parent.
-     *   Parent -> ChildA -> ChildB
+     * This creates a shallower representation of the DAG - similar to . Here
+     * children stages will become siblings of the parent.
+     * Parent -> ChildA -> ChildB
      * instead of:
-     *   Parent
-     *   |-> ChildA -> ChildC
+     * Parent
+     * |-> ChildA -> ChildC
      * Parallel branches will still appear as children ther parent stage.
-     * Original source: https://github.com/jenkinsci/workflow-support-plugin/blob/master/src/main/java/org/jenkinsci/plugins/workflow/support/visualization/table/FlowGraphTable.java#L126
+     * Original source:
+     * https://github.com/jenkinsci/workflow-support-plugin/blob/master/src/main/
+     * java/org/jenkinsci/plugins/workflow/support/visualization/table/
+     * FlowGraphTable.java#L126
      */
     private PipelineGraph createShallowTree(PipelineGraphBuilderApi builder) {
         List<PipelineStageInternal> stages = getPipelineNodes(builder);
@@ -154,7 +158,8 @@ public class PipelineGraphApi {
 
         FlowExecution execution = run.getExecution();
         if (execution == null) {
-            // If we don't have an execution - e.g. if the Pipeline has a syntax error - then return an
+            // If we don't have an execution - e.g. if the Pipeline has a syntax error -
+            // then return an
             // empty graph.
             return new PipelineGraph(new ArrayList<>(), false);
         }
@@ -166,9 +171,11 @@ public class PipelineGraphApi {
                 }
                 List<String> ancestors = getAncestors(stage, stageMap);
                 String treeParentId = null;
-                // Compare the list of GraphVistor ancestors to the IDs of the enclosing node in the
+                // Compare the list of GraphVistor ancestors to the IDs of the enclosing node in
+                // the
                 // execution.
-                // If a node encloses another node, it means it's a tree parent, so the first ancestor
+                // If a node encloses another node, it means it's a tree parent, so the first
+                // ancestor
                 // ID we find
                 // which matches an enclosing node then it's the stages tree parent.
                 List<String> enclosingIds = stageNode.getAllEnclosingIds();
@@ -183,7 +190,8 @@ public class PipelineGraphApi {
                     childrenOfParent.add(stage.getId());
                     stageToChildrenMap.put(treeParentId, childrenOfParent);
                 } else {
-                    // If we can't find a matching parent in the execution and GraphVistor then this is a
+                    // If we can't find a matching parent in the execution and GraphVistor then this
+                    // is a
                     // top level node.
                     stageToChildrenMap.put(stage.getId(), new ArrayList<>());
                     topLevelStageIds.add(stage.getId());
@@ -199,10 +207,10 @@ public class PipelineGraphApi {
 
         List<PipelineStage> stageResults = stageMap.values().stream()
                 .map(pipelineStageInternal -> {
-                    List<PipelineStage> children =
-                            stageToChildrenMap.getOrDefault(pipelineStageInternal.getId(), emptyList()).stream()
-                                    .map(mapper(stageMap, stageToChildrenMap))
-                                    .collect(Collectors.toList());
+                    List<PipelineStage> children = stageToChildrenMap
+                            .getOrDefault(pipelineStageInternal.getId(), emptyList()).stream()
+                            .map(mapper(stageMap, stageToChildrenMap))
+                            .collect(Collectors.toList());
 
                     return pipelineStageInternal.toPipelineStage(children);
                 })
@@ -228,17 +236,23 @@ public class PipelineGraphApi {
         return createTree(new PipelineNodeGraphAdapter(run));
     }
 
-    /* Get a shallower (less nested) representation of the DAG.
-     *  This might miss some inforemation, but looks more like the previous implementation.
-     *  Currently used for the legacy tests that check the Adapater output looks like the legacy one.
+    /*
+     * Get a shallower (less nested) representation of the DAG.
+     * This might miss some inforemation, but looks more like the previous
+     * implementation.
+     * Currently used for the legacy tests that check the Adapater output looks like
+     * the legacy one.
      */
     protected PipelineGraph createShallowTree() {
-        // Make add non-parallel branches siblings to their parents (remove nesting of regular stages).
+        // Make add non-parallel branches siblings to their parents (remove nesting of
+        // regular stages).
         return createShallowTree(new PipelineNodeGraphAdapter(run));
     }
 
-    /** Creates the tree using the legacy PipelineNodeGraphVisitor class.
-     *  This is useful for testing and could be useful for bridging the gap between representations.
+    /**
+     * Creates the tree using the legacy PipelineNodeGraphVisitor class.
+     * This is useful for testing and could be useful for bridging the gap between
+     * representations.
      */
     protected PipelineGraph createLegacyTree() {
         return createShallowTree(new PipelineNodeGraphVisitor(run));

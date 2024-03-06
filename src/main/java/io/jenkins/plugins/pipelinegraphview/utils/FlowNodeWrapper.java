@@ -31,11 +31,16 @@ import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
 public class FlowNodeWrapper {
 
     /**
-     * Checks to see if `this` and `that` probably represent the same underlying pipeline graph node
-     * as far as the user is concerned. This is sloppier than an exact name and ID match because
-     * {@link PipelineNodeGraphAdapter} as of 2019-05-17 can return some nodes with different IDs
-     * during a build as opposed to once the build is complete. As such we check name, type, and
-     * firstParent. But we need to check firstParent the same way for the same reason.
+     * Checks to see if `this` and `that` probably represent the same underlying
+     * pipeline graph node
+     * as far as the user is concerned. This is sloppier than an exact name and ID
+     * match because
+     * {@link PipelineNodeGraphAdapter} as of 2019-05-17 can return some nodes with
+     * different IDs
+     * during a build as opposed to once the build is complete. As such we check
+     * name, type, and
+     * firstParent. But we need to check firstParent the same way for the same
+     * reason.
      *
      * @param that
      * @return
@@ -141,14 +146,14 @@ public class FlowNodeWrapper {
     }
 
     private static NodeType getNodeType(FlowNode node) {
-        if (PipelineNodeUtil.isStage(node)) {
+        if (node instanceof AtomNode) {
+            return NodeType.STEP;
+        } else if (PipelineNodeUtil.isStage(node)) {
             return NodeType.STAGE;
         } else if (PipelineNodeUtil.isParallelBranch(node)) {
             return NodeType.PARALLEL;
         } else if (PipelineNodeUtil.isParallelBlock(node)) {
             return NodeType.PARALLEL_BLOCK;
-        } else if (node instanceof AtomNode) {
-            return NodeType.STEP;
         } else if (node instanceof StepStartNode) {
             return NodeType.STEPS_BLOCK;
         } else if (node instanceof FlowStartNode) {
@@ -192,7 +197,9 @@ public class FlowNodeWrapper {
         return type;
     }
 
-    /* Parallel block appear as StepStartNodes in the tree. We might know know if it's a  don't kno
+    /*
+     * Parallel block appear as StepStartNodes in the tree. We might know know if
+     * it's a don't kno
      *
      */
     public NodeType setType() {
@@ -324,13 +331,16 @@ public class FlowNodeWrapper {
     }
 
     /*
-    public boolean isExecuted() {
-        return NotExecutedNodeAction.isExecuted(node);
-    }*/
+     * public boolean isExecuted() {
+     * return NotExecutedNodeAction.isExecuted(node);
+     * }
+     */
 
     /**
-     * Returns Action instances that were attached to the associated FlowNode, or to any of its
-     * children not represented in the graph. Filters by class to mimic Item.getActions(class).
+     * Returns Action instances that were attached to the associated FlowNode, or to
+     * any of its
+     * children not represented in the graph. Filters by class to mimic
+     * Item.getActions(class).
      */
     public <T extends Action> Collection<T> getPipelineActions(Class<T> clazz) {
         if (pipelineActions == null) {
@@ -346,7 +356,8 @@ public class FlowNodeWrapper {
     }
 
     /**
-     * Returns Action instances that were attached to the associated FlowNode, or to any of its
+     * Returns Action instances that were attached to the associated FlowNode, or to
+     * any of its
      * children not represented in the graph.
      */
     public Collection<Action> getPipelineActions() {

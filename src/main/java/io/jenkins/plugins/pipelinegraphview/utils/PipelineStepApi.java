@@ -30,19 +30,22 @@ public class PipelineStepApi {
                     if (flowNodeWrapper.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
                         state = flowNodeWrapper.getStatus().getState().name().toLowerCase(Locale.ROOT);
                     }
-                    String displayName = flowNodeWrapper.getDisplayName();
 
+                    String displayName = flowNodeWrapper.getDisplayName();
+                    String title = "";
                     if (flowNodeWrapper.getType() == FlowNodeWrapper.NodeType.UNHANDLED_EXCEPTION) {
                         displayName = "Pipeline error";
                     } else {
                         String stepArguments = flowNodeWrapper.getArgumentsAsString();
                         if (stepArguments != null && !stepArguments.isEmpty()) {
-                            displayName = stepArguments + " - " + displayName;
+                            displayName = stepArguments;
+                            title = flowNodeWrapper.getDisplayName();
                         }
                         // Use the step label as the displayName if set
                         String labelDisplayName = flowNodeWrapper.getLabelDisplayName();
                         if (labelDisplayName != null && !labelDisplayName.isEmpty()) {
                             displayName = labelDisplayName;
+                            title = "";
                         }
                     }
                     // Remove non-printable chars (e.g. ANSI color codes).
@@ -56,7 +59,7 @@ public class PipelineStepApi {
                             state,
                             50, // TODO how ???
                             flowNodeWrapper.getType().name(),
-                            flowNodeWrapper.getDisplayName(), // TODO blue ocean uses timing information: "Passed in
+                            title, // TODO blue ocean uses timing information: "Passed in
                             // 0s"
                             stageId,
                             "Queued "

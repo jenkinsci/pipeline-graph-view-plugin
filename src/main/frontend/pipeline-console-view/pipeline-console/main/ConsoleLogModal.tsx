@@ -1,8 +1,7 @@
 import React from "react";
 import { StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
+import { getStepStatus } from "../../../step-status/StepStatus";
 import CloseIcon from "./CloseIcon";
-
-import Button from "@mui/material/Button";
 
 export interface ConsoleLogModelProps {
   logBuffer: StepLogBufferInfo;
@@ -13,7 +12,7 @@ export interface ConsoleLogModelProps {
   open: boolean;
 }
 
-import { Box, Modal } from "@mui/material";
+import { Box, Modal, Stack } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import ConsoleLogStream from "./ConsoleLogStream";
 
@@ -36,6 +35,13 @@ const style = {
 
 export default function ConsoleLogModal(props: ConsoleLogModelProps) {
   const handleClose = () => props.setClose();
+  const statusIcon = getStepStatus(
+    props.step.state,
+    props.step.completePercent,
+    10
+  );
+  const stepDisplayName = props.step.name;
+  const stepTitle = props.step.title ? " - " + props.step.title : "";
 
   return (
     <>
@@ -54,25 +60,17 @@ export default function ConsoleLogModal(props: ConsoleLogModelProps) {
             noWrap={true}
             key={`step-name-text-${props.step.id}`}
           >
-            {props.step.name
-              .substring(0, props.step.name.lastIndexOf("-"))
-              .trimEnd()}
+            <Stack direction="row" alignItems="center" spacing={1}>
+              {statusIcon}
+              <Box component="span">
+                <Box component="span" fontWeight="bold">
+                  {stepDisplayName}
+                </Box>
+                {stepTitle}
+              </Box>
+            </Stack>
           </Typography>
           <CloseIcon onClick={handleClose} />
-          <Typography
-            className="log-card--text"
-            id="modal-modal-description"
-            sx={{ mt: 2, mb: 2 }}
-            key={`step-duration-text-${props.step.id}`}
-          >
-            {props.step.name
-              .substring(
-                props.step.name.lastIndexOf("-") + 1,
-                props.step.name.length
-              )
-              .trimStart()}
-          </Typography>
-
           <ConsoleLogStream {...props} />
         </Box>
       </Modal>

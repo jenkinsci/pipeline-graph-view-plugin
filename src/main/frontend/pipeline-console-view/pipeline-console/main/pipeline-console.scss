@@ -2,13 +2,13 @@
 
 :root {
   --card-background: hsl(212, 30%, 96%);
-  --step-bg-running: var(--accent-color);
-  --step-bg-success: var(--success-color);
-  --step-bg-unstable: var(--warning-color);
-  --step-bg-failure: var(--error-color);
-  --step-bg-aborted: var(--purple);
-  --step-bg-paused: var(--blue);
-  --step-text-color: rgb(233, 237, 237);
+  --step-bg-running: color-mix(in srgb, var(--accent-color) 50%, white);
+  --step-bg-success: color-mix(in srgb, var(--success-color) 50%, white);
+  --step-bg-unstable: color-mix(in srgb, var(--warning-color) 50%, white);
+  --step-bg-failure: color-mix(in srgb, var(--error-color) 50%, white);
+  --step-bg-aborted: color-mix(in srgb, var(--purple) 50%, white);
+  --step-bg-paused: color-mix(in srgb, var(--blue) 50%, white);
+  --step-text-color: var(--text-color);
 }
 
 .app-page-body--one-column {
@@ -17,14 +17,25 @@
 
 [data-theme="dark"] {
   --card-background: hsl(230deg 14% 23%);
-  --step-text-color: hsl(230deg 14% 23%);
+  --step-bg-running: color-mix(in srgb, var(--accent-color) 50%, black);
+  --step-bg-success: color-mix(in srgb, var(--success-color) 50%, black);
+  --step-bg-unstable: color-mix(in srgb, var(--warning-color) 50%, black);
+  --step-bg-failure: color-mix(in srgb, var(--error-color) 50%, black);
+  --step-bg-aborted: color-mix(in srgb, var(--purple) 50%, black);
+  --step-bg-paused: color-mix(in srgb, var(--blue) 50%, black);
 }
 
 @media (prefers-color-scheme: dark) {
   [data-theme="dark-system"],
   [data-theme="dark-system"] {
     --card-background: hsl(230deg 14% 23%);
-    --step-text-color: hsl(230deg 14% 23%);
+    //--step-text-color: hsl(230deg 14% 23%);
+    --step-bg-running: color-mix(in srgb, var(--accent-color) 50%, black);
+    --step-bg-success: color-mix(in srgb, var(--success-color) 50%, black);
+    --step-bg-unstable: color-mix(in srgb, var(--warning-color) 50%, black);
+    --step-bg-failure: color-mix(in srgb, var(--error-color) 50%, black);
+    --step-bg-aborted: color-mix(in srgb, var(--purple) 50%, black);
+    --step-bg-paused: color-mix(in srgb, var(--blue) 50%, black);
   }
 }
 
@@ -232,6 +243,14 @@ g.build-status-icon__outer {
 }
 
 .svg-icon--expand {
+  color: var(--step-text-color);
+}
+
+.svg-icon--link {
+  color: var(--step-text-color);
+}
+
+.svg-icon--resize {
   color: var(--step-text-color);
 }
 

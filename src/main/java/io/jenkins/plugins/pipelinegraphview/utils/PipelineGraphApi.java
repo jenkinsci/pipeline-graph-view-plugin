@@ -41,7 +41,8 @@ public class PipelineGraphApi {
             return null;
         }
 
-        Queue.Item item = Queue.getInstance().schedule2(run.getParent(), 0, causeAction).getItem();
+        Queue.Item item =
+                Queue.getInstance().schedule2(run.getParent(), 0, causeAction).getItem();
         if (item == null) {
             return null;
         }
@@ -52,7 +53,8 @@ public class PipelineGraphApi {
     private List<PipelineStageInternal> getPipelineNodes(PipelineGraphBuilderApi builder) {
         return builder.getPipelineNodes().stream()
                 .map(flowNodeWrapper -> {
-                    String state = flowNodeWrapper.getStatus().getResult().name().toLowerCase(Locale.ROOT);
+                    String state =
+                            flowNodeWrapper.getStatus().getResult().name().toLowerCase(Locale.ROOT);
                     if (flowNodeWrapper.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
                         state = flowNodeWrapper.getStatus().getState().name().toLowerCase(Locale.ROOT);
                     }
@@ -78,8 +80,8 @@ public class PipelineGraphApi {
 
         return id -> {
             List<String> orDefault = stageToChildrenMap.getOrDefault(id, emptyList());
-            List<PipelineStage> children = orDefault.stream().map(mapper(stageMap, stageToChildrenMap))
-                    .collect(Collectors.toList());
+            List<PipelineStage> children =
+                    orDefault.stream().map(mapper(stageMap, stageToChildrenMap)).collect(Collectors.toList());
             return stageMap.get(id).toPipelineStage(children);
         };
     }
@@ -109,8 +111,8 @@ public class PipelineGraphApi {
             if (stage.getParents().isEmpty()) {
                 stageToChildrenMap.put(stage.getId(), new ArrayList<>());
             } else {
-                List<String> parentChildren = stageToChildrenMap.getOrDefault(stage.getParents().get(0),
-                        new ArrayList<String>());
+                List<String> parentChildren =
+                        stageToChildrenMap.getOrDefault(stage.getParents().get(0), new ArrayList<String>());
                 parentChildren.add(stage.getId());
                 childNodes.add(stage.getId());
                 stageToChildrenMap.put(stage.getParents().get(0), parentChildren);
@@ -119,10 +121,10 @@ public class PipelineGraphApi {
 
         List<PipelineStage> stageResults = stageMap.values().stream()
                 .map(pipelineStageInternal -> {
-                    List<PipelineStage> children = stageToChildrenMap
-                            .getOrDefault(pipelineStageInternal.getId(), emptyList()).stream()
-                            .map(mapper(stageMap, stageToChildrenMap))
-                            .collect(Collectors.toList());
+                    List<PipelineStage> children =
+                            stageToChildrenMap.getOrDefault(pipelineStageInternal.getId(), emptyList()).stream()
+                                    .map(mapper(stageMap, stageToChildrenMap))
+                                    .collect(Collectors.toList());
 
                     return pipelineStageInternal.toPipelineStage(children);
                 })
@@ -207,10 +209,10 @@ public class PipelineGraphApi {
 
         List<PipelineStage> stageResults = stageMap.values().stream()
                 .map(pipelineStageInternal -> {
-                    List<PipelineStage> children = stageToChildrenMap
-                            .getOrDefault(pipelineStageInternal.getId(), emptyList()).stream()
-                            .map(mapper(stageMap, stageToChildrenMap))
-                            .collect(Collectors.toList());
+                    List<PipelineStage> children =
+                            stageToChildrenMap.getOrDefault(pipelineStageInternal.getId(), emptyList()).stream()
+                                    .map(mapper(stageMap, stageToChildrenMap))
+                                    .collect(Collectors.toList());
 
                     return pipelineStageInternal.toPipelineStage(children);
                 })

@@ -131,8 +131,8 @@ public class ParallelBlockRelationship extends NodeRelationship {
         this.branchTimings = StatusAndTiming.computeParallelBranchTimings(
                 run, this.start, this.branchStarts, this.branchEnds, parallelEndNode, pauseDurations);
         dump("Calculating parallel timings %s, %s (with above branches)", start.getId(), end.getId());
-        this.overallTiming = StatusAndTiming.computeOverallParallelTiming(run, this.branchTimings, this.start,
-                parallelEndNode);
+        this.overallTiming =
+                StatusAndTiming.computeOverallParallelTiming(run, this.branchTimings, this.start, parallelEndNode);
     }
 
     /*
@@ -154,7 +154,8 @@ public class ParallelBlockRelationship extends NodeRelationship {
         if (this.branchStatuses == null) {
             calculateStatuses(run);
         }
-        dump("Branch status for %s (%s): '%s'",
+        dump(
+                "Branch status for %s (%s): '%s'",
                 branchStartNode.getId(),
                 getBranchName(branchStartNode),
                 this.branchStatuses.get(getBranchName(branchStartNode)));
@@ -168,14 +169,15 @@ public class ParallelBlockRelationship extends NodeRelationship {
         // The parallel API expects parallel end to be null if this is still running -
         // so only pass it if it;s not the start node;
         FlowNode parallelEndNode = (this.start != this.end) ? this.end : null;
-        this.branchStatuses = StatusAndTiming.computeBranchStatuses2(run, this.start, this.branchStarts,
-                this.branchEnds, parallelEndNode);
+        this.branchStatuses = StatusAndTiming.computeBranchStatuses2(
+                run, this.start, this.branchStarts, this.branchEnds, parallelEndNode);
         for (int i = 0; i < this.branchStarts.size(); i++) {
             BlockStartNode branchStart = this.branchStarts.get(i);
             FlowNode branchEnd = this.branchEnds.get(i);
             logger.info(String.format(
                     "Calculating parallel branch status %s, %s: %s",
-                    branchStart.getId(), (branchEnd != null) ? branchEnd.getId() : "null",
+                    branchStart.getId(),
+                    (branchEnd != null) ? branchEnd.getId() : "null",
                     getBranchStatus(run, branchStart)));
         }
 

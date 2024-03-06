@@ -1,7 +1,10 @@
 package io.jenkins.plugins.pipelinegraphview.treescanner;
 
-import hudson.model.Action;
-
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import io.jenkins.plugins.pipelinegraphview.utils.BlueRun;
+import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.WarningAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
@@ -14,12 +17,6 @@ import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException;
 import org.jenkinsci.plugins.workflow.support.actions.PauseAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import io.jenkins.plugins.pipelinegraphview.utils.BlueRun;
-import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
-import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 
 public class NodeRelationship {
     private boolean isDebugEnabled = logger.isDebugEnabled();

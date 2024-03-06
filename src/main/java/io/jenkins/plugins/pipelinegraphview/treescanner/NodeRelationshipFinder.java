@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
-import org.jenkinsci.plugins.workflow.cps.nodes.StepEndNode;
 import org.jenkinsci.plugins.workflow.graph.BlockEndNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.slf4j.Logger;
@@ -40,8 +39,7 @@ public class NodeRelationshipFinder {
         }
     }
 
-    public NodeRelationshipFinder() {
-    }
+    public NodeRelationshipFinder() {}
 
     /**
      * Determines the relationship between FlowNodes {@link FlowNode#getParents()}.
@@ -154,8 +152,12 @@ public class NodeRelationshipFinder {
         // Store a parallel branch relationship - these will be used to build up the
         // parent parallel block relationship.
         // Once generated, that relationship will be superseded this one.
-        dump("Adding parallel branch relationship for %s(%s)->%s(%s)",
-                node.getId(), node.getClass().getName(), endNode.getId(), endNode.getClass().getName());
+        dump(
+                "Adding parallel branch relationship for %s(%s)->%s(%s)",
+                node.getId(),
+                node.getClass().getName(),
+                endNode.getId(),
+                endNode.getClass().getName());
         // After doesn't matter as this relationship object is temporary (only start and
         // end node are used).
         NodeRelationship blockRelationship = new NodeRelationship(node, endNode, after);
@@ -168,8 +170,8 @@ public class NodeRelationshipFinder {
                 "Generating relationship for parallel Block %s (with after %s)",
                 node.getId(), (after != null) ? after.getId() : "null");
         // handle parallel block case.
-        NodeRelationship parallelRelationship = new ParallelBlockRelationship(node, endNode, after,
-                pendingBranchRelationships);
+        NodeRelationship parallelRelationship =
+                new ParallelBlockRelationship(node, endNode, after, pendingBranchRelationships);
         // Set branch relationship to the parent ParallelBlockRelationship - as they are
         // fairly interdependent.
         for (NodeRelationship r : pendingBranchRelationships) {
@@ -212,9 +214,12 @@ public class NodeRelationshipFinder {
         FlowNode after = getBlockAfterNode();
         dump(
                 "Generating relationship for Block %s{%s}->%s{%s} (with after %s{%s})",
-                node.getId(), node.getClass(),
-                endNode.getId(), endNode.getClass(),
-                (after != null) ? after.getId() : "null", (after != null) ? after.getClass() : "null");
+                node.getId(),
+                node.getClass(),
+                endNode.getId(),
+                endNode.getClass(),
+                (after != null) ? after.getId() : "null",
+                (after != null) ? after.getClass() : "null");
         return new NodeRelationship(node, endNode, after);
     }
 }

@@ -18,8 +18,7 @@ public class PipelineGraphApiLegacyTest {
 
     @Test
     public void createLegacyTree_unstableSmokes() throws Exception {
-        WorkflowRun run = TestUtils.createAndRunJob(j, "unstableSmokes", "unstableSmokes.jenkinsfile",
-                Result.FAILURE);
+        WorkflowRun run = TestUtils.createAndRunJob(j, "unstableSmokes", "unstableSmokes.jenkinsfile", Result.FAILURE);
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createLegacyTree();
 
@@ -58,8 +57,7 @@ public class PipelineGraphApiLegacyTest {
 
     @Test
     public void createLegacyTree_complexSmokes() throws Exception {
-        WorkflowRun run = TestUtils.createAndRunJob(j, "complexSmokes", "complexSmokes.jenkinsfile",
-                Result.SUCCESS);
+        WorkflowRun run = TestUtils.createAndRunJob(j, "complexSmokes", "complexSmokes.jenkinsfile", Result.SUCCESS);
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createLegacyTree();
 
@@ -85,8 +83,8 @@ public class PipelineGraphApiLegacyTest {
 
     @Test
     public void createLegacyTree_scriptedParallel() throws Exception {
-        WorkflowRun run = TestUtils.createAndRunJob(j, "scriptedParallel", "scriptedParallel.jenkinsfile",
-                Result.SUCCESS);
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "scriptedParallel", "scriptedParallel.jenkinsfile", Result.SUCCESS);
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createLegacyTree();
 
@@ -105,8 +103,8 @@ public class PipelineGraphApiLegacyTest {
     @Issue("GH#85")
     @Test
     public void createLegacyTree_syntheticStages() throws Exception {
-        WorkflowRun run = TestUtils.createAndRunJob(j, "syntheticStages", "syntheticStages.jenkinsfile",
-                Result.SUCCESS);
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "syntheticStages", "syntheticStages.jenkinsfile", Result.SUCCESS);
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createLegacyTree();
 
@@ -115,28 +113,27 @@ public class PipelineGraphApiLegacyTest {
         // Compare to old result.
         String stagesString = TestUtils.collectStagesAsString(
                 stages,
-                (PipelineStage stage) -> String.format("{%s,%s}", stage.getName(),
-                        stage.isSynthetic() ? "true" : "false"));
+                (PipelineStage stage) ->
+                        String.format("{%s,%s}", stage.getName(), stage.isSynthetic() ? "true" : "false"));
         assertThat(
                 stagesString,
                 is(String.join(
-                        "", "{Checkout SCM,true},", "{Stage 1,false},", "{Stage 2,false},",
-                        "{Post Actions,true}")));
+                        "", "{Checkout SCM,true},", "{Stage 1,false},", "{Stage 2,false},", "{Post Actions,true}")));
 
         // Compare to new implmentation.
         PipelineGraph newGraph = api.createShallowTree();
         String newStagesString = TestUtils.collectStagesAsString(
                 newGraph.getStages(),
-                (PipelineStage stage) -> String.format("{%s,%s}", stage.getName(),
-                        stage.isSynthetic() ? "true" : "false"));
+                (PipelineStage stage) ->
+                        String.format("{%s,%s}", stage.getName(), stage.isSynthetic() ? "true" : "false"));
         assertThat(newStagesString, is(stagesString));
     }
 
     @Issue("GH#87")
     @Test
     public void createLegacyTree_skippedParallel() throws Exception {
-        WorkflowRun run = TestUtils.createAndRunJob(j, "skippedParallel", "skippedParallel.jenkinsfile",
-                Result.SUCCESS);
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "skippedParallel", "skippedParallel.jenkinsfile", Result.SUCCESS);
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createLegacyTree();
 
@@ -144,8 +141,7 @@ public class PipelineGraphApiLegacyTest {
 
         // Compare to old result.
         String stagesString = TestUtils.collectStagesAsString(
-                stages,
-                (PipelineStage stage) -> String.format("{%s,%s}", stage.getName(), stage.getState()));
+                stages, (PipelineStage stage) -> String.format("{%s,%s}", stage.getName(), stage.getState()));
         assertThat(stagesString, is("{Stage 1,success},{Parallel stage,skipped},{Stage 2,success}"));
 
         // Compare to new implmentation.

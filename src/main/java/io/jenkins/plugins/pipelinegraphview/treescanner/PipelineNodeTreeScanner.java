@@ -172,9 +172,9 @@ public class PipelineNodeTreeScanner {
 
         // Print debug message if 'isDebugEnabled' is true.
         private void dump(String message, Object... args) {
-            // if (isDebugEnabled) {
-            logger.info(String.format(message, args));
-            // }
+            if (isDebugEnabled) {
+                logger.debug(String.format(message, args));
+            }
         }
 
         /*
@@ -196,9 +196,6 @@ public class PipelineNodeTreeScanner {
                 FlowNodeWrapper firstParent = stage.getFirstParent();
                 // Remap parentage of stages that aren't children of stages (e.g. allocate node
                 // step).
-                logger.info(String.format(
-                        "-- Stages: [%s] - size: %s",
-                        String.join(", ", stageMap.keySet()), stageMap.keySet().size()));
                 if (firstParent != null && !stageMap.containsKey(firstParent.getId())) {
                     // Add to separate map to avoid updating the original map in loop.
                     remappedStages.add(remapNode(stage, stageMap));
@@ -229,7 +226,7 @@ public class PipelineNodeTreeScanner {
                     wrappedNode.getRun(),
                     wrappedNode.getType());
             FlowNodeWrapper closestParent = findParentNode(wrappedNode, stageMap);
-            logger.info(String.format(
+            logger.debug(String.format(
                     "Found closest parent for node %s, %s",
                     wrappedNode.getId(), (closestParent != null) ? closestParent.getId() : "null"));
             if (closestParent != null) {
@@ -245,7 +242,6 @@ public class PipelineNodeTreeScanner {
          * This provides a similar representation to PipelineStepVisitor.
          */
         public @NonNull Map<String, FlowNodeWrapper> getStepMapping() {
-            logger.info("In getStepMapping");
             if (wrappedStepMap != null) {
                 return wrappedStepMap;
             }
@@ -320,7 +316,7 @@ public class PipelineNodeTreeScanner {
             if (errorAction != null && !PipelineNodeUtil.isJenkinsFailureException(errorAction.getError())) {
                 // Store node that threw exception as step so we can find it's parent stage
                 // later.
-                logger.info(String.format(
+                logger.debug(String.format(
                         "getUnhandledException => Found unhandled exception: %s",
                         errorAction.getError().getMessage()));
                 FlowNode nodeThatThrewException = ErrorAction.findOrigin(errorAction.getError(), this.execution);

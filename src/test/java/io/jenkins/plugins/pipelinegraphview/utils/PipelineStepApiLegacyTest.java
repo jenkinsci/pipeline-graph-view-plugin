@@ -21,10 +21,14 @@ public class PipelineStepApiLegacyTest {
         WorkflowRun run = TestUtils.createAndRunJob(j, "unstableSmokes", "unstableSmokes.jenkinsfile", Result.FAILURE);
         PipelineStepApi api = new PipelineStepApi(run);
 
-        String unstableOneId = TestUtils.getNodesByDisplayName(run, "unstable-one").get(0).getId();
-        String successId = TestUtils.getNodesByDisplayName(run, "success").get(0).getId();
-        String unstableTwoId = TestUtils.getNodesByDisplayName(run, "unstable-two").get(0).getId();
-        String failureID = TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
+        String unstableOneId =
+                TestUtils.getNodesByDisplayName(run, "unstable-one").get(0).getId();
+        String successId =
+                TestUtils.getNodesByDisplayName(run, "success").get(0).getId();
+        String unstableTwoId =
+                TestUtils.getNodesByDisplayName(run, "unstable-two").get(0).getId();
+        String failureID =
+                TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
 
         List<PipelineStep> steps = api.getLegacySteps(unstableOneId).getSteps();
         assertThat(steps, hasSize(3));
@@ -68,11 +72,16 @@ public class PipelineStepApiLegacyTest {
                 .get(0)
                 .getId();
         // We need to prefix with 'Branch: ' as these are Declarative parallel stages.
-        String branchAId = TestUtils.getNodesByDisplayName(run, "Branch: Branch A").get(0).getId();
-        String branchBId = TestUtils.getNodesByDisplayName(run, "Branch: Branch B").get(0).getId();
-        String branchCId = TestUtils.getNodesByDisplayName(run, "Branch: Branch C").get(0).getId();
-        String branchNested1Id = TestUtils.getNodesByDisplayName(run, "Nested 1").get(0).getId();
-        String branchNested2Id = TestUtils.getNodesByDisplayName(run, "Nested 2").get(0).getId();
+        String branchAId =
+                TestUtils.getNodesByDisplayName(run, "Branch: Branch A").get(0).getId();
+        String branchBId =
+                TestUtils.getNodesByDisplayName(run, "Branch: Branch B").get(0).getId();
+        String branchCId =
+                TestUtils.getNodesByDisplayName(run, "Branch: Branch C").get(0).getId();
+        String branchNested1Id =
+                TestUtils.getNodesByDisplayName(run, "Nested 1").get(0).getId();
+        String branchNested2Id =
+                TestUtils.getNodesByDisplayName(run, "Nested 2").get(0).getId();
 
         // Check 'Non-Parallel Stage'
         PipelineStepApi api = new PipelineStepApi(run);
@@ -129,9 +138,11 @@ public class PipelineStepApiLegacyTest {
 
         String childAId = TestUtils.getNodesByDisplayName(run, "Child A").get(0).getId();
         String childBId = TestUtils.getNodesByDisplayName(run, "Child B").get(0).getId();
-        String grandchildBId = TestUtils.getNodesByDisplayName(run, "Grandchild B").get(0).getId();
+        String grandchildBId =
+                TestUtils.getNodesByDisplayName(run, "Grandchild B").get(0).getId();
         String childCId = TestUtils.getNodesByDisplayName(run, "Child C").get(0).getId();
-        String grandchildCId = TestUtils.getNodesByDisplayName(run, "Grandchild C").get(0).getId();
+        String grandchildCId =
+                TestUtils.getNodesByDisplayName(run, "Grandchild C").get(0).getId();
         String greatGrandchildCId = TestUtils.getNodesByDisplayName(run, "Great-grandchild C")
                 .get(0)
                 .getId();
@@ -238,19 +249,23 @@ public class PipelineStepApiLegacyTest {
         String linux8CheckoutId = TestUtils.getNodesByDisplayName(run, "Checkout (linux-8)")
                 .get(0)
                 .getId();
-        String linux8BuildId = TestUtils.getNodesByDisplayName(run, "Build (linux-8)").get(0).getId();
-        String linux8ArchiveId = TestUtils.getNodesByDisplayName(run, "Archive (linux-8)").get(0).getId();
+        String linux8BuildId =
+                TestUtils.getNodesByDisplayName(run, "Build (linux-8)").get(0).getId();
+        String linux8ArchiveId =
+                TestUtils.getNodesByDisplayName(run, "Archive (linux-8)").get(0).getId();
 
         // Linux 11
         String linux11CheckoutId = TestUtils.getNodesByDisplayName(run, "Checkout (linux-11)")
                 .get(0)
                 .getId();
-        String linux11BuildId = TestUtils.getNodesByDisplayName(run, "Build (linux-11)").get(0).getId();
+        String linux11BuildId =
+                TestUtils.getNodesByDisplayName(run, "Build (linux-11)").get(0).getId();
         String linux11ArchiveId = TestUtils.getNodesByDisplayName(run, "Archive (linux-11)")
                 .get(0)
                 .getId();
 
-        String deployStageId = TestUtils.getNodesByDisplayName(run, "Deploy").get(0).getId();
+        String deployStageId =
+                TestUtils.getNodesByDisplayName(run, "Deploy").get(0).getId();
 
         List<PipelineStep> steps = api.getLegacySteps(linux8CheckoutId).getSteps();
         assertThat(steps, hasSize(1));
@@ -298,7 +313,8 @@ public class PipelineStepApiLegacyTest {
 
         PipelineStepApi api = new PipelineStepApi(run);
 
-        String failureStage = TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
+        String failureStage =
+                TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
 
         List<PipelineStep> steps = api.getLegacySteps(failureStage).getSteps();
         assertThat(steps, hasSize(2));
@@ -316,12 +332,13 @@ public class PipelineStepApiLegacyTest {
         // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
         // (as it takes a
         // long time)
-        WorkflowRun run = TestUtils.createAndRunJob(j, "githubIssue213_errorStep", "unstableSmokes.jenkinsfile",
-                Result.FAILURE);
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "githubIssue213_errorStep", "unstableSmokes.jenkinsfile", Result.FAILURE);
 
         PipelineStepApi api = new PipelineStepApi(run);
 
-        String failureStage = TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
+        String failureStage =
+                TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
 
         List<PipelineStep> steps = api.getLegacySteps(failureStage).getSteps();
         assertThat(steps, hasSize(2));
@@ -362,7 +379,8 @@ public class PipelineStepApiLegacyTest {
 
         PipelineStepApi api = new PipelineStepApi(run);
 
-        String failureStage = TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
+        String failureStage =
+                TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
 
         List<PipelineStep> steps = api.getLegacySteps(failureStage).getSteps();
         assertThat(steps, hasSize(2));

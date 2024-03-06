@@ -183,8 +183,7 @@ public class PipelineNodeUtil {
     }
 
     public static final Predicate<FlowNode> isLoggable = input -> {
-        if (input == null)
-            return false;
+        if (input == null) return false;
         return input.getAction(LogAction.class) != null;
     };
 

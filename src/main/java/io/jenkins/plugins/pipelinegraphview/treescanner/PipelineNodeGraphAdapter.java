@@ -104,7 +104,7 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
     // Print debug message if 'isDebugEnabled' is true.
     private void dump(String message) {
         if (isDebugEnabled) {
-            logger.trace(message);
+            logger.debug(message);
         }
     }
 
@@ -119,27 +119,27 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
     // online via:
     // https://dreampuf.github.io/GraphvizOnline
     private void dumpNodeGraphviz(List<FlowNodeWrapper> nodes) {
-        // if (logger.isTraceEnabled()) {
-        String nodeMapStr = String.format("digraph G {%n");
-        for (FlowNodeWrapper node : nodes) {
-            nodeMapStr += String.format(
-                    "  %s [label=\"{id: %s, name: %s, type: %s}\"]%n",
-                    node.getId(), node.getId(), node.getDisplayName(), node.getType());
-            for (FlowNodeWrapper parent : node.getParents()) {
-                nodeMapStr += String.format("  %s -> %s%n", node.getId(), parent.getId());
-            }
-            if (this.stepsMap != null) {
-                for (FlowNodeWrapper step : stepsMap.getOrDefault(node.getId(), new ArrayList<>())) {
-                    nodeMapStr += String.format(
-                            "  %s [label=\"{id: %s, name: %s, type: %s}\"]%n",
-                            step.getId(), step.getId(), step.getDisplayName(), step.getType());
-                    nodeMapStr += String.format("  %s -> %s%n", step.getId(), node.getId());
+        if (logger.isTraceEnabled()) {
+            String nodeMapStr = String.format("digraph G {%n");
+            for (FlowNodeWrapper node : nodes) {
+                nodeMapStr += String.format(
+                        "  %s [label=\"{id: %s, name: %s, type: %s}\"]%n",
+                        node.getId(), node.getId(), node.getDisplayName(), node.getType());
+                for (FlowNodeWrapper parent : node.getParents()) {
+                    nodeMapStr += String.format("  %s -> %s%n", node.getId(), parent.getId());
+                }
+                if (this.stepsMap != null) {
+                    for (FlowNodeWrapper step : stepsMap.getOrDefault(node.getId(), new ArrayList<>())) {
+                        nodeMapStr += String.format(
+                                "  %s [label=\"{id: %s, name: %s, type: %s}\"]%n",
+                                step.getId(), step.getId(), step.getDisplayName(), step.getType());
+                        nodeMapStr += String.format("  %s -> %s%n", step.getId(), node.getId());
+                    }
                 }
             }
+            nodeMapStr += String.format("}");
+            logger.trace(nodeMapStr);
         }
-        nodeMapStr += String.format("}");
-        logger.info(nodeMapStr);
-        // }
     }
 
     private void remapStageParentage() {

@@ -124,9 +124,9 @@ public class ParallelBlockRelationship extends NodeRelationship {
         for (int i = 0; i < this.branchStarts.size(); i++) {
             FlowNode branchStart = this.branchStarts.get(i);
             FlowNode branchEnd = this.branchEnds.get(i);
-            logger.info(String.format(
+            dump(
                     "Calculating parallel branch timings %s, %s",
-                    branchStart.getId(), (branchEnd != null) ? branchEnd.getId() : "null"));
+                    branchStart.getId(), (branchEnd != null) ? branchEnd.getId() : "null");
         }
         this.branchTimings = StatusAndTiming.computeParallelBranchTimings(
                 run, this.start, this.branchStarts, this.branchEnds, parallelEndNode, pauseDurations);
@@ -174,11 +174,11 @@ public class ParallelBlockRelationship extends NodeRelationship {
         for (int i = 0; i < this.branchStarts.size(); i++) {
             BlockStartNode branchStart = this.branchStarts.get(i);
             FlowNode branchEnd = this.branchEnds.get(i);
-            logger.info(String.format(
+            dump(
                     "Calculating parallel branch status %s, %s: %s",
                     branchStart.getId(),
                     (branchEnd != null) ? branchEnd.getId() : "null",
-                    getBranchStatus(run, branchStart)));
+                    getBranchStatus(run, branchStart));
         }
 
         dump("Calculating parallel status %s, %s (with above branches)", this.start.getId(), this.end.getId());

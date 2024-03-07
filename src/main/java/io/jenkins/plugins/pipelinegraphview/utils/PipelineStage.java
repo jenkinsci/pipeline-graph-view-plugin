@@ -1,25 +1,14 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
-import hudson.Util;
-import java.util.Date;
 import java.util.List;
 
-public class PipelineStage {
+public class PipelineStage extends AbstractPipelineNode {
 
-    private String name;
     private List<PipelineStage> children;
-    private String state; // TODO enum
-    private int completePercent; // TODO int is fine?
-    private String type; // TODO enum
-    private String title;
-    private String id; // TODO what's this for?
     private String seqContainerName;
     private final PipelineStage nextSibling;
     private boolean sequential;
     private boolean synthetic;
-    private String pauseDurationMillis;
-    private String startTimeMillis;
-    private String totalDurationMillis;
 
     public PipelineStage(
             String id,
@@ -36,34 +25,21 @@ public class PipelineStage {
             Long pauseDurationMillis,
             Long startTimeMillis,
             Long totalDurationMillis) {
-        this.id = id;
-        this.name = name;
+        super(
+                id,
+                name,
+                state,
+                completePercent,
+                type,
+                title,
+                getUserFriendlyPauseDuration(pauseDurationMillis),
+                getUserFriendlyStartTime(startTimeMillis),
+                getUserFriendlyDuration(totalDurationMillis));
         this.children = children;
-        this.state = state.toLowerCase();
-        this.completePercent = completePercent;
-        this.type = type;
-        this.title = title;
         this.seqContainerName = seqContainerName;
         this.nextSibling = nextSibling;
         this.sequential = sequential;
         this.synthetic = synthetic;
-        this.pauseDurationMillis = "Queued " + Util.getTimeSpanString(pauseDurationMillis);
-        this.startTimeMillis = startTimeMillis == 0
-                ? ""
-                : "Started " + Util.getTimeSpanString(Math.abs(startTimeMillis - new Date().getTime())) + " ago";
-        this.totalDurationMillis = "Took " + Util.getTimeSpanString(totalDurationMillis);
-    }
-
-    public String getPauseDurationMillis() {
-        return pauseDurationMillis;
-    }
-
-    public String getStartTimeMillis() {
-        return startTimeMillis;
-    }
-
-    public String getTotalDurationMillis() {
-        return totalDurationMillis;
     }
 
     public PipelineStage getNextSibling() {
@@ -80,32 +56,8 @@ public class PipelineStage {
         return seqContainerName;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
     public List<PipelineStage> getChildren() {
         return children;
-    }
-
-    public String getState() {
-        return state;
-    }
-
-    public int getCompletePercent() {
-        return completePercent;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public String getTitle() {
-        return title;
     }
 
     public boolean isSynthetic() {

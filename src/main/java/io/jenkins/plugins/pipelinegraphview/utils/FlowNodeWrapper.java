@@ -134,6 +134,9 @@ public class FlowNodeWrapper {
         if (type == NodeType.PARALLEL_BLOCK) {
             return "Parallel";
         }
+        if (type == NodeType.PIPELINE_START) {
+            return "Unhandled Exception";
+        }
         return displayName;
     }
 
@@ -231,7 +234,7 @@ public class FlowNodeWrapper {
     }
 
     public @CheckForNull FlowNodeWrapper getFirstParent() {
-        return parents.size() > 0 ? parents.get(0) : null;
+        return !parents.isEmpty() ? parents.get(0) : null;
     }
 
     public @NonNull List<FlowNodeWrapper> getParents() {
@@ -409,5 +412,22 @@ public class FlowNodeWrapper {
 
     public static int compareIds(String ida, String idb) {
         return Integer.compare(Integer.parseInt(ida), Integer.parseInt(idb));
+    }
+
+    // Useful for dumping node maps to console. These can then be viewed in dor or
+    // online via:
+    // https://dreampuf.github.io/GraphvizOnline
+    public static String getNodeGraphviz(List<FlowNodeWrapper> nodes) {
+        String nodeMapStr = String.format("digraph G {%n");
+        for (FlowNodeWrapper node : nodes) {
+            nodeMapStr += String.format(
+                    "  %s [label=\"{id: %s, name: %s, type: %s}\"]%n",
+                    node.getId(), node.getId(), node.getDisplayName(), node.getType());
+            for (FlowNodeWrapper parent : node.getParents()) {
+                nodeMapStr += String.format("  %s -> %s%n", node.getId(), parent.getId());
+            }
+        }
+        nodeMapStr += String.format("}");
+        return nodeMapStr;
     }
 }

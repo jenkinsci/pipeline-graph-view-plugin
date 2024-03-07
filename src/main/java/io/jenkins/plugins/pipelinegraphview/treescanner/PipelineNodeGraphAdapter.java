@@ -53,14 +53,14 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
                 // id.
                 if (node.getType() == FlowNodeWrapper.NodeType.PARALLEL_BLOCK
                         && parent.getType() == FlowNodeWrapper.NodeType.STAGE) {
-                    dump(String.format(
+                    dump(
                             "getNodesToRemap => Found Parallel block {id: %s, name: %s, type: %s} that has a Stage {id: %s, name: %s, type: %s} as a parent. Adding to remap list.",
                             node.getId(),
                             node.getDisplayName(),
                             node.getType(),
                             parent.getId(),
                             parent.getDisplayName(),
-                            parent.getType()));
+                            parent.getType());
                     this.nodesToRemap.put(node.getId(), parent.getId());
                     // Skip other checks.
                     continue;
@@ -71,14 +71,14 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
                 // in parallel branches.
                 if (parent.getType() == FlowNodeWrapper.NodeType.PARALLEL
                         && node.getDisplayName().equals(parent.getDisplayName())) {
-                    dump(String.format(
+                    dump(
                             "getNodesToRemap => Found Stage {id: %s, name: %s, type: %s} that is an only child and has a parent with the same name {id: %s, name: %s, type: %s}. Adding to remap list.",
                             node.getId(),
                             node.getDisplayName(),
                             node.getType(),
                             parent.getId(),
                             parent.getDisplayName(),
-                            parent.getType()));
+                            parent.getType());
                     this.nodesToRemap.put(node.getId(), parent.getId());
                     continue;
                 }
@@ -102,44 +102,28 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
     }
 
     // Print debug message if 'isDebugEnabled' is true.
-    private void dump(String message) {
-        if (isDebugEnabled) {
-            logger.debug(message);
-        }
-    }
-
-    private void dumpNodeGraphviz(
-            List<FlowNodeWrapper> localPipelineNodesList, Map<String, List<FlowNodeWrapper>> localStepsMap) {
-        List<FlowNodeWrapper> nodes = new ArrayList<FlowNodeWrapper>();
-        nodes.addAll(localPipelineNodesList);
-        dumpNodeGraphviz(nodes);
+    private void dump(String message, Object... args) {
+        // if (isDebugEnabled) {
+        logger.info(String.format(message, args));
+        // }
     }
 
     // Useful for dumping node maps to console. These can then be viewed in dor or
     // online via:
     // https://dreampuf.github.io/GraphvizOnline
-    private void dumpNodeGraphviz(List<FlowNodeWrapper> nodes) {
-        if (logger.isTraceEnabled()) {
-            String nodeMapStr = String.format("digraph G {%n");
-            for (FlowNodeWrapper node : nodes) {
-                nodeMapStr += String.format(
-                        "  %s [label=\"{id: %s, name: %s, type: %s}\"]%n",
-                        node.getId(), node.getId(), node.getDisplayName(), node.getType());
-                for (FlowNodeWrapper parent : node.getParents()) {
-                    nodeMapStr += String.format("  %s -> %s%n", node.getId(), parent.getId());
-                }
-                if (this.stepsMap != null) {
-                    for (FlowNodeWrapper step : stepsMap.getOrDefault(node.getId(), new ArrayList<>())) {
-                        nodeMapStr += String.format(
-                                "  %s [label=\"{id: %s, name: %s, type: %s}\"]%n",
-                                step.getId(), step.getId(), step.getDisplayName(), step.getType());
-                        nodeMapStr += String.format("  %s -> %s%n", step.getId(), node.getId());
-                    }
-                }
+    private void dumpNodeGraphviz(
+            List<FlowNodeWrapper> localPipelineNodesList, Map<String, List<FlowNodeWrapper>> localStepsMap) {
+        List<FlowNodeWrapper> nodes = new ArrayList<>(localPipelineNodesList);
+        if (stepsMap != null) {
+            for (List<FlowNodeWrapper> stepsList : localStepsMap.values()) {
+                nodes.addAll(stepsList);
             }
-            nodeMapStr += String.format("}");
-            logger.trace(nodeMapStr);
         }
+        dump(FlowNodeWrapper.getNodeGraphviz(nodes));
+    }
+
+    private void dumpNodeGraphviz(List<FlowNodeWrapper> nodes) {
+        dumpNodeGraphviz(nodes, stepsMap);
     }
 
     private void remapStageParentage() {
@@ -154,11 +138,11 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
         Collections.sort(this.pipelineNodesList, new FlowNodeWrapper.NodeComparator());
         // Remove children whose parents were skipped.
         Map<String, String> nodesToRemap = getNodesToRemap(this.pipelineNodesList);
-        dump(String.format(
+        dump(
                 "remapStageParentage => nodesToRemap: %s",
                 nodesToRemap.entrySet().stream()
                         .map(entrySet -> entrySet.getKey() + ":" + entrySet.getValue())
-                        .collect(Collectors.joining(",", "[", "]"))));
+                        .collect(Collectors.joining(",", "[", "]")));
         dumpNodeGraphviz(this.pipelineNodesList);
         // Find all nodes that have a parent to remap (see 'getNodesToRemap') and change
         // their parentage
@@ -177,7 +161,7 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
                         FlowNodeWrapper newParent = pipelineNodeMap.get(newParentId);
                         node.addEdge(newParent);
                         node.addParent(newParent);
-                        dump(String.format(
+                        dump(
                                 "remapStageParentage => Remapped parent node of {id: %s, name: %s, type: %s} from {id: %s, name: %s, type: %s} to {id: %s, name: %s, type: %s}.",
                                 node.getId(),
                                 node.getDisplayName(),
@@ -187,16 +171,16 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
                                 parent.getType(),
                                 newParent.getId(),
                                 newParent.getDisplayName(),
-                                newParent.getType()));
+                                newParent.getType());
                     } else {
-                        dump(String.format(
+                        dump(
                                 "remapStageParentage => Removed parent of {id: %s, name: %s, type: %s} - was {id: %s, name: %s, type: %s}.",
                                 node.getId(),
                                 node.getDisplayName(),
                                 node.getType(),
                                 parent.getId(),
                                 parent.getDisplayName(),
-                                parent.getType()));
+                                parent.getType());
                     }
                 }
             }
@@ -228,9 +212,9 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
             String originalParentId = remapEntry.getKey();
             if (this.stepsMap.containsKey(originalParentId)) {
                 String remappedParentId = remapEntry.getValue();
-                dump(String.format(
+                dump(
                         "remapStepParentage => Remapping %s steps from stage %s to %s.",
-                        this.stepsMap.get(originalParentId).size(), originalParentId, remappedParentId));
+                        this.stepsMap.get(originalParentId).size(), originalParentId, remappedParentId);
                 List<FlowNodeWrapper> remappedParentStepsList =
                         this.stepsMap.getOrDefault(remappedParentId, new ArrayList<>());
                 remappedParentStepsList.addAll(this.stepsMap.get(originalParentId));

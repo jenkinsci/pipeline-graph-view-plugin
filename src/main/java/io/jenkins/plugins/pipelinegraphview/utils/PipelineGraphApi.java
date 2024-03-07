@@ -51,6 +51,7 @@ public class PipelineGraphApi {
     }
 
     private List<PipelineStageInternal> getPipelineNodes(PipelineGraphBuilderApi builder) {
+        logger.info(String.format("Found %s stage nodes", builder.getPipelineNodes()));
         return builder.getPipelineNodes().stream()
                 .map(flowNodeWrapper -> {
                     String state =
@@ -92,6 +93,7 @@ public class PipelineGraphApi {
         // these are completely new representations.
         List<PipelineStageInternal> stages = getPipelineNodes(builder);
 
+        logger.info(String.format("getPipelineNodes,returned: '%s'", stages));
         // id => stage
         Map<String, PipelineStageInternal> stageMap = stages.stream()
                 .collect(Collectors.toMap(
@@ -118,7 +120,7 @@ public class PipelineGraphApi {
                 stageToChildrenMap.put(stage.getParents().get(0), parentChildren);
             }
         });
-
+        logger.info(String.format("Ended up with PipelineStages: '%s'", stages));
         List<PipelineStage> stageResults = stageMap.values().stream()
                 .map(pipelineStageInternal -> {
                     List<PipelineStage> children =
@@ -130,6 +132,7 @@ public class PipelineGraphApi {
                 })
                 .filter(stage -> !childNodes.contains(stage.getId()))
                 .collect(Collectors.toList());
+        logger.info(String.format("Ended up with PipelineStages: '%s'", stageResults));
         return new PipelineGraph(stageResults, execution.isComplete());
     }
 
@@ -240,9 +243,9 @@ public class PipelineGraphApi {
 
     /*
      * Get a shallower (less nested) representation of the DAG.
-     * This might miss some inforemation, but looks more like the previous
+     * This might miss some information, but looks more like the previous
      * implementation.
-     * Currently used for the legacy tests that check the Adapater output looks like
+     * Currently used for the legacy tests that check the adapter output looks like
      * the legacy one.
      */
     protected PipelineGraph createShallowTree() {

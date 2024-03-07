@@ -72,11 +72,35 @@ public class TestUtils {
                 .collect(Collectors.joining(","));
     }
 
-    public static String collectStageStepsAsString(List<PipelineStep> steps, Function<PipelineStep, String> converter) {
+    public static String collectStepsAsString(List<PipelineStep> steps, Function<PipelineStep, String> converter) {
         return steps.stream().map((PipelineStep step) -> converter.apply(step)).collect(Collectors.joining(","));
     }
 
-    public static Function<PipelineStage, String> stageNameAndStatus = (PipelineStage stage) -> {
-        return String.format("%s{%s}", stage.getName(), stage.getState());
-    };
+    // TODO: add interface or abstract based class to remove duplication  I tried but the conversion from
+    // PipelineStageInternal to PiplineStage stopped working.
+    public static String nodeNameAndStatus(PipelineStage node) {
+        return String.format("%s{%s}", node.getName(), node.getState());
+    }
+
+    public static String nodeNameAndTiming(PipelineStage node) {
+        return String.format(
+                "%s{%s - %s - %s}",
+                node.getName(),
+                node.getStartTimeMillis(),
+                node.getPauseDurationMillis(),
+                node.getTotalDurationMillis());
+    }
+
+    public static String nodeNameAndStatus(PipelineStep node) {
+        return String.format("%s{%s}", node.getName(), node.getState());
+    }
+
+    public static String nodeNameAndTiming(PipelineStep node) {
+        return String.format(
+                "%s{%s - %s - %s}",
+                node.getName(),
+                node.getStartTimeMillis(),
+                node.getPauseDurationMillis(),
+                node.getTotalDurationMillis());
+    }
 }

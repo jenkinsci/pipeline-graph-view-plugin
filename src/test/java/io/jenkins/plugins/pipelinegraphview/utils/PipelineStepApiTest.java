@@ -1,12 +1,18 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.matchesPattern;
+import static org.hamcrest.Matchers.not;
 
 import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
 import java.util.List;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.Rule;
@@ -403,14 +409,14 @@ public class PipelineStepApiTest {
         j.waitForMessage("Starting sleep...", run);
         List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
         Function<PipelineStep, String> converter = s -> s.getStageId() + "->" + s.getName();
-        String stepsStringRunning = TestUtils.collectStageStepsAsString(steps, converter);
+        String stepsStringRunning = TestUtils.collectStepsAsString(steps, converter);
 
         // Wait for Pipeline to end (terminating it means end nodes might not be
         // created).
         j.waitForCompletion(run);
 
         steps = new PipelineStepApi(run).getAllSteps().getSteps();
-        String stepsStringFinished = TestUtils.collectStageStepsAsString(steps, converter);
+        String stepsStringFinished = TestUtils.collectStepsAsString(steps, converter);
         String[] expected = stepsStringRunning.split(",");
         String[] actual = stepsStringFinished.split(",");
         for (int i = 0; i < expected.length; i++) {
@@ -422,7 +428,29 @@ public class PipelineStepApiTest {
     public void pipelineWithSyntaxError() throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "pipelineWithSyntaxError", "pipelineWithSyntaxError.jenkinsfile", Result.FAILURE);
+
         List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
-        assertThat(steps, hasSize(1));
+        String stepsString = TestUtils.collectStepsAsString(steps, (PipelineStep s) -> TestUtils.nodeNameAndStatus(s));
+
+        assertThat(stepsString, equalTo("Pipeline error{failure}"));
+    }
+
+    @Test
+    public void stepsGetValidTimings() throws Exception {
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "nestedStageSleep", "nestedStageSleep.jenkinsfile", Result.SUCCESS);
+
+        List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
+        String stepsString = TestUtils.collectStepsAsString(steps, (PipelineStep s) -> TestUtils.nodeNameAndTiming(s));
+
+        String[] stepDetails = stepsString.split(",");
+        String[] checks = {
+            "In grandchild A\\{Started 1[\\.\\d]* sec ago - Queued 0 ms - Took \\d+ ms\\}",
+            "In grandchild B\\{Started 1[\\.\\d]* sec ago - Queued 0 ms - Took \\d+ ms\\}",
+            "1\\{Started 1[\\.\\d]* sec ago - Queued 0 ms - Took 1 sec\\}"
+        };
+        for (int i = 0; i < stepDetails.length; i++) {
+            assertThat(stepDetails[i], matchesPattern(Pattern.compile(checks[i])));
+        }
     }
 }

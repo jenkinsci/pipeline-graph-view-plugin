@@ -38,10 +38,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Gives steps in a given FlowGraph and assigned them to the nearing stage or parallel block
+ * Gives steps in a given FlowGraph and assigned them to the nearing stage or
+ * parallel block
  * boundary.
  *
- * <p>Original source:
+ * <p>
+ * Original source:
  * https://github.com/jenkinsci/blueocean-plugin/blob/master/blueocean-pipeline-api-impl/src/main/java/io/jenkins/blueocean/rest/impl/pipeline/PipelineStepVisitor.java
  *
  * @author Vivek Pandey
@@ -80,7 +82,8 @@ public class PipelineStepVisitor extends StandardChunkVisitor implements Pipelin
             try {
                 ForkScanner.visitSimpleChunks(execution.getCurrentHeads(), this, new StageChunkFinder());
             } catch (final Throwable t) {
-                // Log run ID, because the eventual exception handler (probably Stapler) isn't specific
+                // Log run ID, because the eventual exception handler (probably Stapler) isn't
+                // specific
                 // enough to do so
                 logger.debug("Caught a "
                         + t.getClass().getSimpleName()
@@ -179,7 +182,8 @@ public class PipelineStepVisitor extends StandardChunkVisitor implements Pipelin
                     + PipelineNodeUtil.isSyntheticStage(startNode)
                     + " .");
         }
-        // Do not add steps to this stage if it's parent is a parallel block  and it's a declarative
+        // Do not add steps to this stage if it's parent is a parallel block and it's a
+        // declarative
         // step - (it should get addded to
         // that instead).
         // This could be a quirk of how the GraphVisitor works - possible
@@ -233,10 +237,12 @@ public class PipelineStepVisitor extends StandardChunkVisitor implements Pipelin
             // Check for an unhandled exception.
             NodeRunStatus status;
             ErrorAction errorAction = endNode.getAction(ErrorAction.class);
-            // If this is a Jenkins failure exception, then we don't need to add a new node - it will come
+            // If this is a Jenkins failure exception, then we don't need to add a new node
+            // - it will come
             // from an existing step.
             if (errorAction != null && !PipelineNodeUtil.isJenkinsFailureException(errorAction.getError())) {
-                // Store node that threw exception as step so we can find it's parent stage later.
+                // Store node that threw exception as step so we can find it's parent stage
+                // later.
                 logger.debug(
                         "Found unhandled exception: " + errorAction.getError().getMessage());
                 this.nodeThatThrewException = errorAction.findOrigin(errorAction.getError(), this.execution);
@@ -255,7 +261,8 @@ public class PipelineStepVisitor extends StandardChunkVisitor implements Pipelin
             }
             pushExceptionNodeToStepsMap(endNode);
         }
-        // if we're using marker-based (and not block-scoped) stages, add the last node as part of its
+        // if we're using marker-based (and not block-scoped) stages, add the last node
+        // as part of its
         // contents
         if (!(endNode instanceof BlockEndNode)) {
             atomNode(null, endNode, afterChunk, scanner);

@@ -265,7 +265,7 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements Pi
 
         accumulatePipelineActions(chunk.getFirstNode());
         final Set<Action> pipelineActions = drainPipelineActions();
-        if (isNodeVisitorDumpEnabled && pipelineActions.size() > 0) {
+        if (isNodeVisitorDumpEnabled && pipelineActions.isEmpty()) {
             dump("\tAdding " + pipelineActions.size() + " actions to stage id: " + stage.getId());
         }
         stage.setPipelineActions(pipelineActions);
@@ -431,7 +431,7 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements Pi
                 pendingActionsForBranches.remove(branchStartNode);
             }
 
-            if (isNodeVisitorDumpEnabled && branchActions.size() > 0) {
+            if (isNodeVisitorDumpEnabled && branchActions.isEmpty()) {
                 dump("\t\tAdding " + branchActions.size() + " actions to branch id: " + branch.getId());
             }
 

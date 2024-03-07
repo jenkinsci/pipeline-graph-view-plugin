@@ -5,9 +5,12 @@ import static org.hamcrest.Matchers.*;
 
 import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.Rule;
@@ -196,17 +199,6 @@ public class PipelineGraphApiTest {
         j.waitForMessage("Starting sleep A1...", run);
         List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
         String stagesStringRunning = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
-        /*
-         * String stagesStringRunning = TestUtils.collectStagesAsString(
-         * stages,
-         * (PipelineStage stage) -> String.format(
-         * "{%d,%s,%s,%s,%s}",
-         * stage.getCompletePercent(),
-         * stage.getName(),
-         * stage.getTitle(),
-         * stage.getType(),
-         * stage.getState()));
-         */
 
         LOGGER.log(Level.INFO, stagesStringRunning);
         // Wait for Pipeline to end (terminating it means end nodes might not be
@@ -235,7 +227,8 @@ public class PipelineGraphApiTest {
         j.waitForMessage("Finished A1", run);
         j.waitForMessage("Starting sleep B1...", run);
         List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
-        String stagesStringRunning = TestUtils.collectStagesAsString(stages, TestUtils.stageNameAndStatus);
+        String stagesStringRunning =
+                TestUtils.collectStagesAsString(stages, (PipelineStage s) -> TestUtils.nodeNameAndStatus(s));
 
         LOGGER.log(Level.INFO, stagesStringRunning);
         // Wait for Pipeline to end (terminating it means end nodes might not be
@@ -244,7 +237,8 @@ public class PipelineGraphApiTest {
 
         List<PipelineStage> finishedStages =
                 new PipelineGraphApi(run).createTree().getStages();
-        String stagesStringFinished = TestUtils.collectStagesAsString(finishedStages, TestUtils.stageNameAndStatus);
+        String stagesStringFinished =
+                TestUtils.collectStagesAsString(finishedStages, (PipelineStage s) -> TestUtils.nodeNameAndStatus(s));
         LOGGER.log(Level.INFO, stagesStringFinished);
 
         assertThat(
@@ -277,17 +271,7 @@ public class PipelineGraphApiTest {
         j.waitForMessage("Starting sleep B...", run);
         List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
         String stagesStringRunning = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
-        /*
-         * String stagesStringRunning = TestUtils.collectStagesAsString(
-         * stages,
-         * (PipelineStage stage) -> String.format(
-         * "{%d,%s,%s,%s,%s}",
-         * stage.getCompletePercent(),
-         * stage.getName(),
-         * stage.getTitle(),
-         * stage.getType(),
-         * stage.getState()));
-         */
+
         LOGGER.log(Level.INFO, stagesStringRunning);
         // Wait for Pipeline to end (terminating it means end nodes might not be
         // created).
@@ -315,7 +299,8 @@ public class PipelineGraphApiTest {
         j.waitForMessage("Starting sleep A1...", run);
         j.waitForMessage("Starting sleep A2...", run);
         List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
-        String stagesStringRunning = TestUtils.collectStagesAsString(stages, TestUtils.stageNameAndStatus);
+        String stagesStringRunning =
+                TestUtils.collectStagesAsString(stages, (PipelineStage s) -> TestUtils.nodeNameAndStatus(s));
         LOGGER.log(Level.INFO, stagesStringRunning);
         // Wait for Pipeline to end (terminating it means end nodes might not be
         // created).
@@ -323,7 +308,8 @@ public class PipelineGraphApiTest {
 
         List<PipelineStage> finishedStages =
                 new PipelineGraphApi(run).createTree().getStages();
-        String stagesStringFinished = TestUtils.collectStagesAsString(finishedStages, TestUtils.stageNameAndStatus);
+        String stagesStringFinished =
+                TestUtils.collectStagesAsString(finishedStages, (PipelineStage s) -> TestUtils.nodeNameAndStatus(s));
         LOGGER.log(Level.INFO, stagesStringFinished);
 
         assertThat(
@@ -340,7 +326,8 @@ public class PipelineGraphApiTest {
                 j, "gh222_statusPropagatesToParent", "gh222_statusPropagatesToParent.jenkinsfile", Result.FAILURE);
 
         List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
-        String stagesString = TestUtils.collectStagesAsString(stages, TestUtils.stageNameAndStatus);
+        String stagesString =
+                TestUtils.collectStagesAsString(stages, (PipelineStage s) -> TestUtils.nodeNameAndStatus(s));
 
         assertThat(stagesString, equalTo("ParentStage{failure}[SubStageA{failure},SubStageB{skipped}]"));
     }
@@ -349,11 +336,34 @@ public class PipelineGraphApiTest {
     public void pipelineWithSyntaxError() throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "pipelineWithSyntaxError", "pipelineWithSyntaxError.jenkinsfile", Result.FAILURE);
-        PipelineGraphApi api = new PipelineGraphApi(run);
-        PipelineGraph graph = api.createTree();
 
-        List<PipelineStage> stages = graph.getStages();
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
+        String stagesString =
+                TestUtils.collectStagesAsString(stages, (PipelineStage s) -> TestUtils.nodeNameAndStatus(s));
 
-        assertThat(stages, hasSize(1));
+        assertThat(stagesString, equalTo("Unhandled Exception{failure}"));
+    }
+
+    @Test
+    public void stagesGetValidTimings() throws Exception {
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "nestedStageSleep", "nestedStageSleep.jenkinsfile", Result.SUCCESS);
+
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
+        String stagesString =
+                TestUtils.collectStagesAsString(stages, (PipelineStage s) -> TestUtils.nodeNameAndTiming(s));
+
+        List<String> stepDetails = new ArrayList<>(Arrays.asList(stagesString.split("[\\[\\],]")));
+        stepDetails.removeIf(item -> "".equals(item));
+        String[] checks = {
+            "Parent\\{Started 1[\\.\\d]* sec ago - Queued 0 ms - Took 1[\\.\\d]* sec\\}",
+            "Child A\\{Started 1[\\.\\d]* sec ago - Queued 0 ms - Took 1[\\.\\d]* sec\\}",
+            "Grandchild A\\{Started 1[\\.\\d]* sec ago - Queued 0 ms - Took \\d+ ms\\}",
+            "Child B\\{Started 1[\\.\\d]* sec ago - Queued 0 ms - Took 1[\\.\\d]* sec\\}",
+            "Grandchild B\\{Started 1[\\.\\d]* sec ago - Queued 0 ms - Took 1[\\.\\d]* sec\\}"
+        };
+        for (int i = 0; i < stepDetails.size(); i++) {
+            assertThat(stepDetails.get(i), matchesPattern(Pattern.compile(checks[i])));
+        }
     }
 }

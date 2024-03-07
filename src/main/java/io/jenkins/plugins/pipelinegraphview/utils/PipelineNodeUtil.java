@@ -202,9 +202,13 @@ public class PipelineNodeUtil {
         return (pauseAction != null && pauseAction.isPaused());
     }
 
-    public static boolean isParallelBlock(@NonNull FlowNode node) {
+    /* Untested way of determining if we are a parallel block.
+     * WARNING: Use with caution.
+     */
+    protected static boolean isParallelBlock(@NonNull FlowNode node) {
         /*
-         * TODO: Find a better method - allowed list of labels. Seems to only have:
+         * TODO: Find a better method - list of expected labels.
+         * Seems to only have (not sure if this is true for other nodes as well though):
          * org.jenkinsci.plugins.workflow.support.actions.LogStorageAction
          * org.jenkinsci.plugins.workflow.actions.TimingAction
          */

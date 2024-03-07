@@ -132,18 +132,9 @@ public class NodeRelationshipFinder {
                 relationships.put(endNode.getId(), blockRelationship);
             }
             // Remove end node from stack (if there is one).
-            if (pendingEndNodes.size() > 0) {
+            if (!pendingEndNodes.isEmpty()) {
                 pendingEndNodes.pop();
             }
-        }
-    }
-
-    private void removeFromStacks(@NonNull FlowNode startNode, @NonNull FlowNode endNode) {
-        if (pendingStartNodes.size() > 0 && pendingStartNodes.contains(startNode)) {
-            pendingStartNodes.remove(startNode);
-        }
-        if (pendingEndNodes.size() > 0 && pendingEndNodes.contains(endNode)) {
-            pendingEndNodes.remove(endNode);
         }
     }
 
@@ -188,29 +179,16 @@ public class NodeRelationshipFinder {
     @CheckForNull
     private FlowNode getBlockAfterNode() {
         FlowNode after = null;
-        /*
-         * if (pendingStartNodes.size() > 0) {
-         * // Get start node from stack - should be the start node of the block after
-         * this
-         * // one.
-         * after = pendingStartNodes.peek();
-         * dump("Getting after node (%s) from pendingStartNodes", (after != null) ?
-         * after.getId() : "null");
-         * } else {
-         */
-        // otherwise use the parent block end node (or null if there is none).
-        if (pendingEndNodes.size() > 0) {
+        if (!pendingEndNodes.isEmpty()) {
             after = pendingEndNodes.pop();
         }
         dump(
                 "Getting after node (%s) from pendingEndNodes stack (size: %s)",
                 (after != null) ? after.getId() : "null", pendingEndNodes.size());
-        // }
         return after;
     }
 
     private NodeRelationship addStageRelationship(@NonNull FlowNode node, @NonNull FlowNode endNode) {
-        // removeFromStacks(node, endNode);
         FlowNode after = getBlockAfterNode();
         dump(
                 "Generating relationship for Block %s{%s}->%s{%s} (with after %s{%s})",

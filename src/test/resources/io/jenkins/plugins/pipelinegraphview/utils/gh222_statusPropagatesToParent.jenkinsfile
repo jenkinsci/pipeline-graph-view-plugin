@@ -1,0 +1,30 @@
+pipeline 
+{
+    agent any
+    
+    stages 
+    {
+        stage('ParentStage') 
+        {
+            stages
+            {
+                stage('SubStageA')    
+                {
+                    steps
+                    {
+                        echo 'SubStageA'
+                        error 'Something went wrong!'
+                    }
+                }
+                
+                stage('SubStageB')    
+                {
+                    steps
+                    {
+                        echo 'SubStageB'
+                    }
+                }
+            }
+        }
+    }
+}

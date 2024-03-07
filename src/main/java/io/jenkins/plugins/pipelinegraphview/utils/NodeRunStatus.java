@@ -18,21 +18,17 @@ public class NodeRunStatus {
     public final BlueRun.BlueRunState state;
 
     public NodeRunStatus(@NonNull FlowNode endNode) {
-        Result result = null;
         ErrorAction errorAction = endNode.getError();
         WarningAction warningAction = endNode.getPersistentAction(WarningAction.class);
         if (errorAction != null) {
+            Result result = null;
             if (errorAction.getError() instanceof FlowInterruptedException) {
                 result = ((FlowInterruptedException) errorAction.getError()).getResult();
             }
-            if (result == null || result != Result.ABORTED) {
-                this.result = BlueRun.BlueRunResult.FAILURE;
-            } else {
-                this.result = BlueRun.BlueRunResult.ABORTED;
-            }
+            this.result = result != null ? BlueRun.BlueRunResult.fromResult(result) : BlueRun.BlueRunResult.FAILURE;
             this.state = endNode.isActive() ? BlueRun.BlueRunState.RUNNING : BlueRun.BlueRunState.FINISHED;
         } else if (warningAction != null) {
-            this.result = new NodeRunStatus(GenericStatus.fromResult(warningAction.getResult())).result;
+            this.result = BlueRun.BlueRunResult.fromResult(warningAction.getResult());
             this.state = endNode.isActive() ? BlueRun.BlueRunState.RUNNING : BlueRun.BlueRunState.FINISHED;
         } else if (QueueItemAction.getNodeState(endNode) == QueueItemAction.QueueState.QUEUED) {
             this.result = BlueRun.BlueRunResult.UNKNOWN;

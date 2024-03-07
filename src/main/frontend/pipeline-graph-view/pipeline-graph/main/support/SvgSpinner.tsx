@@ -118,6 +118,7 @@ export class SvgSpinner extends React.Component<Props> {
 
     const rotate = (percentage / 100) * 360;
     const d = describeArcAsPath(0, 0, insideRadius, 0, rotate);
+
     const innerRadius = insideRadius / 3;
 
     return (

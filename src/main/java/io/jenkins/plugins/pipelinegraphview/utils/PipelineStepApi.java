@@ -61,9 +61,7 @@ public class PipelineStepApi {
                             title, // TODO blue ocean uses timing information: "Passed in
                             // 0s"
                             stageId,
-                            flowNodeWrapper.getTiming().getPauseDurationMillis(),
-                            flowNodeWrapper.getTiming().getStartTimeMillis(),
-                            flowNodeWrapper.getTiming().getTotalDurationMillis());
+                            flowNodeWrapper.getTiming());
                 })
                 .collect(Collectors.toList());
         return steps;

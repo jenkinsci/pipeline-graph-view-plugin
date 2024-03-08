@@ -59,9 +59,9 @@ public class PipelineNodeTreeScanner {
 
     // Print debug message if 'isDebugEnabled' is true.
     private void dump(String message, Object... args) {
-        // if (isDebugEnabled) {
-        logger.info(String.format(message, args));
-        // }
+        if (isDebugEnabled) {
+            logger.debug(String.format(message, args));
+        }
     }
 
     /**
@@ -184,9 +184,9 @@ public class PipelineNodeTreeScanner {
 
         // Print debug message if 'isDebugEnabled' is true.
         private void dump(String message, Object... args) {
-            // if (isDebugEnabled) {
-            logger.info(String.format(message, args));
-            // }
+            if (isDebugEnabled) {
+                logger.debug(String.format(message, args));
+            }
         }
 
         protected List<FlowNodeWrapper> getNodes() {

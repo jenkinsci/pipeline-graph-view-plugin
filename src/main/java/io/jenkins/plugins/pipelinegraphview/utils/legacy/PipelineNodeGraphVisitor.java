@@ -655,7 +655,7 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements Pi
     }
 
     private void dump(String str) {
-        logger.info(System.identityHashCode(this) + ": " + str);
+        logger.debug(System.identityHashCode(this) + ": " + str);
     }
 
     /**

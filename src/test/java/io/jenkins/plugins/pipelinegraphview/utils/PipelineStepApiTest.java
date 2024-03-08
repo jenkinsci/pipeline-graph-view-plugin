@@ -5,24 +5,42 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
 
 import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
+import io.jenkins.plugins.pipelinegraphview.treescanner.NodeRelationshipFinder;
+import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
+import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeTreeScanner;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
-import java.util.regex.Pattern;
+import java.util.logging.Level;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.LoggerRule;
 
 public class PipelineStepApiTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public LoggerRule l = new LoggerRule();
+
+    @Before
+    public void enabledDebugLogs() {
+        l.record(PipelineGraphApi.class, Level.FINEST);
+        l.record(PipelineNodeTreeScanner.class, Level.FINEST);
+        l.record(PipelineNodeGraphAdapter.class, Level.FINEST);
+        l.record(NodeRelationshipFinder.class, Level.FINEST);
+    }
 
     @Test
     public void unstableSmokes() throws Exception {
@@ -441,16 +459,15 @@ public class PipelineStepApiTest {
                 TestUtils.createAndRunJob(j, "nestedStageSleep", "nestedStageSleep.jenkinsfile", Result.SUCCESS);
 
         List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
-        String stepsString = TestUtils.collectStepsAsString(steps, (PipelineStep s) -> TestUtils.nodeNameAndTiming(s));
 
-        String[] stepDetails = stepsString.split(",");
-        String[] checks = {
-            "In grandchild A\\{Started 1[\\.\\d]* sec ago - Queued 0 ms - Took \\d+ ms\\}",
-            "In grandchild B\\{Started 1[\\.\\d]* sec ago - Queued 0 ms - Took \\d+ ms\\}",
-            "1\\{Started 1[\\.\\d]* sec ago - Queued 0 ms - Took 1 sec\\}"
-        };
-        for (int i = 0; i < stepDetails.length; i++) {
-            assertThat(stepDetails[i], matchesPattern(Pattern.compile(checks[i])));
+        Map<String, List<Long>> checks = new LinkedHashMap<>();
+        // Give large ranges - we are testing that the values are feasible, not that they are precise.
+        checks.put("In grandchild A", Arrays.asList(1000L, 0L, 0L, 5000L, 500L, 500L));
+        checks.put("In grandchild B", Arrays.asList(1000L, 0L, 0L, 5000L, 500L, 500L));
+        checks.put("1", Arrays.asList(1000L, 0L, 1000L, 5000L, 500L, 3000L));
+        for (AbstractPipelineNode n : steps) {
+            assert checks.keySet().contains(n.getName());
+            TestUtils.assertTimesInRange(n, checks.get(n.getName()));
         }
     }
 }

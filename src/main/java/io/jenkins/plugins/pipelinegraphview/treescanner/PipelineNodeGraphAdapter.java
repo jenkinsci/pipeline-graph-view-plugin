@@ -103,9 +103,9 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
 
     // Print debug message if 'isDebugEnabled' is true.
     private void dump(String message, Object... args) {
-        // if (isDebugEnabled) {
-        logger.info(String.format(message, args));
-        // }
+        if (isDebugEnabled) {
+            logger.debug(String.format(message, args));
+        }
     }
 
     // Useful for dumping node maps to console. These can then be viewed in dor or

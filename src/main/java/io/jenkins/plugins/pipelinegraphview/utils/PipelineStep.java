@@ -1,5 +1,7 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
+
 public class PipelineStep extends AbstractPipelineNode {
     private String stageId;
 
@@ -11,19 +13,8 @@ public class PipelineStep extends AbstractPipelineNode {
             String type,
             String title,
             String stageId,
-            long pauseDurationMillis,
-            long startTimeMillis,
-            long totalDurationMillis) {
-        super(
-                id,
-                name,
-                state,
-                completePercent,
-                type,
-                title,
-                getUserFriendlyPauseDuration(pauseDurationMillis),
-                getUserFriendlyStartTime(startTimeMillis),
-                getUserFriendlyDuration(totalDurationMillis));
+            TimingInfo timingInfo) {
+        super(id, name, state, completePercent, type, title, timingInfo);
         this.stageId = stageId;
     }
 

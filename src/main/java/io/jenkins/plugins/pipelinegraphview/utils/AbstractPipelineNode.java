@@ -3,6 +3,7 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 import hudson.Util;
 import java.util.Date;
 import java.util.Locale;
+import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 
 public class AbstractPipelineNode {
     private String name;
@@ -12,8 +13,8 @@ public class AbstractPipelineNode {
     private String title;
     private String id;
     private String pauseDurationMillis;
-    private String startTimeMillis;
     private String totalDurationMillis;
+    private TimingInfo timingInfo;
 
     public AbstractPipelineNode(
             String id,
@@ -22,31 +23,30 @@ public class AbstractPipelineNode {
             int completePercent,
             String type,
             String title,
-            String pauseDurationMillis,
-            String startTimeMillis,
-            String totalDurationMillis) {
+            TimingInfo timingInfo) {
         this.id = id;
         this.name = name;
         this.state = state.toLowerCase(Locale.ROOT);
         this.completePercent = completePercent;
         this.type = type;
         this.title = title;
-        this.pauseDurationMillis = pauseDurationMillis;
-        this.startTimeMillis = startTimeMillis;
-        this.totalDurationMillis = totalDurationMillis;
+        this.timingInfo = timingInfo;
+        // These values won't change for a given TimingInfo.
+        this.pauseDurationMillis = getUserFriendlyPauseDuration(timingInfo.getPauseDurationMillis());
+        this.totalDurationMillis = getUserFriendlyDuration(timingInfo.getTotalDurationMillis());
     }
 
-    protected static String getUserFriendlyPauseDuration(Long pauseDurationMillis) {
+    protected static String getUserFriendlyPauseDuration(long pauseDurationMillis) {
         return "Queued " + Util.getTimeSpanString(pauseDurationMillis);
     }
 
-    protected static String getUserFriendlyStartTime(Long startTimeMillis) {
+    protected static String getUserFriendlyStartTime(long startTimeMillis) {
         return startTimeMillis == 0
                 ? ""
                 : "Started " + Util.getTimeSpanString(Math.abs(startTimeMillis - new Date().getTime())) + " ago";
     }
 
-    protected static String getUserFriendlyDuration(Long totalDurationMillis) {
+    protected static String getUserFriendlyDuration(long totalDurationMillis) {
         return "Took " + Util.getTimeSpanString(totalDurationMillis);
     }
 
@@ -55,7 +55,8 @@ public class AbstractPipelineNode {
     }
 
     public String getStartTimeMillis() {
-        return startTimeMillis;
+        // Dynamically generate as it depends of the current time.
+        return getUserFriendlyStartTime(timingInfo.getStartTimeMillis());
     }
 
     public String getTotalDurationMillis() {
@@ -84,5 +85,9 @@ public class AbstractPipelineNode {
 
     public String getTitle() {
         return title;
+    }
+
+    protected TimingInfo getTimingInfo() {
+        return this.timingInfo;
     }
 }

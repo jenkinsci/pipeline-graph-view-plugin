@@ -1,6 +1,7 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
 import java.util.List;
+import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 
 public class PipelineStage extends AbstractPipelineNode {
 
@@ -22,19 +23,8 @@ public class PipelineStage extends AbstractPipelineNode {
             PipelineStage nextSibling,
             boolean sequential,
             boolean synthetic,
-            Long pauseDurationMillis,
-            Long startTimeMillis,
-            Long totalDurationMillis) {
-        super(
-                id,
-                name,
-                state,
-                completePercent,
-                type,
-                title,
-                getUserFriendlyPauseDuration(pauseDurationMillis),
-                getUserFriendlyStartTime(startTimeMillis),
-                getUserFriendlyDuration(totalDurationMillis));
+            TimingInfo timingInfo) {
+        super(id, name, state, completePercent, type, title, timingInfo);
         this.children = children;
         this.seqContainerName = seqContainerName;
         this.nextSibling = nextSibling;

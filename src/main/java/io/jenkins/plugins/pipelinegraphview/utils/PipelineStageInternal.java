@@ -18,9 +18,7 @@ public class PipelineStageInternal {
     private PipelineStageInternal nextSibling;
     private boolean sequential;
     private boolean synthetic;
-    private Long pauseDurationMillis;
-    private Long startTimeMillis;
-    private Long totalDurationMillis;
+    private TimingInfo timingInfo;
 
     public PipelineStageInternal(
             String id,
@@ -40,9 +38,7 @@ public class PipelineStageInternal {
         this.type = type;
         this.title = title;
         this.synthetic = synthetic;
-        this.pauseDurationMillis = times.getPauseDurationMillis();
-        this.startTimeMillis = times.getStartTimeMillis();
-        this.totalDurationMillis = times.getTotalDurationMillis();
+        this.timingInfo = times;
     }
 
     public boolean isSequential() {
@@ -138,8 +134,6 @@ public class PipelineStageInternal {
                 nextSibling != null ? nextSibling.toPipelineStage(Collections.emptyList()) : null,
                 sequential,
                 synthetic,
-                pauseDurationMillis,
-                startTimeMillis,
-                totalDurationMillis);
+                timingInfo);
     }
 }

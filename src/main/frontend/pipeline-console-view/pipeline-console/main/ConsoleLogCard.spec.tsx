@@ -64,4 +64,20 @@ describe("ConsoleLogCard", () => {
     expect(getByText(/This is a step/));
     expect(findByText(/Hello, world!/));
   });
+
+  it("calls handleMoreConsoleClick on load was card isExpanded set", async () => {
+    console.log = jest.fn();
+    render(<ConsoleLogCard {...DefaultTestProps} isExpanded={true} />);
+    expect(console.log).toHaveBeenCalledWith(
+      "handleMoreConsoleClick triggered"
+    );
+  });
+
+  it("does not call handleMoreConsoleClick on load was card isExpanded set", async () => {
+    console.log = jest.fn();
+    render(<ConsoleLogCard {...DefaultTestProps} />);
+    expect(console.log).not.toHaveBeenCalledWith(
+      "handleMoreConsoleClick triggered"
+    );
+  });
 });

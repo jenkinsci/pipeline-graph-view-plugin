@@ -82,11 +82,11 @@ export class ConsoleLogCard extends React.Component<
 
   componentDidMount(): void {
     if (this.props.isExpanded) {
-      console.info(`Getting initial logs for step '${this.props.step.id}'.`);
       // If we start expanded then request logs.
-      this.props.handleMoreConsoleClick(this.props.step.id, this.props.stepBuffer.startByte);
-    } else {
-      console.info(`Step '${this.props.step.id}' not open '${this.props.isExpanded}', so not getting logs.`);
+      this.props.handleMoreConsoleClick(
+        this.props.step.id,
+        this.props.stepBuffer.startByte
+      );
     }
   }
 

@@ -80,6 +80,16 @@ export class ConsoleLogCard extends React.Component<
     this.props.handleStepToggle(event, this.props.step.id);
   }
 
+  componentDidMount(): void {
+    if (this.props.isExpanded) {
+      // If we start expanded then request logs.
+      this.props.handleMoreConsoleClick(
+        this.props.step.id,
+        this.props.stepBuffer.startByte
+      );
+    }
+  }
+
   getTruncatedLogWarning() {
     if (this.props.stepBuffer.lines && this.props.stepBuffer.startByte > 0) {
       return (

@@ -175,6 +175,10 @@ function forEachChildStage(
     return;
   }
   for (const stage of topStage.children) {
+    // This can be in the graph if there is an unhandled exception.
+    if (stage.type == "PIPELINE_START") {
+      continue;
+    }
     const needToRecurse =
       stageHasChildren(stage) && stage.children[0].type != "PARALLEL";
     callback(topStage, stage, needToRecurse);

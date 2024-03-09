@@ -5,16 +5,23 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.Action;
 import hudson.model.Result;
+import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunResult;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunState;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.LabelAction;
+import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
 import org.jenkinsci.plugins.workflow.graph.AtomNode;
+import org.jenkinsci.plugins.workflow.graph.BlockEndNode;
+import org.jenkinsci.plugins.workflow.graph.BlockStartNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
+import org.jenkinsci.plugins.workflow.graph.FlowStartNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException;
@@ -24,11 +31,16 @@ import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
 public class FlowNodeWrapper {
 
     /**
-     * Checks to see if `this` and `that` probably represent the same underlying pipeline graph node
-     * as far as the user is concerned. This is sloppier than an exact name and ID match because
-     * {@link PipelineNodeGraphVisitor} as of 2019-05-17 can return some nodes with different IDs
-     * during a build as opposed to once the build is complete. As such we check name, type, and
-     * firstParent. But we need to check firstParent the same way for the same reason.
+     * Checks to see if `this` and `that` probably represent the same underlying
+     * pipeline graph node
+     * as far as the user is concerned. This is sloppier than an exact name and ID
+     * match because
+     * {@link PipelineNodeGraphAdapter} as of 2019-05-17 can return some nodes with
+     * different IDs
+     * during a build as opposed to once the build is complete. As such we check
+     * name, type, and
+     * firstParent. But we need to check firstParent the same way for the same
+     * reason.
      *
      * @param that
      * @return
@@ -58,8 +70,11 @@ public class FlowNodeWrapper {
     public enum NodeType {
         STAGE,
         PARALLEL,
+        PARALLEL_BLOCK,
         STEP,
+        STEPS_BLOCK,
         UNHANDLED_EXCEPTION,
+        PIPELINE_START,
     }
 
     private final FlowNode node;
@@ -82,7 +97,7 @@ public class FlowNodeWrapper {
             @NonNull NodeRunStatus status,
             @NonNull TimingInfo timingInfo,
             @NonNull WorkflowRun run) {
-        this(node, status, timingInfo, null, run);
+        this(node, status, timingInfo, null, run, null);
     }
 
     public FlowNodeWrapper(
@@ -91,10 +106,20 @@ public class FlowNodeWrapper {
             @NonNull TimingInfo timingInfo,
             @Nullable InputStep inputStep,
             @NonNull WorkflowRun run) {
+        this(node, status, timingInfo, inputStep, run, null);
+    }
+
+    public FlowNodeWrapper(
+            @NonNull FlowNode node,
+            @NonNull NodeRunStatus status,
+            @NonNull TimingInfo timingInfo,
+            @Nullable InputStep inputStep,
+            @NonNull WorkflowRun run,
+            @Nullable NodeType type) {
         this.node = node;
         this.status = status;
         this.timingInfo = timingInfo;
-        this.type = getNodeType(node);
+        this.type = type == null ? getNodeType(node) : type;
         this.displayName = PipelineNodeUtil.getDisplayName(node);
         this.inputStep = inputStep;
         this.run = run;
@@ -105,6 +130,13 @@ public class FlowNodeWrapper {
     }
 
     public @NonNull String getDisplayName() {
+        // Make 'PARALLEL_BLOCK' types have the display name as SytheticNodes used to.
+        if (type == NodeType.PARALLEL_BLOCK) {
+            return "Parallel";
+        }
+        if (type == NodeType.PIPELINE_START) {
+            return "Unhandled Exception";
+        }
         return displayName;
     }
 
@@ -123,9 +155,16 @@ public class FlowNodeWrapper {
             return NodeType.STAGE;
         } else if (PipelineNodeUtil.isParallelBranch(node)) {
             return NodeType.PARALLEL;
+        } else if (PipelineNodeUtil.isParallelBlock(node)) {
+            return NodeType.PARALLEL_BLOCK;
+        } else if (node instanceof StepStartNode) {
+            return NodeType.STEPS_BLOCK;
+        } else if (node instanceof FlowStartNode) {
+            return NodeType.PIPELINE_START;
         } else if (PipelineNodeUtil.isUnhandledException(node)) {
             return NodeType.UNHANDLED_EXCEPTION;
         }
+
         throw new IllegalArgumentException(
                 String.format("Unknown FlowNode %s, type: %s", node.getId(), node.getClass()));
     }
@@ -145,6 +184,10 @@ public class FlowNodeWrapper {
         return timingInfo;
     }
 
+    public @NonNull TimingInfo setTiming() {
+        return timingInfo;
+    }
+
     public @NonNull String getId() {
         return node.getId();
     }
@@ -157,8 +200,21 @@ public class FlowNodeWrapper {
         return type;
     }
 
+    /*
+     * Parallel block appear as StepStartNodes in the tree. We might know know if
+     * it's a don't kno
+     *
+     */
+    public NodeType setType() {
+        return type;
+    }
+
     public void addEdge(FlowNodeWrapper edge) {
         this.edges.add(edge);
+    }
+
+    public void removeEdge(FlowNodeWrapper edge) {
+        this.edges.remove(edge);
     }
 
     public void addEdges(List<FlowNodeWrapper> edges) {
@@ -166,15 +222,19 @@ public class FlowNodeWrapper {
     }
 
     public void addParent(FlowNodeWrapper parent) {
-        parents.add(parent);
+        this.parents.add(parent);
     }
 
     public void addParents(Collection<FlowNodeWrapper> parents) {
         this.parents.addAll(parents);
     }
 
+    public void removeParent(FlowNodeWrapper parent) {
+        this.parents.remove(parent);
+    }
+
     public @CheckForNull FlowNodeWrapper getFirstParent() {
-        return parents.size() > 0 ? parents.get(0) : null;
+        return !parents.isEmpty() ? parents.get(0) : null;
     }
 
     public @NonNull List<FlowNodeWrapper> getParents() {
@@ -230,7 +290,7 @@ public class FlowNodeWrapper {
     }
 
     @CheckForNull
-    String nodeError() {
+    public String nodeError() {
         ErrorAction errorAction = node.getError();
         if (errorAction != null) {
             return errorAction.getError().getMessage();
@@ -257,9 +317,33 @@ public class FlowNodeWrapper {
         this.blockErrorAction = blockErrorAction;
     }
 
+    public static boolean isStart(FlowNode node) {
+        return node instanceof BlockStartNode;
+    }
+
+    public static boolean isEnd(FlowNode node) {
+        return node instanceof BlockEndNode;
+    }
+
+    public boolean isStep() {
+        return this.type == NodeType.STEP;
+    }
+
+    public boolean isStepsBlock() {
+        return this.type == NodeType.STEPS_BLOCK;
+    }
+
+    /*
+     * public boolean isExecuted() {
+     * return NotExecutedNodeAction.isExecuted(node);
+     * }
+     */
+
     /**
-     * Returns Action instances that were attached to the associated FlowNode, or to any of its
-     * children not represented in the graph. Filters by class to mimic Item.getActions(class).
+     * Returns Action instances that were attached to the associated FlowNode, or to
+     * any of its
+     * children not represented in the graph. Filters by class to mimic
+     * Item.getActions(class).
      */
     public <T extends Action> Collection<T> getPipelineActions(Class<T> clazz) {
         if (pipelineActions == null) {
@@ -275,7 +359,8 @@ public class FlowNodeWrapper {
     }
 
     /**
-     * Returns Action instances that were attached to the associated FlowNode, or to any of its
+     * Returns Action instances that were attached to the associated FlowNode, or to
+     * any of its
      * children not represented in the graph.
      */
     public Collection<Action> getPipelineActions() {
@@ -296,5 +381,58 @@ public class FlowNodeWrapper {
 
     public boolean isUnhandledException() {
         return PipelineNodeUtil.isUnhandledException(node);
+    }
+
+    public static class NodeComparator implements Comparator<FlowNodeWrapper>, Serializable {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public int compare(FlowNodeWrapper a, FlowNodeWrapper b) {
+            return FlowNodeWrapper.compareIds(a.getId(), b.getId());
+        }
+    }
+
+    public static class FlowNodeComparator implements Comparator<FlowNode>, Serializable {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public int compare(FlowNode a, FlowNode b) {
+            return FlowNodeWrapper.compareIds(a.getId(), b.getId());
+        }
+    }
+
+    public static class NodeIdComparator implements Comparator<String>, Serializable {
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public int compare(String a, String b) {
+            return FlowNodeWrapper.compareIds(a, b);
+        }
+    }
+
+    public static int compareIds(String ida, String idb) {
+        return Integer.compare(Integer.parseInt(ida), Integer.parseInt(idb));
+    }
+
+    // Useful for dumping node maps to console. These can then be viewed in dor or
+    // online via:
+    // https://dreampuf.github.io/GraphvizOnline
+    public static String getNodeGraphviz(List<FlowNodeWrapper> nodes) {
+        String nodeMapStr = String.format("digraph G {%n");
+        for (FlowNodeWrapper node : nodes) {
+            nodeMapStr += String.format(
+                    "  %s [label=\"{id: %s, name: %s, type: %s, state: %s, result: %s}\"]%n",
+                    node.getId(),
+                    node.getId(),
+                    node.getDisplayName(),
+                    node.getType(),
+                    node.getStatus().state,
+                    node.getStatus().result);
+            for (FlowNodeWrapper parent : node.getParents()) {
+                nodeMapStr += String.format("  %s -> %s%n", node.getId(), parent.getId());
+            }
+        }
+        nodeMapStr += "}";
+        return nodeMapStr;
     }
 }

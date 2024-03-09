@@ -5,8 +5,8 @@ import static org.hamcrest.Matchers.*;
 
 import hudson.Functions;
 import hudson.model.Result;
+import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
-import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepVisitor;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import java.util.List;
 import net.sf.json.JSONObject;
@@ -28,7 +28,7 @@ public class PipelineConsoleViewActionTest {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "hello_world_scripted", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
-        PipelineStepVisitor builder = new PipelineStepVisitor(run);
+        PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
         String stageId =
                 TestUtils.getNodesByDisplayName(run, "Say Hello").get(0).getId();
         List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
@@ -36,9 +36,9 @@ public class PipelineConsoleViewActionTest {
 
         PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
         JSONObject consoleJson = consoleAction.getConsoleOutputJson(echoStep.getId(), 0L);
-        assertThat(consoleJson.getString("endByte"), is(String.valueOf(TEXT.length())));
-        assertThat(consoleJson.getString("startByte"), is("0"));
-        assertThat(consoleJson.getString("text"), is(TEXT));
+        assertThat(consoleJson.getString("endByte"), equalTo(String.valueOf(TEXT.length())));
+        assertThat(consoleJson.getString("startByte"), equalTo("0"));
+        assertThat(consoleJson.getString("text"), equalTo(TEXT));
     }
 
     @Issue("GH#224")
@@ -47,16 +47,16 @@ public class PipelineConsoleViewActionTest {
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "hello_world_scripted", "simpleError.jenkinsfile", Result.FAILURE);
 
-        PipelineStepVisitor builder = new PipelineStepVisitor(run);
+        PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
         String stageId = TestUtils.getNodesByDisplayName(run, "A").get(0).getId();
         List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
         FlowNodeWrapper errorStep = stepNodes.get(0);
 
         PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
         JSONObject consoleJson = consoleAction.getConsoleOutputJson(errorStep.getId(), 0L);
-        assertThat(consoleJson.getString("endByte"), is("16"));
-        assertThat(consoleJson.getString("startByte"), is("0"));
-        assertThat(consoleJson.getString("text"), is("This is an error"));
+        assertThat(consoleJson.getString("endByte"), equalTo("16"));
+        assertThat(consoleJson.getString("startByte"), equalTo("0"));
+        assertThat(consoleJson.getString("text"), equalTo("This is an error"));
     }
 
     @Issue("GH#224")
@@ -65,7 +65,7 @@ public class PipelineConsoleViewActionTest {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "hello_world_scripted", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
-        PipelineStepVisitor builder = new PipelineStepVisitor(run);
+        PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
         String stageId =
                 TestUtils.getNodesByDisplayName(run, "Say Hello").get(0).getId();
         List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
@@ -73,9 +73,9 @@ public class PipelineConsoleViewActionTest {
 
         PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
         JSONObject consoleJson = consoleAction.getConsoleOutputJson(echoStep.getId(), 7L);
-        assertThat(consoleJson.getString("endByte"), is(String.valueOf(TEXT.length())));
-        assertThat(consoleJson.getString("startByte"), is("7"));
-        assertThat(consoleJson.getString("text"), is("World!" + System.lineSeparator()));
+        assertThat(consoleJson.getString("endByte"), equalTo(String.valueOf(TEXT.length())));
+        assertThat(consoleJson.getString("startByte"), equalTo("7"));
+        assertThat(consoleJson.getString("text"), equalTo("World!" + System.lineSeparator()));
     }
 
     @Issue("GH#224")
@@ -84,7 +84,7 @@ public class PipelineConsoleViewActionTest {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "hello_world_scripted", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
-        PipelineStepVisitor builder = new PipelineStepVisitor(run);
+        PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
         String stageId =
                 TestUtils.getNodesByDisplayName(run, "Say Hello").get(0).getId();
         List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
@@ -93,10 +93,10 @@ public class PipelineConsoleViewActionTest {
         PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
         JSONObject consoleJson = consoleAction.getConsoleOutputJson(echoStep.getId(), -7L);
         // 14-7
-        assertThat(consoleJson.getString("endByte"), is(String.valueOf(TEXT.length())));
-        assertThat(consoleJson.getString("startByte"), is(String.valueOf(7 + (Functions.isWindows() ? 1 : 0))));
+        assertThat(consoleJson.getString("endByte"), equalTo(String.valueOf(TEXT.length())));
+        assertThat(consoleJson.getString("startByte"), equalTo(String.valueOf(7 + (Functions.isWindows() ? 1 : 0))));
         String value = (Functions.isWindows() ? "" : "W") + "orld!" + System.lineSeparator();
-        assertThat(consoleJson.getString("text"), is(value));
+        assertThat(consoleJson.getString("text"), equalTo(value));
     }
 
     @Issue("GH#224")
@@ -105,7 +105,7 @@ public class PipelineConsoleViewActionTest {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "hello_world_scripted", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
-        PipelineStepVisitor builder = new PipelineStepVisitor(run);
+        PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
         String stageId =
                 TestUtils.getNodesByDisplayName(run, "Say Hello").get(0).getId();
         List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
@@ -113,9 +113,9 @@ public class PipelineConsoleViewActionTest {
 
         PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
         JSONObject consoleJson = consoleAction.getConsoleOutputJson(echoStep.getId(), -1000L);
-        assertThat(consoleJson.getString("endByte"), is(String.valueOf(TEXT.length())));
-        assertThat(consoleJson.getString("startByte"), is("0"));
-        assertThat(consoleJson.getString("text"), is(TEXT));
+        assertThat(consoleJson.getString("endByte"), equalTo(String.valueOf(TEXT.length())));
+        assertThat(consoleJson.getString("startByte"), equalTo("0"));
+        assertThat(consoleJson.getString("text"), equalTo(TEXT));
     }
 
     @Issue("GH#224")
@@ -124,7 +124,7 @@ public class PipelineConsoleViewActionTest {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "hello_world_scripted", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
-        PipelineStepVisitor builder = new PipelineStepVisitor(run);
+        PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
         String stageId =
                 TestUtils.getNodesByDisplayName(run, "Say Hello").get(0).getId();
         List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
@@ -140,8 +140,7 @@ public class PipelineConsoleViewActionTest {
     public void getConsoleLogOfStepWithOutputAndException() throws Exception {
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "exec_returns_error", "execStepReturnsError.jenkinsfile", Result.FAILURE);
-
-        PipelineStepVisitor builder = new PipelineStepVisitor(run);
+        PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
         String stageId =
                 TestUtils.getNodesByDisplayName(run, "Say Hello").get(0).getId();
         List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
@@ -150,7 +149,7 @@ public class PipelineConsoleViewActionTest {
 
         PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
         JSONObject consoleJson = consoleAction.getConsoleOutputJson(execStep.getId(), 0L);
-        assertThat(consoleJson.getString("startByte"), is("0"));
+        assertThat(consoleJson.getString("startByte"), equalTo("0"));
         assertThat(
                 consoleJson.getString("text"),
                 stringContainsInOrder("echo", "Hello, world!", "script returned exit code 1"));

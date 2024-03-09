@@ -1,0 +1,24 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Hello') {
+            steps {
+                // Declarative parallel block
+                parallel(
+                    A: {
+                        echo "Starting sleep A..."
+                        // TODO: replace with some kind of triggers (e.g. loop until EnvVar set).
+                        sleep(1)
+                    },
+                    B: {
+                        echo "Starting sleep B..."
+                        // TODO: replace with some kind of triggers (e.g. loop until EnvVar set).
+                        sleep(1)
+                    }
+                )
+                // Cannot print here, as 'parallel' needs to be the only step.
+            }
+        }
+    }
+}

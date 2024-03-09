@@ -1,0 +1,36 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Hello') {
+            steps {
+                script {
+                    parallel([
+                        "A": {
+                            stage("Test A") {
+                                parallel([
+                                    "A1" : {
+                                       echo("Testing A1")
+                                    }
+                                ])
+                                echo("Finished A1")
+                            }
+                        },
+                        "B": {
+                            stage("Test B") {
+                                parallel([
+                                    "B1" : {
+                                       sleep(1)
+                                       echo("Starting sleep B1...")
+                                       sleep(1)
+                                    },
+                                ])
+                            }
+                        }
+                    ])
+                    echo("hello")
+                }
+            }
+        }
+    }
+}

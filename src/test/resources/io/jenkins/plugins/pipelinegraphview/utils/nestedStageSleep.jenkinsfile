@@ -1,0 +1,28 @@
+pipeline {
+    agent any
+    stages {
+        stage("Parent") {
+            stages {
+                stage ("Child A") {
+                    stages {
+                        stage("Grandchild A") {
+                            steps {
+                                echo "In grandchild A"
+                            }
+                        }
+                    }
+                }
+                stage ("Child B") {
+                    stages {
+                        stage("Grandchild B") {
+                            steps {
+                                echo "In grandchild B"
+                                sleep(1)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

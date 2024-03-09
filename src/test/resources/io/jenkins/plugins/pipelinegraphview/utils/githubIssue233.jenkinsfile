@@ -1,0 +1,21 @@
+node {
+    stage('Non-Parallel Stage') {
+        echo 'This stage will be executed first.'
+    }
+    stage('Parallel Stage') {
+        parallel 'Branch A': {
+            echo "On Branch A - 1"
+            echo "On Branch A - 2"
+        },
+        'Branch B': {
+            stage('Nested 1') {
+                stage('Nested 1.1') {
+                    echo "End Nested 1.1 within Branch B"
+                }
+                echo "End Nested 1 within Branch B"
+				echo "Starting sleep..."
+                sleep(1)
+            }
+        }
+    }
+}

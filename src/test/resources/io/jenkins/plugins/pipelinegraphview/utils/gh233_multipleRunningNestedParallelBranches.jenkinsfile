@@ -1,0 +1,29 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Hello') {
+            steps {
+                // Declarative parallel block
+                parallel(
+                    A: {
+                        script {
+                            // Scripted parallel block (cannot nest Declarative blocks).
+                            parallel(
+                                "A1" : {
+                                    echo "Starting sleep A1..."
+                                    sleep(1)
+                                },
+                                "A2" : {
+                                    echo "Starting sleep A2..."
+                                    sleep(1)
+                                },
+                            )
+                            echo("Finished A")
+                        }
+                    },
+                )
+            }
+        }
+    }
+}

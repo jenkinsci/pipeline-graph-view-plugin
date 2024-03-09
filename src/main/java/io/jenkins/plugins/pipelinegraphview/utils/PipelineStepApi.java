@@ -1,6 +1,7 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
-import hudson.Util;
+import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
+import io.jenkins.plugins.pipelinegraphview.utils.legacy.PipelineStepVisitor;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -52,7 +53,7 @@ public class PipelineStepApi {
                     logger.debug("DisplayName After: '" + displayName + "'.");
 
                     return new PipelineStep(
-                            Integer.parseInt(flowNodeWrapper.getId()),
+                            flowNodeWrapper.getId(),
                             displayName,
                             state,
                             50, // TODO how ???
@@ -60,16 +61,7 @@ public class PipelineStepApi {
                             title, // TODO blue ocean uses timing information: "Passed in
                             // 0s"
                             stageId,
-                            "Queued "
-                                    + Util.getTimeSpanString(
-                                            flowNodeWrapper.getTiming().getPauseDurationMillis()),
-                            "Started "
-                                    + Util.getTimeSpanString(System.currentTimeMillis()
-                                            - flowNodeWrapper.getTiming().getStartTimeMillis())
-                                    + " ago",
-                            "Took "
-                                    + Util.getTimeSpanString(
-                                            flowNodeWrapper.getTiming().getTotalDurationMillis()));
+                            flowNodeWrapper.getTiming());
                 })
                 .collect(Collectors.toList());
         return steps;
@@ -81,15 +73,15 @@ public class PipelineStepApi {
         return text.trim();
     }
 
-    public PipelineStepList getSteps(String stageId) {
-        PipelineStepVisitor builder = new PipelineStepVisitor(run);
+    private PipelineStepList getSteps(String stageId, PipelineStepBuilderApi builder) {
         List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
-        return new PipelineStepList(parseSteps(stepNodes, stageId));
+        PipelineStepList steps = new PipelineStepList(parseSteps(stepNodes, stageId));
+        steps.sort();
+        return steps;
     }
 
     /* Returns a PipelineStepList, sorted by stageId and Id. */
-    public PipelineStepList getAllSteps() {
-        PipelineStepVisitor builder = new PipelineStepVisitor(run);
+    private PipelineStepList getAllSteps(PipelineStepBuilderApi builder) {
         Map<String, List<FlowNodeWrapper>> stepNodes = builder.getAllSteps();
         PipelineStepList allSteps = new PipelineStepList();
         for (Map.Entry<String, List<FlowNodeWrapper>> entry : stepNodes.entrySet()) {
@@ -97,5 +89,33 @@ public class PipelineStepApi {
         }
         allSteps.sort();
         return allSteps;
+    }
+
+    public PipelineStepList getSteps(String stageId) {
+        return getSteps(stageId, new PipelineNodeGraphAdapter(run));
+    }
+
+    /* Returns a PipelineStepList, sorted by stageId and Id. */
+    public PipelineStepList getAllSteps() {
+        return getAllSteps(new PipelineNodeGraphAdapter(run));
+    }
+
+    /**
+     * Find steps using the legacy PipelineStepVisitor class.
+     * This is useful for testing and could be useful for bridging the gap between
+     * representations.
+     */
+    protected PipelineStepList getLegacySteps(String stageId) {
+        return getSteps(stageId, new PipelineStepVisitor(run));
+    }
+
+    /**
+     * Gets all steps using the legacy PipelineStepVisitor class.
+     * This is useful for testing and could be useful for bridging the gap between
+     * representations.
+     * Returns a PipelineStepList, sorted by stageId and Id.
+     */
+    protected PipelineStepList getAllLegacySteps() {
+        return getAllSteps(new PipelineStepVisitor(run));
     }
 }

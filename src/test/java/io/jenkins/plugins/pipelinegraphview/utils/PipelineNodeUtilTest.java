@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.*;
 
 import hudson.console.AnnotatedLargeText;
 import hudson.model.Result;
+import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import java.util.List;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -23,25 +24,25 @@ public class PipelineNodeUtilTest {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "hello_world_scripted", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
-        PipelineStepVisitor builder = new PipelineStepVisitor(run);
+        PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
         String stageId =
                 TestUtils.getNodesByDisplayName(run, "Say Hello").get(0).getId();
         List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
         FlowNodeWrapper echoStep = stepNodes.get(0);
         AnnotatedLargeText<? extends FlowNode> logText = PipelineNodeUtil.getLogText(echoStep.getNode());
         String logString = PipelineNodeUtil.convertLogToString(logText);
-        assertThat(logString, is("Hello, World!" + System.lineSeparator()));
+        assertThat(logString, equalTo("Hello, World!" + System.lineSeparator()));
     }
 
     @Issue("GH#224")
     @Test
     public void canGetErrorTextFromStep() throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(j, "simple_error", "simpleError.jenkinsfile", Result.FAILURE);
-        PipelineStepVisitor builder = new PipelineStepVisitor(run);
+        PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
         String stageId = TestUtils.getNodesByDisplayName(run, "A").get(0).getId();
         List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
         FlowNodeWrapper errorStep = stepNodes.get(0);
-        assertThat(PipelineNodeUtil.getExceptionText(errorStep.getNode()), is("This is an error"));
+        assertThat(PipelineNodeUtil.getExceptionText(errorStep.getNode()), equalTo("This is an error"));
     }
 
     @Issue("GH#213")
@@ -52,7 +53,7 @@ public class PipelineNodeUtilTest {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "githubIssue213_callsUnknownVariable", "callsUnknownVariable.jenkinsfile", Result.FAILURE);
 
-        PipelineStepVisitor builder = new PipelineStepVisitor(run);
+        PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
         String stageId = TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
         List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
         FlowNodeWrapper errorStep = stepNodes.get(1);

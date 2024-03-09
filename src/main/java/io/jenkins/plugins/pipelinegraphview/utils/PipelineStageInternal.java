@@ -2,6 +2,7 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 
 public class PipelineStageInternal {
@@ -17,9 +18,7 @@ public class PipelineStageInternal {
     private PipelineStageInternal nextSibling;
     private boolean sequential;
     private boolean synthetic;
-    private Long pauseDurationMillis;
-    private Long startTimeMillis;
-    private Long totalDurationMillis;
+    private TimingInfo timingInfo;
 
     public PipelineStageInternal(
             String id,
@@ -34,14 +33,12 @@ public class PipelineStageInternal {
         this.id = id;
         this.name = name;
         this.parents = parents;
-        this.state = state;
+        this.state = state.toLowerCase(Locale.ROOT);
         this.completePercent = completePercent;
         this.type = type;
         this.title = title;
         this.synthetic = synthetic;
-        this.pauseDurationMillis = times.getPauseDurationMillis();
-        this.startTimeMillis = times.getStartTimeMillis();
-        this.totalDurationMillis = times.getTotalDurationMillis();
+        this.timingInfo = times;
     }
 
     public boolean isSequential() {
@@ -137,8 +134,6 @@ public class PipelineStageInternal {
                 nextSibling != null ? nextSibling.toPipelineStage(Collections.emptyList()) : null,
                 sequential,
                 synthetic,
-                pauseDurationMillis,
-                startTimeMillis,
-                totalDurationMillis);
+                timingInfo);
     }
 }

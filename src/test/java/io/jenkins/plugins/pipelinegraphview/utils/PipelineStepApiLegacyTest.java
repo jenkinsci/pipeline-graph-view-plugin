@@ -1,48 +1,20 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 
 import hudson.model.Result;
-import hudson.model.queue.QueueTaskFuture;
-import io.jenkins.plugins.pipelinegraphview.treescanner.NodeRelationshipFinder;
-import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
-import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeTreeScanner;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.logging.Level;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
 
-public class PipelineStepApiTest {
+public class PipelineStepApiLegacyTest {
     @Rule
     public JenkinsRule j = new JenkinsRule();
-
-    @Rule
-    public LoggerRule l = new LoggerRule();
-
-    @Before
-    public void enabledDebugLogs() {
-        l.record(PipelineGraphApi.class, Level.FINEST);
-        l.record(PipelineNodeTreeScanner.class, Level.FINEST);
-        l.record(PipelineNodeGraphAdapter.class, Level.FINEST);
-        l.record(NodeRelationshipFinder.class, Level.FINEST);
-    }
 
     @Test
     public void unstableSmokes() throws Exception {
@@ -58,7 +30,7 @@ public class PipelineStepApiTest {
         String failureID =
                 TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
 
-        List<PipelineStep> steps = api.getSteps(unstableOneId).getSteps();
+        List<PipelineStep> steps = api.getLegacySteps(unstableOneId).getSteps();
         assertThat(steps, hasSize(3));
         assertThat(steps.get(0).getName(), is("foo"));
         assertThat(steps.get(0).getTitle(), is("Print Message"));
@@ -113,7 +85,7 @@ public class PipelineStepApiTest {
 
         // Check 'Non-Parallel Stage'
         PipelineStepApi api = new PipelineStepApi(run);
-        List<PipelineStep> steps = api.getSteps(nonParallelId).getSteps();
+        List<PipelineStep> steps = api.getLegacySteps(nonParallelId).getSteps();
         assertThat(steps, hasSize(2));
         assertThat(steps.get(0).getName(), is("This stage will be executed first."));
         assertThat(steps.get(0).getTitle(), is("Print Message"));
@@ -295,7 +267,7 @@ public class PipelineStepApiTest {
         String deployStageId =
                 TestUtils.getNodesByDisplayName(run, "Deploy").get(0).getId();
 
-        List<PipelineStep> steps = api.getSteps(linux8CheckoutId).getSteps();
+        List<PipelineStep> steps = api.getLegacySteps(linux8CheckoutId).getSteps();
         assertThat(steps, hasSize(1));
         assertThat(steps.get(0).getName(), is("Checking out linux-8"));
         assertThat(steps.get(0).getTitle(), is("Print Message"));
@@ -344,7 +316,7 @@ public class PipelineStepApiTest {
         String failureStage =
                 TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
 
-        List<PipelineStep> steps = api.getSteps(failureStage).getSteps();
+        List<PipelineStep> steps = api.getLegacySteps(failureStage).getSteps();
         assertThat(steps, hasSize(2));
         PipelineStep errorStep = steps.get(1);
         assertThat(errorStep.getName(), is("oops-failure"));
@@ -368,7 +340,7 @@ public class PipelineStepApiTest {
         String failureStage =
                 TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
 
-        List<PipelineStep> steps = api.getSteps(failureStage).getSteps();
+        List<PipelineStep> steps = api.getLegacySteps(failureStage).getSteps();
         assertThat(steps, hasSize(2));
         PipelineStep errorStep = steps.get(1);
         assertThat(errorStep.getName(), is("oops-failure"));
@@ -398,8 +370,10 @@ public class PipelineStepApiTest {
     @Issue("GH#274")
     @Test
     public void githubIssue274RegressionTest_suppressFlowInterruptedExceptions() throws Exception {
-        // It's a bit dirty, but do this in one test to avoid reloading and rerunning
-        // the job (as it takes a
+        TestUtils.createJob(j, "simpleError", "simpleError.jenkinsfile");
+
+        // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
+        // (as it takes a
         // long time)
         WorkflowRun run = TestUtils.createAndRunJob(j, "githubIssue274", "githubIssue274.jenkinsfile", Result.FAILURE);
 
@@ -408,7 +382,7 @@ public class PipelineStepApiTest {
         String failureStage =
                 TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
 
-        List<PipelineStep> steps = api.getSteps(failureStage).getSteps();
+        List<PipelineStep> steps = api.getLegacySteps(failureStage).getSteps();
         assertThat(steps, hasSize(2));
         PipelineStep errorStep = steps.get(0);
         FlowNode node = run.getExecution().getNode(String.valueOf(errorStep.getId()));
@@ -417,59 +391,5 @@ public class PipelineStepApiTest {
                 errorText,
                 not(containsString(
                         "Found unhandled org.jenkinsci.plugins.workflow.steps.FlowInterruptedException exception")));
-    }
-
-    @Issue("GH#233")
-    @Test
-    public void stepApiReturnsSameResultForRunningPipeline() throws Exception {
-        QueueTaskFuture<WorkflowRun> futureRun =
-                TestUtils.createAndRunJobNoWait(j, "githubIssue233", "githubIssue233.jenkinsfile");
-        WorkflowRun run = futureRun.waitForStart();
-
-        j.waitForMessage("Starting sleep...", run);
-        List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
-        Function<PipelineStep, String> converter = s -> s.getStageId() + "->" + s.getName();
-        String stepsStringRunning = TestUtils.collectStepsAsString(steps, converter);
-
-        // Wait for Pipeline to end (terminating it means end nodes might not be
-        // created).
-        j.waitForCompletion(run);
-
-        steps = new PipelineStepApi(run).getAllSteps().getSteps();
-        String stepsStringFinished = TestUtils.collectStepsAsString(steps, converter);
-        String[] expected = stepsStringRunning.split(",");
-        String[] actual = stepsStringFinished.split(",");
-        for (int i = 0; i < expected.length; i++) {
-            assertThat(actual[i], equalTo(expected[i]));
-        }
-    }
-
-    @Test
-    public void pipelineWithSyntaxError() throws Exception {
-        WorkflowRun run = TestUtils.createAndRunJob(
-                j, "pipelineWithSyntaxError", "pipelineWithSyntaxError.jenkinsfile", Result.FAILURE);
-
-        List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
-        String stepsString = TestUtils.collectStepsAsString(steps, (PipelineStep s) -> TestUtils.nodeNameAndStatus(s));
-
-        assertThat(stepsString, equalTo("Pipeline error{failure}"));
-    }
-
-    @Test
-    public void stepsGetValidTimings() throws Exception {
-        WorkflowRun run =
-                TestUtils.createAndRunJob(j, "nestedStageSleep", "nestedStageSleep.jenkinsfile", Result.SUCCESS);
-
-        List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
-
-        Map<String, List<Long>> checks = new LinkedHashMap<>();
-        // Give large ranges - we are testing that the values are feasible, not that they are precise.
-        checks.put("In grandchild A", Arrays.asList(1000L, 0L, 0L, 5000L, 500L, 500L));
-        checks.put("In grandchild B", Arrays.asList(1000L, 0L, 0L, 5000L, 500L, 500L));
-        checks.put("1", Arrays.asList(1000L, 0L, 1000L, 5000L, 500L, 3000L));
-        for (AbstractPipelineNode n : steps) {
-            assertThat(checks, hasEntry(is(n.getName()), notNullValue()));
-            TestUtils.assertTimesInRange(n, checks.get(n.getName()));
-        }
     }
 }

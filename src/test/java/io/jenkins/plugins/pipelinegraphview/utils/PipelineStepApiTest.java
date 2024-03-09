@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.Before;
@@ -30,6 +31,9 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
 
 public class PipelineStepApiTest {
+
+    private static final Logger LOGGER = Logger.getLogger(PipelineStepApiTest.class.getName());
+
     @Rule
     public JenkinsRule j = new JenkinsRule();
 
@@ -428,6 +432,13 @@ public class PipelineStepApiTest {
 
         j.waitForMessage("Starting sleep...", run);
         List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
+
+        // Sometimes when the sleep runs its flow node isn't fully written and is missed in the graph
+        if (!steps.get(5).getTitle().equals("Sleep")) {
+            LOGGER.info("Sleep step missing in flow graph, retrying...");
+            Thread.sleep(500L);
+            steps = new PipelineStepApi(run).getAllSteps().getSteps();
+        }
         Function<PipelineStep, String> converter = s -> s.getStageId() + "->" + s.getName();
         String stepsStringRunning = TestUtils.collectStepsAsString(steps, converter);
 

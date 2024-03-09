@@ -421,13 +421,18 @@ public class FlowNodeWrapper {
         String nodeMapStr = String.format("digraph G {%n");
         for (FlowNodeWrapper node : nodes) {
             nodeMapStr += String.format(
-                    "  %s [label=\"{id: %s, name: %s, type: %s}\"]%n",
-                    node.getId(), node.getId(), node.getDisplayName(), node.getType());
+                    "  %s [label=\"{id: %s, name: %s, type: %s, state: %s, result: %s}\"]%n",
+                    node.getId(),
+                    node.getId(),
+                    node.getDisplayName(),
+                    node.getType(),
+                    node.getStatus().state,
+                    node.getStatus().result);
             for (FlowNodeWrapper parent : node.getParents()) {
                 nodeMapStr += String.format("  %s -> %s%n", node.getId(), parent.getId());
             }
         }
-        nodeMapStr += String.format("}");
+        nodeMapStr += "}";
         return nodeMapStr;
     }
 }

@@ -3,9 +3,11 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 
 import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
@@ -466,7 +468,7 @@ public class PipelineStepApiTest {
         checks.put("In grandchild B", Arrays.asList(1000L, 0L, 0L, 5000L, 500L, 500L));
         checks.put("1", Arrays.asList(1000L, 0L, 1000L, 5000L, 500L, 3000L));
         for (AbstractPipelineNode n : steps) {
-            assert checks.keySet().contains(n.getName());
+            assertThat(checks, hasEntry(is(n.getName()), notNullValue()));
             TestUtils.assertTimesInRange(n, checks.get(n.getName()));
         }
     }

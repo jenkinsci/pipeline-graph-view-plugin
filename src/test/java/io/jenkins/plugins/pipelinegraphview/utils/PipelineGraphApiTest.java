@@ -375,7 +375,7 @@ public class PipelineGraphApiTest {
         checks.put("Child B", Arrays.asList(1000L, 0L, 1000L, 5000L, 500L, 3000L));
         checks.put("Grandchild B", Arrays.asList(1000L, 0L, 1000L, 5000L, 500L, 3000L));
         for (AbstractPipelineNode n : stages) {
-            assert checks.keySet().contains(n.getName());
+            assertThat(checks, hasEntry(is(n.getName()), notNullValue()));
             TestUtils.assertTimesInRange(n, checks.get(n.getName()));
         }
     }

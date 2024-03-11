@@ -379,4 +379,23 @@ public class PipelineGraphApiTest {
             TestUtils.assertTimesInRange(n, checks.get(n.getName()));
         }
     }
+
+    @Issue("https://github.com/jenkinsci/pipeline-graph-view-plugin/issues/358")
+    @Test
+    public void gh_358_parallelStagesMarkedAsSkipped() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j,
+                "gh_358_parallelStagesMarkedAsSkipped",
+                "gh_358_parallelStagesMarkedAsSkipped.jenkinsfile",
+                Result.FAILURE);
+
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
+        String stagesString =
+                TestUtils.collectStagesAsString(stages, (PipelineStage s) -> TestUtils.nodeNameAndStatus(s));
+
+        assertThat(
+                stagesString,
+                equalTo(
+                        "foo{success},first-parallel{failure}[bar{skipped},baz{failure}],second-parallel{skipped},Post Actions{success}"));
+    }
 }

@@ -1,0 +1,55 @@
+pipeline {
+    agent none
+    stages {
+        stage("foo") {
+            steps {
+                echo "hello"
+            }
+        }
+
+        stage('first-parallel') {
+            parallel {
+                stage("bar") {
+                    when {
+                        expression {
+                            return false
+                        }
+                    }
+                    steps {
+                        echo "I will be skipped"
+                    }
+                }
+
+                stage("baz") {
+                    steps {
+                        error "I will not be skipped but I will fail"
+                    }
+                }
+            }
+        }
+
+        stage('second-parallel') {
+            parallel {
+                stage("bar2") {
+                    steps {
+                        echo "bar2 skipped for earlier failure"
+                    }
+                }
+                stage("baz2") {
+                    steps {
+                        echo "bar3 skipped for earlier failure"
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        failure {
+            echo "I have failed"
+        }
+        success {
+            echo "I have succeeded"
+        }
+    }
+}

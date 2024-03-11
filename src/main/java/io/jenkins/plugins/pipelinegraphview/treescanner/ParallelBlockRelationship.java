@@ -3,6 +3,7 @@ package io.jenkins.plugins.pipelinegraphview.treescanner;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
@@ -159,7 +160,8 @@ public class ParallelBlockRelationship extends NodeRelationship {
                 branchStartNode.getId(),
                 getBranchName(branchStartNode),
                 this.branchStatuses.get(getBranchName(branchStartNode)));
-        return new NodeRunStatus(this.branchStatuses.get(getBranchName(branchStartNode)));
+        boolean skippedStage = PipelineNodeUtil.isSkippedStage(branchStartNode);
+        return new NodeRunStatus(this.branchStatuses.get(getBranchName(branchStartNode)), skippedStage);
     }
 
     /*
@@ -167,7 +169,7 @@ public class ParallelBlockRelationship extends NodeRelationship {
      */
     private void calculateStatuses(WorkflowRun run) {
         // The parallel API expects parallel end to be null if this is still running -
-        // so only pass it if it;s not the start node;
+        // so only pass it if its not the start node;
         FlowNode parallelEndNode = (this.start != this.end) ? this.end : null;
         this.branchStatuses = StatusAndTiming.computeBranchStatuses2(
                 run, this.start, this.branchStarts, this.branchEnds, parallelEndNode);

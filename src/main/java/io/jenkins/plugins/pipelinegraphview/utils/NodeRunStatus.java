@@ -62,6 +62,10 @@ public class NodeRunStatus {
     }
 
     public NodeRunStatus(GenericStatus status) {
+        this(status, false);
+    }
+
+    public NodeRunStatus(GenericStatus status, boolean skipped) {
         GenericStatus coercedStatus = StatusAndTiming.coerceStatusApi(status, StatusAndTiming.CURRENT_API_VERSION);
         if (coercedStatus == null) {
             this.result = BlueRun.BlueRunResult.NOT_BUILT;
@@ -94,8 +98,13 @@ public class NodeRunStatus {
                 this.state = BlueRun.BlueRunState.FINISHED;
                 break;
             case NOT_EXECUTED:
-                this.result = BlueRun.BlueRunResult.NOT_BUILT;
-                this.state = BlueRun.BlueRunState.NOT_BUILT;
+                if (skipped) {
+                    this.result = BlueRun.BlueRunResult.NOT_BUILT;
+                    this.state = BlueRun.BlueRunState.SKIPPED;
+                } else {
+                    this.result = BlueRun.BlueRunResult.NOT_BUILT;
+                    this.state = BlueRun.BlueRunState.NOT_BUILT;
+                }
                 break;
             case QUEUED:
                 this.result = BlueRun.BlueRunResult.UNKNOWN;

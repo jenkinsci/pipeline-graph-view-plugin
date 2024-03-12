@@ -177,7 +177,7 @@ export class PipelineGraph extends React.Component {
     let nodes = [];
     for (const column of nodeColumns) {
       for (const row of column.rows) {
-        for (const node of row) {
+        for (const node of row.stages) {
           nodes.push(node);
         }
       }

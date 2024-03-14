@@ -11,7 +11,9 @@ import static org.hamcrest.Matchers.notNullValue;
 
 import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
+import io.jenkins.plugins.pipelinegraphview.treescanner.NodeRelationship;
 import io.jenkins.plugins.pipelinegraphview.treescanner.NodeRelationshipFinder;
+import io.jenkins.plugins.pipelinegraphview.treescanner.ParallelBlockRelationship;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeTreeScanner;
 import java.util.Arrays;
@@ -47,6 +49,8 @@ public class PipelineStepApiTest {
         l.record(PipelineNodeTreeScanner.class, Level.FINEST);
         l.record(PipelineNodeGraphAdapter.class, Level.FINEST);
         l.record(NodeRelationshipFinder.class, Level.FINEST);
+        l.record(NodeRelationship.class, Level.FINEST);
+        l.record(ParallelBlockRelationship.class, Level.FINEST);
     }
 
     @Test
@@ -503,11 +507,55 @@ public class PipelineStepApiTest {
         // created).
         j.waitForCompletion(run);
 
-        List<PipelineStep> finishedSteps = new PipelineStepApi(run).getAllSteps().getSteps();
-        String stepsStringFinished = TestUtils.collectStepsAsString(finishedSteps, (PipelineStep s) -> TestUtils.nodeNameAndStatus(s));
+        List<PipelineStep> finishedSteps =
+                new PipelineStepApi(run).getAllSteps().getSteps();
+        String stepsStringFinished =
+                TestUtils.collectStepsAsString(finishedSteps, (PipelineStep s) -> TestUtils.nodeNameAndStatus(s));
         LOGGER.log(Level.INFO, stepsStringFinished);
 
-        assertThat(stepsString, equalTo("Starting sleep A...{success},1{running},Starting sleep B...{success},1{running}"));
-        assertThat(stepsStringFinished, equalTo("Starting sleep A...{success},1{success},Starting sleep B...{success},1{success}"));
+        assertThat(
+                stepsString,
+                equalTo("Starting sleep A...{success},1{running},Starting sleep B...{success},1{running}"));
+        assertThat(
+                stepsStringFinished,
+                equalTo("Starting sleep A...{success},1{success},Starting sleep B...{success},1{success}"));
+    }
+
+    @Issue("GH#362")
+    @Test
+    public void gh362_stepsBeforeStepBlockGetValidStatus() throws Exception {
+        WorkflowJob job = TestUtils.createJob(j, "stepBlockInSteps", "stepBlockInSteps.jenkinsfile");
+
+        QueueTaskFuture<WorkflowRun> futureRun = job.scheduleBuild2(0);
+        WorkflowRun run = futureRun.waitForStart();
+        j.waitForMessage("Hello World", run);
+        // Sleep to allow Pipeline to read sleep.
+        Thread.sleep(500L);
+        List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
+        String stepsString = TestUtils.collectStepsAsString(steps, (PipelineStep s) -> TestUtils.nodeNameAndStatus(s));
+
+        LOGGER.log(Level.INFO, stepsString);
+        // Wait for Pipeline to end (terminating it means end nodes might not be
+        // created).
+        j.waitForCompletion(run);
+
+        List<PipelineStep> finishedSteps =
+                new PipelineStepApi(run).getAllSteps().getSteps();
+        String stepsStringFinished =
+                TestUtils.collectStepsAsString(finishedSteps, (PipelineStep s) -> TestUtils.nodeNameAndStatus(s));
+        LOGGER.log(Level.INFO, stepsStringFinished);
+
+        assertThat(stepsString, equalTo("Hello World{success},1{running}"));
+        assertThat(stepsStringFinished, equalTo("Hello World{success},1{success},Goodbye World{success}"));
+
+        Map<String, List<Long>> checks = new LinkedHashMap<>();
+        // Give large ranges - we are testing that the values are feasible, not that they are precise.
+        checks.put("Hello World", Arrays.asList(1000L, 0L, 0L, 5000L, 500L, 500L));
+        checks.put("1", Arrays.asList(1000L, 0L, 1000L, 5000L, 1500L, 1500L));
+        checks.put("Goodbye World", Arrays.asList(0L, 0L, 0L, 5000L, 500L, 500L));
+        for (AbstractPipelineNode n : finishedSteps) {
+            assertThat(checks, hasEntry(is(n.getName()), notNullValue()));
+            TestUtils.assertTimesInRange(n, checks.get(n.getName()));
+        }
     }
 }

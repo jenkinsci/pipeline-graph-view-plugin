@@ -91,7 +91,7 @@ public class NodeRelationshipFinder {
         if (subsequentStepRelationship != null) {
             after = subsequentStepRelationship.getStart();
             dump("Getting after node (%s) from subsequentStepRelationship", after.getId());
-        } else {
+        } else if (!pendingEndNodes.isEmpty()){
             after = pendingEndNodes.peek();
             dump(
                     "Getting after node (%s) from endNodes stack (size: %s)",
@@ -99,6 +99,7 @@ public class NodeRelationshipFinder {
         }
         NodeRelationship nodeRelationship = new NodeRelationship(step, step, after);
         relationships.put(step.getId(), nodeRelationship);
+        // Reset this so the next step will use this step as it's after node (if it's in the same block).
         subsequentStepRelationship = nodeRelationship;
     }
 

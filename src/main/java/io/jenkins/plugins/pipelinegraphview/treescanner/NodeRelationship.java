@@ -6,9 +6,11 @@ import io.jenkins.plugins.pipelinegraphview.utils.BlueRun;
 import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
+import org.jenkinsci.plugins.workflow.actions.TimingAction;
 import org.jenkinsci.plugins.workflow.actions.WarningAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
+import org.jenkinsci.plugins.workflow.graph.FlowStartNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.GenericStatus;
 import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.StatusAndTiming;
@@ -140,7 +142,9 @@ public class NodeRelationship {
         FlowExecution exec = run.getExecution();
         if (exec != null) {
             for (FlowNode head : exec.getCurrentHeads()) {
-                if (head.getAllEnclosingIds().contains(this.start.getId())) {
+                // If out start node is a head, then our npde/block is still running.
+                if (head.getId() == this.start.getId() ||
+                        head.getAllEnclosingIds().contains(this.start.getId())) {
                     return true;
                 }
             }

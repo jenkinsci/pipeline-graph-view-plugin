@@ -22,6 +22,7 @@ import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
+import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.Before;
 import org.junit.Rule;
@@ -482,5 +483,31 @@ public class PipelineStepApiTest {
             assertThat(checks, hasEntry(is(n.getName()), notNullValue()));
             TestUtils.assertTimesInRange(n, checks.get(n.getName()));
         }
+    }
+
+    @Issue("GH#362")
+    @Test
+    public void gh362_pausedParallelBranches() throws Exception {
+        WorkflowJob job = TestUtils.createJob(
+                j, "gh233_multipleRunningParallelBranches", "gh233_multipleRunningParallelBranches.jenkinsfile");
+
+        QueueTaskFuture<WorkflowRun> futureRun = job.scheduleBuild2(0);
+        WorkflowRun run = futureRun.waitForStart();
+        j.waitForMessage("Starting sleep A...", run);
+        j.waitForMessage("Starting sleep B...", run);
+        List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
+        String stepsString = TestUtils.collectStepsAsString(steps, (PipelineStep s) -> TestUtils.nodeNameAndStatus(s));
+
+        LOGGER.log(Level.INFO, stepsString);
+        // Wait for Pipeline to end (terminating it means end nodes might not be
+        // created).
+        j.waitForCompletion(run);
+
+        List<PipelineStep> finishedSteps = new PipelineStepApi(run).getAllSteps().getSteps();
+        String stepsStringFinished = TestUtils.collectStepsAsString(finishedSteps, (PipelineStep s) -> TestUtils.nodeNameAndStatus(s));
+        LOGGER.log(Level.INFO, stepsStringFinished);
+
+        assertThat(stepsString, equalTo("Starting sleep A...{success},1{running},Starting sleep B...{success},1{running}"));
+        assertThat(stepsStringFinished, equalTo("Starting sleep A...{success},1{success},Starting sleep B...{success},1{success}"));
     }
 }

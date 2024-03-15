@@ -20,9 +20,9 @@ pipeline {
                             stage("Test B") {
                                 parallel([
                                     "B1" : {
-                                       sleep(1)
-                                       echo("Starting sleep B1...")
-                                       sleep(1)
+                                        // sleep to make it more reliable the other branch has finished
+                                        sleep '1'
+                                        semaphore 'wait'
                                     },
                                 ])
                             }

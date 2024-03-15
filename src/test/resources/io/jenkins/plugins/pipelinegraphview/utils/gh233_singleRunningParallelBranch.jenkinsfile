@@ -7,9 +7,7 @@ pipeline {
                 // Declarative parallel block
                 parallel(
                     A: {
-                        echo "Starting sleep A..."
-                        // TODO: replace with some kind of triggers (e.g. loop until EnvVar set).
-                        sleep(1)
+                        semaphore 'wait'
                     }
                 )
                 // Cannot print here, as 'parallel' needs to be the only step.

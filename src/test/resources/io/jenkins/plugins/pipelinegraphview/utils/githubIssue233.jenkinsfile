@@ -13,8 +13,7 @@ node {
                     echo "End Nested 1.1 within Branch B"
                 }
                 echo "End Nested 1 within Branch B"
-				echo "Starting sleep..."
-                sleep(1)
+                semaphore 'wait'
             }
         }
     }

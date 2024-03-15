@@ -16,6 +16,8 @@ import io.jenkins.plugins.pipelinegraphview.treescanner.NodeRelationshipFinder;
 import io.jenkins.plugins.pipelinegraphview.treescanner.ParallelBlockRelationship;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeTreeScanner;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
+
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -499,6 +501,8 @@ public class PipelineStepApiTest {
         WorkflowRun run = futureRun.waitForStart();
         j.waitForMessage("Starting sleep A...", run);
         j.waitForMessage("Starting sleep B...", run);
+        // Sleep to allow Pipeline to reach sleep.
+        Thread.sleep(500L);
         List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
         String stepsString = TestUtils.collectStepsAsString(steps, (PipelineStep s) -> TestUtils.nodeNameAndStatus(s));
 
@@ -506,7 +510,6 @@ public class PipelineStepApiTest {
         // Wait for Pipeline to end (terminating it means end nodes might not be
         // created).
         j.waitForCompletion(run);
-
         List<PipelineStep> finishedSteps =
                 new PipelineStepApi(run).getAllSteps().getSteps();
         String stepsStringFinished =
@@ -529,7 +532,7 @@ public class PipelineStepApiTest {
         QueueTaskFuture<WorkflowRun> futureRun = job.scheduleBuild2(0);
         WorkflowRun run = futureRun.waitForStart();
         j.waitForMessage("Hello World", run);
-        // Sleep to allow Pipeline to read sleep.
+        // Sleep to allow Pipeline to reach sleep.
         Thread.sleep(500L);
         List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
         String stepsString = TestUtils.collectStepsAsString(steps, (PipelineStep s) -> TestUtils.nodeNameAndStatus(s));

@@ -16,8 +16,6 @@ import io.jenkins.plugins.pipelinegraphview.treescanner.NodeRelationshipFinder;
 import io.jenkins.plugins.pipelinegraphview.treescanner.ParallelBlockRelationship;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeTreeScanner;
-import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
-
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;

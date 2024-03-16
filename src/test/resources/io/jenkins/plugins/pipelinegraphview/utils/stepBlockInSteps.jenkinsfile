@@ -6,7 +6,7 @@ pipeline {
             steps {
                 echo 'Hello World'
                 retry(1) {
-                    sleep(1)
+                    semaphore '1'
                 }
                 echo 'Goodbye World'
             }

@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.jenkinsci.plugins.workflow.test.steps.SemaphoreStep;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -435,18 +436,13 @@ public class PipelineStepApiTest {
                 TestUtils.createAndRunJobNoWait(j, "githubIssue233", "githubIssue233.jenkinsfile");
         WorkflowRun run = futureRun.waitForStart();
 
-        j.waitForMessage("Starting sleep...", run);
+        SemaphoreStep.waitForStart("wait/1", run);
         List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
 
-        // Sometimes when the sleep runs its flow node isn't fully written and is missed in the graph
-        if (!steps.get(5).getTitle().equals("Sleep")) {
-            LOGGER.info("Sleep step missing in flow graph, retrying...");
-            Thread.sleep(500L);
-            steps = new PipelineStepApi(run).getAllSteps().getSteps();
-        }
         Function<PipelineStep, String> converter = s -> s.getStageId() + "->" + s.getName();
         String stepsStringRunning = TestUtils.collectStepsAsString(steps, converter);
 
+        SemaphoreStep.success("wait/1", null);
         // Wait for Pipeline to end (terminating it means end nodes might not be
         // created).
         j.waitForCompletion(run);
@@ -497,13 +493,14 @@ public class PipelineStepApiTest {
 
         QueueTaskFuture<WorkflowRun> futureRun = job.scheduleBuild2(0);
         WorkflowRun run = futureRun.waitForStart();
-        j.waitForMessage("Starting sleep A...", run);
-        j.waitForMessage("Starting sleep B...", run);
+        SemaphoreStep.waitForStart("a/1", run);
+        SemaphoreStep.waitForStart("b/1", run);
         // Sleep to allow Pipeline to reach sleep.
-        Thread.sleep(500L);
         List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
         String stepsString = TestUtils.collectStepsAsString(steps, (PipelineStep s) -> TestUtils.nodeNameAndStatus(s));
 
+        SemaphoreStep.success("a/1", null);
+        SemaphoreStep.success("b/1", null);
         LOGGER.log(Level.INFO, stepsString);
         // Wait for Pipeline to end (terminating it means end nodes might not be
         // created).
@@ -514,12 +511,8 @@ public class PipelineStepApiTest {
                 TestUtils.collectStepsAsString(finishedSteps, (PipelineStep s) -> TestUtils.nodeNameAndStatus(s));
         LOGGER.log(Level.INFO, stepsStringFinished);
 
-        assertThat(
-                stepsString,
-                equalTo("Starting sleep A...{success},1{running},Starting sleep B...{success},1{running}"));
-        assertThat(
-                stepsStringFinished,
-                equalTo("Starting sleep A...{success},1{success},Starting sleep B...{success},1{success}"));
+        assertThat(stepsString, equalTo("a{running},b{running}"));
+        assertThat(stepsStringFinished, equalTo("a{success},b{success}"));
     }
 
     @Issue("GH#362")
@@ -529,12 +522,11 @@ public class PipelineStepApiTest {
 
         QueueTaskFuture<WorkflowRun> futureRun = job.scheduleBuild2(0);
         WorkflowRun run = futureRun.waitForStart();
-        j.waitForMessage("Hello World", run);
-        // Sleep to allow Pipeline to reach sleep.
-        Thread.sleep(500L);
+        SemaphoreStep.waitForStart("1/1", run);
         List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
         String stepsString = TestUtils.collectStepsAsString(steps, (PipelineStep s) -> TestUtils.nodeNameAndStatus(s));
 
+        SemaphoreStep.success("1/1", null);
         LOGGER.log(Level.INFO, stepsString);
         // Wait for Pipeline to end (terminating it means end nodes might not be
         // created).
@@ -551,8 +543,8 @@ public class PipelineStepApiTest {
 
         Map<String, List<Long>> checks = new LinkedHashMap<>();
         // Give large ranges - we are testing that the values are feasible, not that they are precise.
-        checks.put("Hello World", Arrays.asList(1000L, 0L, 0L, 5000L, 500L, 500L));
-        checks.put("1", Arrays.asList(1000L, 0L, 1000L, 5000L, 1500L, 1500L));
+        checks.put("Hello World", Arrays.asList(100L, 0L, 0L, 5000L, 500L, 500L));
+        checks.put("1", Arrays.asList(100L, 0L, 10L, 5000L, 1500L, 1500L));
         checks.put("Goodbye World", Arrays.asList(0L, 0L, 0L, 5000L, 500L, 500L));
         for (AbstractPipelineNode n : finishedSteps) {
             assertThat(checks, hasEntry(is(n.getName()), notNullValue()));

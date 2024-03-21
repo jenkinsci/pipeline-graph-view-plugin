@@ -9,6 +9,7 @@ export interface ConsoleLogStreamProps {
   logBuffer: StepLogBufferInfo;
   handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
   step: StepInfo;
+  maxHeighScale: number;
 }
 
 import { ConsoleLine } from "./ConsoleLine";
@@ -84,7 +85,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
       <Virtuoso
         style={{
           minHeight: `${minHeight()}vh`,
-          maxHeight: window.innerHeight / 2,
+          maxHeight: window.innerHeight * props.maxHeighScale,
         }}
         ref={virtuosoRef}
         data={props.logBuffer.lines}

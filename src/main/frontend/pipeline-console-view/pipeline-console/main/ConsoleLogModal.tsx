@@ -7,6 +7,7 @@ export interface ConsoleLogModelProps {
   logBuffer: StepLogBufferInfo;
   handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
   step: StepInfo;
+  maxHeighScale: number;
 
   setClose: () => void;
   open: boolean;

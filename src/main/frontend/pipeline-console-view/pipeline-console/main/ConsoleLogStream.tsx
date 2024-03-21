@@ -75,7 +75,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
     const spinnerHeight = shouldRequestMoreLogs() ? 6 : 0;
     const linesHeight = numberOfLines * 1.7;
     const min = linesHeight + spinnerHeight;
-    const max = 60;
+    const max = 65;
     return Math.min(Math.max(linesHeight, min), max);
   };
 

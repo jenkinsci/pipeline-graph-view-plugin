@@ -72,12 +72,11 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
 
   const minHeight = () => {
     const numberOfLines = props.logBuffer.lines.length;
-
-    if (numberOfLines > 200) {
-      return 60;
-    }
-
-    return numberOfLines * 3;
+    const spinnerHeight = shouldRequestMoreLogs() ? 6 : 0;
+    const linesHeight = numberOfLines * 1.7;
+    const min = linesHeight + spinnerHeight;
+    const max = 60;
+    return Math.min(Math.max(linesHeight, min), max);
   };
 
   return (

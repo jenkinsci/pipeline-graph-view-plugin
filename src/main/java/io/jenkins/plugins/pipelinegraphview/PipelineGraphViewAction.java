@@ -2,7 +2,8 @@ package io.jenkins.plugins.pipelinegraphview;
 
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsCard;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
-import io.jenkins.plugins.pipelinegraphview.cards.items.CauseRunDetailsItem;
+import io.jenkins.plugins.pipelinegraphview.cards.items.UpstreamCauseRunDetailsItem;
+import io.jenkins.plugins.pipelinegraphview.cards.items.UserIdCauseRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.SCMRunDetailsItems;
 import io.jenkins.plugins.pipelinegraphview.cards.items.TimingRunDetailsItems;
 import io.jenkins.plugins.pipelinegraphview.utils.AbstractPipelineViewAction;
@@ -36,7 +37,8 @@ public class PipelineGraphViewAction extends AbstractPipelineViewAction {
             runDetailsItems.add(new RunDetailsItem.Builder().separator().build());
         }
 
-        CauseRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
+        UpstreamCauseRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
+        UserIdCauseRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
 
         runDetailsItems.addAll(TimingRunDetailsItems.get(run));
 

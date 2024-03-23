@@ -6,6 +6,7 @@ import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 public class UpstreamCauseRunDetailsItem {
@@ -22,7 +23,7 @@ public class UpstreamCauseRunDetailsItem {
                 .map(upstreamRun -> new RunDetailsItem.Builder()
                         .ionicon("play-circle-outline")
                         .text("Started by upstream pipeline " + upstreamRun.getDisplayName())
-                        .href(upstreamRun.getUrl())
+                        .href(DisplayURLProvider.get().getRunURL(upstreamRun))
                         .build())
                 .findAny();
     }

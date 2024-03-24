@@ -2,10 +2,10 @@ package io.jenkins.plugins.pipelinegraphview;
 
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsCard;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
-import io.jenkins.plugins.pipelinegraphview.cards.items.UpstreamCauseRunDetailsItem;
-import io.jenkins.plugins.pipelinegraphview.cards.items.UserIdCauseRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.SCMRunDetailsItems;
 import io.jenkins.plugins.pipelinegraphview.cards.items.TimingRunDetailsItems;
+import io.jenkins.plugins.pipelinegraphview.cards.items.UpstreamCauseRunDetailsItem;
+import io.jenkins.plugins.pipelinegraphview.cards.items.UserIdCauseRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.utils.AbstractPipelineViewAction;
 import java.util.ArrayList;
 import java.util.List;

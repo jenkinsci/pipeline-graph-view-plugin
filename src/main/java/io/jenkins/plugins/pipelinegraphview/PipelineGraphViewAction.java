@@ -80,7 +80,7 @@ public class PipelineGraphViewAction extends AbstractPipelineViewAction {
                         entry.getCommitId(),
                         getCommitHref(changeSet.getBrowser(), entry),
                         entry.getAuthor().getFullName(),
-                        entry.getMsgEscaped(),
+                        entry.getMsg(),
                         entry.getTimestamp()));
             }
         }

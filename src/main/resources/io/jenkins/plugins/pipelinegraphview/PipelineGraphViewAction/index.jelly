@@ -98,11 +98,13 @@
                         ${card.commitId}
                       </j:otherwise>
                     </j:choose>
+                  </p>
+                  <p>
                     by ${card.author}
                     on <i:formatDate value="${card.timestamp}" type="both" dateStyle="medium" timeStyle="medium"/>
-                  </p>
-                  <p class="app-details__item">
-                    ${card.message}
+                    <pre>
+                      ${card.message}
+                    </pre>
                   </p>
                 </j:forEach>
               </j:when>

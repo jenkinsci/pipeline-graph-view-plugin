@@ -1,8 +1,8 @@
 package io.jenkins.plugins.pipelinegraphview;
 
-import hudson.scm.RepositoryBrowser;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.Entry;
+import hudson.scm.RepositoryBrowser;
 import io.jenkins.plugins.pipelinegraphview.cards.ChangeDetailsCard;
 import io.jenkins.plugins.pipelinegraphview.cards.ChangeDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsCard;
@@ -11,7 +11,6 @@ import io.jenkins.plugins.pipelinegraphview.cards.items.CauseRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.SCMRunDetailsItems;
 import io.jenkins.plugins.pipelinegraphview.cards.items.TimingRunDetailsItems;
 import io.jenkins.plugins.pipelinegraphview.utils.AbstractPipelineViewAction;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -21,9 +20,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PipelineGraphViewAction extends AbstractPipelineViewAction {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(PipelineGraphViewAction.class);
-    
+
     public PipelineGraphViewAction(WorkflowRun target) {
         super(target);
     }
@@ -61,8 +60,8 @@ public class PipelineGraphViewAction extends AbstractPipelineViewAction {
         if (browser != null) {
             URL commitUrl = null;
             try {
-                commitUrl = ((RepositoryBrowser<E>)browser).getChangeSetLink(entry);
-            } catch(IOException e) {
+                commitUrl = ((RepositoryBrowser<E>) browser).getChangeSetLink(entry);
+            } catch (IOException e) {
                 logger.debug("Failed to get change set link: " + e.getStackTrace());
             }
 
@@ -78,11 +77,11 @@ public class PipelineGraphViewAction extends AbstractPipelineViewAction {
         for (ChangeLogSet<? extends Entry> changeSet : changeSets) {
             for (Entry entry : changeSet) {
                 changeDetailsItems.add(new ChangeDetailsItem(
-                    entry.getCommitId(),
-                    getCommitHref(changeSet.getBrowser(), entry),
-                    entry.getAuthor().getFullName(),
-                    entry.getMsgEscaped()
-                ));
+                        entry.getCommitId(),
+                        getCommitHref(changeSet.getBrowser(), entry),
+                        entry.getAuthor().getFullName(),
+                        entry.getMsgEscaped(),
+                        entry.getTimestamp()));
             }
         }
 

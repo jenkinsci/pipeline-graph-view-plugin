@@ -11,12 +11,10 @@ pipeline {
                             // Scripted parallel block (cannot nest Declarative blocks).
                             parallel(
                                 "A1" : {
-                                    echo "Starting sleep A1..."
-                                    sleep(1)
+                                    semaphore 'a1'
                                 },
                                 "A2" : {
-                                    echo "Starting sleep A2..."
-                                    sleep(1)
+                                    semaphore 'a2'
                                 },
                             )
                             echo("Finished A")

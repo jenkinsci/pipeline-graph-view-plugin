@@ -5,15 +5,10 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun;
 import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
-import org.jenkinsci.plugins.workflow.actions.ErrorAction;
-import org.jenkinsci.plugins.workflow.actions.WarningAction;
-import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.GenericStatus;
 import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.StatusAndTiming;
 import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
-import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException;
 import org.jenkinsci.plugins.workflow.support.actions.PauseAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,60 +112,11 @@ public class NodeRelationship {
         } else if (PipelineNodeUtil.isPaused(this.end)) {
             return new NodeRunStatus(BlueRun.BlueRunResult.UNKNOWN, BlueRun.BlueRunState.PAUSED);
         }
-        // StatusAndTiming.computeChunkStatus2 assumes that a Stage is running if there
-        // is no after node. There are instances where this can happen (might be a bug
-        // in this code). To work around this we catch this case and explicitly generate
-        // the status ourselves.
-        if (this.after == null && !isRunning(run)) {
-            return new NodeRunStatus(getFinishNodeStatus());
-        }
         dump(
                 "Calculating Chunk Status start: %s, end: %s after: %s",
                 this.start.getId(), this.end.getId(), (this.after != null) ? this.after.getId() : "null");
         // Catch-all if none of the above are applicable.
         return new NodeRunStatus(
                 StatusAndTiming.computeChunkStatus2(run, this.before, this.start, this.end, this.after));
-    }
-
-    /*
-     * Determine if the current block is still executing.
-     * Note: This doesn't seem efficient, but I couldn't see another way.
-     */
-    private boolean isRunning(WorkflowRun run) {
-        FlowExecution exec = run.getExecution();
-        if (exec != null) {
-            for (FlowNode head : exec.getCurrentHeads()) {
-                if (head.getAllEnclosingIds().contains(this.start.getId())) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /*
-     * Generate status for finished node.
-     * Source:
-     * https://github.com/jenkinsci/pipeline-graph-analysis-plugin/blob/master/src/
-     * main/java/org/jenkinsci/plugins/workflow/pipelinegraphanalysis/
-     * StatusAndTiming.java#L295
-     */
-    private GenericStatus getFinishNodeStatus() {
-        ErrorAction err = this.end.getError();
-        if (err != null) {
-            Throwable rootCause = err.getError();
-            if (rootCause instanceof FlowInterruptedException) {
-                return GenericStatus.fromResult(((FlowInterruptedException) rootCause).getResult());
-            } else {
-                return GenericStatus.FAILURE;
-            }
-        }
-        WarningAction warning = StatusAndTiming.findWorstWarningBetween(start, end);
-        if (warning != null) {
-            return GenericStatus.fromResult(warning.getResult());
-        }
-
-        // Previous chunk before end. If flow continued beyond this, it didn't fail.
-        return GenericStatus.SUCCESS;
     }
 }

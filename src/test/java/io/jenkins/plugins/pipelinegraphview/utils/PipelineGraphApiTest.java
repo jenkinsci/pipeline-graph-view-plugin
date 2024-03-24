@@ -16,6 +16,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.jenkinsci.plugins.workflow.test.steps.SemaphoreStep;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -165,11 +166,12 @@ public class PipelineGraphApiTest {
                 TestUtils.createAndRunJobNoWait(j, "githubIssue233", "githubIssue233.jenkinsfile");
         WorkflowRun run = futureRun.waitForStart();
 
-        j.waitForMessage("Starting sleep...", run);
+        SemaphoreStep.waitForStart("wait/1", run);
         List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
 
         String stagesStringRunning = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
 
+        SemaphoreStep.success("wait/1", null);
         // Wait for Pipeline to end (terminating it means end nodes might not be
         // created).
         j.waitForCompletion(run);
@@ -187,10 +189,11 @@ public class PipelineGraphApiTest {
         QueueTaskFuture<WorkflowRun> futureRun = job.scheduleBuild2(0);
         WorkflowRun run = futureRun.waitForStart();
 
-        j.waitForMessage("Starting sleep A...", run);
+        SemaphoreStep.waitForStart("wait/1", run);
         List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
         String stagesStringRunning = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
         LOGGER.log(Level.INFO, stagesStringRunning);
+        SemaphoreStep.success("wait/1", null);
         // Wait for Pipeline to end (terminating it means end nodes might not be
         // created).
         j.waitForCompletion(run);
@@ -212,10 +215,11 @@ public class PipelineGraphApiTest {
         QueueTaskFuture<WorkflowRun> futureRun = job.scheduleBuild2(0);
         WorkflowRun run = futureRun.waitForStart();
 
-        j.waitForMessage("Starting sleep A1...", run);
+        SemaphoreStep.waitForStart("wait/1", run);
         List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
         String stagesStringRunning = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
 
+        SemaphoreStep.success("wait/1", null);
         LOGGER.log(Level.INFO, stagesStringRunning);
         // Wait for Pipeline to end (terminating it means end nodes might not be
         // created).
@@ -240,13 +244,14 @@ public class PipelineGraphApiTest {
         QueueTaskFuture<WorkflowRun> futureRun = job.scheduleBuild2(0);
         WorkflowRun run = futureRun.waitForStart();
 
+        j.waitForMessage("Testing A1", run);
         j.waitForMessage("Finished A1", run);
-        j.waitForMessage("Starting sleep B1...", run);
+        SemaphoreStep.waitForStart("wait/1", run);
         List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
-        String stagesStringRunning =
-                TestUtils.collectStagesAsString(stages, (PipelineStage s) -> TestUtils.nodeNameAndStatus(s));
+        String stagesStringRunning = TestUtils.collectStagesAsString(stages, TestUtils::nodeNameAndStatus);
 
         LOGGER.log(Level.INFO, stagesStringRunning);
+        SemaphoreStep.success("wait/1", null);
         // Wait for Pipeline to end (terminating it means end nodes might not be
         // created).
         j.waitForCompletion(run);
@@ -283,12 +288,14 @@ public class PipelineGraphApiTest {
 
         QueueTaskFuture<WorkflowRun> futureRun = job.scheduleBuild2(0);
         WorkflowRun run = futureRun.waitForStart();
-        j.waitForMessage("Starting sleep A...", run);
-        j.waitForMessage("Starting sleep B...", run);
+        SemaphoreStep.waitForStart("a/1", run);
+        SemaphoreStep.waitForStart("b/1", run);
         List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
         String stagesStringRunning = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
 
         LOGGER.log(Level.INFO, stagesStringRunning);
+        SemaphoreStep.success("a/1", null);
+        SemaphoreStep.success("b/1", null);
         // Wait for Pipeline to end (terminating it means end nodes might not be
         // created).
         j.waitForCompletion(run);
@@ -312,12 +319,15 @@ public class PipelineGraphApiTest {
         QueueTaskFuture<WorkflowRun> futureRun = job.scheduleBuild2(0);
         WorkflowRun run = futureRun.waitForStart();
 
-        j.waitForMessage("Starting sleep A1...", run);
-        j.waitForMessage("Starting sleep A2...", run);
+        SemaphoreStep.waitForStart("a1/1", run);
+        SemaphoreStep.waitForStart("a2/1", run);
         List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
         String stagesStringRunning =
                 TestUtils.collectStagesAsString(stages, (PipelineStage s) -> TestUtils.nodeNameAndStatus(s));
         LOGGER.log(Level.INFO, stagesStringRunning);
+
+        SemaphoreStep.success("a1/1", null);
+        SemaphoreStep.success("a2/1", null);
         // Wait for Pipeline to end (terminating it means end nodes might not be
         // created).
         j.waitForCompletion(run);

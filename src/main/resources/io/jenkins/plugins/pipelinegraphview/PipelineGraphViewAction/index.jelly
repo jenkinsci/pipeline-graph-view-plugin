@@ -50,33 +50,70 @@
           <div id="graph"/>
           <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/pipeline-graph-view-bundle.js"/>
         </p:card>
-        <p:card title="${it.runDetailsCard.title}">
-          <j:forEach var="card" items="${it.runDetailsCard.items}">
+        <div>
+          <p:card title="${it.runDetailsCard.title}">
+            <j:forEach var="card" items="${it.runDetailsCard.items}">
+              <j:choose>
+                <j:when test="${card.separator}">
+                  <hr/>
+                </j:when>
+                <j:otherwise>
+                  <p class="app-details__item">
+                    <l:icon src="${card.icon}"/>
+                    <j:choose>
+                      <j:when test="${!empty(card.href)}">
+                        <a
+                            class="app-details__item--link"
+                            href="${card.href}"
+                        >
+                          ${card.text}
+                        </a>
+                      </j:when>
+                      <j:otherwise>
+                        ${card.text}
+                      </j:otherwise>
+                    </j:choose>
+                  </p>
+                </j:otherwise>
+              </j:choose>
+            </j:forEach>
+          </p:card>
+          <br/>
+          <p:card title="${it.changeDetailsCard.title}" expandable="true">
             <j:choose>
-              <j:when test="${card.separator}">
-                <hr/>
+              <j:when test="${!empty(it.changeDetailsCard.items)}">
+                <j:forEach var="card" items="${it.changeDetailsCard.items}">
+                  <p class="app-details__item">
+                    <l:icon src="symbol-git-commit-outline plugin-ionicons-api"/>
+                    <j:choose>
+                      <j:when test="${!empty(card.commitHref)}">
+                        <a
+                            class="app-details__item--link"
+                            href="${card.commitHref}"
+                        >
+                          ${card.commitId}
+                        </a>
+                        </j:when>
+                      <j:otherwise>
+                        ${card.commitId}
+                      </j:otherwise>
+                    </j:choose>
+                    by ${card.author}
+                  </p>
+                  <p class="app-details__item">
+                    ${card.message}
+                  </p>
+                </j:forEach>
               </j:when>
               <j:otherwise>
-                <p class="app-details__item">
-                  <l:icon src="${card.icon}"/>
-                  <j:choose>
-                    <j:when test="${!empty(card.href)}">
-                      <a
-                          class="app-details__item--link"
-                          href="${card.href}"
-                      >
-                        ${card.text}
-                      </a>
-                    </j:when>
-                    <j:otherwise>
-                      ${card.text}
-                    </j:otherwise>
-                  </j:choose>
-                </p>
+                <p class="app-details__item"></p>
+                  <l:icon src="symbol-information-circle-outline plugin-ionicons-api"/>
+                  No Changes
+                <p/>
               </j:otherwise>
             </j:choose>
-          </j:forEach>
-        </p:card>
+          </p:card>
+        </div>
       </div>
     </l:main-panel>
   </l:layout>

@@ -6,12 +6,14 @@ public class ChangeDetailsItem {
     private final String commitHref;
     private final String author;
     private final String message;
+    private final long timestamp;
 
-    public ChangeDetailsItem(String commitId, String commitHref, String author, String message) {
+    public ChangeDetailsItem(String commitId, String commitHref, String author, String message, long timestamp) {
         this.commitId = commitId;
         this.commitHref = commitHref;
         this.author = author;
         this.message = message;
+        this.timestamp = timestamp;
     }
 
     public String getCommitId() {
@@ -28,5 +30,9 @@ public class ChangeDetailsItem {
 
     public String getMessage() {
         return message;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
     }
 }

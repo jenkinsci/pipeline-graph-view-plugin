@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:p="/lib/pipeline-graph-view">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:p="/lib/pipeline-graph-view" xmlns:i="jelly:fmt">
   <l:layout title="${%Graph} [${it.fullBuildDisplayName}]" type="one-column">
     <l:main-panel>
       <div class="jenkins-app-bar">
@@ -99,6 +99,7 @@
                       </j:otherwise>
                     </j:choose>
                     by ${card.author}
+                    on <i:formatDate value="${card.timestamp}" type="both" dateStyle="medium" timeStyle="medium"/>
                   </p>
                   <p class="app-details__item">
                     ${card.message}

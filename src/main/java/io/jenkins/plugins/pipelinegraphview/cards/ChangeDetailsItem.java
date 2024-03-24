@@ -1,19 +1,21 @@
 package io.jenkins.plugins.pipelinegraphview.cards;
 
+import java.util.Date;
+
 public class ChangeDetailsItem {
 
     private final String commitId;
     private final String commitHref;
     private final String author;
     private final String message;
-    private final long timestamp;
+    private final Date timestamp;
 
     public ChangeDetailsItem(String commitId, String commitHref, String author, String message, long timestamp) {
         this.commitId = commitId;
         this.commitHref = commitHref;
         this.author = author;
         this.message = message;
-        this.timestamp = timestamp;
+        this.timestamp = new Date(timestamp);
     }
 
     public String getCommitId() {
@@ -32,7 +34,7 @@ public class ChangeDetailsItem {
         return message;
     }
 
-    public long getTimestamp() {
+    public Date getTimestamp() {
         return timestamp;
     }
 }

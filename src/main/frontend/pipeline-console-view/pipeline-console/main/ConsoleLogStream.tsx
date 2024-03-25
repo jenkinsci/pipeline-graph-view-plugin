@@ -1,6 +1,6 @@
 import React from "react";
 import { Virtuoso, VirtuosoHandle, LogLevel } from "react-virtuoso";
-import { useState, useEffect, useRef } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
 
 import Button from "@mui/material/Button";
@@ -20,6 +20,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   const [moveToBottom, setMoveToBottom] = useState(true);
   const showButtonInterval = useRef<NodeJS.Timeout | null>(null);
   const [showButton, setShowButton] = useState(false);
+  const [consoleLineHeight, setConsoleLineHeight] = useState(0);
 
   useEffect(() => {
     return () => {
@@ -50,6 +51,10 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
     }
   }, [moveToBottom]);
 
+  const consoleLineHeightCallback = useCallback((height: number) => {
+    setConsoleLineHeight(height);
+  }, []);
+
   const scrollListBottom = () => {
     if (virtuosoRef.current) {
       if (props.logBuffer.lines) {
@@ -70,22 +75,21 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
     return props.step.state === Result.running || props.logBuffer.startByte < 0;
   };
 
-  const minHeight = () => {
-    const numberOfLines = props.logBuffer.lines.length;
-
-    if (numberOfLines > 200) {
-      return 60;
-    }
-
-    return numberOfLines * 3;
+  const height = () => {
+    const maxLines = 30;
+    const numberOfLines =
+      props.logBuffer.lines.length > maxLines
+        ? maxLines
+        : props.logBuffer.lines.length;
+    const spinnerLines = shouldRequestMoreLogs() ? 2 : 0;
+    return (numberOfLines + spinnerLines) * consoleLineHeight;
   };
 
   return (
     <>
       <Virtuoso
         style={{
-          minHeight: `${minHeight()}vh`,
-          maxHeight: window.innerHeight / 2,
+          height: `${height()}px`,
         }}
         ref={virtuosoRef}
         data={props.logBuffer.lines}
@@ -109,6 +113,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
               content={content}
               stepId={props.step.id}
               startByte={props.logBuffer.startByte}
+              heightCallback={consoleLineHeightCallback}
             />
           );
         }}

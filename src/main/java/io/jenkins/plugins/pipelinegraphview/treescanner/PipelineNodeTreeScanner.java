@@ -48,7 +48,7 @@ public class PipelineNodeTreeScanner {
     private final boolean declarative;
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineNodeTreeScanner.class);
-    private boolean isDebugEnabled = logger.isDebugEnabled();
+    private final boolean isDebugEnabled = logger.isDebugEnabled();
 
     public PipelineNodeTreeScanner(@NonNull WorkflowRun run) {
         this.run = run;
@@ -126,6 +126,11 @@ public class PipelineNodeTreeScanner {
         for (String stageId : stageNodeMap.keySet()) {
             stageNodeStepMap.put(stageId, getStageSteps(stageId));
         }
+
+        if (stageNodeStepMap.isEmpty()) {
+            stageNodeStepMap.put("(no-stage)", new ArrayList<>(stepNodeMap.values()));
+        }
+
         return stageNodeStepMap;
     }
 
@@ -287,11 +292,11 @@ public class PipelineNodeTreeScanner {
             dump("Remapping steps");
             Map<String, FlowNodeWrapper> stepMap = this.wrappedNodeMap.entrySet().stream()
                     .filter(e -> shouldBeInStepMap(e.getValue()))
-                    .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
             Map<String, FlowNodeWrapper> stageMap = this.getStageMapping();
             List<FlowNodeWrapper> nodeList = new ArrayList<FlowNodeWrapper>(stepMap.values());
-            Collections.sort(nodeList, new FlowNodeWrapper.NodeComparator());
+            nodeList.sort(new FlowNodeWrapper.NodeComparator());
             for (FlowNodeWrapper step : nodeList) {
                 FlowNodeWrapper firstParent = step.getFirstParent();
                 // Remap parentage of steps that aren't children of stages (e.g. are in Step
@@ -321,13 +326,15 @@ public class PipelineNodeTreeScanner {
          * Builds a graph from the list of nodes and relationships given to the class.
          */
         private void buildGraph() {
-            List<FlowNode> nodeList = new ArrayList<FlowNode>(nodeMap.values());
-            Collections.sort(nodeList, new FlowNodeWrapper.FlowNodeComparator());
+            List<FlowNode> nodeList = new ArrayList<>(nodeMap.values());
+            nodeList.sort(new FlowNodeWrapper.FlowNodeComparator());
             // If the Pipeline ended with an unhandled exception, then we want to catch the
             // node which threw it.
             BlockEndNode<?> nodeThatThrewException = null;
             if (!nodeList.isEmpty()) {
-                nodeThatThrewException = getUnhandledException(nodeList.get(nodeList.size() - 1));
+                boolean hasStage = nodeList.stream().anyMatch(PipelineNodeUtil::isStage);
+
+                nodeThatThrewException = getUnhandledException(nodeList.get(nodeList.size() - 1), hasStage);
             }
             for (FlowNode node : nodeList) {
                 if (nodeThatThrewException == node) {
@@ -352,12 +359,15 @@ public class PipelineNodeTreeScanner {
          * Returns the origin of any unhandled exception for this node, or null if none
          * found.
          */
-        private @CheckForNull BlockEndNode<?> getUnhandledException(@NonNull FlowNode node) {
+        private @CheckForNull BlockEndNode<?> getUnhandledException(@NonNull FlowNode node, boolean hasStage) {
             // Check for an unhandled exception.
             ErrorAction errorAction = node.getAction(ErrorAction.class);
-            // If this is a Jenkins failure exception, then we don't need to add a new node
-            // - it will come from an existing step.
-            if (errorAction != null && !PipelineNodeUtil.isJenkinsFailureException(errorAction.getError())) {
+            if (errorAction != null) {
+                // If this is a Jenkins failure exception, then we don't need to add a new node
+                // - it will come from an existing step if there is a stage for the step to be part of.
+                if (hasStage && PipelineNodeUtil.isJenkinsFailureException(errorAction.getError())) {
+                    return null;
+                }
                 dump(
                         "getUnhandledException => Found unhandled exception: %s",
                         errorAction.getError().getMessage());

@@ -9,7 +9,6 @@ export interface ConsoleLogStreamProps {
   logBuffer: StepLogBufferInfo;
   handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
   step: StepInfo;
-  maxHeightScale: number;
 }
 
 import { ConsoleLine } from "./ConsoleLine";

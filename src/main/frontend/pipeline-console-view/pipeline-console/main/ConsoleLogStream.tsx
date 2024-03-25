@@ -1,6 +1,6 @@
 import React from "react";
 import { Virtuoso, VirtuosoHandle, LogLevel } from "react-virtuoso";
-import { useState, useEffect, useRef } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
 
 import Button from "@mui/material/Button";
@@ -21,9 +21,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   const [moveToBottom, setMoveToBottom] = useState(true);
   const showButtonInterval = useRef<NodeJS.Timeout | null>(null);
   const [showButton, setShowButton] = useState(false);
-
   const [consoleLineHeight, setConsoleLineHeight] = useState(0);
-  const consoleLineRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     return () => {
@@ -54,10 +52,8 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
     }
   }, [moveToBottom]);
 
-  useEffect(() => {
-    if (consoleLineRef.current) {
-      setConsoleLineHeight(consoleLineRef.current.clientHeight);
-    }
+  const consoleLineHeightCallback = useCallback((height: number) => {
+    setConsoleLineHeight(height);
   }, []);
 
   const scrollListBottom = () => {
@@ -81,18 +77,20 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   };
 
   const height = () => {
-    const singleLineHeight = (consoleLineHeight > 0) ? consoleLineHeight : 22.07;
     const maxLines = 30;
-    const numberOfLines = (props.logBuffer.lines.length > maxLines) ? maxLines : props.logBuffer.lines.length;
+    const numberOfLines =
+      props.logBuffer.lines.length > maxLines
+        ? maxLines
+        : props.logBuffer.lines.length;
     const spinnerLines = shouldRequestMoreLogs() ? 2 : 0;
-    return (numberOfLines + spinnerLines) * singleLineHeight;
+    return (numberOfLines + spinnerLines) * consoleLineHeight;
   };
 
   return (
     <>
       <Virtuoso
         style={{
-          height: `${height()}px`
+          height: `${height()}px`,
         }}
         ref={virtuosoRef}
         data={props.logBuffer.lines}
@@ -116,7 +114,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
               content={content}
               stepId={props.step.id}
               startByte={props.logBuffer.startByte}
-              ref={consoleLineRef}
+              heightCallback={consoleLineHeightCallback}
             />
           );
         }}

@@ -22,6 +22,9 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   const showButtonInterval = useRef<NodeJS.Timeout | null>(null);
   const [showButton, setShowButton] = useState(false);
 
+  const [consoleLineHeight, setConsoleLineHeight] = useState(0);
+  const consoleLineRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     return () => {
       if (appendInterval.current) {
@@ -51,6 +54,12 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
     }
   }, [moveToBottom]);
 
+  useEffect(() => {
+    if (consoleLineRef.current) {
+      setConsoleLineHeight(consoleLineRef.current.clientHeight);
+    }
+  }, []);
+
   const scrollListBottom = () => {
     if (virtuosoRef.current) {
       if (props.logBuffer.lines) {
@@ -71,21 +80,19 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
     return props.step.state === Result.running || props.logBuffer.startByte < 0;
   };
 
-  const minHeight = () => {
-    const numberOfLines = props.logBuffer.lines.length;
-    const spinnerHeight = shouldRequestMoreLogs() ? 6 : 0;
-    const linesHeight = numberOfLines * 1.7;
-    const min = linesHeight + spinnerHeight;
-    const max = 65;
-    return Math.min(Math.max(linesHeight, min), max);
+  const height = () => {
+    const singleLineHeight = (consoleLineHeight > 0) ? consoleLineHeight : 22.07;
+    const maxLines = 30;
+    const numberOfLines = (props.logBuffer.lines.length > maxLines) ? maxLines : props.logBuffer.lines.length;
+    const spinnerLines = shouldRequestMoreLogs() ? 2 : 0;
+    return (numberOfLines + spinnerLines) * singleLineHeight;
   };
 
   return (
     <>
       <Virtuoso
         style={{
-          minHeight: `${minHeight()}vh`,
-          maxHeight: window.innerHeight * props.maxHeightScale,
+          height: `${height()}px`
         }}
         ref={virtuosoRef}
         data={props.logBuffer.lines}
@@ -109,6 +116,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
               content={content}
               stepId={props.step.id}
               startByte={props.logBuffer.startByte}
+              ref={consoleLineRef}
             />
           );
         }}

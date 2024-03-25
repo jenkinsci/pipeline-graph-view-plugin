@@ -29,7 +29,7 @@
     "@mui/icons-material": "5.10.9",
     "@mui/lab": "5.0.0-alpha.104",
     "@mui/material": "5.10.10",
-    "@react-spring/web": "9.7.1",
+    "@react-spring/web": "9.7.3",
     "babel-loader": "^9.1.2",
     "babel-plugin-import": "^1.13.6",
     "html-react-parser": "3.0.12",

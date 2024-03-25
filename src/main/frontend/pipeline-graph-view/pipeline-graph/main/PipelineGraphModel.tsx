@@ -26,7 +26,7 @@ export function decodeResultValue(resultMaybe: any): Result {
 export const defaultLayout = {
   nodeSpacingH: 120,
   parallelSpacingH: 120,
-  nodeSpacingV: 70,
+  nodeSpacingV: 100,
   nodeRadius: 12,
   terminalRadius: 7,
   curveRadius: 12,

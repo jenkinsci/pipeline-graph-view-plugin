@@ -99,7 +99,7 @@ export function SelectionHighlight({
 
   columnLoop: for (const column of nodeColumns) {
     for (const row of column.rows) {
-      for (const node of row) {
+      for (const node of row.stages) {
         if (node.isPlaceholder === false && isStageSelected(node.stage)) {
           selectedNode = node;
           break columnLoop;

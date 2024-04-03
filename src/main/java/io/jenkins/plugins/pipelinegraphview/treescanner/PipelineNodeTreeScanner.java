@@ -1,5 +1,10 @@
 package io.jenkins.plugins.pipelinegraphview.treescanner;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
+import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -7,12 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
-import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
-import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import org.jenkinsci.plugins.pipeline.modeldefinition.actions.ExecutionModelAction;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
@@ -212,7 +211,8 @@ public class PipelineNodeTreeScanner {
             // Find any root stages (ones without parents) that have steps - we want to return these.
             // This should only be FlowNodeStart nodes, but I want to be flexible - if a Stage has steps then the
             // step view should display it.
-            // NOTE: In instances where this isn't the FlowNodeStart, this might add an unexpected FlowNode to the graph view.
+            // NOTE: In instances where this isn't the FlowNodeStart, this might add an unexpected FlowNode to the graph
+            // view.
             List<FlowNodeWrapper> rootStagesWithSteps = getStagesWithChildSteps().stream()
                     .filter(s -> s.getFirstParent() == null)
                     .collect(Collectors.toList());
@@ -249,10 +249,10 @@ public class PipelineNodeTreeScanner {
          */
         private List<FlowNodeWrapper> getStagesWithChildSteps() {
             return getSteps().entrySet().stream()
-                .map(e -> e.getValue().getFirstParent())
-                .filter(p -> p != null)
-                .map(p -> wrappedNodeMap.get(p.getId()))
-                .collect(Collectors.toList());
+                    .map(e -> e.getValue().getFirstParent())
+                    .filter(p -> p != null)
+                    .map(p -> wrappedNodeMap.get(p.getId()))
+                    .collect(Collectors.toList());
         }
 
         private boolean shouldBeInStageMap(FlowNodeWrapper n) {

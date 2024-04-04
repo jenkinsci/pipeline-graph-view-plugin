@@ -20,7 +20,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   const [moveToBottom, setMoveToBottom] = useState(true);
   const showButtonInterval = useRef<NodeJS.Timeout | null>(null);
   const [showButton, setShowButton] = useState(false);
-  const [consoleLineHeight, setConsoleLineHeight] = useState(0);
+  const [consoleLineHeight, setConsoleLineHeight] = useState(1);
 
   useEffect(() => {
     return () => {

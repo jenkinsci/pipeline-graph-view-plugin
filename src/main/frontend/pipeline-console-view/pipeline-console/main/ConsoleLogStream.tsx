@@ -9,6 +9,7 @@ export interface ConsoleLogStreamProps {
   logBuffer: StepLogBufferInfo;
   handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
   step: StepInfo;
+  maxHeightScale: number;
 }
 
 import { ConsoleLine } from "./ConsoleLine";
@@ -76,13 +77,8 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   };
 
   const height = () => {
-    const maxLines = 30;
-    const numberOfLines =
-      props.logBuffer.lines.length > maxLines
-        ? maxLines
-        : props.logBuffer.lines.length;
     const spinnerLines = shouldRequestMoreLogs() ? 2 : 0;
-    return (numberOfLines + spinnerLines) * consoleLineHeight;
+    return (props.logBuffer.lines.length + spinnerLines) * consoleLineHeight;
   };
 
   return (
@@ -90,6 +86,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
       <Virtuoso
         style={{
           height: `${height()}px`,
+          maxHeight: window.innerHeight * props.maxHeightScale,
         }}
         ref={virtuosoRef}
         data={props.logBuffer.lines}

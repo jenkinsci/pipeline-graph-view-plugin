@@ -48,7 +48,7 @@ public class PipelineNodeTreeScanner {
     private final boolean declarative;
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineNodeTreeScanner.class);
-    private boolean isDebugEnabled = logger.isDebugEnabled();
+    private final boolean isDebugEnabled = logger.isDebugEnabled();
 
     public PipelineNodeTreeScanner(@NonNull WorkflowRun run) {
         this.run = run;
@@ -126,6 +126,7 @@ public class PipelineNodeTreeScanner {
         for (String stageId : stageNodeMap.keySet()) {
             stageNodeStepMap.put(stageId, getStageSteps(stageId));
         }
+
         return stageNodeStepMap;
     }
 
@@ -207,8 +208,16 @@ public class PipelineNodeTreeScanner {
                 return this.wrappedStageMap;
             }
             dump("Remapping stages");
+            // Find any root stages (ones without parents) that have steps - we want to return these.
+            // This should only be FlowNodeStart nodes, but I want to be flexible - if a Stage has steps then the
+            // step view should display it.
+            // NOTE: In instances where this isn't the FlowNodeStart, this might add an unexpected FlowNode to the graph
+            // view.
+            List<FlowNodeWrapper> rootStagesWithSteps = getStagesWithChildSteps().stream()
+                    .filter(s -> s.getFirstParent() == null)
+                    .collect(Collectors.toList());
             Map<String, FlowNodeWrapper> stageMap = this.wrappedNodeMap.entrySet().stream()
-                    .filter(e -> shouldBeInStageMap(e.getValue()))
+                    .filter(e -> rootStagesWithSteps.contains(e.getValue()) || shouldBeInStageMap(e.getValue()))
                     .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
             List<FlowNodeWrapper> nodeList = new ArrayList<FlowNodeWrapper>(stageMap.values());
             Collections.sort(nodeList, new FlowNodeWrapper.NodeComparator());
@@ -216,7 +225,6 @@ public class PipelineNodeTreeScanner {
                 FlowNodeWrapper firstParent = stage.getFirstParent();
                 // Remap parentage of stages that aren't children of stages (e.g. allocate node
                 // step).
-                dump("Stages has %s parents", stage.getParents().size());
                 dump("First parent of stage %s: %s", stage.getId(), firstParent);
                 if (firstParent != null) {
                     dump("Parent exists in stage map: %s", stageMap.containsKey(firstParent.getId()));
@@ -227,6 +235,24 @@ public class PipelineNodeTreeScanner {
             }
             this.wrappedStageMap = stageMap;
             return this.wrappedStageMap;
+        }
+
+        /* Filter wrappedNodes to get list of steps.
+         */
+        private Map<String, FlowNodeWrapper> getSteps() {
+            return this.wrappedNodeMap.entrySet().stream()
+                    .filter(e -> shouldBeInStepMap(e.getValue()))
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        }
+
+        /* Filter wrappedNodes to get list of steps.
+         */
+        private List<FlowNodeWrapper> getStagesWithChildSteps() {
+            return getSteps().entrySet().stream()
+                    .map(e -> e.getValue().getFirstParent())
+                    .filter(p -> p != null)
+                    .map(p -> wrappedNodeMap.get(p.getId()))
+                    .collect(Collectors.toList());
         }
 
         private boolean shouldBeInStageMap(FlowNodeWrapper n) {
@@ -285,13 +311,10 @@ public class PipelineNodeTreeScanner {
             }
 
             dump("Remapping steps");
-            Map<String, FlowNodeWrapper> stepMap = this.wrappedNodeMap.entrySet().stream()
-                    .filter(e -> shouldBeInStepMap(e.getValue()))
-                    .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
-
+            Map<String, FlowNodeWrapper> stepMap = getSteps();
             Map<String, FlowNodeWrapper> stageMap = this.getStageMapping();
             List<FlowNodeWrapper> nodeList = new ArrayList<FlowNodeWrapper>(stepMap.values());
-            Collections.sort(nodeList, new FlowNodeWrapper.NodeComparator());
+            nodeList.sort(new FlowNodeWrapper.NodeComparator());
             for (FlowNodeWrapper step : nodeList) {
                 FlowNodeWrapper firstParent = step.getFirstParent();
                 // Remap parentage of steps that aren't children of stages (e.g. are in Step
@@ -321,13 +344,15 @@ public class PipelineNodeTreeScanner {
          * Builds a graph from the list of nodes and relationships given to the class.
          */
         private void buildGraph() {
-            List<FlowNode> nodeList = new ArrayList<FlowNode>(nodeMap.values());
-            Collections.sort(nodeList, new FlowNodeWrapper.FlowNodeComparator());
+            List<FlowNode> nodeList = new ArrayList<>(nodeMap.values());
+            nodeList.sort(new FlowNodeWrapper.FlowNodeComparator());
             // If the Pipeline ended with an unhandled exception, then we want to catch the
             // node which threw it.
             BlockEndNode<?> nodeThatThrewException = null;
             if (!nodeList.isEmpty()) {
-                nodeThatThrewException = getUnhandledException(nodeList.get(nodeList.size() - 1));
+                boolean hasStage = nodeList.stream().anyMatch(PipelineNodeUtil::isStage);
+
+                nodeThatThrewException = getUnhandledException(nodeList.get(nodeList.size() - 1), hasStage);
             }
             for (FlowNode node : nodeList) {
                 if (nodeThatThrewException == node) {
@@ -352,12 +377,15 @@ public class PipelineNodeTreeScanner {
          * Returns the origin of any unhandled exception for this node, or null if none
          * found.
          */
-        private @CheckForNull BlockEndNode<?> getUnhandledException(@NonNull FlowNode node) {
+        private @CheckForNull BlockEndNode<?> getUnhandledException(@NonNull FlowNode node, boolean hasStage) {
             // Check for an unhandled exception.
             ErrorAction errorAction = node.getAction(ErrorAction.class);
-            // If this is a Jenkins failure exception, then we don't need to add a new node
-            // - it will come from an existing step.
-            if (errorAction != null && !PipelineNodeUtil.isJenkinsFailureException(errorAction.getError())) {
+            if (errorAction != null) {
+                // If this is a Jenkins failure exception, then we don't need to add a new node
+                // - it will come from an existing step if there is a stage for the step to be part of.
+                if (hasStage && PipelineNodeUtil.isJenkinsFailureException(errorAction.getError())) {
+                    return null;
+                }
                 dump(
                         "getUnhandledException => Found unhandled exception: %s",
                         errorAction.getError().getMessage());
@@ -372,7 +400,7 @@ public class PipelineNodeTreeScanner {
                 /*
                  * This is a corner case for trivial graphs - ones that only have one action. In
                  * this case the error can be thrown by a the FlowStartNode, which would mean a
-                 * single nodes needs to be a stage and a step. Rather than adding a fake node
+                 * single node needs to be a stage and a step. Rather than adding a fake node
                  * to the graph, we use the end node that we were given to act as the step
                  * - this might need additional logic when getting the log for the exception.
                  */

@@ -296,7 +296,7 @@ export class ConsoleLogCard extends React.Component<
                 logBuffer={this.props.stepBuffer}
                 handleMoreConsoleClick={this.props.handleMoreConsoleClick}
                 step={this.props.step}
-                maxHeightScale={0.70}
+                maxHeightScale={0.65}
               />
             </Suspense>
           </CardContent>

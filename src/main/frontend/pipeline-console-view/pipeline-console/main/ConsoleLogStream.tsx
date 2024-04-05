@@ -1,6 +1,6 @@
 import React from "react";
 import { Virtuoso, VirtuosoHandle, LogLevel } from "react-virtuoso";
-import { useState, useEffect, useRef } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
 
 import Button from "@mui/material/Button";
@@ -9,6 +9,7 @@ export interface ConsoleLogStreamProps {
   logBuffer: StepLogBufferInfo;
   handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
   step: StepInfo;
+  maxHeightScale: number;
 }
 
 import { ConsoleLine } from "./ConsoleLine";
@@ -20,6 +21,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   const [moveToBottom, setMoveToBottom] = useState(true);
   const showButtonInterval = useRef<NodeJS.Timeout | null>(null);
   const [showButton, setShowButton] = useState(false);
+  const [maxConsoleLineHeight, setMaxConsoleLineHeight] = useState(1);
 
   useEffect(() => {
     return () => {
@@ -50,6 +52,14 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
     }
   }, [moveToBottom]);
 
+  const consoleLineHeightCallback = useCallback((height: number) => {
+    if (height > maxConsoleLineHeight) {
+      setMaxConsoleLineHeight(height);
+    } else if (maxConsoleLineHeight == 1) {
+      setMaxConsoleLineHeight(height);
+    }
+  }, []);
+
   const scrollListBottom = () => {
     if (virtuosoRef.current) {
       if (props.logBuffer.lines) {
@@ -70,22 +80,17 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
     return props.step.state === Result.running || props.logBuffer.startByte < 0;
   };
 
-  const minHeight = () => {
-    const numberOfLines = props.logBuffer.lines.length;
-
-    if (numberOfLines > 200) {
-      return 60;
-    }
-
-    return numberOfLines * 3;
+  const height = () => {
+    const spinnerLines = shouldRequestMoreLogs() ? 2 : 0;
+    return (props.logBuffer.lines.length + spinnerLines) * maxConsoleLineHeight;
   };
 
   return (
     <>
       <Virtuoso
         style={{
-          minHeight: `${minHeight()}vh`,
-          maxHeight: window.innerHeight / 2,
+          height: `${height()}px`,
+          maxHeight: window.innerHeight * props.maxHeightScale,
         }}
         ref={virtuosoRef}
         data={props.logBuffer.lines}
@@ -109,6 +114,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
               content={content}
               stepId={props.step.id}
               startByte={props.logBuffer.startByte}
+              heightCallback={consoleLineHeightCallback}
             />
           );
         }}

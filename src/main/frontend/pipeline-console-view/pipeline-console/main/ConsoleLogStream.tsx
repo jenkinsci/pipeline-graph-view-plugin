@@ -21,7 +21,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   const [moveToBottom, setMoveToBottom] = useState(true);
   const showButtonInterval = useRef<NodeJS.Timeout | null>(null);
   const [showButton, setShowButton] = useState(false);
-  const [consoleLineHeight, setConsoleLineHeight] = useState(1);
+  const [maxConsoleLineHeight, setMaxConsoleLineHeight] = useState(1);
 
   useEffect(() => {
     return () => {
@@ -53,7 +53,11 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   }, [moveToBottom]);
 
   const consoleLineHeightCallback = useCallback((height: number) => {
-    setConsoleLineHeight(height);
+    if (height > maxConsoleLineHeight) {
+      setMaxConsoleLineHeight(height);
+    } else if (maxConsoleLineHeight == 1) {
+      setMaxConsoleLineHeight(height);
+    }
   }, []);
 
   const scrollListBottom = () => {
@@ -78,7 +82,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
 
   const height = () => {
     const spinnerLines = shouldRequestMoreLogs() ? 2 : 0;
-    return (props.logBuffer.lines.length + spinnerLines) * consoleLineHeight;
+    return (props.logBuffer.lines.length + spinnerLines) * maxConsoleLineHeight;
   };
 
   return (

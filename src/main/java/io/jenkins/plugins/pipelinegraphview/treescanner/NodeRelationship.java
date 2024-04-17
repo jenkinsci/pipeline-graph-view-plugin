@@ -115,6 +115,12 @@ public class NodeRelationship {
         dump(
                 "Calculating Chunk Status start: %s, end: %s after: %s",
                 this.start.getId(), this.end.getId(), (this.after != null) ? this.after.getId() : "null");
+
+        // If start and end are equal this is a StepNode
+        if (this.start.getId().equals(this.end.getId())) {
+            return new NodeRunStatus(this.start);
+        }
+
         // Catch-all if none of the above are applicable.
         return new NodeRunStatus(
                 StatusAndTiming.computeChunkStatus2(run, this.before, this.start, this.end, this.after));

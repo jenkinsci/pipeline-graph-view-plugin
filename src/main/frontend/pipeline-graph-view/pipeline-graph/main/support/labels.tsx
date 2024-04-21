@@ -175,18 +175,18 @@ export function SequentialContainerLabel({
 
   const lineHeight = 1.35;
 
-  const containerStyle: any = {
+  const containerStyle = {
     top: y,
     left: x,
     lineHeight,
     marginTop: `-${lineHeight / 2}em`,
-    position: "absolute",
+    position: "absolute" as const,
     maxWidth: sequentialStagesLabelOffset,
     overflow: "hidden",
     textOverflow: "ellipsis",
     background: "var(--background, white)",
     padding: "0 3px",
-    whiteSpace: "nowrap",
+    whiteSpace: "nowrap" as const,
     outline: "1px solid var(--graph-connector-grey, gray)",
     borderRadius: "3px",
   };

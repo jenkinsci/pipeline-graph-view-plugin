@@ -12,6 +12,8 @@
   }
 
   .PWGx-PipelineGraph {
+    --graph-connector-grey: #{$graph-connector-grey};
+
     margin-left: auto;
     margin-right: auto;
   }

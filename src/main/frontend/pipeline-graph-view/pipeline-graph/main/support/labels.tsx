@@ -185,6 +185,8 @@ export function SequentialContainerLabel({
     padding: "0 7px",
     lineHeight: "1",
     whiteSpace: "nowrap",
+    outline: "1px solid var(--graph-connector-grey, gray)",
+    borderRadius: "3px",
   };
 
   return (

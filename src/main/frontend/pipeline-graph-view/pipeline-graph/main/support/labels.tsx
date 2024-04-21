@@ -182,7 +182,7 @@ export function SequentialContainerLabel({
     overflow: "hidden",
     textOverflow: "ellipsis",
     background: "var(--background, white)",
-    padding: "0 7px",
+    padding: "0 3px",
     lineHeight: "1",
     whiteSpace: "nowrap",
     outline: "1px solid var(--graph-connector-grey, gray)",

@@ -173,18 +173,22 @@ export function SequentialContainerLabel({
   const y = details.y;
   const x = details.x - Math.floor(nodeRadius * 2); // Because label X is a "node center"-relative position
 
-  const containerStyle: any = {
+  const lineHeight = 1.35;
+
+  const containerStyle = {
     top: y,
     left: x,
-    marginTop: "-0.5em",
-    position: "absolute",
+    lineHeight,
+    marginTop: `-${lineHeight / 2}em`,
+    position: "absolute" as const,
     maxWidth: sequentialStagesLabelOffset,
     overflow: "hidden",
     textOverflow: "ellipsis",
     background: "var(--background, white)",
-    padding: "0 7px",
-    lineHeight: "1",
-    whiteSpace: "nowrap",
+    padding: "0 3px",
+    whiteSpace: "nowrap" as const,
+    outline: "1px solid var(--graph-connector-grey, gray)",
+    borderRadius: "3px",
   };
 
   return (

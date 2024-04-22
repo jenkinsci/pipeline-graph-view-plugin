@@ -53,6 +53,7 @@ describe("ConsoleLogStream", () => {
     step: baseStep,
     logBuffer: baseBuffer,
     isExpanded: false,
+    maxHeightScale: 1,
     handleMoreConsoleClick: () => {
       console.log("handleMoreConsoleClick triggered");
     },

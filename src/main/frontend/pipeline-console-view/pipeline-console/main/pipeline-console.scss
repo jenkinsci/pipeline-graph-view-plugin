@@ -67,10 +67,14 @@
   padding-left: 16px;
 }
 
-.console-text div {
-  text-indent: 0;
+.console-text {
   padding-left: 15px;
   padding-right: 5px;
+}
+
+.console-text div {
+  text-indent: 0;
+  display: inline-block;
 }
 
 div.show-more-console {

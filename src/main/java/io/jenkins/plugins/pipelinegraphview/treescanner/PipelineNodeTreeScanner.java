@@ -146,7 +146,7 @@ public class PipelineNodeTreeScanner {
         return this.declarative;
     }
 
-    private class GraphBuilder {
+    private static class GraphBuilder {
         private final Map<String, FlowNode> nodeMap;
         private final Map<String, NodeRelationship> relationships;
         private final WorkflowRun run;

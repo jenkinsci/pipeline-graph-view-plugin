@@ -192,7 +192,7 @@ public class PipelineStepApiLegacyTest {
         PipelineStepApi api = new PipelineStepApi(run);
 
         List<PipelineStep> steps = api.getAllSteps().getSteps();
-        assertThat(steps, hasSize(10));
+        assertThat(steps, hasSize(11));
         assertThat(steps.get(0).getName(), is("This stage will be executed first."));
         assertThat(steps.get(0).getTitle(), is("Print Message"));
         assertThat(steps.get(1).getName(), is("Print Message"));
@@ -214,6 +214,8 @@ public class PipelineStepApiLegacyTest {
         assertThat(steps.get(8).getTitle(), is("Print Message"));
         assertThat(steps.get(9).getName(), is("In stage Nested 2 - 2 within Branch C"));
         assertThat(steps.get(9).getTitle(), is("Print Message"));
+        assertThat(steps.get(10).getName(), is("Get contextual object from internal APIs"));
+        assertThat(steps.get(10).getTitle(), is(""));
     }
 
     @Test

@@ -81,7 +81,7 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements Pi
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineNodeGraphVisitor.class);
 
-    private final boolean isNodeVisitorDumpEnabled = true; // logger.isTraceEnabled();
+    private static final boolean isNodeVisitorDumpEnabled = true; // logger.isTraceEnabled();
 
     private final Stack<FlowNode> nestedStages = new Stack<>();
     private final Stack<FlowNode> nestedbranches = new Stack<>();

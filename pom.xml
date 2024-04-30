@@ -10,7 +10,7 @@
 
   <groupId>io.jenkins.plugins</groupId>
   <artifactId>pipeline-graph-view</artifactId>
-  <version>${changelist}</version>
+  <version>215.${changelist}</version>
   <packaging>hpi</packaging>
   <name>Pipeline Graph View Plugin</name>
   <url>https://github.com/jenkinsci/pipeline-graph-view-plugin</url>

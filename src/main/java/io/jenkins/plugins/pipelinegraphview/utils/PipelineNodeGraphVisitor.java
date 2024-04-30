@@ -73,7 +73,7 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor {
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineNodeGraphVisitor.class);
 
-    private final boolean isNodeVisitorDumpEnabled = logger.isTraceEnabled();
+    private static final boolean isNodeVisitorDumpEnabled = logger.isTraceEnabled();
 
     private final Stack<FlowNode> nestedStages = new Stack<>();
     private final Stack<FlowNode> nestedbranches = new Stack<>();

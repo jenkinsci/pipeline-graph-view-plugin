@@ -43,7 +43,7 @@ pipeline {
         }
         stage('Skipped stage') {
             when {
-                branch 'master'
+                branch 'some-pattern'
             }
             steps {
                 echo 'This stage will be skipped.'

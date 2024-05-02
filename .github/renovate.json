@@ -13,7 +13,7 @@
       "matchDatasources": ["npm"],
       "addLabels": ["javascript"],
       "automerge": false,
-      "platformAutomerge": false,
+      "platformAutomerge": false
     },
     {
       "matchPackageNames": ["node"],

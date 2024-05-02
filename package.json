@@ -63,7 +63,7 @@
     "prettier": "3.2.5",
     "react-collapse-pane": "^3.0.1",
     "sass": "1.76.0",
-    "sass-loader": "13.1.0",
+    "sass-loader": "13.3.3",
     "source-map-loader": "4.0.2",
     "style-loader": "^3.0.0",
     "styled-components": "^5.3.6",

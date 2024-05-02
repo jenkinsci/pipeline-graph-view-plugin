@@ -62,7 +62,7 @@
     "jest-environment-jsdom": "^29.5.0",
     "prettier": "2.7.1",
     "react-collapse-pane": "^3.0.1",
-    "sass": "1.56.2",
+    "sass": "1.76.0",
     "sass-loader": "13.1.0",
     "source-map-loader": "4.0.1",
     "style-loader": "^3.0.0",

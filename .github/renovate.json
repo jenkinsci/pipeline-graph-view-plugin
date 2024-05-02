@@ -5,14 +5,19 @@
     ":semanticCommitsDisabled",
     "schedule:earlyMondays"
   ],
+  "automerge": true,
+  "automergeType": "pr",
+  "platformAutomerge": true,
   "packageRules": [
     {
       "matchDatasources": ["npm"],
-      "addLabels": ["javascript"]
+      "addLabels": ["javascript"],
+      "automerge": false,
+      "platformAutomerge": false,
     },
     {
       "matchPackageNames": ["node"],
-      "allowedVersions": "/16.[0-9]+.[0-9]+(.[0-9]+)?$/"
+      "allowedVersions": "/20.[0-9]+.[0-9]+(.[0-9]+)?$/"
     }
   ],
   "regexManagers": [

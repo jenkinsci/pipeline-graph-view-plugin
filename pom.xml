@@ -33,7 +33,7 @@
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/pipeline-graph-view-plugin</gitHubRepo>
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
-    <jenkins.version>2.440.1</jenkins.version>
+    <jenkins.version>2.450</jenkins.version>
     <node.version>20.12.2</node.version>
     <npm.version>10.7.0</npm.version>
     <spotless.check.skip>false</spotless.check.skip>

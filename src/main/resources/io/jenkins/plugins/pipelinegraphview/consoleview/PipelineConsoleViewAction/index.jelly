@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns">
     <l:layout title="${%Build log} [${it.buildDisplayName}]" type="one-column">
         <l:main-panel>
             <div class="jenkins-app-bar">
@@ -41,18 +41,12 @@
                         </a>
                     </l:hasPermission>
                     <l:overflowButton>
-                        <a class="jenkins-dropdown__item" href="../console">
-                            <div class="jenkins-dropdown__item__icon">
-                                <l:icon src="symbol-terminal" />
-                            </div>
-                            ${%View classic console}
-                        </a>
-                        <a class="jenkins-dropdown__item" href="../consoleText">
-                            <div class="jenkins-dropdown__item__icon">
-                                <l:icon src="symbol-document-text" />
-                            </div>
-                            ${%View as plain text}
-                        </a>
+                        <dd:item icon="symbol-terminal"
+                                 text="${%View classic console}"
+                                 href="../console" />
+                        <dd:item icon="symbol-document-text"
+                                 text="${%View as plain text}"
+                                 href="../consoleText" />
                     </l:overflowButton>
                 </div>
                 <script src="${rootURL}/plugin/pipeline-graph-view/js/build.js"/>

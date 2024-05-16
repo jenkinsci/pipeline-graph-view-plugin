@@ -65,7 +65,7 @@
     "sass": "1.76.0",
     "sass-loader": "14.2.1",
     "source-map-loader": "4.0.2",
-    "style-loader": "^3.0.0",
+    "style-loader": "^4.0.0",
     "styled-components": "^5.3.6",
     "ts-jest": "29.1.2",
     "ts-loader": "^8.0.0",

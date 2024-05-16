@@ -7,13 +7,11 @@
   ],
   "automerge": true,
   "automergeType": "pr",
-  "platformAutomerge": true,
   "packageRules": [
     {
       "matchDatasources": ["npm"],
       "addLabels": ["javascript"],
-      "automerge": false,
-      "platformAutomerge": false
+      "automerge": false
     },
     {
       "matchPackageNames": ["node"],

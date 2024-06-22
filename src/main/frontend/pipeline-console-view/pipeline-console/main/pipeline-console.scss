@@ -13,6 +13,7 @@
 
 .app-page-body--one-column {
   max-width: 95vw;
+  margin: var(--section-padding)
 }
 
 [data-theme="dark"] {
@@ -219,7 +220,7 @@ g.build-status-icon__outer {
 }
 
 #main-panel {
-  padding-left: 0;
+  padding: unset;
 }
 
 .jenkins-button svg {

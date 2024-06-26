@@ -1,22 +1,10 @@
 :root {
-  --card-background: hsl(212, 30%, 96%);
   --card-gap: 1rem;
 }
 
 .app-page-body--one-column {
   margin: unset;
   max-width: unset;
-}
-
-[data-theme="dark"] {
-  --card-background: hsl(230deg 14% 23%);
-}
-
-@media (prefers-color-scheme: dark) {
-  [data-theme="dark-system"],
-  [data-theme="dark-system"] {
-    --card-background: hsl(230deg 14% 23%);
-  }
 }
 
 @import "cards";

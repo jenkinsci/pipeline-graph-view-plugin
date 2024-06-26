@@ -9,17 +9,17 @@
 
 @import "cards";
 
-.app-details__item svg {
-  color: currentColor !important;
-  width: 16px;
-  height: 16px;
+.idkidkidk {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .app-details__item {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 0 0 15px;
+  margin: 0;
 
   span {
     display: contents;
@@ -27,8 +27,8 @@
 
   svg {
     color: currentColor !important;
-    width: 16px;
-    height: 16px;
+    width: 1.125rem;
+    height: 1.125rem;
   }
 
   &--link {

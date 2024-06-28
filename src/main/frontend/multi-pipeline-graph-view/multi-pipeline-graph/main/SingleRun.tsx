@@ -24,22 +24,26 @@ export const SingleRun: (data: Props) => JSX.Element = ({ run }) => {
   }
 
   const handleNodeClick = (nodeName: string, id: number) => {
-    console.log(nodeName, id);
     let redirect = `../${run.id}/pipeline-console?selected-node=${id}`;
     if (onJobView) {
       redirect = `${run.id}/pipeline-console?selected-node=${id}`;
     }
     window.location.href = redirect;
   };
+
+  const jobStatus = `${run.result.toLowerCase()}`;
+
   return (
     <tr>
       <td>
-        <a
-          href={singleRunPage}
-          className="jenkins-table__link pgw-user-specified-text"
-        >
-          {run.displayName}
-        </a>
+        <div className="PWGx-PipelineGraph-Summary-container">
+          <a href={singleRunPage} className={`PWGx-Link  ${jobStatus}`}>
+            <p>{run.displayName}</p>
+          </a>
+          <div className="PWGx-Start">
+            <span>{run.startTime}</span>
+          </div>
+        </div>
       </td>
       <td>
         <PipelineGraph
@@ -50,6 +54,11 @@ export const SingleRun: (data: Props) => JSX.Element = ({ run }) => {
           collapsed={true}
         />
       </td>
-    </tr>
+      <td>
+        <div className="PWGx-PipelineGraph-Summary-container">
+          <p className="PWGx-Duration">{jobStatus === 'in_progress' ? 'Running...' : 'Took: ' + run.duration}</p>
+        </div>
+      </td>
+    </tr> 
   );
 };

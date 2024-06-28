@@ -19,8 +19,9 @@ export const MultiPipelineGraph = () => {
     <table className="jenkins-table sortable">
       <thead>
         <tr>
-          <th className="jenkins-table__cell--tight">id</th>
-          <th data-sort-disable="true">pipeline</th>
+          <th className="jenkins-table__cell">ID</th>
+          <th data-sort-disable="true">Pipeline</th>
+          <th className="jenkins-table__cell">Duration</th>
         </tr>
       </thead>
       <tbody>

@@ -17,3 +17,62 @@
     margin-right: auto;
   }
 }
+
+.PWGx-PipelineGraph-Summary-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+
+  .PWGx-Link {
+    border-style: solid;
+    border-radius: 12px;
+    border-width: 1px;
+    display: inline-flex;
+    align-items: center;
+    z-index: 3;
+    position: relative;
+    background-color: white;
+    text-decoration: none;
+    
+    &.aborted {
+      border-color: var(--text-color-secondary)
+    }
+    &.success {
+      border-color: var(--success-color);
+    }
+    &.failure {
+      border-color: var(--red);
+    }
+
+    p {
+      font-size: var(--font-size-xs);
+      margin: 0px 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 200px; /* Adjust the max-width as needed */
+    }
+
+    &:hover p {
+      color: var(--link-color--hover);
+      text-decoration: none;
+    }
+  }
+
+  .PWGx-Duration {
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+  }
+  
+  .PWGx-Start {
+    background: var(--light-grey);
+    border-radius: 6px;
+    font-size: 11px;
+    padding: 7px;
+    position: relative;
+    text-align: left;
+    top: -0.8em;
+    white-space: nowrap;
+    display: inline-block;
+  }
+}

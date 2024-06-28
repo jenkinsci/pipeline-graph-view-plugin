@@ -39,6 +39,7 @@ interface PipelineConsoleState {
   hasScrolled: boolean;
   isComplete: boolean;
   hasUnmounted: boolean;
+  isStageViewExpanded: boolean,
 }
 
 // Determines the default selected step.
@@ -135,6 +136,7 @@ export default class PipelineConsole extends React.Component<
       hasScrolled: false,
       isComplete: false,
       hasUnmounted: false,
+      isStageViewExpanded: true,
     };
   }
 
@@ -502,14 +504,23 @@ export default class PipelineConsole extends React.Component<
     }
     return null;
   }
+  
+  handlePaneCollapse = (sizes: Array<number | null>) => {
+    const isStageViewExpanded = sizes[0] === null;
+  
+    if (this.state.isStageViewExpanded !== isStageViewExpanded) {
+      this.setState({ isStageViewExpanded });
+    }
+  };
 
   render() {
     const buttonPositionOffset = 10;
     const collapseDirection = "left";
     const collapseTransition = 500;
-    const grabberSize = 10;
+    const grabberSize = 50;
     const buttonTransition = "grow";
-
+    const stageViewPaneClass = `split-pane ${this.state.isStageViewExpanded ? '' : 'collapsed'}`;
+    
     return (
       <React.Fragment>
         <div className="App">
@@ -518,13 +529,16 @@ export default class PipelineConsole extends React.Component<
             initialSizes={[2, 8]}
             // minSize in Pixels (for all panes)
             minSizes={250}
-            className="split-pane"
+            className={stageViewPaneClass}
             split="vertical"
             collapse={{
               collapseTransitionTimeout: collapseTransition,
               buttonTransition,
               collapseDirection,
               buttonPositionOffset,
+            }}
+            hooks={{
+              onCollapse: this.handlePaneCollapse,
             }}
             resizerOptions={{
               grabberSize,
@@ -543,7 +557,7 @@ export default class PipelineConsole extends React.Component<
             </div>
 
             <div
-              className="split-pane split-pane--stage-view"
+              className={stageViewPaneClass}
               key="stage-view"
               id="stage-view-pane"
             >

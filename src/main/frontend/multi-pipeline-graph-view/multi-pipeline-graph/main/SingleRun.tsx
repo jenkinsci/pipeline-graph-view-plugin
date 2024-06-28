@@ -41,7 +41,7 @@ export const SingleRun: (data: Props) => JSX.Element = ({ run }) => {
             <p>{run.displayName}</p>
           </a>
           <div className="PWGx-Start">
-            <span>{run.startTime}</span>
+            <span>{run.startTime} - {jobStatus === "in_progress" ? "Running..." : run.duration}</span>
           </div>
         </div>
       </td>
@@ -54,11 +54,6 @@ export const SingleRun: (data: Props) => JSX.Element = ({ run }) => {
           collapsed={true}
         />
       </td>
-      <td>
-        <div className="PWGx-PipelineGraph-Summary-container">
-          <p className="PWGx-Duration">{jobStatus === 'in_progress' ? 'Running...' : 'Took: ' + run.duration}</p>
-        </div>
-      </td>
-    </tr> 
+    </tr>
   );
 };

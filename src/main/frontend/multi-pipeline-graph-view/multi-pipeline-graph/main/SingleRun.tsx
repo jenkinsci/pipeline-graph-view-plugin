@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { RunInfo } from "./MultiPipelineGraphModel";
 import {
   PipelineGraph,
+  PipelineSummary,
   StageInfo,
 } from "../../../pipeline-graph-view/pipeline-graph/main";
 
@@ -31,19 +32,22 @@ export const SingleRun: (data: Props) => JSX.Element = ({ run }) => {
     window.location.href = redirect;
   };
 
+  const handleChipClick = () => {
+    window.location.href = singleRunPage;
+  };
+
   const jobStatus = `${run.result.toLowerCase()}`;
 
   return (
     <tr>
       <td>
-        <div className="PWGx-PipelineGraph-Summary-container">
-          <a href={singleRunPage} className={`PWGx-Link  ${jobStatus}`}>
-            <p>{run.displayName}</p>
-          </a>
-          <div className="PWGx-Start">
-            <span>{run.startTime} - {jobStatus === "in_progress" ? "Running..." : run.duration}</span>
-          </div>
-        </div>
+          <PipelineSummary
+            label={run.displayName}
+            status={jobStatus}
+            onClick={handleChipClick}
+            startTime={run.startTime}
+            duration={run.duration}
+          />
       </td>
       <td>
         <PipelineGraph

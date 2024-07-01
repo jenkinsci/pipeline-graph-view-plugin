@@ -24,22 +24,26 @@ export const SingleRun: (data: Props) => JSX.Element = ({ run }) => {
   }
 
   const handleNodeClick = (nodeName: string, id: number) => {
-    console.log(nodeName, id);
     let redirect = `../${run.id}/pipeline-console?selected-node=${id}`;
     if (onJobView) {
       redirect = `${run.id}/pipeline-console?selected-node=${id}`;
     }
     window.location.href = redirect;
   };
+
+  const jobStatus = `${run.result.toLowerCase()}`;
+
   return (
     <tr>
       <td>
-        <a
-          href={singleRunPage}
-          className="jenkins-table__link pgw-user-specified-text"
-        >
-          {run.displayName}
-        </a>
+        <div className="PWGx-PipelineGraph-Summary-container">
+          <a href={singleRunPage} className={`PWGx-Link  ${jobStatus}`}>
+            <p>{run.displayName}</p>
+          </a>
+          <div className="PWGx-Start">
+            <span>{run.startTime} - {jobStatus === "in_progress" ? "Running..." : run.duration}</span>
+          </div>
+        </div>
       </td>
       <td>
         <PipelineGraph

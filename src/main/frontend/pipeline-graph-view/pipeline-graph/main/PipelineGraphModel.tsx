@@ -94,9 +94,16 @@ export interface PlaceholderNodeInfo extends BaseNodeInfo {
 
 export type NodeInfo = StageNodeInfo | PlaceholderNodeInfo;
 
+export interface NodeRow {
+  beforeId?: number,
+  stages: NodeInfo[],
+  nestedRows: NodeRow[],
+  afterId?: number,
+}
+
 export interface NodeColumn {
   topStage?: StageInfo; // Top-most stage for this column, which will have no rendered nodes if it's parallel
-  rows: Array<Array<NodeInfo>>;
+  rows: Array<NodeRow>;
   centerX: number; // Center X position, for positioning top bigLabel
   hasBranchLabels: boolean;
   startX: number; // Where to put the branch labels, or if none, the center of the left-most node(s)

@@ -3,17 +3,14 @@ package io.jenkins.plugins.pipelinegraphview.multipipelinegraphview;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.model.Action;
-import hudson.model.User;
 import hudson.security.Permission;
 import hudson.util.HttpResponses;
 import hudson.util.RunList;
 import io.jenkins.plugins.pipelinegraphview.PipelineGraphViewConfiguration;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
-import io.jenkins.plugins.pipelinegraphview.utils.UserPreferences;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TimeZone;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.jenkins.ui.icon.IconSpec;
@@ -85,25 +82,6 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
     protected JSONArray createJson(List<PipelineRun> pipelineRuns) throws JsonProcessingException {
         String graph = OBJECT_MAPPER.writeValueAsString(pipelineRuns);
         return JSONArray.fromObject(graph);
-    }
-
-    @GET
-    @WebMethod(name = "userPreferences")
-    public HttpResponse getUserPreferences() throws JsonProcessingException {
-        User user = User.current();
-        JSONObject preferencesJson = new JSONObject();
-        if (user != null) {
-            UserPreferences preferences = user.getProperty(UserPreferences.class);
-            if (preferences != null) {
-                preferencesJson.put("timezone", preferences.getTimezone());
-            } else {
-                preferencesJson.put("timezone", TimeZone.getDefault().getID());
-            }
-        } else {
-            // Default tz for anon users
-            preferencesJson.put("timezone", TimeZone.getDefault().getID());
-        }
-        return HttpResponses.okJSON(preferencesJson);
     }
 
     @Override

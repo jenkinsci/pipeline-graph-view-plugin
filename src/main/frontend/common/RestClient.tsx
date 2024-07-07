@@ -96,11 +96,11 @@ export async function getConsoleTextOffset(
 
 export async function getUserPreferences(): Promise<UserPreferences> {
   try {
-    const response = await fetch('multi-pipeline-graph/userPreferences'); // TODO: ew
+    const response = await fetch("/jenkins/multi-pipeline-graph/getUserPreferences");
     if (!response.ok) { throw response.statusText }
 
     const json = await response.json();
-    return json.data;
+    return json;
   } catch (e) {
     console.error(`Caught error when fetching user preferences: '${e}'`);
     return { timezone: 'UTC' };

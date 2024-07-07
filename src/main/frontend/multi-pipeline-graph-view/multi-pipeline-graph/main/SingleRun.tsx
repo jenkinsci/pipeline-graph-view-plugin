@@ -4,13 +4,15 @@ import {
   PipelineGraph,
   PipelineSummary,
   StageInfo,
+  UserPreferences
 } from "../../../pipeline-graph-view/pipeline-graph/main";
 
 interface Props {
   run: RunInfo;
+  userPreferences: UserPreferences;
 }
 
-export const SingleRun: (data: Props) => JSX.Element = ({ run }) => {
+export const SingleRun: (data: Props) => JSX.Element = ({ run, userPreferences }) => {
   const [stages, setStages] = useState<Array<StageInfo>>([]);
   let path = `tree?runId=${run.id}`;
 

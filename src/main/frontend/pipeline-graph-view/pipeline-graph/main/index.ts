@@ -9,4 +9,5 @@ export type {
   LayoutInfo,
   StageInfo,
   NodeInfo,
+  UserPreferences
 } from "./PipelineGraphModel";

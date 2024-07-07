@@ -31,6 +31,10 @@ export interface StepLogBufferInfo {
   endByte: number;
 }
 
+export interface UserPreferences {
+  timezone: string;
+}
+
 // Returned from API, gets converted to 'StepLogBufferInfo'.
 export interface ConsoleLogData {
   text: string;
@@ -87,5 +91,18 @@ export async function getConsoleTextOffset(
   } catch (e) {
     console.error(`Caught error when fetching console: '${e}'`);
     return null;
+  }
+}
+
+export async function getUserPreferences(): Promise<UserPreferences> {
+  try {
+    const response = await fetch('multi-pipeline-graph/userPreferences'); // TODO: ew
+    if (!response.ok) { throw response.statusText }
+
+    const json = await response.json();
+    return json.data;
+  } catch (e) {
+    console.error(`Caught error when fetching user preferences: '${e}'`);
+    return { timezone: 'UTC' };
   }
 }

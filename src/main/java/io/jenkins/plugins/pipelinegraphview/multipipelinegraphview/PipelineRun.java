@@ -2,10 +2,6 @@ package io.jenkins.plugins.pipelinegraphview.multipipelinegraphview;
 
 import hudson.Util;
 import hudson.model.Result;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 public class PipelineRun {
@@ -14,7 +10,7 @@ public class PipelineRun {
     private final String displayName;
     private final String duration;
     private final String result;
-    private final String startTime;
+    private final Long startTime;
 
     public PipelineRun(WorkflowRun run) {
         this.id = run.getId();
@@ -24,11 +20,7 @@ public class PipelineRun {
         Result buildResult = run.getResult();
         this.result = (buildResult != null) ? buildResult.toString() : "IN_PROGRESS";
 
-        SimpleDateFormat sdf = new SimpleDateFormat("d MMM, hh:mm", Locale.getDefault());
-        // TODO support user timezones from UserProperty
-        sdf.setTimeZone(TimeZone.getDefault());
-        // TODO display full duration on hover but continue shortened for display
-        this.startTime = sdf.format(new Date(run.getStartTimeInMillis()));
+        this.startTime = run.getStartTimeInMillis();
     }
 
     public String getId() {
@@ -47,7 +39,7 @@ public class PipelineRun {
         return result;
     }
 
-    public String getStartTime() {
+    public Long getStartTime() {
         return startTime;
     }
 }

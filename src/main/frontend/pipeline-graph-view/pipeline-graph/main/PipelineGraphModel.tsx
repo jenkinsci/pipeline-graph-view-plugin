@@ -64,6 +64,10 @@ export interface StageInfo {
   totalDurationMillis: string;
 }
 
+export interface UserPreferences {
+  timezone: string;
+}
+
 interface BaseNodeInfo {
   key: string;
   x: number;

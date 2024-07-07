@@ -39,7 +39,7 @@ export const SingleRun: (data: Props) => JSX.Element = ({ run, userPreferences }
   };
 
   const jobStatus = `${run.result.toLowerCase()}`;
-
+  
   return (
     <tr>
       <td>
@@ -49,6 +49,7 @@ export const SingleRun: (data: Props) => JSX.Element = ({ run, userPreferences }
             onClick={handleChipClick}
             startTime={run.startTime}
             duration={run.duration}
+            timezone={userPreferences.timezone}
           />
       </td>
       <td>

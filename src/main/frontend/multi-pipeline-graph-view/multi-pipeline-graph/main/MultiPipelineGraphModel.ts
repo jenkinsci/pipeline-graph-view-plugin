@@ -3,5 +3,5 @@ export interface RunInfo {
   displayName: string;
   duration: string;
   result: string;
-  startTime: string;
+  startTime: number;
 }

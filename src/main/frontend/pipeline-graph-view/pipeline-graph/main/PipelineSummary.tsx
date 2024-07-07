@@ -2,13 +2,15 @@ import React from 'react';
 import { styled } from '@mui/material/styles';
 import { Box, Tooltip, Typography } from '@mui/material';
 import { StatusChip } from './support/StatusChip';
+import { formatDateTime } from "../../../common/TimeConverters";
 
 interface PipelineSummaryProps {
   label: string;
   status: string;
   onClick: () => void;
-  startTime: string;
+  startTime: number;
   duration: string;
+  timezone: string;
 }
 
 const CustomBox = styled(Box)(({ theme }) => ({
@@ -16,11 +18,16 @@ const CustomBox = styled(Box)(({ theme }) => ({
   padding: theme.spacing(1),
   display: 'inline-block',
   borderRadius: theme.shape.borderRadius,
+  marginTop: '-0.5em',
+  zIndex: 1,
+  position: 'relative',
 }));
 
 export class PipelineSummary extends React.Component<PipelineSummaryProps> {
   render() {
-    const { label, status, onClick, startTime, duration } = this.props;
+    const { label, status, onClick, startTime, duration, timezone } = this.props;
+    const fullTimeStamp = formatDateTime(startTime, timezone, 'full')
+    const shortTimeStamp = formatDateTime(startTime, timezone, 'short')
 
     return (
       <Box display="flex" flexDirection="column" alignItems="flex-start" className="sup">
@@ -32,13 +39,13 @@ export class PipelineSummary extends React.Component<PipelineSummaryProps> {
         <Tooltip
           title={
             <Typography component="div">
-              {startTime}
+              {fullTimeStamp}
             </Typography>
           }
           placement="bottom"
         >
           <CustomBox>
-            <Typography noWrap style={{ fontSize: 'var(--font-size-xs)' }}>{startTime} - {duration}</Typography>
+            <Typography noWrap style={{ fontSize: 'var(--font-size-xs)' }}>{shortTimeStamp} - {duration}</Typography>
           </CustomBox>
         </Tooltip>
       </Box>

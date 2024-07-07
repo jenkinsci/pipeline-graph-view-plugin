@@ -10,7 +10,6 @@ interface PipelineSummaryProps {
   onClick: () => void;
   startTime: number;
   duration: string;
-  timezone: string;
 }
 
 const CustomBox = styled(Box)(({ theme }) => ({
@@ -25,9 +24,9 @@ const CustomBox = styled(Box)(({ theme }) => ({
 
 export class PipelineSummary extends React.Component<PipelineSummaryProps> {
   render() {
-    const { label, status, onClick, startTime, duration, timezone } = this.props;
-    const fullTimeStamp = formatDateTime(startTime, timezone, 'full')
-    const shortTimeStamp = formatDateTime(startTime, timezone, 'short')
+    const { label, status, onClick, startTime, duration } = this.props;
+    const fullTimeStamp = formatDateTime(startTime, 'full')
+    const shortTimeStamp = formatDateTime(startTime, 'short')
 
     return (
       <Box display="flex" flexDirection="column" alignItems="flex-start" className="sup">

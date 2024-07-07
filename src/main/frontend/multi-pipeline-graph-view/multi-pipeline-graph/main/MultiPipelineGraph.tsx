@@ -2,13 +2,10 @@ import React, { useEffect, useState } from "react";
 import { RunInfo } from "./MultiPipelineGraphModel";
 import startPollingRunsStatus from "./support/startPollingRunsStatus";
 import { SingleRun } from "./SingleRun";
-import { UserPreferences } from "../../../pipeline-graph-view/pipeline-graph/main";
-import { getUserPreferences } from "../../../common/RestClient";
 
 export const MultiPipelineGraph = () => {
   const [runs, setRuns] = useState<Array<RunInfo>>([]);
   const [poll, setPoll] = useState(false);
-  const [userPreferences, setUserPreferences] = useState<UserPreferences>({ timezone: 'UTC' });
 
   useEffect(() => {
     if (!poll) {
@@ -19,14 +16,6 @@ export const MultiPipelineGraph = () => {
     }
   }, [runs, poll]);
 
-  useEffect(() => {
-    const fetchPreferences = async () => {
-      const preferences = await getUserPreferences();
-      setUserPreferences(preferences);
-    };
-
-    fetchPreferences();
-  }, []);
 
   return (
     <table className="jenkins-table sortable">
@@ -38,7 +27,7 @@ export const MultiPipelineGraph = () => {
       </thead>
       <tbody>
         {runs.map((run) => (
-          <SingleRun key={run.id} run={run} userPreferences={userPreferences}/>
+          <SingleRun key={run.id} run={run}/>
         ))}
       </tbody>
     </table>

@@ -4,15 +4,13 @@ import {
   PipelineGraph,
   PipelineSummary,
   StageInfo,
-  UserPreferences
 } from "../../../pipeline-graph-view/pipeline-graph/main";
 
 interface Props {
   run: RunInfo;
-  userPreferences: UserPreferences;
 }
 
-export const SingleRun: (data: Props) => JSX.Element = ({ run, userPreferences }) => {
+export const SingleRun: (data: Props) => JSX.Element = ({ run }) => {
   const [stages, setStages] = useState<Array<StageInfo>>([]);
   let path = `tree?runId=${run.id}`;
 
@@ -49,7 +47,6 @@ export const SingleRun: (data: Props) => JSX.Element = ({ run, userPreferences }
             onClick={handleChipClick}
             startTime={run.startTime}
             duration={run.duration}
-            timezone={userPreferences.timezone}
           />
       </td>
       <td>

@@ -8,6 +8,5 @@ export type {
   NodeLabelInfo,
   LayoutInfo,
   StageInfo,
-  NodeInfo,
-  UserPreferences
+  NodeInfo
 } from "./PipelineGraphModel";

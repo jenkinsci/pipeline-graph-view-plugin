@@ -1,10 +1,9 @@
 /**
  * Returns formatted date from unix epoch
  * @param epochTime - The epoch time
- * @param timezone - The timezone string
  * @param formatType - The format type: 'short' for "DD MMM, HH:mm" or 'full' for "DD MMM, YYYY, HH:mm AM/PM"
  */
-export const formatDateTime = (epochTime: number, timezone: string, formatType: 'short' | 'full'): string => {
+export const formatDateTime = (epochTime: number, formatType: 'short' | 'full'): string => {
   const date = new Date(epochTime);
 
   let options: Intl.DateTimeFormatOptions;
@@ -14,7 +13,6 @@ export const formatDateTime = (epochTime: number, timezone: string, formatType: 
       month: 'short',
       hour: '2-digit',
       minute: '2-digit',
-      timeZone: timezone,
       hour12: false
     };
   } else if (formatType === 'full') {
@@ -24,7 +22,6 @@ export const formatDateTime = (epochTime: number, timezone: string, formatType: 
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-      timeZone: timezone,
       hour12: true
     };
   } else {

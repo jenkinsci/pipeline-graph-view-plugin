@@ -60,7 +60,7 @@
     "jest-cli": "^29.5.0",
     "jest-environment-jsdom": "^29.5.0",
     "jest-junit": "^16.0.0",
-    "prettier": "3.2.5",
+    "prettier": "3.3.3",
     "react-collapse-pane": "^3.0.1",
     "sass": "1.77.6",
     "sass-loader": "14.2.1",

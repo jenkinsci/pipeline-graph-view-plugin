@@ -13,7 +13,8 @@
 
 .app-page-body--one-column {
   max-width: 100vw;
-  margin: var(--section-padding)
+  margin: var(--section-padding);
+  margin-bottom: 0px;
 }
 
 [data-theme="dark"] {
@@ -387,10 +388,17 @@ svg.detail-icon {
 
 div.split-pane {
   position: relative;
-  padding-left: 8px;
   text-align: left;
   height: calc(100vh - 300px);
   overflow: auto;
+
+  > div[style*="position: relative;"] {
+    width: 24px;
+  }
+
+  &.collapsed {
+    overflow: hidden;
+  }
 }
 
 a {

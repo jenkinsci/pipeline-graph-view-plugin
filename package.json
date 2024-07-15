@@ -48,7 +48,7 @@
     "@testing-library/react": "^15.0.0",
     "@types/enzyme": "3.10.18",
     "@types/jest": "29.5.12",
-    "@types/node": "20.14.8",
+    "@types/node": "20.14.10",
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
     "babel-jest": "^29.5.0",

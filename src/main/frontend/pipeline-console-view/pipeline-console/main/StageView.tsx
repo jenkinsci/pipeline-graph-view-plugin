@@ -15,6 +15,7 @@ import {
   LOG_FETCH_SIZE,
 } from "./PipelineConsoleModel";
 import { ConsoleLogCard } from "./ConsoleLogCard";
+import StageNodeLink from "./StageNodeLink";
 
 export interface StageSummaryProps {
   stage: StageInfo;
@@ -94,9 +95,7 @@ const StageSummary = (props: StageSummaryProps) => (
           className="capitalize"
           key={`stage-detail-agent-text-${props.stage.id}`}
         >
-          Running on <a href={`../../../../computer/${props.stage.agent == "built-in" ? "(built-in)" : props.stage.agent }/`}>
-            {props.stage.agent == "built-in" ? "Jenkins" : props.stage.agent }
-          </a>
+          <StageNodeLink agent={props.stage.agent}/>
         </span>
       </div>
       {props.failedSteps.map((value: StepInfo) => {

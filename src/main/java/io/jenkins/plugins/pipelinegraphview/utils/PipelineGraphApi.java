@@ -18,6 +18,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.jenkinsci.plugins.workflow.actions.WorkspaceAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -58,6 +60,17 @@ public class PipelineGraphApi {
                     if (flowNodeWrapper.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
                         state = flowNodeWrapper.getStatus().getState().name().toLowerCase(Locale.ROOT);
                     }
+                    String agent = null;
+                    for (FlowNode enclosing : flowNodeWrapper.getNode().iterateEnclosingBlocks() ) {
+                        WorkspaceAction ws = enclosing.getAction(WorkspaceAction.class);
+                        if (ws != null) {
+                            agent = ws.getNode();
+                            if (agent.isEmpty()) {
+                                agent = "built-in";
+                            }
+                            break;
+                        }
+                    }
                     return new PipelineStageInternal(
                             flowNodeWrapper.getId(), // TODO no need to parse it BO returns a string even though the
                             // datatype is number on the frontend
@@ -70,7 +83,8 @@ public class PipelineGraphApi {
                             flowNodeWrapper.getType().name(),
                             flowNodeWrapper.getDisplayName(), // TODO blue ocean uses timing information: "Passed in 0s"
                             flowNodeWrapper.isSynthetic(),
-                            flowNodeWrapper.getTiming());
+                            flowNodeWrapper.getTiming(),
+                            agent);
                 })
                 .collect(Collectors.toList());
     }

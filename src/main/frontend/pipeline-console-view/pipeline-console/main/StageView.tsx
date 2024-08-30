@@ -81,6 +81,23 @@ const StageSummary = (props: StageSummaryProps) => (
           {props.stage.state}
         </span>
       </div>
+      <div
+        className="detail-element"
+        key={`stage-detail-agent-container-${props.stage.id}`}
+      >
+        <InfoIcon
+          className="detail-icon"
+          key={`stage-detail-agent-icon-${props.stage.id}`}
+        />
+        <span
+          className="capitalize"
+          key={`stage-detail-agent-text-${props.stage.id}`}
+        >
+          Running on <a href={`../../../../computer/${props.stage.agent == "built-in" ? "(built-in)" : props.stage.agent }/`}>
+            {props.stage.agent == "built-in" ? "Jenkins" : props.stage.agent }
+          </a>
+        </span>
+      </div>
       {props.failedSteps.map((value: StepInfo) => {
         console.debug(`Found failed step ${value}`);
         return (

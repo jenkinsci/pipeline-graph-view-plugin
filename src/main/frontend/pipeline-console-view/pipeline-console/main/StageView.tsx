@@ -6,6 +6,7 @@ import ScheduleIcon from "@mui/icons-material/Schedule";
 import TimerIcon from "@mui/icons-material/Timer";
 import InfoIcon from "@mui/icons-material/Info";
 import LinkIcon from "@mui/icons-material/Link";
+import ComputerIcon from '@mui/icons-material/Computer';
 
 import {
   StepInfo,
@@ -85,7 +86,7 @@ const StageSummary = (props: StageSummaryProps) => (
         className="detail-element"
         key={`stage-detail-agent-container-${props.stage.id}`}
       >
-        <InfoIcon
+        <ComputerIcon
           className="detail-icon"
           key={`stage-detail-agent-icon-${props.stage.id}`}
         />

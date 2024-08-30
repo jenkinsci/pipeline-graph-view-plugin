@@ -60,17 +60,6 @@ public class PipelineGraphApi {
                     if (flowNodeWrapper.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
                         state = flowNodeWrapper.getStatus().getState().name().toLowerCase(Locale.ROOT);
                     }
-                    String agent = null;
-                    for (FlowNode enclosing : flowNodeWrapper.getNode().iterateEnclosingBlocks() ) {
-                        WorkspaceAction ws = enclosing.getAction(WorkspaceAction.class);
-                        if (ws != null) {
-                            agent = ws.getNode();
-                            if (agent.isEmpty()) {
-                                agent = "built-in";
-                            }
-                            break;
-                        }
-                    }
                     return new PipelineStageInternal(
                             flowNodeWrapper.getId(), // TODO no need to parse it BO returns a string even though the
                             // datatype is number on the frontend
@@ -84,7 +73,7 @@ public class PipelineGraphApi {
                             flowNodeWrapper.getDisplayName(), // TODO blue ocean uses timing information: "Passed in 0s"
                             flowNodeWrapper.isSynthetic(),
                             flowNodeWrapper.getTiming(),
-                            agent);
+                            getStageNode(flowNodeWrapper));
                 })
                 .collect(Collectors.toList());
     }
@@ -245,6 +234,21 @@ public class PipelineGraphApi {
             }
         }
         return ancestors;
+    }
+
+    private static String getStageNode(FlowNodeWrapper flowNodeWrapper) {
+        String node = null;
+        for (FlowNode enclosing : flowNodeWrapper.getNode().iterateEnclosingBlocks() ) {
+            WorkspaceAction ws = enclosing.getAction(WorkspaceAction.class);
+            if (ws != null) {
+                node = ws.getNode();
+                if (node.isEmpty()) {
+                    node = "built-in";
+                }
+                break;
+            }
+        }
+        return node;
     }
 
     public PipelineGraph createTree() {

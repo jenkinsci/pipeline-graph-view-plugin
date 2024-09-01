@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.actions.WorkspaceAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
+import org.jenkinsci.plugins.workflow.graphanalysis.DepthFirstScanner;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -237,18 +238,25 @@ public class PipelineGraphApi {
     }
 
     private static String getStageNode(FlowNodeWrapper flowNodeWrapper) {
-        String node = null;
-        for (FlowNode enclosing : flowNodeWrapper.getNode().iterateEnclosingBlocks() ) {
-            WorkspaceAction ws = enclosing.getAction(WorkspaceAction.class);
+        FlowNode flowNode = flowNodeWrapper.getNode();
+        DepthFirstScanner scan = new DepthFirstScanner();
+        for (FlowNode n : scan.allNodes(flowNode.getExecution())) {
+            logger.debug("Checking node {}", n);
+            WorkspaceAction ws = n.getAction(WorkspaceAction.class);
             if (ws != null) {
-                node = ws.getNode();
-                if (node.isEmpty()) {
-                    node = "built-in";
+                logger.debug("Found workspace node: {}", n);
+                if (n.getAllEnclosingIds().contains(flowNode.getId() ) ) {
+                    logger.debug("Found correct stage node: {}", n.getId() );
+                    String node = ws.getNode();
+                    if (node.isEmpty()) {
+                        node = "built-in";
+                    }
+                    return node;
                 }
                 break;
             }
         }
-        return node;
+        return null;
     }
 
     public PipelineGraph createTree() {

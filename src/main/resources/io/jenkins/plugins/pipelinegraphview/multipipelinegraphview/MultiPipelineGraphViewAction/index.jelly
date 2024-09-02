@@ -8,7 +8,7 @@
         <j:if test="${it.buildable}">
           <l:hasPermission permission="${it.permission}">
             <button id="pgv-rebuild" data-success-message="${%Build scheduled}" data-build-path="../build"
-                    class="jenkins-button jenkins-!-build-color">
+                    data-parameterized="${it.parameterized}" class="jenkins-button jenkins-!-build-color">
               <l:icon src="symbol-play-outline plugin-ionicons-api"/>
               ${%Build}
             </button>

@@ -240,8 +240,8 @@ public class PipelineGraphApi {
     private static String getStageNode(FlowNodeWrapper flowNodeWrapper) {
         FlowNode flowNode = flowNodeWrapper.getNode();
         DepthFirstScanner scan = new DepthFirstScanner();
+        logger.debug("Checking node {}", flowNode);
         for (FlowNode n : scan.allNodes(flowNode.getExecution())) {
-            logger.debug("Checking node {}", n);
             WorkspaceAction ws = n.getAction(WorkspaceAction.class);
             if (ws != null) {
                 logger.debug("Found workspace node: {}", n);
@@ -253,7 +253,6 @@ public class PipelineGraphApi {
                     }
                     return node;
                 }
-                break;
             }
         }
         return null;

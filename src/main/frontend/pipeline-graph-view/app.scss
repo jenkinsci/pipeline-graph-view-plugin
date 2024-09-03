@@ -9,14 +9,13 @@
 
 @import "cards";
 
-// TODO - Needs to be renamed
-.idkidkidk {
+.pgv-details-card {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.app-details__item {
+.pgv-details__item {
   display: flex;
   align-items: center;
   gap: 10px;

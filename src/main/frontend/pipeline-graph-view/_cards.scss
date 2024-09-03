@@ -32,27 +32,6 @@
       grid-column: span 2;
     }
   }
-
-  &__item__title-float {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    padding: 20px 20px 0 20px;
-    z-index: 1;
-
-    &::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      bottom: -20px;
-      backdrop-filter: blur(20px);
-      z-index: -1;
-      border-radius: 15px 15px 0 0;
-      mask-image: linear-gradient(white 25%, transparent);
-      pointer-events: none;
-    }
-  }
 }
 
 /* Modal */

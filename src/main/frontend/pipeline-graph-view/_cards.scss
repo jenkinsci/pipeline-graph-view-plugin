@@ -76,14 +76,21 @@
   visibility: visible;
   transform: scale(1);
   transition: visibility 0s linear 0s, opacity 0.25s 0s, transform 0.25s;
+
+  // Reset styles inherit from .jenkins-card
+  border-radius: 0;
+
+  &::after {
+    display: none;
+  }
 }
 .pgv-modal__open > .pgv-modal__content {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: var(--card-background);
-  padding: 1rem 1.5rem;
+  background-color: var(--background);
+  box-shadow: var(--dialog-box-shadow);
   width: 95%;
   height: 90%;
   border-radius: 0.5rem;

@@ -28,7 +28,6 @@
 @media (prefers-color-scheme: dark) {
   [data-theme="dark-system"],
   [data-theme="dark-system"] {
-    --step-text-color: hsl(230deg 14% 23%);
     --step-bg-running: color-mix(in srgb, var(--accent-color) 50%, black);
     --step-bg-success: color-mix(in srgb, var(--success-color) 50%, black);
     --step-bg-unstable: color-mix(in srgb, var(--warning-color) 50%, black);

@@ -18,7 +18,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
 import org.jenkinsci.plugins.workflow.actions.WorkspaceAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
@@ -245,8 +244,8 @@ public class PipelineGraphApi {
             WorkspaceAction ws = n.getAction(WorkspaceAction.class);
             if (ws != null) {
                 logger.debug("Found workspace node: {}", n);
-                if (n.getAllEnclosingIds().contains(flowNode.getId() ) ) {
-                    logger.debug("Found correct stage node: {}", n.getId() );
+                if (n.getAllEnclosingIds().contains(flowNode.getId())) {
+                    logger.debug("Found correct stage node: {}", n.getId());
                     String node = ws.getNode();
                     if (node.isEmpty()) {
                         node = "built-in";

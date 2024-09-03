@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>4.82</version>
+    <version>4.86</version>
     <relativePath />
   </parent>
 
@@ -33,9 +33,9 @@
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/pipeline-graph-view-plugin</gitHubRepo>
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
-    <jenkins.version>2.464</jenkins.version>
-    <node.version>20.15.0</node.version>
-    <npm.version>10.8.1</npm.version>
+    <jenkins.version>2.452.1</jenkins.version>
+    <node.version>20.16.0</node.version>
+    <npm.version>10.8.2</npm.version>
     <spotless.check.skip>false</spotless.check.skip>
   </properties>
 

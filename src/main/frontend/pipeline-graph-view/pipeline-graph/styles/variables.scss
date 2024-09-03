@@ -7,6 +7,6 @@ $status-failure: #d54c53;
 $status-paused: #24b0d5;
 $status-unknown: #d54cc4;
 
-$graph-connector-grey: #949393;
+$graph-connector-grey: color-mix(in srgb, var(--text-color-secondary), var(--background));
 $progress-bg: #a7c7f2;
 $progress-bar-color: #1d7dcf;

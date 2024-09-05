@@ -9,9 +9,7 @@ if (rebuildButton) {
     } else {
       fetch(buildUrl, {
         method: 'post',
-        headers: {
-          [document.head.dataset.crumbHeader]: document.head.dataset.crumbValue
-        }
+        headers: crumb.wrap({})
       })
         .then(res => {
           if (!res.ok) {

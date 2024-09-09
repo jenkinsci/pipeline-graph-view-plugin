@@ -29,7 +29,7 @@ export function Node({ node, layout, isStageSelected, onClick }: NodeProps) {
 
   if (node.isPlaceholder) {
     groupChildren.push(
-      <circle r={terminalRadius} className="PWGx-pipeline-node-terminal" />
+      <div className={'PWGx-pipeline-node-terminal'}></div>
     );
   } else {
     const { completePercent = 0, title, state } = node.stage;
@@ -62,14 +62,13 @@ export function Node({ node, layout, isStageSelected, onClick }: NodeProps) {
       left: node.x,
       translate: '-50% -50%'
     },
-    // transform: `translate(${node.x},${node.y})`,
     className: nodeIsSelected
       ? "PWGx-pipeline-node-selected"
       : "PWGx-pipeline-node",
     ...clickableProps
   };
 
-  return React.createElement("button", groupProps, ...groupChildren);
+  return React.createElement(node.isPlaceholder ? "div" : "button", groupProps, ...groupChildren);
 }
 
 interface SelectionHighlightProps {

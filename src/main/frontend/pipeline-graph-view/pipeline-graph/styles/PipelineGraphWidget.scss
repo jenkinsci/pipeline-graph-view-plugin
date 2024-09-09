@@ -161,12 +161,15 @@ circle.halo {
   }
 
   &:active, &:focus {
-    box-shadow: 0 0 0 5px color-mix(in srgb, currentColor 10%, transparent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 10%, transparent);
   }
 }
 
 .PWGx-pipeline-node-terminal {
-  fill: $graph-connector-grey;
+  width: 0.875rem;
+  height: 0.875rem;
+  border-radius: 100px;
+  background: $graph-connector-grey;
 }
 
 .PWGx-pipeline-connector-skipped {

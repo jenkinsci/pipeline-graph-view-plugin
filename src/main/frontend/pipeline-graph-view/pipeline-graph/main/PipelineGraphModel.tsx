@@ -32,7 +32,7 @@ export const defaultLayout = {
   curveRadius: 12,
   connectorStrokeWidth: 2.5,
   labelOffsetV: 25,
-  smallLabelOffsetV: 15,
+  smallLabelOffsetV: 16,
   ypStart: 55,
 };
 

@@ -156,6 +156,13 @@ circle.halo {
     height: 24px;
     scale: 1.1;
   }
+
+  .PWGx-pipeline-node-terminal {
+    width: 0.875rem;
+    height: 0.875rem;
+    border-radius: 100px;
+    background: $graph-connector-grey;
+  }
 }
 
 // Button nodes feature hover and focus states
@@ -167,13 +174,6 @@ button.PWGx-pipeline-node {
   &:active, &:focus {
     box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 10%, transparent);
   }
-}
-
-.PWGx-pipeline-node-terminal {
-  width: 0.875rem;
-  height: 0.875rem;
-  border-radius: 100px;
-  background: $graph-connector-grey;
 }
 
 .PWGx-pipeline-connector-skipped {

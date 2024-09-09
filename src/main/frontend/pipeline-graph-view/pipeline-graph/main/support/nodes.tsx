@@ -49,7 +49,8 @@ export function Node({ node, layout, isStageSelected, onClick }: NodeProps) {
   // Set click listener and link cursor only for nodes we want to be clickable
   const clickableProps: React.SVGProps<SVGCircleElement> = {};
 
-  if (node.isPlaceholder === false && node.stage.state !== "skipped") {
+  const clickable = !node.isPlaceholder && node.stage.state !== "skipped";
+  if (clickable) {
     clickableProps.onClick = () => onClick(node);
   }
 
@@ -68,7 +69,7 @@ export function Node({ node, layout, isStageSelected, onClick }: NodeProps) {
     ...clickableProps
   };
 
-  return React.createElement(node.isPlaceholder ? "div" : "button", groupProps, ...groupChildren);
+  return React.createElement(clickable ? "button" : "div", groupProps, ...groupChildren);
 }
 
 interface SelectionHighlightProps {

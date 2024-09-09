@@ -159,15 +159,6 @@ circle.halo {
     height: 24px;
   }
 
-  &::before {
-    content: "";
-    position: absolute;
-    inset: -4px;
-    background: var(--card-background);
-    border-radius: inherit;
-    z-index: -1;
-  }
-
   &::after {
     content: "";
     position: absolute;
@@ -208,6 +199,15 @@ circle.halo {
 button.PWGx-pipeline-node {
   cursor: pointer;
   transition: var(--standard-transition);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    background: var(--card-background);
+    border-radius: inherit;
+    z-index: -1;
+  }
 
   &::after {
     box-shadow: 0 0 0 10px transparent;

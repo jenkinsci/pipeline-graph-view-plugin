@@ -177,15 +177,18 @@ export function SequentialContainerLabel({
     top: y,
     left: x,
     lineHeight,
-    marginTop: `-${lineHeight / 2}em`,
+    marginTop: `-11px`,
     position: "absolute" as const,
     maxWidth: sequentialStagesLabelOffset,
     overflow: "hidden",
     textOverflow: "ellipsis",
-    background: "var(--background)",
-    padding: "0 4px",
+    fontSize: "11px",
+    fontWeight: "450",
+    background: "color-mix(in srgb, var(--text-color-secondary) 6%, var(--card-background)",
+    boxShadow: "0 0 0 3px var(--card-background)",
+    padding: "4px 8px",
+    borderRadius: "100px",
     whiteSpace: "nowrap" as const,
-    fontWeight: "450"
   };
 
   return (

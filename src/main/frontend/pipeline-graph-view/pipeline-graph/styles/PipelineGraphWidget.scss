@@ -159,11 +159,20 @@ circle.halo {
     height: 24px;
   }
 
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -4px;
+    background: var(--card-background);
+    border-radius: inherit;
+    z-index: -1;
+  }
+
   &::after {
     content: "";
     position: absolute;
     inset: -1px;
-    background: color-mix(in srgb, currentColor var(--background-opacity), var(--background));
+    background: color-mix(in srgb, currentColor var(--background-opacity), var(--card-background));
     border-radius: 100px;
     z-index: -1;
     transition: var(--standard-transition);
@@ -199,7 +208,10 @@ circle.halo {
 button.PWGx-pipeline-node {
   cursor: pointer;
   transition: var(--standard-transition);
-  box-shadow: 0 0 0 10px transparent;
+
+  &::after {
+    box-shadow: 0 0 0 10px transparent;
+  }
 
   &:hover {
     --background-opacity: 17.5%;
@@ -207,7 +219,10 @@ button.PWGx-pipeline-node {
 
   &:active, &:focus {
     --background-opacity: 25%;
-    box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 10%, transparent);
+
+    &::after {
+      box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 10%, transparent);
+    }
   }
 }
 

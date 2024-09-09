@@ -192,15 +192,6 @@ export class PipelineGraph extends React.Component {
               layout={this.state.layout}
             />
 
-            {nodes.map((node) => (
-              <Node
-                key={node.id}
-                node={node}
-                layout={this.state.layout}
-                onClick={this.handleNodeClick}
-                isStageSelected={this.stageIsSelected}
-              />
-            ))}
             <SelectionHighlight
               layout={this.state.layout}
               nodeColumns={this.state.nodeColumns}

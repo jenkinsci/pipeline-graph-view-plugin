@@ -5,8 +5,6 @@ import { TruncatingLabel } from "../support/TruncatingLabel";
 import { NodeLabelInfo, LayoutInfo, StageInfo } from "../PipelineGraphModel";
 import { sequentialStagesLabelOffset } from "../PipelineGraphLayout";
 
-import { TooltipLabel } from "./convertLabelToTooltip";
-
 interface RenderBigLabelProps {
   details: NodeLabelInfo;
   layout: LayoutInfo;

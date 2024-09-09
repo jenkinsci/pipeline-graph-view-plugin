@@ -8,7 +8,7 @@ import {
   NodeInfo,
 } from "./PipelineGraphModel";
 
-export const sequentialStagesLabelOffset = 70;
+export const sequentialStagesLabelOffset = 110;
 
 /**
  * Main process for laying out the graph. Creates and positions markers for each component, but creates no components.

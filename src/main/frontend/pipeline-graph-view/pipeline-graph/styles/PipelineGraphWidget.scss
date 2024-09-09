@@ -140,6 +140,31 @@ circle.halo {
   stroke: $graph-connector-grey;
 }
 
+.PWGx-pipeline-node {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  border-radius: 100%;
+  cursor: pointer;
+  transition: var(--standard-transition);
+  box-shadow: 0 0 0 10px transparent;
+  color: var(--success-color);
+
+  svg {
+    width: 24px;
+    height: 24px;
+    scale: 1.1;
+  }
+
+  &:active, &:focus {
+    box-shadow: 0 0 0 5px color-mix(in srgb, currentColor 10%, transparent);
+  }
+}
+
 .PWGx-pipeline-node-terminal {
   fill: $graph-connector-grey;
 }

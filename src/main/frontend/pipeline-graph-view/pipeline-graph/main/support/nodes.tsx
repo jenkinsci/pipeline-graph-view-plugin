@@ -50,32 +50,26 @@ export function Node({ node, layout, isStageSelected, onClick }: NodeProps) {
   const clickableProps: React.SVGProps<SVGCircleElement> = {};
 
   if (node.isPlaceholder === false && node.stage.state !== "skipped") {
-    clickableProps.cursor = "pointer";
     clickableProps.onClick = () => onClick(node);
   }
-
-  // Add an invisible click/touch/mouseover target, because the nodes are small and (more importantly)
-  // many are hollow.
-  groupChildren.push(
-    <circle
-      r={nodeRadius + 2 * connectorStrokeWidth}
-      className="PWGx-pipeline-node-hittarget"
-      fillOpacity="0"
-      stroke="none"
-      {...clickableProps}
-    />
-  );
 
   // Most of the nodes are in shared code, so they're rendered at 0,0. We transform with a <g> to position them
   const groupProps = {
     key,
-    transform: `translate(${node.x},${node.y})`,
+    style: {
+      position: 'absolute',
+      top: node.y,
+      left: node.x,
+      translate: '-50% -50%'
+    },
+    // transform: `translate(${node.x},${node.y})`,
     className: nodeIsSelected
       ? "PWGx-pipeline-node-selected"
       : "PWGx-pipeline-node",
+    ...clickableProps
   };
 
-  return React.createElement("g", groupProps, ...groupChildren);
+  return React.createElement("button", groupProps, ...groupChildren);
 }
 
 interface SelectionHighlightProps {

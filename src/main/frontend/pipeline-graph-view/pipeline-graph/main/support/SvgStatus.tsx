@@ -39,33 +39,54 @@ export class SvgStatus extends React.PureComponent<Props> {
     const iconSuffix = result === Result.running ? "-anime" : "";
     const style = { width: diameter, height: diameter };
     return (
-      <g
-        className={`${baseWrapperClasses} ${getClassForResult(
-          result
-        )}${iconSuffix}`}
-        style={style}
-      >
-        <g
-          className="build-status-icon__outer"
-          style={outerStyle ?? { transform: `translate(0, 0)` }}
-        >
-          <svg
-            focusable="false"
-            className="svg-icon "
-            x={centerX}
-            y={centerY}
-            width={diameter}
-            height={diameter}
-          >
-            <use
-              className="svg-icon"
-              style={{ transformOrigin: "50% 50%" }}
-              href={`${imagesPath}/build-status/build-status-sprite.svg#build-status-${iconOuterClassName}`}
-            />
-          </svg>
-        </g>
-        {getGlyphFor(result, radius, style, centerX, centerY)}
-      </g>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+        <ellipse
+          cx="256"
+          cy="256"
+          rx="210"
+          ry="210"
+          fill="none"
+          stroke="var(--success-color)"
+          stroke-linecap="round"
+          stroke-miterlimit="10"
+          stroke-width="36"
+        />
+        <path
+          d="M336 189L224 323L176 269.4"
+          fill="transparent"
+          stroke="var(--success-color)"
+          stroke-width="36"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+      // <g
+      //   className={`${baseWrapperClasses} ${getClassForResult(
+      //     result
+      //   )}${iconSuffix}`}
+      //   style={style}
+      // >
+      //   <g
+      //     className="build-status-icon__outer"
+      //     style={outerStyle ?? { transform: `translate(0, 0)` }}
+      //   >
+      //     <svg
+      //       focusable="false"
+      //       className="svg-icon "
+      //       x={centerX}
+      //       y={centerY}
+      //       width={diameter}
+      //       height={diameter}
+      //     >
+      //       <use
+      //         className="svg-icon"
+      //         style={{ transformOrigin: "50% 50%" }}
+      //         href={`${imagesPath}/build-status/build-status-sprite.svg#build-status-${iconOuterClassName}`}
+      //       />
+      //     </svg>
+      //   </g>
+      //   {getGlyphFor(result, radius, style, centerX, centerY)}
+      // </g>
     );
   }
 }
@@ -78,7 +99,7 @@ function getGlyphFor(
   radius: number,
   style: React.CSSProperties,
   centerX?: number,
-  centerY?: number
+  centerY?: number,
 ) {
   // NB: If we start resizing these things, we'll need to use radius/12 to
   // generate a "scale" transform for the group

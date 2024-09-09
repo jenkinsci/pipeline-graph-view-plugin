@@ -37,13 +37,6 @@ public class NodeRelationship {
         this.end = end;
     }
 
-    // Print debug message if 'isDebugEnabled' is true.
-    protected void dump(String message, Object... args) {
-        if (isDebugEnabled) {
-            logger.debug(String.format(message, args));
-        }
-    }
-
     /*
      * Returns the recorded node that was run before this node
      * Returns null if unset (e.g.)
@@ -92,9 +85,13 @@ public class NodeRelationship {
      */
     public @NonNull TimingInfo getTimingInfo(@NonNull WorkflowRun run) {
         long pause = PauseAction.getPauseDuration(this.start);
-        dump(
-                "Calculating Chunk Timing info start: %s, end: %s after: %s",
-                this.start.getId(), this.end.getId(), (this.after != null) ? this.after.getId() : "null");
+        if (isDebugEnabled) {
+            logger.debug(
+                    "Calculating Chunk Timing info start: {}, end: {} after: {}",
+                    this.start.getId(),
+                    this.end.getId(),
+                    (this.after != null) ? this.after.getId() : "null");
+        }
         TimingInfo timing = StatusAndTiming.computeChunkTiming(run, pause, this.start, this.end, this.after);
         if (timing != null) {
             return timing;
@@ -112,9 +109,13 @@ public class NodeRelationship {
         } else if (PipelineNodeUtil.isPaused(this.end)) {
             return new NodeRunStatus(BlueRun.BlueRunResult.UNKNOWN, BlueRun.BlueRunState.PAUSED);
         }
-        dump(
-                "Calculating Chunk Status start: %s, end: %s after: %s",
-                this.start.getId(), this.end.getId(), (this.after != null) ? this.after.getId() : "null");
+        if (isDebugEnabled) {
+            logger.debug(
+                    "Calculating Chunk Status start: {}, end: {} after: {}",
+                    this.start.getId(),
+                    this.end.getId(),
+                    (this.after != null) ? this.after.getId() : "null");
+        }
 
         // If start and end are equal this is a StepNode
         if (this.start.getId().equals(this.end.getId())) {

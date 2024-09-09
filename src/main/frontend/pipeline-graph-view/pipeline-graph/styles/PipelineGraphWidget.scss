@@ -149,9 +149,6 @@ circle.halo {
   outline: none;
   padding: 0;
   border-radius: 100%;
-  cursor: pointer;
-  transition: var(--standard-transition);
-  box-shadow: 0 0 0 10px transparent;
   color: var(--success-color);
 
   svg {
@@ -159,6 +156,13 @@ circle.halo {
     height: 24px;
     scale: 1.1;
   }
+}
+
+// Button nodes feature hover and focus states
+button.PWGx-pipeline-node {
+  cursor: pointer;
+  transition: var(--standard-transition);
+  box-shadow: 0 0 0 10px transparent;
 
   &:active, &:focus {
     box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 10%, transparent);

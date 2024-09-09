@@ -145,23 +145,42 @@ circle.halo {
   align-items: center;
   justify-content: center;
   background: transparent;
-  border: none;
   outline: none;
   padding: 0;
   border-radius: 100%;
+  border: none;
+  width: 24px;
+  height: 24px;
 
   svg {
     width: 24px;
     height: 24px;
-    scale: 1.1;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 2px solid currentColor;
+    border-radius: 100px;
   }
 
   &--success {
     color: var(--success-color);
   }
 
+  &--failure {
+    color: var(--error-color);
+  }
+
   &--skipped {
     color: $graph-connector-grey;
+  }
+
+  &--unknown {
+    &::after {
+      display: none;
+    }
   }
 
   .PWGx-pipeline-node-terminal {

@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Result } from "../PipelineGraphModel";
-import { getClassForResult } from "./StatusIcons";
+// import { getClassForResult } from "./StatusIcons";
 
 // These were mostly taken from SVG and pre-translated
 const questionMarkPath =
@@ -39,55 +39,7 @@ export class SvgStatus extends React.PureComponent<Props> {
     const iconSuffix = result === Result.running ? "-anime" : "";
     const style = { width: diameter, height: diameter };
 
-
-    // Temporary
-    if (result === "skipped") {
-      return (
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-          <ellipse
-            cx="256"
-            cy="256"
-            rx="210"
-            ry="210"
-            fill="none"
-            stroke="currentColor"
-            stroke-linecap="round"
-            stroke-miterlimit="10"
-            stroke-width="36"
-          />
-        </svg>
-      );
-    }
-
-    return (
-      <g
-        className={`${baseWrapperClasses} ${getClassForResult(
-          result,
-        )}${iconSuffix}`}
-        style={style}
-      >
-        <g
-          className="build-status-icon__outer"
-          style={outerStyle ?? { transform: `translate(0, 0)` }}
-        >
-          <svg
-            focusable="false"
-            className="svg-icon "
-            x={centerX}
-            y={centerY}
-            width={diameter}
-            height={diameter}
-          >
-            <use
-              className="svg-icon"
-              style={{ transformOrigin: "50% 50%" }}
-              href={`${imagesPath}/build-status/build-status-sprite.svg#build-status-${iconOuterClassName}`}
-            />
-          </svg>
-        </g>
-        {getGlyphFor(result, radius, style, centerX, centerY)}
-      </g>
-    );
+    return getGlyphFor(result, radius, style, centerX, centerY);
   }
 }
 

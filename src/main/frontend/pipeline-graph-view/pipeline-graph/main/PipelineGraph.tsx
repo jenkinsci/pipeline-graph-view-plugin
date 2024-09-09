@@ -153,7 +153,7 @@ export class PipelineGraph extends React.Component {
       }
 
       // Update selection
-      this.setState({ selectedStage: stage });
+      // this.setState({ selectedStage: stage });
     }
   };
 

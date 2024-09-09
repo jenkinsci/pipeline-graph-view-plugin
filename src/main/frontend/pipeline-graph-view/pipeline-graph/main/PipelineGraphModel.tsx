@@ -30,7 +30,7 @@ export const defaultLayout = {
   nodeRadius: 12,
   terminalRadius: 7,
   curveRadius: 12,
-  connectorStrokeWidth: 3.5,
+  connectorStrokeWidth: 3,
   labelOffsetV: 20,
   smallLabelOffsetV: 15,
   ypStart: 55,

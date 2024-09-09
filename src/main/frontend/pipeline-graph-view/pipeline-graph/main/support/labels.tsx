@@ -184,18 +184,15 @@ export function SequentialContainerLabel({
     maxWidth: sequentialStagesLabelOffset,
     overflow: "hidden",
     textOverflow: "ellipsis",
-    background: "var(--background, white)",
-    padding: "0 3px",
+    background: "var(--background)",
+    padding: "0 4px",
     whiteSpace: "nowrap" as const,
-    outline: "1px solid var(--graph-connector-grey, gray)",
-    borderRadius: "3px",
+    fontWeight: "450"
   };
 
   return (
-    <TooltipLabel content={seqContainerName}>
-      <div style={containerStyle} key={details.key}>
-        {seqContainerName}
-      </div>
-    </TooltipLabel>
+    <div style={containerStyle} key={details.key} tooltip={seqContainerName}>
+      {seqContainerName}
+    </div>
   );
 }

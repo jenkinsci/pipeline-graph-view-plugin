@@ -141,6 +141,8 @@ circle.halo {
 }
 
 .PWGx-pipeline-node {
+  --background-opacity: 10%;
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -160,9 +162,11 @@ circle.halo {
   &::after {
     content: "";
     position: absolute;
-    inset: 0;
-    border: 2px solid currentColor;
+    inset: -1px;
+    background: color-mix(in srgb, currentColor var(--background-opacity), var(--background));
     border-radius: 100px;
+    z-index: -1;
+    transition: var(--standard-transition);
   }
 
   &--success {
@@ -197,7 +201,12 @@ button.PWGx-pipeline-node {
   transition: var(--standard-transition);
   box-shadow: 0 0 0 10px transparent;
 
+  &:hover {
+    --background-opacity: 17.5%;
+  }
+
   &:active, &:focus {
+    --background-opacity: 25%;
     box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 10%, transparent);
   }
 }
@@ -208,19 +217,27 @@ button.PWGx-pipeline-node {
 }
 
 .PWGx-pipeline-small-label {
-  font-size: 80%;
+  font-size: 0.6875rem;
 }
 
-.PWGx-pipeline-big-label.selected {
-  font-weight: bold;
+.PWGx-pipeline-big-label {
+  font-weight: 450;
 }
+
+.PWGx-pipeline-small-label {
+  font-weight: 450;
+}
+
+//.PWGx-pipeline-big-label.selected {
+//  font-weight: bold;
+//}
 
 .PWGx-pipeline-big-label.pgv-graph-node--synthetic {
   font-style: italic;
 }
 
 .PWGx-pipeline-small-label.selected {
-  font-weight: bold;
+  //font-weight: bold;
   margin-top: 3px;
 }
 

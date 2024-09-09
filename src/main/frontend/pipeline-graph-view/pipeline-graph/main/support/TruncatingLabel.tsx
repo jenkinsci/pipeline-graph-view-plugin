@@ -103,7 +103,7 @@ export class TruncatingLabel extends React.Component<Props> {
       <div
         style={mergedStyle}
         className={"TruncatingLabel " + className}
-        title={this.completeText}
+        tooltip={this.innerText === this.completeText ? '' : this.completeText}
       >
         {this.innerText}
       </div>
@@ -141,6 +141,11 @@ export class TruncatingLabel extends React.Component<Props> {
     if (!this.checkSizeRequest) {
       this.checkSizeRequest = requestAnimationFrame(() => this.checkSize());
     }
+
+    console.log('TODO - remove this, this is after render');
+
+    // @ts-ignore
+    Behaviour.applySubtree(document.body, true);
   }
 
   checkSize() {
@@ -204,6 +209,7 @@ export class TruncatingLabel extends React.Component<Props> {
 
         // Bypass react's render loop during the "fluid" state for performance
         thisElement.innerText = this.innerText;
+
         keepMeasuring = true;
       }
 

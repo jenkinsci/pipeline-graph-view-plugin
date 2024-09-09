@@ -27,13 +27,13 @@ export function Node({ node, layout, isStageSelected, onClick }: NodeProps) {
 
   const groupChildren: SVGChildren = [];
 
+  const { completePercent = 0, title, state } = node.stage ?? {};
+  const resultClean = decodeResultValue(state);
   if (node.isPlaceholder) {
     groupChildren.push(
       <div className={'PWGx-pipeline-node-terminal'}></div>
     );
   } else {
-    const { completePercent = 0, title, state } = node.stage;
-    const resultClean = decodeResultValue(state);
 
     groupChildren.push(
       getGroupForResult(resultClean, completePercent, nodeRadius)
@@ -65,7 +65,7 @@ export function Node({ node, layout, isStageSelected, onClick }: NodeProps) {
     },
     className: nodeIsSelected
       ? "PWGx-pipeline-node-selected"
-      : "PWGx-pipeline-node",
+      : "PWGx-pipeline-node PWGx-pipeline-node" + "--" + resultClean,
     ...clickableProps
   };
 

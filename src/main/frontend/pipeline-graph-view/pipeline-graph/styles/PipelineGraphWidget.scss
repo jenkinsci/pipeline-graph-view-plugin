@@ -149,12 +149,19 @@ circle.halo {
   outline: none;
   padding: 0;
   border-radius: 100%;
-  color: var(--success-color);
 
   svg {
     width: 24px;
     height: 24px;
     scale: 1.1;
+  }
+
+  &--success {
+    color: var(--success-color);
+  }
+
+  &--skipped {
+    color: $graph-connector-grey;
   }
 
   .PWGx-pipeline-node-terminal {

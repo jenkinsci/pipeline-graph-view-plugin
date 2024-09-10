@@ -178,7 +178,11 @@ circle.halo {
   }
 
   &--skipped {
-    color: $graph-connector-grey;
+    &::after {
+      display: none;
+    }
+
+    border: 2.5px solid $graph-connector-grey;
   }
 
   &--unknown {

@@ -8,12 +8,8 @@ import hudson.model.Item;
 import hudson.model.Queue;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.legacy.PipelineNodeGraphVisitor;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.io.IOException;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
@@ -200,7 +196,7 @@ public class PipelineGraphApi {
                     stageToChildrenMap.put(stage.getId(), new ArrayList<>());
                     topLevelStageIds.add(stage.getId());
                 }
-            } catch (java.io.IOException ex) {
+            } catch (IOException ex) {
                 logger.error("Caught a "
                         + ex.getClass().getSimpleName()
                         + " when trying to find parent of stage '"
@@ -240,11 +236,33 @@ public class PipelineGraphApi {
         FlowNode flowNode = flowNodeWrapper.getNode();
         DepthFirstScanner scan = new DepthFirstScanner();
         logger.debug("Checking node {}", flowNode);
-        for (FlowNode n : scan.allNodes(flowNode.getExecution())) {
+        FlowExecution execution = flowNode.getExecution();
+        for (FlowNode n : scan.allNodes(execution)) {
             WorkspaceAction ws = n.getAction(WorkspaceAction.class);
             if (ws != null) {
                 logger.debug("Found workspace node: {}", n);
-                if (n.getAllEnclosingIds().contains(flowNode.getId())) {
+                boolean isWorkspaceNode = Objects.equals(n.getId(), flowNode.getId())
+                        || Objects.equals(n.getEnclosingId(), flowNode.getId())
+                        || flowNode.getAllEnclosingIds().contains(n.getId());
+
+                // Parallel stages have a sub-stage, so we need to check the 3rd parent for a match
+                if (flowNodeWrapper.getType() == FlowNodeWrapper.NodeType.PARALLEL) {
+                    try {
+                        if (n.getEnclosingId() != null) {
+                            FlowNode p = execution.getNode(n.getEnclosingId());
+                            if (p != null && p.getEnclosingId() != null) {
+                                p = execution.getNode(p.getEnclosingId());
+                                if (p != null && p.getEnclosingId() != null) {
+                                    isWorkspaceNode = Objects.equals(flowNode.getId(), p.getEnclosingId());
+                                }
+                            }
+                        }
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+
+                if (isWorkspaceNode) {
                     logger.debug("Found correct stage node: {}", n.getId());
                     String node = ws.getNode();
                     if (node.isEmpty()) {

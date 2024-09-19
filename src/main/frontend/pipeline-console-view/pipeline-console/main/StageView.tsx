@@ -6,7 +6,7 @@ import ScheduleIcon from "@mui/icons-material/Schedule";
 import TimerIcon from "@mui/icons-material/Timer";
 import InfoIcon from "@mui/icons-material/Info";
 import LinkIcon from "@mui/icons-material/Link";
-import ComputerIcon from '@mui/icons-material/Computer';
+import ComputerIcon from "@mui/icons-material/Computer";
 
 import {
   StepInfo,
@@ -83,21 +83,23 @@ const StageSummary = (props: StageSummaryProps) => (
           {props.stage.state}
         </span>
       </div>
-      <div
-        className="detail-element"
-        key={`stage-detail-agent-container-${props.stage.id}`}
-      >
-        <ComputerIcon
-          className="detail-icon"
-          key={`stage-detail-agent-icon-${props.stage.id}`}
-        />
-        <span
-          className="capitalize"
-          key={`stage-detail-agent-text-${props.stage.id}`}
+      {props.stage.agent && (
+        <div
+          className="detail-element"
+          key={`stage-detail-agent-container-${props.stage.id}`}
         >
-          <StageNodeLink agent={props.stage.agent}/>
-        </span>
-      </div>
+          <ComputerIcon
+            className="detail-icon"
+            key={`stage-detail-agent-icon-${props.stage.id}`}
+          />
+          <span
+            className="capitalize"
+            key={`stage-detail-agent-text-${props.stage.id}`}
+          >
+            <StageNodeLink agent={props.stage.agent} />
+          </span>
+        </div>
+      )}
       {props.failedSteps.map((value: StepInfo) => {
         console.debug(`Found failed step ${value}`);
         return (

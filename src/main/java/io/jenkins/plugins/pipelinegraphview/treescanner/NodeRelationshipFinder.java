@@ -42,13 +42,6 @@ public class NodeRelationshipFinder {
 
     private LinkedHashMap<String, NodeRelationship> relationships = new LinkedHashMap<>();
 
-    // Print debug message if 'isDebugEnabled' is true.
-    private void dump(String message, Object... args) {
-        if (isDebugEnabled) {
-            logger.debug(String.format(message, args));
-        }
-    }
-
     public NodeRelationshipFinder() {}
 
     /**
@@ -57,14 +50,18 @@ public class NodeRelationshipFinder {
     @NonNull
     public LinkedHashMap<String, NodeRelationship> getNodeRelationships(
             @NonNull LinkedHashMap<String, FlowNode> nodeMap) {
-        dump("Original Ids: %s", String.join(", ", nodeMap.keySet()));
+        if (isDebugEnabled) {
+            logger.debug("Original Ids: {}", String.join(", ", nodeMap.keySet()));
+        }
         // This is important, determining the the relationships depends on the order of
         // iteration.
         // If there was a method to tell if a node was a parallel block this might be
         // less of an issue.
         List<String> sortedIds = new ArrayList<>(nodeMap.keySet());
         Collections.sort(sortedIds, new FlowNodeWrapper.NodeIdComparator().reversed());
-        dump("Sorted Ids: %s", String.join(", ", sortedIds));
+        if (isDebugEnabled) {
+            logger.debug("Sorted Ids: {}", String.join(", ", sortedIds));
+        }
         for (String id : sortedIds) {
             getRelationshipForNode(nodeMap.get(id));
             // Add this node to the parents's stack as the last of it's child nodes that
@@ -90,7 +87,7 @@ public class NodeRelationshipFinder {
         if (FlowNodeWrapper.isStart(node)) {
             addBlockRelationship(node);
         } else {
-            dump("Why are we here?? %s - %s", node.getId(), node.getClass());
+            logger.debug("Why are we here?? {} - {}", node.getId(), node.getClass());
         }
     }
 
@@ -98,7 +95,9 @@ public class NodeRelationshipFinder {
         if (!seenChildNodes.keySet().contains(node.getEnclosingId())) {
             seenChildNodes.put(node.getEnclosingId(), new ArrayDeque<FlowNode>());
         }
-        dump("Adding %s to seenChildNodes %s", node.getId(), node.getEnclosingId());
+        if (isDebugEnabled) {
+            logger.debug("Adding {} to seenChildNodes {}", node.getId(), node.getEnclosingId());
+        }
         seenChildNodes.get(node.getEnclosingId()).push(node);
     }
 
@@ -113,9 +112,13 @@ public class NodeRelationshipFinder {
             // If there are no later siblings, get the parents later sibling.
             ArrayDeque<FlowNode> parentsLaterSiblings = getProcessedChildren(getFirstEnclosingNode(parentStartNode));
             after = parentsLaterSiblings.isEmpty() ? null : parentsLaterSiblings.peek();
-            dump(parentsLaterSiblings.toString());
+            if (isDebugEnabled) {
+                logger.debug(parentsLaterSiblings.toString());
+            }
         } else {
-            dump(laterSiblings.toString());
+            if (isDebugEnabled) {
+                logger.debug(laterSiblings.toString());
+            }
             after = laterSiblings.peek();
         }
         return after;
@@ -136,15 +139,19 @@ public class NodeRelationshipFinder {
     }
 
     private void addStepRelationship(@NonNull StepAtomNode step) {
-        dump("Generating relationship for step %s", step.getId());
+        if (isDebugEnabled) {
+            logger.debug("Generating relationship for step {}", step.getId());
+        }
         // FlowNode after = subsequentNode;
         FlowNode after = getAfterNode(step);
-        dump(
-                "Adding step for %s(%s),%s(%s)",
-                step.getId(),
-                step.getClass().getName(),
-                after == null ? "null" : after.getId(),
-                after == null ? "null" : after.getClass().getName());
+        if (isDebugEnabled) {
+            logger.debug(
+                    "Adding step for {}({}),{}({})",
+                    step.getId(),
+                    step.getClass().getName(),
+                    after == null ? "null" : after.getId(),
+                    after == null ? "null" : after.getClass().getName());
+        }
         NodeRelationship nodeRelationship = new NodeRelationship(step, step, after);
         relationships.put(step.getId(), nodeRelationship);
     }
@@ -166,7 +173,9 @@ public class NodeRelationshipFinder {
         if (PipelineNodeUtil.isParallelBranch(node)) {
             addParallelBranchRelationship(node, endNode);
         } else {
-            dump("Adding relationship for %s", node.getId());
+            if (isDebugEnabled) {
+                logger.debug("Adding relationship for {}", node.getId());
+            }
             if (!pendingBranchRelationships.isEmpty()) {
                 blockRelationship = addParallelRelationship(node, endNode);
             } else {
@@ -186,12 +195,14 @@ public class NodeRelationshipFinder {
         // Store a parallel branch relationship - these will be used to build up the
         // parent parallel block relationship.
         // Once generated, that relationship will be superseded this one.
-        dump(
-                "Adding parallel branch relationship for %s(%s)->%s(%s)",
-                node.getId(),
-                node.getClass().getName(),
-                endNode.getId(),
-                endNode.getClass().getName());
+        if (isDebugEnabled) {
+            logger.debug(
+                    "Adding parallel branch relationship for {}({})->{}({})",
+                    node.getId(),
+                    node.getClass().getName(),
+                    endNode.getId(),
+                    endNode.getClass().getName());
+        }
         // After doesn't matter as this relationship object is temporary (only start and
         // end node are used).
         NodeRelationship blockRelationship = new NodeRelationship(node, endNode, after);
@@ -200,9 +211,12 @@ public class NodeRelationshipFinder {
 
     private NodeRelationship addParallelRelationship(@NonNull FlowNode node, @NonNull FlowNode endNode) {
         FlowNode after = getAfterNode(node);
-        dump(
-                "Generating relationship for parallel Block %s (with after %s)",
-                node.getId(), (after != null) ? after.getId() : "null");
+        if (isDebugEnabled) {
+            logger.debug(
+                    "Generating relationship for parallel Block {} (with after {})",
+                    node.getId(),
+                    (after != null) ? after.getId() : "null");
+        }
         // handle parallel block case.
         NodeRelationship parallelRelationship =
                 new ParallelBlockRelationship(node, endNode, after, pendingBranchRelationships);
@@ -221,14 +235,16 @@ public class NodeRelationshipFinder {
 
     private NodeRelationship addStageRelationship(@NonNull FlowNode node, @NonNull FlowNode endNode) {
         FlowNode after = getAfterNode(node);
-        dump(
-                "Generating relationship for Block %s{%s}->%s{%s} (with after %s{%s})",
-                node.getId(),
-                node.getClass(),
-                endNode.getId(),
-                endNode.getClass(),
-                (after != null) ? after.getId() : "null",
-                (after != null) ? after.getClass() : "null");
+        if (isDebugEnabled) {
+            logger.debug(
+                    "Generating relationship for Block {}{{}}->{}{{}} (with after {}{{}})",
+                    node.getId(),
+                    node.getClass(),
+                    endNode.getId(),
+                    endNode.getClass(),
+                    (after != null) ? after.getId() : "null",
+                    (after != null) ? after.getClass() : "null");
+        }
         return new NodeRelationship(node, endNode, after);
     }
 }

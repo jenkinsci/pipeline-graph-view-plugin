@@ -1,5 +1,4 @@
 :root {
-  --card-background: hsl(212, 30%, 96%);
   --card-gap: 1rem;
 }
 
@@ -8,30 +7,19 @@
   max-width: unset;
 }
 
-[data-theme="dark"] {
-  --card-background: hsl(230deg 14% 23%);
-}
-
-@media (prefers-color-scheme: dark) {
-  [data-theme="dark-system"],
-  [data-theme="dark-system"] {
-    --card-background: hsl(230deg 14% 23%);
-  }
-}
-
 @import "cards";
 
-.app-details__item svg {
-  color: currentColor !important;
-  width: 16px;
-  height: 16px;
+.pgv-details-card {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.app-details__item {
+.pgv-details__item {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 0 0 15px;
+  margin: 0;
 
   span {
     display: contents;
@@ -39,8 +27,8 @@
 
   svg {
     color: currentColor !important;
-    width: 16px;
-    height: 16px;
+    width: 1.125rem;
+    height: 1.125rem;
   }
 
   &--link {

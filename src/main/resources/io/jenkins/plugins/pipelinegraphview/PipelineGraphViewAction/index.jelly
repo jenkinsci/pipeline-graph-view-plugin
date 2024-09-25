@@ -51,31 +51,33 @@
           <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/pipeline-graph-view-bundle.js"/>
         </p:card>
         <p:card title="${it.runDetailsCard.title}">
-          <j:forEach var="card" items="${it.runDetailsCard.items}">
-            <j:choose>
-              <j:when test="${card.separator}">
-                <hr/>
-              </j:when>
-              <j:otherwise>
-                <p class="app-details__item">
-                  <l:icon src="${card.icon}"/>
-                  <j:choose>
-                    <j:when test="${!empty(card.href)}">
-                      <a
-                          class="app-details__item--link"
-                          href="${card.href}"
-                      >
+          <div class="pgv-details-card">
+            <j:forEach var="card" items="${it.runDetailsCard.items}">
+              <j:choose>
+                <j:when test="${card.separator}">
+                  <hr/>
+                </j:when>
+                <j:otherwise>
+                  <p class="pgv-details__item">
+                    <l:icon src="${card.icon}"/>
+                    <j:choose>
+                      <j:when test="${!empty(card.href)}">
+                        <a
+                                class="pgv-details__item--link"
+                                href="${card.href}"
+                        >
+                          ${card.text}
+                        </a>
+                      </j:when>
+                      <j:otherwise>
                         ${card.text}
-                      </a>
-                    </j:when>
-                    <j:otherwise>
-                      ${card.text}
-                    </j:otherwise>
-                  </j:choose>
-                </p>
-              </j:otherwise>
-            </j:choose>
-          </j:forEach>
+                      </j:otherwise>
+                    </j:choose>
+                  </p>
+                </j:otherwise>
+              </j:choose>
+            </j:forEach>
+          </div>
         </p:card>
       </div>
     </l:main-panel>

@@ -130,6 +130,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
 
             Writer writer;
             if (count > 0) {
+                rsp.setContentType("text/plain;charset=UTF-8");
                 writer = (count > 4096) ? rsp.getCompressedWriter(req) : rsp.getWriter();
                 spool.flush();
                 spool.writeTo(new LineEndNormalizingWriter(writer));

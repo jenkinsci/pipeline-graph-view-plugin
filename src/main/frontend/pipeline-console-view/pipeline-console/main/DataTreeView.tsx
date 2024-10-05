@@ -8,7 +8,7 @@ import StepStatus from "../../../step-status/StepStatus";
 
 const getTreeItemsFromStage = (
   stageItems: StageInfo[],
-  selectedStage: string
+  selectedStage: string,
 ) => {
   return stageItems.map((stageItemData) => {
     let children: JSX.Element[] = [];

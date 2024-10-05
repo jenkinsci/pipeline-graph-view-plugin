@@ -14,7 +14,7 @@ export default function startPollingPipelineStatus(
   onFetchError: (err: Error) => void,
   onPipelineComplete: () => void,
   path: string,
-  interval = 3000
+  interval = 3000,
 ) {
   let isComplete = false;
 

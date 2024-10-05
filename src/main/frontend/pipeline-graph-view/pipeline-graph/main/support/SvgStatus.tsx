@@ -41,7 +41,7 @@ export class SvgStatus extends React.PureComponent<Props> {
     return (
       <g
         className={`${baseWrapperClasses} ${getClassForResult(
-          result
+          result,
         )}${iconSuffix}`}
         style={style}
       >
@@ -78,7 +78,7 @@ function getGlyphFor(
   radius: number,
   style: React.CSSProperties,
   centerX?: number,
-  centerY?: number
+  centerY?: number,
 ) {
   // NB: If we start resizing these things, we'll need to use radius/12 to
   // generate a "scale" transform for the group

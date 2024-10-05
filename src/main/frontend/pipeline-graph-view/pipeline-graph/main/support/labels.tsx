@@ -119,10 +119,10 @@ export function SmallLabel({
   } = layout;
 
   const smallLabelWidth = Math.floor(
-    nodeSpacingH - 2 * curveRadius - 2 * connectorStrokeWidth
+    nodeSpacingH - 2 * curveRadius - 2 * connectorStrokeWidth,
   ); // Fit between lines
   const smallLabelHeight = Math.floor(
-    nodeSpacingV - smallLabelOffsetV - nodeRadius - nodeStrokeWidth
+    nodeSpacingV - smallLabelOffsetV - nodeRadius - nodeStrokeWidth,
   );
   const smallLabelOffsetH = Math.floor(smallLabelWidth * -0.5);
 

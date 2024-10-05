@@ -156,7 +156,7 @@ export function tokenizeANSIString(input?: string): string[] | Result[] {
 
     // TODO fix type checking
     const parsedEscapeCode: any = parseEscapeCode(
-      input.substring(loopCounter, escapeCodeIndex + 1)
+      input.substring(loopCounter, escapeCodeIndex + 1),
     );
     result.push(parsedEscapeCode);
 
@@ -181,7 +181,7 @@ export function tokenizeANSIString(input?: string): string[] | Result[] {
  */
 export function makeReactChildren(
   tokenizedInput: string[] | Result[],
-  key: string
+  key: string,
 ) {
   const result = [];
   let currentState: Result = {
@@ -198,7 +198,7 @@ export function makeReactChildren(
           <div
             dangerouslySetInnerHTML={{ __html: codeOrString }}
             key={`${key}-${i}`}
-          />
+          />,
         );
       } else {
         const classNames = [];
@@ -211,7 +211,7 @@ export function makeReactChildren(
         }
 
         result.push(
-          <span className={classNames.join(" ")}>{codeOrString}</span>
+          <span className={classNames.join(" ")}>{codeOrString}</span>,
         );
       }
     } else if (codeOrString.isSelectGraphicRendition) {

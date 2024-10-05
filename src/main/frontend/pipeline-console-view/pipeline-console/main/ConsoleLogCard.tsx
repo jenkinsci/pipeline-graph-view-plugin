@@ -85,7 +85,7 @@ export class ConsoleLogCard extends React.Component<
       // If we start expanded then request logs.
       this.props.handleMoreConsoleClick(
         this.props.step.id,
-        this.props.stepBuffer.startByte
+        this.props.stepBuffer.startByte,
       );
     }
   }
@@ -97,7 +97,7 @@ export class ConsoleLogCard extends React.Component<
           <Grid item xs={6} sm className="show-more-console">
             <Typography align="right" className="step-header">
               {`Missing ${this.prettySizeString(
-                this.props.stepBuffer.startByte
+                this.props.stepBuffer.startByte,
               )} of logs.`}
             </Typography>
           </Grid>
@@ -109,14 +109,14 @@ export class ConsoleLogCard extends React.Component<
                 let startByte =
                   this.props.stepBuffer.startByte - LOG_FETCH_SIZE;
                 console.debug(
-                  `startByte '${this.props.stepBuffer.startByte}' -> '${startByte}'`
+                  `startByte '${this.props.stepBuffer.startByte}' -> '${startByte}'`,
                 );
                 if (startByte < 0) {
                   startByte = 0;
                 }
                 this.props.handleMoreConsoleClick(
                   this.props.step.id,
-                  startByte
+                  startByte,
                 );
               }}
             >
@@ -167,7 +167,7 @@ export class ConsoleLogCard extends React.Component<
     const statusIcon = getStepStatus(
       this.props.step.state,
       this.props.step.completePercent,
-      10
+      10,
     );
 
     return (
@@ -209,7 +209,7 @@ export class ConsoleLogCard extends React.Component<
               </Typography>
               {this.getStepHeaderTitle(
                 this.props.step.title,
-                this.props.step.id
+                this.props.step.id,
               )}
             </Grid>
             <Grid
@@ -227,7 +227,7 @@ export class ConsoleLogCard extends React.Component<
               >
                 {this.props.step.totalDurationMillis.substring(
                   this.props.step.totalDurationMillis.indexOf(" ") + 1,
-                  this.props.step.totalDurationMillis.length
+                  this.props.step.totalDurationMillis.length,
                 )}
               </Typography>
             </Grid>

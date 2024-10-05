@@ -27,7 +27,7 @@ const Component: FunctionComponent<Props> = (props: Props) => {
 export function getStepStatus(
   status: Result,
   complete?: number,
-  radius?: number
+  radius?: number,
 ) {
   const icon = getGroupForResult(
     decodeResultValue(status),
@@ -35,7 +35,7 @@ export function getStepStatus(
     radius ?? 12,
     0,
     0,
-    {}
+    {},
   );
   const diameter = radius ? radius * 2 : 24;
   return (

@@ -248,7 +248,7 @@ export const multipleRunningSteps: StepInfo[] = [
 
 export const findStage = (
   stageList: Array<StageInfo>,
-  id: number
+  id: number,
 ): StageInfo | null => {
   for (let stage of stageList) {
     if (stage.id == id) {
@@ -266,7 +266,7 @@ export const findStage = (
 
 export const findStageSteps = (
   stepList: Array<StepInfo>,
-  id: number
+  id: number,
 ): StepInfo[] => {
   let steps = [] as StepInfo[];
   for (let step of stepList) {

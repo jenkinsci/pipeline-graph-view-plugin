@@ -74,11 +74,11 @@ export async function getRunSteps(): Promise<StepInfo[] | null> {
 
 export async function getConsoleTextOffset(
   stepId: string,
-  startByte: number
+  startByte: number,
 ): Promise<ConsoleLogData | null> {
   try {
     let response = await fetch(
-      `consoleOutput?nodeId=${stepId}&startByte=${startByte}`
+      `consoleOutput?nodeId=${stepId}&startByte=${startByte}`,
     );
     if (!response.ok) throw response.statusText;
     let json = await response.json();

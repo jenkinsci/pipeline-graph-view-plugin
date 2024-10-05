@@ -5,7 +5,7 @@ import { FunctionComponent } from "react";
 import { CircularProgress } from "@mui/material";
 
 const PipelineConsole = lazy(
-  () => import("./pipeline-console/main/PipelineConsole")
+  () => import("./pipeline-console/main/PipelineConsole"),
 );
 
 const App: FunctionComponent = () => {

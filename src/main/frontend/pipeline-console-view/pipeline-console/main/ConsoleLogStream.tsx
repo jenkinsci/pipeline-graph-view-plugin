@@ -128,7 +128,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
             appendInterval.current = setInterval(() => {
               props.handleMoreConsoleClick(
                 props.step.id,
-                props.logBuffer.startByte
+                props.logBuffer.startByte,
               );
             }, 1000);
             console.debug(`Received more text '${bottom} - ${stickToBottom}'`);

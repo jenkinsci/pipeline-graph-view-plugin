@@ -7,7 +7,7 @@ function polarToCartesian(
   centerX: number,
   centerY: number,
   radius: number,
-  angleInDegrees: number
+  angleInDegrees: number,
 ) {
   const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
 
@@ -22,7 +22,7 @@ function describeArcAsPath(
   y: number,
   radius: number,
   startAngle: number,
-  endAngle: number
+  endAngle: number,
 ) {
   const start = polarToCartesian(x, y, radius, endAngle);
   const end = polarToCartesian(x, y, radius, startAngle);
@@ -75,10 +75,10 @@ export class SvgSpinner extends React.Component<Props> {
 
     this.animatedElement!.setAttribute(
       "transform",
-      `rotate(${this.infiniteRotateDegrees})`
+      `rotate(${this.infiniteRotateDegrees})`,
     );
     this.requestAnimationFrameId = requestAnimationFrame(
-      this.infiniteLoadingTimer
+      this.infiniteLoadingTimer,
     );
   };
 

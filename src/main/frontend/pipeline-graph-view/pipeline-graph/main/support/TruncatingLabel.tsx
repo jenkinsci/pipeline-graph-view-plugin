@@ -125,7 +125,7 @@ export class TruncatingLabel extends React.Component<Props> {
       console.warn(
         "TruncatingLabel - Label children must be string but is",
         typeof children,
-        children
+        children,
       );
       this.completeText = "Contents must be string";
     }
@@ -197,7 +197,7 @@ export class TruncatingLabel extends React.Component<Props> {
 
         // Calculate the next length and update the text
         this.textCutoffLength = Math.floor(
-          (this.longestGood + this.shortestBad) / 2
+          (this.longestGood + this.shortestBad) / 2,
         );
         this.innerText =
           this.completeText.substr(0, this.textCutoffLength) + "…";

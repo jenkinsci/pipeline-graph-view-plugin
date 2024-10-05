@@ -19,7 +19,7 @@ describe("PipelineGraphLayout", () => {
     const makeStage = (
       id: number,
       name: string,
-      children: Array<StageInfo> = []
+      children: Array<StageInfo> = [],
     ): StageInfo => {
       return { ...baseStage, id, name, children };
     };
@@ -27,7 +27,7 @@ describe("PipelineGraphLayout", () => {
     const makeParallel = (
       id: number,
       name: string,
-      children: Array<StageInfo> = []
+      children: Array<StageInfo> = [],
     ): StageInfo => {
       return {
         ...baseStage,
@@ -41,7 +41,7 @@ describe("PipelineGraphLayout", () => {
     const makeNode = (
       id: number,
       name: string,
-      seqContainerName: string | undefined = undefined
+      seqContainerName: string | undefined = undefined,
     ) => {
       return {
         id,
@@ -64,7 +64,7 @@ describe("PipelineGraphLayout", () => {
           makeStage(20, "unstable-two"),
           makeStage(26, "failure"),
         ],
-        false
+        false,
       );
 
       expect(columns).toMatchObject([
@@ -113,7 +113,7 @@ describe("PipelineGraphLayout", () => {
             ]),
           ]),
         ],
-        false
+        false,
       );
 
       expect(columns).toMatchObject([
@@ -170,7 +170,7 @@ describe("PipelineGraphLayout", () => {
             ]),
           ]),
         ],
-        false
+        false,
       );
 
       expect(columns).toMatchObject([
@@ -215,7 +215,7 @@ describe("PipelineGraphLayout", () => {
             ]),
           ]),
         ],
-        false
+        false,
       );
 
       expect(columns).toMatchObject([
@@ -258,7 +258,7 @@ describe("PipelineGraphLayout", () => {
           ]),
           makeStage(29, "parent:1"),
         ],
-        false
+        false,
       );
 
       expect(columns).toMatchObject([
@@ -304,7 +304,7 @@ describe("PipelineGraphLayout", () => {
             ]),
           ]),
         ],
-        false
+        false,
       );
 
       expect(columns).toMatchObject([

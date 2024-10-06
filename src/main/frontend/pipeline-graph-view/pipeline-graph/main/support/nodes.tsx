@@ -29,14 +29,14 @@ export function Node({ node, layout, isStageSelected, onClick }: NodeProps) {
 
   if (node.isPlaceholder) {
     groupChildren.push(
-      <circle r={terminalRadius} className="PWGx-pipeline-node-terminal" />
+      <circle r={terminalRadius} className="PWGx-pipeline-node-terminal" />,
     );
   } else {
     const { completePercent = 0, title, state } = node.stage;
     const resultClean = decodeResultValue(state);
 
     groupChildren.push(
-      getGroupForResult(resultClean, completePercent, nodeRadius)
+      getGroupForResult(resultClean, completePercent, nodeRadius),
     );
 
     if (title) {
@@ -63,7 +63,7 @@ export function Node({ node, layout, isStageSelected, onClick }: NodeProps) {
       fillOpacity="0"
       stroke="none"
       {...clickableProps}
-    />
+    />,
   );
 
   // Most of the nodes are in shared code, so they're rendered at 0,0. We transform with a <g> to position them
@@ -93,7 +93,7 @@ export function SelectionHighlight({
 }: SelectionHighlightProps) {
   const { nodeRadius, connectorStrokeWidth } = layout;
   const highlightRadius = Math.ceil(
-    nodeRadius + 0.5 * connectorStrokeWidth + 1
+    nodeRadius + 0.5 * connectorStrokeWidth + 1,
   );
   let selectedNode: NodeInfo | undefined;
 

@@ -11,7 +11,7 @@ export function getGroupForResult(
   radius: number,
   centerX: number,
   centerY: number,
-  outerStyle: React.CSSProperties
+  outerStyle: React.CSSProperties,
 ): React.ReactElement<SvgStatus> {
   switch (result) {
     case Result.running:

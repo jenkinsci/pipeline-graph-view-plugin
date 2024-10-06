@@ -62,7 +62,7 @@ export function TooltipLabel(props: TooltipLabelProps) {
           </tr>
         );
       })}
-    </table>
+    </table>,
   );
 
   return (

@@ -1,6 +1,6 @@
 /** * @jest-environment jsdom */
 
-import '@testing-library/jest-dom';
+import "@testing-library/jest-dom";
 import React from "react";
 import {
   default as PipelineConsole,
@@ -82,21 +82,21 @@ jest.mock("./StageView", () => {
 describe("getDefaultSelectedStep", () => {
   it("selects last successful step", async () => {
     const selectedStep = getDefaultSelectedStep(
-      allSuccessfulStepList
+      allSuccessfulStepList,
     ) as StepInfo;
     expect(selectedStep.id).toEqual("21");
   });
 
   it("selects first errored step", async () => {
     const selectedStep = getDefaultSelectedStep(
-      multipleErrorsStepList
+      multipleErrorsStepList,
     ) as StepInfo;
     expect(selectedStep.id).toEqual("11");
   });
 
   it("selects errored step over unstable", async () => {
     const selectedStep = getDefaultSelectedStep(
-      unstableThenFailureStepList
+      unstableThenFailureStepList,
     ) as StepInfo;
     expect(selectedStep.id).toEqual("12");
   });
@@ -108,7 +108,7 @@ describe("getDefaultSelectedStep", () => {
 
   it("selects first running step", async () => {
     const selectedStep = getDefaultSelectedStep(
-      multipleRunningSteps
+      multipleRunningSteps,
     ) as StepInfo;
     expect(selectedStep.id).toEqual("10");
   });
@@ -185,7 +185,7 @@ describe("PipelineConsole", () => {
         selected: "3",
         stages: defaultStagesList,
       },
-      {}
+      {},
     );
   });
 
@@ -204,7 +204,7 @@ describe("PipelineConsole", () => {
         stepBuffers: expect.any(Map),
         steps: findStageSteps(allSuccessfulStepList, 3),
       },
-      {}
+      {},
     );
   });
 
@@ -224,7 +224,7 @@ describe("PipelineConsole", () => {
         stepBuffers: expect.any(Map),
         steps: findStageSteps(allSuccessfulStepList, 1),
       },
-      {}
+      {},
     );
   });
 
@@ -244,7 +244,7 @@ describe("PipelineConsole", () => {
         stepBuffers: expect.any(Map),
         steps: findStageSteps(allSuccessfulStepList, 3),
       },
-      {}
+      {},
     );
   });
 
@@ -264,7 +264,7 @@ describe("PipelineConsole", () => {
         stepBuffers: expect.any(Map),
         steps: findStageSteps(allSuccessfulStepList, 0),
       },
-      {}
+      {},
     );
   });
 });

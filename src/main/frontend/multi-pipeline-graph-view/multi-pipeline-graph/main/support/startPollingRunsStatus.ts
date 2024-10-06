@@ -7,7 +7,7 @@ import { RunInfo } from "../MultiPipelineGraphModel";
 export default function startPollingRunsStatus(
   onFetchSuccess: (data: Array<RunInfo>) => void,
   onFetchError: (err: Error) => void,
-  interval = 10000
+  interval = 10000,
 ) {
   let path = "runs";
 

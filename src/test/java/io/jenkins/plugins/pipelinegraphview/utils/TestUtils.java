@@ -4,6 +4,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
@@ -37,8 +38,7 @@ public class TestUtils {
         return job.scheduleBuild2(0);
     }
 
-    public static WorkflowJob createJob(JenkinsRule jenkins, String jobName, String jenkinsFileName)
-            throws java.io.IOException {
+    public static WorkflowJob createJob(JenkinsRule jenkins, String jobName, String jenkinsFileName) throws Exception {
         WorkflowJob job = jenkins.createProject(WorkflowJob.class, jobName);
 
         URL resource = Resources.getResource(TestUtils.class, jenkinsFileName);
@@ -47,7 +47,7 @@ public class TestUtils {
         return job;
     }
 
-    public static List<FlowNode> getNodesByDisplayName(WorkflowRun run, String displayName) throws java.io.IOException {
+    public static List<FlowNode> getNodesByDisplayName(WorkflowRun run, String displayName) throws IOException {
         FlowExecution execution = run.getExecution();
         FlowGraphTable graphTable = new FlowGraphTable(execution);
         graphTable.build();

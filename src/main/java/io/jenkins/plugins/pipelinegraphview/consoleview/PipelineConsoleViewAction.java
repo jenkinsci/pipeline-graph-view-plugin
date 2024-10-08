@@ -16,8 +16,8 @@ import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
-import org.kohsuke.stapler.StaplerResponse;
+import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.framework.io.CharSpool;
 import org.kohsuke.stapler.framework.io.LineEndNormalizingWriter;
@@ -68,7 +68,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     // running).
     @GET
     @WebMethod(name = "steps")
-    public HttpResponse getSteps(StaplerRequest req) throws IOException {
+    public HttpResponse getSteps(StaplerRequest2 req) throws IOException {
         String nodeId = req.getParameter("nodeId");
         if (nodeId != null) {
             return HttpResponses.okJSON(getSteps(nodeId));
@@ -92,7 +92,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     // - remove dependency of getting list of stages in frontend.
     @GET
     @WebMethod(name = "allSteps")
-    public HttpResponse getAllSteps(StaplerRequest req) throws IOException {
+    public HttpResponse getAllSteps(StaplerRequest2 req) throws IOException {
         return HttpResponses.okJSON(getAllSteps());
     }
 
@@ -107,7 +107,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     }
 
     @WebMethod(name = "log")
-    public HttpResponse getConsoleText(StaplerRequest req, StaplerResponse rsp) throws IOException {
+    public HttpResponse getConsoleText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         String nodeId = req.getParameter("nodeId");
         if (nodeId == null) {
             logger.error("'consoleText' was not passed 'nodeId'.");
@@ -156,7 +156,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
      */
     @GET
     @WebMethod(name = "consoleOutput")
-    public HttpResponse getConsoleOutput(StaplerRequest req) throws IOException {
+    public HttpResponse getConsoleOutput(StaplerRequest2 req) throws IOException {
         String nodeId = req.getParameter("nodeId");
         if (nodeId == null) {
             logger.error("'consoleJson' was not passed 'nodeId'.");

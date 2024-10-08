@@ -17,7 +17,7 @@ import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.verb.GET;
 
@@ -53,7 +53,7 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
 
     @GET
     @WebMethod(name = "tree")
-    public HttpResponse getTree(StaplerRequest req) throws JsonProcessingException {
+    public HttpResponse getTree(StaplerRequest2 req) throws JsonProcessingException {
         String runId = req.getParameter("runId");
         WorkflowRun run = target.getBuildByNumber(Integer.parseInt(runId));
         PipelineGraphApi api = new PipelineGraphApi(run);

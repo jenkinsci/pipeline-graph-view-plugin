@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.WithoutJenkins;
 
 public class PipelineStepApiTest {
 
@@ -552,5 +553,21 @@ public class PipelineStepApiTest {
             assertThat(checks, hasEntry(is(n.getName()), notNullValue()));
             TestUtils.assertTimesInRange(n, checks.get(n.getName()));
         }
+    }
+
+    @Test
+    @WithoutJenkins
+    public void clearTextContents() {
+        assertThat(PipelineStepApi.cleanTextContent("Hello World"), equalTo("Hello World"));
+        assertThat(PipelineStepApi.cleanTextContent("abc[10m]def"), equalTo("abc[10m]def"));
+        // 3-4 bit
+        assertThat(PipelineStepApi.cleanTextContent("\033[32mHello World\033[0m"), equalTo("Hello World"));
+        assertThat(PipelineStepApi.cleanTextContent("\033[1;32mHello World\033[0m"), equalTo("Hello World"));
+        // 8-bit
+        assertThat(PipelineStepApi.cleanTextContent("\033[38;5;6mHello World\033[0m"), equalTo("Hello World"));
+        // with colon as separator character
+        assertThat(PipelineStepApi.cleanTextContent("\033[38:5:6mHello World\033[0m"), equalTo("Hello World"));
+        // 24-bit rgb
+        assertThat(PipelineStepApi.cleanTextContent("\033[38;2;0;255;128mHello World\033[0m"), equalTo("Hello World"));
     }
 }

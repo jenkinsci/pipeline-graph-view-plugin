@@ -15,17 +15,19 @@ export const MultiPipelineGraph = () => {
       });
     }
   }, [runs, poll]);
+
+
   return (
     <table className="jenkins-table sortable">
       <thead>
         <tr>
-          <th className="jenkins-table__cell--tight">id</th>
-          <th data-sort-disable="true">pipeline</th>
+          <th className="jenkins-table__cell--tight">ID</th>
+          <th data-sort-disable="true">Pipeline</th>
         </tr>
       </thead>
       <tbody>
         {runs.map((run) => (
-          <SingleRun key={run.id} run={run} />
+          <SingleRun key={run.id} run={run}/>
         ))}
       </tbody>
     </table>

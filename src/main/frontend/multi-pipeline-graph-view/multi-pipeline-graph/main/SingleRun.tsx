@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { RunInfo } from "./MultiPipelineGraphModel";
 import {
   PipelineGraph,
+  PipelineSummary,
   StageInfo,
 } from "../../../pipeline-graph-view/pipeline-graph/main";
 
@@ -24,22 +25,29 @@ export const SingleRun: (data: Props) => JSX.Element = ({ run }) => {
   }
 
   const handleNodeClick = (nodeName: string, id: number) => {
-    console.log(nodeName, id);
     let redirect = `../${run.id}/pipeline-console?selected-node=${id}`;
     if (onJobView) {
       redirect = `${run.id}/pipeline-console?selected-node=${id}`;
     }
     window.location.href = redirect;
   };
+
+  const handleChipClick = () => {
+    window.location.href = singleRunPage;
+  };
+
+  const jobStatus = `${run.result.toLowerCase()}`;
+  
   return (
     <tr>
       <td>
-        <a
-          href={singleRunPage}
-          className="jenkins-table__link pgw-user-specified-text"
-        >
-          {run.displayName}
-        </a>
+          <PipelineSummary
+            label={run.displayName}
+            status={jobStatus}
+            onClick={handleChipClick}
+            startTime={run.startTime}
+            duration={run.duration}
+          />
       </td>
       <td>
         <PipelineGraph

@@ -4,7 +4,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 import hudson.model.Result;
+import hudson.model.labels.LabelAtom;
 import hudson.model.queue.QueueTaskFuture;
+import hudson.slaves.DumbSlave;
 import io.jenkins.plugins.pipelinegraphview.treescanner.NodeRelationshipFinder;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeTreeScanner;
@@ -407,5 +409,77 @@ public class PipelineGraphApiTest {
                 stagesString,
                 equalTo(
                         "foo{success},first-parallel{failure}[bar{skipped},baz{failure}],second-parallel{skipped},Post Actions{success}"));
+    }
+
+    @Test
+    public void getAgentForSingleStagePipeline() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j, "getAgentForSingleStagePipeline", "singleStagePipeline.jenkinsfile", Result.SUCCESS);
+
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
+
+        assertThat(stages.size(), equalTo(1));
+        assertThat(stages.get(0).getAgent(), equalTo("built-in"));
+    }
+
+    @Test
+    public void getAgentForSingleStagePipelineWithExternalAgent() throws Exception {
+        var testingLabel = new LabelAtom("external");
+        DumbSlave agent = j.createSlave(testingLabel);
+        j.waitOnline(agent);
+
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j,
+                "getAgentForSingleStagePipelineWithExternalAgent",
+                "singleStagePipelineWithExternalAgent.jenkinsfile",
+                Result.SUCCESS);
+
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
+
+        assertThat(stages.size(), equalTo(1));
+        assertThat(stages.get(0).getAgent(), equalTo(agent.getNodeName()));
+    }
+
+    @Test
+    public void getAgentForParallelPipelineWithExternalAgent() throws Exception {
+        var testingLabel = new LabelAtom("external");
+        DumbSlave agent = j.createSlave(testingLabel);
+        j.waitOnline(agent);
+
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j,
+                "getAgentForParallelPipelineWithExternalAgent",
+                "parallelPipelineWithExternalAgent.jenkinsfile",
+                Result.SUCCESS);
+
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
+
+        // Parallel pipeline structure:
+        // name: Parallel, type: STAGE
+        // name: Parallel, type: PARALLEL_BLOCK
+
+        // name: Builtin, type: PARALLEL
+        // name: Stage : Start, type: STEPS_BLOCK
+        // name: Builtin, type: STAGE
+        // name: Allocate node : Start, type: STEPS_BLOCK
+
+        assertThat(stages.size(), equalTo(1));
+        assertThat(stages.get(0).getType(), equalTo("STAGE"));
+        assertThat(stages.get(0).getName(), equalTo("Parallel"));
+        assertThat(stages.get(0).getAgent(), equalTo(null));
+
+        List<PipelineStage> children = stages.get(0).getChildren();
+
+        assertThat(children.size(), equalTo(2));
+
+        PipelineStage builtinStage = children.get(0);
+        assertThat(builtinStage.getType(), equalTo("PARALLEL"));
+        assertThat(builtinStage.getName(), equalTo("Builtin"));
+        assertThat(builtinStage.getAgent(), equalTo("built-in"));
+
+        PipelineStage externalStage = children.get(1);
+        assertThat(externalStage.getType(), equalTo("PARALLEL"));
+        assertThat(externalStage.getName(), equalTo("External"));
+        assertThat(externalStage.getAgent(), equalTo(agent.getNodeName()));
     }
 }

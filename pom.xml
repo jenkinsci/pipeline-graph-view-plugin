@@ -33,7 +33,8 @@
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/pipeline-graph-view-plugin</gitHubRepo>
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
-    <jenkins.version>2.479</jenkins.version>
+    <jenkins.baseline>2.479</jenkins.baseline>
+    <jenkins.version>${jenkins.baseline}.1</jenkins.version>
     <node.version>20.18.0</node.version>
     <npm.version>10.9.0</npm.version>
     <spotless.check.skip>false</spotless.check.skip>
@@ -44,8 +45,8 @@
       <dependency>
         <!-- Pick up common dependencies for the selected LTS line: https://github.com/jenkinsci/bom#usage -->
         <groupId>io.jenkins.tools.bom</groupId>
-        <artifactId>bom-2.452.x</artifactId>
-        <version>3435.v238d66a_043fb_</version>
+        <artifactId>bom-${jenkins.baseline}.x</artifactId>
+        <version>3559.vb_5b_81183b_d23</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

@@ -3,7 +3,7 @@ import { convertLabelToTooltip } from "./convertLabelToTooltip";
 describe("convertLabelToTooltip", () => {
   it("converts matrix labels to a tooltip", () => {
     const result = convertLabelToTooltip(
-      "Matrix - PKR_VAR_architecture = 'amd64', another = 'amd64', PKR_VAR_agent = 'ubuntu-20', PKR_VAR_image_type = 'amazon-ebs'"
+      "Matrix - PKR_VAR_architecture = 'amd64', another = 'amd64', PKR_VAR_agent = 'ubuntu-20', PKR_VAR_image_type = 'amazon-ebs'",
     );
 
     const expectedResult = [

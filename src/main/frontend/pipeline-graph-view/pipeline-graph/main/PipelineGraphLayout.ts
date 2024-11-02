@@ -22,7 +22,7 @@ export const sequentialStagesLabelOffset = 100;
 export function layoutGraph(
   newStages: Array<StageInfo>,
   layout: LayoutInfo,
-  collasped: boolean
+  collasped: boolean,
 ): PositionedGraph {
   const stageNodeColumns = createNodeColumns(newStages, collasped);
   const { nodeSpacingH, ypStart } = layout;
@@ -89,13 +89,13 @@ export function layoutGraph(
  */
 export function createNodeColumns(
   topLevelStages: Array<StageInfo> = [],
-  collasped: boolean
+  collasped: boolean,
 ): Array<NodeColumn> {
   const nodeColumns: Array<NodeColumn> = [];
 
   const makeNodeForStage = (
     stage: StageInfo,
-    seqContainerName: string | undefined = undefined
+    seqContainerName: string | undefined = undefined,
   ): NodeInfo => {
     return {
       x: 0, // Layout is done later
@@ -129,7 +129,7 @@ export function createNodeColumns(
       if (!collasped && !willRecurse && stageHasChildren(nodeStage)) {
         column.hasBranchLabels = true;
         forEachChildStage(nodeStage, (parentStage, childStage, _) =>
-          rowNodes.push(makeNodeForStage(childStage, parentStage.name))
+          rowNodes.push(makeNodeForStage(childStage, parentStage.name)),
         );
       } else {
         rowNodes.push(makeNodeForStage(nodeStage));
@@ -147,7 +147,7 @@ export function createNodeColumns(
     const selfParentTopStage = { ...protoTopStage, children: [protoTopStage] };
 
     forEachChildStage(selfParentTopStage, (_, topStage, willRecurse) =>
-      processTopStage(topStage, willRecurse)
+      processTopStage(topStage, willRecurse),
     );
   }
 
@@ -169,7 +169,7 @@ function stageHasChildren(stage: StageInfo): boolean {
  */
 function forEachChildStage(
   topStage: StageInfo,
-  callback: (parent: StageInfo, child: StageInfo, willRecurse: boolean) => void
+  callback: (parent: StageInfo, child: StageInfo, willRecurse: boolean) => void,
 ) {
   if (!stageHasChildren(topStage)) {
     return;
@@ -193,7 +193,7 @@ function forEachChildStage(
  */
 function positionNodes(
   nodeColumns: Array<NodeColumn>,
-  { nodeSpacingH, parallelSpacingH, nodeSpacingV, ypStart }: LayoutInfo
+  { nodeSpacingH, parallelSpacingH, nodeSpacingV, ypStart }: LayoutInfo,
 ) {
   let xp = nodeSpacingH / 2;
   let previousTopNode: NodeInfo | undefined;
@@ -287,7 +287,7 @@ function createBigLabels(columns: Array<NodeColumn>): Array<NodeLabelInfo> {
  */
 function createSmallLabels(
   columns: Array<NodeColumn>,
-  collasped: boolean
+  collasped: boolean,
 ): Array<NodeLabelInfo> {
   const labels: Array<NodeLabelInfo> = [];
   if (collasped) {
@@ -325,7 +325,7 @@ function createSmallLabels(
  */
 function createBranchLabels(
   columns: Array<NodeColumn>,
-  collasped: boolean
+  collasped: boolean,
 ): Array<NodeLabelInfo> {
   const labels: Array<NodeLabelInfo> = [];
   if (collasped) {
@@ -358,7 +358,7 @@ function createBranchLabels(
  */
 function createConnections(
   columns: Array<NodeColumn>,
-  collasped: boolean
+  collasped: boolean,
 ): Array<CompositeConnection> {
   const connections: Array<CompositeConnection> = [];
 

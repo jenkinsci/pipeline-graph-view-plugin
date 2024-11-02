@@ -38,7 +38,7 @@ export default function ConsoleLogModal(props: ConsoleLogModelProps) {
   const statusIcon = getStepStatus(
     props.step.state,
     props.step.completePercent,
-    10
+    10,
   );
   const stepDisplayName = props.step.name;
   const stepTitle = props.step.title ? " - " + props.step.title : "";

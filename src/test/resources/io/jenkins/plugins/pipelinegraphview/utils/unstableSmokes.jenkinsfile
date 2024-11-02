@@ -3,7 +3,7 @@ stage('unstable-one') {
     timeout(1) {
         unstable('oops-one')
     }
-    echo('bar')
+    echo('\033[1;32mbar\033[0m')
 }
 stage('success') {
     echo('baz')

@@ -1,6 +1,6 @@
 /** * @jest-environment jsdom */
 
-import '@testing-library/jest-dom';
+import "@testing-library/jest-dom";
 import React from "react";
 import { ConsoleLogCard } from "./ConsoleLogCard";
 import type { ConsoleLogCardProps } from "./ConsoleLogCard";
@@ -59,7 +59,7 @@ describe("ConsoleLogCard", () => {
 
   it("renders step console when expanded", async () => {
     const { getByText, findByText } = render(
-      <ConsoleLogCard {...DefaultTestProps} />
+      <ConsoleLogCard {...DefaultTestProps} />,
     );
     expect(getByText(/This is a step/));
     expect(findByText(/Hello, world!/));
@@ -69,7 +69,7 @@ describe("ConsoleLogCard", () => {
     console.log = jest.fn();
     render(<ConsoleLogCard {...DefaultTestProps} isExpanded={true} />);
     expect(console.log).toHaveBeenCalledWith(
-      "handleMoreConsoleClick triggered"
+      "handleMoreConsoleClick triggered",
     );
   });
 
@@ -77,7 +77,7 @@ describe("ConsoleLogCard", () => {
     console.log = jest.fn();
     render(<ConsoleLogCard {...DefaultTestProps} />);
     expect(console.log).not.toHaveBeenCalledWith(
-      "handleMoreConsoleClick triggered"
+      "handleMoreConsoleClick triggered",
     );
   });
 });

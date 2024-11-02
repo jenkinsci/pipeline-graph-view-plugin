@@ -31,7 +31,7 @@ export class GraphConnections extends React.Component {
    */
   private renderCompositeConnection(
     connection: CompositeConnection,
-    svgElements: SVGChildren
+    svgElements: SVGChildren,
   ) {
     const { sourceNodes, destinationNodes, skippedNodes, hasBranchLabels } =
       connection;
@@ -42,7 +42,7 @@ export class GraphConnections extends React.Component {
         sourceNodes,
         destinationNodes,
         svgElements,
-        hasBranchLabels
+        hasBranchLabels,
       );
     } else {
       this.renderSkippingConnections(
@@ -50,7 +50,7 @@ export class GraphConnections extends React.Component {
         destinationNodes,
         skippedNodes,
         svgElements,
-        hasBranchLabels
+        hasBranchLabels,
       );
     }
   }
@@ -64,7 +64,7 @@ export class GraphConnections extends React.Component {
     sourceNodes: Array<NodeInfo>,
     destinationNodes: Array<NodeInfo>,
     svgElements: SVGChildren,
-    hasBranchLabels: boolean
+    hasBranchLabels: boolean,
   ) {
     const { connectorStrokeWidth, nodeSpacingH } = this.props.layout;
     const halfSpacingH = nodeSpacingH / 2;
@@ -79,7 +79,7 @@ export class GraphConnections extends React.Component {
       sourceNodes[0],
       destinationNodes[0],
       connectorStroke,
-      svgElements
+      svgElements,
     );
 
     if (sourceNodes.length === 1 && destinationNodes.length === 1) {
@@ -97,7 +97,7 @@ export class GraphConnections extends React.Component {
     for (let i = 1; i < destinationNodes.length; i++) {
       leftmostDestination = Math.min(
         leftmostDestination,
-        destinationNodes[i].x
+        destinationNodes[i].x,
       );
     }
 
@@ -108,7 +108,7 @@ export class GraphConnections extends React.Component {
         previousNode,
         destinationNodes[0],
         collapseMidPointX,
-        svgElements
+        svgElements,
       );
     }
 
@@ -125,7 +125,7 @@ export class GraphConnections extends React.Component {
         sourceNodes[0],
         destNode,
         expandMidPointX,
-        svgElements
+        svgElements,
       );
     }
   }
@@ -140,7 +140,7 @@ export class GraphConnections extends React.Component {
     destinationNodes: Array<NodeInfo>,
     skippedNodes: Array<NodeInfo>,
     svgElements: SVGChildren,
-    hasBranchLabels: boolean
+    hasBranchLabels: boolean,
   ) {
     const {
       connectorStrokeWidth,
@@ -176,7 +176,7 @@ export class GraphConnections extends React.Component {
         leftNode,
         rightNode,
         skipConnectorStroke,
-        svgElements
+        svgElements,
       );
       leftNode = rightNode;
     }
@@ -184,7 +184,7 @@ export class GraphConnections extends React.Component {
       leftNode,
       destinationNodes[0],
       skipConnectorStroke,
-      svgElements
+      svgElements,
     );
 
     //--------------------------------------------------------------------------
@@ -200,7 +200,7 @@ export class GraphConnections extends React.Component {
     for (let i = 1; i < destinationNodes.length; i++) {
       leftmostDestination = Math.min(
         leftmostDestination,
-        destinationNodes[i].x
+        destinationNodes[i].x,
       );
     }
 
@@ -227,7 +227,7 @@ export class GraphConnections extends React.Component {
         this.svgBranchCurve(x1, y1, x2, y2, midPointX, curveRadius);
 
       svgElements.push(
-        <path {...connectorStroke} key={key} d={pathData} fill="none" />
+        <path {...connectorStroke} key={key} d={pathData} fill="none" />,
       );
     }
 
@@ -259,7 +259,7 @@ export class GraphConnections extends React.Component {
         this.svgBranchCurve(x1, y1, x2, y2, expandMidPointX, curveRadius);
 
       svgElements.push(
-        <path {...connectorStroke} key={key} d={pathData} fill="none" />
+        <path {...connectorStroke} key={key} d={pathData} fill="none" />,
       );
     }
 
@@ -341,7 +341,7 @@ export class GraphConnections extends React.Component {
       "";
 
     svgElements.push(
-      <path {...connectorStroke} key={key} d={pathData} fill="none" />
+      <path {...connectorStroke} key={key} d={pathData} fill="none" />,
     );
   }
 
@@ -354,7 +354,7 @@ export class GraphConnections extends React.Component {
     leftNode: NodeInfo,
     rightNode: NodeInfo,
     connectorStroke: Object,
-    svgElements: SVGChildren
+    svgElements: SVGChildren,
   ) {
     const { nodeRadius, terminalRadius } = this.props.layout;
     const leftNodeRadius = leftNode.isPlaceholder ? terminalRadius : nodeRadius;
@@ -369,7 +369,7 @@ export class GraphConnections extends React.Component {
     const y = leftNode.y;
 
     svgElements.push(
-      <line {...connectorStroke} key={key} x1={x1} y1={y} x2={x2} y2={y} />
+      <line {...connectorStroke} key={key} x1={x1} y1={y} x2={x2} y2={y} />,
     );
   }
 
@@ -382,7 +382,7 @@ export class GraphConnections extends React.Component {
     leftNode: NodeInfo,
     rightNode: NodeInfo,
     midPointX: number,
-    svgElements: SVGChildren
+    svgElements: SVGChildren,
   ) {
     const { nodeRadius, terminalRadius, curveRadius, connectorStrokeWidth } =
       this.props.layout;
@@ -417,11 +417,11 @@ export class GraphConnections extends React.Component {
         rightPos.x,
         rightPos.y,
         midPointX,
-        curveRadius
+        curveRadius,
       );
 
     svgElements.push(
-      <path {...connectorStroke} key={key} d={pathData} fill="none" />
+      <path {...connectorStroke} key={key} d={pathData} fill="none" />,
     );
   }
 
@@ -434,7 +434,7 @@ export class GraphConnections extends React.Component {
     x2: number,
     y2: number,
     midPointX: number,
-    curveRadius: number
+    curveRadius: number,
   ) {
     const verticalDirection = Math.sign(y2 - y1); // 1 == curve down, -1 == curve up
     const w1 = midPointX - curveRadius - x1 + curveRadius * verticalDirection;

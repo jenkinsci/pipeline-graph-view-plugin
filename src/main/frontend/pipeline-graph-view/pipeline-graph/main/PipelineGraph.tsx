@@ -76,7 +76,7 @@ export class PipelineGraph extends React.Component {
       onPipelineDataReceived,
       onPollingError,
       onPipelineComplete,
-      this.props.path ?? this.getTreePath()
+      this.props.path ?? this.getTreePath(),
     );
   }
 
@@ -131,7 +131,7 @@ export class PipelineGraph extends React.Component {
       this.props.setStages(newStages);
     }
     this.setState(
-      layoutGraph(newStages, this.state.layout, this.props.collapsed ?? false)
+      layoutGraph(newStages, this.state.layout, this.props.collapsed ?? false),
     );
   }
 

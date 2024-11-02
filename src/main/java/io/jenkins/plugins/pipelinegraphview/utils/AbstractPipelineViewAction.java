@@ -15,7 +15,7 @@ import net.sf.json.JSONObject;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest;
+import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.WebMethod;
 
 public abstract class AbstractPipelineViewAction implements Action, IconSpec {
@@ -95,7 +95,7 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
     }
 
     @WebMethod(name = "replay")
-    public HttpResponse replayRun(StaplerRequest req) {
+    public HttpResponse replayRun(StaplerRequest2 req) {
 
         JSONObject result = new JSONObject();
 

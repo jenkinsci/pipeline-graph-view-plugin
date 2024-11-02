@@ -67,9 +67,9 @@ public class PipelineStepApi {
         return steps;
     }
 
-    private static String cleanTextContent(String text) {
+    static String cleanTextContent(String text) {
         // strips off all ANSI color codes
-        text = text.replaceAll("\\[\\d+m", "");
+        text = text.replaceAll("\\e\\[(\\d+[;:]?)+m", "");
         return text.trim();
     }
 

@@ -418,21 +418,26 @@ public class FlowNodeWrapper {
     // online via:
     // https://dreampuf.github.io/GraphvizOnline
     public static String getNodeGraphviz(List<FlowNodeWrapper> nodes) {
-        String nodeMapStr = String.format("digraph G {%n");
+        StringBuilder nodeMapStr = new StringBuilder("digraph G {").append(System.lineSeparator());
         for (FlowNodeWrapper node : nodes) {
-            nodeMapStr += String.format(
-                    "  %s [label=\"{id: %s, name: %s, type: %s, state: %s, result: %s}\"]%n",
-                    node.getId(),
-                    node.getId(),
-                    node.getDisplayName(),
-                    node.getType(),
-                    node.getStatus().state,
-                    node.getStatus().result);
+            nodeMapStr.append(" ").append(node.getId());
+            nodeMapStr.append(" [label=\"{id: ").append(node.getId());
+            nodeMapStr.append(", name: ").append(node.getDisplayName());
+            nodeMapStr.append(", type: ").append(node.getType());
+            nodeMapStr.append(", state: ").append(node.getStatus().state);
+            nodeMapStr.append(", result: ").append(node.getStatus().result);
+            nodeMapStr.append("}\"]").append(System.lineSeparator());
+
             for (FlowNodeWrapper parent : node.getParents()) {
-                nodeMapStr += String.format("  %s -> %s%n", node.getId(), parent.getId());
+                nodeMapStr
+                        .append("  ")
+                        .append(node.getId())
+                        .append(" -> ")
+                        .append(parent.getId())
+                        .append(System.lineSeparator());
             }
         }
-        nodeMapStr += "}";
-        return nodeMapStr;
+        nodeMapStr.append("}");
+        return nodeMapStr.toString();
     }
 }

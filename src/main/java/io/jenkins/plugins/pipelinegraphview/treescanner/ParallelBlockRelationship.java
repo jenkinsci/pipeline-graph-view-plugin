@@ -45,14 +45,6 @@ public class ParallelBlockRelationship extends NodeRelationship {
         this.branchEnds = branchEnds;
     }
 
-    // Print debug message if 'isDebugEnabled' is true.
-    @Override
-    protected void dump(String message, Object... args) {
-        if (isDebugEnabled) {
-            logger.debug(String.format(message, args));
-        }
-    }
-
     public ParallelBlockRelationship(
             @NonNull FlowNode start,
             @NonNull FlowNode end,
@@ -125,13 +117,18 @@ public class ParallelBlockRelationship extends NodeRelationship {
         for (int i = 0; i < this.branchStarts.size(); i++) {
             FlowNode branchStart = this.branchStarts.get(i);
             FlowNode branchEnd = this.branchEnds.get(i);
-            dump(
-                    "Calculating parallel branch timings %s, %s",
-                    branchStart.getId(), (branchEnd != null) ? branchEnd.getId() : "null");
+            if (isDebugEnabled) {
+                logger.debug(
+                        "Calculating parallel branch timings {}, {}",
+                        branchStart.getId(),
+                        (branchEnd != null) ? branchEnd.getId() : "null");
+            }
         }
         this.branchTimings = StatusAndTiming.computeParallelBranchTimings(
                 run, this.start, this.branchStarts, this.branchEnds, parallelEndNode, pauseDurations);
-        dump("Calculating parallel timings %s, %s (with above branches)", start.getId(), end.getId());
+        if (isDebugEnabled) {
+            logger.debug("Calculating parallel timings {}, {} (with above branches)", start.getId(), end.getId());
+        }
         this.overallTiming =
                 StatusAndTiming.computeOverallParallelTiming(run, this.branchTimings, this.start, parallelEndNode);
     }
@@ -144,7 +141,9 @@ public class ParallelBlockRelationship extends NodeRelationship {
         if (this.overallStatus == null) {
             calculateStatuses(run);
         }
-        dump("Overall status for '%s': '%s'", this.start, this.overallStatus);
+        if (isDebugEnabled) {
+            logger.debug("Overall status for '{}': '{}'", this.start, this.overallStatus);
+        }
         return new NodeRunStatus(this.overallStatus);
     }
 
@@ -155,11 +154,13 @@ public class ParallelBlockRelationship extends NodeRelationship {
         if (this.branchStatuses == null) {
             calculateStatuses(run);
         }
-        dump(
-                "Branch status for %s (%s): '%s'",
-                branchStartNode.getId(),
-                getBranchName(branchStartNode),
-                this.branchStatuses.get(getBranchName(branchStartNode)));
+        if (isDebugEnabled) {
+            logger.debug(
+                    "Branch status for {} ({}): '{}'",
+                    branchStartNode.getId(),
+                    getBranchName(branchStartNode),
+                    this.branchStatuses.get(getBranchName(branchStartNode)));
+        }
         boolean skippedStage = PipelineNodeUtil.isSkippedStage(branchStartNode);
         return new NodeRunStatus(this.branchStatuses.get(getBranchName(branchStartNode)), skippedStage);
     }
@@ -176,14 +177,19 @@ public class ParallelBlockRelationship extends NodeRelationship {
         for (int i = 0; i < this.branchStarts.size(); i++) {
             BlockStartNode branchStart = this.branchStarts.get(i);
             FlowNode branchEnd = this.branchEnds.get(i);
-            dump(
-                    "Calculating parallel branch status %s, %s: %s",
-                    branchStart.getId(),
-                    (branchEnd != null) ? branchEnd.getId() : "null",
-                    getBranchStatus(run, branchStart));
+            if (isDebugEnabled) {
+                logger.debug(
+                        "Calculating parallel branch status {}, {}: {}",
+                        branchStart.getId(),
+                        (branchEnd != null) ? branchEnd.getId() : "null",
+                        getBranchStatus(run, branchStart));
+            }
         }
 
-        dump("Calculating parallel status %s, %s (with above branches)", this.start.getId(), this.end.getId());
+        if (isDebugEnabled) {
+            logger.debug(
+                    "Calculating parallel status {}, {} (with above branches)", this.start.getId(), this.end.getId());
+        }
         this.overallStatus = StatusAndTiming.condenseStatus(this.branchStatuses.values());
     }
 }

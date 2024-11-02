@@ -57,36 +57,37 @@ public class PipelineNodeTreeScanner {
         this.build();
     }
 
-    // Print debug message if 'isDebugEnabled' is true.
-    private void dump(String message, Object... args) {
-        if (isDebugEnabled) {
-            logger.debug(String.format(message, args));
-        }
-    }
-
     /**
      * Builds the flow node graph.
      */
     public void build() {
-        dump("Building graph");
+        if (isDebugEnabled) {
+            logger.debug("Building graph");
+        }
         if (execution != null) {
             LinkedHashMap<String, FlowNode> nodes = getAllNodes();
             NodeRelationshipFinder finder = new NodeRelationshipFinder();
             LinkedHashMap<String, NodeRelationship> relationships = finder.getNodeRelationships(nodes);
             GraphBuilder builder = new GraphBuilder(nodes, relationships, this.run, this.execution);
-            dump("Original nodes:");
-            dump(FlowNodeWrapper.getNodeGraphviz(builder.getNodes()));
+            if (isDebugEnabled) {
+                logger.debug("Original nodes:");
+                logger.debug("{}", builder.getNodes());
+            }
             this.stageNodeMap = builder.getStageMapping();
             this.stepNodeMap = builder.getStepMapping();
             List<FlowNodeWrapper> remappedNodes = new ArrayList<>(this.stageNodeMap.values());
             remappedNodes.addAll(this.stepNodeMap.values());
-            dump("Remapped nodes:");
-            dump(FlowNodeWrapper.getNodeGraphviz(remappedNodes));
+            if (isDebugEnabled) {
+                logger.debug("Remapped nodes:");
+                logger.debug("{}", remappedNodes);
+            }
         } else {
             this.stageNodeMap = new LinkedHashMap<>();
             this.stepNodeMap = new LinkedHashMap<>();
         }
-        dump("Graph built");
+        if (isDebugEnabled) {
+            logger.debug("Graph built");
+        }
     }
 
     /**
@@ -116,7 +117,9 @@ public class PipelineNodeTreeScanner {
             }
         }
         Collections.sort(stageSteps, new FlowNodeWrapper.NodeComparator());
-        dump("Returning %s steps for node '%s'", stageSteps.size(), startNodeId);
+        if (isDebugEnabled) {
+            logger.debug("Returning {} steps for node '{}'", stageSteps.size(), startNodeId);
+        }
         return stageSteps;
     }
 
@@ -182,13 +185,6 @@ public class PipelineNodeTreeScanner {
             buildGraph();
         }
 
-        // Print debug message if 'isDebugEnabled' is true.
-        private void dump(String message, Object... args) {
-            if (isDebugEnabled) {
-                logger.debug(String.format(message, args));
-            }
-        }
-
         protected List<FlowNodeWrapper> getNodes() {
             return wrappedNodeMap.entrySet().stream()
                     .map(entrySet -> entrySet.getValue())
@@ -206,7 +202,9 @@ public class PipelineNodeTreeScanner {
             if (this.wrappedStageMap != null) {
                 return this.wrappedStageMap;
             }
-            dump("Remapping stages");
+            if (isDebugEnabled) {
+                logger.debug("Remapping stages");
+            }
             Map<String, FlowNodeWrapper> stageMap = this.wrappedNodeMap.entrySet().stream()
                     .filter(e -> shouldBeInStageMap(e.getValue()))
                     .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
@@ -216,10 +214,12 @@ public class PipelineNodeTreeScanner {
                 FlowNodeWrapper firstParent = stage.getFirstParent();
                 // Remap parentage of stages that aren't children of stages (e.g. allocate node
                 // step).
-                dump("Stages has %s parents", stage.getParents().size());
-                dump("First parent of stage %s: %s", stage.getId(), firstParent);
-                if (firstParent != null) {
-                    dump("Parent exists in stage map: %s", stageMap.containsKey(firstParent.getId()));
+                if (isDebugEnabled) {
+                    logger.debug("Stages has {} parents", stage.getParents().size());
+                    logger.debug("First parent of stage {}: {}", stage.getId(), firstParent);
+                    if (firstParent != null) {
+                        logger.debug("Parent exists in stage map: {}", stageMap.containsKey(firstParent.getId()));
+                    }
                 }
                 if (firstParent != null && !stageMap.containsKey(firstParent.getId())) {
                     stageMap.put(stage.getId(), remapNode(stage, stageMap));
@@ -254,7 +254,9 @@ public class PipelineNodeTreeScanner {
          */
         private @NonNull FlowNodeWrapper remapNode(
                 @NonNull FlowNodeWrapper wrappedNode, @NonNull Map<String, FlowNodeWrapper> stageMap) {
-            dump("Remapping node %s, %s", wrappedNode.getId(), wrappedNode.getClass());
+            if (isDebugEnabled) {
+                logger.debug("Remapping node {}, {}", wrappedNode.getId(), wrappedNode.getClass());
+            }
             // Create new wrapper as we don't want to change the old one.
             FlowNodeWrapper remappedNode = new FlowNodeWrapper(
                     wrappedNode.getNode(),
@@ -264,9 +266,12 @@ public class PipelineNodeTreeScanner {
                     wrappedNode.getRun(),
                     wrappedNode.getType());
             FlowNodeWrapper closestParent = findParentNode(wrappedNode, stageMap);
-            dump(
-                    "Found closest parent for node %s, %s",
-                    wrappedNode.getId(), (closestParent != null) ? closestParent.getId() : "null");
+            if (isDebugEnabled) {
+                logger.debug(
+                        "Found closest parent for node {}, {}",
+                        wrappedNode.getId(),
+                        (closestParent != null) ? closestParent.getId() : "null");
+            }
             if (closestParent != null) {
                 remappedNode.addParent(closestParent);
                 remappedNode.addEdge(closestParent);
@@ -284,7 +289,9 @@ public class PipelineNodeTreeScanner {
                 return wrappedStepMap;
             }
 
-            dump("Remapping steps");
+            if (isDebugEnabled) {
+                logger.debug("Remapping steps");
+            }
             Map<String, FlowNodeWrapper> stepMap = this.wrappedNodeMap.entrySet().stream()
                     .filter(e -> shouldBeInStepMap(e.getValue()))
                     .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
@@ -336,10 +343,14 @@ public class PipelineNodeTreeScanner {
                 } else if (node instanceof BlockEndNode) {
                     // Drop End nodes from Pipeline - unless they are responsible for the unhandled
                     // exception.
-                    dump("Skipping end node %s, %s", node.getId(), node.getClass());
+                    if (isDebugEnabled) {
+                        logger.debug("Skipping end node {}, {}", node.getId(), node.getClass());
+                    }
                     continue;
                 }
-                dump("Wrapping %s [%s]", node.getId(), node.getClass());
+                if (isDebugEnabled) {
+                    logger.debug("Wrapping {} [{}]", node.getId(), node.getClass());
+                }
                 FlowNodeWrapper wrappedNode = wrapNode(node, relationships.get(node.getId()));
                 // Assign parent.
                 FlowNodeWrapper parent = findParentNode(wrappedNode, wrappedNodeMap);
@@ -358,14 +369,18 @@ public class PipelineNodeTreeScanner {
             // If this is a Jenkins failure exception, then we don't need to add a new node
             // - it will come from an existing step.
             if (errorAction != null && !PipelineNodeUtil.isJenkinsFailureException(errorAction.getError())) {
-                dump(
-                        "getUnhandledException => Found unhandled exception: %s",
-                        errorAction.getError().getMessage());
+                if (isDebugEnabled) {
+                    logger.debug(
+                            "getUnhandledException => Found unhandled exception: {}",
+                            errorAction.getError().getMessage());
+                }
                 FlowNode nodeThatThrewException = ErrorAction.findOrigin(errorAction.getError(), this.execution);
                 if (nodeThatThrewException instanceof BlockEndNode<?>) {
-                    dump(
-                            "getUnhandledException => Returning nodeThatThrewException: %s",
-                            nodeThatThrewException.getId());
+                    if (isDebugEnabled) {
+                        logger.debug(
+                                "getUnhandledException => Returning nodeThatThrewException: {}",
+                                nodeThatThrewException.getId());
+                    }
                     return (BlockEndNode<?>) nodeThatThrewException;
                 }
 
@@ -377,11 +392,13 @@ public class PipelineNodeTreeScanner {
                  * - this might need additional logic when getting the log for the exception.
                  */
                 if (node instanceof BlockEndNode<?> && nodeMap.values().size() <= 2) {
-                    dump("getUnhandledException => Returning node: %s", node.getId());
+                    if (isDebugEnabled) {
+                        logger.debug("getUnhandledException => Returning node: {}", node.getId());
+                    }
                     return (BlockEndNode<?>) node;
                 }
                 logger.error(String.format(
-                        "Could not find BlockEndNode that threw exception:%n%s.", errorAction.getDisplayName()));
+                        "Could not find BlockEndNode that threw exception:{}.", errorAction.getDisplayName()));
             }
             return null;
         }
@@ -395,9 +412,12 @@ public class PipelineNodeTreeScanner {
         private void handleException(
                 @NonNull FlowNode nodeWhichThrewException, @NonNull NodeRelationship relationship) {
             assert relationship != null;
-            dump(
-                    "Wrapping nodeWhichThrewException %s [%s]",
-                    nodeWhichThrewException.getId(), nodeWhichThrewException.getClass());
+            if (isDebugEnabled) {
+                logger.debug(
+                        "Wrapping nodeWhichThrewException {} [{}]",
+                        nodeWhichThrewException.getId(),
+                        nodeWhichThrewException.getClass());
+            }
             FlowNodeWrapper wrappedNode = wrapNode(nodeWhichThrewException, relationship);
             FlowNode startNode = null;
             startNode = ((BlockEndNode<?>) nodeWhichThrewException).getStartNode();
@@ -426,7 +446,9 @@ public class PipelineNodeTreeScanner {
          */
         private void assignParent(@NonNull FlowNodeWrapper wrappedNode, @CheckForNull FlowNodeWrapper wrappedParent) {
             if (wrappedParent != null) {
-                dump("Adding parent %s to %s", wrappedParent.getId(), wrappedNode.getId());
+                if (isDebugEnabled) {
+                    logger.debug("Adding parent {} to {}", wrappedParent.getId(), wrappedNode.getId());
+                }
                 wrappedNode.addParent(wrappedParent);
             }
         }
@@ -440,7 +462,9 @@ public class PipelineNodeTreeScanner {
             List<String> enclosingIds = child.getNode().getAllEnclosingIds();
             Set<String> knownNodes = wrappedNodeMap.keySet();
             for (String possibleParentId : enclosingIds) {
-                dump("Checking if %s in %s", possibleParentId, String.join(", ", knownNodes));
+                if (isDebugEnabled) {
+                    logger.debug("Checking if {} in {}", possibleParentId, String.join(", ", knownNodes));
+                }
                 if (knownNodes.contains(possibleParentId)) {
                     return wrappedNodeMap.get(possibleParentId);
                 }

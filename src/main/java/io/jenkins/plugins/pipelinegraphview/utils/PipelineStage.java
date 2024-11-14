@@ -10,6 +10,7 @@ public class PipelineStage extends AbstractPipelineNode {
     private final PipelineStage nextSibling;
     private boolean sequential;
     private boolean synthetic;
+    private String agent;
 
     public PipelineStage(
             String id,
@@ -23,13 +24,15 @@ public class PipelineStage extends AbstractPipelineNode {
             PipelineStage nextSibling,
             boolean sequential,
             boolean synthetic,
-            TimingInfo timingInfo) {
+            TimingInfo timingInfo,
+            String agent) {
         super(id, name, state, completePercent, type, title, timingInfo);
         this.children = children;
         this.seqContainerName = seqContainerName;
         this.nextSibling = nextSibling;
         this.sequential = sequential;
         this.synthetic = synthetic;
+        this.agent = agent;
     }
 
     public PipelineStage getNextSibling() {
@@ -52,5 +55,9 @@ public class PipelineStage extends AbstractPipelineNode {
 
     public boolean isSynthetic() {
         return synthetic;
+    }
+
+    public String getAgent() {
+        return agent;
     }
 }

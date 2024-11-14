@@ -1,5 +1,5 @@
 import { Result, StageType, StageInfo, StepInfo } from "./PipelineConsoleModel";
-export const defaultStagesList = [
+export const defaultStagesList: StageInfo[] = [
   {
     name: "Stage A",
     title: "",
@@ -11,6 +11,7 @@ export const defaultStagesList = [
     pauseDurationMillis: "",
     startTimeMillis: "",
     totalDurationMillis: "",
+    agent: "built-in",
   },
   {
     name: "Stage B",
@@ -23,6 +24,7 @@ export const defaultStagesList = [
     pauseDurationMillis: "",
     startTimeMillis: "",
     totalDurationMillis: "",
+    agent: "not-built-in",
   },
   {
     name: "Parent C",
@@ -43,11 +45,13 @@ export const defaultStagesList = [
         pauseDurationMillis: "",
         startTimeMillis: "",
         totalDurationMillis: "",
+        agent: "not-built-in",
       },
     ],
     pauseDurationMillis: "",
     startTimeMillis: "",
     totalDurationMillis: "",
+    agent: "built-in",
   },
 ];
 

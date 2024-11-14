@@ -6,6 +6,7 @@ import ScheduleIcon from "@mui/icons-material/Schedule";
 import TimerIcon from "@mui/icons-material/Timer";
 import InfoIcon from "@mui/icons-material/Info";
 import LinkIcon from "@mui/icons-material/Link";
+import ComputerIcon from "@mui/icons-material/Computer";
 
 import {
   StepInfo,
@@ -14,6 +15,7 @@ import {
   LOG_FETCH_SIZE,
 } from "./PipelineConsoleModel";
 import { ConsoleLogCard } from "./ConsoleLogCard";
+import StageNodeLink from "./StageNodeLink";
 
 export interface StageSummaryProps {
   stage: StageInfo;
@@ -81,6 +83,22 @@ const StageSummary = (props: StageSummaryProps) => (
           {props.stage.state}
         </span>
       </div>
+      {props.stage.agent && (
+        <div
+          className="detail-element"
+          key={`stage-detail-agent-container-${props.stage.id}`}
+        >
+          <ComputerIcon
+            className="detail-icon"
+            key={`stage-detail-agent-icon-${props.stage.id}`}
+          />
+          <span
+            key={`stage-detail-agent-text-${props.stage.id}`}
+          >
+            <StageNodeLink agent={props.stage.agent} />
+          </span>
+        </div>
+      )}
       {props.failedSteps.map((value: StepInfo) => {
         console.debug(`Found failed step ${value}`);
         return (

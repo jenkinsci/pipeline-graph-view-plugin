@@ -93,7 +93,6 @@ const StageSummary = (props: StageSummaryProps) => (
             key={`stage-detail-agent-icon-${props.stage.id}`}
           />
           <span
-            className="capitalize"
             key={`stage-detail-agent-text-${props.stage.id}`}
           >
             <StageNodeLink agent={props.stage.agent} />

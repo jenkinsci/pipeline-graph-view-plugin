@@ -7,7 +7,7 @@ export interface StageNodeLinkProps {
 function getAgentUrl(name: string) {
     // Wrap built-in in brackets
     const id = name == "built-in" ? "(built-in)" : name;
-    const rootPath = document.head.dataset.rootUrl
+    const rootPath = document.head.dataset.rooturl
     return `${rootPath}/computer/${id}/`;
 }
 

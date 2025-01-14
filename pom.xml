@@ -36,7 +36,7 @@
     <jenkins.baseline>2.479</jenkins.baseline>
     <jenkins.version>${jenkins.baseline}.1</jenkins.version>
     <node.version>20.18.1</node.version>
-    <npm.version>10.9.0</npm.version>
+    <npm.version>10.9.2</npm.version>
     <spotless.check.skip>false</spotless.check.skip>
   </properties>
 

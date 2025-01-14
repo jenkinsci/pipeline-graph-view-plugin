@@ -45,7 +45,7 @@
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
     "@testing-library/jest-dom": "^6.0.0",
-    "@testing-library/react": "^15.0.0",
+    "@testing-library/react": "^16.0.0",
     "@types/enzyme": "3.10.18",
     "@types/jest": "29.5.14",
     "@types/node": "22.10.6",

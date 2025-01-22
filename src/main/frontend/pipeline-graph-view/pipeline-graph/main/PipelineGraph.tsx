@@ -81,8 +81,10 @@ export class PipelineGraph extends React.Component {
   }
 
   getTreePath() {
-    if (!window.location.href.endsWith("pipeline-graph/")) {
-      return `pipeline-graph/tree`;
+    const url = new URL(window.location.href);
+
+    if (!url.pathname.endsWith("pipeline-graph/")) {
+      return "pipeline-graph/tree";
     }
 
     return "tree";

@@ -33,16 +33,16 @@ If you are a newcomer contributor and have any questions, please do not hesitate
 
 Prerequisites: _Java_ and _Maven_.
 
-- Ensure Java 11 or 17 is available.
+- Ensure Java 17 or 21 is available.
 
   ```console	
-  $ java -version	
-  openjdk version "11.0.18" 2023-01-17
-  OpenJDK Runtime Environment Temurin-11.0.18+10 (build 11.0.18+10)
-  OpenJDK 64-Bit Server VM Temurin-11.0.18+10 (build 11.0.18+10, mixed mode)
+  $ java -version
+  openjdk 17.0.13 2024-10-15
+  OpenJDK Runtime Environment (build 17.0.13+11-Ubuntu-2ubuntu124.04)
+  OpenJDK 64-Bit Server VM (build 17.0.13+11-Ubuntu-2ubuntu124.04, mixed mode, sharing)
   ```	
 
-- Ensure Maven >= 3.8.1 is installed and included in the PATH environment variable.
+- Ensure Maven >= 3.9.9 is installed and included in the PATH environment variable.
 
   ```console
   $ mvn --version	

@@ -50,13 +50,19 @@ export function Node({ node, layout, isStageSelected, onClick }: NodeProps) {
   const clickableProps: React.SVGProps<SVGCircleElement> = {};
 
   const clickable = !node.isPlaceholder && node.stage.state !== "skipped";
-  if (clickable) {
-    clickableProps.onClick = () => onClick(node);
-  }
+  // if (clickable) {
+  //   clickableProps.onClick = () => onClick(node);
+  // }
+
+  // console.log(node.stage)
+
+  // pipeline-console/?selected-node=166
 
   // Most of the nodes are in shared code, so they're rendered at 0,0. We transform with a <g> to position them
   const groupProps = {
     key,
+    // TODO - Change this to be ../ on pipeline overview page
+    href: 'pipeline-console/?selected-node=' + node.id,
     style: {
       position: 'absolute',
       top: node.y,
@@ -69,7 +75,7 @@ export function Node({ node, layout, isStageSelected, onClick }: NodeProps) {
     ...clickableProps
   };
 
-  return React.createElement(clickable ? "button" : "div", groupProps, ...groupChildren);
+  return React.createElement(clickable ? "a" : "div", groupProps, ...groupChildren);
 }
 
 interface SelectionHighlightProps {

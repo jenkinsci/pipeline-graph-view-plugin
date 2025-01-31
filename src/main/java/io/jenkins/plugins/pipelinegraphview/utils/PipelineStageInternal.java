@@ -19,6 +19,7 @@ public class PipelineStageInternal {
     private boolean sequential;
     private boolean synthetic;
     private TimingInfo timingInfo;
+    private String agent;
 
     public PipelineStageInternal(
             String id,
@@ -29,7 +30,8 @@ public class PipelineStageInternal {
             String type,
             String title,
             boolean synthetic,
-            TimingInfo times) {
+            TimingInfo times,
+            String agent) {
         this.id = id;
         this.name = name;
         this.parents = parents;
@@ -39,6 +41,7 @@ public class PipelineStageInternal {
         this.title = title;
         this.synthetic = synthetic;
         this.timingInfo = times;
+        this.agent = agent;
     }
 
     public boolean isSequential() {
@@ -121,6 +124,14 @@ public class PipelineStageInternal {
         this.synthetic = synthetic;
     }
 
+    public String getAgent() {
+        return agent;
+    }
+
+    public void setAgent(String aAgent) {
+        this.agent = aAgent;
+    }
+
     public PipelineStage toPipelineStage(List<PipelineStage> children) {
         return new PipelineStage(
                 id,
@@ -134,6 +145,7 @@ public class PipelineStageInternal {
                 nextSibling != null ? nextSibling.toPipelineStage(Collections.emptyList()) : null,
                 sequential,
                 synthetic,
-                timingInfo);
+                timingInfo,
+                agent);
     }
 }

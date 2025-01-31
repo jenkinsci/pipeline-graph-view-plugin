@@ -1,0 +1,21 @@
+pipeline {
+    agent none
+    stages {
+        stage('Parallel') {
+            parallel {
+                stage('Builtin') {
+                    agent { label 'built-in' }
+                    steps {
+                        echo "Hello, from home"
+                    }
+                }
+                stage('External') {
+                    agent { label 'external' }
+                    steps {
+                        echo "Hello, from far away"
+                    }
+                }
+            }
+        }
+    }
+}

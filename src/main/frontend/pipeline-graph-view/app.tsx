@@ -8,7 +8,8 @@ import "./pipeline-graph/styles/main.scss";
 
 function handleNodeClick(nodeName: string, id: number) {
   let location = `../pipeline-console?selected-node=${id}`;
-  if (!window.location.href.endsWith("pipeline-graph/")) {
+  const url = new URL(window.location.href);
+  if (!url.pathname.endsWith("pipeline-graph/")) {
     location = `pipeline-console?selected-node=${id}`;
   }
 

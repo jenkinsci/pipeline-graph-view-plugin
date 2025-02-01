@@ -11,7 +11,9 @@ export default function startPollingRunsStatus(
 ) {
   let path = "runs";
 
-  if (!window.location.href.endsWith("multi-pipeline-graph/")) {
+  const url = new URL(window.location.href);
+
+  if (!url.pathname.endsWith("multi-pipeline-graph/")) {
     path = `multi-pipeline-graph/${path}`;
   }
 

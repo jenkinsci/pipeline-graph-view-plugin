@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>5.2</version>
+    <version>5.5</version>
     <relativePath />
   </parent>
 
@@ -35,8 +35,8 @@
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
     <jenkins.baseline>2.479</jenkins.baseline>
     <jenkins.version>${jenkins.baseline}.1</jenkins.version>
-    <node.version>20.18.0</node.version>
-    <npm.version>10.9.0</npm.version>
+    <node.version>20.18.1</node.version>
+    <npm.version>10.9.2</npm.version>
     <spotless.check.skip>false</spotless.check.skip>
   </properties>
 

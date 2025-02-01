@@ -13,7 +13,9 @@ export const SingleRun: (data: Props) => JSX.Element = ({ run }) => {
   const [stages, setStages] = useState<Array<StageInfo>>([]);
   let path = `tree?runId=${run.id}`;
 
-  const onJobView = !window.location.href.endsWith("multi-pipeline-graph/");
+  const url = new URL(window.location.href);
+
+  const onJobView = !url.pathname.endsWith("multi-pipeline-graph/");
   if (onJobView) {
     path = `multi-pipeline-graph/${path}`;
   }

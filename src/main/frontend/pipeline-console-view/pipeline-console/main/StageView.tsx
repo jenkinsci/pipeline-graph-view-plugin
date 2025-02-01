@@ -92,9 +92,7 @@ const StageSummary = (props: StageSummaryProps) => (
             className="detail-icon"
             key={`stage-detail-agent-icon-${props.stage.id}`}
           />
-          <span
-            key={`stage-detail-agent-text-${props.stage.id}`}
-          >
+          <span key={`stage-detail-agent-text-${props.stage.id}`}>
             <StageNodeLink agent={props.stage.agent} />
           </span>
         </div>

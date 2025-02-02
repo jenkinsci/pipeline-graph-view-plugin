@@ -30,11 +30,6 @@ export function getStepStatus(
 ) {
   const icon = getSymbolForResult(
     decodeResultValue(status),
-    complete ?? 100,
-    radius ?? 12,
-    0,
-    0,
-    {},
   );
   return (
     <div

@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { getSymbolForResult } from "../support/StatusIcons";
+import { getSymbolForResult } from "./StatusIcons";
 import {
   decodeResultValue,
   LayoutInfo,
@@ -13,13 +13,11 @@ type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should
 
 interface NodeProps {
   node: NodeInfo;
-  layout: LayoutInfo;
 }
 /**
  * Generate the SVG elements to represent a node.
  */
-export function Node({ node, layout }: NodeProps) {
-  const { nodeRadius } = layout;
+export function Node({ node }: NodeProps) {
   const key = node.key;
   const groupChildren: SVGChildren = [];
 
@@ -40,11 +38,11 @@ export function Node({ node, layout }: NodeProps) {
     return React.createElement("div", groupProps, ...groupChildren);
   }
 
-  const { completePercent = 0, title, state } = node.stage ?? {};
+  const { title, state } = node.stage ?? {};
   const resultClean = decodeResultValue(state);
 
   groupChildren.push(
-    getSymbolForResult(resultClean, completePercent, nodeRadius)
+    getSymbolForResult(resultClean)
   );
 
   if (title) {
@@ -72,7 +70,7 @@ export function Node({ node, layout }: NodeProps) {
 
 function generateUrl(nodeId: number) {
   let location = `../pipeline-console?selected-node=${nodeId}`;
-  
+
   const url = new URL(window.location.href);
 
   if (!url.pathname.endsWith("pipeline-graph/")) {

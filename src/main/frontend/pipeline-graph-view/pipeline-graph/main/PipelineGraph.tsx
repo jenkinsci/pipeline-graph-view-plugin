@@ -189,7 +189,6 @@ export class PipelineGraph extends React.Component {
             <Node
               key={node.id}
               node={node}
-              layout={this.state.layout}
             />
           ))}
           {bigLabels.map((label) => (

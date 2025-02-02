@@ -3,7 +3,7 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
     <st:documentation>
-        Provides the Jenkins Symbols of build statuses for use in React
+        Provides the Jenkins Symbols of build statuses for use in React.
     </st:documentation>
 
     <template id="pgv-build-status-icons">

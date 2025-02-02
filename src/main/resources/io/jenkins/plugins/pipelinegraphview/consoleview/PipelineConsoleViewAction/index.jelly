@@ -4,7 +4,6 @@
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns" xmlns:p="/lib/pipeline-graph-view">
     <l:layout title="${%Build log} [${it.buildDisplayName}]" type="one-column">
         <l:main-panel>
-<!--         TODO -   Validate needed-->
             <p:symbols />
 
             <div class="jenkins-app-bar">

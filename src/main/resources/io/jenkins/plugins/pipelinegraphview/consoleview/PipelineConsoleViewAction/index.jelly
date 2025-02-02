@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns" xmlns:p="/lib/pipeline-graph-view">
     <l:layout title="${%Build log} [${it.buildDisplayName}]" type="one-column">
         <l:main-panel>
+<!--         TODO -   Validate needed-->
+            <p:symbols />
+
             <div class="jenkins-app-bar">
                 <div class="jenkins-app-bar__content">
                     <h1>

@@ -14,30 +14,27 @@ const questionMarkPath =
 
 interface Props {
   result: Result;
-  radius: number;
-  outerStyle?: React.CSSProperties;
-  centerX?: number;
-  centerY?: number;
+  // radius: number;
+  // outerStyle?: React.CSSProperties;
+  // centerX?: number;
+  // centerY?: number;
 }
-
-const imagesPath = document.head.dataset.imagesurl;
 
 export class SvgStatus extends React.PureComponent<Props> {
   render() {
-    const baseWrapperClasses = "build-status-icon__wrapper icon-md";
     const {
       result,
-      radius = 12,
-      centerX = -radius,
-      centerY = -radius,
+      // radius = 12,
+      // centerX = -radius,
+      // centerY = -radius,
     } = this.props;
-    const outerStyle = this.props.outerStyle;
-    const diameter = radius * 2;
-    const iconOuterClassName =
-      result === Result.running ? "in-progress" : "static";
-    const iconSuffix = result === Result.running ? "-anime" : "";
-    const style = { width: diameter, height: diameter };
-    return getGlyphFor(result, radius, style, centerX, centerY)
+    // const outerStyle = this.props.outerStyle;
+    // const diameter = radius * 2;
+    // const iconOuterClassName =
+    //   result === Result.running ? "in-progress" : "static";
+    // const iconSuffix = result === Result.running ? "-anime" : "";
+    // const style = { width: diameter, height: diameter };
+    return getGlyphFor(result)
   }
 }
 
@@ -46,14 +43,11 @@ export class SvgStatus extends React.PureComponent<Props> {
  */
 function getGlyphFor(
   result: Result,
-  radius: number,
-  style: React.CSSProperties,
-  centerX?: number,
-  centerY?: number,
+  // radius: number,
+  // style: React.CSSProperties,
+  // centerX?: number,
+  // centerY?: number,
 ) {
-  // NB: If we start resizing these things, we'll need to use radius/12 to
-  // generate a "scale" transform for the group
-  const diameter = radius * 2;
   switch (result) {
     case Result.aborted:
       return (
@@ -82,16 +76,19 @@ function getGlyphFor(
     case Result.paused:
       // "||"
       return (
-        <svg
-          x={centerX}
-          y={centerY}
-          width={diameter}
-          height={diameter}
-          focusable="false"
-          className={`svg-icon icon-md`}
-          viewBox={`${-radius} ${-radius} ${"100%"} ${"100%"}`}
-          style={{ ...style, ...{ width: diameter, height: diameter } }}
-        >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+          <ellipse
+            cx="256"
+            cy="256"
+            rx="210"
+            ry="210"
+            fill="none"
+            stroke="var(--text-color-secondary)"
+            stroke-linecap="round"
+            stroke-miterlimit="10"
+            stroke-width="36"
+          />
+          {/*// TODO - need TO FIX*/}
           <polygon points="-4,-4.65 -4,4.65 -4,4.65 -1.5,4.65 -1.5,-4.65" />
           <polygon points="4,-4.65 1.5,-4.65 1.5,-4.65 1.5,4.65 4,4.65" />
         </svg>
@@ -227,14 +224,6 @@ function getGlyphFor(
             stroke-miterlimit="10"
             stroke-width="36"
           />
-          <path
-            fill="none"
-            stroke="var(--text-color-secondary)"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="36"
-            d="M192 320l128-128"
-          />
         </svg>
       );
     case Result.unknown:
@@ -245,16 +234,19 @@ function getGlyphFor(
   }
   // "?" for Result.unknown or for bad input
   return (
-    <svg
-      className={`svg-icon icon-md`}
-      x={centerX}
-      y={centerY}
-      width={diameter}
-      height={diameter}
-      viewBox={`${-radius} ${-radius} ${"100%"} ${"100%"}`}
-      style={{ ...style, ...{ width: diameter, height: diameter } }}
-    >
-      <path d={questionMarkPath} />
+    // TODO - need to fix
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+      <ellipse
+        cx="256"
+        cy="256"
+        rx="210"
+        ry="210"
+        fill="none"
+        stroke="var(--text-color-secondary)"
+        stroke-linecap="round"
+        stroke-miterlimit="10"
+        stroke-width="36"
+      />
     </svg>
   );
 }

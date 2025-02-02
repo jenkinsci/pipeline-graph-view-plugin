@@ -25,7 +25,7 @@ export function getSymbolForResult(
     case Result.unknown:
       return (
         <SvgStatus
-          radius={radius}
+          // radius={radius}
           result={result}
         />
       );
@@ -33,7 +33,7 @@ export function getSymbolForResult(
       badResult(result);
       return (
         <SvgStatus
-          radius={radius}
+          // radius={radius}
           result={Result.unknown}
         />
       );

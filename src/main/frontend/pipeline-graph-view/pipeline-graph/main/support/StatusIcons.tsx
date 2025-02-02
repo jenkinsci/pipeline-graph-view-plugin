@@ -92,13 +92,14 @@ export function getSymbolForResult(
   // Map the result to retrieve the appropriate symbol from core
   const symbols = document.querySelector<HTMLTemplateElement>(
     "#pgv-build-status-icons",
-  )!;
+  );
   const mappedResult = mapResultToCore(result);
 
   return (
     <div
       dangerouslySetInnerHTML={{
-        __html: symbols.content.querySelector("#" + mappedResult)!.outerHTML,
+        // This fails in React tests without the Jelly context
+        __html: symbols?.content?.querySelector("#" + mappedResult)?.outerHTML || `<div></div>`,
       }}
     />
   );

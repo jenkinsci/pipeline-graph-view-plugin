@@ -1,6 +1,5 @@
 import * as React from "react";
 import { Result } from "../PipelineGraphModel";
-import { getClassForResult } from "./StatusIcons";
 
 // These were mostly taken from SVG and pre-translated
 const questionMarkPath =
@@ -38,35 +37,7 @@ export class SvgStatus extends React.PureComponent<Props> {
       result === Result.running ? "in-progress" : "static";
     const iconSuffix = result === Result.running ? "-anime" : "";
     const style = { width: diameter, height: diameter };
-    return (
-      <g
-        className={`${baseWrapperClasses} ${getClassForResult(
-          result,
-        )}${iconSuffix}`}
-        style={style}
-      >
-        <g
-          className="build-status-icon__outer"
-          style={outerStyle ?? { transform: `translate(0, 0)` }}
-        >
-          <svg
-            focusable="false"
-            className="svg-icon "
-            x={centerX}
-            y={centerY}
-            width={diameter}
-            height={diameter}
-          >
-            <use
-              className="svg-icon"
-              style={{ transformOrigin: "50% 50%" }}
-              href={`${imagesPath}/build-status/build-status-sprite.svg#build-status-${iconOuterClassName}`}
-            />
-          </svg>
-        </g>
-        {getGlyphFor(result, radius, style, centerX, centerY)}
-      </g>
-    );
+    return getGlyphFor(result, radius, style, centerX, centerY)
   }
 }
 
@@ -86,23 +57,30 @@ function getGlyphFor(
   switch (result) {
     case Result.aborted:
       return (
-        <svg
-          x={centerX}
-          y={centerY}
-          width={diameter}
-          height={diameter}
-          focusable="false"
-          className={`svg-icon icon-md`}
-          style={{ ...style, ...{ width: diameter, height: diameter } }}
-        >
-          <use
-            href={`${imagesPath}/build-status/build-status-sprite.svg#last-aborted`}
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+          <ellipse
+            cx="256"
+            cy="256"
+            rx="210"
+            ry="210"
+            fill="none"
+            stroke="var(--text-color-secondary)"
+            stroke-linecap="round"
+            stroke-miterlimit="10"
+            stroke-width="36"
+          />
+          <path
+            fill="none"
+            stroke="var(--text-color-secondary)"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="36"
+            d="M192 320l128-128"
           />
         </svg>
       );
     case Result.paused:
       // "||"
-      // 8px 9.3px
       return (
         <svg
           x={centerX}
@@ -122,73 +100,143 @@ function getGlyphFor(
       // "!"
       return (
         <svg
-          x={centerX}
-          y={centerY}
-          width={diameter}
-          height={diameter}
-          focusable="false"
-          className={`svg-icon icon-md`}
-          style={{ ...style, ...{ width: diameter, height: diameter } }}
+          xmlns="http://www.w3.org/2000/svg"
+          className="ionicon"
+          viewBox="0 0 512 512"
         >
-          <use
-            href={`${imagesPath}/build-status/build-status-sprite.svg#last-unstable`}
+          <ellipse
+            cx="256"
+            cy="256"
+            rx="210"
+            ry="210"
+            fill="none"
+            stroke="var(--orange)"
+            stroke-linecap="round"
+            stroke-miterlimit="10"
+            stroke-width="36"
           />
+          <path
+            d="M250.26 166.05L256 288l5.73-121.95a5.74 5.74 0 00-5.79-6h0a5.74 5.74 0 00-5.68 6z"
+            fill="none"
+            stroke="var(--orange)"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="36"
+          />
+          <ellipse cx="256" cy="350" rx="26" ry="26" fill="var(--orange)" />
         </svg>
       );
     case Result.success:
       // check-mark
       return (
-        <svg
-          x={centerX}
-          y={centerY}
-          width={diameter}
-          height={diameter}
-          focusable="false"
-          className={`svg-icon icon-md`}
-          style={{ ...style, ...{ width: diameter, height: diameter } }}
-        >
-          <use
-            href={`${imagesPath}/build-status/build-status-sprite.svg#last-successful`}
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+          <ellipse
+            cx="256"
+            cy="256"
+            rx="210"
+            ry="210"
+            fill="none"
+            stroke="var(--success-color)"
+            stroke-linecap="round"
+            stroke-miterlimit="10"
+            stroke-width="36"
+          />
+          <path
+            d="M336 189L224 323L176 269.4"
+            fill="transparent"
+            stroke="var(--success-color)"
+            stroke-width="36"
+            stroke-linecap="round"
+            stroke-linejoin="round"
           />
         </svg>
       );
     case Result.failure:
       // "X"
       return (
-        <svg
-          x={centerX}
-          y={centerY}
-          width={diameter}
-          height={diameter}
-          focusable="false"
-          className={`svg-icon icon-md`}
-          style={{ ...style, ...{ width: diameter, height: diameter } }}
-        >
-          <use
-            href={`${imagesPath}/build-status/build-status-sprite.svg#last-failed`}
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+          <ellipse
+            cx="256"
+            cy="256"
+            rx="210"
+            ry="210"
+            fill="none"
+            stroke="var(--red)"
+            stroke-linecap="round"
+            stroke-miterlimit="10"
+            stroke-width="36"
+          />
+          <path
+            fill="none"
+            stroke="var(--red)"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="36"
+            d="M320 320L192 192M192 320l128-128"
           />
         </svg>
       );
     case Result.not_built:
     case Result.running:
       return (
-        <svg
-          x={centerX}
-          y={centerY}
-          width={diameter}
-          height={diameter}
-          focusable="false"
-          className={`svg-icon icon-md`}
-          style={{ ...style, ...{ width: diameter, height: diameter } }}
-        >
-          <use
-            href={`${imagesPath}/build-status/build-status-sprite.svg#never-built`}
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+          <ellipse
+            cx="256"
+            cy="256"
+            rx="210"
+            ry="210"
+            fill="none"
+            stroke="var(--text-color-secondary)"
+            stroke-linecap="round"
+            stroke-miterlimit="10"
+            stroke-width="36"
+          />
+          <ellipse
+            cx="256"
+            cy="256"
+            rx="100"
+            ry="100"
+            fill="none"
+            stroke="var(--text-color-secondary)"
+            stroke-linecap="round"
+            stroke-miterlimit="10"
+            stroke-width="36"
+          />
+          <path
+            fill="none"
+            stroke="var(--text-color-secondary)"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="36"
+            d="M192 320l128-128"
           />
         </svg>
       );
     case Result.skipped:
     case Result.queued:
-      return null;
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+          <ellipse
+            cx="256"
+            cy="256"
+            rx="210"
+            ry="210"
+            fill="none"
+            stroke="var(--text-color-secondary)"
+            stroke-linecap="round"
+            stroke-miterlimit="10"
+            stroke-width="36"
+          />
+          <path
+            fill="none"
+            stroke="var(--text-color-secondary)"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="36"
+            d="M192 320l128-128"
+          />
+        </svg>
+      );
     case Result.unknown:
       break; // Continue on to the "unknown render"
 

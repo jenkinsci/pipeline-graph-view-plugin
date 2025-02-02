@@ -4,8 +4,7 @@ import { SvgStatus } from "./SvgStatus";
 
 export const nodeStrokeWidth = 3.5; // px.
 
-// Returns the correct <g> element for the result / progress percent.
-export function getGroupForResult(
+export function getSymbolForResult(
   result: Result,
   percentage: number,
   radius: number,
@@ -28,9 +27,6 @@ export function getGroupForResult(
         <SvgStatus
           radius={radius}
           result={result}
-          outerStyle={outerStyle}
-          centerX={centerX}
-          centerY={centerY}
         />
       );
     default:
@@ -39,9 +35,6 @@ export function getGroupForResult(
         <SvgStatus
           radius={radius}
           result={Result.unknown}
-          outerStyle={outerStyle}
-          centerX={centerX}
-          centerY={centerY}
         />
       );
   }
@@ -50,27 +43,3 @@ export function getGroupForResult(
 function badResult(x: never) {
   console.error("Unexpected Result value", x);
 }
-
-export const getClassForResult = (result: Result) => {
-  // These come from the themes icons.less
-  switch (result) {
-    case Result.aborted:
-      return "icon-aborted";
-    case Result.unstable:
-      return "icon-yellow";
-    case Result.failure:
-      return "icon-red";
-    case Result.success:
-      return "icon-blue";
-    case Result.running:
-    case Result.queued:
-      return "icon-grey";
-    case Result.skipped:
-      return "icon-skipped";
-    case Result.not_built:
-    case Result.paused:
-    case Result.unknown:
-    default:
-      return "icon-nobuilt";
-  }
-};

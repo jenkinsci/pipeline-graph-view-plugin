@@ -140,8 +140,24 @@ circle.halo {
   stroke: $graph-connector-grey;
 }
 
+.PWGx-pipeline-node {
+  display: flex;
+  align-items: center;
+  justify-items: center;
+  width: 24px;
+  height: 24px;
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
 .PWGx-pipeline-node-terminal {
-  fill: $graph-connector-grey;
+  width: 10px;
+  height: 10px;
+  background: $graph-connector-grey;
+  border-radius: 10px;
 }
 
 .PWGx-pipeline-connector-skipped {

@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { getGroupForResult } from "../support/StatusIcons";
+import { getSymbolForResult } from "../support/StatusIcons";
 import {
   decodeResultValue,
   LayoutInfo,
@@ -14,33 +14,44 @@ type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should
 interface NodeProps {
   node: NodeInfo;
   layout: LayoutInfo;
-  isStageSelected: (stage: StageInfo) => boolean;
 }
 /**
  * Generate the SVG elements to represent a node.
  */
-export function Node({ node, layout, isStageSelected }: NodeProps) {
+export function Node({ node, layout }: NodeProps) {
   const { nodeRadius } = layout;
   const key = node.key;
   const groupChildren: SVGChildren = [];
-  const { completePercent = 0, title, state } = node.stage ?? {};
-  const resultClean = decodeResultValue(state);
 
   if (node.isPlaceholder) {
     groupChildren.push(
       <div className={'PWGx-pipeline-node-terminal'}></div>
     );
-  } else {
-    groupChildren.push(
-      getGroupForResult(resultClean, completePercent, nodeRadius)
-    );
-
-    if (title) {
-      groupChildren.push(<title>{title}</title>);
-    }
+    const groupProps = {
+      key,
+      style: {
+        position: 'absolute',
+        top: node.y,
+        left: node.x,
+        translate: '-50% -50%'
+      },
+      className: "PWGx-pipeline-node",
+    };
+    return React.createElement("div", groupProps, ...groupChildren);
   }
 
-  const clickable = !node.isPlaceholder && node.stage.state !== "skipped";
+  const { completePercent = 0, title, state } = node.stage ?? {};
+  const resultClean = decodeResultValue(state);
+
+  groupChildren.push(
+    getSymbolForResult(resultClean, completePercent, nodeRadius)
+  );
+
+  if (title) {
+    groupChildren.push(<title>{title}</title>);
+  }
+
+  const clickable = !node.isPlaceholder && node.stage?.state !== "skipped";
 
   // Most of the nodes are in shared code, so they're rendered at 0,0. We transform with a <g> to position them
   const groupProps = {

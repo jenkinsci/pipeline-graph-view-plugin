@@ -2,7 +2,7 @@ import { CSSProperties, FunctionComponent } from "react";
 import * as React from "react";
 import { Result } from "../pipeline-graph-view/pipeline-graph/main";
 import { decodeResultValue } from "../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
-import { getGroupForResult } from "../pipeline-graph-view/pipeline-graph/main/support/StatusIcons";
+import { getSymbolForResult } from "../pipeline-graph-view/pipeline-graph/main/support/StatusIcons";
 import { height } from "@mui/system";
 
 interface Props {
@@ -29,7 +29,7 @@ export function getStepStatus(
   complete?: number,
   radius?: number,
 ) {
-  const icon = getGroupForResult(
+  const icon = getSymbolForResult(
     decodeResultValue(status),
     complete ?? 100,
     radius ?? 12,

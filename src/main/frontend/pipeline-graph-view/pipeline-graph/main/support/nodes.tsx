@@ -22,7 +22,7 @@ export function Node({ node }: NodeProps) {
   const groupChildren: SVGChildren = [];
 
   if (node.isPlaceholder) {
-    groupChildren.push(<div className={"PWGx-pipeline-node-terminal"}></div>);
+    groupChildren.push(<span className={"PWGx-pipeline-node-terminal"}></span>);
     const groupProps = {
       key,
       style: {

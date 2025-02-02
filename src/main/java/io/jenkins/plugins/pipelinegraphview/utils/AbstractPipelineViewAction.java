@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.model.Action;
 import hudson.model.BallColor;
+import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
 import hudson.security.Permission;
 import hudson.util.HttpResponses;
@@ -47,6 +48,11 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
     }
 
     public boolean isParameterized() {
+        ParametersAction paramAction = run.getAction(ParametersAction.class);
+        if (paramAction != null && !paramAction.getAllParameters().isEmpty()) {
+            return true;
+        }
+
         ParametersDefinitionProperty property = run.getParent().getProperty(ParametersDefinitionProperty.class);
         return property != null && !property.getParameterDefinitions().isEmpty();
     }

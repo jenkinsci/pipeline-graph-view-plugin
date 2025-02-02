@@ -15,12 +15,11 @@ interface NodeProps {
   node: NodeInfo;
   layout: LayoutInfo;
   isStageSelected: (stage: StageInfo) => boolean;
-  onClick: (node: NodeInfo) => void;
 }
 /**
  * Generate the SVG elements to represent a node.
  */
-export function Node({ node, layout, isStageSelected, onClick }: NodeProps) {
+export function Node({ node, layout, isStageSelected }: NodeProps) {
   let nodeIsSelected = false;
   const { nodeRadius, connectorStrokeWidth, terminalRadius } = layout;
   const key = node.key;
@@ -50,13 +49,6 @@ export function Node({ node, layout, isStageSelected, onClick }: NodeProps) {
   const clickableProps: React.SVGProps<SVGCircleElement> = {};
 
   const clickable = !node.isPlaceholder && node.stage.state !== "skipped";
-  // if (clickable) {
-  //   clickableProps.onClick = () => onClick(node);
-  // }
-
-  // console.log(node.stage)
-
-  // pipeline-console/?selected-node=166
 
   // Most of the nodes are in shared code, so they're rendered at 0,0. We transform with a <g> to position them
   const groupProps = {
@@ -71,7 +63,7 @@ export function Node({ node, layout, isStageSelected, onClick }: NodeProps) {
     },
     className: nodeIsSelected
       ? "PWGx-pipeline-node-selected"
-      : "PWGx-pipeline-node PWGx-pipeline-node" + "--" + resultClean,
+      : "jenkins-button PWGx-pipeline-node jenkins-!-" + resultClean + "-color PWGx-pipeline-node" + "--" + resultClean,
     ...clickableProps
   };
 

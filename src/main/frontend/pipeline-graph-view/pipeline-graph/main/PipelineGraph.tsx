@@ -145,19 +145,16 @@ export class PipelineGraph extends React.Component {
     return (selectedStage && stage && selectedStage.id === stage.id) || false;
   };
 
-  private handleNodeClick = (node: NodeInfo) => {
-    if (node.isPlaceholder === false && node.stage.state !== "skipped") {
-      const stage = node.stage;
-      const listener = this.props.onNodeClick;
-
-      if (listener) {
-        listener(stage.name, stage.id);
-      }
-
-      // Update selection
-      // this.setState({ selectedStage: stage });
-    }
-  };
+  // private handleNodeClick = (node: NodeInfo) => {
+  //   if (node.isPlaceholder === false && node.stage.state !== "skipped") {
+  //     const stage = node.stage;
+  //     const listener = this.props.onNodeClick;
+  //
+  //     if (listener) {
+  //       listener(stage.name, stage.id);
+  //     }
+  //   }
+  // };
 
   render() {
     const {
@@ -206,7 +203,7 @@ export class PipelineGraph extends React.Component {
               key={node.id}
               node={node}
               layout={this.state.layout}
-              onClick={this.handleNodeClick}
+              // onClick={this.handleNodeClick}
               isStageSelected={this.stageIsSelected}
             />
           ))}

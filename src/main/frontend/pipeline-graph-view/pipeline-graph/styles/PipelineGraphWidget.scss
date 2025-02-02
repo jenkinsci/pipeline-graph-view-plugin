@@ -141,33 +141,34 @@ circle.halo {
 }
 
 .PWGx-pipeline-node {
-  --background-opacity: 10%;
+  //--background-opacity: 10%;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  outline: none;
+  //display: flex;
+  //align-items: center;
+  //justify-content: center;
+  //background: transparent;
+  //outline: none;
   padding: 0;
   border-radius: 100%;
-  border: none;
+  //border: none;
   width: 24px;
   height: 24px;
+  min-height: 0;
 
   svg {
     width: 24px;
     height: 24px;
   }
 
-  &::after {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    background: color-mix(in srgb, currentColor var(--background-opacity), var(--card-background));
-    border-radius: 100px;
-    z-index: -1;
-    transition: var(--standard-transition);
-  }
+  //&::after {
+  //  content: "";
+  //  position: absolute;
+  //  inset: -1px;
+  //  background: color-mix(in srgb, currentColor var(--background-opacity), var(--card-background));
+  //  border-radius: 100px;
+  //  z-index: -1;
+  //  transition: var(--standard-transition);
+  //}
 
   &--success {
     color: var(--success-color);

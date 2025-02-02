@@ -20,20 +20,17 @@ interface NodeProps {
  * Generate the SVG elements to represent a node.
  */
 export function Node({ node, layout, isStageSelected }: NodeProps) {
-  let nodeIsSelected = false;
-  const { nodeRadius, connectorStrokeWidth, terminalRadius } = layout;
+  const { nodeRadius } = layout;
   const key = node.key;
-
   const groupChildren: SVGChildren = [];
-
   const { completePercent = 0, title, state } = node.stage ?? {};
   const resultClean = decodeResultValue(state);
+
   if (node.isPlaceholder) {
     groupChildren.push(
       <div className={'PWGx-pipeline-node-terminal'}></div>
     );
   } else {
-
     groupChildren.push(
       getGroupForResult(resultClean, completePercent, nodeRadius)
     );
@@ -41,12 +38,7 @@ export function Node({ node, layout, isStageSelected }: NodeProps) {
     if (title) {
       groupChildren.push(<title>{title}</title>);
     }
-
-    nodeIsSelected = isStageSelected(node.stage);
   }
-
-  // Set click listener and link cursor only for nodes we want to be clickable
-  const clickableProps: React.SVGProps<SVGCircleElement> = {};
 
   const clickable = !node.isPlaceholder && node.stage.state !== "skipped";
 
@@ -54,17 +46,14 @@ export function Node({ node, layout, isStageSelected }: NodeProps) {
   const groupProps = {
     key,
     // TODO - Change this to be ../ on pipeline overview page
-    href: 'pipeline-console/?selected-node=' + node.id,
+    href: clickable ? 'pipeline-console/?selected-node=' + node.id : null,
     style: {
       position: 'absolute',
       top: node.y,
       left: node.x,
       translate: '-50% -50%'
     },
-    className: nodeIsSelected
-      ? "PWGx-pipeline-node-selected"
-      : "jenkins-button PWGx-pipeline-node jenkins-!-" + resultClean + "-color PWGx-pipeline-node" + "--" + resultClean,
-    ...clickableProps
+    className: "PWGx-pipeline-node PWGx-pipeline-node--" + resultClean,
   };
 
   return React.createElement(clickable ? "a" : "div", groupProps, ...groupChildren);

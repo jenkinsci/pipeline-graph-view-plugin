@@ -54,7 +54,6 @@ export function Node({ node }: NodeProps) {
   // Most of the nodes are in shared code, so they're rendered at 0,0. We transform with a <g> to position them
   const groupProps = {
     key,
-    // TODO - Change this to be ../ on pipeline overview page
     href: clickable ? generateUrl(node.id) : null,
     style: {
       position: 'absolute',

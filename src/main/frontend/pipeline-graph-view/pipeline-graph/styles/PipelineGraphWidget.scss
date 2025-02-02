@@ -140,95 +140,8 @@ circle.halo {
   stroke: $graph-connector-grey;
 }
 
-.PWGx-pipeline-node {
-  //--background-opacity: 10%;
-
-  //display: flex;
-  //align-items: center;
-  //justify-content: center;
-  //background: transparent;
-  //outline: none;
-  padding: 0;
-  border-radius: 100%;
-  //border: none;
-  width: 24px;
-  height: 24px;
-  min-height: 0;
-
-  svg {
-    width: 24px;
-    height: 24px;
-  }
-
-  //&::after {
-  //  content: "";
-  //  position: absolute;
-  //  inset: -1px;
-  //  background: color-mix(in srgb, currentColor var(--background-opacity), var(--card-background));
-  //  border-radius: 100px;
-  //  z-index: -1;
-  //  transition: var(--standard-transition);
-  //}
-
-  &--success {
-    color: var(--success-color);
-  }
-
-  &--failure {
-    color: var(--error-color);
-  }
-
-  &--skipped {
-    &::after {
-      display: none;
-    }
-
-    border: 2.5px solid $graph-connector-grey;
-  }
-
-  &--unknown {
-    &::after {
-      display: none;
-    }
-  }
-
-  .PWGx-pipeline-node-terminal {
-    width: 0.875rem;
-    height: 0.875rem;
-    border-radius: 100px;
-    background: $graph-connector-grey;
-  }
-}
-
-// Button nodes feature hover and focus states
-button.PWGx-pipeline-node {
-  cursor: pointer;
-  transition: var(--standard-transition);
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: -4px;
-    background: var(--card-background);
-    border-radius: inherit;
-    z-index: -1;
-  }
-
-  &::after {
-    box-shadow: 0 0 0 10px transparent;
-  }
-
-  &:hover {
-    --background-opacity: 17.5%;
-  }
-
-  &:active, &:focus {
-    --background-opacity: 25%;
-
-    &::after {
-      box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 10%, transparent);
-    }
-  }
+.PWGx-pipeline-node-terminal {
+  fill: $graph-connector-grey;
 }
 
 .PWGx-pipeline-connector-skipped {
@@ -237,27 +150,19 @@ button.PWGx-pipeline-node {
 }
 
 .PWGx-pipeline-small-label {
-  font-size: 0.6875rem;
+  font-size: 80%;
 }
 
-.PWGx-pipeline-big-label {
-  font-weight: 450;
+.PWGx-pipeline-big-label.selected {
+  font-weight: bold;
 }
-
-.PWGx-pipeline-small-label {
-  font-weight: 450;
-}
-
-//.PWGx-pipeline-big-label.selected {
-//  font-weight: bold;
-//}
 
 .PWGx-pipeline-big-label.pgv-graph-node--synthetic {
   font-style: italic;
 }
 
 .PWGx-pipeline-small-label.selected {
-  //font-weight: bold;
+  font-weight: bold;
   margin-top: 3px;
 }
 

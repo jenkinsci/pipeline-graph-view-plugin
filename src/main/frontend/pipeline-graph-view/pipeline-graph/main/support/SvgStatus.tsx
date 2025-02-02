@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Result } from "../PipelineGraphModel";
-// import { getClassForResult } from "./StatusIcons";
+import { getClassForResult } from "./StatusIcons";
 
 // These were mostly taken from SVG and pre-translated
 const questionMarkPath =
@@ -38,8 +38,35 @@ export class SvgStatus extends React.PureComponent<Props> {
       result === Result.running ? "in-progress" : "static";
     const iconSuffix = result === Result.running ? "-anime" : "";
     const style = { width: diameter, height: diameter };
-
-    return getGlyphFor(result, radius, style, centerX, centerY);
+    return (
+      <g
+        className={`${baseWrapperClasses} ${getClassForResult(
+          result,
+        )}${iconSuffix}`}
+        style={style}
+      >
+        <g
+          className="build-status-icon__outer"
+          style={outerStyle ?? { transform: `translate(0, 0)` }}
+        >
+          <svg
+            focusable="false"
+            className="svg-icon "
+            x={centerX}
+            y={centerY}
+            width={diameter}
+            height={diameter}
+          >
+            <use
+              className="svg-icon"
+              style={{ transformOrigin: "50% 50%" }}
+              href={`${imagesPath}/build-status/build-status-sprite.svg#build-status-${iconOuterClassName}`}
+            />
+          </svg>
+        </g>
+        {getGlyphFor(result, radius, style, centerX, centerY)}
+      </g>
+    );
   }
 }
 
@@ -51,7 +78,7 @@ function getGlyphFor(
   radius: number,
   style: React.CSSProperties,
   centerX?: number,
-  centerY?: number
+  centerY?: number,
 ) {
   // NB: If we start resizing these things, we'll need to use radius/12 to
   // generate a "scale" transform for the group

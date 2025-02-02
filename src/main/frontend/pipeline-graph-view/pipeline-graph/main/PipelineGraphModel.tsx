@@ -29,10 +29,10 @@ export const defaultLayout = {
   nodeSpacingV: 70,
   nodeRadius: 12,
   terminalRadius: 7,
-  curveRadius: 15,
-  connectorStrokeWidth: 2.5,
-  labelOffsetV: 25,
-  smallLabelOffsetV: 16,
+  curveRadius: 12,
+  connectorStrokeWidth: 3.5,
+  labelOffsetV: 20,
+  smallLabelOffsetV: 15,
   ypStart: 55,
 };
 

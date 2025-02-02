@@ -1,5 +1,5 @@
 import * as React from "react";
-import { FunctionComponent, useEffect } from "react";
+import { FunctionComponent } from "react";
 
 import { PipelineGraph } from "./pipeline-graph/main";
 

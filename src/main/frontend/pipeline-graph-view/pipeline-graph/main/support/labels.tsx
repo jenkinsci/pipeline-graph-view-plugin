@@ -5,6 +5,8 @@ import { TruncatingLabel } from "../support/TruncatingLabel";
 import { NodeLabelInfo, LayoutInfo, StageInfo } from "../PipelineGraphModel";
 import { sequentialStagesLabelOffset } from "../PipelineGraphLayout";
 
+import { TooltipLabel } from "./convertLabelToTooltip";
+
 interface RenderBigLabelProps {
   details: NodeLabelInfo;
   layout: LayoutInfo;
@@ -177,23 +179,23 @@ export function SequentialContainerLabel({
     top: y,
     left: x,
     lineHeight,
-    marginTop: `-11px`,
+    marginTop: `-${lineHeight / 2}em`,
     position: "absolute" as const,
     maxWidth: sequentialStagesLabelOffset,
     overflow: "hidden",
     textOverflow: "ellipsis",
-    fontSize: "11px",
-    fontWeight: "450",
-    background: "color-mix(in srgb, var(--text-color-secondary) 6%, var(--card-background)",
-    boxShadow: "0 0 0 3px var(--card-background)",
-    padding: "4px 8px",
-    borderRadius: "100px",
+    background: "var(--background, white)",
+    padding: "0 3px",
     whiteSpace: "nowrap" as const,
+    outline: "1px solid var(--graph-connector-grey, gray)",
+    borderRadius: "3px",
   };
 
   return (
-    <div style={containerStyle} key={details.key} tooltip={seqContainerName}>
-      {seqContainerName}
-    </div>
+    <TooltipLabel content={seqContainerName}>
+      <div style={containerStyle} key={details.key}>
+        {seqContainerName}
+      </div>
+    </TooltipLabel>
   );
 }

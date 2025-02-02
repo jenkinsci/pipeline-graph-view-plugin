@@ -7,7 +7,6 @@ import {
   NodeLabelInfo,
   LayoutInfo,
   NodeColumn,
-  NodeInfo,
   StageInfo,
 } from "./PipelineGraphModel";
 import { layoutGraph } from "./PipelineGraphLayout";
@@ -24,7 +23,6 @@ interface Props {
   stages: Array<StageInfo>;
   layout?: Partial<LayoutInfo>;
   setStages?: (stages: Array<StageInfo>) => void;
-  onNodeClick?: (nodeName: string, id: number) => void;
   selectedStage?: StageInfo;
   path?: string;
   collapsed?: boolean;

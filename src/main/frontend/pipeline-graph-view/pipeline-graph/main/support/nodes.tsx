@@ -57,7 +57,7 @@ export function Node({ node, layout }: NodeProps) {
   const groupProps = {
     key,
     // TODO - Change this to be ../ on pipeline overview page
-    href: clickable ? 'pipeline-console/?selected-node=' + node.id : null,
+    href: clickable ? generateUrl(node.id) : null,
     style: {
       position: 'absolute',
       top: node.y,
@@ -68,6 +68,18 @@ export function Node({ node, layout }: NodeProps) {
   };
 
   return React.createElement(clickable ? "a" : "div", groupProps, ...groupChildren);
+}
+
+function generateUrl(nodeId: number) {
+  let location = `../pipeline-console?selected-node=${nodeId}`;
+  
+  const url = new URL(window.location.href);
+
+  if (!url.pathname.endsWith("pipeline-graph/")) {
+    location = `pipeline-console?selected-node=${nodeId}`;
+  }
+
+  return location;
 }
 
 interface SelectionHighlightProps {

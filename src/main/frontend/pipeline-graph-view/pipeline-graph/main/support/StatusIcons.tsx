@@ -22,9 +22,7 @@ function mapResultToCore(result: Result): string {
   }
 }
 
-export function getSymbolForResult(
-  result: Result,
-): React.ReactElement {
+export function getSymbolForResult(result: Result): React.ReactElement {
   // Handle non-core symbols
   if (result === Result.paused) {
     return (
@@ -74,8 +72,7 @@ export function getSymbolForResult(
           strokeMiterlimit="10"
           strokeWidth="28"
         />
-        <circle cx="250" cy="348" r="20"
-                fill="var(--text-color-secondary)" />
+        <circle cx="250" cy="348" r="20" fill="var(--text-color-secondary)" />
       </svg>
     );
   }
@@ -83,10 +80,19 @@ export function getSymbolForResult(
   if (result === Result.skipped) {
     return (
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-        <ellipse cx="256" cy="256" rx="210" ry="210" fill="none" stroke="var(--text-color-secondary)"
-                 strokeLinecap="round" strokeMiterlimit="10" strokeWidth="36" />
+        <ellipse
+          cx="256"
+          cy="256"
+          rx="210"
+          ry="210"
+          fill="none"
+          stroke="var(--text-color-secondary)"
+          strokeLinecap="round"
+          strokeMiterlimit="10"
+          strokeWidth="36"
+        />
       </svg>
-    )
+    );
   }
 
   // Map the result to retrieve the appropriate symbol from core
@@ -99,7 +105,9 @@ export function getSymbolForResult(
     <div
       dangerouslySetInnerHTML={{
         // This fails in React tests without the Jelly context
-        __html: symbols?.content?.querySelector("#" + mappedResult)?.outerHTML || `<div></div>`,
+        __html:
+          symbols?.content?.querySelector("#" + mappedResult)?.outerHTML ||
+          `<div></div>`,
       }}
     />
   );

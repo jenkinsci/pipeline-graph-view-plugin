@@ -9,10 +9,7 @@ import "./pipeline-graph/styles/main.scss";
 const App: FunctionComponent = () => {
   return (
     <div>
-      <PipelineGraph
-        stages={[]}
-        collapsed={false}
-      />
+      <PipelineGraph stages={[]} collapsed={false} />
     </div>
   );
 };

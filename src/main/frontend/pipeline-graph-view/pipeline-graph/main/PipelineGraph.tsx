@@ -186,10 +186,7 @@ export class PipelineGraph extends React.Component {
           </svg>
 
           {nodes.map((node) => (
-            <Node
-              key={node.id}
-              node={node}
-            />
+            <Node key={node.id} node={node} />
           ))}
           {bigLabels.map((label) => (
             <BigLabel

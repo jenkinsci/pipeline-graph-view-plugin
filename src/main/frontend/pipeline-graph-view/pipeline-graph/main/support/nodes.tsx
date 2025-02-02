@@ -22,16 +22,14 @@ export function Node({ node }: NodeProps) {
   const groupChildren: SVGChildren = [];
 
   if (node.isPlaceholder) {
-    groupChildren.push(
-      <div className={'PWGx-pipeline-node-terminal'}></div>
-    );
+    groupChildren.push(<div className={"PWGx-pipeline-node-terminal"}></div>);
     const groupProps = {
       key,
       style: {
-        position: 'absolute',
+        position: "absolute",
         top: node.y,
         left: node.x,
-        translate: '-50% -50%'
+        translate: "-50% -50%",
       },
       className: "PWGx-pipeline-node",
     };
@@ -41,9 +39,7 @@ export function Node({ node }: NodeProps) {
   const { title, state } = node.stage ?? {};
   const resultClean = decodeResultValue(state);
 
-  groupChildren.push(
-    getSymbolForResult(resultClean)
-  );
+  groupChildren.push(getSymbolForResult(resultClean));
 
   if (title) {
     groupChildren.push(<title>{title}</title>);
@@ -56,15 +52,19 @@ export function Node({ node }: NodeProps) {
     key,
     href: clickable ? generateUrl(node.id) : null,
     style: {
-      position: 'absolute',
+      position: "absolute",
       top: node.y,
       left: node.x,
-      translate: '-50% -50%'
+      translate: "-50% -50%",
     },
     className: "PWGx-pipeline-node PWGx-pipeline-node--" + resultClean,
   };
 
-  return React.createElement(clickable ? "a" : "div", groupProps, ...groupChildren);
+  return React.createElement(
+    clickable ? "a" : "div",
+    groupProps,
+    ...groupChildren,
+  );
 }
 
 function generateUrl(nodeId: number) {

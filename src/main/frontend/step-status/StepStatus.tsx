@@ -28,9 +28,7 @@ export function getStepStatus(
   complete?: number,
   radius?: number,
 ) {
-  const icon = getSymbolForResult(
-    decodeResultValue(status),
-  );
+  const icon = getSymbolForResult(decodeResultValue(status));
   return (
     <div
       className={`icon-sm`}

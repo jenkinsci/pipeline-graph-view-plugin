@@ -6,7 +6,7 @@
         Provides the Jenkins Symbols of build statuses for use in React
     </st:documentation>
 
-    <template id="jenkins-build-status-icons">
+    <template id="pgv-build-status-icons">
         <l:icon src="symbol-status-blue" id="blue" />
         <l:icon src="symbol-status-yellow" id="yellow" />
         <l:icon src="symbol-status-red" id="red" />

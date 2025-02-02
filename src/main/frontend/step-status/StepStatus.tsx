@@ -1,9 +1,8 @@
-import { CSSProperties, FunctionComponent } from "react";
+import { FunctionComponent } from "react";
 import * as React from "react";
 import { Result } from "../pipeline-graph-view/pipeline-graph/main";
 import { decodeResultValue } from "../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
 import { getSymbolForResult } from "../pipeline-graph-view/pipeline-graph/main/support/StatusIcons";
-import { height } from "@mui/system";
 
 interface Props {
   status: Result;
@@ -37,23 +36,15 @@ export function getStepStatus(
     0,
     {},
   );
-  const diameter = radius ? radius * 2 : 24;
   return (
     <div
+      className={`icon-sm`}
       style={{
         display: "inline-block",
-        paddingTop: "1px",
-        verticalAlign: "middle",
-        lineHeight: "normal",
+        paddingBottom: "20px",
       }}
     >
-      <svg
-        viewBox={`0 0 ${diameter} ${diameter}`}
-        width={`${diameter}px`}
-        height={`${diameter}px`}
-      >
-        {icon}
-      </svg>
+      {icon}
     </div>
   );
 }

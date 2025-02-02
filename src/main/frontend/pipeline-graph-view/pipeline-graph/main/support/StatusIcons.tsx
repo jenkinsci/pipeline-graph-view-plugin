@@ -8,7 +8,7 @@ function mapResultToCore(result: Result): string {
     case Result.success:
       return "blue";
     case Result.running:
-      return "blue-anime";
+      return "nobuilt-anime";
     case Result.failure:
       return "red";
     case Result.unstable:

@@ -85,7 +85,7 @@ export function SelectionHighlight({
 }: SelectionHighlightProps) {
   const { nodeRadius, connectorStrokeWidth } = layout;
   const highlightRadius = Math.ceil(
-    nodeRadius + 0.5 * connectorStrokeWidth + 1
+    nodeRadius + 0.5 * connectorStrokeWidth + 1,
   );
   let selectedNode: NodeInfo | undefined;
 

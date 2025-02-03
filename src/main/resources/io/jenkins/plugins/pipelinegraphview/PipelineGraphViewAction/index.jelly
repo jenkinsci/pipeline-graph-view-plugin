@@ -28,8 +28,8 @@
             <l:hasPermission permission="${it.permission}">
               <j:set var="proxyId" value="${h.generateId()}" />
               <st:bind value="${it}" var="rebuildAction${proxyId}"/>
-              <button id="pgv-rebuild" data-success-message="${%Build scheduled}" data-build-path="../../build"
-                      data-parameterized="${it.parameterized}" data-proxy-name="rebuildAction${proxyId}"
+              <button id="pgv-rebuild" data-success-message="${%Build scheduled}"
+                      data-proxy-name="rebuildAction${proxyId}"
                       class="jenkins-button jenkins-!-build-color">
                 <l:icon src="symbol-play-outline plugin-ionicons-api"/>
                 ${%Rebuild}

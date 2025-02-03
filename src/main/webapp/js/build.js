@@ -5,7 +5,13 @@ if (rebuildButton) {
     event.preventDefault();
     const buildUrl = `${rebuildButton.dataset.buildPath}?delay=0sec`
     if (rebuildButton.dataset.parameterized === 'true') {
-      window.location.href = buildUrl
+      const rebuildAction = window[`${rebuildButton.dataset.proxyName}`];
+      rebuildAction.doRebuild(function (success) {
+        const result = success.responseJSON;
+        if (result) {
+          window.hoverNotification(rebuildButton.dataset.successMessage, rebuildButton);
+        }
+      });
     } else {
       fetch(buildUrl, {
         method: 'post',

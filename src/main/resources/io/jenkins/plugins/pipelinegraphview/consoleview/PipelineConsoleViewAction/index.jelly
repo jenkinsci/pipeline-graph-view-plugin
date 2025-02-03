@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns">
     <l:layout title="${%Build log} [${it.buildDisplayName}]" type="one-column">
         <l:main-panel>
             <div class="jenkins-app-bar">
@@ -24,8 +24,11 @@
                 <div class="jenkins-app-bar__controls">
                     <j:if test="${it.buildable}">
                         <l:hasPermission permission="${it.permission}">
+                            <j:set var="proxyId" value="${h.generateId()}" />
+                            <st:bind value="${it}" var="rebuildAction${proxyId}"/>
                             <button id="pgv-rebuild" data-success-message="${%Build scheduled}"
                                     data-build-path="../../build" data-parameterized="${it.parameterized}"
+                                    data-proxy-name="rebuildAction${proxyId}"
                                     class="jenkins-button jenkins-!-build-color">
                                 <l:icon src="symbol-play-outline plugin-ionicons-api"/>
                                 ${%Rebuild}

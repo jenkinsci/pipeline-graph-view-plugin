@@ -41,9 +41,7 @@ public class PipelineGraphViewRebuildTest {
 
             HtmlPage page = webClient.getPage(run, new PipelineGraphViewAction(run).getUrlName());
             HtmlPage newPage = page.getElementById("pgv-rebuild").click();
-            assertEquals(
-                    j.getURL() + run.getParent().getUrl() + "build?delay=0sec",
-                    newPage.getBaseURL().toExternalForm());
+            assertEquals(page.getBaseURL(), newPage.getBaseURL());
         }
     }
 }

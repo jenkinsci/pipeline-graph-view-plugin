@@ -81,7 +81,7 @@ It's recommended that you set up the above terminal commands in your IDE of choi
 
 ### Build and package
 
-To generate the hpi package and run the test you can use two different maven command
+To generate the hpi package and run the test you can use:
 ```sh
 mvn package
 ```

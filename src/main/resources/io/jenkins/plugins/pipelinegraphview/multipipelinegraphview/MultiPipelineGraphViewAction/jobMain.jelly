@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form"  xmlns:p="/lib/pipeline-graph-view">
+  <p:symbols />
   <j:if test="${it.showGraphOnJobPage}">
     <div id="multiple-pipeline-root"/>
     <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/multi-pipeline-graph-view-bundle.js"/>

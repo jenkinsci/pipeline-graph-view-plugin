@@ -1,76 +1,114 @@
 import * as React from "react";
 import { Result } from "../PipelineGraphModel";
-import { SvgStatus } from "./SvgStatus";
 
 export const nodeStrokeWidth = 3.5; // px.
 
-// Returns the correct <g> element for the result / progress percent.
-export function getGroupForResult(
-  result: Result,
-  percentage: number,
-  radius: number,
-  centerX: number,
-  centerY: number,
-  outerStyle: React.CSSProperties,
-): React.ReactElement<SvgStatus> {
+function mapResultToCore(result: Result): string {
   switch (result) {
-    case Result.running:
-    case Result.queued:
-    case Result.not_built:
-    case Result.skipped:
     case Result.success:
+      return "blue";
+    case Result.running:
+      return "nobuilt-anime";
     case Result.failure:
-    case Result.paused:
+      return "red";
     case Result.unstable:
+      return "yellow";
     case Result.aborted:
-    case Result.unknown:
-      return (
-        <SvgStatus
-          radius={radius}
-          result={result}
-          outerStyle={outerStyle}
-          centerX={centerX}
-          centerY={centerY}
-        />
-      );
+      return "aborted";
+    case Result.not_built:
+      return "nobuilt";
     default:
-      badResult(result);
-      return (
-        <SvgStatus
-          radius={radius}
-          result={Result.unknown}
-          outerStyle={outerStyle}
-          centerX={centerX}
-          centerY={centerY}
-        />
-      );
+      throw new Error(`Unhandled result: ${result}`);
   }
 }
 
-function badResult(x: never) {
-  console.error("Unexpected Result value", x);
-}
-
-export const getClassForResult = (result: Result) => {
-  // These come from the themes icons.less
-  switch (result) {
-    case Result.aborted:
-      return "icon-aborted";
-    case Result.unstable:
-      return "icon-yellow";
-    case Result.failure:
-      return "icon-red";
-    case Result.success:
-      return "icon-blue";
-    case Result.running:
-    case Result.queued:
-      return "icon-grey";
-    case Result.skipped:
-      return "icon-skipped";
-    case Result.not_built:
-    case Result.paused:
-    case Result.unknown:
-    default:
-      return "icon-nobuilt";
+export function getSymbolForResult(result: Result): React.ReactElement {
+  // Handle non-core symbols
+  if (result === Result.paused) {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+        <ellipse
+          cx="256"
+          cy="256"
+          rx="210"
+          ry="210"
+          fill="none"
+          stroke="var(--text-color-secondary)"
+          strokeLinecap="round"
+          strokeMiterlimit="10"
+          strokeWidth="36"
+        />
+        <path
+          fill="none"
+          stroke="var(--text-color-secondary)"
+          strokeLinecap="round"
+          strokeMiterlimit="10"
+          strokeWidth="32"
+          d="M208 192v128M304 192v128"
+        />
+      </svg>
+    );
   }
-};
+
+  if (result === Result.unknown) {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+        <ellipse
+          cx="256"
+          cy="256"
+          rx="210"
+          ry="210"
+          fill="none"
+          stroke="var(--text-color-secondary)"
+          strokeLinecap="round"
+          strokeMiterlimit="10"
+          strokeWidth="36"
+        />
+        <path
+          d="M200 202.29s.84-17.5 19.57-32.57C230.68 160.77 244 158.18 256 158c10.93-.14 20.69 1.67 26.53 4.45 10 4.76 29.47 16.38 29.47 41.09 0 26-17 37.81-36.37 50.8S251 281.43 251 296"
+          fill="none"
+          stroke="var(--text-color-secondary)"
+          strokeLinecap="round"
+          strokeMiterlimit="10"
+          strokeWidth="28"
+        />
+        <circle cx="250" cy="348" r="20" fill="var(--text-color-secondary)" />
+      </svg>
+    );
+  }
+
+  if (result === Result.skipped) {
+    return (
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+        <ellipse
+          cx="256"
+          cy="256"
+          rx="210"
+          ry="210"
+          fill="none"
+          stroke="var(--text-color-secondary)"
+          strokeLinecap="round"
+          strokeMiterlimit="10"
+          strokeWidth="36"
+        />
+      </svg>
+    );
+  }
+
+  // Map the result to retrieve the appropriate symbol from core
+  const symbols = document.querySelector<HTMLTemplateElement>(
+    "#pgv-build-status-icons",
+  );
+  const mappedResult = mapResultToCore(result);
+
+  return (
+    <div
+      dangerouslySetInnerHTML={{
+        // This fails in React tests without the Jelly context
+        __html:
+          symbols?.content?.querySelector("#" + mappedResult)?.outerHTML ||
+          `<div></div>`,
+      }}
+    />
+  );
+}

@@ -220,12 +220,6 @@ g.build-status-icon__outer {
   padding: unset;
 }
 
-.jenkins-button svg {
-  width: 20px !important;
-  height: 20px !important;
-  color: currentColor !important;
-}
-
 .svg-icon {
   // Force rotating icons to rotate about their center.
   transform-origin: center;

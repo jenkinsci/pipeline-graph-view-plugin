@@ -4,6 +4,8 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:p="/lib/pipeline-graph-view">
   <l:layout title="${%Graph} [${it.fullBuildDisplayName}]" type="one-column">
     <l:main-panel>
+      <p:symbols />
+
       <div class="jenkins-app-bar">
         <div class="jenkins-app-bar__content">
           <h1>

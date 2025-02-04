@@ -4,20 +4,24 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.model.Action;
 import hudson.model.BallColor;
-import hudson.model.ParametersAction;
-import hudson.model.ParametersDefinitionProperty;
+import hudson.model.Item;
+import hudson.model.Queue;
 import hudson.security.Permission;
 import hudson.util.HttpResponses;
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sf.json.JSONObject;
 import org.jenkins.ui.icon.IconSpec;
+import org.jenkinsci.plugins.workflow.cps.replay.ReplayAction;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.WebMethod;
+import org.kohsuke.stapler.bind.JavaScriptMethod;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 
 public abstract class AbstractPipelineViewAction implements Action, IconSpec {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -47,14 +51,24 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
         return run.getDisplayName();
     }
 
-    public boolean isParameterized() {
-        ParametersAction paramAction = run.getAction(ParametersAction.class);
-        if (paramAction != null && !paramAction.getAllParameters().isEmpty()) {
+    /**
+     * Handles the rebuild request using ReplayAction feature
+     */
+    @RequirePOST
+    @JavaScriptMethod
+    public boolean doRebuild() throws IOException, ExecutionException {
+        if (run != null) {
+            run.checkAnyPermission(Item.BUILD);
+            ReplayAction replayAction = run.getAction(ReplayAction.class);
+            Queue.Item item =
+                    replayAction.run2(replayAction.getOriginalScript(), replayAction.getOriginalLoadedScripts());
+
+            if (item == null) {
+                return false;
+            }
             return true;
         }
-
-        ParametersDefinitionProperty property = run.getParent().getProperty(ParametersDefinitionProperty.class);
-        return property != null && !property.getParameterDefinitions().isEmpty();
+        return false;
     }
 
     public String getFullBuildDisplayName() {

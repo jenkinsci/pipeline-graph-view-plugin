@@ -79,6 +79,17 @@ npm run build:dev
 
 It's recommended that you set up the above terminal commands in your IDE of choice.
 
+### Build and package
+
+To generate the hpi package and run the test you can use two different maven command
+```sh
+mvn package
+```
+For a quicker build without the tests run:
+```sh
+mvn package -P quick-build
+```
+
 ### Code style
 
 Code style will be enforced by GitHub pull request checks.

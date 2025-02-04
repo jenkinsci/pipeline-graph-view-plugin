@@ -50,7 +50,7 @@ export function Node({ node }: NodeProps) {
   // Most of the nodes are in shared code, so they're rendered at 0,0. We transform with a <g> to position them
   const groupProps = {
     key,
-    href: clickable ? generateUrl(node.id) : null,
+    href: clickable ? node.url : null,
     style: {
       position: "absolute",
       top: node.y,
@@ -65,18 +65,6 @@ export function Node({ node }: NodeProps) {
     groupProps,
     ...groupChildren,
   );
-}
-
-function generateUrl(nodeId: number) {
-  let location = `../pipeline-console?selected-node=${nodeId}`;
-
-  const url = new URL(window.location.href);
-
-  if (!url.pathname.endsWith("pipeline-graph/")) {
-    location = `pipeline-console?selected-node=${nodeId}`;
-  }
-
-  return location;
 }
 
 interface SelectionHighlightProps {

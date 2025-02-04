@@ -83,6 +83,7 @@ export interface StageNodeInfo extends BaseNodeInfo {
   // -- Unique
   stage: StageInfo;
   seqContainerName?: string; // Used within a parallel branch to denote the name of the container of the parallel sequential stages
+  url?: string;
 }
 
 export interface PlaceholderNodeInfo extends BaseNodeInfo {

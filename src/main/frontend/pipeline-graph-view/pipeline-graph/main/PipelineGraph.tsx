@@ -164,7 +164,29 @@ export class PipelineGraph extends React.Component {
     for (const column of nodeColumns) {
       for (const row of column.rows) {
         for (const node of row) {
-          nodes.push(node);
+          const currentPath = this.props.path;
+          let nodeUrl = "";
+
+          if (currentPath) {
+            const runId = currentPath.split("=")[1];
+            if (currentPath.startsWith("multi-pipeline-graph/")) {
+              nodeUrl = `${runId}/pipeline-console?selected-node=${node.id}`
+            } else {
+              nodeUrl = `../${runId}/pipeline-console?selected-node=${node.id}`
+            }
+
+            nodes.push({...node, url: nodeUrl});
+            continue;
+          }
+
+          const newPath = this.getTreePath();
+          if (newPath.startsWith("pipeline-graph/tree")) {
+            nodeUrl = `pipeline-console?selected-node=${node.id}`
+          } else {
+            nodeUrl = `../pipeline-console?selected-node=${node.id}`
+          }
+
+          nodes.push({...node, url: nodeUrl});
         }
       }
     }

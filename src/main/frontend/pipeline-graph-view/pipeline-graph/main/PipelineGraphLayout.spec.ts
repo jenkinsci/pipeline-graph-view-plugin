@@ -15,6 +15,7 @@ describe("PipelineGraphLayout", () => {
       startTimeMillis: "",
       totalDurationMillis: "",
       agent: "built-in",
+      url: "?selected-node=0",
     };
 
     const makeStage = (

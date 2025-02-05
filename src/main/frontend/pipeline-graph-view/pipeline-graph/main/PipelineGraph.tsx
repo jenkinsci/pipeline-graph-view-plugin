@@ -7,7 +7,6 @@ import {
   NodeLabelInfo,
   LayoutInfo,
   NodeColumn,
-  NodeInfo,
   StageInfo,
 } from "./PipelineGraphModel";
 import { layoutGraph } from "./PipelineGraphLayout";
@@ -24,7 +23,6 @@ interface Props {
   stages: Array<StageInfo>;
   layout?: Partial<LayoutInfo>;
   setStages?: (stages: Array<StageInfo>) => void;
-  onNodeClick?: (nodeName: string, id: number) => void;
   selectedStage?: StageInfo;
   path?: string;
   collapsed?: boolean;
@@ -145,20 +143,6 @@ export class PipelineGraph extends React.Component {
     return (selectedStage && stage && selectedStage.id === stage.id) || false;
   };
 
-  private handleNodeClick = (node: NodeInfo) => {
-    if (node.isPlaceholder === false && node.stage.state !== "skipped") {
-      const stage = node.stage;
-      const listener = this.props.onNodeClick;
-
-      if (listener) {
-        listener(stage.name, stage.id);
-      }
-
-      // Update selection
-      this.setState({ selectedStage: stage });
-    }
-  };
-
   render() {
     const {
       nodeColumns,
@@ -194,15 +178,6 @@ export class PipelineGraph extends React.Component {
               layout={this.state.layout}
             />
 
-            {nodes.map((node) => (
-              <Node
-                key={node.id}
-                node={node}
-                layout={this.state.layout}
-                onClick={this.handleNodeClick}
-                isStageSelected={this.stageIsSelected}
-              />
-            ))}
             <SelectionHighlight
               layout={this.state.layout}
               nodeColumns={this.state.nodeColumns}
@@ -210,6 +185,9 @@ export class PipelineGraph extends React.Component {
             />
           </svg>
 
+          {nodes.map((node) => (
+            <Node key={node.id} node={node} />
+          ))}
           {bigLabels.map((label) => (
             <BigLabel
               key={label.key}

@@ -1,81 +1,71 @@
 import * as React from "react";
 
-import { getGroupForResult } from "../support/StatusIcons";
+import { getSymbolForResult } from "./StatusIcons";
 import {
   decodeResultValue,
   LayoutInfo,
   NodeColumn,
   NodeInfo,
   StageInfo,
+  StageNodeInfo,
 } from "../PipelineGraphModel";
 
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck
 
 interface NodeProps {
   node: NodeInfo;
-  layout: LayoutInfo;
-  isStageSelected: (stage: StageInfo) => boolean;
-  onClick: (node: NodeInfo) => void;
 }
 /**
  * Generate the SVG elements to represent a node.
  */
-export function Node({ node, layout, isStageSelected, onClick }: NodeProps) {
-  let nodeIsSelected = false;
-  const { nodeRadius, connectorStrokeWidth, terminalRadius } = layout;
+export function Node({ node }: NodeProps) {
   const key = node.key;
-
   const groupChildren: SVGChildren = [];
 
   if (node.isPlaceholder) {
-    groupChildren.push(
-      <circle r={terminalRadius} className="PWGx-pipeline-node-terminal" />,
-    );
-  } else {
-    const { completePercent = 0, title, state } = node.stage;
-    const resultClean = decodeResultValue(state);
-
-    groupChildren.push(
-      getGroupForResult(resultClean, completePercent, nodeRadius),
-    );
-
-    if (title) {
-      groupChildren.push(<title>{title}</title>);
-    }
-
-    nodeIsSelected = isStageSelected(node.stage);
+    groupChildren.push(<span className={"PWGx-pipeline-node-terminal"}></span>);
+    const groupProps = {
+      key,
+      style: {
+        position: "absolute",
+        top: node.y,
+        left: node.x,
+        translate: "-50% -50%",
+      },
+      className: "PWGx-pipeline-node",
+    };
+    return React.createElement("div", groupProps, ...groupChildren);
   }
 
-  // Set click listener and link cursor only for nodes we want to be clickable
-  const clickableProps: React.SVGProps<SVGCircleElement> = {};
+  const { title, state, url } = node.stage ?? {};
+  const resultClean = decodeResultValue(state);
 
-  if (node.isPlaceholder === false && node.stage.state !== "skipped") {
-    clickableProps.cursor = "pointer";
-    clickableProps.onClick = () => onClick(node);
+  groupChildren.push(getSymbolForResult(resultClean));
+
+  if (title) {
+    groupChildren.push(<title>{title}</title>);
   }
 
-  // Add an invisible click/touch/mouseover target, because the nodes are small and (more importantly)
-  // many are hollow.
-  groupChildren.push(
-    <circle
-      r={nodeRadius + 2 * connectorStrokeWidth}
-      className="PWGx-pipeline-node-hittarget"
-      fillOpacity="0"
-      stroke="none"
-      {...clickableProps}
-    />,
-  );
+  const clickable = !node.isPlaceholder && node.stage?.state !== "skipped";
 
   // Most of the nodes are in shared code, so they're rendered at 0,0. We transform with a <g> to position them
   const groupProps = {
     key,
-    transform: `translate(${node.x},${node.y})`,
-    className: nodeIsSelected
-      ? "PWGx-pipeline-node-selected"
-      : "PWGx-pipeline-node",
+    href: clickable ? document.head.dataset.rooturl + url : null,
+    style: {
+      position: "absolute",
+      top: node.y,
+      left: node.x,
+      translate: "-50% -50%",
+    },
+    className: "PWGx-pipeline-node PWGx-pipeline-node--" + resultClean,
   };
 
-  return React.createElement("g", groupProps, ...groupChildren);
+  return React.createElement(
+    clickable ? "a" : "div",
+    groupProps,
+    ...groupChildren,
+  );
 }
 
 interface SelectionHighlightProps {

@@ -132,7 +132,7 @@ public class PipelineStageInternal {
         this.agent = aAgent;
     }
 
-    public PipelineStage toPipelineStage(List<PipelineStage> children) {
+    public PipelineStage toPipelineStage(List<PipelineStage> children, String runUrl) {
         return new PipelineStage(
                 id,
                 name,
@@ -142,10 +142,11 @@ public class PipelineStageInternal {
                 type,
                 title,
                 seqContainerName,
-                nextSibling != null ? nextSibling.toPipelineStage(Collections.emptyList()) : null,
+                nextSibling != null ? nextSibling.toPipelineStage(Collections.emptyList(), runUrl) : null,
                 sequential,
                 synthetic,
                 timingInfo,
-                agent);
+                agent,
+                runUrl);
     }
 }

@@ -76,12 +76,12 @@ public class PipelineGraphApi {
 
     private Function<String, PipelineStage> mapper(
             Map<String, PipelineStageInternal> stageMap, Map<String, List<String>> stageToChildrenMap) {
-
+        String runUrl = run.getUrl();
         return id -> {
             List<String> orDefault = stageToChildrenMap.getOrDefault(id, emptyList());
             List<PipelineStage> children =
                     orDefault.stream().map(mapper(stageMap, stageToChildrenMap)).collect(Collectors.toList());
-            return stageMap.get(id).toPipelineStage(children);
+            return stageMap.get(id).toPipelineStage(children, runUrl);
         };
     }
 
@@ -117,6 +117,7 @@ public class PipelineGraphApi {
                 stageToChildrenMap.put(stage.getParents().get(0), parentChildren);
             }
         });
+        String runUrl = run.getUrl();
         List<PipelineStage> stageResults = stageMap.values().stream()
                 .map(pipelineStageInternal -> {
                     List<PipelineStage> children =
@@ -124,7 +125,7 @@ public class PipelineGraphApi {
                                     .map(mapper(stageMap, stageToChildrenMap))
                                     .collect(Collectors.toList());
 
-                    return pipelineStageInternal.toPipelineStage(children);
+                    return pipelineStageInternal.toPipelineStage(children, runUrl);
                 })
                 .filter(stage -> !childNodes.contains(stage.getId()))
                 .collect(Collectors.toList());
@@ -205,6 +206,7 @@ public class PipelineGraphApi {
             }
         });
 
+        String runUrl = run.getUrl();
         List<PipelineStage> stageResults = stageMap.values().stream()
                 .map(pipelineStageInternal -> {
                     List<PipelineStage> children =
@@ -212,7 +214,7 @@ public class PipelineGraphApi {
                                     .map(mapper(stageMap, stageToChildrenMap))
                                     .collect(Collectors.toList());
 
-                    return pipelineStageInternal.toPipelineStage(children);
+                    return pipelineStageInternal.toPipelineStage(children, runUrl);
                 })
                 .filter(stage -> topLevelStageIds.contains(stage.getId()))
                 .collect(Collectors.toList());

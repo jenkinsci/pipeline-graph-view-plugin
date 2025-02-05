@@ -63,6 +63,7 @@ export interface StageInfo {
   startTimeMillis: string;
   totalDurationMillis: string;
   agent: string;
+  url: string;
 }
 
 interface BaseNodeInfo {

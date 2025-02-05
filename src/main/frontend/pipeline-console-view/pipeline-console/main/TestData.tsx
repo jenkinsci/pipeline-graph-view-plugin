@@ -12,6 +12,7 @@ export const defaultStagesList: StageInfo[] = [
     startTimeMillis: "",
     totalDurationMillis: "",
     agent: "built-in",
+    url: "?selected-node=0",
   },
   {
     name: "Stage B",
@@ -25,6 +26,7 @@ export const defaultStagesList: StageInfo[] = [
     startTimeMillis: "",
     totalDurationMillis: "",
     agent: "not-built-in",
+    url: "?selected-node=1",
   },
   {
     name: "Parent C",
@@ -46,12 +48,14 @@ export const defaultStagesList: StageInfo[] = [
         startTimeMillis: "",
         totalDurationMillis: "",
         agent: "not-built-in",
+        url: "?selected-node=3",
       },
     ],
     pauseDurationMillis: "",
     startTimeMillis: "",
     totalDurationMillis: "",
     agent: "built-in",
+    url: "?selected-node=2",
   },
 ];
 

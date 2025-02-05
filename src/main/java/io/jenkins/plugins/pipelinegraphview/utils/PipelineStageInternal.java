@@ -3,8 +3,6 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-
-import hudson.model.Run;
 import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 
 public class PipelineStageInternal {

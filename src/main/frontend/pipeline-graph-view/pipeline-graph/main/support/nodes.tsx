@@ -6,7 +6,8 @@ import {
   LayoutInfo,
   NodeColumn,
   NodeInfo,
-  StageInfo, StageNodeInfo
+  StageInfo,
+  StageNodeInfo,
 } from "../PipelineGraphModel";
 
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck

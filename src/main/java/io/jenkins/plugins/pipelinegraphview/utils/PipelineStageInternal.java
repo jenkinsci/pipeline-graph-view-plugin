@@ -3,6 +3,8 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+
+import hudson.model.Run;
 import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 
 public class PipelineStageInternal {
@@ -132,7 +134,7 @@ public class PipelineStageInternal {
         this.agent = aAgent;
     }
 
-    public PipelineStage toPipelineStage(List<PipelineStage> children) {
+    public PipelineStage toPipelineStage(List<PipelineStage> children, String runUrl) {
         return new PipelineStage(
                 id,
                 name,
@@ -142,10 +144,11 @@ public class PipelineStageInternal {
                 type,
                 title,
                 seqContainerName,
-                nextSibling != null ? nextSibling.toPipelineStage(Collections.emptyList()) : null,
+                nextSibling != null ? nextSibling.toPipelineStage(Collections.emptyList(), runUrl) : null,
                 sequential,
                 synthetic,
                 timingInfo,
-                agent);
+                agent,
+                runUrl);
     }
 }

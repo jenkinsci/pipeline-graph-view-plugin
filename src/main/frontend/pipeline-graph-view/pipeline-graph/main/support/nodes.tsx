@@ -6,7 +6,7 @@ import {
   LayoutInfo,
   NodeColumn,
   NodeInfo,
-  StageInfo,
+  StageInfo, StageNodeInfo
 } from "../PipelineGraphModel";
 
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck
@@ -36,7 +36,7 @@ export function Node({ node }: NodeProps) {
     return React.createElement("div", groupProps, ...groupChildren);
   }
 
-  const { title, state } = node.stage ?? {};
+  const { title, state, url } = node.stage ?? {};
   const resultClean = decodeResultValue(state);
 
   groupChildren.push(getSymbolForResult(resultClean));
@@ -50,7 +50,7 @@ export function Node({ node }: NodeProps) {
   // Most of the nodes are in shared code, so they're rendered at 0,0. We transform with a <g> to position them
   const groupProps = {
     key,
-    href: clickable ? node.url : null,
+    href: clickable ? document.head.dataset.rooturl + url : null,
     style: {
       position: "absolute",
       top: node.y,

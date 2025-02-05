@@ -1,19 +1,11 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import hudson.model.Action;
-import hudson.model.BallColor;
-import hudson.model.Item;
-import hudson.model.Queue;
-import hudson.security.Permission;
-import hudson.util.HttpResponses;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import net.sf.json.JSONObject;
+
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.workflow.cps.replay.ReplayAction;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -22,6 +14,19 @@ import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 import org.kohsuke.stapler.interceptor.RequirePOST;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import hudson.model.Action;
+import hudson.model.BallColor;
+import hudson.model.Item;
+import hudson.model.Queue;
+import hudson.model.Run;
+import hudson.model.queue.QueueTaskFuture;
+import hudson.security.Permission;
+import hudson.util.HttpResponses;
+import net.sf.json.JSONObject;
 
 public abstract class AbstractPipelineViewAction implements Action, IconSpec {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -56,7 +61,11 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
      */
     @RequirePOST
     @JavaScriptMethod
-    public boolean doRebuild() throws IOException, ExecutionException {
+    public JSONObject doRebuild() throws IOException, ExecutionException, Exception {
+        JSONObject result = new JSONObject();
+        result.put("success",false);
+        result.put("url","");
+
         if (run != null) {
             run.checkAnyPermission(Item.BUILD);
             ReplayAction replayAction = run.getAction(ReplayAction.class);
@@ -64,11 +73,25 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
                     replayAction.run2(replayAction.getOriginalScript(), replayAction.getOriginalLoadedScripts());
 
             if (item == null) {
-                return false;
+                return result;
             }
-            return true;
+
+            QueueTaskFuture<? extends Run<?, ?>> f = (QueueTaskFuture) item.getFuture();
+            if (f == null) {
+                return result;
+            }
+            Run<?, ?> b = f.waitForStart();
+
+            Integer number = b.getNumber();
+
+            result.put("success", true);
+            result.put("url", run.getUrl().replace("/" + run.getNumber() + "/", "/" + number + "/")
+                        + "pipeline-graph/");
+
+            return result;
         }
-        return false;
+
+        return result;
     }
 
     public String getFullBuildDisplayName() {

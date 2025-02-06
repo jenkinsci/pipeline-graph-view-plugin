@@ -48,10 +48,7 @@ public class PipelineNodeUtil {
     }
 
     public static boolean isStage(FlowNode node) {
-        return node != null
-                && ((node.getAction(StageAction.class) != null)
-                        || (node.getAction(LabelAction.class) != null
-                                && node.getAction(ThreadNameAction.class) == null));
+        return node != null && (node.getAction(StageAction.class) != null);
     }
 
     public static boolean isSyntheticStage(@Nullable FlowNode node) {

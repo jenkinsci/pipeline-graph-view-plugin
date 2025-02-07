@@ -22,7 +22,6 @@ import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.LabelAction;
 import org.jenkinsci.plugins.workflow.actions.LogAction;
 import org.jenkinsci.plugins.workflow.actions.QueueItemAction;
-import org.jenkinsci.plugins.workflow.actions.StageAction;
 import org.jenkinsci.plugins.workflow.actions.TagsAction;
 import org.jenkinsci.plugins.workflow.actions.ThreadNameAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
@@ -32,6 +31,7 @@ import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 import org.jenkinsci.plugins.workflow.support.actions.PauseAction;
 import org.jenkinsci.plugins.workflow.support.steps.ExecutorStep;
+import org.jenkinsci.plugins.workflow.support.steps.StageStep;
 import org.jenkinsci.plugins.workflow.support.steps.input.InputAction;
 
 /** @author Vivek Pandey */
@@ -48,7 +48,14 @@ public class PipelineNodeUtil {
     }
 
     public static boolean isStage(FlowNode node) {
-        return node != null && (node.getAction(StageAction.class) != null);
+        if (node != null && node instanceof StepStartNode) {
+            StepStartNode stepStartNode = (StepStartNode) node;
+            if (stepStartNode.getDescriptor() != null) {
+                StepDescriptor sd = stepStartNode.getDescriptor();
+                return sd != null && StageStep.DescriptorImpl.class.equals(sd.getClass()) && stepStartNode.isBody();
+            }
+        }
+        return false;
     }
 
     public static boolean isSyntheticStage(@Nullable FlowNode node) {

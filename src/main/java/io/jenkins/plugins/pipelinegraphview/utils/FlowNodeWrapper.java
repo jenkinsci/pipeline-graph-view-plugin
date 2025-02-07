@@ -17,7 +17,6 @@ import java.util.List;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.LabelAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
-import org.jenkinsci.plugins.workflow.graph.AtomNode;
 import org.jenkinsci.plugins.workflow.graph.BlockEndNode;
 import org.jenkinsci.plugins.workflow.graph.BlockStartNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
@@ -149,7 +148,7 @@ public class FlowNodeWrapper {
     }
 
     private static NodeType getNodeType(FlowNode node) {
-        if (node instanceof AtomNode) {
+        if (PipelineNodeUtil.isStep(node)) {
             return NodeType.STEP;
         } else if (PipelineNodeUtil.isStage(node)) {
             return NodeType.STAGE;

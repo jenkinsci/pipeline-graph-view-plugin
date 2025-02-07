@@ -26,6 +26,7 @@ import org.jenkinsci.plugins.workflow.actions.TagsAction;
 import org.jenkinsci.plugins.workflow.actions.ThreadNameAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
+import org.jenkinsci.plugins.workflow.graph.AtomNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
@@ -45,6 +46,19 @@ public class PipelineNodeUtil {
         return isSyntheticStage(node) && name.startsWith(DECLARATIVE_DISPLAY_NAME_PREFIX)
                 ? name.substring(DECLARATIVE_DISPLAY_NAME_PREFIX.length())
                 : name;
+    }
+
+    public static boolean isStep(FlowNode node) {
+        if (node != null) {
+            if (node instanceof AtomNode) {
+                return true;
+            }
+            if (node instanceof StepStartNode && !isStage(node)) {
+                StepStartNode stepStartNode = (StepStartNode) node;
+                return stepStartNode.isBody();
+            }
+        }
+        return false;
     }
 
     public static boolean isStage(FlowNode node) {

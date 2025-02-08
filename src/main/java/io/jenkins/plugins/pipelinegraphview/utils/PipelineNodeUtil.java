@@ -19,13 +19,13 @@ import org.jenkinsci.plugins.pipeline.StageStatus;
 import org.jenkinsci.plugins.pipeline.SyntheticStage;
 import org.jenkinsci.plugins.workflow.actions.ArgumentsAction;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
-import org.jenkinsci.plugins.workflow.actions.LabelAction;
 import org.jenkinsci.plugins.workflow.actions.LogAction;
 import org.jenkinsci.plugins.workflow.actions.QueueItemAction;
 import org.jenkinsci.plugins.workflow.actions.TagsAction;
 import org.jenkinsci.plugins.workflow.actions.ThreadNameAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
+import org.jenkinsci.plugins.workflow.cps.steps.ParallelStep;
 import org.jenkinsci.plugins.workflow.graph.AtomNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException;
@@ -53,7 +53,7 @@ public class PipelineNodeUtil {
             if (node instanceof AtomNode) {
                 return true;
             }
-            if (node instanceof StepStartNode && !isStage(node)) {
+            if (node instanceof StepStartNode && !isStage(node) && !isParallelBranch(node)) {
                 StepStartNode stepStartNode = (StepStartNode) node;
                 return stepStartNode.isBody();
             }
@@ -133,9 +133,14 @@ public class PipelineNodeUtil {
     }
 
     public static boolean isParallelBranch(@Nullable FlowNode node) {
-        return node != null
-                && node.getAction(LabelAction.class) != null
-                && node.getAction(ThreadNameAction.class) != null;
+        if (node != null && node instanceof StepStartNode) {
+            StepStartNode stepStartNode = (StepStartNode) node;
+            if (stepStartNode.getDescriptor() != null) {
+                StepDescriptor sd = stepStartNode.getDescriptor();
+                return sd != null && ParallelStep.DescriptorImpl.class.equals(sd.getClass()) && stepStartNode.isBody();
+            }
+        }
+        return false;
     }
 
     public static boolean isUnhandledException(@Nullable FlowNode node) {

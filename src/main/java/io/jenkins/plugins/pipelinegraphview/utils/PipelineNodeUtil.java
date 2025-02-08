@@ -234,17 +234,15 @@ public class PipelineNodeUtil {
         return (pauseAction != null && pauseAction.isPaused());
     }
 
-    /* Untested way of determining if we are a parallel block.
-     * WARNING: Use with caution.
-     */
     protected static boolean isParallelBlock(@NonNull FlowNode node) {
-        /*
-         * TODO: Find a better method - list of expected labels.
-         * Seems to only have (not sure if this is true for other nodes as well though):
-         * org.jenkinsci.plugins.workflow.support.actions.LogStorageAction
-         * org.jenkinsci.plugins.workflow.actions.TimingAction
-         */
-        return getDisplayName(node).startsWith("Execute in parallel");
+        if (node != null && node instanceof StepStartNode) {
+            StepStartNode stepStartNode = (StepStartNode) node;
+            if (stepStartNode.getDescriptor() != null) {
+                StepDescriptor sd = stepStartNode.getDescriptor();
+                return sd != null && ParallelStep.DescriptorImpl.class.equals(sd.getClass()) && !stepStartNode.isBody();
+            }
+        }
+        return false;
     }
 
     /**

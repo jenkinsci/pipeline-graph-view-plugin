@@ -19,6 +19,7 @@ import org.jenkinsci.plugins.pipeline.StageStatus;
 import org.jenkinsci.plugins.pipeline.SyntheticStage;
 import org.jenkinsci.plugins.workflow.actions.ArgumentsAction;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
+import org.jenkinsci.plugins.workflow.actions.LabelAction;
 import org.jenkinsci.plugins.workflow.actions.LogAction;
 import org.jenkinsci.plugins.workflow.actions.QueueItemAction;
 import org.jenkinsci.plugins.workflow.actions.TagsAction;
@@ -39,6 +40,7 @@ import org.jenkinsci.plugins.workflow.support.steps.input.InputAction;
 public class PipelineNodeUtil {
 
     private static final String DECLARATIVE_DISPLAY_NAME_PREFIX = "Declarative: ";
+    private static final String PARALLEL_SYNTHETIC_STAGE_NAME = "Parallel";
 
     public static String getDisplayName(@NonNull FlowNode node) {
         ThreadNameAction threadNameAction = node.getAction(ThreadNameAction.class);
@@ -74,7 +76,9 @@ public class PipelineNodeUtil {
                 return sd != null && StageStep.DescriptorImpl.class.equals(sd.getClass()) && stepStartNode.isBody();
             }
         }
-        return false;
+        LabelAction labelAction = node.getAction(LabelAction.class);
+        ThreadNameAction threadNameAction = node.getAction(ThreadNameAction.class);
+        return labelAction != null && PARALLEL_SYNTHETIC_STAGE_NAME.equals(labelAction.getDisplayName()) && threadNameAction == null;
     }
 
     public static boolean isSyntheticStage(@Nullable FlowNode node) {

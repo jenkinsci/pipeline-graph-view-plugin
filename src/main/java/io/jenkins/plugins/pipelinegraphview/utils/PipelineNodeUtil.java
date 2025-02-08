@@ -53,9 +53,14 @@ public class PipelineNodeUtil {
             if (node instanceof AtomNode) {
                 return true;
             }
-            if (node instanceof StepStartNode && !isStage(node) && !isParallelBranch(node)) {
+            if (node instanceof StepStartNode) {
                 StepStartNode stepStartNode = (StepStartNode) node;
-                return stepStartNode.isBody();
+                boolean takesImplicitBlockArgument = false;
+                StepDescriptor sd = stepStartNode.getDescriptor();
+                if (sd != null) {
+                    takesImplicitBlockArgument = sd.takesImplicitBlockArgument();
+                }
+                return !isStage(node) && !isParallelBranch(node) && stepStartNode.isBody() && !takesImplicitBlockArgument;
             }
         }
         return false;

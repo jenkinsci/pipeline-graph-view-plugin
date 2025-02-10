@@ -72,18 +72,21 @@ public class PipelineNodeUtil {
     }
 
     public static boolean isStage(FlowNode node) {
-        if (node != null && node instanceof StepStartNode) {
-            StepStartNode stepStartNode = (StepStartNode) node;
-            if (stepStartNode.getDescriptor() != null) {
-                StepDescriptor sd = stepStartNode.getDescriptor();
-                return sd != null && StageStep.DescriptorImpl.class.equals(sd.getClass()) && stepStartNode.isBody();
+        if (node != null) {
+            if (node instanceof StepStartNode) {
+                StepStartNode stepStartNode = (StepStartNode) node;
+                if (stepStartNode.getDescriptor() != null) {
+                    StepDescriptor sd = stepStartNode.getDescriptor();
+                    return sd != null && StageStep.DescriptorImpl.class.equals(sd.getClass()) && stepStartNode.isBody();
+                }
             }
+            LabelAction labelAction = node.getAction(LabelAction.class);
+            ThreadNameAction threadNameAction = node.getAction(ThreadNameAction.class);
+            return labelAction != null
+                    && PARALLEL_SYNTHETIC_STAGE_NAME.equals(labelAction.getDisplayName())
+                    && threadNameAction == null;
         }
-        LabelAction labelAction = node.getAction(LabelAction.class);
-        ThreadNameAction threadNameAction = node.getAction(ThreadNameAction.class);
-        return labelAction != null
-                && PARALLEL_SYNTHETIC_STAGE_NAME.equals(labelAction.getDisplayName())
-                && threadNameAction == null;
+        return false;
     }
 
     public static boolean isSyntheticStage(@Nullable FlowNode node) {

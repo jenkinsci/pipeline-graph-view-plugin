@@ -62,7 +62,10 @@ public class PipelineNodeUtil {
                 if (sd != null) {
                     takesImplicitBlockArgument = sd.takesImplicitBlockArgument();
                 }
-                return !isStage(node) && !isParallelBranch(node) && stepStartNode.isBody() && !takesImplicitBlockArgument;
+                return !isStage(node)
+                        && !isParallelBranch(node)
+                        && stepStartNode.isBody()
+                        && !takesImplicitBlockArgument;
             }
         }
         return false;
@@ -78,7 +81,9 @@ public class PipelineNodeUtil {
         }
         LabelAction labelAction = node.getAction(LabelAction.class);
         ThreadNameAction threadNameAction = node.getAction(ThreadNameAction.class);
-        return labelAction != null && PARALLEL_SYNTHETIC_STAGE_NAME.equals(labelAction.getDisplayName()) && threadNameAction == null;
+        return labelAction != null
+                && PARALLEL_SYNTHETIC_STAGE_NAME.equals(labelAction.getDisplayName())
+                && threadNameAction == null;
     }
 
     public static boolean isSyntheticStage(@Nullable FlowNode node) {

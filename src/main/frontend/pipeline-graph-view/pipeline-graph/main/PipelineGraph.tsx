@@ -162,8 +162,8 @@ export class PipelineGraph extends React.Component {
 
     let nodes = [];
     for (const column of nodeColumns) {
-      const topStageState = column.topStage?.state ?? Result.unknown; 
-    
+      const topStageState = column.topStage?.state ?? Result.unknown;
+
       for (const row of column.rows) {
         for (const node of row) {
           // If the topStage is still running but one of its child nodes has completed,
@@ -172,14 +172,14 @@ export class PipelineGraph extends React.Component {
           // This issue is reproducible in the complexSmokes test.
           if (
             column.topStage &&
-            'stage' in node &&
+            "stage" in node &&
             node.stage &&
             Array.isArray(column.topStage.children) &&
             column.topStage.children.includes(node.stage)
           ) {
             node.stage.state = topStageState;
           }
-    
+
           nodes.push(node);
         }
       }

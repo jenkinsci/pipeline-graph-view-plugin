@@ -10,7 +10,7 @@ import {
   StageInfo,
 } from "./PipelineGraphModel";
 import { layoutGraph } from "./PipelineGraphLayout";
-
+import { Result } from "./PipelineGraphModel";
 import { Node, SelectionHighlight } from "./support/nodes";
 import {
   BigLabel,
@@ -162,8 +162,24 @@ export class PipelineGraph extends React.Component {
 
     let nodes = [];
     for (const column of nodeColumns) {
+      const topStageState = column.topStage?.state ?? Result.unknown; 
+    
       for (const row of column.rows) {
         for (const node of row) {
+          // If the topStage is still running but one of its child nodes has completed,
+          // the UI may incorrectly display the childs status instead of the topStages.
+          // To ensure consistency, override the nodes state with the topStages state.
+          // This issue is reproducible in the complexSmokes test.
+          if (
+            column.topStage &&
+            'stage' in node &&
+            node.stage &&
+            Array.isArray(column.topStage.children) &&
+            column.topStage.children.includes(node.stage)
+          ) {
+            node.stage.state = topStageState;
+          }
+    
           nodes.push(node);
         }
       }

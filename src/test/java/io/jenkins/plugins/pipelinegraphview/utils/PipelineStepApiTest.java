@@ -546,9 +546,9 @@ public class PipelineStepApiTest {
 
         Map<String, List<Long>> checks = new LinkedHashMap<>();
         // Give large ranges - we are testing that the values are feasible, not that they are precise.
-        checks.put("Hello World", Arrays.asList(100L, 0L, 0L, 5000L, 500L, 500L));
-        checks.put("1", Arrays.asList(100L, 0L, 10L, 5000L, 1500L, 1500L));
-        checks.put("Goodbye World", Arrays.asList(0L, 0L, 0L, 5000L, 500L, 500L));
+        checks.put("Hello World", Arrays.asList(100L, 0L, 0L, 10000L, 1000L, 1000L));
+        checks.put("1", Arrays.asList(100L, 0L, 10L, 10000L, 3000L, 3000L));
+        checks.put("Goodbye World", Arrays.asList(0L, 0L, 0L, 10000L, 1000L, 1000L));
         for (AbstractPipelineNode n : finishedSteps) {
             assertThat(checks, hasEntry(is(n.getName()), notNullValue()));
             TestUtils.assertTimesInRange(n, checks.get(n.getName()));

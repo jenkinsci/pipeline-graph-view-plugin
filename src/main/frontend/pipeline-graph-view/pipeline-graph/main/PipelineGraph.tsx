@@ -175,7 +175,8 @@ export class PipelineGraph extends React.Component {
             "stage" in node &&
             node.stage &&
             Array.isArray(column.topStage.children) &&
-            column.topStage.children.includes(node.stage)
+            column.topStage.children.includes(node.stage) &&
+            this.props.collapsed
           ) {
             node.stage.state = topStageState;
           }

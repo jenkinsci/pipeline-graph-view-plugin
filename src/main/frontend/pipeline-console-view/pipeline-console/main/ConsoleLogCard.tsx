@@ -104,7 +104,11 @@ export class ConsoleLogCard extends React.Component<
           <Grid item xs={6} sm className="show-more-console">
             <Button
               variant="text"
-              sx={{ padding: "0px", textTransform: "none" }}
+              sx={{
+                padding: "0px",
+                textTransform: "none",
+                marginLeft: "0.25rem",
+              }}
               onClick={() => {
                 let startByte =
                   this.props.stepBuffer.startByte - LOG_FETCH_SIZE;
@@ -276,6 +280,7 @@ export class ConsoleLogCard extends React.Component<
           logBuffer={this.props.stepBuffer}
           handleMoreConsoleClick={this.props.handleMoreConsoleClick}
           step={this.props.step}
+          truncatedLogWarning={this.getTruncatedLogWarning()}
           maxHeightScale={0.85}
           open={this.state.open}
           setClose={handleClose}

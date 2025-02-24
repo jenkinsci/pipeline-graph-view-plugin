@@ -7,17 +7,16 @@ import hudson.model.Result;
 import java.util.List;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class PipelineStepApiLegacyTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class PipelineStepApiLegacyTest {
 
     @Test
-    public void unstableSmokes() throws Exception {
+    void unstableSmokes(JenkinsRule j) throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(j, "unstableSmokes", "unstableSmokes.jenkinsfile", Result.FAILURE);
         PipelineStepApi api = new PipelineStepApi(run);
 
@@ -60,7 +59,7 @@ public class PipelineStepApiLegacyTest {
     }
 
     @Test
-    public void complexParallelBranchesHaveCorrectSteps() throws Exception {
+    void complexParallelBranchesHaveCorrectSteps(JenkinsRule j) throws Exception {
         // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
         // (as it takes a
         // long time)
@@ -130,7 +129,7 @@ public class PipelineStepApiLegacyTest {
     }
 
     @Test
-    public void nestedStagesHaveCorrectSteps() throws Exception {
+    void nestedStagesHaveCorrectSteps(JenkinsRule j) throws Exception {
         // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
         // (as it takes a
         // long time)
@@ -181,7 +180,7 @@ public class PipelineStepApiLegacyTest {
     }
 
     @Test
-    public void getAllStepsReturnsStepsForComplexParallelBranches() throws Exception {
+    void getAllStepsReturnsStepsForComplexParallelBranches(JenkinsRule j) throws Exception {
         // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
         // (as it takes a
         // long time)
@@ -219,7 +218,7 @@ public class PipelineStepApiLegacyTest {
     }
 
     @Test
-    public void getAllStepsReturnsStepsForNestedStages() throws Exception {
+    void getAllStepsReturnsStepsForNestedStages(JenkinsRule j) throws Exception {
         // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
         // (as it takes a
         // long time)
@@ -239,7 +238,7 @@ public class PipelineStepApiLegacyTest {
 
     @Issue("GH#92")
     @Test
-    public void githubIssue92RegressionTest() throws Exception {
+    void githubIssue92RegressionTest(JenkinsRule j) throws Exception {
         // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
         // (as it takes a
         // long time)
@@ -307,7 +306,7 @@ public class PipelineStepApiLegacyTest {
 
     @Issue("GH#213")
     @Test
-    public void githubIssue213RegressionTest_scriptedError() throws Exception {
+    void githubIssue213RegressionTest_scriptedError(JenkinsRule j) throws Exception {
         // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
         // (as it takes a
         // long time)
@@ -330,7 +329,7 @@ public class PipelineStepApiLegacyTest {
 
     @Issue("GH#213")
     @Test
-    public void githubIssue213RegressionTest_errorStep() throws Exception {
+    void githubIssue213RegressionTest_errorStep(JenkinsRule j) throws Exception {
         // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
         // (as it takes a
         // long time)
@@ -354,7 +353,7 @@ public class PipelineStepApiLegacyTest {
 
     @Issue("GH#213")
     @Test
-    public void githubIssue213RegressionTest_pipelineCallsUndefinedVar() throws Exception {
+    void githubIssue213RegressionTest_pipelineCallsUndefinedVar(JenkinsRule j) throws Exception {
         // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
         // (as it takes a
         // long time)
@@ -371,7 +370,7 @@ public class PipelineStepApiLegacyTest {
 
     @Issue("GH#274")
     @Test
-    public void githubIssue274RegressionTest_suppressFlowInterruptedExceptions() throws Exception {
+    void githubIssue274RegressionTest_suppressFlowInterruptedExceptions(JenkinsRule j) throws Exception {
         TestUtils.createJob(j, "simpleError", "simpleError.jenkinsfile");
 
         // It's a bit dirty, but do this in one to avoid reloading and rerunning the job

@@ -1,23 +1,22 @@
 package io.jenkins.plugins.pipelinegraphview;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import org.htmlunit.html.HtmlPage;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class PipelineGraphViewRebuildTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class PipelineGraphViewRebuildTest {
 
     @Issue("GH#330")
     @Test
-    public void rebuildButtonStartsNewBuild() throws Exception {
+    void rebuildButtonStartsNewBuild(JenkinsRule j) throws Exception {
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "hello_world", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
@@ -30,7 +29,7 @@ public class PipelineGraphViewRebuildTest {
 
     @Issue("GH#330")
     @Test
-    public void rebuildButtonRedirectsForParameterizedJob() throws Exception {
+    void rebuildButtonRedirectsForParameterizedJob(JenkinsRule j) throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "echo_parameterized", "gh330_parameterizedBuild.jenkinsfile", Result.SUCCESS);
 

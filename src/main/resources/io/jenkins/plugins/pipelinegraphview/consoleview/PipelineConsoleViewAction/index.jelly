@@ -6,6 +6,8 @@
         <l:main-panel>
             <p:symbols />
 
+            <j:out value="${h.generateConsoleAnnotationScriptAndStylesheet()}"/>
+
             <div class="jenkins-app-bar">
                 <div class="jenkins-app-bar__content">
                     <h1>

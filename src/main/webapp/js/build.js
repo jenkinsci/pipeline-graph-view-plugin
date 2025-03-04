@@ -6,7 +6,7 @@ if (rebuildButton) {
     const rebuildAction = window[`${rebuildButton.dataset.proxyName}`];
     rebuildAction.doRebuild(function (success) {
       const result = success.responseJSON;
-      if (result) {
+      if (result && result.success) {
         window.hoverNotification(rebuildButton.dataset.successMessage, rebuildButton);
       }
     });

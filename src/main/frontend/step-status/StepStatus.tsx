@@ -12,11 +12,13 @@ interface Props {
 }
 
 const Component: FunctionComponent<Props> = (props: Props) => {
-  const statusIcon = getStepStatus(props.status, props.percent, props.radius);
+  const icon = getSymbolForResult(decodeResultValue(props.status));
   return (
     <>
-      {statusIcon}
-      <span style={{ marginLeft: "0.3rem", padding: "auto" }}>
+      <span className="task-icon-link">
+        {icon}
+      </span>
+      <span className="task-link-text">
         {props.text}
       </span>
     </>

@@ -1,0 +1,47 @@
+#tasks {
+  margin: 0;
+}
+
+.pgv-tree-item {
+  font-family: var(--font-family-sans) !important;
+
+  .task-icon-link > div {
+    display: contents;
+  }
+}
+
+.pgv-toggle-icon {
+  width: 1rem;
+  height: 1rem;
+  margin-left: auto;
+  transition: var(--standard-transition);
+
+  &--active {
+    rotate: 90deg;
+  }
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+    color: var(--text-color-secondary);
+
+    * {
+      stroke-width: 50px !important;
+    }
+  }
+}
+
+.tree-node-header {
+  display: flex;
+  justify-content: stretch;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 0.7rem !important;
+  width: 300px;
+}
+
+.tree-children {
+  margin-left: 1.5rem;
+  border-left: var(--jenkins-border);
+  padding-left: 0.5rem;
+}

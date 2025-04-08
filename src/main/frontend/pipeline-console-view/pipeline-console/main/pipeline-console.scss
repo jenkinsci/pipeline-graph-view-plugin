@@ -232,15 +232,13 @@ g.build-status-icon__outer {
 // Console styling
 a.console-line-number {
   text-align: right;
-  width: 50px;
+  width: 30px;
   padding-left: 10px;
-  color: var(--link-color);
+  color: var(--text-color-secondary);
   white-space: nowrap;
   display: inline-block;
   flex-shrink: 0;
-  -webkit-user-select: none; /* Safari */
-  -ms-user-select: none; /* IE 10 and IE 11 */
-  user-select: none; /* Standard syntax */
+  user-select: none;
 }
 
 div.console-output-line-anchor {

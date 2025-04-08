@@ -1,5 +1,5 @@
 import React from "react";
-import { Virtuoso, VirtuosoHandle, LogLevel } from "react-virtuoso";
+import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
 import { useCallback, useState, useEffect, useRef } from "react";
 import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
 

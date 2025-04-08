@@ -1,20 +1,13 @@
 import React from "react";
 import { lazy, Suspense } from "react";
-import { styled } from "@mui/material/styles";
 import {
   Button,
-  Card,
-  CardContent,
   CircularProgress,
-  Collapse,
   Grid,
   Typography,
 } from "@mui/material";
-import CardActionArea from "@mui/material/CardActions";
-import IconButton, { IconButtonProps } from "@mui/material/IconButton";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import LinkIcon from "@mui/icons-material/Link";
-import { Tooltip } from "react-tippy";
+import './console-log-card.scss';
 
 import {
   LOG_FETCH_SIZE,
@@ -28,27 +21,11 @@ import { getStepStatus } from "../../../step-status/StepStatus";
 
 const ConsoleLogStream = lazy(() => import("./ConsoleLogStream"));
 
-interface ExpandMoreProps extends IconButtonProps {
-  expand: boolean;
-}
-
 declare module "react-tippy" {
   export interface TooltipProps {
     children?: React.ReactNode;
   }
 }
-
-const ExpandMore = styled((props: ExpandMoreProps) => {
-  const { expand, ...other } = props;
-  return <button {...other} />;
-})(({ theme, expand }) => ({
-  className: "jenkins-button jenkins-button--tertiary",
-  transform: !expand ? "rotate(0deg)" : "rotate(180deg)",
-  marginLeft: "auto",
-  transition: theme.transitions.create("transform", {
-    duration: theme.transitions.duration.shortest,
-  }),
-}));
 
 export type ConsoleLogCardProps = {
   step: StepInfo;
@@ -149,22 +126,6 @@ export class ConsoleLogCard extends React.Component<
     return `${(size / gib).toFixed(2)}GiB`;
   }
 
-  getStepHeaderTitle(stepTitle: string, stepId: string) {
-    if (stepTitle) {
-      return (
-        // <Typography
-        //   className="log-card--text"
-        //   component="div"
-        //   key={`step-duration-text-${stepId}`}
-        // >
-          <>{stepTitle}</>
-        // </Typography>
-      );
-    } else {
-      return null;
-    }
-  }
-
   render() {
     const handleOpen = () => this.setState({ open: true });
     const handleClose = () => this.setState({ open: false });
@@ -176,13 +137,14 @@ export class ConsoleLogCard extends React.Component<
     );
 
     return (
-      <div style={{ border: "var(--jenkins-border)", borderRadius: "10px" }}
+      <div
+        style={{ border: "var(--jenkins-border)", marginBottom: "0.375rem", background: "var(--card-background)", borderRadius: "10px", paddingInline: "0.65rem" }}
         // className="step-detail-group"
         key={`step-card-${this.props.step.id}`}
         // style={{ marginBottom: "5px" }}
       >
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr auto" }}
+        <div
+          style={{ display: "grid", gridTemplateColumns: "1fr auto" }}
           // onClick={this.handleStepToggle}
           // aria-label="Show console log."
           // className={`step-header step-header-${this.props.step.state.toLowerCase()} step-detail-group-${
@@ -190,74 +152,64 @@ export class ConsoleLogCard extends React.Component<
           //*}`}*/}
           key={`step-action-area-${this.props.step.id}`}
         >
+          <div
+            className="thinggg"
+          >
+            {statusIcon}
 
-         <div style={{ display: "flex", alignItems: "center", fontSize: "var(--font-size-sm)" }}>
-           {statusIcon}
+            <span style={{ fontWeight: "450" }}>
+              {this.props.step.name}
+            </span>
 
-           {/*<Typography*/}
-           {/*  className="log-card--header"*/}
-           {/*  noWrap={true}*/}
-           {/*  component="div"*/}
-           {/*  key={`step-name-text-${this.props.step.id}`}*/}
-           {/*  sx={{ flexGrow: 3 }}*/}
-           {/*>*/}
-             {this.props.step.name}
-           {/*</Typography>*/}
+            {this.props.step.title}
+          </div>
 
-           {this.getStepHeaderTitle(
-             this.props.step.title,
-             this.props.step.id,
-           )}
+          <div className={"actionsss"}>
+            <span style={{ color: "var(--text-color-secondary)" }}>
+              {this.props.step.totalDurationMillis.substring(
+                this.props.step.totalDurationMillis.indexOf(" ") + 1,
+                this.props.step.totalDurationMillis.length,
+              )}
+            </span>
+            {/*<Tooltip title="Open console log in full-screen mode">*/}
+            <button
+              className="jenkins-button jenkins-button--tertiary"
+              aria-label={"Open console log in full-screen mode"}
+              onClick={handleOpen}
+            >
+              <ResizeIcon />
+            </button>
+            {/*</Tooltip>*/}
+            {/*<Tooltip title="View step as plain text">*/}
+            <button
+              className="jenkins-button jenkins-button--tertiary"
+              onClick={() => window.open(`log?nodeId=${this.props.step.id}`)}
+              aria-label="View step as plain text"
+            >
+              <LinkIcon />
+            </button>
+            {/*</Tooltip>*/}
 
-           {/*<Typography*/}
-           {/*  className="log-card--text log-card--text-duration"*/}
-           {/*  align="right"*/}
-           {/*  component="div"*/}
-           {/*  key={`step-duration-text-${this.props.step.id}`}*/}
-           {/*>*/}
-             {this.props.step.totalDurationMillis.substring(
-               this.props.step.totalDurationMillis.indexOf(" ") + 1,
-               this.props.step.totalDurationMillis.length,
-             )}
-           {/*</Typography>*/}
-         </div>
-
-          <div style={{ display: "flex" }}>
-              {/*<Tooltip title="Open console log in full-screen mode">*/}
-                <button
-                  className="jenkins-button jenkins-button--tertiary"
-                  aria-label={"Open console log in full-screen mode"}
-                  onClick={handleOpen}
-                >
-                  <ResizeIcon />
-                </button>
-              {/*</Tooltip>*/}
-              {/*<Tooltip title="View step as plain text">*/}
-                <button
-                  className="jenkins-button jenkins-button--tertiary"
-                  onClick={() =>
-                    window.open(`log?nodeId=${this.props.step.id}`)
-                  }
-                  aria-label="View step as plain text"
-                >
-                  <LinkIcon/>
-                </button>
-              {/*</Tooltip>*/}
-
-              {/*<Tooltip title="Open console log">*/}
-                <ExpandMore
-                  expand={this.props.isExpanded}
-                  aria-label={"Open console log"}
-                  aria-expanded
-                  key={`step-expand-button-${this.props.step.id}`}
-                >
-                  <ExpandMoreIcon
-                    key={`step-expand-icon-${this.props.step.id}`}
-                  />
-                </ExpandMore>
-              {/*</Tooltip>*/}
-            </div>
-
+            {/*<Tooltip title="Open console log">*/}
+            <button
+              onClick={this.handleStepToggle}
+              className="jenkins-button jenkins-button--tertiary"
+              aria-label={"Open console log"}
+              key={`step-expand-button-${this.props.step.id}`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="48"
+                  d="M184 112l144 144-144 144"
+                />
+              </svg>
+            </button>
+            {/*</Tooltip>*/}
+          </div>
         </div>
 
         <ConsoleLogModal
@@ -270,14 +222,8 @@ export class ConsoleLogCard extends React.Component<
           setClose={handleClose}
         />
 
-        <Collapse
-          in={this.props.isExpanded}
-          timeout={50}
-          unmountOnExit
-          key={`step-colapsable-console-${this.props.step.id}`}
-        >
-          <div
-          >
+        {this.props.isExpanded && (
+          <div style={{ padding: "0.5rem" }}>
             <div>{this.getTruncatedLogWarning()}</div>
             <Suspense fallback={<CircularProgress />}>
               <ConsoleLogStream
@@ -288,7 +234,7 @@ export class ConsoleLogCard extends React.Component<
               />
             </Suspense>
           </div>
-        </Collapse>
+        )}
       </div>
     );
   }

@@ -64,18 +64,20 @@ function TreeNode({ stage, selected, onSelect }: TreeNodeProps) {
             isSelected ? "task-link--active" : ""
           }`}
         >
-          <StepStatus
-            status={stage.state}
-            text={stage.name}
-            key={`status-${stage.id}`}
-            percent={stage.completePercent}
-            radius={10}
-          />
-          {stage.state === Result.running && (
-            <span style={{ color: "var(--text-color-secondary)" }}>
-              {stage.totalDurationMillis}
-            </span>
-          )}
+          <div>
+            <StepStatus
+              status={stage.state}
+              text={stage.name}
+              key={`status-${stage.id}`}
+              percent={stage.completePercent}
+              radius={10}
+            />
+            {stage.state === Result.running && (
+              <span style={{ color: "var(--text-color-secondary)" }}>
+                {stage.totalDurationMillis}
+              </span>
+            )}
+          </div>
         </button>
 
         {hasChildren && (

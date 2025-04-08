@@ -30,8 +30,10 @@ export default function SplitView(props: SplitViewNewProps) {
   });
 
   return (
-    <div className="pgv-split-view__container"
-         style={{ gridTemplateColumns: `${panelWidth}px 1fr` }}>
+    <div
+      className="pgv-split-view__container"
+      style={{ gridTemplateColumns: `${panelWidth}px 1fr` }}
+    >
       <div className="pgv-split-view__side-panel">
         {props.children[0]}
 

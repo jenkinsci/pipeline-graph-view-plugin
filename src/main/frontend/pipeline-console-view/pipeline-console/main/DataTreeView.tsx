@@ -6,27 +6,42 @@ import {
 import StepStatus from "../../../step-status/StepStatus";
 import "./data-tree-view.scss";
 
-interface DataTreeViewProps {
-  stages: StageInfo[];
-  selected: string;
-  onNodeSelect: (event: React.MouseEvent, nodeId: string) => void;
-}
+export default function DataTreeView({
+  stages,
+  selected,
+  onNodeSelect,
+}: DataTreeViewProps) {
+  const handleSelect = useCallback(
+    (event: React.MouseEvent, nodeId: string) => {
+      onNodeSelect(event, nodeId);
+    },
+    [onNodeSelect],
+  );
 
-interface TreeNodeProps {
-  stage: StageInfo;
-  selected: string;
-  onSelect: (event: React.MouseEvent, id: string) => void;
+  return (
+    <div className="custom-tree-view" id="tasks">
+      {stages.map((stage) => (
+        <TreeNode
+          key={stage.id}
+          stage={stage}
+          selected={selected}
+          onSelect={handleSelect}
+        />
+      ))}
+    </div>
+  );
 }
 
 function TreeNode({ stage, selected, onSelect }: TreeNodeProps) {
   const hasChildren = stage.children && stage.children.length > 0;
   const isSelected = String(stage.id) === selected;
-  const [isExpanded, setIsExpanded] = useState<boolean>(hasSelectedDescendant(stage));
+  const [isExpanded, setIsExpanded] = useState<boolean>(
+    hasSelectedDescendant(stage),
+  );
 
   function hasSelectedDescendant(stage: StageInfo): boolean {
     return stage.children?.some(
-      (child) =>
-        String(child.id) === selected || hasSelectedDescendant(child)
+      (child) => String(child.id) === selected || hasSelectedDescendant(child),
     );
   }
 
@@ -101,28 +116,14 @@ function TreeNode({ stage, selected, onSelect }: TreeNodeProps) {
   );
 }
 
-export default function DataTreeView({
-                                       stages,
-                                       selected,
-                                       onNodeSelect,
-                                     }: DataTreeViewProps) {
-  const handleSelect = useCallback(
-    (event: React.MouseEvent, nodeId: string) => {
-      onNodeSelect(event, nodeId);
-    },
-    [onNodeSelect]
-  );
+interface DataTreeViewProps {
+  stages: StageInfo[];
+  selected: string;
+  onNodeSelect: (event: React.MouseEvent, nodeId: string) => void;
+}
 
-  return (
-    <div className="custom-tree-view" id="tasks">
-      {stages.map((stage) => (
-        <TreeNode
-          key={stage.id}
-          stage={stage}
-          selected={selected}
-          onSelect={handleSelect}
-        />
-      ))}
-    </div>
-  );
+interface TreeNodeProps {
+  stage: StageInfo;
+  selected: string;
+  onSelect: (event: React.MouseEvent, id: string) => void;
 }

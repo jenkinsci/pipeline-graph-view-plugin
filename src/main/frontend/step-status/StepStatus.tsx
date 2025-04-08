@@ -15,12 +15,8 @@ const Component: FunctionComponent<Props> = (props: Props) => {
   const icon = getSymbolForResult(decodeResultValue(props.status));
   return (
     <>
-      <span className="task-icon-link">
-        {icon}
-      </span>
-      <span className="task-link-text">
-        {props.text}
-      </span>
+      <span className="task-icon-link">{icon}</span>
+      <span className="task-link-text">{props.text}</span>
     </>
   );
 };

@@ -14,12 +14,9 @@ const TreeNode: React.FC<{
   selected: string;
   onSelect: (event: React.MouseEvent, id: string) => void;
 }> = ({ stage, selected, onSelect }) => {
-  const [expanded, setExpanded] = useState<boolean>(false);
-
-  const handleToggle = () => setExpanded((prev) => !prev);
-
   const hasChildren = stage.children && stage.children.length > 0;
   const isSelected = String(stage.id) === selected;
+  const anyChildrenSelected = isSelected || stage.children.some((item) => String(item.id) === selected);
 
   return (
     <div className="task">
@@ -40,7 +37,7 @@ const TreeNode: React.FC<{
           {hasChildren && (
             <span
               className={`pgv-toggle-icon ${
-                isSelected ? "pgv-toggle-icon--active" : ""
+                anyChildrenSelected ? "pgv-toggle-icon--active" : ""
               }`}
             >
               <svg
@@ -60,7 +57,7 @@ const TreeNode: React.FC<{
           )}
         </button>
       </div>
-      {hasChildren && isSelected && (
+      {hasChildren && anyChildrenSelected && (
         <div className="tree-children">
           {stage.children!.map((child) => (
             <TreeNode

@@ -3,7 +3,7 @@ import "./split-view.scss";
 
 export default function SplitView(props: SplitViewNewProps) {
   const [isDragging, setIsDragging] = useState(false);
-  const [panelWidth, setPanelWidth] = useState(320);
+  const [panelWidth, setPanelWidth] = useState(300);
   const dividerRef = useRef<HTMLDivElement>(null);
 
   const startDragging = (e: React.MouseEvent) => {

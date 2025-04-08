@@ -1,9 +1,11 @@
 #tasks {
   margin: 0;
+  padding-right: 1.4rem;
 }
 
 .pgv-tree-item {
   font-family: var(--font-family-sans) !important;
+  padding-block: 0.375rem !important;
 
   .task-icon-link > div {
     display: contents;
@@ -36,12 +38,25 @@
   justify-content: stretch;
   align-items: center;
   gap: 0.5rem;
-  margin-left: 0.7rem !important;
-  width: 300px;
 }
 
 .tree-children {
-  margin-left: 1.5rem;
-  border-left: var(--jenkins-border);
-  padding-left: 0.5rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  margin-top: 0.125rem;
+  padding-left: calc(1.35rem + 1.375rem + var(--jenkins-border-width));
+  padding-right: 0.7rem;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0.375rem;
+    left: calc(0.7rem + (1.375rem / 2) - (var(--jenkins-border-width) / 2));
+    bottom: 0.375rem;
+    background-color: var(--jenkins-border-color);
+    width: var(--jenkins-border-width);
+    border-radius: 10px;
+  }
 }

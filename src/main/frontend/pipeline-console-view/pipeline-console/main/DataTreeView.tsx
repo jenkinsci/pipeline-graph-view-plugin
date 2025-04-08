@@ -21,11 +21,17 @@ interface TreeNodeProps {
 function TreeNode({ stage, selected, onSelect }: TreeNodeProps) {
   const hasChildren = stage.children && stage.children.length > 0;
   const isSelected = String(stage.id) === selected;
+  const [isExpanded, setIsExpanded] = useState<boolean>(hasSelectedDescendant(stage));
 
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  function hasSelectedDescendant(stage: StageInfo): boolean {
+    return stage.children?.some(
+      (child) =>
+        String(child.id) === selected || hasSelectedDescendant(child)
+    );
+  }
 
   const handleToggleClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // prevent triggering select
+    e.stopPropagation();
     setIsExpanded(!isExpanded);
   };
 
@@ -37,7 +43,7 @@ function TreeNode({ stage, selected, onSelect }: TreeNodeProps) {
             if (!isSelected) {
               onSelect(e, String(stage.id));
             }
-            setIsExpanded(true);
+            setIsExpanded(!isExpanded);
           }}
           className={`pgv-tree-item task-link ${
             isSelected ? "task-link--active" : ""

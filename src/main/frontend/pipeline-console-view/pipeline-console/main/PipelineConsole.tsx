@@ -126,7 +126,8 @@ export default class PipelineConsole extends React.Component<
       // Store the stage that is selected - either by the user or URL params.
       selectedStage: "",
       // Store the stage that should be open in the stage view.
-      openStage: "",
+      // TODO - Hacky?
+      openStage: new URLSearchParams(document.location.search.substring(1)).get("selected-node") || "",
       expandedStages: [] as string[],
       expandedSteps: [] as string[],
       stages: [] as StageInfo[],
@@ -514,41 +515,15 @@ export default class PipelineConsole extends React.Component<
   };
 
   render() {
-    const buttonPositionOffset = 10;
-    const collapseDirection = "left";
-    const collapseTransition = 500;
-    const grabberSize = 50;
-    const buttonTransition = "grow";
     const stageViewPaneClass = `split-pane ${this.state.isStageViewExpanded ? "" : "collapsed"}`;
 
     return (
-      <SplitView
-        // initialSize ratio
-        // initialSizes={[2, 8]}
-        // // minSize in Pixels (for all panes)
-        // minSizes={250}
-        // className={stageViewPaneClass}
-        // split="vertical"
-        // collapse={{
-        //   collapseTransitionTimeout: collapseTransition,
-        //   buttonTransition,
-        //   collapseDirection,
-        //   buttonPositionOffset,
-        // }}
-        // hooks={{
-        //   onCollapse: this.handlePaneCollapse,
-        // }}
-        // resizerOptions={{
-        //   grabberSize,
-        // }}
-      >
+      <SplitView>
         <div className="split-pane" key="tree-view" id="tree-view-pane">
           <Suspense fallback={<CircularProgress />}>
             <DataTreeView
-              onNodeToggle={this.handleStageToggle}
               onNodeSelect={this.handleStageSelect}
               selected={this.state.openStage}
-              expanded={this.state.expandedStages}
               stages={this.state.stages}
             />
           </Suspense>

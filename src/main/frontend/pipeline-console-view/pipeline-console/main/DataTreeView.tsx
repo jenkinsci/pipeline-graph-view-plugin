@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Result,
   StageInfo,
@@ -6,27 +6,39 @@ import {
 import StepStatus from "../../../step-status/StepStatus";
 import "./data-tree-view.scss";
 
-export interface DataTreeViewProps {
+interface DataTreeViewProps {
   stages: StageInfo[];
   selected: string;
   onNodeSelect: (event: React.MouseEvent, nodeId: string) => void;
 }
 
-const TreeNode: React.FC<{
+interface TreeNodeProps {
   stage: StageInfo;
   selected: string;
   onSelect: (event: React.MouseEvent, id: string) => void;
-}> = ({ stage, selected, onSelect }) => {
+}
+
+function TreeNode({ stage, selected, onSelect }: TreeNodeProps) {
   const hasChildren = stage.children && stage.children.length > 0;
   const isSelected = String(stage.id) === selected;
-  const anyChildrenSelected =
-    isSelected || stage.children.some((item) => String(item.id) === selected);
+
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+
+  const handleToggleClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // prevent triggering select
+    setIsExpanded(!isExpanded);
+  };
 
   return (
     <div className="task">
       <div className="tree-node-header">
         <button
-          onClick={(e) => onSelect(e, String(stage.id))}
+          onClick={(e) => {
+            if (!isSelected) {
+              onSelect(e, String(stage.id));
+            }
+            setIsExpanded(true);
+          }}
           className={`pgv-tree-item task-link ${
             isSelected ? "task-link--active" : ""
           }`}
@@ -39,31 +51,37 @@ const TreeNode: React.FC<{
             radius={10}
           />
           {stage.state === Result.running && (
-            <span style={{ color: "var(--text-color-secondary)" }}>{stage.totalDurationMillis}</span>
-          )}
-          {hasChildren && (
-            <span
-              className={`pgv-toggle-icon ${
-                anyChildrenSelected ? "pgv-toggle-icon--active" : ""
-              }`}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                <path
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="48"
-                  d="M184 112l144 144-144 144"
-                />
-              </svg>
+            <span style={{ color: "var(--text-color-secondary)" }}>
+              {stage.totalDurationMillis}
             </span>
           )}
         </button>
+
+        {hasChildren && (
+          <button
+            className={`pgv-toggle-icon ${
+              isExpanded ? "pgv-toggle-icon--active" : ""
+            }`}
+            onClick={handleToggleClick}
+            aria-label={isExpanded ? "Collapse" : "Expand"}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+              <path
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="48"
+                d="M184 112l144 144-144 144"
+              />
+            </svg>
+          </button>
+        )}
       </div>
-      {hasChildren && anyChildrenSelected && (
+
+      {hasChildren && isExpanded && (
         <div className="tree-children">
-          {stage.children!.map((child) => (
+          {stage.children.map((child) => (
             <TreeNode
               key={child.id}
               stage={child}
@@ -75,18 +93,18 @@ const TreeNode: React.FC<{
       )}
     </div>
   );
-};
+}
 
 export default function DataTreeView({
-  stages,
-  selected,
-  onNodeSelect,
-}: DataTreeViewProps) {
+                                       stages,
+                                       selected,
+                                       onNodeSelect,
+                                     }: DataTreeViewProps) {
   const handleSelect = useCallback(
     (event: React.MouseEvent, nodeId: string) => {
       onNodeSelect(event, nodeId);
     },
-    [onNodeSelect],
+    [onNodeSelect]
   );
 
   return (

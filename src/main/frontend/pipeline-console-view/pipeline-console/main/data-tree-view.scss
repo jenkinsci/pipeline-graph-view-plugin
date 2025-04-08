@@ -13,10 +13,19 @@
 }
 
 .pgv-toggle-icon {
+  position: absolute;
+  top: 0.5625rem;
+  right: 0.5625rem;
   width: 1rem;
   height: 1rem;
   margin-left: auto;
   transition: var(--standard-transition);
+  appearance: none;
+  background: none;
+  padding: 0;
+  border: none;
+  cursor: pointer;
+  color: var(--text-color-secondary);
 
   &--active {
     rotate: 90deg;
@@ -25,19 +34,19 @@
   svg {
     width: 1rem;
     height: 1rem;
-    color: var(--text-color-secondary);
 
     * {
       stroke-width: 42px !important;
     }
   }
+
+  &:hover {
+    color: var(--text-color);
+  }
 }
 
 .tree-node-header {
-  display: flex;
-  justify-content: stretch;
-  align-items: center;
-  gap: 0.5rem;
+  position: relative;
 }
 
 .tree-children {

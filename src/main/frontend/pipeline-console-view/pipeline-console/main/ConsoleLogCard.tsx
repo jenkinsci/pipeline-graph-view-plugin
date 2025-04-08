@@ -138,7 +138,7 @@ export class ConsoleLogCard extends React.Component<
 
     return (
       <div
-        style={{ border: "var(--jenkins-border)", marginBottom: "0.375rem", background: "var(--card-background)", borderRadius: "10px", paddingInline: "0.65rem" }}
+        style={{ border: "var(--jenkins-border)", marginBottom: "0.25rem", background: "var(--card-background)", borderRadius: "6px", paddingInline: "0.65rem" }}
         // className="step-detail-group"
         key={`step-card-${this.props.step.id}`}
         // style={{ marginBottom: "5px" }}

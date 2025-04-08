@@ -17,7 +17,7 @@ import { CircularProgress } from "@mui/material";
 import "./pipeline-console.scss";
 import { StageInfo, StepInfo, Result } from "./PipelineConsoleModel";
 import Button from "@mui/material/Button";
-import SplitViewNew from "./SplitViewNew";
+import SplitView from "./SplitView";
 
 const DataTreeView = lazy(() => import("./DataTreeView"));
 const StageView = lazy(() => import("./StageView"));
@@ -523,7 +523,7 @@ export default class PipelineConsole extends React.Component<
     const stageViewPaneClass = `split-pane ${this.state.isStageViewExpanded ? "" : "collapsed"}`;
 
     return (
-      <SplitViewNew
+      <SplitView
         // initialSize ratio
         // initialSizes={[2, 8]}
         // // minSize in Pixels (for all panes)
@@ -573,7 +573,7 @@ export default class PipelineConsole extends React.Component<
             />
           </Suspense>
         </div>
-      </SplitViewNew>
+      </SplitView>
     );
   }
 }

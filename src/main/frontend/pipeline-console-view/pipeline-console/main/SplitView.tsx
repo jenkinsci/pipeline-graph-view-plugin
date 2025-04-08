@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import "./split-view-new.scss";
+import "./split-view.scss";
 
-export default function SplitViewNew(props: SplitViewNewProps) {
+export default function SplitView(props: SplitViewNewProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [panelWidth, setPanelWidth] = useState(320);
   const dividerRef = useRef<HTMLDivElement>(null);
@@ -30,15 +30,9 @@ export default function SplitViewNew(props: SplitViewNewProps) {
   });
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: `${panelWidth}px 1fr`,
-        gap: "var(--section-padding)",
-        position: "relative",
-      }}
-    >
-      <div className="pgv-split-view-new">
+    <div className="pgv-split-view__container"
+         style={{ gridTemplateColumns: `${panelWidth}px 1fr` }}>
+      <div className="pgv-split-view__side-panel">
         {props.children[0]}
 
         <div

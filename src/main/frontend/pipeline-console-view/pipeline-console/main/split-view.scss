@@ -1,4 +1,9 @@
-.pgv-split-view-new {
+.pgv-split-view__container {
+  display: grid;
+  gap: var(--section-padding);
+}
+
+.pgv-split-view__side-panel {
   position: relative;
   min-height: calc(100vh - 250px);
 }

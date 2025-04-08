@@ -52,7 +52,7 @@ function TreeNode({ stage, selected, onSelect }: TreeNodeProps) {
 
   return (
     <div className="task">
-      <div className="tree-node-header">
+      <div className="pgv-tree-node-header">
         <button
           onClick={(e) => {
             if (!isSelected) {
@@ -103,7 +103,7 @@ function TreeNode({ stage, selected, onSelect }: TreeNodeProps) {
       </div>
 
       {hasChildren && isExpanded && (
-        <div className="tree-children">
+        <div className="pgv-tree-children">
           {stage.children.map((child) => (
             <TreeNode
               key={child.id}

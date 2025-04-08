@@ -1,5 +1,8 @@
-import React, { useState, useCallback } from "react";
-import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/";
+import React, { useCallback } from "react";
+import {
+  Result,
+  StageInfo,
+} from "../../../pipeline-graph-view/pipeline-graph/main/";
 import StepStatus from "../../../step-status/StepStatus";
 import "./data-tree-view.scss";
 
@@ -16,7 +19,8 @@ const TreeNode: React.FC<{
 }> = ({ stage, selected, onSelect }) => {
   const hasChildren = stage.children && stage.children.length > 0;
   const isSelected = String(stage.id) === selected;
-  const anyChildrenSelected = isSelected || stage.children.some((item) => String(item.id) === selected);
+  const anyChildrenSelected =
+    isSelected || stage.children.some((item) => String(item.id) === selected);
 
   return (
     <div className="task">
@@ -34,16 +38,16 @@ const TreeNode: React.FC<{
             percent={stage.completePercent}
             radius={10}
           />
+          {stage.state === Result.running && (
+            <span style={{ color: "var(--text-color-secondary)" }}>{stage.totalDurationMillis}</span>
+          )}
           {hasChildren && (
             <span
               className={`pgv-toggle-icon ${
                 anyChildrenSelected ? "pgv-toggle-icon--active" : ""
               }`}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 512 512"
-              >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
                 <path
                   fill="none"
                   stroke="currentColor"
@@ -74,15 +78,15 @@ const TreeNode: React.FC<{
 };
 
 export default function DataTreeView({
-                                                     stages,
-                                                     selected,
-                                                     onNodeSelect,
-                                                   }: DataTreeViewProps)  {
+  stages,
+  selected,
+  onNodeSelect,
+}: DataTreeViewProps) {
   const handleSelect = useCallback(
     (event: React.MouseEvent, nodeId: string) => {
       onNodeSelect(event, nodeId);
     },
-    [onNodeSelect]
+    [onNodeSelect],
   );
 
   return (
@@ -97,4 +101,4 @@ export default function DataTreeView({
       ))}
     </div>
   );
-};
+}

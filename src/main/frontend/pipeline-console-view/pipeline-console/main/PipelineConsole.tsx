@@ -16,7 +16,6 @@ import { CircularProgress } from "@mui/material";
 
 import "./pipeline-console.scss";
 import { StageInfo, StepInfo, Result } from "./PipelineConsoleModel";
-import Button from "@mui/material/Button";
 import SplitView from "./SplitView";
 
 const DataTreeView = lazy(() => import("./DataTreeView"));
@@ -548,7 +547,7 @@ export default class PipelineConsole extends React.Component<
             <DataTreeView
               onNodeToggle={this.handleStageToggle}
               onNodeSelect={this.handleStageSelect}
-              selected={this.state.selectedStage}
+              selected={this.state.openStage}
               expanded={this.state.expandedStages}
               stages={this.state.stages}
             />

@@ -37,14 +37,6 @@
   }
 }
 
-.App {
-  font-family: sans-serif;
-  text-align: center;
-  height: 80%;
-  display: flex;
-  background: transparent;
-}
-
 .SplitPane {
   position: relative;
 }
@@ -376,20 +368,20 @@ svg.detail-icon {
   transform-origin: 50% 50%;
 }
 
-div.split-pane {
-  position: relative;
-  text-align: left;
-  height: calc(100vh - 300px);
-  overflow: auto;
-
-  > div[style*="position: relative;"] {
-    width: 24px;
-  }
-
-  &.collapsed {
-    overflow: hidden;
-  }
-}
+//div.split-pane {
+//  position: relative;
+//  text-align: left;
+//  height: calc(100vh - 300px);
+//  overflow: auto;
+//
+//  > div[style*="position: relative;"] {
+//    width: 24px;
+//  }
+//
+//  &.collapsed {
+//    overflow: hidden;
+//  }
+//}
 
 a {
   cursor: pointer !important;

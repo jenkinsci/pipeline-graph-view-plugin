@@ -1,97 +1,131 @@
-import React from "react";
-import TreeView from "@mui/lab/TreeView/";
-import TreeItem from "@mui/lab/TreeItem";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/";
+import React, { useCallback, useState } from "react";
+import {
+  Result,
+  StageInfo,
+} from "../../../pipeline-graph-view/pipeline-graph/main/";
 import StepStatus from "../../../step-status/StepStatus";
+import "./data-tree-view.scss";
 
-const getTreeItemsFromStage = (
-  stageItems: StageInfo[],
-  selectedStage: string,
-) => {
-  return stageItems.map((stageItemData) => {
-    let children: JSX.Element[] = [];
-    if (stageItemData.children && stageItemData.children.length > 0) {
-      children = getTreeItemsFromStage(stageItemData.children, selectedStage);
-    }
-    return (
-      <TreeItem
-        className={
-          String(stageItemData.id) == selectedStage
-            ? "stage-tree-item-selected"
-            : "stage-tree-item"
-        }
-        key={stageItemData.id}
-        nodeId={String(stageItemData.id)}
-        label={
-          <div
-            id={`stage-tree-icon-${stageItemData.id}`}
-            key={`stage-tree-icon-${stageItemData.id}`}
-          >
-            <StepStatus
-              status={stageItemData.state}
-              text={stageItemData.name}
-              key={`status-${stageItemData.id}`}
-              percent={stageItemData.completePercent}
-              radius={10}
-            />
-          </div>
-        }
-        children={children}
-        classes={{
-          label: stageItemData.synthetic
-            ? "pgv-graph-node--synthetic"
-            : undefined,
-        }}
-      />
-    );
-  });
-};
+export default function DataTreeView({
+  stages,
+  selected,
+  onNodeSelect,
+}: DataTreeViewProps) {
+  const handleSelect = useCallback(
+    (event: React.MouseEvent, nodeId: string) => {
+      onNodeSelect(event, nodeId);
+    },
+    [onNodeSelect],
+  );
 
-export interface DataTreeViewProps {
-  stages: Array<StageInfo>;
-  onNodeToggle: (event: React.ChangeEvent<any>, nodeIds: string[]) => void;
-  onNodeSelect: (event: React.ChangeEvent<any>, nodeIds: string) => void;
-  selected: string;
-  expanded: string[];
+  return (
+    <div className="custom-tree-view" id="tasks">
+      {stages.map((stage) => (
+        <TreeNode
+          key={stage.id}
+          stage={stage}
+          selected={selected}
+          onSelect={handleSelect}
+        />
+      ))}
+    </div>
+  );
 }
 
-export default class DataTreeView extends React.Component {
-  props!: DataTreeViewProps;
+function TreeNode({ stage, selected, onSelect }: TreeNodeProps) {
+  const hasChildren = stage.children && stage.children.length > 0;
+  const isSelected = String(stage.id) === selected;
+  const [isExpanded, setIsExpanded] = useState<boolean>(
+    hasSelectedDescendant(stage),
+  );
 
-  constructor(props: DataTreeViewProps) {
-    super(props);
-    this.state = {
-      stages: [],
-      steps: new Map(),
-      expanded: [],
-    };
-    this.handleToggle = this.handleToggle.bind(this);
-  }
-
-  handleToggle(event: React.ChangeEvent<{}>, nodeIds: string[]): void {
-    this.setState({
-      expanded: nodeIds,
-    });
-  }
-
-  render() {
-    return (
-      <TreeView
-        defaultCollapseIcon={<ExpandMoreIcon />}
-        defaultExpandIcon={<ChevronRightIcon />}
-        expanded={this.props.expanded}
-        selected={this.props.selected}
-        onNodeToggle={this.props.onNodeToggle}
-        onNodeSelect={this.props.onNodeSelect}
-        onNodeFocus={(event: React.SyntheticEvent, nodeId: string) => {
-          console.debug(`node '${nodeId}' focused.`);
-        }}
-        key="console-tree-view"
-      >
-        {getTreeItemsFromStage(this.props.stages, this.props.selected)}
-      </TreeView>
+  function hasSelectedDescendant(stage: StageInfo): boolean {
+    return stage.children?.some(
+      (child) => String(child.id) === selected || hasSelectedDescendant(child),
     );
   }
+
+  const handleToggleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsExpanded(!isExpanded);
+  };
+
+  return (
+    <div className="task">
+      <div className="pgv-tree-node-header">
+        <button
+          onClick={(e) => {
+            if (!isSelected) {
+              onSelect(e, String(stage.id));
+            }
+            setIsExpanded(!isExpanded);
+          }}
+          className={`pgv-tree-item task-link ${
+            isSelected ? "task-link--active" : ""
+          }`}
+        >
+          <div>
+            <StepStatus
+              status={stage.state}
+              text={stage.name}
+              key={`status-${stage.id}`}
+              percent={stage.completePercent}
+              radius={10}
+            />
+            {stage.state === Result.running && (
+              <span style={{ color: "var(--text-color-secondary)" }}>
+                {stage.totalDurationMillis}
+              </span>
+            )}
+          </div>
+        </button>
+
+        {hasChildren && (
+          <button
+            className={`pgv-toggle-icon ${
+              isExpanded ? "pgv-toggle-icon--active" : ""
+            }`}
+            onClick={handleToggleClick}
+            aria-label={isExpanded ? "Collapse" : "Expand"}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+              <path
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="48"
+                d="M184 112l144 144-144 144"
+              />
+            </svg>
+          </button>
+        )}
+      </div>
+
+      {hasChildren && isExpanded && (
+        <div className="pgv-tree-children">
+          {stage.children.map((child) => (
+            <TreeNode
+              key={child.id}
+              stage={child}
+              selected={selected}
+              onSelect={onSelect}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface DataTreeViewProps {
+  stages: StageInfo[];
+  selected: string;
+  onNodeSelect: (event: React.MouseEvent, nodeId: string) => void;
+}
+
+interface TreeNodeProps {
+  stage: StageInfo;
+  selected: string;
+  onSelect: (event: React.MouseEvent, id: string) => void;
 }

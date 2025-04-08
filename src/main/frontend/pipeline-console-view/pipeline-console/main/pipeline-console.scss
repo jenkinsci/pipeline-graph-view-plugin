@@ -379,7 +379,7 @@ svg.detail-icon {
 div.split-pane {
   position: relative;
   text-align: left;
-  height: calc(100vh - 300px);
+  height: calc(100vh);
   overflow: auto;
 
   > div[style*="position: relative;"] {

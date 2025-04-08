@@ -40,8 +40,9 @@ declare module "react-tippy" {
 
 const ExpandMore = styled((props: ExpandMoreProps) => {
   const { expand, ...other } = props;
-  return <IconButton {...other} />;
+  return <button {...other} />;
 })(({ theme, expand }) => ({
+  className: "jenkins-button jenkins-button--tertiary",
   transform: !expand ? "rotate(0deg)" : "rotate(180deg)",
   marginLeft: "auto",
   transition: theme.transitions.create("transform", {
@@ -151,13 +152,13 @@ export class ConsoleLogCard extends React.Component<
   getStepHeaderTitle(stepTitle: string, stepId: string) {
     if (stepTitle) {
       return (
-        <Typography
-          className="log-card--text"
-          component="div"
-          key={`step-duration-text-${stepId}`}
-        >
-          {stepTitle}
-        </Typography>
+        // <Typography
+        //   className="log-card--text"
+        //   component="div"
+        //   key={`step-duration-text-${stepId}`}
+        // >
+          <>{stepTitle}</>
+        // </Typography>
       );
     } else {
       return null;
@@ -175,107 +176,90 @@ export class ConsoleLogCard extends React.Component<
     );
 
     return (
-      <Card
-        className="step-detail-group"
+      <div style={{ border: "var(--jenkins-border)", borderRadius: "10px" }}
+        // className="step-detail-group"
         key={`step-card-${this.props.step.id}`}
-        style={{ marginBottom: "5px" }}
+        // style={{ marginBottom: "5px" }}
       >
-        <CardActionArea
-          onClick={this.handleStepToggle}
-          aria-label="Show console log."
-          className={`step-header step-header-${this.props.step.state.toLowerCase()} step-detail-group-${
-            this.props.isExpanded ? "expanded" : "collapsed"
-          }`}
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr auto" }}
+          // onClick={this.handleStepToggle}
+          // aria-label="Show console log."
+          // className={`step-header step-header-${this.props.step.state.toLowerCase()} step-detail-group-${
+          //   this.props.isExpanded ? "expanded" : "collapsed"
+          //*}`}*/}
           key={`step-action-area-${this.props.step.id}`}
         >
-          {statusIcon}
-          <Grid
-            container
-            wrap="nowrap"
-            columns={{ xs: 20 }}
-            key={`step-root-container-${this.props.step.id}`}
-          >
-            <Grid
-              item
-              container
-              xs={16}
-              sx={{ display: "block", margin: "auto" }}
-              width="80%"
-            >
-              <Typography
-                className="log-card--header"
-                noWrap={true}
-                component="div"
-                key={`step-name-text-${this.props.step.id}`}
-                sx={{ flexGrow: 3 }}
-              >
-                {this.props.step.name}
-              </Typography>
-              {this.getStepHeaderTitle(
-                this.props.step.title,
-                this.props.step.id,
-              )}
-            </Grid>
-            <Grid
-              item
-              xs={2}
-              sx={{ margin: "auto", padding: "0px" }}
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Typography
-                className="log-card--text log-card--text-duration"
-                align="right"
-                component="div"
-                key={`step-duration-text-${this.props.step.id}`}
-              >
-                {this.props.step.totalDurationMillis.substring(
-                  this.props.step.totalDurationMillis.indexOf(" ") + 1,
-                  this.props.step.totalDurationMillis.length,
-                )}
-              </Typography>
-            </Grid>
 
-            <Grid item xs={2} alignItems="center" sx={{ margin: "auto" }}>
-              <Tooltip title="Open console log in full-screen mode">
-                <IconButton
+         <div style={{ display: "flex", alignItems: "center", fontSize: "var(--font-size-sm)" }}>
+           {statusIcon}
+
+           {/*<Typography*/}
+           {/*  className="log-card--header"*/}
+           {/*  noWrap={true}*/}
+           {/*  component="div"*/}
+           {/*  key={`step-name-text-${this.props.step.id}`}*/}
+           {/*  sx={{ flexGrow: 3 }}*/}
+           {/*>*/}
+             {this.props.step.name}
+           {/*</Typography>*/}
+
+           {this.getStepHeaderTitle(
+             this.props.step.title,
+             this.props.step.id,
+           )}
+
+           {/*<Typography*/}
+           {/*  className="log-card--text log-card--text-duration"*/}
+           {/*  align="right"*/}
+           {/*  component="div"*/}
+           {/*  key={`step-duration-text-${this.props.step.id}`}*/}
+           {/*>*/}
+             {this.props.step.totalDurationMillis.substring(
+               this.props.step.totalDurationMillis.indexOf(" ") + 1,
+               this.props.step.totalDurationMillis.length,
+             )}
+           {/*</Typography>*/}
+         </div>
+
+          <div style={{ display: "flex" }}>
+              {/*<Tooltip title="Open console log in full-screen mode">*/}
+                <button
+                  className="jenkins-button jenkins-button--tertiary"
                   aria-label={"Open console log in full-screen mode"}
                   onClick={handleOpen}
                 >
-                  <div className="svg-icon--expand">
-                    <ResizeIcon />
-                  </div>
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="View step as plain text">
-                <IconButton
+                  <ResizeIcon />
+                </button>
+              {/*</Tooltip>*/}
+              {/*<Tooltip title="View step as plain text">*/}
+                <button
+                  className="jenkins-button jenkins-button--tertiary"
                   onClick={() =>
                     window.open(`log?nodeId=${this.props.step.id}`)
                   }
                   aria-label="View step as plain text"
                 >
-                  <LinkIcon className="svg-icon--expand" />
-                </IconButton>
-              </Tooltip>
-            </Grid>
-            <Grid item xs={1} alignItems="center" sx={{ margin: "auto" }}>
-              <Tooltip title="Open console log">
+                  <LinkIcon/>
+                </button>
+              {/*</Tooltip>*/}
+
+              {/*<Tooltip title="Open console log">*/}
                 <ExpandMore
                   expand={this.props.isExpanded}
                   aria-label={"Open console log"}
                   aria-expanded
                   key={`step-expand-button-${this.props.step.id}`}
-                  sx={{ display: "block", marginLeft: "auto" }}
                 >
                   <ExpandMoreIcon
                     key={`step-expand-icon-${this.props.step.id}`}
-                    className="svg-icon svg-icon--expand"
                   />
                 </ExpandMore>
-              </Tooltip>
-            </Grid>
-          </Grid>
-        </CardActionArea>
+              {/*</Tooltip>*/}
+            </div>
+
+        </div>
+
         <ConsoleLogModal
           logBuffer={this.props.stepBuffer}
           handleMoreConsoleClick={this.props.handleMoreConsoleClick}
@@ -285,15 +269,14 @@ export class ConsoleLogCard extends React.Component<
           open={this.state.open}
           setClose={handleClose}
         />
+
         <Collapse
           in={this.props.isExpanded}
           timeout={50}
           unmountOnExit
           key={`step-colapsable-console-${this.props.step.id}`}
         >
-          <CardContent
-            className="step-content"
-            key={`step-console-content-${this.props.step.id}`}
+          <div
           >
             <div>{this.getTruncatedLogWarning()}</div>
             <Suspense fallback={<CircularProgress />}>
@@ -304,9 +287,9 @@ export class ConsoleLogCard extends React.Component<
                 maxHeightScale={0.65}
               />
             </Suspense>
-          </CardContent>
+          </div>
         </Collapse>
-      </Card>
+      </div>
     );
   }
 }

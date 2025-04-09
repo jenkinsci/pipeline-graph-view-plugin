@@ -138,13 +138,11 @@ export class ConsoleLogCard extends React.Component<
 
     return (
       <div
-        style={{ border: "var(--jenkins-border)", marginBottom: "0.25rem", background: "var(--card-background)", borderRadius: "6px", paddingInline: "0.65rem" }}
-        // className="step-detail-group"
+        className="step-detail-group"
         key={`step-card-${this.props.step.id}`}
-        // style={{ marginBottom: "5px" }}
       >
         <div
-          style={{ display: "grid", gridTemplateColumns: "1fr auto" }}
+          className="step-detail-header jenkins-button jenkins-button--tertiary"
           // onClick={this.handleStepToggle}
           // aria-label="Show console log."
           // className={`step-header step-header-${this.props.step.state.toLowerCase()} step-detail-group-${
@@ -161,7 +159,7 @@ export class ConsoleLogCard extends React.Component<
               {this.props.step.name}
             </span>
 
-            {this.props.step.title}
+            <span style={{ color: "var(--text-color-secondary)" }}>{this.props.step.title}</span>
           </div>
 
           <div className={"actionsss"}>

@@ -196,14 +196,15 @@ export default class StageView extends React.Component {
   render() {
     return (
       <React.Fragment>
+        {/*<div*/}
+        {/*  key={`stage-summary-${*/}
+        {/*    this.props.stage ? this.props.stage.id : "unk"*/}
+        {/*  }`}*/}
+        {/*>*/}
+        {/*  {this.renderStageDetails()}*/}
+        {/*</div>*/}
         <div
-          key={`stage-summary-${
-            this.props.stage ? this.props.stage.id : "unk"
-          }`}
-        >
-          {this.renderStageDetails()}
-        </div>
-        <div
+          style={{ border: "var(--jenkins-border)", background: "var(--card-background)", borderRadius: "1rem", padding: "0.5rem" }}
           key={`stage-steps-container-${
             this.props.stage ? this.props.stage.id : "unk"
           }`}

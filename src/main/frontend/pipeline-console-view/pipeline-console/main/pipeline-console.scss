@@ -270,12 +270,30 @@ div.stage-detail-group {
 }
 
 .step-detail-group {
-  @extend div, .stage-detail-group;
-  background-color: transparent !important;
-  text-indent: 15px;
-  padding: 0px !important;
-  color: var(--text-color) !important;
-  box-shadow: none !important;
+}
+
+.step-detail-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  //display: flex;
+  align-items: center;
+  justify-content: stretch;
+  padding: 0 0.5rem !important;
+  border-radius: 8px;
+  cursor: pointer;
+  min-height: 38px;
+  
+  &:not(:last-of-type) {
+    margin-bottom: 0.25rem;
+  }
+
+  .jenkins-button {
+    width: 30px;
+    height: 30px;
+    min-height: 0;
+    min-width: 0;
+    padding: 0;
+  }
 }
 
 div.step-detail-group-expanded {

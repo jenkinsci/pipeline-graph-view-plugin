@@ -62,10 +62,6 @@
   display: inline-block;
 }
 
-div.show-more-console {
-  background-color: var(--alert-warning-bg-color);
-}
-
 pre.console-output-line {
   @extend pre, .console-output;
   padding: 0px;

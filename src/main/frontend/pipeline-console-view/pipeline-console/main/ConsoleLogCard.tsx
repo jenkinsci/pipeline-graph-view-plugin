@@ -1,5 +1,4 @@
 import React, { useEffect, useState, Suspense } from "react";
-import { Button, Grid, Typography } from "@mui/material";
 import "./console-log-card.scss";
 
 import {
@@ -45,26 +44,9 @@ function ConsoleLogCard(props: ConsoleLogCardProps) {
   const getTruncatedLogWarning = () => {
     if (props.stepBuffer.lines && props.stepBuffer.startByte > 0) {
       return (
-        <Grid container>
-          <Grid item xs={6} sm className="show-more-console">
-            <Typography align="right" className="step-header">
-              {`Missing ${prettySizeString(props.stepBuffer.startByte)} of logs.`}
-            </Typography>
-          </Grid>
-          <Grid item xs={6} sm className="show-more-console">
-            <Button
-              variant="text"
-              sx={{
-                padding: "0px",
-                textTransform: "none",
-                marginLeft: "0.25rem",
-              }}
-              onClick={showMoreLogs}
-            >
-              Show more logs
-            </Button>
-          </Grid>
-        </Grid>
+        <button onClick={showMoreLogs} className={"jenkins-button jenkins-!-warning-color"} style={{ position: "absolute", top: 50, left: 0, right: 0, zIndex: 10, backdropFilter: "blur(40px)" }}>
+          Missing {prettySizeString(props.stepBuffer.startByte)} of logs. Click to see more logs
+        </button>
       );
     }
     return undefined;

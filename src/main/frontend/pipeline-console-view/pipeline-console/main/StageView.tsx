@@ -207,11 +207,11 @@ export default class StageView extends React.Component {
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: "8px",
+            gap: "0.25rem",
             border: "var(--jenkins-border)",
             background: "var(--card-background)",
-            borderRadius: "1rem",
-            padding: "0.5rem",
+            borderRadius: "var(--form-input-border-radius)",
+            padding: "0.375rem",
           }}
           key={`stage-steps-container-${
             this.props.stage ? this.props.stage.id : "unk"

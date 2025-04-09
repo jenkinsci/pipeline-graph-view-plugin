@@ -227,9 +227,8 @@ g.build-status-icon__outer {
 // Console styling
 a.console-line-number {
   text-align: right;
-  width: 20px;
-  padding-left: 10px;
-  margin-right: 10px;
+  width: 28px;
+  margin-right: 14px;
   color: var(--text-color-secondary);
   white-space: nowrap;
   display: inline-block;
@@ -245,7 +244,26 @@ div.console-output-line-anchor {
 }
 
 div.console-output-line {
+  position: relative;
   display: flex;
+  padding-block: 2px;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: color-mix(in srgb, var(--text-color-secondary) 5%, transparent);
+    border: var(--jenkins-border-width) solid color-mix(in srgb, var(--text-color-secondary) 2.5%, transparent);
+    border-radius: 0.5rem;
+    opacity: 0;
+    transition: opacity var(--standard-transition);
+  }
+
+  &:hover {
+    &::before {
+      opacity: 1;
+    }
+  }
 }
 
 span.timestamp {
@@ -281,12 +299,12 @@ div.stage-detail-group {
   }
 }
 
-.step-detail-group--expanded {
-  &::before {
-    opacity: 1;
-    scale: 100%;
-  }
-}
+//.step-detail-group--expanded {
+//  &::before {
+//    opacity: 1;
+//    scale: 100%;
+//  }
+//}
 
 .step-detail-header {
   display: grid;
@@ -309,6 +327,7 @@ div.stage-detail-group {
 
   .svgtest {
     transition: var(--standard-transition);
+    scale: 0.9;
   }
 }
 

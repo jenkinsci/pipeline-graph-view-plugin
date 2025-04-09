@@ -322,18 +322,10 @@ div.stage-detail-group {
   align-items: center;
   justify-content: stretch;
   padding: 0 0.5rem !important;
-  border-radius: 8px;
+  border-radius: 0.375rem;
   cursor: pointer;
   min-height: 38px;
   width: 100%;
-
-  .jenkins-button {
-    width: 30px;
-    height: 30px;
-    min-height: 0;
-    min-width: 0;
-    padding: 0;
-  }
 
   .svgtest {
     transition: var(--standard-transition);

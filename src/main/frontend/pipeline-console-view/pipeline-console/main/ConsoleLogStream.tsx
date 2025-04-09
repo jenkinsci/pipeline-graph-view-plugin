@@ -3,8 +3,6 @@ import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
 import { useCallback, useState, useEffect, useRef } from "react";
 import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
 
-import Button from "@mui/material/Button";
-
 export interface ConsoleLogStreamProps {
   logBuffer: StepLogBufferInfo;
   handleMoreConsoleClick: (nodeId: string, startByte: number) => void;

@@ -176,7 +176,7 @@ function ConsoleLogCard(props: ConsoleLogCardProps) {
 
       {props.isExpanded && (
         <div style={{ paddingBlock: "0.5rem" }}>
-          {/*<div>{getTruncatedLogWarning()}</div>*/}
+          <div>{getTruncatedLogWarning()}</div>
           <Suspense fallback={<Skeleton />}>
             <ConsoleLogStream
               logBuffer={props.stepBuffer}

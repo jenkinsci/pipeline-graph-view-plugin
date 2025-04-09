@@ -125,11 +125,7 @@ export default class PipelineConsole extends React.Component<
       // Store the stage that is selected - either by the user or URL params.
       selectedStage: "",
       // Store the stage that should be open in the stage view.
-      // TODO - Hacky?
-      openStage:
-        new URLSearchParams(document.location.search.substring(1)).get(
-          "selected-node",
-        ) || "",
+      openStage: "",
       expandedStages: [] as string[],
       expandedSteps: [] as string[],
       stages: [] as StageInfo[],

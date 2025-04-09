@@ -57,11 +57,6 @@
   padding-left: 16px;
 }
 
-.console-text {
-  padding-left: 15px;
-  padding-right: 5px;
-}
-
 .console-text div {
   text-indent: 0;
   display: inline-block;
@@ -232,8 +227,9 @@ g.build-status-icon__outer {
 // Console styling
 a.console-line-number {
   text-align: right;
-  width: 30px;
+  width: 20px;
   padding-left: 10px;
+  margin-right: 10px;
   color: var(--text-color-secondary);
   white-space: nowrap;
   display: inline-block;
@@ -270,12 +266,31 @@ div.stage-detail-group {
 }
 
 .step-detail-group {
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    background: color-mix(in srgb, var(--text-color-secondary) 2.5%, transparent);
+    border: var(--jenkins-border);
+    border-radius: 10px;
+    opacity: 0;
+    transition: var(--standard-transition);
+    scale: 97.5%;
+  }
+}
+
+.step-detail-group--expanded {
+  &::before {
+    opacity: 1;
+    scale: 100%;
+  }
 }
 
 .step-detail-header {
   display: grid;
   grid-template-columns: 1fr auto;
-  //display: flex;
   align-items: center;
   justify-content: stretch;
   padding: 0 0.5rem !important;

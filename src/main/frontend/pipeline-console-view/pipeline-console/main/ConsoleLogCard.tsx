@@ -1,5 +1,5 @@
 import React, { useEffect, useState, Suspense } from "react";
-import { Button, CircularProgress, Grid, Typography } from "@mui/material";
+import { Button, Grid, Typography } from "@mui/material";
 import "./console-log-card.scss";
 
 import {
@@ -10,6 +10,7 @@ import {
 
 import ConsoleLogModal from "./ConsoleLogModal";
 import { getStepStatus } from "../../../step-status/StepStatus";
+import Skeleton from "./Skeleton";
 
 const ConsoleLogStream = React.lazy(() => import("./ConsoleLogStream"));
 
@@ -86,10 +87,19 @@ function ConsoleLogCard(props: ConsoleLogCardProps) {
   );
 
   return (
-    <div className={"step-detail-group " + (props.isExpanded ? "step-detail-group--expanded" : "")} key={`step-card-${props.step.id}`}>
+    <div
+      className={
+        "step-detail-group " +
+        (props.isExpanded ? "step-detail-group--expanded" : "")
+      }
+      key={`step-card-${props.step.id}`}
+    >
       <button
         onClick={handleToggle}
-        className={"step-detail-header jenkins-button " + (props.isExpanded ? "" : "jenkins-button--tertiary")}
+        className={
+          "step-detail-header jenkins-button " +
+          (props.isExpanded ? "" : "jenkins-button--tertiary")
+        }
         key={`step-action-area-${props.step.id}`}
       >
         <div className="thinggg">
@@ -166,8 +176,8 @@ function ConsoleLogCard(props: ConsoleLogCardProps) {
 
       {props.isExpanded && (
         <div style={{ paddingBlock: "0.5rem" }}>
-          <div>{getTruncatedLogWarning()}</div>
-          <Suspense fallback={<CircularProgress />}>
+          {/*<div>{getTruncatedLogWarning()}</div>*/}
+          <Suspense fallback={<Skeleton />}>
             <ConsoleLogStream
               logBuffer={props.stepBuffer}
               handleMoreConsoleClick={props.handleMoreConsoleClick}

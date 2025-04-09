@@ -1,0 +1,48 @@
+.pgv-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+
+  > div {
+    height: 16px;
+    background: linear-gradient(
+                    90deg,
+                    color-mix(in srgb, var(--text-color-secondary) 25%, transparent) 25%,
+                    color-mix(in srgb, var(--text-color-secondary), transparent) 50%,
+                    color-mix(in srgb, var(--text-color-secondary) 25%, transparent) 75%
+    );
+    background-size: 200% 100%;
+    border-radius: 6px;
+    animation: shimmer 2s infinite linear;
+  }
+
+  > div:nth-child(1) {
+    width: 70%;
+  }
+
+  > div:nth-child(2) {
+    width: 90%;
+  }
+
+  > div:nth-child(3) {
+    width: 60%;
+  }
+
+  > div:nth-child(4) {
+    width: 85%;
+  }
+
+  > div:nth-child(5) {
+    width: 50%;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}

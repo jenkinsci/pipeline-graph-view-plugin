@@ -252,11 +252,17 @@ div.console-output-line {
     content: "";
     position: absolute;
     inset: 0;
-    background-color: color-mix(in srgb, var(--text-color-secondary) 5%, transparent);
-    border: var(--jenkins-border-width) solid color-mix(in srgb, var(--text-color-secondary) 2.5%, transparent);
+    background-color: color-mix(
+      in srgb,
+      var(--text-color-secondary) 5%,
+      transparent
+    );
+    border: var(--jenkins-border-width) solid
+      color-mix(in srgb, var(--text-color-secondary) 2.5%, transparent);
     border-radius: 0.5rem;
     opacity: 0;
     transition: opacity var(--standard-transition);
+    pointer-events: none;
   }
 
   &:hover {
@@ -290,7 +296,11 @@ div.stage-detail-group {
     content: "";
     position: absolute;
     inset: -3px;
-    background: color-mix(in srgb, var(--text-color-secondary) 2.5%, transparent);
+    background: color-mix(
+      in srgb,
+      var(--text-color-secondary) 2.5%,
+      transparent
+    );
     border: var(--jenkins-border);
     border-radius: 10px;
     opacity: 0;

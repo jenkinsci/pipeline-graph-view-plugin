@@ -107,7 +107,7 @@ export class ConsoleLogCard extends React.Component<
   }
 
   render() {
-    const handleOpen = () => this.setState({ open: true });
+    // const handleOpen = () => this.setState({ open: true });
     const handleClose = () => this.setState({ open: false });
 
     const statusIcon = getStepStatus(
@@ -136,7 +136,7 @@ export class ConsoleLogCard extends React.Component<
           >
             {statusIcon}
 
-            <span style={{ fontWeight: "450" }}>
+            <span>
               {this.props.step.name}
             </span>
 
@@ -169,7 +169,7 @@ export class ConsoleLogCard extends React.Component<
             {/*</button>*/}
             {/*</Tooltip>*/}
 
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className={"svgtest"}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className={"svgtest"} rotate={true ? 10 : 90}>
               <path
                 fill="none"
                 stroke="var(--text-color-secondary)"

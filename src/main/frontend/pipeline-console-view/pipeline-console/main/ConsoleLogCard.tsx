@@ -21,26 +21,6 @@ import { getStepStatus } from "../../../step-status/StepStatus";
 
 const ConsoleLogStream = lazy(() => import("./ConsoleLogStream"));
 
-declare module "react-tippy" {
-  export interface TooltipProps {
-    children?: React.ReactNode;
-  }
-}
-
-export type ConsoleLogCardProps = {
-  step: StepInfo;
-  stepBuffer: StepLogBufferInfo;
-  isExpanded: boolean;
-  handleStepToggle: (event: React.SyntheticEvent<{}>, nodeId: string) => void;
-  handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
-  // Id of the element whose scroll bar we wish to use.
-  scrollParentId: string;
-};
-
-export type ConsoleLogCardState = {
-  open: boolean;
-};
-
 export class ConsoleLogCard extends React.Component<
   ConsoleLogCardProps,
   ConsoleLogCardState
@@ -141,7 +121,8 @@ export class ConsoleLogCard extends React.Component<
         className="step-detail-group"
         key={`step-card-${this.props.step.id}`}
       >
-        <div
+        <button
+          onClick={this.handleStepToggle}
           className="step-detail-header jenkins-button jenkins-button--tertiary"
           // onClick={this.handleStepToggle}
           // aria-label="Show console log."
@@ -159,56 +140,48 @@ export class ConsoleLogCard extends React.Component<
               {this.props.step.name}
             </span>
 
-            <span style={{ color: "var(--text-color-secondary)" }}>{this.props.step.title}</span>
+            <span style={{ color: "var(--text-color-secondary)", fontFamily: "var(--font-family-mono)" }}>{this.props.step.title}</span>
           </div>
 
           <div className={"actionsss"}>
-            <span style={{ color: "var(--text-color-secondary)" }}>
+            <span style={{ color: "var(--text-color-secondary)", fontFamily: "var(--font-family-mono)" }}>
               {this.props.step.totalDurationMillis.substring(
                 this.props.step.totalDurationMillis.indexOf(" ") + 1,
                 this.props.step.totalDurationMillis.length,
               )}
             </span>
             {/*<Tooltip title="Open console log in full-screen mode">*/}
-            <button
-              className="jenkins-button jenkins-button--tertiary"
-              aria-label={"Open console log in full-screen mode"}
-              onClick={handleOpen}
-            >
-              <ResizeIcon />
-            </button>
+            {/*<button*/}
+            {/*  className="jenkins-button jenkins-button--tertiary"*/}
+            {/*  aria-label={"Open console log in full-screen mode"}*/}
+            {/*  onClick={handleOpen}*/}
+            {/*>*/}
+            {/*  <ResizeIcon />*/}
+            {/*</button>*/}
             {/*</Tooltip>*/}
             {/*<Tooltip title="View step as plain text">*/}
-            <button
-              className="jenkins-button jenkins-button--tertiary"
-              onClick={() => window.open(`log?nodeId=${this.props.step.id}`)}
-              aria-label="View step as plain text"
-            >
-              <LinkIcon />
-            </button>
+            {/*<button*/}
+            {/*  className="jenkins-button jenkins-button--tertiary"*/}
+            {/*  onClick={() => window.open(`log?nodeId=${this.props.step.id}`)}*/}
+            {/*  aria-label="View step as plain text"*/}
+            {/*>*/}
+            {/*  <LinkIcon />*/}
+            {/*</button>*/}
             {/*</Tooltip>*/}
 
-            {/*<Tooltip title="Open console log">*/}
-            <button
-              onClick={this.handleStepToggle}
-              className="jenkins-button jenkins-button--tertiary"
-              aria-label={"Open console log"}
-              key={`step-expand-button-${this.props.step.id}`}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                <path
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="48"
-                  d="M184 112l144 144-144 144"
-                />
-              </svg>
-            </button>
-            {/*</Tooltip>*/}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" className={"svgtest"}>
+              <path
+                fill="none"
+                stroke="var(--text-color-secondary)"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="48"
+                opacity={0.75}
+                d="M184 112l144 144-144 144"
+              />
+            </svg>
           </div>
-        </div>
+        </button>
 
         <ConsoleLogModal
           logBuffer={this.props.stepBuffer}
@@ -237,3 +210,23 @@ export class ConsoleLogCard extends React.Component<
     );
   }
 }
+
+declare module "react-tippy" {
+  export interface TooltipProps {
+    children?: React.ReactNode;
+  }
+}
+
+export type ConsoleLogCardProps = {
+  step: StepInfo;
+  stepBuffer: StepLogBufferInfo;
+  isExpanded: boolean;
+  handleStepToggle: (event: React.SyntheticEvent<{}>, nodeId: string) => void;
+  handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
+  // Id of the element whose scroll bar we wish to use.
+  scrollParentId: string;
+};
+
+export type ConsoleLogCardState = {
+  open: boolean;
+};

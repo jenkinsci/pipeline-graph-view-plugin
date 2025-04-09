@@ -282,10 +282,7 @@ div.stage-detail-group {
   border-radius: 8px;
   cursor: pointer;
   min-height: 38px;
-  
-  &:not(:last-of-type) {
-    margin-bottom: 0.25rem;
-  }
+  width: 100%;
 
   .jenkins-button {
     width: 30px;
@@ -293,6 +290,11 @@ div.stage-detail-group {
     min-height: 0;
     min-width: 0;
     padding: 0;
+  }
+
+  .svgtest {
+    rotate: 45deg;
+    transition: var(--standard-transition);
   }
 }
 

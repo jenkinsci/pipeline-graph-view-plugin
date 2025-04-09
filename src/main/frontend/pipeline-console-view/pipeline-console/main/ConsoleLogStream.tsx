@@ -144,16 +144,16 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
         // Uncomment to help with debugging virtuoso issues.
         //logLevel={LogLevel.DEBUG}
       />
-      {showButton && (
-        <Button
-          variant="text"
-          sx={{ padding: "0px", textTransform: "none" }}
-          onClick={() => scrollListBottom()}
-          style={{ float: "right", transform: "translate(-2rem, -2rem)" }}
-        >
-          Scroll to Bottom
-        </Button>
-      )}
+      {/*{showButton && (*/}
+      {/*  <Button*/}
+      {/*    variant="text"*/}
+      {/*    sx={{ padding: "0px", textTransform: "none" }}*/}
+      {/*    onClick={() => scrollListBottom()}*/}
+      {/*    style={{ float: "right", transform: "translate(-2rem, -2rem)" }}*/}
+      {/*  >*/}
+      {/*    Scroll to Bottom*/}
+      {/*  </Button>*/}
+      {/*)}*/}
     </>
   );
 }

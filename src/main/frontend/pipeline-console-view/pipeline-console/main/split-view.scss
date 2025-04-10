@@ -23,6 +23,7 @@
     right: 50%;
     top: 0;
     bottom: 0;
+    // TODO - var fallback can removed after baseline is moved >= 2.496
     width: var(--jenkins-border-width, 2px);
     border-radius: 5px;
     transition: var(--standard-transition);

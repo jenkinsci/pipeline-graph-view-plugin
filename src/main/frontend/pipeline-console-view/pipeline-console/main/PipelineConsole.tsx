@@ -121,7 +121,6 @@ export default class PipelineConsole extends React.Component<
 
     // set default values of state
     this.state = {
-      // TODO - figure out why selectedStage and openStage are different?
       // Store the stage that is selected - either by the user or URL params.
       selectedStage: "",
       // Store the stage that should be open in the stage view.

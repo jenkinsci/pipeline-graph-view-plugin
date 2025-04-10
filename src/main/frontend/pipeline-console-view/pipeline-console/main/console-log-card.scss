@@ -15,6 +15,37 @@
   }
 }
 
+.step-detail-headerparent {
+  position: sticky;
+  top: calc(var(--header-height) + 0.375rem);
+  z-index: 1;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -0.375rem;
+    background: var(--card-background);
+    pointer-events: none;
+  }
+}
+
+.step-detail-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  justify-content: stretch;
+  padding: 0 0.5rem !important;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  min-height: 38px;
+  width: 100%;
+
+  .svgtest {
+    transition: var(--standard-transition);
+    scale: 0.9;
+  }
+}
+
 .actionsss {
   display: flex;
   align-items: center;

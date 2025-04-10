@@ -138,88 +138,6 @@ g.build-status-icon__outer {
   background: var(--white, #fff);
 }
 
-// TreeView styling
-.MuiTreeItem-label {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  border-radius: 10px;
-  margin: 0 0 5px 0 !important;
-  padding-left: 1rem !important;
-  padding-right: 1rem !important;
-  box-shadow: 0 0 1px rgb(0 0 0 / 6%);
-  // Move down slightly to avoid curring off the top background.
-  top: 5px;
-}
-
-// Hover TreeItem style.
-.MuiTreeItem-label:hover {
-  background: var(--very-light-grey);
-}
-
-:root {
-  --active-card-background: var(--light-yellow);
-}
-
-[data-theme="dark"] {
-  --active-card-background: var(--dark-yellow);
-}
-
-@media (prefers-color-scheme: dark) {
-  [data-theme="dark-system"],
-  [data-theme="dark-system"] {
-    --active-card-background: var(--dark-yellow);
-  }
-}
-
-.MuiTreeItem-label.pgv-graph-node--synthetic {
-  font-style: italic;
-}
-
-.Mui-selected {
-  // Remove highlighting
-  background: transparent !important;
-}
-
-.Mui-focused {
-  background: transparent !important;
-  text-decoration: bold;
-}
-
-.Mui-focused {
-  // Remove highlighting
-  background: transparent !important;
-  text-decoration: bold;
-}
-
-.MuiTreeItem-content:hover {
-  background: transparent !important;
-}
-
-#main-panel {
-  padding: unset;
-}
-
-.svg-icon {
-  // Force rotating icons to rotate about their center.
-  transform-origin: center;
-}
-
-.svg-icon--expand {
-  color: var(--step-text-color);
-}
-
-.svg-icon--link {
-  color: var(--step-text-color);
-}
-
-.svg-icon--resize {
-  color: var(--step-text-color);
-}
-
-.svg-icon--step-card-status {
-  color: var(--step-text-color) !important;
-}
-
 // Console styling
 a.console-line-number {
   text-align: right;
@@ -255,7 +173,7 @@ div.console-output-line {
     );
     border: var(--jenkins-border-width) solid
       color-mix(in srgb, var(--text-color-secondary) 2.5%, transparent);
-    border-radius: 0.5rem;
+    border-radius: 0.375rem;
     opacity: 0;
     transition: opacity var(--standard-transition);
     pointer-events: none;
@@ -311,23 +229,6 @@ div.stage-detail-group {
 //    scale: 100%;
 //  }
 //}
-
-.step-detail-header {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  justify-content: stretch;
-  padding: 0 0.5rem !important;
-  border-radius: 0.375rem;
-  cursor: pointer;
-  min-height: 38px;
-  width: 100%;
-
-  .svgtest {
-    transition: var(--standard-transition);
-    scale: 0.9;
-  }
-}
 
 div.step-detail-group-expanded {
   @extend div, .stage-detail-group;

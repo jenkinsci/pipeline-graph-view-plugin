@@ -76,28 +76,29 @@ function ConsoleLogCard(props: ConsoleLogCardProps) {
       }
       key={`step-card-${props.step.id}`}
     >
-      <button
-        onClick={handleToggle}
-        className={
-          "step-detail-header jenkins-button " +
-          (props.isExpanded ? "" : "jenkins-button--tertiary")
-        }
-        key={`step-action-area-${props.step.id}`}
-      >
-        <div className="thinggg">
-          {statusIcon}
-          <span style={{ fontWeight: "450" }}>{props.step.name}</span>
-          <span
-            style={{
-              color: "var(--text-color-secondary)",
-              fontFamily: "var(--font-family-mono)",
-            }}
-          >
+      <div className="step-detail-headerparent">
+        <button
+          onClick={handleToggle}
+          className={
+            "step-detail-header jenkins-button " +
+            (props.isExpanded ? "" : "jenkins-button--tertiary")
+          }
+          key={`step-action-area-${props.step.id}`}
+        >
+          <div className="thinggg">
+            {statusIcon}
+            <span style={{ fontWeight: "450" }}>{props.step.name}</span>
+            <span
+              style={{
+                color: "var(--text-color-secondary)",
+                fontFamily: "var(--font-family-mono)",
+              }}
+            >
             {props.step.title}
           </span>
-        </div>
+          </div>
 
-        <div className="actionsss">
+          <div className="actionsss">
           <span
             style={{
               color: "var(--text-color-secondary)",
@@ -107,8 +108,8 @@ function ConsoleLogCard(props: ConsoleLogCardProps) {
             {props.step.totalDurationMillis}
           </span>
 
-          {/* Uncomment if needed */}
-          {/* <button
+            {/* Uncomment if needed */}
+            {/* <button
             className="jenkins-button jenkins-button--tertiary"
             aria-label="Open console log in full-screen mode"
             onClick={() => setOpen(true)}
@@ -124,24 +125,25 @@ function ConsoleLogCard(props: ConsoleLogCardProps) {
             <LinkIcon />
           </button> */}
 
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 512 512"
-            className={"svgtest"}
-            style={{ rotate: props.isExpanded ? "90deg" : "0deg" }}
-          >
-            <path
-              fill="none"
-              stroke="var(--text-color-secondary)"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="48"
-              opacity={0.75}
-              d="M184 112l144 144-144 144"
-            />
-          </svg>
-        </div>
-      </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 512 512"
+              className={"svgtest"}
+              style={{ rotate: props.isExpanded ? "90deg" : "0deg" }}
+            >
+              <path
+                fill="none"
+                stroke="var(--text-color-secondary)"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="48"
+                opacity={0.75}
+                d="M184 112l144 144-144 144"
+              />
+            </svg>
+          </div>
+        </button>
+      </div>
 
       <ConsoleLogModal
         logBuffer={props.stepBuffer}

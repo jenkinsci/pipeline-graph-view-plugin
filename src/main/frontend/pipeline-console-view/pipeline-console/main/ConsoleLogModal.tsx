@@ -13,8 +13,6 @@ export interface ConsoleLogModelProps {
   open: boolean;
 }
 
-import { Box, Modal, Stack } from "@mui/material";
-import Typography from "@mui/material/Typography";
 import ConsoleLogStream from "./ConsoleLogStream";
 
 const style = {
@@ -46,36 +44,36 @@ export default function ConsoleLogModal(props: ConsoleLogModelProps) {
 
   return (
     <>
-      <Modal
-        open={props.open}
-        onClose={handleClose}
-        aria-labelledby="modal-modal-title"
-        aria-describedby="modal-modal-description"
-      >
-        <Box sx={style}>
-          <Typography
-            id="modal-modal-title"
-            variant="h6"
-            component="h2"
-            className="log-card--header"
-            noWrap={true}
-            key={`step-name-text-${props.step.id}`}
-          >
-            <Stack direction="row" alignItems="center" spacing={1}>
-              {statusIcon}
-              <Box component="span">
-                <Box component="span" fontWeight="bold">
-                  {stepDisplayName}
-                </Box>
-                {stepTitle}
-              </Box>
-            </Stack>
-          </Typography>
-          <CloseIcon onClick={handleClose} />
-          <div>{props.truncatedLogWarning}</div>
-          <ConsoleLogStream {...props} />
-        </Box>
-      </Modal>
+      {/*<Modal*/}
+      {/*  open={props.open}*/}
+      {/*  onClose={handleClose}*/}
+      {/*  aria-labelledby="modal-modal-title"*/}
+      {/*  aria-describedby="modal-modal-description"*/}
+      {/*>*/}
+      {/*  <Box sx={style}>*/}
+      {/*    <Typography*/}
+      {/*      id="modal-modal-title"*/}
+      {/*      variant="h6"*/}
+      {/*      component="h2"*/}
+      {/*      className="log-card--header"*/}
+      {/*      noWrap={true}*/}
+      {/*      key={`step-name-text-${props.step.id}`}*/}
+      {/*    >*/}
+      {/*      <Stack direction="row" alignItems="center" spacing={1}>*/}
+      {/*        {statusIcon}*/}
+      {/*        <Box component="span">*/}
+      {/*          <Box component="span" fontWeight="bold">*/}
+      {/*            {stepDisplayName}*/}
+      {/*          </Box>*/}
+      {/*          {stepTitle}*/}
+      {/*        </Box>*/}
+      {/*      </Stack>*/}
+      {/*    </Typography>*/}
+      {/*    <CloseIcon onClick={handleClose} />*/}
+      {/*    <div>{props.truncatedLogWarning}</div>*/}
+      {/*    <ConsoleLogStream {...props} />*/}
+      {/*  </Box>*/}
+      {/*</Modal>*/}
     </>
   );
 }

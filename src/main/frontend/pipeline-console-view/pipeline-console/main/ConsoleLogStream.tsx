@@ -89,7 +89,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
       <Virtuoso
         style={{
           height: `${height()}px`,
-          maxHeight: window.innerHeight * props.maxHeightScale,
+          // maxHeight: window.innerHeight * props.maxHeightScale,
         }}
         ref={virtuosoRef}
         data={props.logBuffer.lines}

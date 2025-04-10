@@ -44,7 +44,7 @@ function ConsoleLogCard(props: ConsoleLogCardProps) {
   const getTruncatedLogWarning = () => {
     if (props.stepBuffer.lines && props.stepBuffer.startByte > 0) {
       return (
-        <button onClick={showMoreLogs} className={"jenkins-button jenkins-!-warning-color"} style={{ position: "absolute", top: 50, left: 0, right: 0, zIndex: 10, backdropFilter: "blur(40px)" }}>
+        <button onClick={showMoreLogs} className={"pgv-show-more-logs jenkins-button jenkins-!-warning-color"}>
           Missing {prettySizeString(props.stepBuffer.startByte)} of logs. Click to see more logs
         </button>
       );

@@ -420,6 +420,13 @@ a {
 .app-details__prev_next {
   color: inherit !important;
   text-decoration: none !important;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  // TODO - Hacky
+  padding-inline: 5px;
 }
 
 .split-pane--stage-view {

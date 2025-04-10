@@ -25,3 +25,13 @@
     padding-inline: 0 !important;
   }
 }
+
+.pgv-show-more-logs {
+  background: var(--card-background);
+  box-shadow: 0 0 5px var(--card-background);
+  position: absolute;
+  top: 50px;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}

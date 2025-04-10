@@ -1,0 +1,19 @@
+.pgv-scroll-to-bottom {
+  position: absolute;
+  bottom: var(--section-padding);
+  right: var(--section-padding);
+  min-width: 38px;
+  padding: 0;
+  background: var(--card-background);
+  box-shadow: 0 0 5px var(--card-background);
+
+  svg {
+    transition: var(--standard-transition);
+  }
+
+  &:hover {
+    svg {
+      translate: 0 1px;
+    }
+  }
+}

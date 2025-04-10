@@ -2,6 +2,7 @@ import React from "react";
 import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
 import { useCallback, useState, useEffect, useRef } from "react";
 import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
+import './console-log-stream.scss';
 
 export interface ConsoleLogStreamProps {
   logBuffer: StepLogBufferInfo;
@@ -142,16 +143,19 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
         // Uncomment to help with debugging virtuoso issues.
         //logLevel={LogLevel.DEBUG}
       />
-      {/*{showButton && (*/}
-      {/*  <Button*/}
-      {/*    variant="text"*/}
-      {/*    sx={{ padding: "0px", textTransform: "none" }}*/}
-      {/*    onClick={() => scrollListBottom()}*/}
-      {/*    style={{ float: "right", transform: "translate(-2rem, -2rem)" }}*/}
-      {/*  >*/}
-      {/*    Scroll to Bottom*/}
-      {/*  </Button>*/}
-      {/*)}*/}
+      {showButton && (
+        <button
+          className="jenkins-button jenkins-!-accent-color pgv-scroll-to-bottom"
+          onClick={() => scrollListBottom()}
+          // TODO - make this work
+          data-tooltip="Scroll to bottom"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="48"
+                  d="M112 268l144 144 144-144M256 392V100" />
+          </svg>
+        </button>
+      )}
     </>
   );
 }

@@ -33,13 +33,14 @@
   &:hover {
     &::after {
       opacity: 0.3;
+      scale: 150% 100%;
     }
   }
 
   &:active {
     &::after {
       opacity: 0.6;
-      scale: 150% 100%;
+      scale: 200% 100%;
     }
   }
 }

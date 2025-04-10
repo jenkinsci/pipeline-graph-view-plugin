@@ -509,7 +509,7 @@ export default class PipelineConsole extends React.Component<
 
     return (
       <SplitView>
-        <div className="split-pane" key="tree-view" id="tree-view-pane">
+        <div key="tree-view" id="tree-view-pane">
           <Suspense fallback={<CircularProgress />}>
             <DataTreeView
               onNodeSelect={this.handleStageSelect}

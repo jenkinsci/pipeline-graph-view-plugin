@@ -10,11 +10,11 @@ import {
   pollUntilComplete,
   RunStatus,
 } from "./PipelineConsoleModel";
-import { CircularProgress } from "@mui/material";
 
 import "./pipeline-console.scss";
 import { StageInfo, StepInfo, Result } from "./PipelineConsoleModel";
 import SplitView from "./SplitView";
+import Skeleton from "./Skeleton";
 
 const DataTreeView = lazy(() => import("./DataTreeView"));
 const StageView = lazy(() => import("./StageView"));
@@ -509,7 +509,7 @@ export default class PipelineConsole extends React.Component<
     return (
       <SplitView>
         <div key="tree-view" id="tree-view-pane">
-          <Suspense fallback={<CircularProgress />}>
+          <Suspense fallback={<Skeleton />}>
             <DataTreeView
               onNodeSelect={this.handleStageSelect}
               selected={this.state.openStage}
@@ -523,7 +523,7 @@ export default class PipelineConsole extends React.Component<
           key="stage-view"
           id="stage-view-pane"
         >
-          <Suspense fallback={<CircularProgress />}>
+          <Suspense fallback={<Skeleton />}>
             <StageView
               stage={this.getOpenStage()}
               steps={this.getStageSteps(this.state.openStage)}

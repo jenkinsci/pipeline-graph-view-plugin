@@ -31,6 +31,7 @@ export const ConsoleLine = (props: ConsoleLineProps) => {
 
   return (
     <pre
+      style={{ background: "none", border: "none" }}
       className="console-output-line"
       key={`console-line-pre${props.lineNumber}`}
     >

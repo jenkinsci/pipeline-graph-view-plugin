@@ -37,14 +37,6 @@
   }
 }
 
-.App {
-  font-family: sans-serif;
-  text-align: center;
-  height: 80%;
-  display: flex;
-  background: transparent;
-}
-
 .SplitPane {
   position: relative;
 }
@@ -190,10 +182,6 @@ g.build-status-icon__outer {
 
 .MuiTreeItem-label.pgv-graph-node--synthetic {
   font-style: italic;
-}
-
-.stage-tree-item-selected > .MuiTreeItem-content > .MuiTreeItem-label {
-  background: var(--active-card-background) !important;
 }
 
 .Mui-selected {
@@ -374,21 +362,6 @@ svg.detail-icon {
   margin-right: 10px;
   font-size: 1.5rem !important;
   transform-origin: 50% 50%;
-}
-
-div.split-pane {
-  position: relative;
-  text-align: left;
-  height: calc(100vh - 300px);
-  overflow: auto;
-
-  > div[style*="position: relative;"] {
-    width: 24px;
-  }
-
-  &.collapsed {
-    overflow: hidden;
-  }
 }
 
 a {

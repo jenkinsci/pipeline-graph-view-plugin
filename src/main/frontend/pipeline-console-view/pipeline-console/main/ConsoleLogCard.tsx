@@ -104,10 +104,7 @@ function ConsoleLogCard(props: ConsoleLogCardProps) {
               fontFamily: "var(--font-family-mono)",
             }}
           >
-            {props.step.totalDurationMillis.substring(
-              props.step.totalDurationMillis.indexOf(" ") + 1,
-              props.step.totalDurationMillis.length,
-            )}
+            {props.step.totalDurationMillis}
           </span>
 
           {/* Uncomment if needed */}

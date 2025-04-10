@@ -19,7 +19,7 @@ export default function DataTreeView({
   );
 
   return (
-    <div className="custom-tree-view" id="tasks">
+    <div id="tasks">
       {stages.map((stage) => (
         <TreeNode
           key={stage.id}
@@ -73,7 +73,7 @@ function TreeNode({ stage, selected, onSelect }: TreeNodeProps) {
               radius={10}
             />
             {stage.state === Result.running && (
-              <span style={{ color: "var(--text-color-secondary)" }}>
+              <span className="pgv-tree-item__description">
                 {stage.totalDurationMillis}
               </span>
             )}

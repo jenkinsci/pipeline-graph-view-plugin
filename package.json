@@ -27,7 +27,6 @@
     "@babel/preset-typescript": "^7.21.0",
     "@babel/traverse": "^7.20.7",
     "@mui/icons-material": "5.10.9",
-    "@mui/lab": "5.0.0-alpha.104",
     "@mui/material": "5.10.10",
     "@react-spring/web": "9.7.5",
     "babel-loader": "^9.1.2",

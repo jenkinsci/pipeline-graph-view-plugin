@@ -32,6 +32,10 @@
   svg {
     flex-shrink: 0;
   }
+
+  &__description {
+    color: var(--text-color-secondary);
+  }
 }
 
 .pgv-toggle-icon {

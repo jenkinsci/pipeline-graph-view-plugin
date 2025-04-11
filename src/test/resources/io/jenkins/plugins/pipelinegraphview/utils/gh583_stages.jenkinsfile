@@ -1,0 +1,14 @@
+stage("A") {
+	parallel([
+		"B1": {
+			stage("C") {
+				echo("C")
+			}
+		},
+		"B2": {
+			stage("D") {
+				echo("D")
+			}
+		}
+	])
+}

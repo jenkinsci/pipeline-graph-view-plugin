@@ -480,7 +480,8 @@ class PipelineGraphApiTest {
     @Issue("GH#616")
     @Test
     void createTree_stageResult() throws Exception {
-        WorkflowRun run = TestUtils.createAndRunJob(j, "stageResult", "gh616_stageResult.jenkinsfile", Result.UNSTABLE, false);
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "stageResult", "gh616_stageResult.jenkinsfile", Result.UNSTABLE, false);
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createTree();
 

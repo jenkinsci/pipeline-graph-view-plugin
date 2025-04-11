@@ -25,12 +25,13 @@ public class TestUtils {
     private static final Logger LOGGER = Logger.getLogger(TestUtils.class.getName());
 
     public static WorkflowRun createAndRunJob(
-        JenkinsRule jenkins, String jobName, String jenkinsFileName, Result expectedResult) throws Exception {
-            return createAndRunJob(jenkins, jobName, jenkinsFileName, expectedResult, true);
+            JenkinsRule jenkins, String jobName, String jenkinsFileName, Result expectedResult) throws Exception {
+        return createAndRunJob(jenkins, jobName, jenkinsFileName, expectedResult, true);
     }
 
     public static WorkflowRun createAndRunJob(
-            JenkinsRule jenkins, String jobName, String jenkinsFileName, Result expectedResult, boolean sandbox) throws Exception {
+            JenkinsRule jenkins, String jobName, String jenkinsFileName, Result expectedResult, boolean sandbox)
+            throws Exception {
         WorkflowJob job = TestUtils.createJob(jenkins, jobName, jenkinsFileName, sandbox);
         jenkins.assertBuildStatus(expectedResult, job.scheduleBuild2(0));
         return job.getLastBuild();
@@ -51,7 +52,8 @@ public class TestUtils {
         return createJob(jenkins, jobName, jenkinsFileName, true);
     }
 
-    public static WorkflowJob createJob(JenkinsRule jenkins, String jobName, String jenkinsFileName, boolean sandbox) throws Exception {
+    public static WorkflowJob createJob(JenkinsRule jenkins, String jobName, String jenkinsFileName, boolean sandbox)
+            throws Exception {
         WorkflowJob job = jenkins.createProject(WorkflowJob.class, jobName);
 
         URL resource = Resources.getResource(TestUtils.class, jenkinsFileName);

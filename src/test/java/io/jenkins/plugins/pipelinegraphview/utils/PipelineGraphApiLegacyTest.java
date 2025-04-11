@@ -149,4 +149,30 @@ class PipelineGraphApiLegacyTest {
                 (PipelineStage stage) -> String.format("{%s,%s}", stage.getName(), stage.getState()));
         assertThat(newStagesString, is(stagesString));
     }
+
+    @Issue("GH#616")
+    @Test
+    void createLegacyTree_stageResult(JenkinsRule j) throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(j, "gh616_stageResult", "gh_stageResult.jenkinsfile", Result.UNSTABLE, false);
+        PipelineGraphApi api = new PipelineGraphApi(run);
+        PipelineGraph graph = api.createLegacyTree();
+
+        List<PipelineStage> stages = graph.getStages();
+
+        String stagesString = TestUtils.collectStagesAsString(
+                stages,
+                (PipelineStage stage) -> String.format(
+                        "{%s,%s,%s,%s}",
+                        stage.getName(),
+                        stage.getTitle(),
+                        stage.getType(),
+                        stage.getState()));
+        assertThat(
+                stagesString,
+                is(String.join(
+                    "",
+                    "{success-stage,success-stage,STAGE,success},",
+                    "{failure-stage,failure-stage,STAGE,failure},",
+                    "{unstable-stage,unstable-stage,STAGE,unstable}")));
+    }
 }

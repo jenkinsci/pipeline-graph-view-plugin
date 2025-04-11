@@ -476,4 +476,26 @@ class PipelineGraphApiTest {
         assertThat(externalStage.getName(), equalTo("External"));
         assertThat(externalStage.getAgent(), equalTo(agent.getNodeName()));
     }
+
+    @Issue("GH#616")
+    @Test
+    void createTree_stageResult() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(j, "stageResult", "gh616_stageResult.jenkinsfile", Result.UNSTABLE, false);
+        PipelineGraphApi api = new PipelineGraphApi(run);
+        PipelineGraph graph = api.createTree();
+
+        List<PipelineStage> stages = graph.getStages();
+
+        String stagesString = TestUtils.collectStagesAsString(
+                stages,
+                (PipelineStage stage) -> String.format(
+                        "{%s,%s,%s,%s}", stage.getName(), stage.getTitle(), stage.getType(), stage.getState()));
+        assertThat(
+                stagesString,
+                equalTo(String.join(
+                        "",
+                        "{success-stage,success-stage,STAGE,success},",
+                        "{failure-stage,failure-stage,STAGE,failure},",
+                        "{unstable-stage,unstable-stage,STAGE,unstable}")));
+    }
 }

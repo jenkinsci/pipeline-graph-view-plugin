@@ -26,23 +26,39 @@ public class TestUtils {
 
     public static WorkflowRun createAndRunJob(
             JenkinsRule jenkins, String jobName, String jenkinsFileName, Result expectedResult) throws Exception {
-        WorkflowJob job = TestUtils.createJob(jenkins, jobName, jenkinsFileName);
+        return createAndRunJob(jenkins, jobName, jenkinsFileName, expectedResult, true);
+    }
+
+    public static WorkflowRun createAndRunJob(
+            JenkinsRule jenkins, String jobName, String jenkinsFileName, Result expectedResult, boolean sandbox)
+            throws Exception {
+        WorkflowJob job = TestUtils.createJob(jenkins, jobName, jenkinsFileName, sandbox);
         jenkins.assertBuildStatus(expectedResult, job.scheduleBuild2(0));
         return job.getLastBuild();
     }
 
     public static QueueTaskFuture<WorkflowRun> createAndRunJobNoWait(
             JenkinsRule jenkins, String jobName, String jenkinsFileName) throws Exception {
-        WorkflowJob job = TestUtils.createJob(jenkins, jobName, jenkinsFileName);
+        return createAndRunJobNoWait(jenkins, jobName, jenkinsFileName, true);
+    }
+
+    public static QueueTaskFuture<WorkflowRun> createAndRunJobNoWait(
+            JenkinsRule jenkins, String jobName, String jenkinsFileName, boolean sandbox) throws Exception {
+        WorkflowJob job = TestUtils.createJob(jenkins, jobName, jenkinsFileName, sandbox);
         return job.scheduleBuild2(0);
     }
 
     public static WorkflowJob createJob(JenkinsRule jenkins, String jobName, String jenkinsFileName) throws Exception {
+        return createJob(jenkins, jobName, jenkinsFileName, true);
+    }
+
+    public static WorkflowJob createJob(JenkinsRule jenkins, String jobName, String jenkinsFileName, boolean sandbox)
+            throws Exception {
         WorkflowJob job = jenkins.createProject(WorkflowJob.class, jobName);
 
         URL resource = Resources.getResource(TestUtils.class, jenkinsFileName);
         String jenkinsFile = Resources.toString(resource, Charsets.UTF_8);
-        job.setDefinition(new CpsFlowDefinition(jenkinsFile, true));
+        job.setDefinition(new CpsFlowDefinition(jenkinsFile, sandbox));
         return job;
     }
 

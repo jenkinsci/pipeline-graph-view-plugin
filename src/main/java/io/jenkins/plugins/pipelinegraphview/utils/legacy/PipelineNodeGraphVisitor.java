@@ -31,6 +31,7 @@ import org.jenkinsci.plugins.pipeline.modeldefinition.actions.ExecutionModelActi
 import org.jenkinsci.plugins.workflow.actions.LabelAction;
 import org.jenkinsci.plugins.workflow.actions.NotExecutedNodeAction;
 import org.jenkinsci.plugins.workflow.actions.TimingAction;
+import org.jenkinsci.plugins.workflow.actions.WarningAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepEndNode;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
@@ -238,12 +239,18 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements Pi
         } else if (firstExecuted == null) {
             status = new NodeRunStatus(GenericStatus.NOT_EXECUTED);
         } else if (chunk.getLastNode() != null) {
+            WarningAction warningAction = chunk.getFirstNode().getPersistentAction(WarningAction.class);
+
             // StatusAndTiming.computeChunkStatus2 seems to return wrong status for parallel
             // sequential
             // stages
             // so check check if active and in the case of nested sequential
             if (parallelNestedStages && chunk.getFirstNode().isActive()) {
                 status = new NodeRunStatus(chunk.getFirstNode());
+            } else if (PipelineNodeUtil.isStage(chunk.getFirstNode()) && warningAction != null) {
+                // If the chunk is  a stage and there's a WarningAction on the stage start node use the
+                // associated result
+                status = new NodeRunStatus(GenericStatus.fromResult(warningAction.getResult()));
             } else {
                 FlowNode nodeBefore = chunk.getNodeBefore(),
                         firstNode = chunk.getFirstNode(),

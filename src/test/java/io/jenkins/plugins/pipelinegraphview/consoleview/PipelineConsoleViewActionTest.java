@@ -11,20 +11,19 @@ import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import java.util.List;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class PipelineConsoleViewActionTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class PipelineConsoleViewActionTest {
 
     private static final String TEXT = "Hello, World!" + System.lineSeparator();
 
     @Issue("GH#224")
     @Test
-    public void getConsoleLogReturnLogText() throws Exception {
+    void getConsoleLogReturnLogText(JenkinsRule j) throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "hello_world_scripted", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
@@ -43,7 +42,7 @@ public class PipelineConsoleViewActionTest {
 
     @Issue("GH#224")
     @Test
-    public void getConsoleLogReturnsErrorText() throws Exception {
+    void getConsoleLogReturnsErrorText(JenkinsRule j) throws Exception {
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "hello_world_scripted", "simpleError.jenkinsfile", Result.FAILURE);
 
@@ -61,7 +60,7 @@ public class PipelineConsoleViewActionTest {
 
     @Issue("GH#224")
     @Test
-    public void getConsoleLogReturnLogTextWithOffset() throws Exception {
+    void getConsoleLogReturnLogTextWithOffset(JenkinsRule j) throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "hello_world_scripted", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
@@ -80,7 +79,7 @@ public class PipelineConsoleViewActionTest {
 
     @Issue("GH#224")
     @Test
-    public void getConsoleLogReturnLogTextWithNegativeOffset() throws Exception {
+    void getConsoleLogReturnLogTextWithNegativeOffset(JenkinsRule j) throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "hello_world_scripted", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
@@ -101,7 +100,7 @@ public class PipelineConsoleViewActionTest {
 
     @Issue("GH#224")
     @Test
-    public void getConsoleLogReturnLogTextWithLargeNegativeOffset() throws Exception {
+    void getConsoleLogReturnLogTextWithLargeNegativeOffset(JenkinsRule j) throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "hello_world_scripted", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
@@ -120,7 +119,7 @@ public class PipelineConsoleViewActionTest {
 
     @Issue("GH#224")
     @Test
-    public void getConsoleLogReturnLogTextWithLargeOffset() throws Exception {
+    void getConsoleLogReturnLogTextWithLargeOffset(JenkinsRule j) throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "hello_world_scripted", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
@@ -137,7 +136,7 @@ public class PipelineConsoleViewActionTest {
 
     @Issue("GH#224")
     @Test
-    public void getConsoleLogOfStepWithOutputAndException() throws Exception {
+    void getConsoleLogOfStepWithOutputAndException(JenkinsRule j) throws Exception {
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "exec_returns_error", "execStepReturnsError.jenkinsfile", Result.FAILURE);
         PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);

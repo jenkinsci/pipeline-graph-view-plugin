@@ -7,6 +7,7 @@ export interface ConsoleLogModelProps {
   logBuffer: StepLogBufferInfo;
   handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
   step: StepInfo;
+  truncatedLogWarning: React.JSX.Element | undefined;
   maxHeightScale: number;
   setClose: () => void;
   open: boolean;
@@ -71,6 +72,7 @@ export default function ConsoleLogModal(props: ConsoleLogModelProps) {
             </Stack>
           </Typography>
           <CloseIcon onClick={handleClose} />
+          <div>{props.truncatedLogWarning}</div>
           <ConsoleLogStream {...props} />
         </Box>
       </Modal>

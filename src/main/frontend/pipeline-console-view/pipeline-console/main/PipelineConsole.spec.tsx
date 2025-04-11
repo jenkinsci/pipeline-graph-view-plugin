@@ -7,7 +7,7 @@ import {
   getDefaultSelectedStep,
   updateStepBuffer,
 } from "./PipelineConsole";
-import DataTreeView, { DataTreeViewProps } from "./DataTreeView";
+import DataTreeView from "./DataTreeView";
 import StageView, { StageViewProps } from "./StageView";
 import { StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
 import { render } from "@testing-library/react";
@@ -64,7 +64,7 @@ jest.mock("../../../common/RestClient", () => {
 });
 
 jest.mock("./DataTreeView", () => {
-  return jest.fn((props: DataTreeViewProps) => {
+  return jest.fn((props) => {
     return (
       <div>
         SimpleDataTreeView...<div>{JSON.stringify(props)}</div>
@@ -179,9 +179,7 @@ describe("PipelineConsole", () => {
     await findByText("SimpleDataTreeView...");
     expect(DataTreeView).toHaveBeenLastCalledWith(
       {
-        expanded: ["3", "2"],
         onNodeSelect: expect.anything(),
-        onNodeToggle: expect.anything(),
         selected: "3",
         stages: defaultStagesList,
       },

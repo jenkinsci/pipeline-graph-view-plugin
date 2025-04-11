@@ -1,6 +1,5 @@
 import React from "react";
 import { lazy, Suspense } from "react";
-import { SplitPane } from "react-collapse-pane";
 
 import {
   LOG_FETCH_SIZE,
@@ -8,7 +7,6 @@ import {
   getRunStatus,
   getRunSteps,
   getConsoleTextOffset,
-  POLL_INTERVAL,
   pollUntilComplete,
   RunStatus,
 } from "./PipelineConsoleModel";
@@ -16,7 +14,7 @@ import { CircularProgress } from "@mui/material";
 
 import "./pipeline-console.scss";
 import { StageInfo, StepInfo, Result } from "./PipelineConsoleModel";
-import Button from "@mui/material/Button";
+import SplitView from "./SplitView";
 
 const DataTreeView = lazy(() => import("./DataTreeView"));
 const StageView = lazy(() => import("./StageView"));
@@ -505,78 +503,40 @@ export default class PipelineConsole extends React.Component<
     return null;
   }
 
-  handlePaneCollapse = (sizes: Array<number | null>) => {
-    const isStageViewExpanded = sizes[0] === null;
-
-    if (this.state.isStageViewExpanded !== isStageViewExpanded) {
-      this.setState({ isStageViewExpanded });
-    }
-  };
-
   render() {
-    const buttonPositionOffset = 10;
-    const collapseDirection = "left";
-    const collapseTransition = 500;
-    const grabberSize = 50;
-    const buttonTransition = "grow";
     const stageViewPaneClass = `split-pane ${this.state.isStageViewExpanded ? "" : "collapsed"}`;
 
     return (
-      <React.Fragment>
-        <div className="App">
-          <SplitPane
-            // initialSize ratio
-            initialSizes={[2, 8]}
-            // minSize in Pixels (for all panes)
-            minSizes={250}
-            className={stageViewPaneClass}
-            split="vertical"
-            collapse={{
-              collapseTransitionTimeout: collapseTransition,
-              buttonTransition,
-              collapseDirection,
-              buttonPositionOffset,
-            }}
-            hooks={{
-              onCollapse: this.handlePaneCollapse,
-            }}
-            resizerOptions={{
-              grabberSize,
-            }}
-          >
-            <div className="split-pane" key="tree-view" id="tree-view-pane">
-              <Suspense fallback={<CircularProgress />}>
-                <DataTreeView
-                  onNodeToggle={this.handleStageToggle}
-                  onNodeSelect={this.handleStageSelect}
-                  selected={this.state.selectedStage}
-                  expanded={this.state.expandedStages}
-                  stages={this.state.stages}
-                />
-              </Suspense>
-            </div>
-
-            <div
-              className={stageViewPaneClass}
-              key="stage-view"
-              id="stage-view-pane"
-            >
-              <Suspense fallback={<CircularProgress />}>
-                <StageView
-                  stage={this.getOpenStage()}
-                  steps={this.getStageSteps(this.state.openStage)}
-                  stepBuffers={this.getStageStepBuffers(this.state.openStage)}
-                  expandedSteps={this.state.expandedSteps}
-                  selectedStage={this.state.openStage}
-                  handleStepToggle={this.handleStepToggle}
-                  handleMoreConsoleClick={this.handleMoreConsoleClick}
-                  scrollParentId="stage-view-pane"
-                />
-              </Suspense>
-            </div>
-          </SplitPane>
+      <SplitView>
+        <div key="tree-view" id="tree-view-pane">
+          <Suspense fallback={<CircularProgress />}>
+            <DataTreeView
+              onNodeSelect={this.handleStageSelect}
+              selected={this.state.openStage}
+              stages={this.state.stages}
+            />
+          </Suspense>
         </div>
-      </React.Fragment>
+
+        <div
+          className={stageViewPaneClass}
+          key="stage-view"
+          id="stage-view-pane"
+        >
+          <Suspense fallback={<CircularProgress />}>
+            <StageView
+              stage={this.getOpenStage()}
+              steps={this.getStageSteps(this.state.openStage)}
+              stepBuffers={this.getStageStepBuffers(this.state.openStage)}
+              expandedSteps={this.state.expandedSteps}
+              selectedStage={this.state.openStage}
+              handleStepToggle={this.handleStepToggle}
+              handleMoreConsoleClick={this.handleMoreConsoleClick}
+              scrollParentId="stage-view-pane"
+            />
+          </Suspense>
+        </div>
+      </SplitView>
     );
   }
 }

@@ -27,26 +27,26 @@ import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.test.steps.SemaphoreStep;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
 import org.jvnet.hudson.test.WithoutJenkins;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class PipelineStepApiTest {
+@WithJenkins
+class PipelineStepApiTest {
 
     private static final Logger LOGGER = Logger.getLogger(PipelineStepApiTest.class.getName());
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private JenkinsRule j;
 
-    @Rule
-    public LoggerRule l = new LoggerRule();
+    private final LogRecorder l = new LogRecorder();
 
-    @Before
-    public void enabledDebugLogs() {
+    @BeforeEach
+    void enabledDebugLogs(JenkinsRule j) {
+        this.j = j;
         l.record(PipelineGraphApi.class, Level.FINEST);
         l.record(PipelineNodeTreeScanner.class, Level.FINEST);
         l.record(PipelineNodeGraphAdapter.class, Level.FINEST);
@@ -56,7 +56,7 @@ public class PipelineStepApiTest {
     }
 
     @Test
-    public void unstableSmokes() throws Exception {
+    void unstableSmokes() throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(j, "unstableSmokes", "unstableSmokes.jenkinsfile", Result.FAILURE);
         PipelineStepApi api = new PipelineStepApi(run);
 
@@ -99,7 +99,7 @@ public class PipelineStepApiTest {
     }
 
     @Test
-    public void complexParallelBranchesHaveCorrectSteps() throws Exception {
+    void complexParallelBranchesHaveCorrectSteps() throws Exception {
         // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
         // (as it takes a
         // long time)
@@ -169,7 +169,7 @@ public class PipelineStepApiTest {
     }
 
     @Test
-    public void nestedStagesHaveCorrectSteps() throws Exception {
+    void nestedStagesHaveCorrectSteps() throws Exception {
         // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
         // (as it takes a
         // long time)
@@ -220,7 +220,7 @@ public class PipelineStepApiTest {
     }
 
     @Test
-    public void getAllStepsReturnsStepsForComplexParallelBranches() throws Exception {
+    void getAllStepsReturnsStepsForComplexParallelBranches() throws Exception {
         // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
         // (as it takes a
         // long time)
@@ -258,7 +258,7 @@ public class PipelineStepApiTest {
     }
 
     @Test
-    public void getAllStepsReturnsStepsForNestedStages() throws Exception {
+    void getAllStepsReturnsStepsForNestedStages() throws Exception {
         // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
         // (as it takes a
         // long time)
@@ -278,7 +278,7 @@ public class PipelineStepApiTest {
 
     @Issue("GH#92")
     @Test
-    public void githubIssue92RegressionTest() throws Exception {
+    void githubIssue92RegressionTest() throws Exception {
         // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
         // (as it takes a
         // long time)
@@ -346,7 +346,7 @@ public class PipelineStepApiTest {
 
     @Issue("GH#213")
     @Test
-    public void githubIssue213RegressionTest_scriptedError() throws Exception {
+    void githubIssue213RegressionTest_scriptedError() throws Exception {
         // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
         // (as it takes a
         // long time)
@@ -369,7 +369,7 @@ public class PipelineStepApiTest {
 
     @Issue("GH#213")
     @Test
-    public void githubIssue213RegressionTest_errorStep() throws Exception {
+    void githubIssue213RegressionTest_errorStep() throws Exception {
         // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
         // (as it takes a
         // long time)
@@ -393,7 +393,7 @@ public class PipelineStepApiTest {
 
     @Issue("GH#213")
     @Test
-    public void githubIssue213RegressionTest_pipelineCallsUndefinedVar() throws Exception {
+    void githubIssue213RegressionTest_pipelineCallsUndefinedVar() throws Exception {
         // It's a bit dirty, but do this in one to avoid reloading and rerunning the job
         // (as it takes a
         // long time)
@@ -410,7 +410,7 @@ public class PipelineStepApiTest {
 
     @Issue("GH#274")
     @Test
-    public void githubIssue274RegressionTest_suppressFlowInterruptedExceptions() throws Exception {
+    void githubIssue274RegressionTest_suppressFlowInterruptedExceptions() throws Exception {
         // It's a bit dirty, but do this in one test to avoid reloading and rerunning
         // the job (as it takes a
         // long time)
@@ -434,7 +434,7 @@ public class PipelineStepApiTest {
 
     @Issue("GH#233")
     @Test
-    public void stepApiReturnsSameResultForRunningPipeline() throws Exception {
+    void stepApiReturnsSameResultForRunningPipeline() throws Exception {
         QueueTaskFuture<WorkflowRun> futureRun =
                 TestUtils.createAndRunJobNoWait(j, "githubIssue233", "githubIssue233.jenkinsfile");
         WorkflowRun run = futureRun.waitForStart();
@@ -460,18 +460,18 @@ public class PipelineStepApiTest {
     }
 
     @Test
-    public void pipelineWithSyntaxError() throws Exception {
+    void pipelineWithSyntaxError() throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "pipelineWithSyntaxError", "pipelineWithSyntaxError.jenkinsfile", Result.FAILURE);
 
         List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
-        String stepsString = TestUtils.collectStepsAsString(steps, (PipelineStep s) -> TestUtils.nodeNameAndStatus(s));
+        String stepsString = TestUtils.collectStepsAsString(steps, TestUtils::nodeNameAndStatus);
 
         assertThat(stepsString, equalTo("Pipeline error{failure}"));
     }
 
     @Test
-    public void stepsGetValidTimings() throws Exception {
+    void stepsGetValidTimings() throws Exception {
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "nestedStageSleep", "nestedStageSleep.jenkinsfile", Result.SUCCESS);
 
@@ -490,7 +490,7 @@ public class PipelineStepApiTest {
 
     @Issue("GH#362")
     @Test
-    public void gh362_pausedParallelBranches() throws Exception {
+    void gh362_pausedParallelBranches() throws Exception {
         WorkflowJob job = TestUtils.createJob(
                 j, "gh233_multipleRunningParallelBranches", "gh233_multipleRunningParallelBranches.jenkinsfile");
 
@@ -500,7 +500,7 @@ public class PipelineStepApiTest {
         SemaphoreStep.waitForStart("b/1", run);
         // Sleep to allow Pipeline to reach sleep.
         List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
-        String stepsString = TestUtils.collectStepsAsString(steps, (PipelineStep s) -> TestUtils.nodeNameAndStatus(s));
+        String stepsString = TestUtils.collectStepsAsString(steps, TestUtils::nodeNameAndStatus);
 
         SemaphoreStep.success("a/1", null);
         SemaphoreStep.success("b/1", null);
@@ -510,8 +510,7 @@ public class PipelineStepApiTest {
         j.waitForCompletion(run);
         List<PipelineStep> finishedSteps =
                 new PipelineStepApi(run).getAllSteps().getSteps();
-        String stepsStringFinished =
-                TestUtils.collectStepsAsString(finishedSteps, (PipelineStep s) -> TestUtils.nodeNameAndStatus(s));
+        String stepsStringFinished = TestUtils.collectStepsAsString(finishedSteps, TestUtils::nodeNameAndStatus);
         LOGGER.log(Level.INFO, stepsStringFinished);
 
         assertThat(stepsString, equalTo("a{running},b{running}"));
@@ -520,14 +519,14 @@ public class PipelineStepApiTest {
 
     @Issue("GH#362")
     @Test
-    public void gh362_stepsBeforeStepBlockGetValidStatus() throws Exception {
+    void gh362_stepsBeforeStepBlockGetValidStatus() throws Exception {
         WorkflowJob job = TestUtils.createJob(j, "stepBlockInSteps", "stepBlockInSteps.jenkinsfile");
 
         QueueTaskFuture<WorkflowRun> futureRun = job.scheduleBuild2(0);
         WorkflowRun run = futureRun.waitForStart();
         SemaphoreStep.waitForStart("1/1", run);
         List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
-        String stepsString = TestUtils.collectStepsAsString(steps, (PipelineStep s) -> TestUtils.nodeNameAndStatus(s));
+        String stepsString = TestUtils.collectStepsAsString(steps, TestUtils::nodeNameAndStatus);
 
         SemaphoreStep.success("1/1", null);
         LOGGER.log(Level.INFO, stepsString);
@@ -537,8 +536,7 @@ public class PipelineStepApiTest {
 
         List<PipelineStep> finishedSteps =
                 new PipelineStepApi(run).getAllSteps().getSteps();
-        String stepsStringFinished =
-                TestUtils.collectStepsAsString(finishedSteps, (PipelineStep s) -> TestUtils.nodeNameAndStatus(s));
+        String stepsStringFinished = TestUtils.collectStepsAsString(finishedSteps, TestUtils::nodeNameAndStatus);
         LOGGER.log(Level.INFO, stepsStringFinished);
 
         assertThat(stepsString, equalTo("Hello World{success},1{running}"));
@@ -546,9 +544,9 @@ public class PipelineStepApiTest {
 
         Map<String, List<Long>> checks = new LinkedHashMap<>();
         // Give large ranges - we are testing that the values are feasible, not that they are precise.
-        checks.put("Hello World", Arrays.asList(100L, 0L, 0L, 5000L, 500L, 500L));
-        checks.put("1", Arrays.asList(100L, 0L, 10L, 5000L, 1500L, 1500L));
-        checks.put("Goodbye World", Arrays.asList(0L, 0L, 0L, 5000L, 500L, 500L));
+        checks.put("Hello World", Arrays.asList(100L, 0L, 0L, 10000L, 1000L, 1000L));
+        checks.put("1", Arrays.asList(100L, 0L, 10L, 10000L, 3000L, 3000L));
+        checks.put("Goodbye World", Arrays.asList(0L, 0L, 0L, 10000L, 1000L, 1000L));
         for (AbstractPipelineNode n : finishedSteps) {
             assertThat(checks, hasEntry(is(n.getName()), notNullValue()));
             TestUtils.assertTimesInRange(n, checks.get(n.getName()));
@@ -557,7 +555,7 @@ public class PipelineStepApiTest {
 
     @Test
     @WithoutJenkins
-    public void clearTextContents() {
+    void clearTextContents() {
         assertThat(PipelineStepApi.cleanTextContent("Hello World"), equalTo("Hello World"));
         assertThat(PipelineStepApi.cleanTextContent("abc[10m]def"), equalTo("abc[10m]def"));
         // 3-4 bit

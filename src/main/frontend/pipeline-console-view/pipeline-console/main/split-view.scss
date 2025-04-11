@@ -1,0 +1,47 @@
+.pgv-split-view__container {
+  display: grid;
+  gap: var(--section-padding);
+}
+
+.pgv-split-view__side-panel {
+  position: relative;
+  min-height: calc(100vh - 250px);
+}
+
+.pgv-split-view__divider {
+  position: absolute;
+  right: -9px;
+  top: 0;
+  bottom: 0;
+  width: 20px;
+  cursor: col-resize;
+  z-index: 1;
+
+  &::after {
+    content: "";
+    position: absolute;
+    right: 50%;
+    top: 0;
+    bottom: 0;
+    // TODO - var fallback can removed after baseline is moved >= 2.496
+    width: var(--jenkins-border-width, 2px);
+    border-radius: 5px;
+    transition: var(--standard-transition);
+    background-color: var(--text-color-secondary);
+    opacity: 0.1;
+  }
+
+  &:hover {
+    &::after {
+      opacity: 0.3;
+      scale: 150% 100%;
+    }
+  }
+
+  &:active {
+    &::after {
+      opacity: 0.6;
+      scale: 200% 100%;
+    }
+  }
+}

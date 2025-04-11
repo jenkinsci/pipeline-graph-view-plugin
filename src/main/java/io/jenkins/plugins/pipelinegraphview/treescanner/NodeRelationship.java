@@ -5,8 +5,10 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun;
 import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
+import org.jenkinsci.plugins.workflow.actions.WarningAction;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.GenericStatus;
 import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.StatusAndTiming;
 import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 import org.jenkinsci.plugins.workflow.support.actions.PauseAction;
@@ -108,6 +110,11 @@ public class NodeRelationship {
             return new NodeRunStatus(BlueRun.BlueRunResult.NOT_BUILT, BlueRun.BlueRunState.SKIPPED);
         } else if (PipelineNodeUtil.isPaused(this.end)) {
             return new NodeRunStatus(BlueRun.BlueRunResult.UNKNOWN, BlueRun.BlueRunState.PAUSED);
+        } else if (PipelineNodeUtil.isStage(start)) {
+            WarningAction warningAction = start.getPersistentAction(WarningAction.class);
+            if (warningAction != null) {
+                return new NodeRunStatus(GenericStatus.fromResult(warningAction.getResult()));
+            }
         }
         if (isDebugEnabled) {
             logger.debug(

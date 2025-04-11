@@ -19,33 +19,33 @@ import java.util.logging.Logger;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.test.steps.SemaphoreStep;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class PipelineGraphApiTest {
+@WithJenkins
+class PipelineGraphApiTest {
 
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+    private static final Logger LOGGER = Logger.getLogger(PipelineGraphApiTest.class.getName());
 
-    @Rule
-    public LoggerRule l = new LoggerRule();
+    private JenkinsRule j;
 
-    @Before
-    public void enabledDebugLogs() {
+    private final LogRecorder l = new LogRecorder();
+
+    @BeforeEach
+    void enabledDebugLogs(JenkinsRule j) {
+        this.j = j;
         l.record(PipelineGraphApi.class, Level.FINEST);
         l.record(PipelineNodeTreeScanner.class, Level.FINEST);
         l.record(PipelineNodeGraphAdapter.class, Level.FINEST);
         l.record(NodeRelationshipFinder.class, Level.FINEST);
     }
 
-    private static final Logger LOGGER = Logger.getLogger(PipelineGraphApiTest.class.getName());
-
     @Test
-    public void createTree_unstableSmokes() throws Exception {
+    void createTree_unstableSmokes() throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(j, "unstableSmokes", "unstableSmokes.jenkinsfile", Result.FAILURE);
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createTree();
@@ -67,7 +67,7 @@ public class PipelineGraphApiTest {
     }
 
     @Test
-    public void createTree_complexSmokes() throws Exception {
+    void createTree_complexSmokes() throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(j, "complexSmokes", "complexSmokes.jenkinsfile", Result.SUCCESS);
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createTree();
@@ -86,7 +86,7 @@ public class PipelineGraphApiTest {
     }
 
     @Test
-    public void createTree_scriptedParallel() throws Exception {
+    void createTree_scriptedParallel() throws Exception {
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "scriptedParallel", "scriptedParallel.jenkinsfile", Result.SUCCESS);
         PipelineGraphApi api = new PipelineGraphApi(run);
@@ -100,7 +100,7 @@ public class PipelineGraphApiTest {
 
     @Issue("GH#85")
     @Test
-    public void createTree_syntheticStages() throws Exception {
+    void createTree_syntheticStages() throws Exception {
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "syntheticStages", "syntheticStages.jenkinsfile", Result.SUCCESS);
         PipelineGraphApi api = new PipelineGraphApi(run);
@@ -120,7 +120,7 @@ public class PipelineGraphApiTest {
 
     @Issue("GH#87")
     @Test
-    public void createTree_skippedParallel() throws Exception {
+    void createTree_skippedParallel() throws Exception {
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "skippedParallel", "skippedParallel.jenkinsfile", Result.SUCCESS);
         PipelineGraphApi api = new PipelineGraphApi(run);
@@ -135,7 +135,7 @@ public class PipelineGraphApiTest {
 
     @Issue("GH#213")
     @Test
-    public void createTree_nestedSciptedParallel() throws Exception {
+    void createTree_nestedSciptedParallel() throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "nestedSciptedParallel", "nestedSciptedParallel.jenkinsfile", Result.SUCCESS);
         PipelineGraphApi api = new PipelineGraphApi(run);
@@ -149,7 +149,7 @@ public class PipelineGraphApiTest {
 
     @Issue("GH#213")
     @Test
-    public void createTree_nestedDeclarativeParallel() throws Exception {
+    void createTree_nestedDeclarativeParallel() throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "nestedDeclarativeParallel", "nestedDeclarativeParallel.jenkinsfile", Result.SUCCESS);
         PipelineGraphApi api = new PipelineGraphApi(run);
@@ -163,7 +163,7 @@ public class PipelineGraphApiTest {
 
     @Issue("GH#233")
     @Test
-    public void graphApiReturnSameResultForRunningPipeline() throws Exception {
+    void graphApiReturnSameResultForRunningPipeline() throws Exception {
         QueueTaskFuture<WorkflowRun> futureRun =
                 TestUtils.createAndRunJobNoWait(j, "githubIssue233", "githubIssue233.jenkinsfile");
         WorkflowRun run = futureRun.waitForStart();
@@ -185,7 +185,7 @@ public class PipelineGraphApiTest {
 
     @Issue("GH#233")
     @Test
-    public void gh233_singleRunningParallelBranch() throws Exception {
+    void gh233_singleRunningParallelBranch() throws Exception {
         WorkflowJob job = TestUtils.createJob(
                 j, "gh233_singleRunningParallelBranch", "gh233_singleRunningParallelBranch.jenkinsfile");
         QueueTaskFuture<WorkflowRun> futureRun = job.scheduleBuild2(0);
@@ -211,7 +211,7 @@ public class PipelineGraphApiTest {
 
     @Issue("GH#233")
     @Test
-    public void gh233_singleRunningNestedParallelBranch() throws Exception {
+    void gh233_singleRunningNestedParallelBranch() throws Exception {
         WorkflowJob job = TestUtils.createJob(
                 j, "gh233_singleRunningNestedParallelBranch", "gh233_singleRunningNestedParallelBranch.jenkinsfile");
         QueueTaskFuture<WorkflowRun> futureRun = job.scheduleBuild2(0);
@@ -238,7 +238,7 @@ public class PipelineGraphApiTest {
 
     @Issue("GH#233")
     @Test
-    public void gh233_singleRunningMultipleNestedParallelBranch() throws Exception {
+    void gh233_singleRunningMultipleNestedParallelBranch() throws Exception {
         WorkflowJob job = TestUtils.createJob(
                 j,
                 "gh233_singleRunningMultipleNestedParallelBranch",
@@ -260,8 +260,7 @@ public class PipelineGraphApiTest {
 
         List<PipelineStage> finishedStages =
                 new PipelineGraphApi(run).createTree().getStages();
-        String stagesStringFinished =
-                TestUtils.collectStagesAsString(finishedStages, (PipelineStage s) -> TestUtils.nodeNameAndStatus(s));
+        String stagesStringFinished = TestUtils.collectStagesAsString(finishedStages, TestUtils::nodeNameAndStatus);
         LOGGER.log(Level.INFO, stagesStringFinished);
 
         assertThat(
@@ -284,7 +283,7 @@ public class PipelineGraphApiTest {
 
     @Issue("GH#233")
     @Test
-    public void gh233_multipleRunningParallelBranches() throws Exception {
+    void gh233_multipleRunningParallelBranches() throws Exception {
         WorkflowJob job = TestUtils.createJob(
                 j, "gh233_multipleRunningParallelBranches", "gh233_multipleRunningParallelBranches.jenkinsfile");
 
@@ -313,7 +312,7 @@ public class PipelineGraphApiTest {
 
     @Issue("GH#233")
     @Test
-    public void gh233_multipleRunningNestedParallelBranches() throws Exception {
+    void gh233_multipleRunningNestedParallelBranches() throws Exception {
         WorkflowJob job = TestUtils.createJob(
                 j,
                 "gh233_multipleRunningNestedParallelBranches",
@@ -324,8 +323,7 @@ public class PipelineGraphApiTest {
         SemaphoreStep.waitForStart("a1/1", run);
         SemaphoreStep.waitForStart("a2/1", run);
         List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
-        String stagesStringRunning =
-                TestUtils.collectStagesAsString(stages, (PipelineStage s) -> TestUtils.nodeNameAndStatus(s));
+        String stagesStringRunning = TestUtils.collectStagesAsString(stages, TestUtils::nodeNameAndStatus);
         LOGGER.log(Level.INFO, stagesStringRunning);
 
         SemaphoreStep.success("a1/1", null);
@@ -336,8 +334,7 @@ public class PipelineGraphApiTest {
 
         List<PipelineStage> finishedStages =
                 new PipelineGraphApi(run).createTree().getStages();
-        String stagesStringFinished =
-                TestUtils.collectStagesAsString(finishedStages, (PipelineStage s) -> TestUtils.nodeNameAndStatus(s));
+        String stagesStringFinished = TestUtils.collectStagesAsString(finishedStages, TestUtils::nodeNameAndStatus);
         LOGGER.log(Level.INFO, stagesStringFinished);
 
         assertThat(
@@ -349,31 +346,29 @@ public class PipelineGraphApiTest {
 
     @Issue("GH#222")
     @Test
-    public void gh222_statusPropagatesToParent() throws Exception {
+    void gh222_statusPropagatesToParent() throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "gh222_statusPropagatesToParent", "gh222_statusPropagatesToParent.jenkinsfile", Result.FAILURE);
 
         List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
-        String stagesString =
-                TestUtils.collectStagesAsString(stages, (PipelineStage s) -> TestUtils.nodeNameAndStatus(s));
+        String stagesString = TestUtils.collectStagesAsString(stages, TestUtils::nodeNameAndStatus);
 
         assertThat(stagesString, equalTo("ParentStage{failure}[SubStageA{failure},SubStageB{skipped}]"));
     }
 
     @Test
-    public void pipelineWithSyntaxError() throws Exception {
+    void pipelineWithSyntaxError() throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "pipelineWithSyntaxError", "pipelineWithSyntaxError.jenkinsfile", Result.FAILURE);
 
         List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
-        String stagesString =
-                TestUtils.collectStagesAsString(stages, (PipelineStage s) -> TestUtils.nodeNameAndStatus(s));
+        String stagesString = TestUtils.collectStagesAsString(stages, TestUtils::nodeNameAndStatus);
 
         assertThat(stagesString, equalTo("Unhandled Exception{failure}"));
     }
 
     @Test
-    public void stagesGetValidTimings() throws Exception {
+    void stagesGetValidTimings() throws Exception {
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "nestedStageSleep", "nestedStageSleep.jenkinsfile", Result.SUCCESS);
 
@@ -394,7 +389,7 @@ public class PipelineGraphApiTest {
 
     @Issue("https://github.com/jenkinsci/pipeline-graph-view-plugin/issues/358")
     @Test
-    public void gh_358_parallelStagesMarkedAsSkipped() throws Exception {
+    void gh_358_parallelStagesMarkedAsSkipped() throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j,
                 "gh_358_parallelStagesMarkedAsSkipped",
@@ -402,8 +397,7 @@ public class PipelineGraphApiTest {
                 Result.FAILURE);
 
         List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
-        String stagesString =
-                TestUtils.collectStagesAsString(stages, (PipelineStage s) -> TestUtils.nodeNameAndStatus(s));
+        String stagesString = TestUtils.collectStagesAsString(stages, TestUtils::nodeNameAndStatus);
 
         assertThat(
                 stagesString,
@@ -412,7 +406,7 @@ public class PipelineGraphApiTest {
     }
 
     @Test
-    public void getAgentForSingleStagePipeline() throws Exception {
+    void getAgentForSingleStagePipeline() throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "getAgentForSingleStagePipeline", "singleStagePipeline.jenkinsfile", Result.SUCCESS);
 
@@ -423,7 +417,7 @@ public class PipelineGraphApiTest {
     }
 
     @Test
-    public void getAgentForSingleStagePipelineWithExternalAgent() throws Exception {
+    void getAgentForSingleStagePipelineWithExternalAgent() throws Exception {
         var testingLabel = new LabelAtom("external");
         DumbSlave agent = j.createSlave(testingLabel);
         j.waitOnline(agent);
@@ -441,7 +435,7 @@ public class PipelineGraphApiTest {
     }
 
     @Test
-    public void getAgentForParallelPipelineWithExternalAgent() throws Exception {
+    void getAgentForParallelPipelineWithExternalAgent() throws Exception {
         var testingLabel = new LabelAtom("external");
         DumbSlave agent = j.createSlave(testingLabel);
         j.waitOnline(agent);
@@ -481,5 +475,28 @@ public class PipelineGraphApiTest {
         assertThat(externalStage.getType(), equalTo("PARALLEL"));
         assertThat(externalStage.getName(), equalTo("External"));
         assertThat(externalStage.getAgent(), equalTo(agent.getNodeName()));
+    }
+
+    @Issue("GH#616")
+    @Test
+    void createTree_stageResult() throws Exception {
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "stageResult", "gh616_stageResult.jenkinsfile", Result.UNSTABLE, false);
+        PipelineGraphApi api = new PipelineGraphApi(run);
+        PipelineGraph graph = api.createTree();
+
+        List<PipelineStage> stages = graph.getStages();
+
+        String stagesString = TestUtils.collectStagesAsString(
+                stages,
+                (PipelineStage stage) -> String.format(
+                        "{%s,%s,%s,%s}", stage.getName(), stage.getTitle(), stage.getType(), stage.getState()));
+        assertThat(
+                stagesString,
+                equalTo(String.join(
+                        "",
+                        "{success-stage,success-stage,STAGE,success},",
+                        "{failure-stage,failure-stage,STAGE,failure},",
+                        "{unstable-stage,unstable-stage,STAGE,unstable}")));
     }
 }

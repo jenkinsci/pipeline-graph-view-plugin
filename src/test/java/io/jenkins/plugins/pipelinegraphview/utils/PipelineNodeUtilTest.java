@@ -9,18 +9,17 @@ import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter
 import java.util.List;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class PipelineNodeUtilTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class PipelineNodeUtilTest {
 
     @Issue("GH#224")
     @Test
-    public void canGetLogTextFromStep() throws Exception {
+    void canGetLogTextFromStep(JenkinsRule j) throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "hello_world_scripted", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
@@ -36,7 +35,7 @@ public class PipelineNodeUtilTest {
 
     @Issue("GH#224")
     @Test
-    public void canGetErrorTextFromStep() throws Exception {
+    void canGetErrorTextFromStep(JenkinsRule j) throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(j, "simple_error", "simpleError.jenkinsfile", Result.FAILURE);
         PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
         String stageId = TestUtils.getNodesByDisplayName(run, "A").get(0).getId();
@@ -47,7 +46,7 @@ public class PipelineNodeUtilTest {
 
     @Issue("GH#213")
     @Test
-    public void pipelineCallsUndefinedVar() throws Exception {
+    void pipelineCallsUndefinedVar(JenkinsRule j) throws Exception {
         // It's a bit dirty, but do this in one to avoid reloading and rerunning the job (as it takes a
         // long time)
         WorkflowRun run = TestUtils.createAndRunJob(

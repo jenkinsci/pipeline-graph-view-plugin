@@ -47,7 +47,7 @@ public class AbstractPipelineNode {
     }
 
     protected static String getUserFriendlyDuration(long totalDurationMillis) {
-        return "Took " + Util.getTimeSpanString(totalDurationMillis);
+        return Util.getTimeSpanString(totalDurationMillis);
     }
 
     public String getPauseDurationMillis() {

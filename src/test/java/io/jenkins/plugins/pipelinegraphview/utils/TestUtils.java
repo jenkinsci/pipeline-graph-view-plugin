@@ -4,7 +4,6 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,27 +26,43 @@ public class TestUtils {
 
     public static WorkflowRun createAndRunJob(
             JenkinsRule jenkins, String jobName, String jenkinsFileName, Result expectedResult) throws Exception {
-        WorkflowJob job = TestUtils.createJob(jenkins, jobName, jenkinsFileName);
+        return createAndRunJob(jenkins, jobName, jenkinsFileName, expectedResult, true);
+    }
+
+    public static WorkflowRun createAndRunJob(
+            JenkinsRule jenkins, String jobName, String jenkinsFileName, Result expectedResult, boolean sandbox)
+            throws Exception {
+        WorkflowJob job = TestUtils.createJob(jenkins, jobName, jenkinsFileName, sandbox);
         jenkins.assertBuildStatus(expectedResult, job.scheduleBuild2(0));
         return job.getLastBuild();
     }
 
     public static QueueTaskFuture<WorkflowRun> createAndRunJobNoWait(
             JenkinsRule jenkins, String jobName, String jenkinsFileName) throws Exception {
-        WorkflowJob job = TestUtils.createJob(jenkins, jobName, jenkinsFileName);
+        return createAndRunJobNoWait(jenkins, jobName, jenkinsFileName, true);
+    }
+
+    public static QueueTaskFuture<WorkflowRun> createAndRunJobNoWait(
+            JenkinsRule jenkins, String jobName, String jenkinsFileName, boolean sandbox) throws Exception {
+        WorkflowJob job = TestUtils.createJob(jenkins, jobName, jenkinsFileName, sandbox);
         return job.scheduleBuild2(0);
     }
 
     public static WorkflowJob createJob(JenkinsRule jenkins, String jobName, String jenkinsFileName) throws Exception {
+        return createJob(jenkins, jobName, jenkinsFileName, true);
+    }
+
+    public static WorkflowJob createJob(JenkinsRule jenkins, String jobName, String jenkinsFileName, boolean sandbox)
+            throws Exception {
         WorkflowJob job = jenkins.createProject(WorkflowJob.class, jobName);
 
         URL resource = Resources.getResource(TestUtils.class, jenkinsFileName);
         String jenkinsFile = Resources.toString(resource, Charsets.UTF_8);
-        job.setDefinition(new CpsFlowDefinition(jenkinsFile, true));
+        job.setDefinition(new CpsFlowDefinition(jenkinsFile, sandbox));
         return job;
     }
 
-    public static List<FlowNode> getNodesByDisplayName(WorkflowRun run, String displayName) throws IOException {
+    public static List<FlowNode> getNodesByDisplayName(WorkflowRun run, String displayName) {
         FlowExecution execution = run.getExecution();
         FlowGraphTable graphTable = new FlowGraphTable(execution);
         graphTable.build();
@@ -74,37 +89,11 @@ public class TestUtils {
     }
 
     public static String collectStepsAsString(List<PipelineStep> steps, Function<PipelineStep, String> converter) {
-        return steps.stream().map((PipelineStep step) -> converter.apply(step)).collect(Collectors.joining(","));
+        return steps.stream().map(converter).collect(Collectors.joining(","));
     }
 
-    public static String getNodeTimingString(AbstractPipelineNode node) {
-        return String.format(
-                "%s{%s - %s - %s}",
-                node.getName(),
-                node.getStartTimeMillis(),
-                node.getPauseDurationMillis(),
-                node.getTotalDurationMillis());
-    }
-
-    // TODO: remove duplication.
-    public static String nodeNameAndStatus(PipelineStage node) {
+    public static String nodeNameAndStatus(AbstractPipelineNode node) {
         return String.format("%s{%s}", node.getName(), node.getState());
-    }
-
-    public static String nodeNameAndTiming(PipelineStage node) {
-        return getNodeTimingString(node);
-    }
-
-    public static String nodeNameAndStatus(PipelineStep node) {
-        return String.format("%s{%s}", node.getName(), node.getState());
-    }
-
-    public static String nodeNameAndTiming(PipelineStep node) {
-        return getNodeTimingString(node);
-    }
-
-    public static boolean compareTimeRange(long value, long min, long max) {
-        return value > min && value < max;
     }
 
     /* Check if the TimingInfo of the given node is in the expected ranges.
@@ -112,7 +101,7 @@ public class TestUtils {
      * times: List of times in the order:
      *    [startMin, queuedMin, totalMin, startMax, queuedMax, totalMax]
      * I considered adding a 'assertTimesInRange(AbstractPipelineNode node, TimingInfo[] minMax)' method,
-     * but this ended up taking up more space - happy to add it if it's useful.
+     * but this ended up taking more space - happy to add it if it's useful.
      * Throws AssertionError (with meaningful message) if issues are found.
      */
     public static void assertTimesInRange(AbstractPipelineNode node, List<Long> times) {

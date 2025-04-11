@@ -6,18 +6,16 @@ import static org.hamcrest.Matchers.is;
 import hudson.model.Result;
 import java.util.List;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class PipelineGraphApiLegacyTest {
-
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class PipelineGraphApiLegacyTest {
 
     @Test
-    public void createLegacyTree_unstableSmokes() throws Exception {
+    void createLegacyTree_unstableSmokes(JenkinsRule j) throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(j, "unstableSmokes", "unstableSmokes.jenkinsfile", Result.FAILURE);
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createLegacyTree();
@@ -56,7 +54,7 @@ public class PipelineGraphApiLegacyTest {
     }
 
     @Test
-    public void createLegacyTree_complexSmokes() throws Exception {
+    void createLegacyTree_complexSmokes(JenkinsRule j) throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(j, "complexSmokes", "complexSmokes.jenkinsfile", Result.SUCCESS);
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createLegacyTree();
@@ -82,7 +80,7 @@ public class PipelineGraphApiLegacyTest {
     }
 
     @Test
-    public void createLegacyTree_scriptedParallel() throws Exception {
+    void createLegacyTree_scriptedParallel(JenkinsRule j) throws Exception {
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "scriptedParallel", "scriptedParallel.jenkinsfile", Result.SUCCESS);
         PipelineGraphApi api = new PipelineGraphApi(run);
@@ -102,7 +100,7 @@ public class PipelineGraphApiLegacyTest {
 
     @Issue("GH#85")
     @Test
-    public void createLegacyTree_syntheticStages() throws Exception {
+    void createLegacyTree_syntheticStages(JenkinsRule j) throws Exception {
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "syntheticStages", "syntheticStages.jenkinsfile", Result.SUCCESS);
         PipelineGraphApi api = new PipelineGraphApi(run);
@@ -131,7 +129,7 @@ public class PipelineGraphApiLegacyTest {
 
     @Issue("GH#87")
     @Test
-    public void createLegacyTree_skippedParallel() throws Exception {
+    void createLegacyTree_skippedParallel(JenkinsRule j) throws Exception {
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "skippedParallel", "skippedParallel.jenkinsfile", Result.SUCCESS);
         PipelineGraphApi api = new PipelineGraphApi(run);
@@ -150,5 +148,28 @@ public class PipelineGraphApiLegacyTest {
                 newGraph.getStages(),
                 (PipelineStage stage) -> String.format("{%s,%s}", stage.getName(), stage.getState()));
         assertThat(newStagesString, is(stagesString));
+    }
+
+    @Issue("GH#616")
+    @Test
+    void createLegacyTree_stageResult(JenkinsRule j) throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j, "gh616_stageResult", "gh616_stageResult.jenkinsfile", Result.UNSTABLE, false);
+        PipelineGraphApi api = new PipelineGraphApi(run);
+        PipelineGraph graph = api.createLegacyTree();
+
+        List<PipelineStage> stages = graph.getStages();
+
+        String stagesString = TestUtils.collectStagesAsString(
+                stages,
+                (PipelineStage stage) -> String.format(
+                        "{%s,%s,%s,%s}", stage.getName(), stage.getTitle(), stage.getType(), stage.getState()));
+        assertThat(
+                stagesString,
+                is(String.join(
+                        "",
+                        "{success-stage,success-stage,STAGE,success},",
+                        "{failure-stage,failure-stage,STAGE,failure},",
+                        "{unstable-stage,unstable-stage,STAGE,unstable}")));
     }
 }

@@ -16,15 +16,6 @@ const plugins = [
             camel2DashComponentName: false,
         },
         'icons',
-    ],
-    [
-        'babel-plugin-import',
-        {
-        libraryName: '@mui/lab',
-        libraryDirectory: '',
-        camel2DashComponentName: false,
-        },
-        'lab',
     ]
 ];
 

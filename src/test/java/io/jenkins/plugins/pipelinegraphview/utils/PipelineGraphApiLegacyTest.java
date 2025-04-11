@@ -153,7 +153,7 @@ class PipelineGraphApiLegacyTest {
     @Issue("GH#616")
     @Test
     void createLegacyTree_stageResult(JenkinsRule j) throws Exception {
-        WorkflowRun run = TestUtils.createAndRunJob(j, "gh616_stageResult", "gh_stageResult.jenkinsfile", Result.UNSTABLE, false);
+        WorkflowRun run = TestUtils.createAndRunJob(j, "gh616_stageResult", "gh616_stageResult.jenkinsfile", Result.UNSTABLE, false);
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createLegacyTree();
 

@@ -12,7 +12,6 @@ export interface ConsoleLogStreamProps {
 }
 
 import { ConsoleLine } from "./ConsoleLine";
-import SkeletonOne from "./SkeletonOne";
 
 export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   const appendInterval = useRef<NodeJS.Timeout | null>(null);
@@ -81,8 +80,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   };
 
   const height = () => {
-    const spinnerLines = shouldRequestMoreLogs() ? 2 : 0;
-    return (props.logBuffer.lines.length + spinnerLines) * maxConsoleLineHeight;
+    return props.logBuffer.lines.length * maxConsoleLineHeight;
   };
 
   return (
@@ -90,15 +88,10 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
       <Virtuoso
         style={{
           height: `${height()}px`,
-          // maxHeight: window.innerHeight * props.maxHeightScale,
+          overflowY: "hidden"
         }}
         ref={virtuosoRef}
         data={props.logBuffer.lines}
-        components={{
-          Footer: () => {
-            return shouldRequestMoreLogs() ? <SkeletonOne /> : <></>;
-          },
-        }}
         itemContent={(index: number, content: string) => {
           return (
             <ConsoleLine

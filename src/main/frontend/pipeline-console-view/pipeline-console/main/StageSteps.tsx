@@ -50,7 +50,6 @@ interface StageStepsProps {
   stage: StageInfo | null;
   steps: Array<StepInfo>;
   stepBuffers: Map<string, StepLogBufferInfo>;
-  selectedStage: string;
   expandedSteps: string[];
   handleStepToggle: (event: React.SyntheticEvent<{}>, nodeId: string) => void;
   handleMoreConsoleClick: (nodeId: string, startByte: number) => void;

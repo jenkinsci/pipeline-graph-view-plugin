@@ -5,10 +5,11 @@ import {
 } from "../../../pipeline-graph-view/pipeline-graph/main";
 import "./stage-details.scss";
 import { getSymbolForResult } from "../../../pipeline-graph-view/pipeline-graph/main/support/StatusIcons";
+import StageNodeLink from "./StageNodeLink";
 
 export default function StageDetails({ stage }: StageDetailsProps) {
   if (!stage) {
-    return <p>{JSON.stringify(stage)}</p>;
+    return null;
   }
 
   return (
@@ -21,6 +22,23 @@ export default function StageDetails({ stage }: StageDetailsProps) {
         <h2>{stage.name}</h2>
       </div>
       <ul>
+        <li>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <path
+              d="M112.91 128A191.85 191.85 0 0064 254c-1.18 106.35 85.65 193.8 192 194 106.2.2 192-85.83 192-192 0-104.54-83.55-189.61-187.5-192a4.36 4.36 0 00-4.5 4.37V152"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="32"
+            />
+            <path
+              d="M233.38 278.63l-79-113a8.13 8.13 0 0111.32-11.32l113 79a32.5 32.5 0 01-37.25 53.26 33.21 33.21 0 01-8.07-7.94z"
+              fill="currentColor"
+            />
+          </svg>
+          {stage.totalDurationMillis}
+        </li>
         <li>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
             <path
@@ -41,7 +59,8 @@ export default function StageDetails({ stage }: StageDetailsProps) {
           </svg>
           {stage.startTimeMillis}
         </li>
-        {stage.pauseDurationMillis && (
+        {/*TODO - hacky*/}
+        {!stage.pauseDurationMillis.includes(" 0 ms") && (
           <li>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
               <path
@@ -61,45 +80,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
           </li>
         )}
         <li>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <path
-              d="M112.91 128A191.85 191.85 0 0064 254c-1.18 106.35 85.65 193.8 192 194 106.2.2 192-85.83 192-192 0-104.54-83.55-189.61-187.5-192a4.36 4.36 0 00-4.5 4.37V152"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="32"
-            />
-            <path
-              d="M233.38 278.63l-79-113a8.13 8.13 0 0111.32-11.32l113 79a32.5 32.5 0 01-37.25 53.26 33.21 33.21 0 01-8.07-7.94z"
-              fill="currentColor"
-            />
-          </svg>
-          {stage.totalDurationMillis}
-        </li>
-        <li>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <rect
-              x="32"
-              y="96"
-              width="448"
-              height="272"
-              rx="32.14"
-              ry="32.14"
-              fill="none"
-              stroke="currentColor"
-              strokeLinejoin="round"
-              strokeWidth="32"
-            />
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeMiterlimit="10"
-              strokeWidth="32"
-              d="M128 416h256"
-            />
-          </svg>
-          {stage.agent}
+          <StageNodeLink agent={stage.agent} />
         </li>
       </ul>
     </div>

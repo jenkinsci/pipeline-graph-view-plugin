@@ -50,8 +50,7 @@ function ConsoleLogCard(props: ConsoleLogCardProps) {
             "pgv-show-more-logs jenkins-button jenkins-!-warning-color"
           }
         >
-          Missing {prettySizeString(props.stepBuffer.startByte)} of logs. Click
-          to see more logs
+          There’s more to see - {prettySizeString(props.stepBuffer.startByte)} of logs hidden
         </button>
       );
     }
@@ -145,7 +144,7 @@ function ConsoleLogCard(props: ConsoleLogCardProps) {
 
       {props.isExpanded && (
         <div style={{ paddingBlock: "0.5rem" }}>
-          <div>{getTruncatedLogWarning()}</div>
+          {getTruncatedLogWarning()}
           <Suspense fallback={<Skeleton />}>
             <ConsoleLogStream
               logBuffer={props.stepBuffer}

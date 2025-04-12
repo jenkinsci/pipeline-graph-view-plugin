@@ -59,11 +59,11 @@
 }
 
 .pgv-show-more-logs {
+  position: sticky;
+  top: calc(var(--header-height) + 0.375rem + 0.375rem + 2.375rem);
   background: var(--card-background);
-  box-shadow: 0 0 5px var(--card-background);
-  position: absolute;
-  top: 50px;
-  left: 0;
-  right: 0;
+  box-shadow: 0 0 0.375rem var(--card-background);
   z-index: 10;
+  border-radius: 0.375rem;
+  width: 100%;
 }

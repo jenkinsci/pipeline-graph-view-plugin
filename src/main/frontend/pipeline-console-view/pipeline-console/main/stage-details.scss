@@ -2,8 +2,8 @@
   --bg-color: var(--color, var(--text-color-secondary));
 
   position: relative;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr auto;
   gap: 0.5rem;
   padding: 1rem;
   border-radius: var(--form-input-border-radius);
@@ -13,10 +13,11 @@
     content: "";
     position: absolute;
     inset: 0;
-    background: oklch(from var(--bg-color) l c h / 0.05);
+    background: oklch(from var(--bg-color) l c h / 0.075);
     border: 1.5px solid oklch(from var(--bg-color) l c h / 0.1);
     border-radius: inherit;
     transition: var(--standard-transition);
+    pointer-events: none;
   }
 
   & > div {
@@ -35,32 +36,38 @@
   }
 
   h2 {
-    font-size: 1rem;
-    font-weight: 500;
+    font-size: var(--font-size-base);
+    font-weight: 450;
     margin: 0;
     text-box: trim-both;
   }
 
   ul {
     display: flex;
-    gap: 1.125rem;
+    gap: 1.25rem;
     padding: 0;
     margin: 0;
-    font-family: var(--font-family-mono);
-    margin-left: 1.85rem;
+    opacity: 0.7;
 
     li {
       display: flex;
       align-items: center;
       gap: 0.375rem;
-      opacity: 0.75;
-      font-size: 12px;
       font-weight: 450;
       text-box: trim-both;
 
+      a {
+        display: contents;
+        color: inherit;
+      }
+
       svg {
-        width: 1rem;
-        height: 1rem;
+        width: 1.125rem;
+        height: 1.125rem;
+
+        * {
+          stroke-width: 40px;
+        }
       }
     }
   }

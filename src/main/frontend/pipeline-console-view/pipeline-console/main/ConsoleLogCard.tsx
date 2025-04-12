@@ -44,8 +44,14 @@ function ConsoleLogCard(props: ConsoleLogCardProps) {
   const getTruncatedLogWarning = () => {
     if (props.stepBuffer.lines && props.stepBuffer.startByte > 0) {
       return (
-        <button onClick={showMoreLogs} className={"pgv-show-more-logs jenkins-button jenkins-!-warning-color"}>
-          Missing {prettySizeString(props.stepBuffer.startByte)} of logs. Click to see more logs
+        <button
+          onClick={showMoreLogs}
+          className={
+            "pgv-show-more-logs jenkins-button jenkins-!-warning-color"
+          }
+        >
+          Missing {prettySizeString(props.stepBuffer.startByte)} of logs. Click
+          to see more logs
         </button>
       );
     }
@@ -94,19 +100,19 @@ function ConsoleLogCard(props: ConsoleLogCardProps) {
                 fontFamily: "var(--font-family-mono)",
               }}
             >
-            {props.step.title}
-          </span>
+              {props.step.title}
+            </span>
           </div>
 
           <div className="actionsss">
-          <span
-            style={{
-              color: "var(--text-color-secondary)",
-              fontFamily: "var(--font-family-mono)",
-            }}
-          >
-            {props.step.totalDurationMillis}
-          </span>
+            <span
+              style={{
+                color: "var(--text-color-secondary)",
+                fontFamily: "var(--font-family-mono)",
+              }}
+            >
+              {props.step.totalDurationMillis}
+            </span>
 
             {/* Uncomment if needed */}
             {/* <button

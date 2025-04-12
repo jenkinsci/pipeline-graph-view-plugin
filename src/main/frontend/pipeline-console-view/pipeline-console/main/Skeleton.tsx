@@ -1,5 +1,5 @@
 import React from "react";
-import './skeleton.scss'
+import "./skeleton.scss";
 
 export default function Skeleton() {
   return (
@@ -10,5 +10,5 @@ export default function Skeleton() {
       <div></div>
       <div></div>
     </div>
-  )
+  );
 }

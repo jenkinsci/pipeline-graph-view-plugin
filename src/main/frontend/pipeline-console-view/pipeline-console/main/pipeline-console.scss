@@ -138,6 +138,11 @@ g.build-status-icon__outer {
   background: var(--white, #fff);
 }
 
+.todo-sidebar {
+  position: sticky;
+  top: calc(var(--header-height) + var(--section-padding));
+}
+
 // Console styling
 a.console-line-number {
   text-align: right;
@@ -190,13 +195,13 @@ span.timestamp {
   margin-right: 15px;
 }
 
-div.stage-detail-group {
-  vertical-align: auto;
-  border-radius: 10px;
-  // Move down slightly to avoid curring off the top background.
-  position: relative;
-  white-space: nowrap;
-}
+//div.stage-detail-group {
+//  vertical-align: auto;
+//  border-radius: 10px;
+//  // Move down slightly to avoid curring off the top background.
+//  position: relative;
+//  white-space: nowrap;
+//}
 
 .step-content {
   padding: 0px !important;
@@ -230,11 +235,11 @@ div.stage-detail-group {
 //  }
 //}
 
-div.step-detail-group-expanded {
-  @extend div, .stage-detail-group;
-  border-bottom-left-radius: 0px;
-  border-bottom-right-radius: 0px;
-}
+//div.step-detail-group-expanded {
+//  //@extend div, .stage-detail-group;
+//  border-bottom-left-radius: 0px;
+//  border-bottom-right-radius: 0px;
+//}
 
 div.detail-element {
   display: flex;

@@ -504,11 +504,9 @@ export default class PipelineConsole extends React.Component<
   }
 
   render() {
-    const stageViewPaneClass = `split-pane ${this.state.isStageViewExpanded ? "" : "collapsed"}`;
-
     return (
       <SplitView>
-        <div key="tree-view" id="tree-view-pane">
+        <div key="tree-view" id="tree-view-pane" className={"todo-sidebar"}>
           <Suspense fallback={<Skeleton />}>
             <DataTreeView
               onNodeSelect={this.handleStageSelect}
@@ -518,11 +516,7 @@ export default class PipelineConsole extends React.Component<
           </Suspense>
         </div>
 
-        <div
-          className={stageViewPaneClass}
-          key="stage-view"
-          id="stage-view-pane"
-        >
+        <div key="stage-view" id="stage-view-pane">
           <Suspense fallback={<Skeleton />}>
             <StageView
               stage={this.getOpenStage()}

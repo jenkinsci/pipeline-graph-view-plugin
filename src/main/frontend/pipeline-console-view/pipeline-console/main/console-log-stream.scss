@@ -6,6 +6,7 @@
   padding: 0;
   background: var(--card-background);
   box-shadow: 0 0 5px var(--card-background);
+  z-index: 100;
 
   svg {
     transition: var(--standard-transition);

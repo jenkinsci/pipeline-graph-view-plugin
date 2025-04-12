@@ -7,10 +7,10 @@
   > div {
     height: 16px;
     background: linear-gradient(
-                    90deg,
-                    color-mix(in srgb, var(--text-color-secondary) 25%, transparent) 25%,
-                    color-mix(in srgb, var(--text-color-secondary), transparent) 50%,
-                    color-mix(in srgb, var(--text-color-secondary) 25%, transparent) 75%
+      90deg,
+      color-mix(in srgb, var(--text-color-secondary) 25%, transparent) 25%,
+      color-mix(in srgb, var(--text-color-secondary), transparent) 50%,
+      color-mix(in srgb, var(--text-color-secondary) 25%, transparent) 75%
     );
     background-size: 200% 100%;
     border-radius: 6px;

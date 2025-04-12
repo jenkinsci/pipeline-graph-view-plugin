@@ -1,0 +1,83 @@
+.pgv-stage-details {
+  --bg-color: var(--color, var(--text-color-secondary));
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: var(--form-input-border-radius);
+  margin-bottom: 0.5rem;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: oklch(from var(--bg-color) l c h / 0.05);
+    border: 1.5px solid oklch(from var(--bg-color) l c h / 0.1);
+    border-radius: inherit;
+    transition: var(--standard-transition);
+  }
+
+  & > div {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    & > div {
+      display: contents;
+    }
+
+    svg {
+      width: 1.25rem;
+      height: 1.25rem;
+    }
+  }
+
+  h2 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 0;
+    text-box: trim-both;
+  }
+
+  ul {
+    display: flex;
+    gap: 1.125rem;
+    padding: 0;
+    margin: 0;
+    font-family: var(--font-family-mono);
+    margin-left: 1.85rem;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      opacity: 0.75;
+      font-size: 12px;
+      font-weight: 450;
+      text-box: trim-both;
+
+      svg {
+        width: 1rem;
+        height: 1rem;
+      }
+    }
+  }
+
+  &__running {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--bg-color);
+    pointer-events: none;
+    animation: pulse 2s ease-in-out infinite;
+    opacity: 0;
+
+    @keyframes pulse {
+      50% {
+        opacity: 0.1;
+      }
+    }
+  }
+}

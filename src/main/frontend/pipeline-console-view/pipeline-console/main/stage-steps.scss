@@ -1,0 +1,9 @@
+.pgv-stage-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  border: var(--jenkins-border);
+  background: var(--card-background);
+  border-radius: var(--form-input-border-radius);
+  padding: 0.375rem;
+}

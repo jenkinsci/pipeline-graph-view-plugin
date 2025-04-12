@@ -108,28 +108,10 @@ function ConsoleLogCard(props: ConsoleLogCardProps) {
             <span
               style={{
                 color: "var(--text-color-secondary)",
-                fontFamily: "var(--font-family-mono)",
               }}
             >
               {props.step.totalDurationMillis}
             </span>
-
-            {/* Uncomment if needed */}
-            {/* <button
-            className="jenkins-button jenkins-button--tertiary"
-            aria-label="Open console log in full-screen mode"
-            onClick={() => setOpen(true)}
-          >
-            <ResizeIcon />
-          </button>
-
-          <button
-            className="jenkins-button jenkins-button--tertiary"
-            onClick={() => window.open(`log?nodeId=${props.step.id}`)}
-            aria-label="View step as plain text"
-          >
-            <LinkIcon />
-          </button> */}
 
             <svg
               xmlns="http://www.w3.org/2000/svg"

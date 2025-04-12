@@ -1,55 +1,23 @@
 import React from "react";
 
-import {
-  StepInfo,
-  StageInfo,
-  StepLogBufferInfo,
-  LOG_FETCH_SIZE,
-} from "./PipelineConsoleModel";
-import ConsoleLogCard from "./ConsoleLogCard";
+import { StepInfo, StageInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
 import StageDetails from "./StageDetails";
+import StageSteps from "./StageSteps";
 
 export default function StageView(props: StageViewProps) {
-  const getTreeItemsFromStepList = (stepsItems: StepInfo[]) => {
-    return stepsItems.map((stepItemData) => {
-      return (
-        <ConsoleLogCard
-          step={stepItemData}
-          stepBuffer={
-            props.stepBuffers.get(stepItemData.id) ??
-            ({
-              lines: [] as string[],
-              startByte: 0 - LOG_FETCH_SIZE,
-              endByte: -1,
-            } as StepLogBufferInfo)
-          }
-          handleStepToggle={props.handleStepToggle}
-          isExpanded={props.expandedSteps.includes(stepItemData.id)}
-          handleMoreConsoleClick={props.handleMoreConsoleClick}
-          key={`step-console-card-${stepItemData.id}`}
-          scrollParentId={props.scrollParentId}
-        />
-      );
-    });
-  };
-
   return (
     <>
       <StageDetails stage={props.stage} />
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "0.375rem",
-          border: "var(--jenkins-border)",
-          background: "var(--card-background)",
-          borderRadius: "var(--form-input-border-radius)",
-          padding: "0.375rem",
-        }}
-        key={`stage-steps-container-${props.stage ? props.stage.id : "unk"}`}
-      >
-        {getTreeItemsFromStepList(props.steps)}
-      </div>
+      <StageSteps
+        stage={props.stage}
+        steps={props.steps}
+        stepBuffers={props.stepBuffers}
+        selectedStage={props.selectedStage}
+        expandedSteps={props.expandedSteps}
+        handleStepToggle={props.handleStepToggle}
+        handleMoreConsoleClick={props.handleMoreConsoleClick}
+        scrollParentId={props.scrollParentId}
+      />
     </>
   );
 }

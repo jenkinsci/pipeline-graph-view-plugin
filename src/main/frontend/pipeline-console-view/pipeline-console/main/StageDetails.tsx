@@ -6,7 +6,7 @@ import {
 import "./stage-details.scss";
 import { getSymbolForResult } from "../../../pipeline-graph-view/pipeline-graph/main/support/StatusIcons";
 
-export default function StageDetails({ stage }: StageSummaryProps) {
+export default function StageDetails({ stage }: StageDetailsProps) {
   if (!stage) {
     return null;
   }
@@ -123,6 +123,6 @@ function resultToColor(result: Result) {
   }
 }
 
-interface StageSummaryProps {
+interface StageDetailsProps {
   stage: StageInfo | null;
 }

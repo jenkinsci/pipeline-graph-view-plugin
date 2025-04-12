@@ -12,6 +12,7 @@ export interface ConsoleLogStreamProps {
 }
 
 import { ConsoleLine } from "./ConsoleLine";
+import SkeletonOne from "./SkeletonOne";
 
 export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   const appendInterval = useRef<NodeJS.Timeout | null>(null);
@@ -96,11 +97,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
         components={{
           Footer: () => {
             return shouldRequestMoreLogs() ? (
-              <div className="lds-ellipsis">
-                <div></div>
-                <div></div>
-                <div></div>
-              </div>
+              <SkeletonOne />
             ) : (
               <></>
             );

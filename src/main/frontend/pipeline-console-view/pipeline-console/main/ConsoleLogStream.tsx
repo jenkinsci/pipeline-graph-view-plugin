@@ -96,11 +96,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
         data={props.logBuffer.lines}
         components={{
           Footer: () => {
-            return shouldRequestMoreLogs() ? (
-              <SkeletonOne />
-            ) : (
-              <></>
-            );
+            return shouldRequestMoreLogs() ? <SkeletonOne /> : <></>;
           },
         }}
         itemContent={(index: number, content: string) => {

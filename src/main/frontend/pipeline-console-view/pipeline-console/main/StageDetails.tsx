@@ -8,7 +8,7 @@ import { getSymbolForResult } from "../../../pipeline-graph-view/pipeline-graph/
 
 export default function StageDetails({ stage }: StageDetailsProps) {
   if (!stage) {
-    return null;
+    return <p>{JSON.stringify(stage)}</p>;
   }
 
   return (

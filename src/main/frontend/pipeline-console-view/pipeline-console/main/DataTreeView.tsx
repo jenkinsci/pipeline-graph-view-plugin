@@ -32,7 +32,7 @@ export default function DataTreeView({
   );
 }
 
-function TreeNode({ stage, selected, onSelect }: TreeNodeProps) {
+const TreeNode = React.memo(({ stage, selected, onSelect }: TreeNodeProps) => {
   const hasChildren = stage.children && stage.children.length > 0;
   const isSelected = String(stage.id) === selected;
   const [isExpanded, setIsExpanded] = useState<boolean>(
@@ -116,7 +116,7 @@ function TreeNode({ stage, selected, onSelect }: TreeNodeProps) {
       )}
     </div>
   );
-}
+});
 
 interface DataTreeViewProps {
   stages: StageInfo[];

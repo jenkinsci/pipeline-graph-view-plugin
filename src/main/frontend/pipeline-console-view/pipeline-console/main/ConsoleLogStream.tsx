@@ -88,7 +88,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
       <Virtuoso
         style={{
           height: `${height()}px`,
-          overflowY: "hidden"
+          overflowY: "hidden",
         }}
         ref={virtuosoRef}
         data={props.logBuffer.lines}

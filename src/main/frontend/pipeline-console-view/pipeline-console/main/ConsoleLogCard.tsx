@@ -50,7 +50,8 @@ function ConsoleLogCard(props: ConsoleLogCardProps) {
             "pgv-show-more-logs jenkins-button jenkins-!-warning-color"
           }
         >
-          There’s more to see - {prettySizeString(props.stepBuffer.startByte)} of logs hidden
+          There’s more to see - {prettySizeString(props.stepBuffer.startByte)}{" "}
+          of logs hidden
         </button>
       );
     }

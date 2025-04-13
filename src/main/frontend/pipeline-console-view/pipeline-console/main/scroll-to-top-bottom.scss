@@ -1,23 +1,29 @@
+.pgv-scroll-to-top-bottom__container {
+  position: sticky;
+  bottom: 0;
+  z-index: 999;
+  margin-top: -0.375rem;
+}
+
 .pgv-scroll-to-top-bottom {
-  position: fixed;
-  right: calc(var(--section-padding) * 2);
-  bottom: var(--section-padding);
+  position: absolute;
+  top: calc((3.125rem + var(--section-padding)) * -1);
+  right: calc(var(--section-padding) / 2);
   display: flex;
   gap: 0.375rem;
-  z-index: 999;
   padding: 0.375rem;
   border-radius: 100px;
   box-shadow: var(--dropdown-box-shadow);
   background: color-mix(in sRGB, var(--card-background) 85%, transparent);
   backdrop-filter: var(--dropdown-backdrop-filter);
   opacity: 0;
-  translate: 0 100px;
-  transition: var(--standard-transition);
+  scale: 0.25;
+  transition: var(--elastic-transition);
   pointer-events: none;
 
   &--visible {
     opacity: 1;
-    translate: 0 0;
+    scale: 1;
     pointer-events: auto;
   }
 

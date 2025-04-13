@@ -13,16 +13,7 @@ import Skeleton from "./Skeleton";
 
 const ConsoleLogStream = React.lazy(() => import("./ConsoleLogStream"));
 
-type ConsoleLogCardProps = {
-  step: StepInfo;
-  stepBuffer: StepLogBufferInfo;
-  isExpanded: boolean;
-  handleStepToggle: (event: React.SyntheticEvent<{}>, nodeId: string) => void;
-  handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
-  scrollParentId: string;
-};
-
-function ConsoleLogCard(props: ConsoleLogCardProps) {
+export default function ConsoleLogCard(props: ConsoleLogCardProps) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -75,63 +66,55 @@ function ConsoleLogCard(props: ConsoleLogCardProps) {
   );
 
   return (
-    <div
-      className={
-        "step-detail-group " +
-        (props.isExpanded ? "step-detail-group--expanded" : "")
-      }
-      key={`step-card-${props.step.id}`}
-    >
-      <div className="step-detail-headerparent">
-        <button
-          onClick={handleToggle}
-          className={
-            "step-detail-header jenkins-button " +
-            (props.isExpanded ? "" : "jenkins-button--tertiary")
-          }
-          key={`step-action-area-${props.step.id}`}
-        >
-          <div className="thinggg">
-            {statusIcon}
-            <span style={{ fontWeight: "450" }}>{props.step.name}</span>
-            <span
-              style={{
-                color: "var(--text-color-secondary)",
-                fontFamily: "var(--font-family-mono)",
-              }}
-            >
-              {props.step.title}
-            </span>
-          </div>
+    <div className={"pgv-step-detail-group"} key={`step-card-${props.step.id}`}>
+      <button
+        onClick={handleToggle}
+        className={
+          "pgv-step-detail-header jenkins-button " +
+          (props.isExpanded ? "" : "jenkins-button--tertiary")
+        }
+        key={`step-action-area-${props.step.id}`}
+      >
+        <div className="pgv-step-detail-header__content">
+          {statusIcon}
+          <span style={{ fontWeight: "450" }}>{props.step.name}</span>
+          <span
+            style={{
+              color: "var(--text-color-secondary)",
+              fontFamily: "var(--font-family-mono)",
+            }}
+          >
+            {props.step.title}
+          </span>
+        </div>
 
-          <div className="actionsss">
-            <span
-              style={{
-                color: "var(--text-color-secondary)",
-              }}
-            >
-              {props.step.totalDurationMillis}
-            </span>
+        <div className="pgv-step-detail-header__actions">
+          <span
+            style={{
+              color: "var(--text-color-secondary)",
+            }}
+          >
+            {props.step.totalDurationMillis}
+          </span>
 
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 512 512"
-              className={"svgtest"}
-              style={{ rotate: props.isExpanded ? "90deg" : "0deg" }}
-            >
-              <path
-                fill="none"
-                stroke="var(--text-color-secondary)"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="48"
-                opacity={0.75}
-                d="M184 112l144 144-144 144"
-              />
-            </svg>
-          </div>
-        </button>
-      </div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 512 512"
+            className={"svgtest"}
+            style={{ rotate: props.isExpanded ? "90deg" : "0deg" }}
+          >
+            <path
+              fill="none"
+              stroke="var(--text-color-secondary)"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="48"
+              opacity={0.75}
+              d="M184 112l144 144-144 144"
+            />
+          </svg>
+        </div>
+      </button>
 
       <ConsoleLogModal
         logBuffer={props.stepBuffer}
@@ -144,7 +127,7 @@ function ConsoleLogCard(props: ConsoleLogCardProps) {
       />
 
       {props.isExpanded && (
-        <div style={{ paddingBlock: "0.5rem" }}>
+        <div style={{ paddingTop: "0.5rem" }}>
           {getTruncatedLogWarning()}
           <Suspense fallback={<Skeleton />}>
             <ConsoleLogStream
@@ -160,4 +143,11 @@ function ConsoleLogCard(props: ConsoleLogCardProps) {
   );
 }
 
-export default ConsoleLogCard;
+type ConsoleLogCardProps = {
+  step: StepInfo;
+  stepBuffer: StepLogBufferInfo;
+  isExpanded: boolean;
+  handleStepToggle: (event: React.SyntheticEvent<{}>, nodeId: string) => void;
+  handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
+  scrollParentId: string;
+};

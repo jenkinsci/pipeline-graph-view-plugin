@@ -54,42 +54,44 @@ export default function ScrollToTopBottom() {
   };
 
   return (
-    <div
-      className={`pgv-scroll-to-top-bottom ${isScrollable ? "pgv-scroll-to-top-bottom--visible" : ""}`}
-      aria-hidden={!isScrollable}
-    >
-      <button
-        onClick={scrollToTop}
-        className="jenkins-button"
-        disabled={isAtTop}
+    <div className="pgv-scroll-to-top-bottom__container">
+      <div
+        className={`pgv-scroll-to-top-bottom ${isScrollable ? "pgv-scroll-to-top-bottom--visible" : ""}`}
+        aria-hidden={!isScrollable}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-          <path
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="48"
-            d="M112 244l144-144 144 144M256 120v292"
-          />
-        </svg>
-      </button>
-      <button
-        onClick={scrollToBottom}
-        className="jenkins-button"
-        disabled={isAtBottom}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-          <path
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="48"
-            d="M112 268l144 144 144-144M256 392V100"
-          />
-        </svg>
-      </button>
+        <button
+          onClick={scrollToTop}
+          className="jenkins-button"
+          disabled={isAtTop}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <path
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="48"
+              d="M112 244l144-144 144 144M256 120v292"
+            />
+          </svg>
+        </button>
+        <button
+          onClick={scrollToBottom}
+          className="jenkins-button"
+          disabled={isAtBottom}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <path
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="48"
+              d="M112 268l144 144 144-144M256 392V100"
+            />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 }

@@ -80,29 +80,29 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
             />
           );
         }}
-        atBottomStateChange={(bottom) => {
-          if (appendInterval.current) {
-            clearInterval(appendInterval.current);
-          }
-          console.debug(`'atBottomStateChange' called with '${bottom}'`);
-          if (bottom && shouldRequestMoreLogs()) {
-            console.debug(`Fetching more log text`);
-            appendInterval.current = setInterval(() => {
-              props.handleMoreConsoleClick(
-                props.step.id,
-                props.logBuffer.startByte,
-              );
-            }, 1000);
-            console.debug(`Received more text '${bottom} - ${stickToBottom}'`);
-          }
-          console.debug(`Setting stickToBottom to '${bottom}'`);
-          setStickToBottom(bottom);
-        }}
-        followOutput={(bottom) => {
-          // This is a workaround as 'followOutput' isn't working for me - works in sandbox, but not nested inside Jenkins UI.
-          setMoveToBottom(bottom);
-          return false;
-        }}
+        // atBottomStateChange={(bottom) => {
+        //   if (appendInterval.current) {
+        //     clearInterval(appendInterval.current);
+        //   }
+        //   console.debug(`'atBottomStateChange' called with '${bottom}'`);
+        //   if (bottom && shouldRequestMoreLogs()) {
+        //     console.debug(`Fetching more log text`);
+        //     appendInterval.current = setInterval(() => {
+        //       props.handleMoreConsoleClick(
+        //         props.step.id,
+        //         props.logBuffer.startByte,
+        //       );
+        //     }, 1000);
+        //     console.debug(`Received more text '${bottom} - ${stickToBottom}'`);
+        //   }
+        //   console.debug(`Setting stickToBottom to '${bottom}'`);
+        //   setStickToBottom(bottom);
+        // }}
+        // followOutput={(bottom) => {
+        //   // This is a workaround as 'followOutput' isn't working for me - works in sandbox, but not nested inside Jenkins UI.
+        //   setMoveToBottom(bottom);
+        //   return false;
+        // }}
         // Uncomment to help with debugging virtuoso issues.
         //logLevel={LogLevel.DEBUG}
       />

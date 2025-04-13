@@ -3,6 +3,7 @@ import { StepInfo, StepLogBufferInfo } from "../../../common/RestClient";
 import ConsoleLogCard from "./ConsoleLogCard";
 import { LOG_FETCH_SIZE, StageInfo } from "./PipelineConsoleModel";
 import "./stage-steps.scss";
+import ScrollToTopBottom from "./ScrollToTopBottom";
 
 export default function StageSteps({
   stage,
@@ -42,6 +43,7 @@ export default function StageSteps({
           />
         );
       })}
+      <ScrollToTopBottom />
     </div>
   );
 }

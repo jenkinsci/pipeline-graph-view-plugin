@@ -82,6 +82,26 @@ export default function StageDetails({ stage }: StageDetailsProps) {
         <li>
           <StageNodeLink agent={stage.agent} />
         </li>
+        {!stage.synthetic && (
+          <li>
+            <a
+              href={`log?nodeId=${stage.id}`}
+              data-tooltip="View as plain text"
+              className="jenkins-button jenkins-button--tertiary"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <path
+                  d="M384 224v184a40 40 0 01-40 40H104a40 40 0 01-40-40V168a40 40 0 0140-40h167.48M336 64h112v112M224 288L440 72"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="32"
+                />
+              </svg>
+            </a>
+          </li>
+        )}
       </ul>
     </div>
   );

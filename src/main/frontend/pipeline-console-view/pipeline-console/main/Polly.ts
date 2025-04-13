@@ -81,21 +81,18 @@ export function usePipelineState() {
     [updateStepConsoleOffset],
   );
 
-  const selectDefaultNode = useCallback(
-    (steps: StepInfo[]) => {
-      const step = steps.find((s) => s !== undefined);
-      if (!step) return;
-      setOpenStage(step.stageId);
-      setExpandedSteps([step.id]);
+  const selectDefaultNode = useCallback((steps: StepInfo[]) => {
+    const step = steps.find((s) => s !== undefined);
+    if (!step) return;
+    setOpenStage(step.stageId);
+    setExpandedSteps([step.id]);
 
-      setTimeout(() => {
-        document
-          .getElementById(`stage-tree-icon-${step.stageId}`)
-          ?.scrollIntoView();
-      }, 0);
-    },
-    [],
-  );
+    setTimeout(() => {
+      document
+        .getElementById(`stage-tree-icon-${step.stageId}`)
+        ?.scrollIntoView();
+    }, 0);
+  }, []);
 
   // TODO - refine
   function isEqual(idk: any, idk2: any) {
@@ -149,34 +146,33 @@ export function usePipelineState() {
       }
 
       if (!data.isComplete) {
-          startPollingPipeline({
-            getStateUpdateFn: getStateUpdate,
-            onData: (data) => {
-              const hasNewStages =
-                JSON.stringify(stagesRef.current) !==
-                JSON.stringify(data.stages);
-              const hasNewSteps =
-                JSON.stringify(stepsRef.current) !== JSON.stringify(data.steps);
+        startPollingPipeline({
+          getStateUpdateFn: getStateUpdate,
+          onData: (data) => {
+            const hasNewStages =
+              JSON.stringify(stagesRef.current) !== JSON.stringify(data.stages);
+            const hasNewSteps =
+              JSON.stringify(stepsRef.current) !== JSON.stringify(data.steps);
 
-              if (hasNewStages) {
-                setStages((prev) => {
-                  const merged = mergeStages(prev, data.stages);
-                  if (merged === prev) return prev; // no change, no re-render
-                  stagesRef.current = merged;
-                  console.log("Setting stages!", merged[-1]);
-                  return merged;
-                });
-                stagesRef.current = data.stages;
-              }
+            if (hasNewStages) {
+              setStages((prev) => {
+                const merged = mergeStages(prev, data.stages);
+                if (merged === prev) return prev; // no change, no re-render
+                stagesRef.current = merged;
+                console.log("Setting stages!", merged[-1]);
+                return merged;
+              });
+              stagesRef.current = data.stages;
+            }
 
-              if (hasNewSteps) {
-                setSteps(data.steps);
-                stepsRef.current = data.steps;
-              }
-            },
-            checkComplete: (data) => data.isComplete ?? false,
-            interval: POLL_INTERVAL,
-          });
+            if (hasNewSteps) {
+              setSteps(data.steps);
+              stepsRef.current = data.steps;
+            }
+          },
+          checkComplete: (data) => data.isComplete ?? false,
+          interval: POLL_INTERVAL,
+        });
       }
     });
   }, []);

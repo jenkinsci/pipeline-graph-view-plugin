@@ -1,14 +1,14 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   getConsoleTextOffset,
-  LOG_FETCH_SIZE,
-  StepLogBufferInfo,
-  StageInfo,
-  StepInfo,
-  RunStatus,
   getRunStatus,
   getRunSteps,
+  LOG_FETCH_SIZE,
   POLL_INTERVAL,
+  RunStatus,
+  StageInfo,
+  StepInfo,
+  StepLogBufferInfo
 } from "./PipelineConsoleModel";
 
 /**
@@ -108,7 +108,7 @@ export function usePipelineState() {
   ): StageInfo[] {
     const prevMap = new Map(prevStages.map((s) => [s.id, s]));
 
-    const merged = newStages.map((newStage) => {
+    return newStages.map((newStage) => {
       const prevStage = prevMap.get(newStage.id);
 
       // If we have a previous stage, compare deeply
@@ -134,8 +134,6 @@ export function usePipelineState() {
       // New stage
       return newStage;
     });
-
-    return merged;
   }
 
   useEffect(() => {
@@ -151,36 +149,40 @@ export function usePipelineState() {
       }
 
       if (!data.isComplete) {
-        startPollingPipeline({
-          getStateUpdateFn: getStateUpdate,
-          onData: (data) => {
-            const hasNewStages =
-              JSON.stringify(stagesRef.current) !== JSON.stringify(data.stages);
-            const hasNewSteps =
-              JSON.stringify(stepsRef.current) !== JSON.stringify(data.steps);
+        // TODO - Tidy up, have startPollingPipeline have an initial delay?
+        // No point instantly polling after we've _just_ polled
+        setTimeout(() => {
+          startPollingPipeline({
+            getStateUpdateFn: getStateUpdate,
+            onData: (data) => {
+              const hasNewStages =
+                JSON.stringify(stagesRef.current) !== JSON.stringify(data.stages);
+              const hasNewSteps =
+                JSON.stringify(stepsRef.current) !== JSON.stringify(data.steps);
 
-            if (hasNewStages) {
-              setStages((prev) => {
-                const merged = mergeStages(prev, data.stages);
-                if (merged === prev) return prev; // no change, no re-render
-                stagesRef.current = merged;
-                console.log("Setting stages!", merged[-1]);
-                return merged;
-              });
-              stagesRef.current = data.stages;
-            }
+              if (hasNewStages) {
+                setStages((prev) => {
+                  const merged = mergeStages(prev, data.stages);
+                  if (merged === prev) return prev; // no change, no re-render
+                  stagesRef.current = merged;
+                  console.log("Setting stages!", merged[-1]);
+                  return merged;
+                });
+                stagesRef.current = data.stages;
+              }
 
-            if (hasNewSteps) {
-              setSteps(data.steps);
-              stepsRef.current = data.steps;
-            }
-          },
-          checkComplete: (data) => data.isComplete ?? false,
-          interval: POLL_INTERVAL,
-        });
+              if (hasNewSteps) {
+                setSteps(data.steps);
+                stepsRef.current = data.steps;
+              }
+            },
+            checkComplete: (data) => data.isComplete ?? false,
+            interval: POLL_INTERVAL,
+          });
+        }, POLL_INTERVAL);
       }
     });
-  }, [parseUrlParams, openStage, selectDefaultNode]);
+  }, []);
 
   const handleStageSelect = useCallback(
     (nodeId: string) => {
@@ -242,16 +244,11 @@ export function usePipelineState() {
   };
 
   return {
-    // openStage,
     openStage: getOpenStage(),
     openStageSteps: getStageSteps(openStage),
     openStageStepBuffers: getStageStepBuffers(openStage),
     expandedSteps,
-    // setExpandedSteps,
     stages,
-    // steps,
-    // stepBuffers,
-    // updateStepConsoleOffset,
     handleStageSelect,
     handleStepToggle,
     handleMoreConsoleClick,

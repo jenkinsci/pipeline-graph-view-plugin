@@ -1,5 +1,11 @@
 @import "react-tippy/dist/tippy.css";
 
+h1 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .console-pane pre {
   padding-left: 16px;
 }
@@ -229,10 +235,10 @@ div.log-card--header {
 }
 
 //div.log-card--text {
-  //font-weight: 400;
-  //font-family: var(--font-family-sans-mono);
-  //line-height: 1.66 !important;
-  //color: var(--step-text-color);
+//font-weight: 400;
+//font-family: var(--font-family-sans-mono);
+//line-height: 1.66 !important;
+//color: var(--step-text-color);
 //}
 
 //div.log-card--text-duration {
@@ -257,13 +263,9 @@ div.detail-element:last-child {
 .app-details__prev_next {
   color: inherit !important;
   text-decoration: none !important;
-
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
-  // TODO - Hacky
-  padding-inline: 5px;
 }
 
 //.split-pane--stage-view {

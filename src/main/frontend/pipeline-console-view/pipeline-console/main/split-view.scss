@@ -1,6 +1,13 @@
 .pgv-split-view__container {
   display: grid;
-  gap: 1.25rem;
+  gap: var(--section-padding);
+  animation: fade-in 0.1s ease-in-out both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
 }
 
 .pgv-split-view__side-panel {
@@ -10,17 +17,18 @@
 
 .pgv-split-view__divider {
   position: absolute;
-  right: -9px;
+  right: calc(var(--section-padding) * -1);
   top: 0;
   bottom: 0;
-  width: 20px;
+  width: var(--section-padding);
   cursor: col-resize;
   z-index: 1;
 
   &::after {
     content: "";
     position: absolute;
-    right: 50%;
+    // TODO - var fallback can removed after baseline is moved >= 2.496
+    right: calc(50% - (var(--jenkins-border-width, 2px) / 2));
     top: 0;
     bottom: 0;
     // TODO - var fallback can removed after baseline is moved >= 2.496
@@ -33,14 +41,14 @@
 
   &:hover {
     &::after {
-      opacity: 0.3;
+      opacity: 0.4;
       scale: 150% 100%;
     }
   }
 
   &:active {
     &::after {
-      opacity: 0.6;
+      opacity: 0.8;
       scale: 200% 100%;
     }
   }

@@ -18,8 +18,6 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   const virtuosoRef = useRef<VirtuosoHandle>(null);
   const [stickToBottom, setStickToBottom] = useState(false);
   const [moveToBottom, setMoveToBottom] = useState(true);
-  const showButtonInterval = useRef<NodeJS.Timeout | null>(null);
-  const [showButton, setShowButton] = useState(false);
   const [maxConsoleLineHeight, setMaxConsoleLineHeight] = useState(1);
 
   useEffect(() => {
@@ -27,22 +25,8 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
       if (appendInterval.current) {
         clearInterval(appendInterval.current);
       }
-      if (showButtonInterval.current) {
-        clearTimeout(showButtonInterval.current);
-      }
     };
   }, []);
-
-  useEffect(() => {
-    if (showButtonInterval.current) {
-      clearTimeout(showButtonInterval.current);
-    }
-    if (!stickToBottom) {
-      showButtonInterval.current = setTimeout(() => setShowButton(true), 500);
-    } else {
-      setShowButton(false);
-    }
-  }, [stickToBottom, setShowButton]);
 
   useEffect(() => {
     if (moveToBottom) {
@@ -79,17 +63,10 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
     return props.step.state === Result.running || props.logBuffer.startByte < 0;
   };
 
-  const height = () => {
-    return props.logBuffer.lines.length * maxConsoleLineHeight;
-  };
-
   return (
     <>
       <Virtuoso
-        style={{
-          height: `${height()}px`,
-          overflowY: "hidden",
-        }}
+        useWindowScroll
         ref={virtuosoRef}
         data={props.logBuffer.lines}
         itemContent={(index: number, content: string) => {
@@ -129,25 +106,6 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
         // Uncomment to help with debugging virtuoso issues.
         //logLevel={LogLevel.DEBUG}
       />
-      {showButton && (
-        <button
-          className="jenkins-button jenkins-!-accent-color pgv-scroll-to-bottom"
-          onClick={() => scrollListBottom()}
-          // TODO - make this work
-          data-tooltip="Scroll to bottom"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <path
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="48"
-              d="M112 268l144 144 144-144M256 392V100"
-            />
-          </svg>
-        </button>
-      )}
     </>
   );
 }

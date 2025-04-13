@@ -34,7 +34,7 @@ export default function DropdownWrapper({ items }: DropdownWrapperProps) {
   return (
     <>
       <button
-        className="jenkins-button"
+        className="jenkins-button jenkins-button--tertiary"
         type="button"
         data-dropdown="true"
         ref={buttonRef}

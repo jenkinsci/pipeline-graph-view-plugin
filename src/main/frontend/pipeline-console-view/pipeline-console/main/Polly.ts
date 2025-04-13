@@ -214,17 +214,47 @@ export function usePipelineState() {
     updateStepConsoleOffset(nodeId, true, startByte);
   };
 
+  const getStageSteps = (stageId: string) =>
+    steps.filter((step) => step.stageId === stageId);
+
+  const getStageStepBuffers = (stageId: string) => {
+    const buffers = new Map<string, StepLogBufferInfo>();
+    steps.forEach((step) => {
+      if (step.stageId === stageId && stepBuffers.has(step.id)) {
+        buffers.set(step.id, stepBuffers.get(step.id)!);
+      }
+    });
+    return buffers;
+  };
+
+  const getOpenStage = (): StageInfo | null => {
+    const findStage = (stages: StageInfo[]): StageInfo | null => {
+      for (let stage of stages) {
+        if (String(stage.id) === openStage) return stage;
+        if (stage.children.length > 0) {
+          const result = findStage(stage.children);
+          if (result) return result;
+        }
+      }
+      return null;
+    };
+    return openStage ? findStage(stages) : null;
+  };
+
   return {
-    openStage,
+    // openStage,
+    openStage: getOpenStage(),
+    openStageSteps: getStageSteps(openStage),
+    openStageStepBuffers: getStageStepBuffers(openStage),
     expandedSteps,
-    setExpandedSteps,
+    // setExpandedSteps,
     stages,
-    steps,
-    stepBuffers,
-    updateStepConsoleOffset,
+    // steps,
+    // stepBuffers,
+    // updateStepConsoleOffset,
     handleStageSelect,
     handleStepToggle,
-    handleMoreConsoleClick
+    handleMoreConsoleClick,
   };
 }
 

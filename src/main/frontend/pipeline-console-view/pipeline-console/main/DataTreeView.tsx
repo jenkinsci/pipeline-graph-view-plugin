@@ -24,7 +24,7 @@ export default function DataTreeView({
         <TreeNode
           key={stage.id}
           stage={stage}
-          selected={selected}
+          selected={String(selected)}
           onSelect={handleSelect}
         />
       ))}
@@ -120,7 +120,7 @@ const TreeNode = React.memo(({ stage, selected, onSelect }: TreeNodeProps) => {
 
 interface DataTreeViewProps {
   stages: StageInfo[];
-  selected: string;
+  selected?: number;
   onNodeSelect: (event: React.MouseEvent, nodeId: string) => void;
 }
 

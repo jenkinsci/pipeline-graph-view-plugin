@@ -87,6 +87,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
             <a
               href={`log?nodeId=${stage.id}`}
               data-tooltip="View as plain text"
+              target="_blank"
               className="jenkins-button jenkins-button--tertiary"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">

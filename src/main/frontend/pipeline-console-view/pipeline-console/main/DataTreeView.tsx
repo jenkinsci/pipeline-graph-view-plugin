@@ -53,8 +53,17 @@ function TreeNode({ stage, selected, onSelect }: TreeNodeProps) {
   return (
     <div className="task">
       <div className="pgv-tree-node-header">
-        <button
+        <a
+          href={`?selected-node=` + stage.id}
           onClick={(e) => {
+            // Only prevent left clicks
+            if (e.button !== 0 || e.metaKey || e.ctrlKey) {
+              return;
+            }
+
+            e.preventDefault();
+
+            history.replaceState({}, "", `?selected-node=` + stage.id);
             if (!isSelected) {
               onSelect(e, String(stage.id));
             }
@@ -78,7 +87,7 @@ function TreeNode({ stage, selected, onSelect }: TreeNodeProps) {
               </span>
             )}
           </div>
-        </button>
+        </a>
 
         {hasChildren && (
           <button

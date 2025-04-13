@@ -2,6 +2,8 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import hudson.console.AnnotatedLargeText;
 import hudson.model.Result;
@@ -60,5 +62,53 @@ class PipelineNodeUtilTest {
                 PipelineNodeUtil.getExceptionText(errorStep.getNode()),
                 startsWith(
                         "Found unhandled groovy.lang.MissingPropertyException exception:\nNo such property: undefined for class: groovy.lang.Binding"));
+    }
+
+    @Issue("GH#583")
+    @Test
+    void isStageTest(JenkinsRule j) throws Exception {
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "githubIssue583_stages", "gh583_stages.jenkinsfile", Result.SUCCESS);
+        PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
+        FlowNode stageANode = TestUtils.getNodesByDisplayName(run, "A").get(0);
+        assertFalse(PipelineNodeUtil.isStep(stageANode));
+        assertTrue(PipelineNodeUtil.isStage(stageANode));
+        assertFalse(PipelineNodeUtil.isParallelBranch(stageANode));
+
+        FlowNode stageCNode = TestUtils.getNodesByDisplayName(run, "C").get(0);
+        String stageCId = stageCNode.getId();
+        assertFalse(PipelineNodeUtil.isStep(stageCNode));
+        assertTrue(PipelineNodeUtil.isStage(stageCNode));
+        assertFalse(PipelineNodeUtil.isParallelBranch(stageCNode));
+
+        List<FlowNodeWrapper> stageCSteps = builder.getStageSteps(stageCId);
+        FlowNode stepCEcho = stageCSteps.get(0).getNode();
+        assertTrue(PipelineNodeUtil.isStep(stepCEcho));
+        assertFalse(PipelineNodeUtil.isStage(stepCEcho));
+        assertFalse(PipelineNodeUtil.isParallelBranch(stepCEcho));
+
+        FlowNode stageDNode = TestUtils.getNodesByDisplayName(run, "D").get(0);
+        String stageDId = stageDNode.getId();
+        assertFalse(PipelineNodeUtil.isStep(stageDNode));
+        assertTrue(PipelineNodeUtil.isStage(stageDNode));
+        assertFalse(PipelineNodeUtil.isParallelBranch(stageDNode));
+
+        List<FlowNodeWrapper> stageDSteps = builder.getStageSteps(stageDId);
+        FlowNode stepDEcho = stageDSteps.get(0).getNode();
+        assertTrue(PipelineNodeUtil.isStep(stepDEcho));
+        assertFalse(PipelineNodeUtil.isStage(stepDEcho));
+        assertFalse(PipelineNodeUtil.isParallelBranch(stepDEcho));
+
+        FlowNode branchB1Node =
+                TestUtils.getNodesByDisplayName(run, "Branch: B1").get(0);
+        assertFalse(PipelineNodeUtil.isStep(branchB1Node));
+        assertFalse(PipelineNodeUtil.isStage(branchB1Node));
+        assertTrue(PipelineNodeUtil.isParallelBranch(branchB1Node));
+
+        FlowNode branchB2Node =
+                TestUtils.getNodesByDisplayName(run, "Branch: B2").get(0);
+        assertFalse(PipelineNodeUtil.isStep(branchB2Node));
+        assertFalse(PipelineNodeUtil.isStage(branchB2Node));
+        assertTrue(PipelineNodeUtil.isParallelBranch(branchB2Node));
     }
 }

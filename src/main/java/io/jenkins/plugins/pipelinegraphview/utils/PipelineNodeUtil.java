@@ -22,22 +22,25 @@ import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.LabelAction;
 import org.jenkinsci.plugins.workflow.actions.LogAction;
 import org.jenkinsci.plugins.workflow.actions.QueueItemAction;
-import org.jenkinsci.plugins.workflow.actions.StageAction;
 import org.jenkinsci.plugins.workflow.actions.TagsAction;
 import org.jenkinsci.plugins.workflow.actions.ThreadNameAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
+import org.jenkinsci.plugins.workflow.cps.steps.ParallelStep;
+import org.jenkinsci.plugins.workflow.graph.AtomNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 import org.jenkinsci.plugins.workflow.support.actions.PauseAction;
 import org.jenkinsci.plugins.workflow.support.steps.ExecutorStep;
+import org.jenkinsci.plugins.workflow.support.steps.StageStep;
 import org.jenkinsci.plugins.workflow.support.steps.input.InputAction;
 
 /** @author Vivek Pandey */
 public class PipelineNodeUtil {
 
     private static final String DECLARATIVE_DISPLAY_NAME_PREFIX = "Declarative: ";
+    private static final String PARALLEL_SYNTHETIC_STAGE_NAME = "Parallel";
 
     public static String getDisplayName(@NonNull FlowNode node) {
         ThreadNameAction threadNameAction = node.getAction(ThreadNameAction.class);
@@ -47,11 +50,43 @@ public class PipelineNodeUtil {
                 : name;
     }
 
+    public static boolean isStep(FlowNode node) {
+        if (node != null) {
+            if (node instanceof AtomNode) {
+                return true;
+            }
+            if (node instanceof StepStartNode) {
+                StepStartNode stepStartNode = (StepStartNode) node;
+                boolean takesImplicitBlockArgument = false;
+                StepDescriptor sd = stepStartNode.getDescriptor();
+                if (sd != null) {
+                    takesImplicitBlockArgument = sd.takesImplicitBlockArgument();
+                }
+                return !isStage(node)
+                        && !isParallelBranch(node)
+                        && stepStartNode.isBody()
+                        && !takesImplicitBlockArgument;
+            }
+        }
+        return false;
+    }
+
     public static boolean isStage(FlowNode node) {
-        return node != null
-                && ((node.getAction(StageAction.class) != null)
-                        || (node.getAction(LabelAction.class) != null
-                                && node.getAction(ThreadNameAction.class) == null));
+        if (node != null) {
+            if (node instanceof StepStartNode) {
+                StepStartNode stepStartNode = (StepStartNode) node;
+                if (stepStartNode.getDescriptor() != null) {
+                    StepDescriptor sd = stepStartNode.getDescriptor();
+                    return sd != null && StageStep.DescriptorImpl.class.equals(sd.getClass()) && stepStartNode.isBody();
+                }
+            }
+            LabelAction labelAction = node.getAction(LabelAction.class);
+            ThreadNameAction threadNameAction = node.getAction(ThreadNameAction.class);
+            return labelAction != null
+                    && PARALLEL_SYNTHETIC_STAGE_NAME.equals(labelAction.getDisplayName())
+                    && threadNameAction == null;
+        }
+        return false;
     }
 
     public static boolean isSyntheticStage(@Nullable FlowNode node) {
@@ -115,9 +150,14 @@ public class PipelineNodeUtil {
     }
 
     public static boolean isParallelBranch(@Nullable FlowNode node) {
-        return node != null
-                && node.getAction(LabelAction.class) != null
-                && node.getAction(ThreadNameAction.class) != null;
+        if (node != null && node instanceof StepStartNode) {
+            StepStartNode stepStartNode = (StepStartNode) node;
+            if (stepStartNode.getDescriptor() != null) {
+                StepDescriptor sd = stepStartNode.getDescriptor();
+                return sd != null && ParallelStep.DescriptorImpl.class.equals(sd.getClass()) && stepStartNode.isBody();
+            }
+        }
+        return false;
     }
 
     public static boolean isUnhandledException(@Nullable FlowNode node) {
@@ -202,17 +242,15 @@ public class PipelineNodeUtil {
         return (pauseAction != null && pauseAction.isPaused());
     }
 
-    /* Untested way of determining if we are a parallel block.
-     * WARNING: Use with caution.
-     */
     protected static boolean isParallelBlock(@NonNull FlowNode node) {
-        /*
-         * TODO: Find a better method - list of expected labels.
-         * Seems to only have (not sure if this is true for other nodes as well though):
-         * org.jenkinsci.plugins.workflow.support.actions.LogStorageAction
-         * org.jenkinsci.plugins.workflow.actions.TimingAction
-         */
-        return getDisplayName(node).startsWith("Execute in parallel");
+        if (node != null && node instanceof StepStartNode) {
+            StepStartNode stepStartNode = (StepStartNode) node;
+            if (stepStartNode.getDescriptor() != null) {
+                StepDescriptor sd = stepStartNode.getDescriptor();
+                return sd != null && ParallelStep.DescriptorImpl.class.equals(sd.getClass()) && !stepStartNode.isBody();
+            }
+        }
+        return false;
     }
 
     /**

@@ -51,11 +51,11 @@ export function usePipelineState() {
 
       setStepBuffers((prev) => new Map(prev).set(stepId, stepBuffer));
     },
-    [stepBuffers],
+    [],
   );
 
   const parseUrlParams = useCallback(
-    (steps: StepInfo[], stages: StageInfo[]): boolean => {
+    (steps: StepInfo[]): boolean => {
       const params = new URLSearchParams(document.location.search.substring(1));
       let selected = params.get("selected-node") || "";
       if (!selected) return false;
@@ -82,7 +82,7 @@ export function usePipelineState() {
   );
 
   const selectDefaultNode = useCallback(
-    (steps: StepInfo[], stages: StageInfo[]) => {
+    (steps: StepInfo[]) => {
       const step = steps.find((s) => s !== undefined);
       if (!step) return;
       setOpenStage(step.stageId);
@@ -143,15 +143,12 @@ export function usePipelineState() {
       stagesRef.current = data.stages;
       stepsRef.current = data.steps;
 
-      const usedUrl = parseUrlParams(data.steps, data.stages);
+      const usedUrl = parseUrlParams(data.steps);
       if (!usedUrl && !openStage) {
-        selectDefaultNode(data.steps, data.stages);
+        selectDefaultNode(data.steps);
       }
 
       if (!data.isComplete) {
-        // TODO - Tidy up, have startPollingPipeline have an initial delay?
-        // No point instantly polling after we've _just_ polled
-        setTimeout(() => {
           startPollingPipeline({
             getStateUpdateFn: getStateUpdate,
             onData: (data) => {
@@ -180,7 +177,6 @@ export function usePipelineState() {
             checkComplete: (data) => data.isComplete ?? false,
             interval: POLL_INTERVAL,
           });
-        }, POLL_INTERVAL);
       }
     });
   }, []);
@@ -230,6 +226,7 @@ export function usePipelineState() {
     return buffers;
   };
 
+  // TODO - kill this method completely?
   const getOpenStage = (): StageInfo | null => {
     const findStage = (stages: StageInfo[]): StageInfo | null => {
       for (let stage of stages) {
@@ -306,7 +303,7 @@ export const startPollingPipeline = ({
     }
   };
 
-  poll();
+  setTimeout(poll, interval);
 
   return () => {
     polling = false;

@@ -25,7 +25,7 @@ const StageNodeLink = ({ agent }: StageNodeLinkProps) => {
       >
         <g
           stroke="none"
-          stroke-width="1"
+          strokeWidth="1"
           fill="none"
           fillRule="evenodd"
           strokeLinejoin="round"

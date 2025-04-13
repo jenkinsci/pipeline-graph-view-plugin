@@ -4,7 +4,6 @@ import Skeleton from "./Skeleton";
 import { usePipelineState } from "./Polly";
 import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main";
 import { StepLogBufferInfo } from "../../../common/RestClient";
-import { LOG_FETCH_SIZE } from "./PipelineConsoleModel";
 import "./pipeline-console.scss";
 
 const DataTreeView = React.lazy(() => import("./DataTreeView"));
@@ -14,26 +13,13 @@ export default function PipelineConsole() {
   const {
     openStage,
     expandedSteps,
-    setExpandedSteps,
     stages,
     steps,
     stepBuffers,
-    updateStepConsoleOffset,
     handleStageSelect,
+    handleStepToggle,
+    handleMoreConsoleClick
   } = usePipelineState();
-
-  const handleStepToggle = (_: any, nodeId: string) => {
-    if (!expandedSteps.includes(nodeId)) {
-      setExpandedSteps((prev) => [...prev, nodeId]);
-      updateStepConsoleOffset(nodeId, false, 0 - LOG_FETCH_SIZE);
-    } else {
-      setExpandedSteps((prev) => prev.filter((id) => id !== nodeId));
-    }
-  };
-
-  const handleMoreConsoleClick = (nodeId: string, startByte: number) => {
-    updateStepConsoleOffset(nodeId, true, startByte);
-  };
 
   const getStageSteps = (stageId: string) =>
     steps.filter((step) => step.stageId === stageId);
@@ -48,6 +34,7 @@ export default function PipelineConsole() {
     return buffers;
   };
 
+  // TODO - move to Polly
   const getOpenStage = (): StageInfo | null => {
     const findStage = (stages: StageInfo[]): StageInfo | null => {
       for (let stage of stages) {

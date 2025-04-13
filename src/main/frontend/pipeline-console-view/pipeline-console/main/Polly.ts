@@ -11,6 +11,9 @@ import {
   POLL_INTERVAL,
 } from "./PipelineConsoleModel";
 
+/**
+ * TODO
+ */
 export function usePipelineState() {
   const [openStage, setOpenStage] = useState("");
   const [expandedSteps, setExpandedSteps] = useState<string[]>([]);
@@ -198,6 +201,19 @@ export function usePipelineState() {
     [openStage, steps, updateStepConsoleOffset],
   );
 
+  const handleStepToggle = (_: any, nodeId: string) => {
+    if (!expandedSteps.includes(nodeId)) {
+      setExpandedSteps((prev) => [...prev, nodeId]);
+      updateStepConsoleOffset(nodeId, false, 0 - LOG_FETCH_SIZE);
+    } else {
+      setExpandedSteps((prev) => prev.filter((id) => id !== nodeId));
+    }
+  };
+
+  const handleMoreConsoleClick = (nodeId: string, startByte: number) => {
+    updateStepConsoleOffset(nodeId, true, startByte);
+  };
+
   return {
     openStage,
     expandedSteps,
@@ -207,6 +223,8 @@ export function usePipelineState() {
     stepBuffers,
     updateStepConsoleOffset,
     handleStageSelect,
+    handleStepToggle,
+    handleMoreConsoleClick
   };
 }
 

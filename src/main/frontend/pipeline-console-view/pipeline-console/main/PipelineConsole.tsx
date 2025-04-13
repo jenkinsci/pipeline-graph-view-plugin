@@ -1,6 +1,5 @@
-import React, { Suspense } from "react";
+import React from "react";
 import SplitView from "./SplitView";
-import Skeleton from "./Skeleton";
 import { usePipelineState } from "./Polly";
 import "./pipeline-console.scss";
 
@@ -22,27 +21,23 @@ export default function PipelineConsole() {
   return (
     <SplitView>
       <div key="tree-view" id="tree-view-pane" className="todo-sidebar">
-        <Suspense fallback={<Skeleton />}>
-          <DataTreeView
-            onNodeSelect={(_, nodeId) => handleStageSelect(nodeId)}
-            selected={openStage?.id}
-            stages={stages}
-          />
-        </Suspense>
+        <DataTreeView
+          onNodeSelect={(_, nodeId) => handleStageSelect(nodeId)}
+          selected={openStage?.id}
+          stages={stages}
+        />
       </div>
 
       <div key="stage-view" id="stage-view-pane">
-        <Suspense fallback={<Skeleton />}>
-          <StageView
-            stage={openStage}
-            steps={openStageSteps}
-            stepBuffers={openStageStepBuffers}
-            expandedSteps={expandedSteps}
-            handleStepToggle={handleStepToggle}
-            handleMoreConsoleClick={handleMoreConsoleClick}
-            scrollParentId="stage-view-pane"
-          />
-        </Suspense>
+        <StageView
+          stage={openStage}
+          steps={openStageSteps}
+          stepBuffers={openStageStepBuffers}
+          expandedSteps={expandedSteps}
+          handleStepToggle={handleStepToggle}
+          handleMoreConsoleClick={handleMoreConsoleClick}
+          scrollParentId="stage-view-pane"
+        />
       </div>
     </SplitView>
   );

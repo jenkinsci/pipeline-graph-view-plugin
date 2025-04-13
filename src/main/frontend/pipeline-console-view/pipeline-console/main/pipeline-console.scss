@@ -1,58 +1,5 @@
 @import "react-tippy/dist/tippy.css";
 
-:root {
-  --step-bg-running: color-mix(in srgb, var(--accent-color) 50%, white);
-  --step-bg-success: color-mix(in srgb, var(--success-color) 50%, white);
-  --step-bg-unstable: color-mix(in srgb, var(--warning-color) 50%, white);
-  --step-bg-failure: color-mix(in srgb, var(--error-color) 50%, white);
-  --step-bg-aborted: color-mix(in srgb, var(--purple) 50%, white);
-  --step-bg-paused: color-mix(in srgb, var(--blue) 50%, white);
-  --step-text-color: var(--text-color);
-}
-
-.app-page-body--one-column {
-  max-width: 100vw;
-  margin-inline: var(--section-padding);
-  margin-bottom: 0px;
-}
-
-[data-theme="dark"] {
-  --step-bg-running: color-mix(in srgb, var(--accent-color) 50%, black);
-  --step-bg-success: color-mix(in srgb, var(--success-color) 50%, black);
-  --step-bg-unstable: color-mix(in srgb, var(--warning-color) 50%, black);
-  --step-bg-failure: color-mix(in srgb, var(--error-color) 50%, black);
-  --step-bg-aborted: color-mix(in srgb, var(--purple) 50%, black);
-  --step-bg-paused: color-mix(in srgb, var(--blue) 50%, black);
-}
-
-@media (prefers-color-scheme: dark) {
-  [data-theme="dark-system"],
-  [data-theme="dark-system"] {
-    --step-bg-running: color-mix(in srgb, var(--accent-color) 50%, black);
-    --step-bg-success: color-mix(in srgb, var(--success-color) 50%, black);
-    --step-bg-unstable: color-mix(in srgb, var(--warning-color) 50%, black);
-    --step-bg-failure: color-mix(in srgb, var(--error-color) 50%, black);
-    --step-bg-aborted: color-mix(in srgb, var(--purple) 50%, black);
-    --step-bg-paused: color-mix(in srgb, var(--blue) 50%, black);
-  }
-}
-
-.SplitPane {
-  position: relative;
-}
-
-.console-output {
-  text-align: left;
-  padding-left: 16px;
-  padding-top: 7px;
-  padding-bottom: 7px;
-  margin-bottom: 10px;
-}
-
-.console-output p {
-  margin: 0;
-}
-
 .console-pane pre {
   padding-left: 16px;
 }
@@ -63,7 +10,12 @@
 }
 
 pre.console-output-line {
-  @extend pre, .console-output;
+  @extend pre;
+  text-align: left;
+  padding-left: 16px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  margin-bottom: 10px;
   padding: 0px;
   margin: 0px;
   border-radius: 0px;
@@ -195,14 +147,6 @@ span.timestamp {
   margin-right: 15px;
 }
 
-//div.stage-detail-group {
-//  vertical-align: auto;
-//  border-radius: 10px;
-//  // Move down slightly to avoid curring off the top background.
-//  position: relative;
-//  white-space: nowrap;
-//}
-
 .step-content {
   padding: 0px !important;
   padding-bottom: 0px !important;
@@ -228,19 +172,6 @@ span.timestamp {
   }
 }
 
-//.step-detail-group--expanded {
-//  &::before {
-//    opacity: 1;
-//    scale: 100%;
-//  }
-//}
-
-//div.step-detail-group-expanded {
-//  //@extend div, .stage-detail-group;
-//  border-bottom-left-radius: 0px;
-//  border-bottom-right-radius: 0px;
-//}
-
 div.detail-element {
   display: flex;
   width: 100%;
@@ -256,40 +187,40 @@ div.detail-element {
   cursor: pointer;
 }
 
-.step-header-running {
-  background: var(--step-bg-running) !important;
-}
+//.step-header-running {
+//  background: var(--step-bg-running) !important;
+//}
+//
+//.step-header-success {
+//  background: var(--step-bg-success) !important;
+//}
+//
+//.step-header-unstable {
+//  background: var(--step-bg-unstable) !important;
+//}
+//
+//.step-header-failure {
+//  background: var(--step-bg-failure) !important;
+//}
+//
+//.step-header-aborted {
+//  background: var(--step-bg-aborted) !important;
+//}
 
-.step-header-success {
-  background: var(--step-bg-success) !important;
-}
+//.step-header-queued,
+//.step-header-paused,
+//.step-header-not-built,
+//.step-header-skipped {
+//  background: var(--step-bg-paused) !important;
+//}
 
-.step-header-unstable {
-  background: var(--step-bg-unstable) !important;
-}
-
-.step-header-failure {
-  background: var(--step-bg-failure) !important;
-}
-
-.step-header-aborted {
-  background: var(--step-bg-aborted) !important;
-}
-
-.step-header-queued,
-.step-header-paused,
-.step-header-not-built,
-.step-header-skipped {
-  background: var(--step-bg-paused) !important;
-}
-
-.capitalize {
-  text-transform: lowercase;
-}
-
-.capitalize:first-letter {
-  text-transform: capitalize;
-}
+//.capitalize {
+//  text-transform: lowercase;
+//}
+//
+//.capitalize:first-letter {
+//  text-transform: capitalize;
+//}
 
 div.log-card--header {
   font-weight: 800;
@@ -297,31 +228,31 @@ div.log-card--header {
   color: var(--step-text-color);
 }
 
-div.log-card--text {
+//div.log-card--text {
   //font-weight: 400;
-  font-family: var(--font-family-sans-mono);
-  line-height: 1.66 !important;
-  color: var(--step-text-color);
-}
+  //font-family: var(--font-family-sans-mono);
+  //line-height: 1.66 !important;
+  //color: var(--step-text-color);
+//}
 
-div.log-card--text-duration {
-  overflow-x: hidden;
-  text-indent: 5px;
-}
+//div.log-card--text-duration {
+//  overflow-x: hidden;
+//  text-indent: 5px;
+//}
 
 div.detail-element:last-child {
   border: none;
 }
 
-svg.detail-icon {
-  margin-right: 10px;
-  font-size: 1.5rem !important;
-  transform-origin: 50% 50%;
-}
+//svg.detail-icon {
+//  margin-right: 10px;
+//  font-size: 1.5rem !important;
+//  transform-origin: 50% 50%;
+//}
 
-a {
-  cursor: pointer !important;
-}
+//a {
+//  cursor: pointer !important;
+//}
 
 .app-details__prev_next {
   color: inherit !important;
@@ -335,9 +266,9 @@ a {
   padding-inline: 5px;
 }
 
-.split-pane--stage-view {
-  margin: 0;
-  padding: 0;
-  height: 100vh;
-  overflow: scroll;
-}
+//.split-pane--stage-view {
+//  margin: 0;
+//  padding: 0;
+//  height: 100vh;
+//  overflow: scroll;
+//}

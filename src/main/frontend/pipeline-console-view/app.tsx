@@ -1,21 +1,44 @@
-import React from "react";
-import { lazy, Suspense } from "react";
-import { FunctionComponent } from "react";
-import Skeleton from "./pipeline-console/main/Skeleton";
+import React, { Suspense } from "react";
+import { lazy } from "react";
+import Placeholder from "./pipeline-console/main/Placeholder";
 
 const PipelineConsole = lazy(
   () => import("./pipeline-console/main/PipelineConsole"),
 );
 
-const App: FunctionComponent = () => {
-  return (
-    <React.Fragment>
-      <div>
-        <Suspense fallback={<Skeleton />}>
-          <PipelineConsole />
-        </Suspense>
+export default function App() {
+  function ConsolePlaceholder() {
+    return (
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "300px 1fr",
+          gap: "1rem",
+        }}
+      >
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
+        >
+          <Placeholder height={2} />
+          <Placeholder height={2} />
+          <Placeholder height={2} />
+          <Placeholder height={2} />
+        </div>
+        <div
+          style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
+        >
+          <Placeholder height={2.5} />
+          <Placeholder height={10} />
+          <Placeholder height={10} />
+          <Placeholder height={10} />
+        </div>
       </div>
-    </React.Fragment>
+    );
+  }
+
+  return (
+    <Suspense fallback={<ConsolePlaceholder />}>
+      <PipelineConsole />
+    </Suspense>
   );
-};
-export default App;
+}

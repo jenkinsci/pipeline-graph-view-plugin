@@ -2,7 +2,7 @@
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns" xmlns:p="/lib/pipeline-graph-view">
-    <l:layout title="${%Build log} [${it.buildDisplayName}]" type="one-column">
+    <l:layout title="${%Build log} [${it.buildDisplayName}]">
         <l:header>
             <!-- paste this BEFORE any scripts -->
             <script

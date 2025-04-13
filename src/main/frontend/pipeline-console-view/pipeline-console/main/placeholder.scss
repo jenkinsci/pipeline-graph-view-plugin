@@ -1,0 +1,15 @@
+.pgv-placeholder {
+  position: relative;
+  background: var(--text-color-secondary);
+  border-radius: var(--form-input-border-radius);
+  border: var(--jenkins-border-width) solid
+    color-mix(in srgb, var(--text-color) 5%, var(--text-color-secondary));
+  opacity: 0.1;
+  animation: pulse 2s infinite ease-in-out;
+
+  @keyframes pulse {
+    50% {
+      opacity: 0.05;
+    }
+  }
+}

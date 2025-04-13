@@ -15,7 +15,7 @@ const StageNodeLink = ({ agent }: StageNodeLinkProps) => {
   const agentName = agent == "built-in" ? "Jenkins" : agent;
   const href = getAgentUrl(agent);
   return (
-    <a href={href}>
+    <a href={href} className={"jenkins-button jenkins-button--tertiary"}>
       <svg
         width="512px"
         height="512px"

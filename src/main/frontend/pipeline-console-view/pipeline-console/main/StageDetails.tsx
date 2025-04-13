@@ -6,6 +6,7 @@ import {
 import "./stage-details.scss";
 import { getSymbolForResult } from "../../../pipeline-graph-view/pipeline-graph/main/support/StatusIcons";
 import StageNodeLink from "./StageNodeLink";
+import DropdownWrapper from "./DropdownWrapper";
 
 export default function StageDetails({ stage }: StageDetailsProps) {
   if (!stage) {
@@ -84,23 +85,90 @@ export default function StageDetails({ stage }: StageDetailsProps) {
         </li>
         {!stage.synthetic && (
           <li>
-            <a
-              href={`log?nodeId=${stage.id}`}
-              data-tooltip="View as plain text"
-              target="_blank"
-              className="jenkins-button jenkins-button--tertiary"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                <path
-                  d="M384 224v184a40 40 0 01-40 40H104a40 40 0 01-40-40V168a40 40 0 0140-40h167.48M336 64h112v112M224 288L440 72"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="32"
-                />
-              </svg>
-            </a>
+            <DropdownWrapper
+              items={[
+                {
+                  text: "View as plain text",
+                  icon: (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="ionicon"
+                      viewBox="0 0 512 512"
+                    >
+                      <circle
+                        cx="256"
+                        cy="256"
+                        r="45"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-miterlimit="10"
+                        stroke-width="32"
+                      />
+                      <circle
+                        cx="441"
+                        cy="256"
+                        r="45"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-miterlimit="10"
+                        stroke-width="32"
+                      />
+                      <circle
+                        cx="71"
+                        cy="256"
+                        r="45"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-miterlimit="10"
+                        stroke-width="32"
+                      />
+                    </svg>
+                  ),
+                  href: `log?nodeId=${stage.id}`,
+                  target: "_blank",
+                },
+                {
+                  text: "Download logs",
+                  icon: (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="ionicon"
+                      viewBox="0 0 512 512"
+                    >
+                      <circle
+                        cx="256"
+                        cy="256"
+                        r="45"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-miterlimit="10"
+                        stroke-width="32"
+                      />
+                      <circle
+                        cx="441"
+                        cy="256"
+                        r="45"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-miterlimit="10"
+                        stroke-width="32"
+                      />
+                      <circle
+                        cx="71"
+                        cy="256"
+                        r="45"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-miterlimit="10"
+                        stroke-width="32"
+                      />
+                    </svg>
+                  ),
+                  href: `log?nodeId=${stage.id}`,
+                  target: "_blank",
+                },
+              ]}
+            />
           </li>
         )}
       </ul>

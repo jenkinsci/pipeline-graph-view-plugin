@@ -8,6 +8,7 @@
   padding: 1rem;
   border-radius: var(--form-input-border-radius);
   margin-bottom: 0.5rem;
+  z-index: 10;
 
   &::before {
     content: "";

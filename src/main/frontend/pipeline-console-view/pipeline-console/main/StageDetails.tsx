@@ -80,9 +80,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
             {stage.pauseDurationMillis}
           </li>
         )}
-        <li>
-          <StageNodeLink agent={stage.agent} />
-        </li>
+        <StageNodeLink agent={stage.agent} />
         {!stage.synthetic && (
           <li>
             <DropdownWrapper

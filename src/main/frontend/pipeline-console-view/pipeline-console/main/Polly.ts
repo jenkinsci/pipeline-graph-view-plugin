@@ -8,7 +8,7 @@ import {
   RunStatus,
   StageInfo,
   StepInfo,
-  StepLogBufferInfo
+  StepLogBufferInfo,
 } from "./PipelineConsoleModel";
 
 /**
@@ -156,7 +156,8 @@ export function usePipelineState() {
             getStateUpdateFn: getStateUpdate,
             onData: (data) => {
               const hasNewStages =
-                JSON.stringify(stagesRef.current) !== JSON.stringify(data.stages);
+                JSON.stringify(stagesRef.current) !==
+                JSON.stringify(data.stages);
               const hasNewSteps =
                 JSON.stringify(stepsRef.current) !== JSON.stringify(data.steps);
 

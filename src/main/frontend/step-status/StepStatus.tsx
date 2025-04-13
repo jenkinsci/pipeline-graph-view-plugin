@@ -1,4 +1,3 @@
-import { FunctionComponent } from "react";
 import * as React from "react";
 import { Result } from "../pipeline-graph-view/pipeline-graph/main";
 import { decodeResultValue } from "../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
@@ -8,10 +7,9 @@ interface Props {
   status: Result;
   text: string;
   percent: number;
-  radius?: number;
 }
 
-const Component: FunctionComponent<Props> = (props: Props) => {
+const Component = React.memo((props: Props) => {
   const icon = getSymbolForResult(decodeResultValue(props.status));
   return (
     <>
@@ -19,7 +17,7 @@ const Component: FunctionComponent<Props> = (props: Props) => {
       <span className="task-link-text">{props.text}</span>
     </>
   );
-};
+});
 
 export function getStepStatus(
   status: Result,

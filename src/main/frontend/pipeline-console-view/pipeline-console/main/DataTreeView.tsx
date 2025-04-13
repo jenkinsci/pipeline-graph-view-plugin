@@ -70,7 +70,6 @@ const TreeNode = React.memo(({ stage, selected, onSelect }: TreeNodeProps) => {
               text={stage.name}
               key={`status-${stage.id}`}
               percent={stage.completePercent}
-              radius={10}
             />
             {stage.state === Result.running && (
               <span className="pgv-tree-item__description">

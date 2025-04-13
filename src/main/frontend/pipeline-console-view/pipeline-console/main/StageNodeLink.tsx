@@ -16,26 +16,40 @@ const StageNodeLink = ({ agent }: StageNodeLinkProps) => {
   const href = getAgentUrl(agent);
   return (
     <a href={href}>
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-        <rect
-          x="32"
-          y="96"
-          width="448"
-          height="272"
-          rx="32.14"
-          ry="32.14"
+      <svg
+        width="512px"
+        height="512px"
+        viewBox="0 0 512 512"
+        version="1.1"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <g
+          stroke="none"
+          stroke-width="1"
           fill="none"
-          stroke="currentColor"
+          fillRule="evenodd"
           strokeLinejoin="round"
-          strokeWidth="32"
-        />
-        <path
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeMiterlimit="10"
-          strokeWidth="32"
-          d="M128 416h256"
-        />
+        >
+          <g
+            transform="translate(32.000000, 64.000000)"
+            stroke="currentColor"
+            strokeWidth="32"
+          >
+            <rect x="0" y="0" width="448" height="320" rx="32"></rect>
+            <polygon
+              strokeLinecap="round"
+              fillRule="nonzero"
+              points="272 384 264 320 184 320 176 384"
+            ></polygon>
+            <line
+              x1="336"
+              y1="384"
+              x2="112"
+              y2="384"
+              strokeLinecap="round"
+            ></line>
+          </g>
+        </g>
       </svg>
       {agentName}
     </a>

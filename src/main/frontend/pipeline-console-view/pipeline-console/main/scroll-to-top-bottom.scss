@@ -40,18 +40,20 @@
       transition: translate 0.1s ease-in-out;
     }
 
-    &:first-of-type {
-      &:hover {
-        svg {
-          translate: 0 -1px;
+    &:not(:disabled) {
+      &:first-of-type {
+        &:hover {
+          svg {
+            translate: 0 -1px;
+          }
         }
       }
-    }
 
-    &:last-of-type {
-      &:hover {
-        svg {
-          translate: 0 1px;
+      &:last-of-type {
+        &:hover {
+          svg {
+            translate: 0 1px;
+          }
         }
       }
     }

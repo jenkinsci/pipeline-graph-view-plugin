@@ -1,6 +1,9 @@
 import React, { useEffect, useRef } from "react";
 
-export default function DropdownWrapper({ items }: DropdownWrapperProps) {
+export default function DropdownWrapper({
+  items,
+  disabled,
+}: DropdownWrapperProps) {
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -38,6 +41,7 @@ export default function DropdownWrapper({ items }: DropdownWrapperProps) {
         type="button"
         data-dropdown="true"
         ref={buttonRef}
+        disabled={disabled}
       >
         <div className="jenkins-overflow-button__ellipsis">
           <span></span>
@@ -51,6 +55,7 @@ export default function DropdownWrapper({ items }: DropdownWrapperProps) {
 
 export interface DropdownWrapperProps {
   items: DropdownItem[];
+  disabled?: boolean;
 }
 
 export interface DropdownItem {

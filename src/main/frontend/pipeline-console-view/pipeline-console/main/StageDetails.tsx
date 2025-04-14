@@ -81,94 +81,93 @@ export default function StageDetails({ stage }: StageDetailsProps) {
           </li>
         )}
         <StageNodeLink agent={stage.agent} />
-        {!stage.synthetic && (
-          <li>
-            <DropdownWrapper
-              items={[
-                {
-                  text: "View as plain text",
-                  icon: (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="ionicon"
-                      viewBox="0 0 512 512"
-                    >
-                      <circle
-                        cx="256"
-                        cy="256"
-                        r="45"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-miterlimit="10"
-                        stroke-width="32"
-                      />
-                      <circle
-                        cx="441"
-                        cy="256"
-                        r="45"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-miterlimit="10"
-                        stroke-width="32"
-                      />
-                      <circle
-                        cx="71"
-                        cy="256"
-                        r="45"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-miterlimit="10"
-                        stroke-width="32"
-                      />
-                    </svg>
-                  ),
-                  href: `log?nodeId=${stage.id}`,
-                  target: "_blank",
-                },
-                {
-                  text: "Download logs",
-                  icon: (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="ionicon"
-                      viewBox="0 0 512 512"
-                    >
-                      <circle
-                        cx="256"
-                        cy="256"
-                        r="45"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-miterlimit="10"
-                        stroke-width="32"
-                      />
-                      <circle
-                        cx="441"
-                        cy="256"
-                        r="45"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-miterlimit="10"
-                        stroke-width="32"
-                      />
-                      <circle
-                        cx="71"
-                        cy="256"
-                        r="45"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-miterlimit="10"
-                        stroke-width="32"
-                      />
-                    </svg>
-                  ),
-                  href: `log?nodeId=${stage.id}`,
-                  target: "_blank",
-                },
-              ]}
-            />
-          </li>
-        )}
+        <li>
+          <DropdownWrapper
+            disabled={stage.synthetic}
+            items={[
+              {
+                text: "View as plain text",
+                icon: (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="ionicon"
+                    viewBox="0 0 512 512"
+                  >
+                    <circle
+                      cx="256"
+                      cy="256"
+                      r="45"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-miterlimit="10"
+                      stroke-width="32"
+                    />
+                    <circle
+                      cx="441"
+                      cy="256"
+                      r="45"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-miterlimit="10"
+                      stroke-width="32"
+                    />
+                    <circle
+                      cx="71"
+                      cy="256"
+                      r="45"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-miterlimit="10"
+                      stroke-width="32"
+                    />
+                  </svg>
+                ),
+                href: `log?nodeId=${stage.id}`,
+                target: "_blank",
+              },
+              {
+                text: "Download logs",
+                icon: (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="ionicon"
+                    viewBox="0 0 512 512"
+                  >
+                    <circle
+                      cx="256"
+                      cy="256"
+                      r="45"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-miterlimit="10"
+                      stroke-width="32"
+                    />
+                    <circle
+                      cx="441"
+                      cy="256"
+                      r="45"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-miterlimit="10"
+                      stroke-width="32"
+                    />
+                    <circle
+                      cx="71"
+                      cy="256"
+                      r="45"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-miterlimit="10"
+                      stroke-width="32"
+                    />
+                  </svg>
+                ),
+                href: `log?nodeId=${stage.id}`,
+                target: "_blank",
+              },
+            ]}
+          />
+        </li>
       </ul>
     </div>
   );

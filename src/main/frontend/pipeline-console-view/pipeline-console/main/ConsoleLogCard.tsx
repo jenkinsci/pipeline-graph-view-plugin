@@ -143,7 +143,7 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
   );
 }
 
-type ConsoleLogCardProps = {
+export type ConsoleLogCardProps = {
   step: StepInfo;
   stepBuffer: StepLogBufferInfo;
   isExpanded: boolean;

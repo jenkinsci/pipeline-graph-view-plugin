@@ -86,84 +86,16 @@ export default function StageDetails({ stage }: StageDetailsProps) {
             disabled={stage.synthetic}
             items={[
               {
-                text: "View as plain text",
-                icon: (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="ionicon"
-                    viewBox="0 0 512 512"
-                  >
-                    <circle
-                      cx="256"
-                      cy="256"
-                      r="45"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-miterlimit="10"
-                      stroke-width="32"
-                    />
-                    <circle
-                      cx="441"
-                      cy="256"
-                      r="45"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-miterlimit="10"
-                      stroke-width="32"
-                    />
-                    <circle
-                      cx="71"
-                      cy="256"
-                      r="45"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-miterlimit="10"
-                      stroke-width="32"
-                    />
-                  </svg>
-                ),
+                text: "View stage as plain text",
+                icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><title>Document Text</title><path d="M416 221.25V416a48 48 0 01-48 48H144a48 48 0 01-48-48V96a48 48 0 0148-48h98.75a32 32 0 0122.62 9.37l141.26 141.26a32 32 0 019.37 22.62z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="32"/><path d="M256 56v120a32 32 0 0032 32h120M176 288h160M176 368h160" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32"/></svg>`,
                 href: `log?nodeId=${stage.id}`,
                 target: "_blank",
               },
               {
-                text: "Download logs",
-                icon: (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="ionicon"
-                    viewBox="0 0 512 512"
-                  >
-                    <circle
-                      cx="256"
-                      cy="256"
-                      r="45"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-miterlimit="10"
-                      stroke-width="32"
-                    />
-                    <circle
-                      cx="441"
-                      cy="256"
-                      r="45"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-miterlimit="10"
-                      stroke-width="32"
-                    />
-                    <circle
-                      cx="71"
-                      cy="256"
-                      r="45"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-miterlimit="10"
-                      stroke-width="32"
-                    />
-                  </svg>
-                ),
+                text: "Download stage logs",
+                icon: `<svg xmlns="http://www.w3.org/2000/svg" class="ionicon" viewBox="0 0 512 512"><title>Download</title><path d="M336 176h40a40 40 0 0140 40v208a40 40 0 01-40 40H136a40 40 0 01-40-40V216a40 40 0 0140-40h40" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="32" d="M176 272l80 80 80-80M256 48v288"/></svg>`,
                 href: `log?nodeId=${stage.id}`,
-                target: "_blank",
+                download: `${stage.name}.txt`,
               },
             ]}
           />

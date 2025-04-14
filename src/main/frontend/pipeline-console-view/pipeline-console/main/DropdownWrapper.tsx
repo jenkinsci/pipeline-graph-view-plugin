@@ -1,5 +1,8 @@
 import React, { useEffect, useRef } from "react";
 
+/**
+ * Provides a bridge between React and the Jenkins' dropdown component
+ */
 export default function DropdownWrapper({
   items,
   disabled,
@@ -17,11 +20,13 @@ export default function DropdownWrapper({
       ${items
         .map(
           (item) => `
-        <template
-          data-dropdown-type="ITEM"
-          data-dropdown-icon="<svg></svg>"
-          data-dropdown-text="${item.text}"
-          data-dropdown-href="${item.href || ""}">
+        <template data-dropdown-type="CUSTOM">
+          <a class="jenkins-dropdown__item" href=${item.href}
+             ${item.target ? `target="${item.target}"` : ""}
+             ${item.download ? `download="${item.download}"` : ""}>
+            <div class="jenkins-dropdown__item__icon">${item.icon}</div>
+            ${item.text}
+          </a>
         </template>
       `,
         )
@@ -40,6 +45,7 @@ export default function DropdownWrapper({
         className="jenkins-button jenkins-button--tertiary"
         type="button"
         data-dropdown="true"
+        {...{ tooltip: "More actions" }}
         ref={buttonRef}
         disabled={disabled}
       >
@@ -53,14 +59,15 @@ export default function DropdownWrapper({
   );
 }
 
-export interface DropdownWrapperProps {
+interface DropdownWrapperProps {
   items: DropdownItem[];
   disabled?: boolean;
 }
 
-export interface DropdownItem {
+interface DropdownItem {
   text: string;
   href?: string;
-  icon: React.ReactElement;
+  icon: string;
   target?: string;
+  download?: string;
 }

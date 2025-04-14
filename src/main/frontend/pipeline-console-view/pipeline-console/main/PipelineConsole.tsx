@@ -20,7 +20,7 @@ export default function PipelineConsole() {
 
   return (
     <SplitView>
-      <div key="tree-view" id="tree-view-pane" className="todo-sidebar">
+      <div key="tree-view" id="tree-view-pane" className="pgv-sticky-sidebar">
         <DataTreeView
           onNodeSelect={(_, nodeId) => handleStageSelect(nodeId)}
           selected={openStage?.id}

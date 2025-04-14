@@ -2,9 +2,7 @@
 
 import "@testing-library/jest-dom";
 import React from "react";
-import {
-  default as PipelineConsole,
-} from "./PipelineConsole";
+import { default as PipelineConsole } from "./PipelineConsole";
 import DataTreeView from "./DataTreeView";
 import StageView, { StageViewProps } from "./StageView";
 import { StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";

@@ -9,7 +9,6 @@ import {
 
 import ConsoleLogModal from "./ConsoleLogModal";
 import { getStepStatus } from "../../../step-status/StepStatus";
-import Skeleton from "./Skeleton";
 
 const ConsoleLogStream = React.lazy(() => import("./ConsoleLogStream"));
 
@@ -129,7 +128,7 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
       {props.isExpanded && (
         <div style={{ paddingTop: "0.5rem" }}>
           {getTruncatedLogWarning()}
-          <Suspense fallback={<Skeleton />}>
+          <Suspense>
             <ConsoleLogStream
               logBuffer={props.stepBuffer}
               handleMoreConsoleClick={props.handleMoreConsoleClick}

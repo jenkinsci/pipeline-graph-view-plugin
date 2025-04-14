@@ -40,13 +40,24 @@
   }
 }
 
-//.app-details__prev_next {
-//  color: inherit !important;
-//  text-decoration: none !important;
-//  display: flex;
-//  align-items: center;
-//  justify-content: center;
-//}
+h1 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.app-details__prev_next {
+  padding: 0.5rem;
+  min-width: 2.375rem;
+  border-radius: 100px;
+  margin-inline: -0.375rem;
+  color: var(--text-color-secondary) !important;
+
+  &::before,
+  &::after {
+    inset: 0.375rem;
+  }
+}
 
 .pgw-graph-container {
   width: 100%;

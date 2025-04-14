@@ -157,9 +157,8 @@ export function usePipelineState() {
             if (hasNewStages) {
               setStages((prev) => {
                 const merged = mergeStages(prev, data.stages);
-                if (merged === prev) return prev; // no change, no re-render
+                if (merged === prev) return prev;
                 stagesRef.current = merged;
-                console.log("Setting stages!", merged[-1]);
                 return merged;
               });
               stagesRef.current = data.stages;

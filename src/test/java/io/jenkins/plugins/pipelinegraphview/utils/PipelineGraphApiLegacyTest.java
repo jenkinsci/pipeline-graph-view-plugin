@@ -35,10 +35,10 @@ class PipelineGraphApiLegacyTest {
                 stagesString,
                 is(String.join(
                         "",
-                        "{50,unstable-one,unstable-one,STAGE,unstable},",
-                        "{50,success,success,STAGE,success},",
-                        "{50,unstable-two,unstable-two,STAGE,unstable},",
-                        "{50,failure,failure,STAGE,failure}")));
+                        "{100,unstable-one,unstable-one,STAGE,unstable},",
+                        "{100,success,success,STAGE,success},",
+                        "{100,unstable-two,unstable-two,STAGE,unstable},",
+                        "{100,failure,failure,STAGE,failure}")));
 
         PipelineGraph newGraph = api.createShallowTree();
         String newStagesString = TestUtils.collectStagesAsString(

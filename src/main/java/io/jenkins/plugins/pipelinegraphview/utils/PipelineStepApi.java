@@ -3,7 +3,6 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.legacy.PipelineStepVisitor;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -19,16 +18,10 @@ public class PipelineStepApi {
     }
 
     private List<PipelineStep> parseSteps(List<FlowNodeWrapper> stepNodes, String stageId) {
-        if (logger.isDebugEnabled()) {
-            logger.debug("PipelineStepApi steps: '" + stepNodes + "'.");
-        }
-        List<PipelineStep> steps = stepNodes.stream()
+        logger.atDebug().addArgument(stepNodes).log("PipelineStepApi steps: '{}'.");
+        return stepNodes.stream()
                 .map(flowNodeWrapper -> {
-                    String state =
-                            flowNodeWrapper.getStatus().getResult().name().toLowerCase(Locale.ROOT);
-                    if (flowNodeWrapper.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
-                        state = flowNodeWrapper.getStatus().getState().name().toLowerCase(Locale.ROOT);
-                    }
+                    PipelineStatus state = PipelineStatus.of(flowNodeWrapper.getStatus());
 
                     String displayName = flowNodeWrapper.getDisplayName();
                     String title = "";
@@ -48,9 +41,9 @@ public class PipelineStepApi {
                         }
                     }
                     // Remove non-printable chars (e.g. ANSI color codes).
-                    logger.debug("DisplayName Before: '" + displayName + "'.");
+                    logger.debug("DisplayName Before: '{}'.", displayName);
                     displayName = cleanTextContent(displayName);
-                    logger.debug("DisplayName After: '" + displayName + "'.");
+                    logger.debug("DisplayName After: '{}'.", displayName);
 
                     return new PipelineStep(
                             flowNodeWrapper.getId(),
@@ -64,7 +57,6 @@ public class PipelineStepApi {
                             flowNodeWrapper.getTiming());
                 })
                 .collect(Collectors.toList());
-        return steps;
     }
 
     static String cleanTextContent(String text) {

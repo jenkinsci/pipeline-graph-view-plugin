@@ -18,6 +18,19 @@ public class PipelineStep extends AbstractPipelineNode {
         this.stageId = stageId;
     }
 
+    PipelineStep(
+            String id,
+            String name,
+            PipelineStatus state,
+            int completePercent,
+            String type,
+            String title,
+            String stageId,
+            TimingInfo timingInfo) {
+        super(id, name, state.toString(), completePercent, type, title, timingInfo);
+        this.stageId = stageId;
+    }
+
     public String getStageId() {
         return stageId;
     }

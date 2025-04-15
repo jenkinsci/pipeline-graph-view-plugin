@@ -19,6 +19,7 @@ import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.graphanalysis.DepthFirstScanner;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,29 +50,59 @@ public class PipelineGraphApi {
     }
 
     private List<PipelineStageInternal> getPipelineNodes(PipelineGraphBuilderApi builder) {
+        return getPipelineNodes(builder, new StageInformation());
+    }
+
+    private List<PipelineStageInternal> getPipelineNodes(PipelineGraphBuilderApi builder, StageInformation info) {
         return builder.getPipelineNodes().stream()
-                .map(flowNodeWrapper -> {
-                    String state =
-                            flowNodeWrapper.getStatus().getResult().name().toLowerCase(Locale.ROOT);
-                    if (flowNodeWrapper.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
-                        state = flowNodeWrapper.getStatus().getState().name().toLowerCase(Locale.ROOT);
+            .map(flowNodeWrapper -> new PipelineStageInternal(
+                flowNodeWrapper.getId(), // TODO no need to parse it BO returns a string even though the
+                // datatype is number on the frontend
+                flowNodeWrapper.getDisplayName(),
+                flowNodeWrapper.getParents().stream()
+                    .map(FlowNodeWrapper::getId)
+                    .collect(Collectors.toList()),
+                PipelineStatus.of(flowNodeWrapper.getStatus()),
+                info.completePercent(flowNodeWrapper.getStatus().getState(), flowNodeWrapper.getDisplayName(), flowNodeWrapper.getTiming()), // TODO how ???
+                flowNodeWrapper.getType().name(),
+                flowNodeWrapper.getDisplayName(), // TODO blue ocean uses timing information: "Passed in 0s"
+                flowNodeWrapper.isSynthetic(),
+                flowNodeWrapper.getTiming(),
+                getStageNode(flowNodeWrapper)))
+            .collect(Collectors.toList());
+    }
+
+    static class StageInformation {
+        private final Map<String, PipelineStageInternal> stageMap;
+
+        StageInformation() {
+            stageMap = new HashMap<>();
+        }
+
+        void add(PipelineStageInternal stage) {
+            stageMap.put(stage.getName(), stage);
+        }
+
+        int completePercent(BlueRun.BlueRunState state, String name,  TimingInfo info) {
+            return switch (state) {
+                case QUEUED -> 0;
+                case SKIPPED, FINISHED, NOT_BUILT -> 100;
+                case RUNNING, PAUSED -> {
+                    PipelineStageInternal previous = stageMap.get(name);
+                    if (previous == null) {
+                        yield 0; // TODO anything better to return when unknown?
                     }
-                    return new PipelineStageInternal(
-                            flowNodeWrapper.getId(), // TODO no need to parse it BO returns a string even though the
-                            // datatype is number on the frontend
-                            flowNodeWrapper.getDisplayName(),
-                            flowNodeWrapper.getParents().stream()
-                                    .map(FlowNodeWrapper::getId)
-                                    .collect(Collectors.toList()),
-                            state,
-                            50, // TODO how ???
-                            flowNodeWrapper.getType().name(),
-                            flowNodeWrapper.getDisplayName(), // TODO blue ocean uses timing information: "Passed in 0s"
-                            flowNodeWrapper.isSynthetic(),
-                            flowNodeWrapper.getTiming(),
-                            getStageNode(flowNodeWrapper));
-                })
-                .collect(Collectors.toList());
+                    double previousTiming = previous.getTimingInfo().getTotalDurationMillis();
+                    double currentTiming = info.getTotalDurationMillis();
+                    if (previousTiming <= currentTiming) {
+                        // it is taking longer than last time, just hold at 99%?
+                        yield 99;
+                    }
+                    double percentage = ((previousTiming - currentTiming) / previousTiming) * 100;
+                    yield 100 - (int) percentage;
+                }
+            };
+        }
     }
 
     private Function<String, PipelineStage> mapper(
@@ -86,10 +117,23 @@ public class PipelineGraphApi {
     }
 
     private PipelineGraph createTree(PipelineGraphBuilderApi builder) {
+        FlowExecution execution = run.getExecution();
+        if (execution == null) {
+            // If we don't have an execution - e.g. if the Pipeline has a syntax error -
+            // then return an empty graph.
+            return new PipelineGraph(new ArrayList<>(), false);
+        }
+
         // We want to remap children here, so we don't update the parents of the
-        // original objects - as
-        // these are completely new representations.
-        List<PipelineStageInternal> stages = getPipelineNodes(builder);
+        // original objects - as these are completely new representations.
+        StageInformation info = buildStageInformation(run -> {
+            if (builder instanceof PipelineNodeGraphAdapter) {
+                return new PipelineNodeGraphAdapter(run);
+            }
+            return new PipelineNodeGraphVisitor(run);
+        });
+
+        List<PipelineStageInternal> stages = getPipelineNodes(builder, info);
 
         // id => stage
         Map<String, PipelineStageInternal> stageMap = stages.stream()
@@ -99,13 +143,6 @@ public class PipelineGraphApi {
         Map<String, List<String>> stageToChildrenMap = new HashMap<>();
         List<String> childNodes = new ArrayList<>();
 
-        FlowExecution execution = run.getExecution();
-        if (execution == null) {
-            // If we don't have an execution - e.g. if the Pipeline has a syntax error -
-            // then return an
-            // empty graph.
-            return new PipelineGraph(new ArrayList<>(), false);
-        }
         stages.forEach(stage -> {
             if (stage.getParents().isEmpty()) {
                 stageToChildrenMap.put(stage.getId(), new ArrayList<>());
@@ -132,6 +169,24 @@ public class PipelineGraphApi {
         return new PipelineGraph(stageResults, execution.isComplete());
     }
 
+    private StageInformation buildStageInformation(Function<WorkflowRun, PipelineGraphBuilderApi> builder) {
+        StageInformation stageInformation = new StageInformation();
+
+        WorkflowRun previousBuild = run.getPreviousBuild();
+
+        if (previousBuild == null) {
+            return new StageInformation();
+        }
+
+        PipelineGraphBuilderApi previouslyOnJenkins = builder.apply(previousBuild);
+
+        List<PipelineStageInternal> stages = getPipelineNodes(previouslyOnJenkins);
+        for (PipelineStageInternal stage : stages) {
+            stageInformation.add(stage);
+        }
+        return stageInformation;
+    }
+
     /*
      * Create a shallow Tree from the GraphVisitor.
      * This creates a shallower representation of the DAG - similar to . Here
@@ -147,7 +202,23 @@ public class PipelineGraphApi {
      * FlowGraphTable.java#L126
      */
     private PipelineGraph createShallowTree(PipelineGraphBuilderApi builder) {
-        List<PipelineStageInternal> stages = getPipelineNodes(builder);
+        FlowExecution execution = run.getExecution();
+        if (execution == null) {
+            // If we don't have an execution - e.g. if the Pipeline has a syntax error -
+            // then return an
+            // empty graph.
+            return new PipelineGraph(new ArrayList<>(), false);
+        }
+
+        StageInformation info = buildStageInformation(run -> {
+            if (builder instanceof PipelineNodeGraphAdapter) {
+                return new PipelineNodeGraphAdapter(run);
+            }
+            return new PipelineNodeGraphVisitor(run);
+        });
+
+        List<PipelineStageInternal> stages = getPipelineNodes(builder, info);
+
         List<String> topLevelStageIds = new ArrayList<>();
 
         // id => stage
@@ -157,13 +228,6 @@ public class PipelineGraphApi {
 
         Map<String, List<String>> stageToChildrenMap = new HashMap<>();
 
-        FlowExecution execution = run.getExecution();
-        if (execution == null) {
-            // If we don't have an execution - e.g. if the Pipeline has a syntax error -
-            // then return an
-            // empty graph.
-            return new PipelineGraph(new ArrayList<>(), false);
-        }
         stages.forEach(stage -> {
             try {
                 FlowNode stageNode = execution.getNode(stage.getId());
@@ -198,11 +262,7 @@ public class PipelineGraphApi {
                     topLevelStageIds.add(stage.getId());
                 }
             } catch (IOException ex) {
-                logger.error("Caught a "
-                        + ex.getClass().getSimpleName()
-                        + " when trying to find parent of stage '"
-                        + stage.getName()
-                        + "'");
+                logger.error("Caught a {} when trying to find parent of stage '{}'", ex.getClass().getSimpleName(), stage.getName());
             }
         });
 

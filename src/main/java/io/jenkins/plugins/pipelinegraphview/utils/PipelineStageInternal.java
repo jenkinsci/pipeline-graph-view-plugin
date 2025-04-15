@@ -5,11 +5,11 @@ import java.util.List;
 import java.util.Locale;
 import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 
-public class PipelineStageInternal {
+class PipelineStageInternal {
 
     private String name;
     private List<String> parents;
-    private String state; // TODO enum
+    private PipelineStatus state; // TODO enum
     private int completePercent; // TODO int is fine?
     private String type; // TODO enum
     private String title;
@@ -25,7 +25,7 @@ public class PipelineStageInternal {
             String id,
             String name,
             List<String> parents,
-            String state,
+            PipelineStatus state,
             int completePercent,
             String type,
             String title,
@@ -35,7 +35,7 @@ public class PipelineStageInternal {
         this.id = id;
         this.name = name;
         this.parents = parents;
-        this.state = state.toLowerCase(Locale.ROOT);
+        this.state = state;
         this.completePercent = completePercent;
         this.type = type;
         this.title = title;
@@ -56,7 +56,7 @@ public class PipelineStageInternal {
         this.sequential = sequential;
     }
 
-    public void setState(String state) {
+    public void setState(PipelineStatus state) {
         this.state = state;
     }
 
@@ -100,7 +100,7 @@ public class PipelineStageInternal {
         return parents;
     }
 
-    public String getState() {
+    public PipelineStatus getState() {
         return state;
     }
 
@@ -132,12 +132,16 @@ public class PipelineStageInternal {
         this.agent = aAgent;
     }
 
+    public TimingInfo getTimingInfo() {
+        return timingInfo;
+    }
+
     public PipelineStage toPipelineStage(List<PipelineStage> children, String runUrl) {
         return new PipelineStage(
                 id,
                 name,
                 children,
-                state,
+                state.toString(),
                 completePercent,
                 type,
                 title,

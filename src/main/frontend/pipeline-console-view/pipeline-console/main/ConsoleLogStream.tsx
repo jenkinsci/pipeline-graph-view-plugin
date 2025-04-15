@@ -4,13 +4,6 @@ import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
 import { ConsoleLine } from "./ConsoleLine";
 import "./console-log-stream.scss";
 
-export interface ConsoleLogStreamProps {
-  logBuffer: StepLogBufferInfo;
-  handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
-  step: StepInfo;
-  maxHeightScale: number;
-}
-
 export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   const appendInterval = useRef<NodeJS.Timeout | null>(null);
   const virtuosoRef = useRef<VirtuosoHandle>(null);
@@ -97,4 +90,11 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
       )}
     />
   );
+}
+
+export interface ConsoleLogStreamProps {
+  logBuffer: StepLogBufferInfo;
+  handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
+  step: StepInfo;
+  maxHeightScale: number;
 }

@@ -229,10 +229,7 @@ export class ConsoleLogCard extends React.Component<
                 component="div"
                 key={`step-duration-text-${this.props.step.id}`}
               >
-                {this.props.step.totalDurationMillis.substring(
-                  this.props.step.totalDurationMillis.indexOf(" ") + 1,
-                  this.props.step.totalDurationMillis.length,
-                )}
+                {this.props.step.totalDurationMillis}
               </Typography>
             </Grid>
 

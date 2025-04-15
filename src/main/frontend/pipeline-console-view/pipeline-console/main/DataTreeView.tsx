@@ -3,8 +3,8 @@ import {
   Result,
   StageInfo,
 } from "../../../pipeline-graph-view/pipeline-graph/main/";
-import StepStatus from "../../../step-status/StepStatus";
 import "./data-tree-view.scss";
+import StatusIcon from "../../../common/status-icon";
 
 export default function DataTreeView({
   stages,
@@ -74,13 +74,13 @@ function TreeNode({ stage, selected, onSelect }: TreeNodeProps) {
           }`}
         >
           <div>
-            <StepStatus
-              status={stage.state}
-              text={stage.name}
-              key={`status-${stage.id}`}
-              percent={stage.completePercent}
-              radius={10}
-            />
+            <span className="task-icon-link">
+              <StatusIcon
+                status={stage.state}
+                percentage={stage.completePercent}
+              />
+            </span>
+            <span className="task-link-text">{stage.name}</span>
             {stage.state === Result.running && (
               <span className="pgv-tree-item__description">
                 {stage.totalDurationMillis}

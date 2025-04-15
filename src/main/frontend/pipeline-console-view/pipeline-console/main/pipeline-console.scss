@@ -301,6 +301,11 @@ div.detail-element {
   cursor: pointer;
 }
 
+.pgv-step-header__icon svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
 .step-header-running {
   background: var(--step-bg-running) !important;
 }

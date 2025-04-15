@@ -24,7 +24,7 @@ import {
 import ConsoleLogModal from "./ConsoleLogModal";
 import ResizeIcon from "./ResizeIcon";
 
-import { getStepStatus } from "../../../step-status/StepStatus";
+import StatusIcon from "../../../common/status-icon";
 
 const ConsoleLogStream = lazy(() => import("./ConsoleLogStream"));
 
@@ -168,12 +168,6 @@ export class ConsoleLogCard extends React.Component<
     const handleOpen = () => this.setState({ open: true });
     const handleClose = () => this.setState({ open: false });
 
-    const statusIcon = getStepStatus(
-      this.props.step.state,
-      this.props.step.completePercent,
-      10,
-    );
-
     return (
       <Card
         className="step-detail-group"
@@ -188,7 +182,12 @@ export class ConsoleLogCard extends React.Component<
           }`}
           key={`step-action-area-${this.props.step.id}`}
         >
-          {statusIcon}
+          <span className="pgv-step-header__icon">
+            <StatusIcon
+              status={this.props.step.state}
+              percentage={this.props.step.completePercent}
+            />
+          </span>
           <Grid
             container
             wrap="nowrap"

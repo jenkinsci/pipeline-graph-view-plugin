@@ -141,11 +141,22 @@ circle.halo {
 }
 
 .PWGx-pipeline-node {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 24px;
   height: 24px;
+  z-index: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -1.5px;
+    background: var(--card-background);
+    border-radius: 50%;
+    z-index: -1;
+  }
 
   & > div {
     display: contents;
@@ -155,13 +166,23 @@ circle.halo {
     width: 24px;
     height: 24px;
   }
+
+  &:has(.PWGx-pipeline-node-terminal) {
+    &::before {
+      inset: 4px;
+    }
+  }
 }
 
 .PWGx-pipeline-node-terminal {
   width: 10px;
   height: 10px;
-  background: $graph-connector-grey;
+  border: 2px solid $graph-connector-grey;
   border-radius: 10px;
+
+  &::before {
+    display: none !important;
+  }
 }
 
 .PWGx-pipeline-connector-skipped {

@@ -22,8 +22,9 @@ export default function StatusIcon({ status, percentage, skeleton }: StatusIconP
         cx={viewBoxSize / 2}
         cy={viewBoxSize / 2}
         r={radius}
-        fill="var(--color)"
-        opacity={0.15}
+        fill="oklch(from var(--color) l c h / 0.15)"
+        stroke="color-mix(in oklch, var(--color) 25%, var(--card-background))"
+        strokeWidth={20}
         style={{
           transition: "var(--standard-transition)",
         }}

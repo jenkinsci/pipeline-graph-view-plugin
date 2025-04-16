@@ -27,9 +27,9 @@ describe("ConsoleLogCard", () => {
     completePercent: 50,
     id: "2",
     type: "STAGE",
-    pauseDurationMillis: "",
-    startTimeMillis: "",
-    totalDurationMillis: "",
+    pauseDurationMillis: 0,
+    startTimeMillis: 0,
+    totalDurationMillis: 0,
     stageId: "1",
   };
 

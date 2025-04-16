@@ -20,13 +20,12 @@ class PipelineStatusTest {
 
     private static Stream<Arguments> whenFinished() {
         return Stream.of(
-            Arguments.arguments(BlueRun.BlueRunResult.SUCCESS, PipelineStatus.SUCCESS),
-            Arguments.arguments(BlueRun.BlueRunResult.UNSTABLE, PipelineStatus.UNSTABLE),
-            Arguments.arguments(BlueRun.BlueRunResult.FAILURE, PipelineStatus.FAILURE),
-            Arguments.arguments(BlueRun.BlueRunResult.NOT_BUILT, PipelineStatus.NOT_BUILT),
-            Arguments.arguments(BlueRun.BlueRunResult.UNKNOWN, PipelineStatus.UNKNOWN),
-            Arguments.arguments(BlueRun.BlueRunResult.ABORTED, PipelineStatus.ABORTED)
-        );
+                Arguments.arguments(BlueRun.BlueRunResult.SUCCESS, PipelineStatus.SUCCESS),
+                Arguments.arguments(BlueRun.BlueRunResult.UNSTABLE, PipelineStatus.UNSTABLE),
+                Arguments.arguments(BlueRun.BlueRunResult.FAILURE, PipelineStatus.FAILURE),
+                Arguments.arguments(BlueRun.BlueRunResult.NOT_BUILT, PipelineStatus.NOT_BUILT),
+                Arguments.arguments(BlueRun.BlueRunResult.UNKNOWN, PipelineStatus.UNKNOWN),
+                Arguments.arguments(BlueRun.BlueRunResult.ABORTED, PipelineStatus.ABORTED));
     }
 
     @ParameterizedTest
@@ -41,11 +40,10 @@ class PipelineStatusTest {
 
     private static Stream<Arguments> whenNotFinished() {
         return Stream.of(
-            Arguments.arguments(BlueRun.BlueRunState.QUEUED, PipelineStatus.QUEUED),
-            Arguments.arguments(BlueRun.BlueRunState.RUNNING, PipelineStatus.RUNNING),
-            Arguments.arguments(BlueRun.BlueRunState.PAUSED, PipelineStatus.PAUSED),
-            Arguments.arguments(BlueRun.BlueRunState.SKIPPED, PipelineStatus.SKIPPED),
-            Arguments.arguments(BlueRun.BlueRunState.NOT_BUILT, PipelineStatus.NOT_BUILT)
-        );
+                Arguments.arguments(BlueRun.BlueRunState.QUEUED, PipelineStatus.QUEUED),
+                Arguments.arguments(BlueRun.BlueRunState.RUNNING, PipelineStatus.RUNNING),
+                Arguments.arguments(BlueRun.BlueRunState.PAUSED, PipelineStatus.PAUSED),
+                Arguments.arguments(BlueRun.BlueRunState.SKIPPED, PipelineStatus.SKIPPED),
+                Arguments.arguments(BlueRun.BlueRunState.NOT_BUILT, PipelineStatus.NOT_BUILT));
     }
 }

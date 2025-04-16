@@ -11,9 +11,9 @@ describe("PipelineGraphLayout", () => {
       id: 0,
       type: "STAGE",
       children: [],
-      pauseDurationMillis: "",
-      startTimeMillis: "",
-      totalDurationMillis: "",
+      pauseDurationMillis: 0,
+      startTimeMillis: 0,
+      totalDurationMillis: 0,
       agent: "built-in",
       url: "?selected-node=0",
     };

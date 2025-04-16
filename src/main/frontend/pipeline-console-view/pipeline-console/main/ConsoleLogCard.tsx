@@ -25,6 +25,7 @@ import ConsoleLogModal from "./ConsoleLogModal";
 import ResizeIcon from "./ResizeIcon";
 
 import StatusIcon from "../../../common/status-icon";
+import { total } from "../../../common/Timings";
 
 const ConsoleLogStream = lazy(() => import("./ConsoleLogStream"));
 
@@ -228,7 +229,7 @@ export class ConsoleLogCard extends React.Component<
                 component="div"
                 key={`step-duration-text-${this.props.step.id}`}
               >
-                {this.props.step.totalDurationMillis}
+                {total(this.props.step.totalDurationMillis)}
               </Typography>
             </Grid>
 

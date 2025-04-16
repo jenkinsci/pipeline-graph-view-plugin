@@ -19,9 +19,9 @@ export interface StepInfo {
   id: string;
   type: string;
   stageId: string;
-  pauseDurationMillis: string;
-  startTimeMillis: string;
-  totalDurationMillis: string;
+  pauseDurationMillis: number;
+  startTimeMillis: number;
+  totalDurationMillis: number;
 }
 
 // Internal representation of console log.

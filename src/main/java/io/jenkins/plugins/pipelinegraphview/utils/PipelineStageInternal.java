@@ -2,7 +2,6 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 
 class PipelineStageInternal {

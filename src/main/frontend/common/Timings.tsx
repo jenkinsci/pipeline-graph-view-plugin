@@ -42,7 +42,7 @@ function getTimeSpanString(duration: number): string {
   const minutes = Math.floor(duration / ONE_MINUTE_MS);
   duration %= ONE_MINUTE_MS;
   const seconds = Math.floor(duration / ONE_SECOND_MS);
-  const ms = duration % ONE_SECOND_MS;
+  const millis = duration % ONE_SECOND_MS;
 
   if (years > 0) {
     return makeTimeSpanString(years, `${years} yr`, months, `${months} mo`);
@@ -62,11 +62,11 @@ function getTimeSpanString(duration: number): string {
   } else if (seconds >= 10) {
     return `${seconds} sec`;
   } else if (seconds >= 1) {
-    return `${(seconds + ms / 1000).toFixed(1)} sec`;
-  } else if (ms >= 100) {
-    return `${(ms / 1000).toFixed(2)} sec`;
+    return `${seconds + Math.floor(millis / 100) / 10} sec`;
+  } else if (millis >= 100) {
+    return `${Math.floor(millis / 10) / 100} sec`;
   } else {
-    return `${ms} ms`;
+    return `${millis} ms`;
   }
 }
 

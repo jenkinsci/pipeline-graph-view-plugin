@@ -13,6 +13,7 @@ interface RenderBigLabelProps {
   measuredHeight: number;
   selectedStage?: StageInfo;
   isStageSelected: (stage?: StageInfo) => boolean;
+  isComplete: boolean;
 }
 
 /**
@@ -84,6 +85,9 @@ export function BigLabel({
     classNames.push("pgv-graph-node--synthetic");
   }
   if (details.stage?.skeleton) {
+    classNames.push("pgv-graph-node--skeleton");
+  }
+  if (details.node.id < 0) {
     classNames.push("pgv-graph-node--skeleton");
   }
 
@@ -187,11 +191,11 @@ export function SequentialContainerLabel({
     maxWidth: sequentialStagesLabelOffset,
     overflow: "hidden",
     textOverflow: "ellipsis",
-    background: "var(--background, white)",
-    padding: "0 3px",
+    background: "var(--card-background)",
+    fontSize: "0.8125rem",
+    fontWeight: "var(--font-bold-weight)",
+    padding: "0 5px",
     whiteSpace: "nowrap" as const,
-    outline: "1px solid var(--graph-connector-grey, gray)",
-    borderRadius: "3px",
   };
 
   return (

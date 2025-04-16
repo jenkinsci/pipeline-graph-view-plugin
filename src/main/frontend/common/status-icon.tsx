@@ -45,22 +45,6 @@ export default function StatusIcon({ status, percentage, skeleton }: StatusIconP
         }}
       />
 
-      {status === "running" && (
-        <circle
-          cx={viewBoxSize / 2}
-          cy={viewBoxSize / 2}
-          r={radius}
-          fill="none"
-          stroke="var(--color)"
-          strokeWidth={36}
-          strokeLinecap="round"
-          style={{
-            transition: "var(--standard-transition)",
-          }}
-          className={"pgv-pulse"}
-        />
-      )}
-
       <Group currentStatus={status} status={Result.running}>
         <circle
           cx="256"
@@ -76,7 +60,7 @@ export default function StatusIcon({ status, percentage, skeleton }: StatusIconP
           d="M336 189L224 323L176 269.4"
           fill="transparent"
           stroke="var(--color)"
-          strokeWidth={36}
+          strokeWidth={32}
           strokeLinecap="round"
           strokeLinejoin="round"
         />
@@ -88,7 +72,7 @@ export default function StatusIcon({ status, percentage, skeleton }: StatusIconP
           stroke="var(--color)"
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth={36}
+          strokeWidth={32}
           d="M320 320L192 192M192 320l128-128"
         />
       </Group>
@@ -99,7 +83,7 @@ export default function StatusIcon({ status, percentage, skeleton }: StatusIconP
           stroke="var(--color)"
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth={36}
+          strokeWidth={32}
           d="M192 320l128-128"
         />
       </Group>
@@ -111,7 +95,7 @@ export default function StatusIcon({ status, percentage, skeleton }: StatusIconP
           stroke="var(--color)"
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth={36}
+          strokeWidth={32}
         />
         <ellipse cx="256" cy="350" rx="26" ry="26" fill="var(--color)" />
       </Group>
@@ -129,7 +113,7 @@ export default function StatusIcon({ status, percentage, skeleton }: StatusIconP
           stroke="var(--color)"
           strokeLinecap="round"
           strokeMiterlimit="10"
-          strokeWidth={36}
+          strokeWidth={32}
           d="M208 192v128M304 192v128"
         />
       </Group>

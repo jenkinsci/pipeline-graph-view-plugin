@@ -15,17 +15,6 @@
       }
     }
   }
-
-  .pgv-pulse {
-    opacity: 0;
-    animation: pulseOpacity 2s both ease-in-out infinite;
-
-    @keyframes pulseOpacity {
-      50% {
-        opacity: 0.25;
-      }
-    }
-  }
 }
 
 // TODO - can be removed when Jenkins >= 2.506

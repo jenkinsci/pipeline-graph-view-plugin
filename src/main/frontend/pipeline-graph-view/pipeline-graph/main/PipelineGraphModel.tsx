@@ -24,8 +24,8 @@ export function decodeResultValue(resultMaybe: any): Result {
 
 // Dimensions used for layout, px
 export const defaultLayout = {
-  nodeSpacingH: 120,
-  parallelSpacingH: 120,
+  nodeSpacingH: 140,
+  parallelSpacingH: 140,
   nodeSpacingV: 70,
   nodeRadius: 12,
   terminalRadius: 10,

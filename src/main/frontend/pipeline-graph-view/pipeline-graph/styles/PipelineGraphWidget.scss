@@ -152,7 +152,7 @@ circle.halo {
   &::before {
     content: "";
     position: absolute;
-    inset: -1.5px;
+    inset: -3px;
     background: var(--card-background);
     border-radius: 50%;
     z-index: -1;
@@ -191,11 +191,12 @@ circle.halo {
 }
 
 .PWGx-pipeline-small-label {
-  font-size: 80%;
+  font-size: 0.75rem;
 }
 
-.PWGx-pipeline-big-label.selected {
-  font-weight: bold;
+.PWGx-pipeline-big-label {
+  font-weight: var(--font-bold-weight);
+  font-size: 0.8125rem;
 }
 
 .PWGx-pipeline-big-label.pgv-graph-node--synthetic {
@@ -204,6 +205,7 @@ circle.halo {
 
 .PWGx-pipeline-big-label.pgv-graph-node--skeleton {
   color: var(--text-color-secondary);
+  font-weight: normal;
 }
 
 .PWGx-pipeline-small-label.selected {

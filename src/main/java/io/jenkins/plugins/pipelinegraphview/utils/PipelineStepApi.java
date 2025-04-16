@@ -18,7 +18,7 @@ public class PipelineStepApi {
     }
 
     private List<PipelineStep> parseSteps(List<FlowNodeWrapper> stepNodes, String stageId) {
-        logger.atDebug().addArgument(stepNodes).log("PipelineStepApi steps: '{}'.");
+        logger.debug("PipelineStepApi steps: '{}'.", stepNodes);
         return stepNodes.stream()
                 .map(flowNodeWrapper -> {
                     PipelineStatus state = PipelineStatus.of(flowNodeWrapper.getStatus());
@@ -49,7 +49,6 @@ public class PipelineStepApi {
                             flowNodeWrapper.getId(),
                             displayName,
                             state,
-                            50, // TODO how ???
                             flowNodeWrapper.getType().name(),
                             title, // TODO blue ocean uses timing information: "Passed in
                             // 0s"

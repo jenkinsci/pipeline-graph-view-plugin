@@ -6,7 +6,6 @@ import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 public class AbstractPipelineNode {
     private String name;
     private String state; // TODO enum
-    private int completePercent; // TODO int is fine?
     private String type; // TODO enum
     private String title;
     private String id;
@@ -15,17 +14,10 @@ public class AbstractPipelineNode {
     private TimingInfo timingInfo;
 
     public AbstractPipelineNode(
-            String id,
-            String name,
-            String state,
-            int completePercent,
-            String type,
-            String title,
-            TimingInfo timingInfo) {
+            String id, String name, String state, String type, String title, TimingInfo timingInfo) {
         this.id = id;
         this.name = name;
         this.state = state.toLowerCase(Locale.ROOT);
-        this.completePercent = completePercent;
         this.type = type;
         this.title = title;
         this.timingInfo = timingInfo;
@@ -58,8 +50,9 @@ public class AbstractPipelineNode {
         return state;
     }
 
+    // TODO: 16/04/2025 Delete this
     public int getCompletePercent() {
-        return completePercent;
+        return 0;
     }
 
     public String getType() {

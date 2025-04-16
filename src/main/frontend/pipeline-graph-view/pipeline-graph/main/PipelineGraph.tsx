@@ -243,6 +243,7 @@ export const markSkeleton = (stages: StageInfo[]): StageInfo[] =>
   stages.map(s => ({
     ...s,
     skeleton: true,
+    completePercent: 0,
     children: markSkeleton(s.children ?? [])
   }));
 
@@ -269,5 +270,6 @@ export const mergeStageInfos = (skeletons: StageInfo[], incoming: StageInfo[]): 
 export const stripSkeleton = (stage: StageInfo): StageInfo => ({
   ...stage,
   skeleton: false,
+  completePercent: 0,
   children: stage.children?.map(stripSkeleton) ?? []
 });

@@ -7,26 +7,23 @@ import "./status-icon.scss";
  */
 export default function StatusIcon({ status, percentage, skeleton }: StatusIconProps) {
   const viewBoxSize = 512;
-  const strokeWidth = status === "running" ? 60 : 36;
-  const radius = (viewBoxSize - strokeWidth) / 2.45;
+  const strokeWidth = status === "running" ? 50 : 0;
+  const radius = (viewBoxSize - strokeWidth) / 2.2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - ((percentage ?? 100) / 100) * circumference;
 
   return (
     <svg
       viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
-      className={"pgv-status-icon " + resultToColor(status)}
-      opacity={skeleton ? 0.25 : 1}
+      className={"pgv-status-icon " + resultToColor(status, skeleton)}
+      opacity={skeleton ? 0.5 : 1}
     >
       <circle
         cx={viewBoxSize / 2}
         cy={viewBoxSize / 2}
         r={radius}
-        fill="none"
-        stroke="var(--color)"
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-        opacity={0.35}
+        fill="var(--color)"
+        opacity={0.15}
         style={{
           transition: "var(--standard-transition)",
         }}
@@ -55,7 +52,7 @@ export default function StatusIcon({ status, percentage, skeleton }: StatusIconP
           r={radius}
           fill="none"
           stroke="var(--color)"
-          strokeWidth={strokeWidth}
+          strokeWidth={36}
           strokeLinecap="round"
           style={{
             transition: "var(--standard-transition)",
@@ -79,7 +76,7 @@ export default function StatusIcon({ status, percentage, skeleton }: StatusIconP
           d="M336 189L224 323L176 269.4"
           fill="transparent"
           stroke="var(--color)"
-          strokeWidth={strokeWidth}
+          strokeWidth={36}
           strokeLinecap="round"
           strokeLinejoin="round"
         />
@@ -91,7 +88,7 @@ export default function StatusIcon({ status, percentage, skeleton }: StatusIconP
           stroke="var(--color)"
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth={strokeWidth}
+          strokeWidth={36}
           d="M320 320L192 192M192 320l128-128"
         />
       </Group>
@@ -102,7 +99,7 @@ export default function StatusIcon({ status, percentage, skeleton }: StatusIconP
           stroke="var(--color)"
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth={strokeWidth}
+          strokeWidth={36}
           d="M192 320l128-128"
         />
       </Group>
@@ -114,7 +111,7 @@ export default function StatusIcon({ status, percentage, skeleton }: StatusIconP
           stroke="var(--color)"
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth={strokeWidth}
+          strokeWidth={36}
         />
         <ellipse cx="256" cy="350" rx="26" ry="26" fill="var(--color)" />
       </Group>
@@ -132,7 +129,7 @@ export default function StatusIcon({ status, percentage, skeleton }: StatusIconP
           stroke="var(--color)"
           strokeLinecap="round"
           strokeMiterlimit="10"
-          strokeWidth={strokeWidth}
+          strokeWidth={36}
           d="M208 192v128M304 192v128"
         />
       </Group>
@@ -179,7 +176,11 @@ function Group({
   );
 }
 
-function resultToColor(result: Result) {
+function resultToColor(result: Result, skeleton: boolean | undefined) {
+  if (skeleton) {
+    return "jenkins-!-skipped-color";
+  }
+
   switch (result) {
     case "success":
       return "jenkins-!-success-color";

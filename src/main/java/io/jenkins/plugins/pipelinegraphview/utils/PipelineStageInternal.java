@@ -8,7 +8,7 @@ class PipelineStageInternal {
 
     private String name;
     private List<String> parents;
-    private PipelineStatus state; // TODO enum
+    private PipelineStatus state;
     private String type; // TODO enum
     private String title;
     private String id;

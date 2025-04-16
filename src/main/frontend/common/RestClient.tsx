@@ -38,6 +38,28 @@ export interface ConsoleLogData {
   endByte: number;
 }
 
+export async function getRunStatusFromPath(url: string): Promise<RunStatus | null> {
+  try {
+    let response = await fetch(url + "/pipeline-graph/tree");
+    if (!response.ok) throw response.statusText;
+    let json = await response.json();
+    if (json.data.hasOwnProperty("complete")) {
+      // The API returned 'complete' but we expect 'isComplete'.
+      if ("complete" in json.data) {
+        json.data["isComplete"] = json.data["complete"];
+        delete json.data["complete"];
+      }
+      if (!("isComplete" in json.data)) {
+        console.error("Did not get 'complete' status from API.");
+      }
+    }
+    return json.data;
+  } catch (e) {
+    console.error(`Caught error getting tree: '${e}'`);
+    return null;
+  }
+}
+
 export async function getRunStatus(): Promise<RunStatus | null> {
   try {
     let response = await fetch("tree");

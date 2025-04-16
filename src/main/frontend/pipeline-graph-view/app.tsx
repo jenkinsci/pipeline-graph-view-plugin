@@ -1,18 +1,16 @@
-import * as React from "react";
-import { FunctionComponent } from "react";
-
-import { PipelineGraph, Result } from "./pipeline-graph/main";
+import { PipelineGraph } from "./pipeline-graph/main";
 
 import "./app.scss";
 import "./pipeline-graph/styles/main.scss";
-import StatusIcon from "../common/status-icon";
+import React from "react";
 
-const App: FunctionComponent = () => {
+export default function App() {
+  const rootElement = document.getElementById("graph");
+  const previousPath = rootElement?.dataset.previousRun;
+
   return (
     <div>
-      <PipelineGraph stages={[]} collapsed={false} />
+      <PipelineGraph stages={[]} collapsed={false} previousPath={previousPath} />
     </div>
   );
 };
-
-export default App;

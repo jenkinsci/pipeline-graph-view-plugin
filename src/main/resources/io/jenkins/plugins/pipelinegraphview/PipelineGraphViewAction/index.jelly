@@ -52,7 +52,7 @@
       </div>
       <div class="pgv-cards">
         <p:card title="${%Pipeline}" type="wide" expandable="true">
-          <div id="graph"/>
+          <div id="graph" data-previous-run="${it.previousBuildUrl != null ? rootURL + '/' + it.previousBuildUrl : null}" />
           <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/pipeline-graph-view-bundle.js"/>
         </p:card>
         <p:card title="${it.runDetailsCard.title}">

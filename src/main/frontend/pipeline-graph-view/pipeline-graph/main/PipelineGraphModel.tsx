@@ -64,6 +64,8 @@ export interface StageInfo {
   totalDurationMillis: number;
   agent: string;
   url: string;
+
+  skeleton?: boolean;
 }
 
 interface BaseNodeInfo {

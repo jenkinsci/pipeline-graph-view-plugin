@@ -79,6 +79,7 @@ function TreeNode({ stage, selected, onSelect }: TreeNodeProps) {
               <StatusIcon
                 status={stage.state}
                 percentage={stage.completePercent}
+                skeleton={stage.skeleton}
               />
             </span>
             <span className="task-link-text">{stage.name}</span>

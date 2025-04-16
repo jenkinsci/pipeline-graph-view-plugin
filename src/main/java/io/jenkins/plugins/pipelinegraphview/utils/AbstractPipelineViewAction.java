@@ -90,6 +90,10 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
         return getBuildNumber(run.getPreviousBuild());
     }
 
+    public String getPreviousBuildUrl() {
+        return run.getPreviousBuild().getUrl();
+    }
+
     public String getNextBuildNumber() {
         return getBuildNumber(run.getNextBuild());
     }

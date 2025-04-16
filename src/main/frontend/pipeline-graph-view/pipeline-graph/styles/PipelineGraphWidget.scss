@@ -144,16 +144,16 @@ circle.halo {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 1.75rem;
+  height: 1.75rem;
 
   & > div {
     display: contents;
   }
 
   svg {
-    width: 24px;
-    height: 24px;
+    width: 1.75rem;
+    height: 1.75rem;
   }
 }
 
@@ -179,6 +179,10 @@ circle.halo {
 
 .PWGx-pipeline-big-label.pgv-graph-node--synthetic {
   font-style: italic;
+}
+
+.PWGx-pipeline-big-label.pgv-graph-node--skeleton {
+  color: var(--text-color-secondary);
 }
 
 .PWGx-pipeline-small-label.selected {

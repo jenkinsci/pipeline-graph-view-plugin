@@ -5,7 +5,7 @@ import "./status-icon.scss";
 /**
  * Visual representation of a job or build status
  */
-export default function StatusIcon({ status, percentage }: StatusIconProps) {
+export default function StatusIcon({ status, percentage, skeleton }: StatusIconProps) {
   const viewBoxSize = 512;
   const strokeWidth = status === "running" ? 60 : 36;
   const radius = (viewBoxSize - strokeWidth) / 2.45;
@@ -16,6 +16,7 @@ export default function StatusIcon({ status, percentage }: StatusIconProps) {
     <svg
       viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
       className={"pgv-status-icon " + resultToColor(status)}
+      opacity={skeleton ? 0.25 : 1}
     >
       <circle
         cx={viewBoxSize / 2}
@@ -196,4 +197,5 @@ function resultToColor(result: Result) {
 interface StatusIconProps {
   status: Result;
   percentage?: number;
+  skeleton?: boolean;
 }

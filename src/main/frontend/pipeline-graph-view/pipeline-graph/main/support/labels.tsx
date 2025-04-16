@@ -83,6 +83,9 @@ export function BigLabel({
   if (details.stage && details.stage.synthetic) {
     classNames.push("pgv-graph-node--synthetic");
   }
+  if (details.stage?.skeleton) {
+    classNames.push("pgv-graph-node--skeleton");
+  }
 
   return (
     <TruncatingLabel

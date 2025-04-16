@@ -44,6 +44,7 @@ export function Node({ node }: NodeProps) {
     <StatusIcon
       status={node.stage.state}
       percentage={node.stage.completePercent}
+      skeleton={node.stage.skeleton}
     />,
   );
 

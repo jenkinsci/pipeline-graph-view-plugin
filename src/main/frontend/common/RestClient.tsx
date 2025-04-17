@@ -38,7 +38,9 @@ export interface ConsoleLogData {
   endByte: number;
 }
 
-export async function getRunStatusFromPath(url: string): Promise<RunStatus | null> {
+export async function getRunStatusFromPath(
+  url: string,
+): Promise<RunStatus | null> {
   try {
     let response = await fetch(url + "/pipeline-graph/tree");
     if (!response.ok) throw response.statusText;

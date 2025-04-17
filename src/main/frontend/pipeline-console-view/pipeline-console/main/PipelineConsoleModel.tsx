@@ -10,7 +10,6 @@ export type {
   StageInfo,
   StageType,
 } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
-export { default as startPollingPipelineStatus } from "../../../pipeline-graph-view/pipeline-graph/main/support/startPollingPipelineStatus";
 export { pollUntilComplete } from "../../../common/Poller";
 export * from "../../../common/RestClient";
 

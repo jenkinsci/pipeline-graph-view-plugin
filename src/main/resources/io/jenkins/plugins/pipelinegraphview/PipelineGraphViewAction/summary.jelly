@@ -4,7 +4,9 @@
   <j:if test="${it.showGraphOnBuildPage}">
     <p:symbols />
     <div class="pgw-graph-container">
-      <div id="graph" data-previous-run="${it.previousBuildUrl != null ? rootURL + '/' + it.previousBuildUrl : null}" />
+      <div id="graph"
+           data-current-run-path="${rootURL + '/' + it.buildUrl}"
+           data-previous-run-path="${it.previousBuildUrl != null ? rootURL + '/' + it.previousBuildUrl : null}" />
     </div>
     <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/pipeline-graph-view-bundle.js"/>
   </j:if>

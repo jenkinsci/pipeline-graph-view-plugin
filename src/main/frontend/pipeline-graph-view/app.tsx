@@ -6,11 +6,17 @@ import React from "react";
 
 export default function App() {
   const rootElement = document.getElementById("graph");
-  const previousPath = rootElement?.dataset.previousRun;
+  const currentRunPath = rootElement?.dataset.currentRunPath!;
+  const previousRunPath = rootElement?.dataset.previousRunPath;
 
   return (
     <div>
-      <PipelineGraph stages={[]} collapsed={false} previousPath={previousPath} />
+      <PipelineGraph
+        stages={[]}
+        collapsed={false}
+        path={currentRunPath}
+        previousPath={previousRunPath}
+      />
     </div>
   );
-};
+}

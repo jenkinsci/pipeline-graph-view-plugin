@@ -5,7 +5,11 @@ import "./status-icon.scss";
 /**
  * Visual representation of a job or build status
  */
-export default function StatusIcon({ status, percentage, skeleton }: StatusIconProps) {
+export default function StatusIcon({
+  status,
+  percentage,
+  skeleton,
+}: StatusIconProps) {
   const viewBoxSize = 512;
   const strokeWidth = status === "running" ? 50 : 0;
   const radius = (viewBoxSize - strokeWidth) / 2.2;

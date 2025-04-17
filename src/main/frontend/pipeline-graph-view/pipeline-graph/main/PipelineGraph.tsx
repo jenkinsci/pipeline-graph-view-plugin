@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 
-import startPollingPipelineStatus from "./support/startPollingPipelineStatus";
 import {
   CompositeConnection,
   defaultLayout,
@@ -18,8 +17,7 @@ import {
   SequentialContainerLabel,
 } from "./support/labels";
 import { GraphConnections } from "./support/connections";
-import { getRunStatusFromPath } from "../../../common/RestClient";
-import PreviousRunThing from "./support/PreviousRunThing";
+import useLewis from "../../../common/tree-api";
 
 export function PipelineGraph(props: Props) {
   const {
@@ -31,6 +29,8 @@ export function PipelineGraph(props: Props) {
     previousPath,
     collapsed,
   } = props;
+
+  const { run } = useLewis({ path: path, previousPath: previousPath });
 
   const [nodeColumns, setNodeColumns] = useState<NodeColumn[]>([]);
   const [connections, setConnections] = useState<CompositeConnection[]>([]);
@@ -48,55 +48,14 @@ export function PipelineGraph(props: Props) {
   >(selectedStage);
 
   useEffect(() => {
-    console.log(previousPath);
+    if (run) {
+      updateLayout(run.stages);
 
-    // TODO - tidy this up
-    if (previousPath) {
-      getRunStatusFromPath(previousPath).then(r => {
-        updateLayout(markSkeleton(r!.stages))
-
-        // poll stuff
-        const onPipelineDataReceived = (data: { stages: StageInfo[] }) => {
-          if (setStages) setStages(data.stages);
-
-          updateLayout(mergeStageInfos(markSkeleton(r!.stages), data.stages));
-
-          console.log("New", data.stages);
-        };
-
-        const onPollingError = (err: Error) => {
-          console.log("There was an error when polling the pipeline status", err);
-        };
-
-        const onPipelineComplete = () => undefined;
-
-        startPollingPipelineStatus(
-          onPipelineDataReceived,
-          onPollingError,
-          onPipelineComplete,
-          path ?? getTreePath(),
-        );
-      });
-    } else {
-    //   const onPipelineDataReceived = (data: { stages: StageInfo[] }) => {
-    //     if (setStages) setStages(data.stages);
-    //     updateLayout(data.stages);
-    //   };
-    //
-    //   const onPollingError = (err: Error) => {
-    //     console.log("There was an error when polling the pipeline status", err);
-    //   };
-    //
-    //   const onPipelineComplete = () => undefined;
-    //
-    //   startPollingPipelineStatus(
-    //     onPipelineDataReceived,
-    //     onPollingError,
-    //     onPipelineComplete,
-    //     path ?? getTreePath(),
-    //   );
+      if (setStages) {
+        setStages(run.stages);
+      }
     }
-  }, []);
+  }, [run]);
 
   useEffect(() => {
     let needsLayout = false;
@@ -121,19 +80,8 @@ export function PipelineGraph(props: Props) {
     }
   }, [layout, selectedStage, stages]);
 
-  const getTreePath = () => {
-    const url = new URL(window.location.href);
-    return url.pathname.endsWith("pipeline-graph/")
-      ? "tree"
-      : "pipeline-graph/tree";
-  };
-
   const updateLayout = (newStages: StageInfo[] = []) => {
-    const newLayout = layoutGraph(
-      newStages,
-      layoutState,
-      collapsed ?? false,
-    );
+    const newLayout = layoutGraph(newStages, layoutState, collapsed ?? false);
     setNodeColumns(newLayout.nodeColumns);
     setConnections(newLayout.connections);
     setBigLabels(newLayout.bigLabels);
@@ -145,9 +93,7 @@ export function PipelineGraph(props: Props) {
 
   const stageIsSelected = (stage?: StageInfo): boolean => {
     return (
-      (currentSelectedStage &&
-        stage &&
-        currentSelectedStage.id === stage.id) ||
+      (currentSelectedStage && stage && currentSelectedStage.id === stage.id) ||
       false
     );
   };
@@ -232,47 +178,13 @@ interface Props {
   layout?: Partial<LayoutInfo>;
   setStages?: (stages: Array<StageInfo>) => void;
   selectedStage?: StageInfo;
-  path?: string;
   /**
-   * Optional path of the previous build
+   * Path of the current run
+   */
+  path: string;
+  /**
+   * Optional path of the previous run
    */
   previousPath?: string;
   collapsed?: boolean;
 }
-
-export const markSkeleton = (stages: StageInfo[]): StageInfo[] =>
-  stages.map(s => ({
-    ...s,
-    skeleton: true,
-    completePercent: 0, // TODO - verify we need
-    children: markSkeleton(s.children ?? [])
-  }));
-
-export const mergeStageInfos = (skeletons: StageInfo[], incoming: StageInfo[]): StageInfo[] => {
-  const previous: PreviousRunThing = new PreviousRunThing(skeletons);
-  const merged = incoming.map(incomingItem => {
-    const match = skeletons.find(s => s.name === incomingItem.name);
-
-    return {
-      ...(match ?? {}),
-      ...incomingItem,
-      skeleton: false,
-      completePercent: previous.estimateCompletion(incomingItem),
-      children: mergeStageInfos(match?.children ?? [], incomingItem.children ?? [])
-    };
-  });
-
-  const unmatchedSkeletons = skeletons.filter(
-    s => !incoming.some(i => i.name === s.name)
-  );
-
-  return [...merged, ...unmatchedSkeletons];
-};
-
-// Optional helper: strip skeleton flags from incoming before replacing
-export const stripSkeleton = (stage: StageInfo): StageInfo => ({
-  ...stage,
-  skeleton: false,
-  completePercent: 0,
-  children: stage.children?.map(stripSkeleton) ?? []
-});

@@ -1,5 +1,8 @@
-import { Result, StageInfo } from "./PipelineGraphModel";
-import { mergeStageInfos } from "../../../common/tree-api";
+import {
+  Result,
+  StageInfo,
+} from "../../pipeline-graph-view/pipeline-graph/main";
+import { mergeStageInfos } from "./stage-merge";
 
 describe("mergeStageInfos", () => {
   it("merges matching items by name", () => {
@@ -57,7 +60,7 @@ describe("mergeStageInfos", () => {
     expect(result[0].name).toBe("Build");
     expect(result[0].state).toBe("running");
     expect(result[0].skeleton).toBe(false); // Comes from incoming
-    expect(result[1].skeleton).toBe(false); // Comes from incoming
+    expect(result[1].skeleton).toBe(true);
   });
 
   it("recursively merges children", () => {

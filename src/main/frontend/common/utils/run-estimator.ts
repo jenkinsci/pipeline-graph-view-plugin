@@ -1,6 +1,9 @@
-import { Result, StageInfo } from "../PipelineGraphModel";
+import {
+  Result,
+  StageInfo,
+} from "../../pipeline-graph-view/pipeline-graph/main";
 
-export default class PreviousRunThing {
+export default class RunEstimator {
   private stagesLookup: Map<String, StageInfo>;
 
   constructor(stages: StageInfo[]) {

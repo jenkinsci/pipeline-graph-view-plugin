@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { getRunStatusFromPath } from "./RestClient";
 import { StageInfo } from "../pipeline-graph-view/pipeline-graph/main";
 import startPollingPipelineStatus from "../pipeline-graph-view/pipeline-graph/main/support/startPollingPipelineStatus";
-import PreviousRunThing from "../pipeline-graph-view/pipeline-graph/main/support/PreviousRunThing";
+import { mergeStageInfos } from "./utils/stage-merge";
 
 /**
  * Polls a run, stopping once the run has completed
@@ -23,7 +23,7 @@ export default function useRunPoller({
           complete: boolean;
         }) => {
           setRun({
-            stages: mergeStageInfos(markSkeleton(r!.stages), data.stages),
+            stages: mergeStageInfos(r!.stages, data.stages),
           });
         };
 
@@ -78,45 +78,3 @@ interface RunPollerProps {
   currentRunPath: string;
   previousRunPath?: string;
 }
-
-export const markSkeleton = (stages: StageInfo[]): StageInfo[] =>
-  stages.map((s) => ({
-    ...s,
-    skeleton: true,
-    completePercent: 0,
-    children: markSkeleton(s.children ?? []),
-  }));
-
-export const mergeStageInfos = (
-  skeletons: StageInfo[],
-  incoming: StageInfo[],
-): StageInfo[] => {
-  const previous: PreviousRunThing = new PreviousRunThing(skeletons);
-  const merged = incoming.map((incomingItem) => {
-    const match = skeletons.find((s) => s.name === incomingItem.name);
-
-    return {
-      ...(match ?? {}),
-      ...incomingItem,
-      skeleton: false,
-      completePercent: previous.estimateCompletion(incomingItem),
-      children: mergeStageInfos(
-        match?.children ?? [],
-        incomingItem.children ?? [],
-      ),
-    };
-  });
-
-  const unmatchedSkeletons = skeletons.filter(
-    (s) => !incoming.some((i) => i.name === s.name),
-  );
-
-  return [...merged, ...unmatchedSkeletons];
-};
-
-export const stripSkeleton = (stage: StageInfo): StageInfo => ({
-  ...stage,
-  skeleton: false,
-  completePercent: 0,
-  children: stage.children?.map(stripSkeleton) ?? [],
-});

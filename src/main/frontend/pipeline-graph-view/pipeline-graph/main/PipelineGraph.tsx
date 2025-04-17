@@ -243,7 +243,7 @@ export const markSkeleton = (stages: StageInfo[]): StageInfo[] =>
   stages.map(s => ({
     ...s,
     skeleton: true,
-    completePercent: 0,
+    completePercent: 0, // TODO - verify we need
     children: markSkeleton(s.children ?? [])
   }));
 
@@ -255,6 +255,7 @@ export const mergeStageInfos = (skeletons: StageInfo[], incoming: StageInfo[]): 
       ...(match ?? {}),
       ...incomingItem,
       skeleton: false,
+      ...(match ? {completePercent: (incomingItem.totalDurationMillis  / match?.totalDurationMillis) * 100} : {}),
       children: mergeStageInfos(match?.children ?? [], incomingItem.children ?? [])
     };
   });

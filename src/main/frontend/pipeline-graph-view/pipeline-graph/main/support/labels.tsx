@@ -13,7 +13,6 @@ interface RenderBigLabelProps {
   measuredHeight: number;
   selectedStage?: StageInfo;
   isStageSelected: (stage?: StageInfo) => boolean;
-  isComplete: boolean;
 }
 
 /**

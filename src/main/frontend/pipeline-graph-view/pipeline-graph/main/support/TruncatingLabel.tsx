@@ -3,9 +3,10 @@ import React, { CSSProperties } from "react";
 export function TruncatingLabel({ children, style = {}, className = "" }: TruncatingLabelProps) {
 
   const mergedStyle: React.CSSProperties = {
+    display: '-webkit-box',
     overflow: "hidden",
-    textOverflow: "ellipsis",
-    whiteSpace: 'pre',
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: "vertical",
     ...style,
   };
 

@@ -19,6 +19,7 @@ import {
 } from "./support/labels";
 import { GraphConnections } from "./support/connections";
 import { getRunStatusFromPath } from "../../../common/RestClient";
+import PreviousRunThing from "./support/PreviousRunThing";
 
 export function PipelineGraph(props: Props) {
   const {
@@ -248,6 +249,7 @@ export const markSkeleton = (stages: StageInfo[]): StageInfo[] =>
   }));
 
 export const mergeStageInfos = (skeletons: StageInfo[], incoming: StageInfo[]): StageInfo[] => {
+  const previous: PreviousRunThing = new PreviousRunThing(skeletons);
   const merged = incoming.map(incomingItem => {
     const match = skeletons.find(s => s.name === incomingItem.name);
 
@@ -255,7 +257,7 @@ export const mergeStageInfos = (skeletons: StageInfo[], incoming: StageInfo[]): 
       ...(match ?? {}),
       ...incomingItem,
       skeleton: false,
-      ...(match ? {completePercent: (incomingItem.totalDurationMillis  / match?.totalDurationMillis) * 100} : {}),
+      completePercent: previous.estimateCompletion(incomingItem),
       children: mergeStageInfos(match?.children ?? [], incomingItem.children ?? [])
     };
   });

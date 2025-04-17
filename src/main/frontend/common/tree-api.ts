@@ -37,7 +37,7 @@ export default function useLewis({ path, previousPath }: LewisProps) {
           onPipelineDataReceived,
           onPollingError,
           onPipelineComplete,
-          path + "pipeline-graph/tree",
+          path,
         );
       });
     } else {
@@ -58,7 +58,7 @@ export default function useLewis({ path, previousPath }: LewisProps) {
         onPipelineDataReceived,
         onPollingError,
         onPipelineComplete,
-        path + "pipeline-graph/tree",
+        path,
       );
     }
   }, []);

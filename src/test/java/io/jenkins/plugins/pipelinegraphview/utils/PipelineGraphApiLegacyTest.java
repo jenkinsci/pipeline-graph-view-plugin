@@ -25,8 +25,7 @@ class PipelineGraphApiLegacyTest {
         String stagesString = TestUtils.collectStagesAsString(
                 stages,
                 (PipelineStage stage) -> String.format(
-                        "{%d,%s,%s,%s,%s}",
-                        stage.getCompletePercent(),
+                        "{%s,%s,%s,%s}",
                         stage.getName(),
                         stage.getTitle(),
                         stage.getType(),
@@ -35,17 +34,16 @@ class PipelineGraphApiLegacyTest {
                 stagesString,
                 is(String.join(
                         "",
-                        "{0,unstable-one,unstable-one,STAGE,unstable},",
-                        "{0,success,success,STAGE,success},",
-                        "{0,unstable-two,unstable-two,STAGE,unstable},",
-                        "{0,failure,failure,STAGE,failure}")));
+                        "{unstable-one,unstable-one,STAGE,unstable},",
+                        "{success,success,STAGE,success},",
+                        "{unstable-two,unstable-two,STAGE,unstable},",
+                        "{failure,failure,STAGE,failure}")));
 
         PipelineGraph newGraph = api.createShallowTree();
         String newStagesString = TestUtils.collectStagesAsString(
                 newGraph.getStages(),
                 (PipelineStage stage) -> String.format(
-                        "{%d,%s,%s,%s,%s}",
-                        stage.getCompletePercent(),
+                        "{%s,%s,%s,%s}",
                         stage.getName(),
                         stage.getTitle(),
                         stage.getType(),

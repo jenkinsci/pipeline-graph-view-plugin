@@ -50,11 +50,6 @@ public class AbstractPipelineNode {
         return state;
     }
 
-    // TODO: 16/04/2025 Delete this
-    public int getCompletePercent() {
-        return 0;
-    }
-
     public String getType() {
         return type;
     }

@@ -1,9 +1,12 @@
 import React, { CSSProperties } from "react";
 
-export function TruncatingLabel({ children, style = {}, className = "" }: TruncatingLabelProps) {
-
+export function TruncatingLabel({
+  children,
+  style = {},
+  className = "",
+}: TruncatingLabelProps) {
   const mergedStyle: React.CSSProperties = {
-    display: '-webkit-box',
+    display: "-webkit-box",
     overflow: "hidden",
     WebkitLineClamp: 2,
     WebkitBoxOrient: "vertical",
@@ -11,10 +14,7 @@ export function TruncatingLabel({ children, style = {}, className = "" }: Trunca
   };
 
   return (
-    <div
-      style={mergedStyle}
-      className={`TruncatingLabel ${className}`.trim()}
-    >
+    <div style={mergedStyle} className={`TruncatingLabel ${className}`.trim()}>
       {children}
     </div>
   );

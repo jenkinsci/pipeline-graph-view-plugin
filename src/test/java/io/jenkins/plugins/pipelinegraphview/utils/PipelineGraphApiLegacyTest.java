@@ -25,11 +25,7 @@ class PipelineGraphApiLegacyTest {
         String stagesString = TestUtils.collectStagesAsString(
                 stages,
                 (PipelineStage stage) -> String.format(
-                        "{%s,%s,%s,%s}",
-                        stage.getName(),
-                        stage.getTitle(),
-                        stage.getType(),
-                        stage.getState()));
+                        "{%s,%s,%s,%s}", stage.getName(), stage.getTitle(), stage.getType(), stage.getState()));
         assertThat(
                 stagesString,
                 is(String.join(
@@ -43,11 +39,7 @@ class PipelineGraphApiLegacyTest {
         String newStagesString = TestUtils.collectStagesAsString(
                 newGraph.getStages(),
                 (PipelineStage stage) -> String.format(
-                        "{%s,%s,%s,%s}",
-                        stage.getName(),
-                        stage.getTitle(),
-                        stage.getType(),
-                        stage.getState()));
+                        "{%s,%s,%s,%s}", stage.getName(), stage.getTitle(), stage.getType(), stage.getState()));
         assertThat(newStagesString, is(stagesString));
     }
 

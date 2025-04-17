@@ -8,7 +8,7 @@ class PipelineStageInternal {
 
     private String name;
     private List<String> parents;
-    private PipelineStatus state;
+    private String state; // TODO enum
     private String type; // TODO enum
     private String title;
     private String id;
@@ -23,7 +23,7 @@ class PipelineStageInternal {
             String id,
             String name,
             List<String> parents,
-            PipelineStatus state,
+            String state,
             String type,
             String title,
             boolean synthetic,
@@ -52,7 +52,7 @@ class PipelineStageInternal {
         this.sequential = sequential;
     }
 
-    public void setState(PipelineStatus state) {
+    public void setState(String state) {
         this.state = state;
     }
 
@@ -92,7 +92,7 @@ class PipelineStageInternal {
         return parents;
     }
 
-    public PipelineStatus getState() {
+    public String getState() {
         return state;
     }
 
@@ -120,16 +120,12 @@ class PipelineStageInternal {
         this.agent = aAgent;
     }
 
-    public TimingInfo getTimingInfo() {
-        return timingInfo;
-    }
-
     public PipelineStage toPipelineStage(List<PipelineStage> children, String runUrl) {
         return new PipelineStage(
                 id,
                 name,
                 children,
-                state.toString(),
+                state,
                 type,
                 title,
                 seqContainerName,

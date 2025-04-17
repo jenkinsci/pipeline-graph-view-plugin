@@ -5,7 +5,7 @@
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 0.5rem;
-  padding: 0.375rem 1rem;
+  padding: 0.375rem calc(1rem + var(--jenkins-border-width));
   border-radius: var(--form-input-border-radius);
   margin-bottom: 0.5rem;
   z-index: 101;

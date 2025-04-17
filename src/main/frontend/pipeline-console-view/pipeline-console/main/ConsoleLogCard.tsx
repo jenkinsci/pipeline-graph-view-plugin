@@ -9,6 +9,7 @@ import {
 
 import ConsoleLogModal from "./ConsoleLogModal";
 import StatusIcon from "../../../common/components/status-icon";
+import { total } from "../../../common/utils/timings";
 
 const ConsoleLogStream = React.lazy(() => import("./ConsoleLogStream"));
 
@@ -90,7 +91,7 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
               color: "var(--text-color-secondary)",
             }}
           >
-            {props.step.totalDurationMillis}
+            {total(props.step.totalDurationMillis)}
           </span>
 
           <svg

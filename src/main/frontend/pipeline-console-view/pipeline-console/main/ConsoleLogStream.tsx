@@ -43,7 +43,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
         appendInterval.current = setInterval(() => {
           props.handleMoreConsoleClick(
             props.step.id,
-            props.logBuffer.startByte
+            props.logBuffer.startByte,
           );
         }, 1000);
       }
@@ -53,11 +53,14 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
     }
   }, [stickToBottom, props.step, props.logBuffer]);
 
-  const consoleLineHeightCallback = useCallback((height: number) => {
-    if (height > maxConsoleLineHeight || maxConsoleLineHeight === 1) {
-      setMaxConsoleLineHeight(height);
-    }
-  }, [maxConsoleLineHeight]);
+  const consoleLineHeightCallback = useCallback(
+    (height: number) => {
+      if (height > maxConsoleLineHeight || maxConsoleLineHeight === 1) {
+        setMaxConsoleLineHeight(height);
+      }
+    },
+    [maxConsoleLineHeight],
+  );
 
   const scrollListBottom = () => {
     if (virtuosoRef.current && props.logBuffer.lines) {

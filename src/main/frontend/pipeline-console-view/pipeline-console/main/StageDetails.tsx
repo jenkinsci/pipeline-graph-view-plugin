@@ -4,9 +4,10 @@ import {
   StageInfo,
 } from "../../../pipeline-graph-view/pipeline-graph/main";
 import "./stage-details.scss";
-import { getSymbolForResult } from "../../../pipeline-graph-view/pipeline-graph/main/support/StatusIcons";
 import StageNodeLink from "./StageNodeLink";
 import DropdownWrapper from "./DropdownWrapper";
+import StatusIcon from "../../../common/components/status-icon";
+import { paused, started, total } from "../../../common/utils/timings";
 
 export default function StageDetails({ stage }: StageDetailsProps) {
   if (!stage) {
@@ -19,7 +20,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
         <div className={"pgv-stage-details__running"} />
       )}
       <div>
-        {getSymbolForResult(stage.state)}
+        <StatusIcon status={stage.state} />
         <h2>{stage.name}</h2>
       </div>
       <ul>
@@ -38,7 +39,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
               fill="currentColor"
             />
           </svg>
-          {stage.totalDurationMillis}
+          {total(stage.totalDurationMillis)}
         </li>
         <li>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
@@ -58,10 +59,9 @@ export default function StageDetails({ stage }: StageDetailsProps) {
               d="M256 128v144h96"
             />
           </svg>
-          {stage.startTimeMillis}
+          {started(stage.startTimeMillis)}
         </li>
-        {/*TODO - hacky*/}
-        {!stage.pauseDurationMillis.includes(" 0 ms") && (
+        {stage.pauseDurationMillis !== 0 && (
           <li>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
               <path
@@ -77,7 +77,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
                 fill="currentColor"
               />
             </svg>
-            {stage.pauseDurationMillis}
+            {paused(stage.pauseDurationMillis)}
           </li>
         )}
         <StageNodeLink agent={stage.agent} />

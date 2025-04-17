@@ -8,7 +8,7 @@ import {
 } from "./PipelineConsoleModel";
 
 import ConsoleLogModal from "./ConsoleLogModal";
-import { getStepStatus } from "../../../step-status/StepStatus";
+import StatusIcon from "../../../common/components/status-icon";
 
 const ConsoleLogStream = React.lazy(() => import("./ConsoleLogStream"));
 
@@ -58,12 +58,6 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
     return `${(size / gib).toFixed(2)}GiB`;
   };
 
-  const statusIcon = getStepStatus(
-    props.step.state,
-    props.step.completePercent,
-    10,
-  );
-
   return (
     <div className={"pgv-step-detail-group"} key={`step-card-${props.step.id}`}>
       <button
@@ -75,7 +69,10 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
         key={`step-action-area-${props.step.id}`}
       >
         <div className="pgv-step-detail-header__content">
-          {statusIcon}
+          <StatusIcon
+            status={props.step.state}
+            percentage={props.step.completePercent}
+          />
           <span style={{ fontWeight: "450" }}>{props.step.name}</span>
           <span
             style={{

@@ -5,7 +5,7 @@ import {
 } from "../../../pipeline-graph-view/pipeline-graph/main/";
 import "./data-tree-view.scss";
 import StatusIcon from "../../../common/status-icon";
-import { total } from "../../../common/Timings";
+import { total } from "../../../common/timings";
 
 export default function DataTreeView({
   stages,

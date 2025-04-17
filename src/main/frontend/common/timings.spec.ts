@@ -1,4 +1,4 @@
-import { total, paused, started } from "./Timings";
+import { total, paused, started } from "./timings";
 
 describe("Timings", () => {
   describe("Total", () => {

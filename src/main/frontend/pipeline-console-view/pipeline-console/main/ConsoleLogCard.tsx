@@ -25,7 +25,7 @@ import ConsoleLogModal from "./ConsoleLogModal";
 import ResizeIcon from "./ResizeIcon";
 
 import StatusIcon from "../../../common/status-icon";
-import { total } from "../../../common/Timings";
+import { total } from "../../../common/timings";
 
 const ConsoleLogStream = lazy(() => import("./ConsoleLogStream"));
 

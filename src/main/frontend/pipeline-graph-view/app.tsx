@@ -14,8 +14,8 @@ export default function App() {
       <PipelineGraph
         stages={[]}
         collapsed={false}
-        path={currentRunPath}
-        previousPath={previousRunPath}
+        currentRunPath={currentRunPath}
+        previousRunPath={previousRunPath}
       />
     </div>
   );

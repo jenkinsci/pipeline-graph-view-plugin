@@ -25,14 +25,14 @@ export function PipelineGraph(props: Props) {
     layout,
     setStages,
     selectedStage,
-    path,
-    previousPath,
+    currentRunPath,
+    previousRunPath,
     collapsed,
   } = props;
 
   const { run } = useRunPoller({
-    currentRunPath: path,
-    previousRunPath: previousPath,
+    currentRunPath: currentRunPath,
+    previousRunPath: previousRunPath,
   });
 
   const [nodeColumns, setNodeColumns] = useState<NodeColumn[]>([]);
@@ -184,10 +184,10 @@ interface Props {
   /**
    * Path of the current run
    */
-  path: string;
+  currentRunPath: string;
   /**
    * Optional path of the previous run
    */
-  previousPath?: string;
+  previousRunPath?: string;
   collapsed?: boolean;
 }

@@ -7,10 +7,7 @@ export default class RunEstimator {
   private stagesLookup: Map<String, StageInfo>;
 
   constructor(stages: StageInfo[]) {
-    this.stagesLookup = new Map();
-    stages.forEach((stage) => {
-      this.stagesLookup.set(stage.name, stage);
-    });
+    this.stagesLookup = new Map(stages.map((stage) => [stage.name, stage]));
   }
 
   estimateCompletion(stage: StageInfo): number {

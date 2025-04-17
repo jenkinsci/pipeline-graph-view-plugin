@@ -15,6 +15,8 @@ export default function useRunPoller({
   const [run, setRun] = useState<Run>();
 
   useEffect(() => {
+    const onPipelineComplete = () => undefined;
+
     if (previousRunPath) {
       getRunStatusFromPath(previousRunPath).then((r) => {
         // This should be a Result - not 'complete'
@@ -34,8 +36,6 @@ export default function useRunPoller({
           );
         };
 
-        const onPipelineComplete = () => undefined;
-
         startPollingPipelineStatus(
           onPipelineDataReceived,
           onPollingError,
@@ -53,8 +53,6 @@ export default function useRunPoller({
       const onPollingError = (err: Error) => {
         console.log("There was an error when polling the pipeline status", err);
       };
-
-      const onPipelineComplete = () => undefined;
 
       startPollingPipelineStatus(
         onPipelineDataReceived,

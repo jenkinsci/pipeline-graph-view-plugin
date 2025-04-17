@@ -158,8 +158,40 @@ circle.halo {
     z-index: -1;
   }
 
-  & > div {
-    display: contents;
+  &[href] {
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 1px;
+      border-radius: 50%;
+      z-index: -1;
+      transition: var(--standard-transition);
+      box-shadow: 0 0 0 0.5rem transparent;
+    }
+
+    &:focus-visible {
+      outline: none;
+    }
+
+    &:hover {
+      &::after {
+        background: oklch(from var(--color) l c h / 0.1);
+      }
+    }
+
+    &:active,
+    &:focus {
+      &::after {
+        background: oklch(from var(--color) l c h / 0.15);
+        box-shadow: 0 0 0 0.25rem oklch(from var(--color) l c h / 0.15);
+      }
+    }
+
+    &:focus-visible {
+      &::after {
+        box-shadow: 0 0 0 0.2rem var(--text-color) !important;
+      }
+    }
   }
 
   svg {

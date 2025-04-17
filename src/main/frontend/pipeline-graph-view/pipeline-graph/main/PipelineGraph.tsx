@@ -17,7 +17,7 @@ import {
   SequentialContainerLabel,
 } from "./support/labels";
 import { GraphConnections } from "./support/connections";
-import useLewis from "../../../common/tree-api";
+import useRunPoller from "../../../common/tree-api";
 
 export function PipelineGraph(props: Props) {
   const {
@@ -30,7 +30,10 @@ export function PipelineGraph(props: Props) {
     collapsed,
   } = props;
 
-  const { run } = useLewis({ path: path, previousPath: previousPath });
+  const { run } = useRunPoller({
+    currentRunPath: path,
+    previousRunPath: previousPath,
+  });
 
   const [nodeColumns, setNodeColumns] = useState<NodeColumn[]>([]);
   const [connections, setConnections] = useState<CompositeConnection[]>([]);

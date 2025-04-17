@@ -1,25 +1,28 @@
 import { useEffect, useState } from "react";
 import { getRunStatusFromPath } from "./RestClient";
-import { Result, StageInfo } from "../pipeline-graph-view/pipeline-graph/main";
+import { StageInfo } from "../pipeline-graph-view/pipeline-graph/main";
 import startPollingPipelineStatus from "../pipeline-graph-view/pipeline-graph/main/support/startPollingPipelineStatus";
 import PreviousRunThing from "../pipeline-graph-view/pipeline-graph/main/support/PreviousRunThing";
 
 /**
- *
+ * Polls a run, stopping once the run has completed
+ * Optionally retrieves data from the prior run and overlays the new run on top
  */
-export default function useLewis({ path, previousPath }: LewisProps) {
+export default function useRunPoller({
+  currentRunPath,
+  previousRunPath,
+}: RunPollerProps) {
   const [run, setRun] = useState<Run>();
 
   useEffect(() => {
-    if (previousPath) {
-      getRunStatusFromPath(previousPath).then((r) => {
+    if (previousRunPath) {
+      getRunStatusFromPath(previousRunPath).then((r) => {
         // This should be a Result - not 'complete'
         const onPipelineDataReceived = (data: {
           stages: StageInfo[];
           complete: boolean;
         }) => {
           setRun({
-            status: Result.success,
             stages: mergeStageInfos(markSkeleton(r!.stages), data.stages),
           });
         };
@@ -37,13 +40,12 @@ export default function useLewis({ path, previousPath }: LewisProps) {
           onPipelineDataReceived,
           onPollingError,
           onPipelineComplete,
-          path,
+          currentRunPath,
         );
       });
     } else {
       const onPipelineDataReceived = (data: { stages: StageInfo[] }) => {
         setRun({
-          status: Result.success,
           stages: data.stages,
         });
       };
@@ -58,7 +60,7 @@ export default function useLewis({ path, previousPath }: LewisProps) {
         onPipelineDataReceived,
         onPollingError,
         onPipelineComplete,
-        path,
+        currentRunPath,
       );
     }
   }, []);
@@ -69,20 +71,19 @@ export default function useLewis({ path, previousPath }: LewisProps) {
 }
 
 interface Run {
-  status: Result;
   stages: StageInfo[];
 }
 
-interface LewisProps {
-  path: string;
-  previousPath?: string;
+interface RunPollerProps {
+  currentRunPath: string;
+  previousRunPath?: string;
 }
 
 export const markSkeleton = (stages: StageInfo[]): StageInfo[] =>
   stages.map((s) => ({
     ...s,
     skeleton: true,
-    completePercent: 0, // TODO - verify we need
+    completePercent: 0,
     children: markSkeleton(s.children ?? []),
   }));
 
@@ -113,7 +114,6 @@ export const mergeStageInfos = (
   return [...merged, ...unmatchedSkeletons];
 };
 
-// Optional helper: strip skeleton flags from incoming before replacing
 export const stripSkeleton = (stage: StageInfo): StageInfo => ({
   ...stage,
   skeleton: false,

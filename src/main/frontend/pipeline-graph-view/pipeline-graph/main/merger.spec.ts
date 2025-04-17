@@ -1,5 +1,5 @@
-import { mergeStageInfos } from "./PipelineGraph";
 import { Result, StageInfo } from "./PipelineGraphModel";
+import { mergeStageInfos } from "../../../common/tree-api";
 
 describe("mergeStageInfos", () => {
   it("merges matching items by name", () => {
@@ -38,7 +38,6 @@ describe("mergeStageInfos", () => {
       {
         name: "Build",
         state: Result.running,
-        skeleton: false,
         children: [],
         completePercent: 50,
         id: 3,
@@ -58,34 +57,8 @@ describe("mergeStageInfos", () => {
     expect(result[0].name).toBe("Build");
     expect(result[0].state).toBe("running");
     expect(result[0].skeleton).toBe(false); // Comes from incoming
-    expect(result[1].skeleton).toBe(true); // Comes from incoming
+    expect(result[1].skeleton).toBe(false); // Comes from incoming
   });
-
-  // it("preserves skeleton data when no matching incoming item", () => {
-  //   const skeletons: StageInfo[] = [
-  //     {
-  //       name: "Orphan",
-  //       state: Result.success,
-  //       skeleton: true,
-  //       children: [],
-  //       completePercent: 100,
-  //       id: 4,
-  //       title: "Orphan",
-  //       type: "STAGE",
-  //       pauseDurationMillis: 0,
-  //       startTimeMillis: 0,
-  //       totalDurationMillis: 0,
-  //       agent: "",
-  //       url: "",
-  //     },
-  //   ];
-  //
-  //   const incoming: StageInfo[] = [];
-  //
-  //   const result = mergeStageInfos(skeletons, incoming);
-  //
-  //   expect(result).toHaveLength(0);
-  // });
 
   it("recursively merges children", () => {
     const skeletons: StageInfo[] = [

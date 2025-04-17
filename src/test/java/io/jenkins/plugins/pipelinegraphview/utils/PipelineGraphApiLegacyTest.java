@@ -25,31 +25,21 @@ class PipelineGraphApiLegacyTest {
         String stagesString = TestUtils.collectStagesAsString(
                 stages,
                 (PipelineStage stage) -> String.format(
-                        "{%d,%s,%s,%s,%s}",
-                        stage.getCompletePercent(),
-                        stage.getName(),
-                        stage.getTitle(),
-                        stage.getType(),
-                        stage.getState()));
+                        "{%s,%s,%s,%s}", stage.getName(), stage.getTitle(), stage.getType(), stage.getState()));
         assertThat(
                 stagesString,
                 is(String.join(
                         "",
-                        "{50,unstable-one,unstable-one,STAGE,unstable},",
-                        "{50,success,success,STAGE,success},",
-                        "{50,unstable-two,unstable-two,STAGE,unstable},",
-                        "{50,failure,failure,STAGE,failure}")));
+                        "{unstable-one,unstable-one,STAGE,unstable},",
+                        "{success,success,STAGE,success},",
+                        "{unstable-two,unstable-two,STAGE,unstable},",
+                        "{failure,failure,STAGE,failure}")));
 
         PipelineGraph newGraph = api.createShallowTree();
         String newStagesString = TestUtils.collectStagesAsString(
                 newGraph.getStages(),
                 (PipelineStage stage) -> String.format(
-                        "{%d,%s,%s,%s,%s}",
-                        stage.getCompletePercent(),
-                        stage.getName(),
-                        stage.getTitle(),
-                        stage.getType(),
-                        stage.getState()));
+                        "{%s,%s,%s,%s}", stage.getName(), stage.getTitle(), stage.getType(), stage.getState()));
         assertThat(newStagesString, is(stagesString));
     }
 

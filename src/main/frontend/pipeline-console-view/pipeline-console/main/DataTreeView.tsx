@@ -3,8 +3,9 @@ import {
   Result,
   StageInfo,
 } from "../../../pipeline-graph-view/pipeline-graph/main/";
-import StepStatus from "../../../step-status/StepStatus";
 import "./data-tree-view.scss";
+import { total } from "../../../common/utils/timings";
+import StatusIcon from "../../../common/components/status-icon";
 
 export default function DataTreeView({
   stages,
@@ -74,15 +75,17 @@ const TreeNode = React.memo(({ stage, selected, onSelect }: TreeNodeProps) => {
           }`}
         >
           <div>
-            <StepStatus
-              status={stage.state}
-              text={stage.name}
-              key={`status-${stage.id}`}
-              percent={stage.completePercent}
-            />
+            <span className="task-icon-link">
+              <StatusIcon
+                status={stage.state}
+                percentage={stage.completePercent}
+                skeleton={stage.skeleton}
+              />
+            </span>
+            <span className="task-link-text">{stage.name}</span>
             {stage.state === Result.running && (
               <span className="pgv-tree-item__description">
-                {stage.totalDurationMillis}
+                {total(stage.totalDurationMillis)}
               </span>
             )}
           </div>

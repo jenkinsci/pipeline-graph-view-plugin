@@ -5,17 +5,12 @@ import { RunInfo } from "../MultiPipelineGraphModel";
  * Will only stop once the run is finished.
  */
 export default function startPollingRunsStatus(
+  pathPrefix: string,
   onFetchSuccess: (data: Array<RunInfo>) => void,
   onFetchError: (err: Error) => void,
   interval = 10000,
 ) {
-  let path = "runs";
-
-  const url = new URL(window.location.href);
-
-  if (!url.pathname.endsWith("multi-pipeline-graph/")) {
-    path = `multi-pipeline-graph/${path}`;
-  }
+  let path = pathPrefix + "multi-pipeline-graph/runs";
 
   async function fetchPipelineData() {
     try {

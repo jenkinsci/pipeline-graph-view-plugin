@@ -84,6 +84,10 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
         return JSONArray.fromObject(graph);
     }
 
+    public String getJobUrl() {
+        return target.getUrl();
+    }
+
     @Override
     public String getIconFileName() {
         return null;

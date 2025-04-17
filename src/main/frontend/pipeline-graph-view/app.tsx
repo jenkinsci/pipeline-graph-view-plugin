@@ -1,17 +1,22 @@
-import * as React from "react";
-import { FunctionComponent } from "react";
-
 import { PipelineGraph } from "./pipeline-graph/main";
 
 import "./app.scss";
 import "./pipeline-graph/styles/main.scss";
+import React from "react";
 
-const App: FunctionComponent = () => {
+export default function App() {
+  const rootElement = document.getElementById("graph");
+  const currentRunPath = rootElement?.dataset.currentRunPath!;
+  const previousRunPath = rootElement?.dataset.previousRunPath;
+
   return (
     <div>
-      <PipelineGraph stages={[]} collapsed={false} />
+      <PipelineGraph
+        stages={[]}
+        collapsed={false}
+        currentRunPath={currentRunPath}
+        previousRunPath={previousRunPath}
+      />
     </div>
   );
-};
-
-export default App;
+}

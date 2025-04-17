@@ -24,14 +24,14 @@ export function decodeResultValue(resultMaybe: any): Result {
 
 // Dimensions used for layout, px
 export const defaultLayout = {
-  nodeSpacingH: 120,
-  parallelSpacingH: 120,
+  nodeSpacingH: 140,
+  parallelSpacingH: 140,
   nodeSpacingV: 70,
   nodeRadius: 12,
-  terminalRadius: 7,
-  curveRadius: 12,
-  connectorStrokeWidth: 3.5,
-  labelOffsetV: 20,
+  terminalRadius: 10,
+  curveRadius: 15,
+  connectorStrokeWidth: 2,
+  labelOffsetV: 22,
   smallLabelOffsetV: 15,
   ypStart: 55,
 };
@@ -59,11 +59,13 @@ export interface StageInfo {
   nextSibling?: StageInfo; // Used within a parallel branch to denote sequential stages
   isSequential?: boolean;
   synthetic?: boolean;
-  pauseDurationMillis: string;
-  startTimeMillis: string;
-  totalDurationMillis: string;
+  pauseDurationMillis: number;
+  startTimeMillis: number;
+  totalDurationMillis: number;
   agent: string;
   url: string;
+
+  skeleton?: boolean;
 }
 
 interface BaseNodeInfo {

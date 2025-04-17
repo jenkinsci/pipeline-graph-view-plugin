@@ -1,6 +1,5 @@
 import * as React from "react";
 
-import { getSymbolForResult } from "./StatusIcons";
 import {
   decodeResultValue,
   LayoutInfo,
@@ -8,6 +7,7 @@ import {
   NodeInfo,
   StageInfo,
 } from "../PipelineGraphModel";
+import StatusIcon from "../../../../common/components/status-icon";
 
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck
 
@@ -39,13 +39,22 @@ export function Node({ node }: NodeProps) {
   const { title, state, url } = node.stage ?? {};
   const resultClean = decodeResultValue(state);
 
-  groupChildren.push(getSymbolForResult(resultClean));
+  groupChildren.push(
+    <StatusIcon
+      status={node.stage.state}
+      percentage={node.stage.completePercent}
+      skeleton={node.stage.skeleton}
+    />,
+  );
 
   if (title) {
     groupChildren.push(<title>{title}</title>);
   }
 
-  const clickable = !node.isPlaceholder && node.stage?.state !== "skipped";
+  const clickable =
+    !node.isPlaceholder &&
+    node.stage?.state !== "skipped" &&
+    !node.stage.skeleton;
 
   // Most of the nodes are in shared code, so they're rendered at 0,0. We transform with a <g> to position them
   const groupProps = {

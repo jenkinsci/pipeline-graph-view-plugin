@@ -64,7 +64,6 @@ public class PipelineGraphApi {
                                     .map(FlowNodeWrapper::getId)
                                     .collect(Collectors.toList()),
                             state,
-                            50, // TODO how ???
                             flowNodeWrapper.getType().name(),
                             flowNodeWrapper.getDisplayName(), // TODO blue ocean uses timing information: "Passed in 0s"
                             flowNodeWrapper.isSynthetic(),

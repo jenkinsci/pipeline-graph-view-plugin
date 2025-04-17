@@ -141,27 +141,48 @@ circle.halo {
 }
 
 .PWGx-pipeline-node {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 1.75rem;
+  height: 1.75rem;
+  z-index: 0;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    background: var(--card-background);
+    border-radius: 50%;
+    z-index: -1;
+  }
 
   & > div {
     display: contents;
   }
 
   svg {
-    width: 24px;
-    height: 24px;
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  &:has(.PWGx-pipeline-node-terminal) {
+    &::before {
+      inset: 4px;
+    }
   }
 }
 
 .PWGx-pipeline-node-terminal {
   width: 10px;
   height: 10px;
-  background: $graph-connector-grey;
+  border: 2px solid $graph-connector-grey;
   border-radius: 10px;
+
+  &::before {
+    display: none !important;
+  }
 }
 
 .PWGx-pipeline-connector-skipped {
@@ -170,15 +191,21 @@ circle.halo {
 }
 
 .PWGx-pipeline-small-label {
-  font-size: 80%;
+  font-size: 0.75rem;
 }
 
-.PWGx-pipeline-big-label.selected {
-  font-weight: bold;
+.PWGx-pipeline-big-label {
+  font-weight: var(--font-bold-weight);
+  font-size: 0.8125rem;
 }
 
 .PWGx-pipeline-big-label.pgv-graph-node--synthetic {
   font-style: italic;
+}
+
+.PWGx-pipeline-big-label.pgv-graph-node--skeleton {
+  color: var(--text-color-secondary);
+  font-weight: normal;
 }
 
 .PWGx-pipeline-small-label.selected {

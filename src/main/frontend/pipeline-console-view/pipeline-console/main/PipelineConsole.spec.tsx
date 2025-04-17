@@ -30,7 +30,7 @@ const getRunStatusMock = jest
   .fn((): RunStatus => {
     return {
       stages: defaultStagesList,
-      isComplete: true,
+      complete: true,
     };
   })
   .mockName("default getRunStatusMock");

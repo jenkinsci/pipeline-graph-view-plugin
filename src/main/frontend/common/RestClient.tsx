@@ -5,7 +5,7 @@ import {
 
 export interface RunStatus {
   stages: StageInfo[];
-  isComplete: boolean;
+  complete: boolean;
 }
 
 /**
@@ -19,9 +19,9 @@ export interface StepInfo {
   id: string;
   type: string;
   stageId: string;
-  pauseDurationMillis: string;
-  startTimeMillis: string;
-  totalDurationMillis: string;
+  pauseDurationMillis: number;
+  startTimeMillis: number;
+  totalDurationMillis: number;
 }
 
 // Internal representation of console log.
@@ -36,6 +36,20 @@ export interface ConsoleLogData {
   text: string;
   startByte: number;
   endByte: number;
+}
+
+export async function getRunStatusFromPath(
+  url: string,
+): Promise<RunStatus | null> {
+  try {
+    let response = await fetch(url + "/pipeline-graph/tree");
+    if (!response.ok) throw response.statusText;
+    let json = await response.json();
+    return json.data;
+  } catch (e) {
+    console.error(`Caught error getting tree: '${e}'`);
+    return null;
+  }
 }
 
 export async function getRunStatus(): Promise<RunStatus | null> {

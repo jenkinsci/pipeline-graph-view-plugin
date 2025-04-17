@@ -15,7 +15,7 @@ export interface ConsoleLogModelProps {
 import { Box, Modal, Stack } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import ConsoleLogStream from "./ConsoleLogStream";
-import StatusIcon from "../../../common/status-icon";
+import StatusIcon from "../../../common/components/status-icon";
 
 const style = {
   top: "50%",

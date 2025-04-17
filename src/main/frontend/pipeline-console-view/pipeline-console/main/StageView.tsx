@@ -16,7 +16,7 @@ import {
 } from "./PipelineConsoleModel";
 import { ConsoleLogCard } from "./ConsoleLogCard";
 import StageNodeLink from "./StageNodeLink";
-import { total, started, paused } from "../../../common/timings";
+import { paused, started, total } from "../../../common/utils/timings";
 
 export interface StageSummaryProps {
   stage: StageInfo;

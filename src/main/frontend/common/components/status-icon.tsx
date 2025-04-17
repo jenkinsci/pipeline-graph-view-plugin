@@ -1,6 +1,6 @@
 import React from "react";
-import { Result } from "../pipeline-graph-view/pipeline-graph/main";
 import "./status-icon.scss";
+import { Result } from "../../pipeline-graph-view/pipeline-graph/main";
 
 /**
  * Visual representation of a job or build status

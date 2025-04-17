@@ -6,9 +6,8 @@ import {
   NodeColumn,
   NodeInfo,
   StageInfo,
-  StageNodeInfo,
 } from "../PipelineGraphModel";
-import StatusIcon from "../../../../common/status-icon";
+import StatusIcon from "../../../../common/components/status-icon";
 
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck
 

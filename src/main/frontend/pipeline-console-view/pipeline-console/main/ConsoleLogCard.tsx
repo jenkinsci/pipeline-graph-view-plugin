@@ -23,9 +23,8 @@ import {
 } from "./PipelineConsoleModel";
 import ConsoleLogModal from "./ConsoleLogModal";
 import ResizeIcon from "./ResizeIcon";
-
-import StatusIcon from "../../../common/status-icon";
-import { total } from "../../../common/timings";
+import { total } from "../../../common/utils/timings";
+import StatusIcon from "../../../common/components/status-icon";
 
 const ConsoleLogStream = lazy(() => import("./ConsoleLogStream"));
 

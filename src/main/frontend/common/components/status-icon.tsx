@@ -27,11 +27,18 @@ export default function StatusIcon({
         cy={viewBoxSize / 2}
         r={radius}
         fill="oklch(from var(--color) l c h / 0.15)"
-        stroke="color-mix(in oklch, var(--color) 25%, var(--card-background))"
-        strokeWidth={20}
         style={{
           transition: "var(--standard-transition)",
         }}
+      />
+      <circle
+        cx={viewBoxSize / 2}
+        cy={viewBoxSize / 2}
+        r={radius - 10}
+        fill="none"
+        stroke="var(--color)"
+        strokeWidth={20}
+        strokeOpacity={0.15}
       />
       <circle
         cx={viewBoxSize / 2}
@@ -165,7 +172,7 @@ function Group({
   );
 }
 
-function resultToColor(result: Result, skeleton: boolean | undefined) {
+export function resultToColor(result: Result, skeleton: boolean | undefined) {
   if (skeleton) {
     return "jenkins-!-skipped-color";
   }

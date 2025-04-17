@@ -7,7 +7,9 @@ import {
   NodeInfo,
   StageInfo,
 } from "../PipelineGraphModel";
-import StatusIcon from "../../../../common/components/status-icon";
+import StatusIcon, {
+  resultToColor,
+} from "../../../../common/components/status-icon";
 
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck
 
@@ -66,7 +68,11 @@ export function Node({ node }: NodeProps) {
       left: node.x,
       translate: "-50% -50%",
     },
-    className: "PWGx-pipeline-node PWGx-pipeline-node--" + resultClean,
+    className:
+      "PWGx-pipeline-node PWGx-pipeline-node--" +
+      resultClean +
+      " " +
+      resultToColor(node.stage.state, node.stage.skeleton),
   };
 
   return React.createElement(

@@ -1,218 +1,125 @@
-import * as React from "react";
-import * as ReactDOM from "react-dom";
+import React, { CSSProperties, useEffect, useRef, useState } from "react";
 
-//--------------------------------------
-//  Safety constants
-//--------------------------------------
+export function TruncatingLabel({ children, style = {}, className = "" }: Props) {
+  const [renderState, setRenderState] = useState(RenderState.INITIAL);
+  const [innerText, setInnerText] = useState(children);
+  const elementRef = useRef<HTMLDivElement>(null);
 
-const MINLENGTH = 5; // Minimum size of cut-down text
-const MAXLOOPS = 50; // Max no of iterations attempting to find the correct size text
+  const completeText = useRef<string>("");
+  const textCutoffLength = useRef(0);
+  const longestGood = useRef(MINLENGTH);
+  const shortestBad = useRef(0);
+  const loopCount = useRef(0);
+  const checkSizeRequest = useRef<number>();
 
-//--------------------------------------
-//  Render lifecycle
-//--------------------------------------
+  // Handle props
+  useEffect(() => {
+    if (typeof children === "string") {
+      completeText.current = children;
+    } else if (children === null || children === false) {
+      completeText.current = "";
+    } else {
+      console.warn("TruncatingLabel - Label children must be string but is", typeof children, children);
+      completeText.current = "Contents must be string";
+    }
+
+    setInnerText(completeText.current);
+    loopCount.current = 0;
+    longestGood.current = MINLENGTH;
+    shortestBad.current = completeText.current.length;
+    textCutoffLength.current = completeText.current.length;
+    setRenderState(RenderState.MEASURE);
+  }, [children]);
+
+  // Resize check effect
+  useEffect(() => {
+    if (renderState === RenderState.STABLE) return;
+
+    const checkSize = () => {
+      checkSizeRequest.current = undefined;
+      const el = elementRef.current;
+      if (!el) return;
+
+      const { scrollHeight, clientHeight, scrollWidth, clientWidth } = el;
+      const tooBig = scrollHeight > clientHeight || scrollWidth > clientWidth;
+
+      if (renderState === RenderState.MEASURE) {
+        if (tooBig) {
+          setRenderState(RenderState.FLUID);
+        } else {
+          setRenderState(RenderState.STABLE);
+        }
+        return;
+      }
+
+      if (renderState === RenderState.FLUID) {
+        loopCount.current++;
+        const lastLength = textCutoffLength.current;
+
+        let keepMeasuring = true;
+        if (loopCount.current >= MAXLOOPS || lastLength <= MINLENGTH || Math.abs(shortestBad.current - longestGood.current) < 2) {
+          keepMeasuring = false;
+        } else {
+          if (tooBig) {
+            shortestBad.current = Math.min(shortestBad.current, lastLength);
+          } else {
+            longestGood.current = Math.max(longestGood.current, lastLength);
+          }
+
+          textCutoffLength.current = Math.floor((longestGood.current + shortestBad.current) / 2);
+          const newInnerText = completeText.current.substring(0, textCutoffLength.current) + "…";
+          if (el) el.innerText = newInnerText;
+          setInnerText(newInnerText);
+        }
+
+        if (keepMeasuring) {
+          requestAnimationFrame(checkSize);
+        } else {
+          setRenderState(RenderState.STABLE);
+        }
+      }
+    };
+
+    checkSizeRequest.current = requestAnimationFrame(checkSize);
+    return () => {
+      if (checkSizeRequest.current) {
+        cancelAnimationFrame(checkSizeRequest.current);
+        checkSizeRequest.current = undefined;
+      }
+    };
+  }, [renderState]);
+
+  const mergedStyle: React.CSSProperties = {
+    overflow: "hidden",
+    wordWrap: "break-word",
+    ...style,
+    opacity: renderState === RenderState.STABLE ? 1 : 0,
+  };
+
+  return (
+    <div
+      ref={elementRef}
+      style={mergedStyle}
+      className={`TruncatingLabel ${className}`.trim()}
+      title={completeText.current}
+    >
+      {innerText}
+    </div>
+  );
+}
+
+const MINLENGTH = 5;
+const MAXLOOPS = 50;
 
 enum RenderState {
   INITIAL,
-  MEASURE, // Mounted, text/props changed, measurement needed.
-  FLUID, // Text too big, in the process of trimming it down
-  STABLE, // Done measuring until props change
+  MEASURE,
+  FLUID,
+  STABLE,
 }
-
-//--------------------------------------
-//  Component
-//--------------------------------------
 
 interface Props {
-  children?: string;
-  style?: Object;
+  children: React.ReactNode;
+  style?: CSSProperties;
   className?: string;
-}
-
-/**
- * Multi-line label that will truncate with ellipses
- *
- * Use with a set width + height (or maxWidth / maxHeight) to get any use from it :D
- */
-export class TruncatingLabel extends React.Component<Props> {
-  //--------------------------------------
-  //  Component state / lifecycle
-  //--------------------------------------
-
-  completeText = ""; // Unabridged plain text content
-  innerText = ""; // Current innerText of element - includes possible ellipses
-  renderState = RenderState.INITIAL; // Internal rendering lifecycle state
-  checkSizeRequest?: number; // window.requestAnimationFrame handle
-
-  //--------------------------------------
-  //  Binary search state
-  //--------------------------------------
-
-  textCutoffLength = 0; // Last count used to truncate completeText
-  longestGood = 0; // Length of the longest truncated text that fits
-  shortestBad = 0; // Length of the shortest truncated text that does not fit
-  loopCount = 0; // to avoid infinite iteration
-
-  //--------------------------------------
-  //  React Lifecycle
-  //--------------------------------------
-
-  componentWillMount() {
-    this.handleProps(this.props);
-  }
-
-  componentWillReceiveProps(nextProps: Props) {
-    this.handleProps(nextProps);
-  }
-
-  componentDidMount() {
-    this.invalidateSize();
-  }
-
-  componentDidUpdate() {
-    this.invalidateSize();
-  }
-
-  componentWillUnmount() {
-    if (this.checkSizeRequest) {
-      cancelAnimationFrame(this.checkSizeRequest);
-      this.checkSizeRequest = 0;
-    }
-  }
-
-  //--------------------------------------
-  //  Render
-  //--------------------------------------
-
-  render() {
-    const { className = "" } = this.props;
-
-    const style: React.CSSProperties = this.props.style || {};
-
-    const mergedStyle: React.CSSProperties = {
-      overflow: "hidden",
-      wordWrap: "break-word",
-      ...style,
-    };
-
-    if (this.renderState !== RenderState.STABLE) {
-      mergedStyle.opacity = 0;
-    }
-
-    return (
-      <div
-        style={mergedStyle}
-        className={"TruncatingLabel " + className}
-        title={this.completeText}
-      >
-        {this.innerText}
-      </div>
-    );
-  }
-
-  //--------------------------------------
-  //  Internal Rendering Lifecycle
-  //--------------------------------------
-
-  handleProps(props: Props) {
-    const { children = "" } = props;
-
-    if (typeof children === "string") {
-      this.completeText = children;
-    } else if (children === null || children === false) {
-      this.completeText = "";
-    } else {
-      console.warn(
-        "TruncatingLabel - Label children must be string but is",
-        typeof children,
-        children,
-      );
-      this.completeText = "Contents must be string";
-    }
-
-    this.renderState = RenderState.MEASURE;
-    this.innerText = this.completeText;
-    this.loopCount = 0;
-    this.longestGood = MINLENGTH;
-    this.shortestBad = this.innerText.length;
-  }
-
-  invalidateSize() {
-    if (!this.checkSizeRequest) {
-      this.checkSizeRequest = requestAnimationFrame(() => this.checkSize());
-    }
-  }
-
-  checkSize() {
-    this.checkSizeRequest = 0;
-
-    if (this.renderState === RenderState.STABLE) {
-      return; // Nothing to check, no more checks to schedule
-    }
-
-    const thisElement = ReactDOM.findDOMNode(this) as HTMLElement;
-    const { scrollHeight, clientHeight, scrollWidth, clientWidth } =
-      thisElement;
-
-    const tooBig = scrollHeight > clientHeight || scrollWidth > clientWidth;
-
-    if (this.renderState === RenderState.MEASURE) {
-      // First measurement since mount / props changed
-
-      if (tooBig) {
-        this.renderState = RenderState.FLUID;
-
-        // Set initial params for binary search of length
-        this.longestGood = MINLENGTH;
-        this.textCutoffLength = this.shortestBad = this.innerText.length;
-      } else {
-        this.renderState = RenderState.STABLE;
-        this.forceUpdate(); // Re-render via react so it can update the alpha
-      }
-    }
-
-    if (this.renderState === RenderState.FLUID) {
-      this.loopCount++;
-
-      const lastLength = this.textCutoffLength;
-
-      let keepMeasuring;
-
-      if (this.loopCount >= MAXLOOPS) {
-        // This really shouldn't happen!
-        console.error("TruncatingLabel - TOO MANY LOOPS");
-        keepMeasuring = false;
-      } else if (lastLength <= MINLENGTH) {
-        keepMeasuring = false;
-      } else if (Math.abs(this.shortestBad - this.longestGood) < 2) {
-        // We're done searching, hoorays!
-        keepMeasuring = false;
-      } else {
-        // Update search space
-        if (tooBig) {
-          this.shortestBad = Math.min(this.shortestBad, lastLength);
-        } else {
-          this.longestGood = Math.max(this.longestGood, lastLength);
-        }
-
-        // Calculate the next length and update the text
-        this.textCutoffLength = Math.floor(
-          (this.longestGood + this.shortestBad) / 2,
-        );
-        this.innerText =
-          this.completeText.substr(0, this.textCutoffLength) + "…";
-
-        // Bypass react's render loop during the "fluid" state for performance
-        thisElement.innerText = this.innerText;
-        keepMeasuring = true;
-      }
-
-      if (keepMeasuring) {
-        this.invalidateSize();
-      } else {
-        this.renderState = RenderState.STABLE;
-        this.forceUpdate(); // Re-render via react so it knows about updated alpha and final content
-      }
-    }
-  }
 }

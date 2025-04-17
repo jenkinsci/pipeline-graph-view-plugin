@@ -5,7 +5,7 @@ import {
 
 export interface RunStatus {
   stages: StageInfo[];
-  isComplete: boolean;
+  complete: boolean;
 }
 
 /**

@@ -18,7 +18,6 @@ public class PipelineStage extends AbstractPipelineNode {
             String name,
             List<PipelineStage> children,
             String state,
-            int completePercent,
             String type,
             String title,
             String seqContainerName,
@@ -28,7 +27,7 @@ public class PipelineStage extends AbstractPipelineNode {
             TimingInfo timingInfo,
             String agent,
             String runUrl) {
-        super(id, name, state, completePercent, type, title, timingInfo);
+        super(id, name, state, type, title, timingInfo);
         this.children = children;
         this.seqContainerName = seqContainerName;
         this.nextSibling = nextSibling;

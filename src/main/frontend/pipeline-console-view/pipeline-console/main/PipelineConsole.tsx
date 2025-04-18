@@ -220,7 +220,7 @@ export default class PipelineConsole extends React.Component<
       },
       checkComplete: (data: PipelineStatusInfo) => {
         // Set 'checkComplete' when component unmounted to prevent needless polling.
-        return (data.isComplete ?? false) || this.state.hasUnmounted;
+        return (data.complete ?? false) || this.state.hasUnmounted;
       },
       onComplete: () => {
         this.onPipelineComplete();

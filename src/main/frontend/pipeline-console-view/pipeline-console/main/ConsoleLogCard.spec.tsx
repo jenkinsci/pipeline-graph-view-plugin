@@ -1,5 +1,7 @@
 /** * @jest-environment jsdom */
 
+(global as any).TextEncoder = require("util").TextEncoder;
+
 import "@testing-library/jest-dom";
 import React from "react";
 import { ConsoleLogCard } from "./ConsoleLogCard";
@@ -27,9 +29,9 @@ describe("ConsoleLogCard", () => {
     completePercent: 50,
     id: "2",
     type: "STAGE",
-    pauseDurationMillis: "",
-    startTimeMillis: "",
-    totalDurationMillis: "",
+    pauseDurationMillis: 0,
+    startTimeMillis: 0,
+    totalDurationMillis: 0,
     stageId: "1",
   };
 

@@ -1,6 +1,5 @@
 import React from "react";
 import { StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
-import { getStepStatus } from "../../../step-status/StepStatus";
 import CloseIcon from "./CloseIcon";
 
 export interface ConsoleLogModelProps {
@@ -16,6 +15,7 @@ export interface ConsoleLogModelProps {
 import { Box, Modal, Stack } from "@mui/material";
 import Typography from "@mui/material/Typography";
 import ConsoleLogStream from "./ConsoleLogStream";
+import StatusIcon from "../../../common/components/status-icon";
 
 const style = {
   top: "50%",
@@ -36,11 +36,6 @@ const style = {
 
 export default function ConsoleLogModal(props: ConsoleLogModelProps) {
   const handleClose = () => props.setClose();
-  const statusIcon = getStepStatus(
-    props.step.state,
-    props.step.completePercent,
-    10,
-  );
   const stepDisplayName = props.step.name;
   const stepTitle = props.step.title ? " - " + props.step.title : "";
 
@@ -62,7 +57,12 @@ export default function ConsoleLogModal(props: ConsoleLogModelProps) {
             key={`step-name-text-${props.step.id}`}
           >
             <Stack direction="row" alignItems="center" spacing={1}>
-              {statusIcon}
+              <span className="pgv-step-header__icon">
+                <StatusIcon
+                  status={props.step.state}
+                  percentage={props.step.completePercent}
+                />
+              </span>
               <Box component="span">
                 <Box component="span" fontWeight="bold">
                   {stepDisplayName}

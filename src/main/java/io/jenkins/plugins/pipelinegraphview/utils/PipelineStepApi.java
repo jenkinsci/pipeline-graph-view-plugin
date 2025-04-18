@@ -56,7 +56,6 @@ public class PipelineStepApi {
                             flowNodeWrapper.getId(),
                             displayName,
                             state,
-                            50, // TODO how ???
                             flowNodeWrapper.getType().name(),
                             title, // TODO blue ocean uses timing information: "Passed in
                             // 0s"

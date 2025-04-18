@@ -10,7 +10,6 @@ public class PipelineStageInternal {
     private String name;
     private List<String> parents;
     private String state; // TODO enum
-    private int completePercent; // TODO int is fine?
     private String type; // TODO enum
     private String title;
     private String id;
@@ -26,7 +25,6 @@ public class PipelineStageInternal {
             String name,
             List<String> parents,
             String state,
-            int completePercent,
             String type,
             String title,
             boolean synthetic,
@@ -36,7 +34,6 @@ public class PipelineStageInternal {
         this.name = name;
         this.parents = parents;
         this.state = state.toLowerCase(Locale.ROOT);
-        this.completePercent = completePercent;
         this.type = type;
         this.title = title;
         this.synthetic = synthetic;
@@ -58,10 +55,6 @@ public class PipelineStageInternal {
 
     public void setState(String state) {
         this.state = state;
-    }
-
-    public void setCompletePercent(int completePercent) {
-        this.completePercent = completePercent;
     }
 
     public void setType(String type) {
@@ -104,10 +97,6 @@ public class PipelineStageInternal {
         return state;
     }
 
-    public int getCompletePercent() {
-        return completePercent;
-    }
-
     public String getType() {
         return type;
     }
@@ -138,7 +127,6 @@ public class PipelineStageInternal {
                 name,
                 children,
                 state,
-                completePercent,
                 type,
                 title,
                 seqContainerName,

@@ -1,14 +1,16 @@
 import * as React from "react";
 
-import { getSymbolForResult } from "./StatusIcons";
 import {
   decodeResultValue,
   LayoutInfo,
   NodeColumn,
   NodeInfo,
   StageInfo,
-  StageNodeInfo,
 } from "../PipelineGraphModel";
+import StatusIcon, {
+  resultToColor,
+} from "../../../../common/components/status-icon";
+import { CSSProperties } from "react";
 
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck
 
@@ -40,31 +42,44 @@ export function Node({ node }: NodeProps) {
   const { title, state, url } = node.stage ?? {};
   const resultClean = decodeResultValue(state);
 
-  groupChildren.push(getSymbolForResult(resultClean));
+  groupChildren.push(
+    <StatusIcon
+      status={node.stage.state}
+      percentage={node.stage.completePercent}
+      skeleton={node.stage.skeleton}
+    />,
+  );
 
-  if (title) {
-    groupChildren.push(<title>{title}</title>);
-  }
-
-  const clickable = !node.isPlaceholder && node.stage?.state !== "skipped";
+  const clickable =
+    !node.isPlaceholder &&
+    node.stage?.state !== "skipped" &&
+    !node.stage.skeleton;
 
   // Most of the nodes are in shared code, so they're rendered at 0,0. We transform with a <g> to position them
   const groupProps = {
     key,
-    href: clickable ? document.head.dataset.rooturl + url : null,
     style: {
       position: "absolute",
       top: node.y,
       left: node.x,
       translate: "-50% -50%",
-    },
-    className: "PWGx-pipeline-node PWGx-pipeline-node--" + resultClean,
+    } as CSSProperties,
+    className:
+      "PWGx-pipeline-node PWGx-pipeline-node--" +
+      resultClean +
+      " " +
+      resultToColor(node.stage.state, node.stage.skeleton),
   };
 
-  return React.createElement(
-    clickable ? "a" : "div",
-    groupProps,
-    ...groupChildren,
+  return (
+    <div {...groupProps}>
+      {groupChildren}
+      {clickable && (
+        <a href={document.head.dataset.rooturl + url}>
+          <span className="jenkins-visually-hidden">{title}</span>
+        </a>
+      )}
+    </div>
   );
 }
 

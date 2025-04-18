@@ -5,16 +5,15 @@ export const mergeStageInfos = (
   skeletons: StageInfo[],
   incoming: StageInfo[],
 ): StageInfo[] => {
-  skeletons = markSkeleton(skeletons);
-  const previous = new RunEstimator(skeletons);
+  const marked = markSkeleton(skeletons);
+  const estimator = new RunEstimator(marked);
   const merged = incoming.map((incomingItem) => {
-    const match = skeletons.find((s) => s.name === incomingItem.name);
-
+    const match = marked.find((s) => s.name === incomingItem.name);
     return {
       ...(match ?? {}),
       ...incomingItem,
       skeleton: false,
-      completePercent: previous.estimateCompletion(incomingItem),
+      completePercent: estimator.estimateCompletion(incomingItem),
       children: mergeStageInfos(
         match?.children ?? [],
         incomingItem.children ?? [],
@@ -22,11 +21,29 @@ export const mergeStageInfos = (
     };
   });
 
-  const unmatchedSkeletons = skeletons.filter(
-    (s) => !incoming.some((i) => i.name === s.name),
-  );
+  if (merged.length === 0) {
+    return marked;
+  }
 
-  return [...merged, ...unmatchedSkeletons];
+  const nameToIndex = new Map<string, number>();
+  marked.forEach((s, idx) => nameToIndex.set(s.name, idx));
+
+  const hasUnknown = incoming.some((item) => !nameToIndex.has(item.name));
+  if (hasUnknown) {
+    return merged;
+  }
+
+  const lastRanIndex = incoming.reduce((maxIdx, item) => {
+    const idx = nameToIndex.get(item.name) ?? -1;
+    return idx > maxIdx ? idx : maxIdx;
+  }, -1);
+
+  const futureSkeletons = marked.filter((s) => {
+    const idx = nameToIndex.get(s.name) ?? Infinity;
+    return idx > lastRanIndex && !incoming.some((i) => i.name === s.name);
+  });
+
+  return [...merged, ...futureSkeletons];
 };
 
 const markSkeleton = (stages: StageInfo[]): StageInfo[] =>
@@ -36,10 +53,3 @@ const markSkeleton = (stages: StageInfo[]): StageInfo[] =>
     completePercent: 0,
     children: markSkeleton(s.children ?? []),
   }));
-
-const stripSkeleton = (stage: StageInfo): StageInfo => ({
-  ...stage,
-  skeleton: false,
-  completePercent: 0,
-  children: stage.children?.map(stripSkeleton) ?? [],
-});

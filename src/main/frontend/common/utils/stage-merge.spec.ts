@@ -6,137 +6,91 @@ import { mergeStageInfos } from "./stage-merge";
 
 describe("mergeStageInfos", () => {
   it("merges matching items by name", () => {
-    const skeletons: StageInfo[] = [
-      {
-        name: "Build",
-        state: Result.success,
-        children: [],
-        completePercent: 100,
-        id: 1,
-        title: "Build",
-        type: "STAGE",
-        pauseDurationMillis: 0,
-        startTimeMillis: 0,
-        totalDurationMillis: 0,
-        agent: "",
-        url: "",
-      },
-      {
-        name: "Test",
-        state: Result.skipped,
-        children: [],
-        completePercent: 100,
-        id: 2,
-        title: "Test",
-        type: "STAGE",
-        pauseDurationMillis: 0,
-        startTimeMillis: 0,
-        totalDurationMillis: 0,
-        agent: "",
-        url: "",
-      },
-    ];
-
-    const incoming: StageInfo[] = [
-      {
-        name: "Build",
-        state: Result.running,
-        children: [],
-        completePercent: 50,
-        id: 3,
-        title: "Build",
-        type: "STAGE",
-        pauseDurationMillis: 0,
-        startTimeMillis: 0,
-        totalDurationMillis: 0,
-        agent: "",
-        url: "",
-      },
+    const skeletons = [stage("Build"), stage("Test")];
+    const incoming = [
+      stage("Build", { state: Result.running, completePercent: 50, id: 42 }),
     ];
 
     const result = mergeStageInfos(skeletons, incoming);
-
     expect(result).toHaveLength(2);
-    expect(result[0].name).toBe("Build");
-    expect(result[0].state).toBe("running");
-    expect(result[0].skeleton).toBe(false); // Comes from incoming
-    expect(result[1].skeleton).toBe(true);
+
+    const [build, test] = result;
+    expect(build.name).toBe("Build");
+    expect(build.state).toBe(Result.running);
+    expect(build.skeleton).toBe(false);
+
+    expect(test.name).toBe("Test");
+    expect(test.skeleton).toBe(true);
   });
 
   it("recursively merges children", () => {
-    const skeletons: StageInfo[] = [
-      {
-        name: "Parent",
-        state: Result.success,
-        skeleton: true,
-        completePercent: 100,
-        id: 1,
-        title: "Parent",
-        type: "STAGE",
-        pauseDurationMillis: 0,
-        startTimeMillis: 0,
-        totalDurationMillis: 0,
-        agent: "",
-        url: "",
-        children: [
-          {
-            name: "Child",
-            state: Result.success,
-            skeleton: true,
-            completePercent: 100,
-            id: 2,
-            title: "Child",
-            type: "STAGE",
-            pauseDurationMillis: 0,
-            startTimeMillis: 0,
-            totalDurationMillis: 0,
-            agent: "",
-            url: "",
-            children: [],
-          },
-        ],
-      },
+    const skeletons = [
+      stage("Parent", {
+        children: [stage("Child", { skeleton: true, completePercent: 100 })],
+      }),
     ];
-
-    const incoming: StageInfo[] = [
-      {
-        name: "Parent",
+    const incoming = [
+      stage("Parent", {
         state: Result.running,
-        skeleton: false,
         completePercent: 50,
-        id: 3,
-        title: "Parent",
-        type: "STAGE",
-        pauseDurationMillis: 0,
-        startTimeMillis: 0,
-        totalDurationMillis: 0,
-        agent: "",
-        url: "",
         children: [
-          {
-            name: "Child",
-            state: Result.running,
-            skeleton: false,
-            completePercent: 20,
-            id: 4,
-            title: "Child",
-            type: "STAGE",
-            pauseDurationMillis: 0,
-            startTimeMillis: 0,
-            totalDurationMillis: 0,
-            agent: "",
-            url: "",
-            children: [],
-          },
+          stage("Child", { state: Result.running, completePercent: 20 }),
         ],
-      },
+      }),
     ];
 
-    const result = mergeStageInfos(skeletons, incoming);
+    const [parent] = mergeStageInfos(skeletons, incoming);
+    expect(parent.state).toBe(Result.running);
 
-    expect(result[0].name).toBe("Parent");
-    expect(result[0].state).toBe("running");
-    expect(result[0].children[0].name).toBe("Child");
-    expect(result[0].children[0].state).toBe("running");
+    const [child] = parent.children;
+    expect(child.name).toBe("Child");
+    expect(child.state).toBe(Result.running);
   });
+
+  it("drops skeletons if new stages differ", () => {
+    const skeletons = [
+      stage("Start"),
+      stage("Tool Install"),
+      stage("Build"),
+      stage("Test"),
+      stage("Lint"),
+      stage("End"),
+    ];
+
+    const incoming = [
+      stage("Start", { completePercent: 100 }),
+      stage("Tool Install", { completePercent: 100 }),
+      stage("Build", { completePercent: 100 }),
+      stage("Test", { completePercent: 100 }),
+      stage("Different stage", { completePercent: 100 }),
+    ];
+
+    const names = mergeStageInfos(skeletons, incoming).map((s) => s.name);
+    expect(names).toEqual([
+      "Start",
+      "Tool Install",
+      "Build",
+      "Test",
+      "Different stage",
+    ]);
+  });
+});
+
+const stage = (
+  name: string,
+  overrides: Partial<StageInfo> = {},
+): StageInfo => ({
+  name,
+  title: name,
+  state: Result.success,
+  type: "STAGE",
+  children: [],
+  completePercent: 0,
+  id: name.length, // simple unique-ish id
+  pauseDurationMillis: 0,
+  startTimeMillis: 0,
+  totalDurationMillis: 0,
+  agent: "",
+  url: "",
+  ...overrides,
 });

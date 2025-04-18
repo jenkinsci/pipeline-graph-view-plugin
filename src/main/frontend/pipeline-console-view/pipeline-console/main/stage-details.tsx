@@ -111,6 +111,8 @@ function resultToColor(result: Result) {
       return "jenkins-!-success-color";
     case "failure":
       return "jenkins-!-error-color";
+    case "unstable":
+      return "jenkins-!-warning-color";
     case "skipped":
       return "jenkins-!-skipped-color";
     case "aborted":

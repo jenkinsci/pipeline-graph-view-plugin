@@ -64,6 +64,10 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         return run.getTimestampString();
     }
 
+    public String getUrl() {
+        return target.getUrl();
+    }
+
     // Legacy - leave in case we want to update a sub section of steps (e.g. if a stage is still
     // running).
     @GET

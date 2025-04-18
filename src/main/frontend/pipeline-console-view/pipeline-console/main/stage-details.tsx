@@ -1,12 +1,11 @@
 import React from "react";
-import {
-  Result,
-  StageInfo,
-} from "../../../pipeline-graph-view/pipeline-graph/main";
+import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main";
 import "./stage-details.scss";
 import StageNodeLink from "./StageNodeLink";
 import DropdownWrapper from "./DropdownWrapper";
-import StatusIcon, { resultToColor } from "../../../common/components/status-icon";
+import StatusIcon, {
+  resultToColor,
+} from "../../../common/components/status-icon";
 import { paused, started, total } from "../../../common/utils/timings";
 
 export default function StageDetails({ stage }: StageDetailsProps) {
@@ -15,7 +14,11 @@ export default function StageDetails({ stage }: StageDetailsProps) {
   }
 
   return (
-    <div className={"pgv-stage-details " + resultToColor(stage.state)}>
+    <div
+      className={
+        "pgv-stage-details " + resultToColor(stage.state, stage.skeleton)
+      }
+    >
       {stage.state === "running" && (
         <div className={"pgv-stage-details__running"} />
       )}

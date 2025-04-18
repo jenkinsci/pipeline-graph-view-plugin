@@ -26,6 +26,10 @@ public class PipelineGraphViewAction extends AbstractPipelineViewAction {
         return "pipeline-graph";
     }
 
+    public String getUrl() {
+        return run.getUrl();
+    }
+
     @SuppressWarnings("unused")
     public RunDetailsCard getRunDetailsCard() {
 

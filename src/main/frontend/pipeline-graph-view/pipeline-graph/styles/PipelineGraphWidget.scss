@@ -158,7 +158,7 @@ circle.halo {
     z-index: -1;
   }
 
-  &[href] {
+  &:has(a) {
     &::after {
       content: "";
       position: absolute;
@@ -192,6 +192,12 @@ circle.halo {
         box-shadow: 0 0 0 0.2rem var(--text-color) !important;
       }
     }
+  }
+
+  a {
+    position: absolute;
+    inset: 0;
+    background: transparent;
   }
 
   svg {

@@ -6,7 +6,7 @@ import {
 import "./stage-details.scss";
 import StageNodeLink from "./StageNodeLink";
 import DropdownWrapper from "./DropdownWrapper";
-import StatusIcon from "../../../common/components/status-icon";
+import StatusIcon, { resultToColor } from "../../../common/components/status-icon";
 import { paused, started, total } from "../../../common/utils/timings";
 
 export default function StageDetails({ stage }: StageDetailsProps) {
@@ -103,25 +103,6 @@ export default function StageDetails({ stage }: StageDetailsProps) {
       </ul>
     </div>
   );
-}
-
-function resultToColor(result: Result) {
-  switch (result) {
-    case "success":
-      return "jenkins-!-success-color";
-    case "failure":
-      return "jenkins-!-error-color";
-    case "unstable":
-      return "jenkins-!-warning-color";
-    case "skipped":
-      return "jenkins-!-skipped-color";
-    case "aborted":
-      return "jenkins-!-skipped-color";
-    case "running":
-      return "jenkins-!-accent-color";
-    default:
-      return null;
-  }
 }
 
 interface StageDetailsProps {

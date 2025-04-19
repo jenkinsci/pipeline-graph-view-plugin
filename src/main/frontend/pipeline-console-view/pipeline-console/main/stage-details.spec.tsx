@@ -2,7 +2,10 @@
 
 import React from "react";
 import { render, screen } from "@testing-library/react";
-import { Result, StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main";
+import {
+  Result,
+  StageInfo,
+} from "../../../pipeline-graph-view/pipeline-graph/main";
 import { paused } from "../../../common/utils/timings";
 import StageDetails from "./stage-details";
 
@@ -19,14 +22,18 @@ describe("StageDetails", () => {
     const heading = screen.getByRole("heading", { level: 2 });
     expect(heading).toHaveTextContent("Build");
     const wrapper = heading.closest(".pgv-stage-details");
-    expect(wrapper?.className).toMatch("pgv-stage-details jenkins-!-success-color");
+    expect(wrapper?.className).toMatch(
+      "pgv-stage-details jenkins-!-success-color",
+    );
   });
 
   it("shows running bar if stage is running", () => {
     render(<StageDetails stage={{ ...mockStage, state: Result.running }} />);
 
-    const runningIndicator = document.querySelector(".pgv-stage-details__running");
-    expect(runningIndicator).toBeInTheDocument()
+    const runningIndicator = document.querySelector(
+      ".pgv-stage-details__running",
+    );
+    expect(runningIndicator).toBeInTheDocument();
   });
 
   it("does not show pause time if pauseDurationMillis is 0", () => {

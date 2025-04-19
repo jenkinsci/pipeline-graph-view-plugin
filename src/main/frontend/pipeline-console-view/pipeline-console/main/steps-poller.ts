@@ -4,6 +4,7 @@ import {
   getRunSteps,
   LOG_FETCH_SIZE,
   POLL_INTERVAL,
+  Result,
   StageInfo,
   StepInfo,
   StepLogBufferInfo,
@@ -54,12 +55,15 @@ export function useStepsPoller(props: RunPollerProps) {
     [],
   );
 
-  // TODO - Rename!
   const parseUrlParams = useCallback(
     (steps: StepInfo[]): boolean => {
       const params = new URLSearchParams(document.location.search.substring(1));
       let selected = params.get("selected-node");
-      if (!selected) return false;
+      if (!selected) {
+        return false;
+      }
+
+      setUserManuallySetNode(true);
 
       const step = steps.find((s) => s.id === selected);
       const expanded: string[] = [];
@@ -82,15 +86,55 @@ export function useStepsPoller(props: RunPollerProps) {
     [updateStepConsoleOffset],
   );
 
+  const getDefaultSelectedStep = (steps: StepInfo[]) => {
+    if (userManuallySetNode) {
+      return;
+    }
+
+    let selectedStep = steps.find((step) => step !== undefined);
+    if (!steps || steps.length == 0 || !selectedStep) {
+      return null;
+    }
+    for (let step of steps) {
+      let stepResult = step.state.toLowerCase() as Result;
+      let selectedStepResult = selectedStep?.state.toLowerCase() as Result;
+      switch (stepResult) {
+        case Result.running:
+        case Result.queued:
+        case Result.paused:
+          // Return first running/queued/paused step.
+          return step;
+        case Result.unstable:
+        case Result.failure:
+        case Result.aborted:
+          if (selectedStepResult && stepResult < selectedStepResult) {
+            // Return first unstable/failed/aborted step which has a state worse than the selectedStep.
+            // E.g. if the first step state is failure we want to return that over a later unstable step.
+            return step;
+          }
+          continue;
+        default:
+          // Otherwise select the step with the worst result with the largest id - e.g. (last step if all successful).
+          if (selectedStepResult && stepResult <= selectedStepResult) {
+            selectedStep = step;
+          }
+      }
+    }
+    return selectedStep;
+  };
+
   useEffect(() => {
     getRunSteps().then((steps) => {
       steps = steps || [];
       setSteps(steps);
 
-      // const usedUrl = parseUrlParams(steps);
-      // if (!usedUrl && !openStage) {
-      //   selectDefaultNode(steps);
-      // }
+      const usedUrl = parseUrlParams(steps);
+      if (!usedUrl) {
+        const defaultStep = getDefaultSelectedStep(steps);
+        if (defaultStep) {
+          setOpenStage(defaultStep.stageId);
+        }
+      }
 
       if (!run?.complete) {
         startPollingPipeline({
@@ -100,6 +144,13 @@ export function useStepsPoller(props: RunPollerProps) {
               JSON.stringify(stepsRef.current) !== JSON.stringify(data);
 
             if (hasNewSteps) {
+              if (userManuallySetNode) {
+                const defaultStep = getDefaultSelectedStep(steps);
+                if (defaultStep) {
+                  setOpenStage(defaultStep.stageId);
+                }
+              }
+
               setSteps(data);
               stepsRef.current = data;
             }
@@ -113,7 +164,7 @@ export function useStepsPoller(props: RunPollerProps) {
 
   const handleStageSelect = useCallback(
     (nodeId: string) => {
-      setUserManuallySetNode(true) // - TODO do we need this?
+      setUserManuallySetNode(true);
 
       if (!nodeId) return;
       if (nodeId === openStage) return; // skip if already selected
@@ -133,7 +184,7 @@ export function useStepsPoller(props: RunPollerProps) {
   );
 
   const handleStepToggle = (nodeId: string) => {
-    // setUserManuallySetNode(true) - TODO do we need this?
+    setUserManuallySetNode(true);
     if (!expandedSteps.includes(nodeId)) {
       setExpandedSteps((prev) => [...prev, nodeId]);
       updateStepConsoleOffset(nodeId, false, 0 - LOG_FETCH_SIZE);
@@ -189,7 +240,7 @@ export function useStepsPoller(props: RunPollerProps) {
 /**
  * Starts polling a function until a complete condition is met.
  */
-export const startPollingPipeline = ({
+const startPollingPipeline = ({
   getStateUpdateFn,
   onData,
   checkComplete,

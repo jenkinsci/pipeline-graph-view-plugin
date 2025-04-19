@@ -13,7 +13,7 @@ import useRunPoller from "../../../common/tree-api";
 /**
  * TODO
  */
-export function usePipelineState(props: RunPollerProps) {
+export function useStepsPoller(props: RunPollerProps) {
   const { run } = useRunPoller({
     currentRunPath: props.currentRunPath,
     previousRunPath: props.previousRunPath,
@@ -135,7 +135,7 @@ export function usePipelineState(props: RunPollerProps) {
     (nodeId: string) => {
       if (!nodeId) return;
       if (nodeId === openStage) return; // skip if already selected
-      
+
       const stepsForStage = steps.filter((step) => step.stageId === nodeId);
       const lastStep = stepsForStage[stepsForStage.length - 1];
       const newlyExpandedSteps = lastStep ? [lastStep.id] : [];
@@ -164,7 +164,7 @@ export function usePipelineState(props: RunPollerProps) {
   };
 
   const getStageSteps = (stageId: string) => {
-    return steps.filter((step) => step.stageId === stageId)
+    return steps.filter((step) => step.stageId === stageId);
   };
 
   const getStageStepBuffers = (stageId: string) => {

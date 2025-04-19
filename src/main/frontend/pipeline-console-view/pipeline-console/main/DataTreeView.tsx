@@ -84,9 +84,7 @@ const TreeNode = React.memo(({ stage, selected, onSelect }: TreeNodeProps) => {
                 skeleton={stage.skeleton}
               />
             </span>
-            <span className="task-link-text">
-              {stage.name}
-            </span>
+            <span className="task-link-text">{stage.name}</span>
             {stage.state === Result.running && (
               <span className="pgv-tree-item__description">
                 {total(stage.totalDurationMillis)}

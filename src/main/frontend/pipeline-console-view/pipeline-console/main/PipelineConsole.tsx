@@ -1,6 +1,6 @@
 import React from "react";
 import SplitView from "./SplitView";
-import { usePipelineState } from "./Polly";
+import { useStepsPoller } from "./steps-poller";
 import "./pipeline-console.scss";
 
 const DataTreeView = React.lazy(() => import("./DataTreeView"));
@@ -20,7 +20,7 @@ export default function PipelineConsole() {
     handleStageSelect,
     handleStepToggle,
     handleMoreConsoleClick,
-  } = usePipelineState({ currentRunPath, previousRunPath });
+  } = useStepsPoller({ currentRunPath, previousRunPath });
 
   return (
     <SplitView>

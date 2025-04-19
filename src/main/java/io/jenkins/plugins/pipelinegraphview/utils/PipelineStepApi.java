@@ -20,7 +20,7 @@ public class PipelineStepApi {
 
     private List<PipelineStep> parseSteps(List<FlowNodeWrapper> stepNodes, String stageId) {
         if (logger.isDebugEnabled()) {
-            logger.debug("PipelineStepApi steps: '" + stepNodes + "'.");
+            logger.debug("PipelineStepApi steps: '{}'.", stepNodes);
         }
         List<PipelineStep> steps = stepNodes.stream()
                 .map(flowNodeWrapper -> {
@@ -48,9 +48,9 @@ public class PipelineStepApi {
                         }
                     }
                     // Remove non-printable chars (e.g. ANSI color codes).
-                    logger.debug("DisplayName Before: '" + displayName + "'.");
+                    logger.debug("DisplayName Before: '{}'.", displayName);
                     displayName = cleanTextContent(displayName);
-                    logger.debug("DisplayName After: '" + displayName + "'.");
+                    logger.debug("DisplayName After: '{}'.", displayName);
 
                     return new PipelineStep(
                             flowNodeWrapper.getId(),

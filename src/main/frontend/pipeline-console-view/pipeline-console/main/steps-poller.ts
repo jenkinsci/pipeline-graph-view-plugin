@@ -132,7 +132,13 @@ export function useStepsPoller(props: RunPollerProps) {
       if (!usedUrl) {
         const defaultStep = getDefaultSelectedStep(steps);
         if (defaultStep) {
+          console.log("Opening step", defaultStep.title);
           setOpenStage(defaultStep.stageId);
+
+          if (defaultStep.stageId) {
+            setExpandedSteps((prev) => [...prev, defaultStep.id]);
+            updateStepConsoleOffset(defaultStep.id, false, 0 - LOG_FETCH_SIZE);
+          }
         }
       }
 
@@ -143,14 +149,24 @@ export function useStepsPoller(props: RunPollerProps) {
             const hasNewSteps =
               JSON.stringify(stepsRef.current) !== JSON.stringify(data);
 
-            if (hasNewSteps) {
-              if (userManuallySetNode) {
-                const defaultStep = getDefaultSelectedStep(steps);
-                if (defaultStep) {
-                  setOpenStage(defaultStep.stageId);
+            if (userManuallySetNode) {
+              const defaultStep = getDefaultSelectedStep(steps);
+              if (defaultStep) {
+                console.log("Opening step", defaultStep.title);
+                setOpenStage(defaultStep.stageId);
+
+                if (defaultStep.stageId) {
+                  setExpandedSteps((prev) => [...prev, defaultStep.id]);
+                  updateStepConsoleOffset(
+                    defaultStep.id,
+                    false,
+                    0 - LOG_FETCH_SIZE,
+                  );
                 }
               }
+            }
 
+            if (hasNewSteps) {
               setSteps(data);
               stepsRef.current = data;
             }

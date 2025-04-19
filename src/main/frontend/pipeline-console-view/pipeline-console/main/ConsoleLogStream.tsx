@@ -66,7 +66,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
     if (virtuosoRef.current && props.logBuffer.lines) {
       requestAnimationFrame(() => {
         const scrollTarget = document.documentElement.scrollHeight;
-        window.scrollTo({ top: scrollTarget, behavior: "smooth" });
+        window.scrollTo({ top: scrollTarget });
       });
     } else {
       console.debug("Log buffer is empty or virtuosoRef is not available.");

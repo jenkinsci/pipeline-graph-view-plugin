@@ -12,7 +12,6 @@ export default function StageSteps({
   handleStepToggle,
   expandedSteps,
   handleMoreConsoleClick,
-  scrollParentId,
 }: StageStepsProps) {
   if (steps.length === 0) {
     return null;
@@ -39,7 +38,6 @@ export default function StageSteps({
             isExpanded={expandedSteps.includes(stepItemData.id)}
             handleMoreConsoleClick={handleMoreConsoleClick}
             key={`step-console-card-${stepItemData.id}`}
-            scrollParentId={scrollParentId}
           />
         );
       })}
@@ -55,6 +53,4 @@ interface StageStepsProps {
   expandedSteps: string[];
   handleStepToggle: (nodeId: string) => void;
   handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
-  // Id of the element whose scroll bar we wish to use.
-  scrollParentId: string;
 }

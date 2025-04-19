@@ -15,7 +15,6 @@ export default function StageView(props: StageViewProps) {
         expandedSteps={props.expandedSteps}
         handleStepToggle={props.handleStepToggle}
         handleMoreConsoleClick={props.handleMoreConsoleClick}
-        scrollParentId={props.scrollParentId}
       />
     </>
   );
@@ -28,6 +27,4 @@ export interface StageViewProps {
   expandedSteps: string[];
   handleStepToggle: (nodeId: string) => void;
   handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
-  // Id of the element whose scroll bar we wish to use.
-  scrollParentId: string;
 }

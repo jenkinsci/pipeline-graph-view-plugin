@@ -80,7 +80,6 @@ export function useStepsPoller(props: RunPollerProps) {
       }
 
       setOpenStage(selected);
-      console.log("init - Setting to ", expanded)
       setExpandedSteps(expanded);
       return true;
     },
@@ -136,7 +135,6 @@ export function useStepsPoller(props: RunPollerProps) {
           setOpenStage(defaultStep.stageId);
 
           if (defaultStep.stageId) {
-            console.log("dEFAULTTTT", defaultStep.stageId);
             setExpandedSteps((prev) => [...prev, defaultStep.id]);
             updateStepConsoleOffset(defaultStep.id, false, 0 - LOG_FETCH_SIZE);
           }
@@ -190,7 +188,6 @@ export function useStepsPoller(props: RunPollerProps) {
       const newlyExpandedSteps = lastStep ? [lastStep.id] : [];
 
       setOpenStage(nodeId);
-      console.log("ini2t - Setting to ", newlyExpandedSteps)
       setExpandedSteps((prev) => [...prev, ...newlyExpandedSteps]);
 
       if (lastStep) {
@@ -203,11 +200,9 @@ export function useStepsPoller(props: RunPollerProps) {
   const handleStepToggle = (nodeId: string) => {
     setUserManuallySetNode(true);
     if (!expandedSteps.includes(nodeId)) {
-      console.log("step toggle - Setting to ", nodeId)
       setExpandedSteps((prev) => [...prev, nodeId]);
       updateStepConsoleOffset(nodeId, false, 0 - LOG_FETCH_SIZE);
     } else {
-      console.log("step toggle 2 - Setting to ", nodeId)
       setExpandedSteps((prev) => prev.filter((id) => id !== nodeId));
     }
   };

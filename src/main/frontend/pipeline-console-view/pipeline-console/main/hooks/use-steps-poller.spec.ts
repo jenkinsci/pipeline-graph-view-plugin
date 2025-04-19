@@ -53,9 +53,7 @@ it("selects default step if URL param is missing", async () => {
     useStepsPoller({ currentRunPath: "/run/1", previousRunPath: undefined }),
   );
 
-  await waitFor(() =>
-    expect(result.current.expandedSteps).toContain("step-2")
-  );
+  await waitFor(() => expect(result.current.expandedSteps).toContain("step-2"));
 
   const { openStage, expandedSteps } = result.current;
 
@@ -69,9 +67,7 @@ it("selects the step from URL on initial load", async () => {
     useStepsPoller({ currentRunPath: "/run/1", previousRunPath: undefined }),
   );
 
-  await waitFor(() =>
-    expect(result.current.expandedSteps).toContain("step-1")
-  );
+  await waitFor(() => expect(result.current.expandedSteps).toContain("step-1"));
 
   const { openStage, expandedSteps } = result.current;
 
@@ -85,15 +81,15 @@ it("switches to next stage when current one finishes", async () => {
     { id: "s2", title: "Step 2", stageId: "stage-2", state: "queued" },
   ];
 
-  (model.getRunSteps as jest.Mock).mockImplementation(() => Promise.resolve(currentSteps));
+  (model.getRunSteps as jest.Mock).mockImplementation(() =>
+    Promise.resolve(currentSteps),
+  );
 
   const { result } = renderHook(() =>
     useStepsPoller({ currentRunPath: "/run/1" }),
   );
 
-  await waitFor(() =>
-    expect(result.current.openStage?.id).toBe("stage-1")
-  );
+  await waitFor(() => expect(result.current.openStage?.id).toBe("stage-1"));
 
   // Simulate stage-1 finishing and stage-2 becoming active
   currentSteps = [
@@ -102,9 +98,7 @@ it("switches to next stage when current one finishes", async () => {
   ];
   (model.getRunSteps as jest.Mock).mockResolvedValue(currentSteps);
 
-  await waitFor(() =>
-    expect(result.current.openStage?.id).toBe("stage-1")
-  );
+  await waitFor(() => expect(result.current.openStage?.id).toBe("stage-1"));
 
   expect(result.current.expandedSteps).toContain("s1");
 });
@@ -114,9 +108,7 @@ it("expands and collapses step when toggled", async () => {
     useStepsPoller({ currentRunPath: "/run/1" }),
   );
 
-  await waitFor(() =>
-    expect(result.current.expandedSteps).toContain("step-2")
-  );
+  await waitFor(() => expect(result.current.expandedSteps).toContain("step-2"));
 
   act(() => result.current.handleStepToggle("step-2"));
   expect(result.current.expandedSteps).not.toContain("step-2");

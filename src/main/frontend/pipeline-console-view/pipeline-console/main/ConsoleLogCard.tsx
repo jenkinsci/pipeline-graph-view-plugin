@@ -143,5 +143,4 @@ export type ConsoleLogCardProps = {
   isExpanded: boolean;
   handleStepToggle: (nodeId: string) => void;
   handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
-  scrollParentId: string;
 };

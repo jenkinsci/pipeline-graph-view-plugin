@@ -50,7 +50,6 @@ describe("ConsoleLogCard", () => {
     handleMoreConsoleClick: () => {
       console.log("handleMoreConsoleClick triggered");
     },
-    scrollParentId: "test-parent",
   } as ConsoleLogCardProps;
 
   it("renders step header only when not expanded", async () => {

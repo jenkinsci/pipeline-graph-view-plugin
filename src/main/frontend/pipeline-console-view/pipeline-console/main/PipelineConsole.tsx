@@ -40,7 +40,6 @@ export default function PipelineConsole() {
           expandedSteps={expandedSteps}
           handleStepToggle={handleStepToggle}
           handleMoreConsoleClick={handleMoreConsoleClick}
-          scrollParentId="stage-view-pane"
         />
       </div>
     </SplitView>

@@ -2,74 +2,60 @@
 
 (global as any).TextEncoder = require("util").TextEncoder;
 
-import "@testing-library/jest-dom";
 import React from "react";
-import { StepLogBufferInfo } from "./PipelineConsoleModel";
-import { render } from "@testing-library/react";
-import StageView, { StageViewProps } from "./StageView";
-import { ConsoleLogCardProps } from "./ConsoleLogCard";
-import {
-  defaultStagesList,
-  findStageSteps,
-  allSuccessfulStepList,
-} from "./TestData";
+import { act, render, screen } from "@testing-library/react";
+import StageView from "./StageView";
+import { Result, StageInfo, StepInfo } from "./PipelineConsoleModel";
 
-const TestComponent = (props: StageViewProps) => {
-  return (
-    <div id="test-parent">
-      <StageView {...props} />
-    </div>
-  );
+const mockStage: StageInfo = {
+  id: 1,
+  name: "Build Stage",
+  state: Result.success,
+  skeleton: false,
+  completePercent: 100,
+  children: [],
+  type: "STAGE",
+  title: "Build",
+  pauseDurationMillis: 0,
+  startTimeMillis: Date.now(),
+  totalDurationMillis: 10000,
+  agent: "",
+  url: "",
 };
 
-window.HTMLElement.prototype.scrollBy = jest.fn();
-
-jest.mock("./ConsoleLogCard", () => {
-  return {
-    ConsoleLogCard: jest.fn((props: ConsoleLogCardProps) => {
-      return (
-        <div>
-          <div>SimpleConsoleLogCard...</div>
-          <div>Hello, world!</div>
-        </div>
-      );
-    }),
-  };
-});
+const mockSteps: StepInfo[] = [
+  {
+    id: "step-1",
+    title: "Step 1",
+    stageId: "stage-1",
+    state: Result.running,
+    name: "",
+    completePercent: 0,
+    type: "",
+    pauseDurationMillis: 0,
+    startTimeMillis: 0,
+    totalDurationMillis: 0,
+  },
+];
 
 describe("StageView", () => {
-  const baseStage = defaultStagesList[0];
-  const stageSteps = findStageSteps(allSuccessfulStepList, baseStage.id);
-  const expandedStepId = stageSteps[0].id;
-  const baseBuffer: StepLogBufferInfo = {
-    lines: ["Hello, world!"],
-    startByte: 0,
-    endByte: 13,
-  };
+  it("renders StageDetails and StageSteps with provided props", async () => {
+    await act(async () => {
+      render(
+        <StageView
+          stage={mockStage}
+          steps={mockSteps}
+          stepBuffers={new Map()}
+          expandedSteps={["step-1"]}
+          handleStepToggle={jest.fn()}
+          handleMoreConsoleClick={jest.fn()}
+        />,
+      );
+    });
 
-  const stepBuffers: Map<string, StepLogBufferInfo> = new Map<
-    string,
-    StepLogBufferInfo
-  >();
-  stepBuffers.set(expandedStepId, baseBuffer);
-
-  const DefaultTestProps = {
-    stage: baseStage,
-    steps: stageSteps,
-    stepBuffers: stepBuffers,
-    selectedStage: `${baseStage.id}`,
-    expandedSteps: [],
-    handleStepToggle: () => {
-      console.log("handleStepToggle triggered");
-    },
-    handleMoreConsoleClick: () => {
-      console.log("handleMoreConsoleClick triggered");
-    },
-    scrollParentId: "dummy-id",
-  } as StageViewProps;
-
-  it("renders step view", async () => {
-    const { findByText } = render(<StageView {...DefaultTestProps} />);
-    expect(findByText(/Hello, world!/));
+    expect(screen.getByRole("heading", { level: 2 })).toHaveTextContent(
+      "Build Stage",
+    );
+    expect(screen.getByText("Step 1")).toBeInTheDocument();
   });
 });

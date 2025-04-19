@@ -1,5 +1,11 @@
 import React, { useEffect, useRef } from "react";
 
+declare global {
+  interface Window {
+    Behaviour: any;
+  }
+}
+
 /**
  * Provides a bridge between React and the Jenkins' dropdown component
  */
@@ -32,8 +38,7 @@ export default function Dropdown({ items, disabled }: DropdownProps) {
   `;
     buttonRef.current.parentNode?.appendChild(template);
 
-    // @ts-ignore
-    Behaviour.applySubtree(buttonRef.current.parentNode, true);
+    window.Behaviour?.applySubtree(buttonRef.current.parentNode, true);
   }, []);
 
   return (

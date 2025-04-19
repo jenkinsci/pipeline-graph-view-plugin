@@ -1,5 +1,11 @@
 import React, { useEffect, useRef } from "react";
 
+declare global {
+  interface Window {
+    Behaviour: any;
+  }
+}
+
 /**
  * Provides a bridge between React and the Jenkins' tooltip component
  */
@@ -11,8 +17,7 @@ export default function Tooltip({ text, children }: TooltipProps) {
       return;
     }
 
-    // @ts-ignore
-    Behaviour.applySubtree(ref.current.parentNode, true);
+    window.Behaviour?.applySubtree(ref.current.parentNode, true);
   }, []);
 
   return (

@@ -3,7 +3,6 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.legacy.PipelineStepVisitor;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -24,12 +23,6 @@ public class PipelineStepApi {
         }
         List<PipelineStep> steps = stepNodes.stream()
                 .map(flowNodeWrapper -> {
-                    String state =
-                            flowNodeWrapper.getStatus().getResult().name().toLowerCase(Locale.ROOT);
-                    if (flowNodeWrapper.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
-                        state = flowNodeWrapper.getStatus().getState().name().toLowerCase(Locale.ROOT);
-                    }
-
                     String displayName = flowNodeWrapper.getDisplayName();
                     String title = "";
                     if (flowNodeWrapper.getType() == FlowNodeWrapper.NodeType.UNHANDLED_EXCEPTION) {
@@ -55,7 +48,7 @@ public class PipelineStepApi {
                     return new PipelineStep(
                             flowNodeWrapper.getId(),
                             displayName,
-                            state,
+                            PipelineStatus.of(flowNodeWrapper.getStatus()),
                             flowNodeWrapper.getType().name(),
                             title, // TODO blue ocean uses timing information: "Passed in
                             // 0s"

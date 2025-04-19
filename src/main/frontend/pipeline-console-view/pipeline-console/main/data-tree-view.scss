@@ -36,6 +36,11 @@
   &__description {
     color: var(--text-color-secondary);
   }
+
+  &--skeleton {
+    pointer-events: none;
+    color: var(--text-color-secondary) !important;
+  }
 }
 
 .pgv-toggle-icon {

@@ -81,7 +81,7 @@ export async function getRunSteps(): Promise<StepInfo[] | null> {
     let response = await fetch("allSteps");
     if (!response.ok) throw response.statusText;
     let json = await response.json();
-    return json.data;
+    return json.data.steps;
   } catch (e) {
     console.warn(`Caught error getting steps: '${e}'`);
     return null;

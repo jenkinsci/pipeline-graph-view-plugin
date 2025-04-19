@@ -23,7 +23,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
         <div className={"pgv-stage-details__running"} />
       )}
       <div>
-        <StatusIcon status={stage.state} />
+        <StatusIcon status={stage.state} skeleton={stage.skeleton} percentage={stage.completePercent} />
         <h2>{stage.name}</h2>
       </div>
       <ul>

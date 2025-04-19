@@ -1,29 +1,32 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   getConsoleTextOffset,
-  getRunStatus,
   getRunSteps,
   LOG_FETCH_SIZE,
   POLL_INTERVAL,
-  RunStatus,
   StageInfo,
   StepInfo,
   StepLogBufferInfo,
 } from "./PipelineConsoleModel";
+import useRunPoller from "../../../common/tree-api";
 
 /**
  * TODO
  */
-export function usePipelineState() {
+export function usePipelineState(props: RunPollerProps) {
+  const { run } = useRunPoller({
+    currentRunPath: props.currentRunPath,
+    previousRunPath: props.previousRunPath,
+  });
+
   const [openStage, setOpenStage] = useState("");
   const [expandedSteps, setExpandedSteps] = useState<string[]>([]);
-  const [stages, setStages] = useState<StageInfo[]>([]);
+  const [stages, setaStages] = useState<StageInfo[]>([]);
   const [steps, setSteps] = useState<StepInfo[]>([]);
   const [stepBuffers, setStepBuffers] = useState(
     new Map<string, StepLogBufferInfo>(),
   );
 
-  const stagesRef = useRef<StageInfo[]>([]);
   const stepsRef = useRef<StepInfo[]>([]);
 
   const updateStepConsoleOffset = useCallback(
@@ -94,93 +97,45 @@ export function usePipelineState() {
     }, 0);
   }, []);
 
-  // TODO - refine
-  function isEqual(idk: any, idk2: any) {
-    return JSON.stringify(idk) === JSON.stringify(idk2);
-  }
-
-  function mergeStages(
-    prevStages: StageInfo[],
-    newStages: StageInfo[],
-  ): StageInfo[] {
-    const prevMap = new Map(prevStages.map((s) => [s.id, s]));
-
-    return newStages.map((newStage) => {
-      const prevStage = prevMap.get(newStage.id);
-
-      // If we have a previous stage, compare deeply
-      if (prevStage) {
-        const children = mergeStages(
-          prevStage.children,
-          newStage.children || [],
-        );
-
-        const changed =
-          !isEqual(
-            { ...prevStage, children: undefined },
-            { ...newStage, children: undefined },
-          ) || children !== prevStage.children;
-
-        if (changed) {
-          return { ...newStage, children };
-        } else {
-          return prevStage; // reuse previous ref to skip re-render
-        }
-      }
-
-      // New stage
-      return newStage;
-    });
-  }
+  //
+  useEffect(() => {
+    setaStages(run?.stages ?? []);
+  }, [run]);
 
   useEffect(() => {
-    getStateUpdate().then((data) => {
-      setStages(data.stages);
-      setSteps(data.steps);
-      stagesRef.current = data.stages;
-      stepsRef.current = data.steps;
+    getRunSteps().then((steps) => {
+      steps = steps || [];
+      setSteps(steps);
 
-      const usedUrl = parseUrlParams(data.steps);
+      const usedUrl = parseUrlParams(steps);
       if (!usedUrl && !openStage) {
-        selectDefaultNode(data.steps);
+        selectDefaultNode(steps);
       }
 
-      if (!data.isComplete) {
+      if (!run?.complete) {
         startPollingPipeline({
-          getStateUpdateFn: getStateUpdate,
+          getStateUpdateFn: getRunSteps,
           onData: (data) => {
-            const hasNewStages =
-              JSON.stringify(stagesRef.current) !== JSON.stringify(data.stages);
             const hasNewSteps =
-              JSON.stringify(stepsRef.current) !== JSON.stringify(data.steps);
-
-            if (hasNewStages) {
-              setStages((prev) => {
-                const merged = mergeStages(prev, data.stages);
-                if (merged === prev) return prev;
-                stagesRef.current = merged;
-                return merged;
-              });
-              stagesRef.current = data.stages;
-            }
+              JSON.stringify(stepsRef.current) !== JSON.stringify(data);
 
             if (hasNewSteps) {
-              setSteps(data.steps);
-              stepsRef.current = data.steps;
+              setSteps(data);
+              stepsRef.current = data;
             }
           },
-          checkComplete: (data) => data.isComplete ?? false,
+          checkComplete: () => !run?.complete,
           interval: POLL_INTERVAL,
         });
       }
     });
-  }, []);
+  }, [stages]);
 
   const handleStageSelect = useCallback(
     (nodeId: string) => {
       if (!nodeId) return;
       if (nodeId === openStage) return; // skip if already selected
-
+      
       const stepsForStage = steps.filter((step) => step.stageId === nodeId);
       const lastStep = stepsForStage[stepsForStage.length - 1];
       const newlyExpandedSteps = lastStep ? [lastStep.id] : [];
@@ -208,8 +163,9 @@ export function usePipelineState() {
     updateStepConsoleOffset(nodeId, true, startByte);
   };
 
-  const getStageSteps = (stageId: string) =>
-    steps.filter((step) => step.stageId === stageId);
+  const getStageSteps = (stageId: string) => {
+    return steps.filter((step) => step.stageId === stageId)
+  };
 
   const getStageStepBuffers = (stageId: string) => {
     const buffers = new Map<string, StepLogBufferInfo>();
@@ -248,26 +204,6 @@ export function usePipelineState() {
   };
 }
 
-export interface PipelineStatusInfo extends RunStatus {
-  steps: StepInfo[];
-  stages: StageInfo[];
-}
-
-/**
- * Fetches the latest pipeline state from the API.
- */
-export const getStateUpdate = async (): Promise<PipelineStatusInfo> => {
-  const [runStatus, runSteps] = await Promise.all([
-    getRunStatus(),
-    getRunSteps(),
-  ]);
-
-  return {
-    ...(runStatus ?? { isComplete: false, stages: [] }),
-    ...(runSteps ?? { steps: [] }),
-  } as PipelineStatusInfo;
-};
-
 /**
  * Starts polling a function until a complete condition is met.
  */
@@ -277,16 +213,16 @@ export const startPollingPipeline = ({
   checkComplete,
   interval = 1000,
 }: {
-  getStateUpdateFn: () => Promise<PipelineStatusInfo>;
-  onData: (data: PipelineStatusInfo) => void;
-  checkComplete: (data: PipelineStatusInfo) => boolean;
+  getStateUpdateFn: () => Promise<StepInfo[] | null>;
+  onData: (data: StepInfo[]) => void;
+  checkComplete: (data: StepInfo[]) => boolean;
   interval?: number;
 }): (() => void) => {
   let polling = true;
 
   const poll = async () => {
     while (polling) {
-      const data = await getStateUpdateFn();
+      const data = (await getStateUpdateFn()) || [];
       onData(data);
 
       if (checkComplete(data)) {
@@ -304,3 +240,8 @@ export const startPollingPipeline = ({
     polling = false;
   };
 };
+
+interface RunPollerProps {
+  currentRunPath: string;
+  previousRunPath?: string;
+}

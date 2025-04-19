@@ -7,6 +7,10 @@ const DataTreeView = React.lazy(() => import("./DataTreeView"));
 const StageView = React.lazy(() => import("./StageView"));
 
 export default function PipelineConsole() {
+  const rootElement = document.getElementById("root");
+  const currentRunPath = rootElement?.dataset.currentRunPath!;
+  const previousRunPath = rootElement?.dataset.previousRunPath;
+
   const {
     openStage,
     openStageSteps,
@@ -16,7 +20,7 @@ export default function PipelineConsole() {
     handleStageSelect,
     handleStepToggle,
     handleMoreConsoleClick,
-  } = usePipelineState();
+  } = usePipelineState({ currentRunPath, previousRunPath });
 
   return (
     <SplitView>

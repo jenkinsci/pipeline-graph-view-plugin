@@ -6,6 +6,7 @@ import {
 import "./data-tree-view.scss";
 import { total } from "../../../common/utils/timings";
 import StatusIcon from "../../../common/components/status-icon";
+import { classNames } from "../../../common/utils/classnames";
 
 export default function DataTreeView({
   stages,
@@ -70,9 +71,10 @@ const TreeNode = React.memo(({ stage, selected, onSelect }: TreeNodeProps) => {
             }
             setIsExpanded(!isExpanded);
           }}
-          className={`pgv-tree-item task-link ${
-            isSelected ? "task-link--active" : ""
-          }`}
+          className={classNames("pgv-tree-item", "task-link", {
+            "task-link--active": isSelected,
+            "pgv-tree-item--skeleton": stage.skeleton,
+          })}
         >
           <div>
             <span className="task-icon-link">
@@ -82,7 +84,9 @@ const TreeNode = React.memo(({ stage, selected, onSelect }: TreeNodeProps) => {
                 skeleton={stage.skeleton}
               />
             </span>
-            <span className="task-link-text">{stage.name}</span>
+            <span className="task-link-text">
+              {stage.name}
+            </span>
             {stage.state === Result.running && (
               <span className="pgv-tree-item__description">
                 {total(stage.totalDurationMillis)}

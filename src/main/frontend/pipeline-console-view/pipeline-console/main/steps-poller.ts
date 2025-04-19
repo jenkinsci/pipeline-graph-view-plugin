@@ -10,9 +10,6 @@ import {
 } from "./PipelineConsoleModel";
 import useRunPoller from "../../../common/tree-api";
 
-/**
- * TODO
- */
 export function useStepsPoller(props: RunPollerProps) {
   const { run } = useRunPoller({
     currentRunPath: props.currentRunPath,
@@ -177,7 +174,6 @@ export function useStepsPoller(props: RunPollerProps) {
     return buffers;
   };
 
-  // TODO - kill this method completely?
   const getOpenStage = (): StageInfo | null => {
     const findStage = (stages: StageInfo[]): StageInfo | null => {
       for (let stage of stages) {

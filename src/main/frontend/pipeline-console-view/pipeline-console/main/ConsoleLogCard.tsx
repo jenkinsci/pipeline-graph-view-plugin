@@ -1,4 +1,4 @@
-import React, { useEffect, useState, Suspense } from "react";
+import React, { useEffect, Suspense } from "react";
 import "./console-log-card.scss";
 
 import {
@@ -7,15 +7,12 @@ import {
   StepLogBufferInfo,
 } from "./PipelineConsoleModel";
 
-import ConsoleLogModal from "./ConsoleLogModal";
 import StatusIcon from "../../../common/components/status-icon";
 import { total } from "../../../common/utils/timings";
 
 const ConsoleLogStream = React.lazy(() => import("./ConsoleLogStream"));
 
 export default function ConsoleLogCard(props: ConsoleLogCardProps) {
-  const [open, setOpen] = useState(false);
-
   useEffect(() => {
     if (props.isExpanded) {
       props.handleMoreConsoleClick(props.step.id, props.stepBuffer.startByte);
@@ -112,16 +109,6 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
           </svg>
         </div>
       </button>
-
-      <ConsoleLogModal
-        logBuffer={props.stepBuffer}
-        handleMoreConsoleClick={props.handleMoreConsoleClick}
-        step={props.step}
-        truncatedLogWarning={getTruncatedLogWarning()}
-        maxHeightScale={0.85}
-        open={open}
-        setClose={() => setOpen(false)}
-      />
 
       {props.isExpanded && (
         <div style={{ paddingTop: "0.5rem" }}>

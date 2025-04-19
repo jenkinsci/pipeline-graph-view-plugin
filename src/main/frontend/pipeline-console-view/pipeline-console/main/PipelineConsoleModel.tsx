@@ -1,5 +1,3 @@
-import { Result } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
-
 // re-export Result so the relative path exists in one location.
 export {
   Result,

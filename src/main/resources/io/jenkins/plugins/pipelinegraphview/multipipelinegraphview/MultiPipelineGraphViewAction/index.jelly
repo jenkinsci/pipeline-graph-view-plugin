@@ -4,7 +4,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:p="/lib/pipeline-graph-view">
   <l:layout title="Stages [${it.jobDisplayName}]" type="one-column">
     <l:main-panel>
-      <l:app-bar title="${%Build} ${it.jobDisplayName}">
+      <l:app-bar title="${it.jobDisplayName}">
         <j:if test="${it.buildable}">
           <l:hasPermission permission="${it.permission}">
             <j:set var="proxyId" value="${h.generateId()}" />

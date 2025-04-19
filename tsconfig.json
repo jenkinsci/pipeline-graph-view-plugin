@@ -9,6 +9,7 @@
       "jsx": "react",
       "resolveJsonModule": true,
       "esModuleInterop": true,
-      "useUnknownInCatchVariables": false
+      "useUnknownInCatchVariables": false,
+      "types": ["node", "jest", "@testing-library/jest-dom"]
     }
   }

@@ -1,12 +1,12 @@
 #tasks {
   margin: 0;
-  padding-right: 1.4rem;
+  padding-right: 0.7rem;
 }
 
 .pgv-tree-item {
   display: block !important;
   font-family: var(--font-family-sans) !important;
-  padding-block: 0.3125rem !important;
+  padding-block: 0.375rem !important;
   padding-right: 1rem;
   cursor: pointer !important;
 
@@ -36,12 +36,17 @@
   &__description {
     color: var(--text-color-secondary);
   }
+
+  &--skeleton {
+    pointer-events: none;
+    color: var(--text-color-secondary) !important;
+  }
 }
 
 .pgv-toggle-icon {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
+  top: 0.55rem;
+  right: 0.55rem;
   width: 1rem;
   height: 1rem;
   margin-left: auto;

@@ -18,11 +18,11 @@ export function useStepsPoller(props: RunPollerProps) {
 
   const [openStage, setOpenStage] = useState("");
   const [expandedSteps, setExpandedSteps] = useState<string[]>([]);
-  const [stages, setaStages] = useState<StageInfo[]>([]);
   const [steps, setSteps] = useState<StepInfo[]>([]);
   const [stepBuffers, setStepBuffers] = useState(
     new Map<string, StepLogBufferInfo>(),
   );
+  const [userManuallySetNode, setUserManuallySetNode] = useState(false);
 
   const stepsRef = useRef<StepInfo[]>([]);
 
@@ -54,57 +54,40 @@ export function useStepsPoller(props: RunPollerProps) {
     [],
   );
 
+  // TODO - Rename!
   const parseUrlParams = useCallback(
     (steps: StepInfo[]): boolean => {
-      // const params = new URLSearchParams(document.location.search.substring(1));
-      // let selected = params.get("selected-node") || "";
-      // if (!selected) return false;
-      //
-      // const step = steps.find((s) => s.id === selected);
-      // const expanded: string[] = [];
-      //
-      // if (step) {
-      //   selected = step.stageId;
-      //   expanded.push(step.id);
-      //
-      //   updateStepConsoleOffset(
-      //     step.id,
-      //     false,
-      //     parseInt(params.get("start-byte") || `${0 - LOG_FETCH_SIZE}`),
-      //   );
-      // }
-      //
-      // setOpenStage(selected);
-      // setExpandedSteps(expanded);
+      const params = new URLSearchParams(document.location.search.substring(1));
+      let selected = params.get("selected-node");
+      if (!selected) return false;
+
+      const step = steps.find((s) => s.id === selected);
+      const expanded: string[] = [];
+
+      if (step) {
+        selected = step.stageId;
+        expanded.push(step.id);
+
+        updateStepConsoleOffset(
+          step.id,
+          false,
+          parseInt(params.get("start-byte") || `${0 - LOG_FETCH_SIZE}`),
+        );
+      }
+
+      setOpenStage(selected);
+      setExpandedSteps(expanded);
       return true;
     },
     [updateStepConsoleOffset],
   );
-
-  // const selectDefaultNode = useCallback((steps: StepInfo[]) => {
-  //   const step = steps.find((s) => s !== undefined);
-  //   if (!step) return;
-  //   setOpenStage(step.stageId);
-  //   setExpandedSteps([step.id]);
-  //
-  //   setTimeout(() => {
-  //     document
-  //       .getElementById(`stage-tree-icon-${step.stageId}`)
-  //       ?.scrollIntoView();
-  //   }, 0);
-  // }, []);
-
-  //
-  useEffect(() => {
-    setaStages(run?.stages ?? []);
-  }, [run]);
 
   useEffect(() => {
     getRunSteps().then((steps) => {
       steps = steps || [];
       setSteps(steps);
 
-      const usedUrl = parseUrlParams(steps);
+      // const usedUrl = parseUrlParams(steps);
       // if (!usedUrl && !openStage) {
       //   selectDefaultNode(steps);
       // }
@@ -126,10 +109,12 @@ export function useStepsPoller(props: RunPollerProps) {
         });
       }
     });
-  }, [stages]);
+  }, [run?.stages]);
 
   const handleStageSelect = useCallback(
     (nodeId: string) => {
+      setUserManuallySetNode(true) // - TODO do we need this?
+
       if (!nodeId) return;
       if (nodeId === openStage) return; // skip if already selected
 
@@ -148,6 +133,7 @@ export function useStepsPoller(props: RunPollerProps) {
   );
 
   const handleStepToggle = (nodeId: string) => {
+    // setUserManuallySetNode(true) - TODO do we need this?
     if (!expandedSteps.includes(nodeId)) {
       setExpandedSteps((prev) => [...prev, nodeId]);
       updateStepConsoleOffset(nodeId, false, 0 - LOG_FETCH_SIZE);
@@ -185,7 +171,7 @@ export function useStepsPoller(props: RunPollerProps) {
       }
       return null;
     };
-    return openStage ? findStage(stages) : null;
+    return openStage ? findStage(run?.stages || []) : null;
   };
 
   return {
@@ -193,7 +179,7 @@ export function useStepsPoller(props: RunPollerProps) {
     openStageSteps: getStageSteps(openStage),
     openStageStepBuffers: getStageStepBuffers(openStage),
     expandedSteps,
-    stages,
+    stages: run?.stages || [],
     handleStageSelect,
     handleStepToggle,
     handleMoreConsoleClick,

@@ -26,7 +26,7 @@ export interface StageViewProps {
   steps: Array<StepInfo>;
   stepBuffers: Map<string, StepLogBufferInfo>;
   expandedSteps: string[];
-  handleStepToggle: (event: React.SyntheticEvent<{}>, nodeId: string) => void;
+  handleStepToggle: (nodeId: string) => void;
   handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
   // Id of the element whose scroll bar we wish to use.
   scrollParentId: string;

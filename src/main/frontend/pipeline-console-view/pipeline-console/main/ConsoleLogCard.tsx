@@ -20,8 +20,17 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
     }
   }, [props.isExpanded]);
 
-  const handleToggle = (event: React.MouseEvent<HTMLElement>) => {
-    props.handleStepToggle(event, props.step.id);
+  const handleToggle = (e: React.MouseEvent<HTMLElement>) => {
+    // Only prevent left clicks
+    if (e.button !== 0 || e.metaKey || e.ctrlKey) {
+      return;
+    }
+
+    e.preventDefault();
+
+    history.replaceState({}, "", `?selected-node=` + props.step.id);
+
+    props.handleStepToggle(props.step.id);
   };
 
   const showMoreLogs = () => {
@@ -59,7 +68,8 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
 
   return (
     <div className={"pgv-step-detail-group"} key={`step-card-${props.step.id}`}>
-      <button
+      <a
+        href={`?selected-node=` + props.step.id}
         onClick={handleToggle}
         className={classNames("pgv-step-detail-header", "jenkins-button", {
           "jenkins-button--tertiary": !props.isExpanded,
@@ -108,7 +118,7 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
             />
           </svg>
         </div>
-      </button>
+      </a>
 
       {props.isExpanded && (
         <div style={{ paddingTop: "0.5rem" }}>
@@ -131,7 +141,7 @@ export type ConsoleLogCardProps = {
   step: StepInfo;
   stepBuffer: StepLogBufferInfo;
   isExpanded: boolean;
-  handleStepToggle: (event: React.SyntheticEvent<{}>, nodeId: string) => void;
+  handleStepToggle: (nodeId: string) => void;
   handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
   scrollParentId: string;
 };

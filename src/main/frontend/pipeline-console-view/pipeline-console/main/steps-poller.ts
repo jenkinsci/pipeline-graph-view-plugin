@@ -147,7 +147,7 @@ export function useStepsPoller(props: RunPollerProps) {
     [openStage, steps, updateStepConsoleOffset],
   );
 
-  const handleStepToggle = (_: any, nodeId: string) => {
+  const handleStepToggle = (nodeId: string) => {
     if (!expandedSteps.includes(nodeId)) {
       setExpandedSteps((prev) => [...prev, nodeId]);
       updateStepConsoleOffset(nodeId, false, 0 - LOG_FETCH_SIZE);

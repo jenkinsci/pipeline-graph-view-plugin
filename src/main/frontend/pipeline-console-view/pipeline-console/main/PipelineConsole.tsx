@@ -1,7 +1,7 @@
 import React from "react";
 import SplitView from "./SplitView";
-import { useStepsPoller } from "./steps-poller";
 import "./pipeline-console.scss";
+import { useStepsPoller } from "./hooks/use-steps-poller";
 
 const DataTreeView = React.lazy(() => import("./DataTreeView"));
 const StageView = React.lazy(() => import("./StageView"));

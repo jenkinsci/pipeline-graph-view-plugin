@@ -1,5 +1,7 @@
 /** * @jest-environment jsdom */
 
+(global as any).TextEncoder = require("util").TextEncoder;
+
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import {

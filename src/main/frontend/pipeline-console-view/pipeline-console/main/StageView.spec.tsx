@@ -4,7 +4,7 @@
 
 import "@testing-library/jest-dom";
 import React from "react";
-import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
+import { StepLogBufferInfo } from "./PipelineConsoleModel";
 import { render } from "@testing-library/react";
 import StageView, { StageViewProps } from "./StageView";
 import { ConsoleLogCardProps } from "./ConsoleLogCard";

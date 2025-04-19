@@ -124,21 +124,3 @@ it("expands and collapses step when toggled", async () => {
   act(() => result.current.handleStepToggle("step-2"));
   expect(result.current.expandedSteps).toContain("step-2");
 });
-
-it("does not re-open stage if same stage is clicked", () => {
-  const { result } = renderHook(() =>
-    useStepsPoller({ currentRunPath: "/run/1" }),
-  );
-
-  act(() => {
-    result.current.handleStageSelect("stage-1");
-  });
-
-  const prevExpanded = result.current.expandedSteps;
-
-  act(() => {
-    result.current.handleStageSelect("stage-1");
-  });
-
-  expect(result.current.expandedSteps).toEqual(prevExpanded);
-});

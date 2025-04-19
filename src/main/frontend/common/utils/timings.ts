@@ -1,3 +1,5 @@
+import { i18n } from "./i18n";
+
 const ONE_SECOND_MS: number = 1000;
 const ONE_MINUTE_MS: number = 60 * ONE_SECOND_MS;
 const ONE_HOUR_MS: number = 60 * ONE_MINUTE_MS;
@@ -31,6 +33,15 @@ function makeTimeSpanString(
  * @param duration number of milliseconds.
  */
 function getTimeSpanString(duration: number): string {
+  i18n().then((map => {
+    console.log("year", map.get("Util.year")!.format({"0": "13"}));
+    console.log("month", map.get("Util.month")!.format({"0": "12"}));
+    console.log("hour", map.get("Util.hour")!.format({"0": "11"}));
+    console.log("day", map.get("Util.day")!.format({"0": "2"}));
+    console.log("day", map.get("Util.day")!.format({"0": "1"}));
+    console.log("day", map.get("Util.day")!.format({"0": "0"}));
+  }));
+
   const years = Math.floor(duration / ONE_YEAR_MS);
   duration %= ONE_YEAR_MS;
   const months = Math.floor(duration / ONE_MONTH_MS);

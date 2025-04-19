@@ -95,9 +95,9 @@ const TreeNode = React.memo(({ stage, selected, onSelect }: TreeNodeProps) => {
 
         {hasChildren && (
           <button
-            className={`pgv-toggle-icon ${
-              isExpanded ? "pgv-toggle-icon--active" : ""
-            }`}
+            className={classNames("pgv-toggle-icon", {
+              "pgv-toggle-icon--active": isExpanded,
+            })}
             onClick={handleToggleClick}
             aria-label={isExpanded ? "Collapse" : "Expand"}
           >

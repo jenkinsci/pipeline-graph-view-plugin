@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./scroll-to-top-bottom.scss";
+import { classNames } from "../../../common/utils/classnames";
 
 export default function ScrollToTopBottom() {
   const [isAtTop, setIsAtTop] = useState(true);
@@ -56,7 +57,9 @@ export default function ScrollToTopBottom() {
   return (
     <div className="pgv-scroll-to-top-bottom__container">
       <div
-        className={`pgv-scroll-to-top-bottom ${isScrollable ? "pgv-scroll-to-top-bottom--visible" : ""}`}
+        className={classNames(`pgv-scroll-to-top-bottom`, {
+          "pgv-scroll-to-top-bottom--visible": isScrollable,
+        })}
         aria-hidden={!isScrollable}
       >
         <button

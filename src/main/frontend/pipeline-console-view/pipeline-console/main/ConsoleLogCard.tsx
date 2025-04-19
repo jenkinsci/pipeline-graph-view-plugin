@@ -9,6 +9,7 @@ import {
 
 import StatusIcon from "../../../common/components/status-icon";
 import { total } from "../../../common/utils/timings";
+import { classNames } from "../../../common/utils/classnames";
 
 const ConsoleLogStream = React.lazy(() => import("./ConsoleLogStream"));
 
@@ -60,10 +61,9 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
     <div className={"pgv-step-detail-group"} key={`step-card-${props.step.id}`}>
       <button
         onClick={handleToggle}
-        className={
-          "pgv-step-detail-header jenkins-button " +
-          (props.isExpanded ? "" : "jenkins-button--tertiary")
-        }
+        className={classNames("pgv-step-detail-header", "jenkins-button", {
+          "jenkins-button--tertiary": !props.isExpanded,
+        })}
         key={`step-action-area-${props.step.id}`}
       >
         <div className="pgv-step-detail-header__content">

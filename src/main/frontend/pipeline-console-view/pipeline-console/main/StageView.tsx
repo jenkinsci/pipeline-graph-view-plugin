@@ -21,7 +21,7 @@ export default function StageView(props: StageViewProps) {
   );
 }
 
-export interface StageViewProps {
+interface StageViewProps {
   stage: StageInfo | null;
   steps: Array<StepInfo>;
   stepBuffers: Map<string, StepLogBufferInfo>;

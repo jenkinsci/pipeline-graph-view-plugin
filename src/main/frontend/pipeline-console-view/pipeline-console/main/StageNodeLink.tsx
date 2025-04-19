@@ -63,6 +63,6 @@ export default function StageNodeLink({ agent }: StageNodeLinkProps) {
   );
 }
 
-export interface StageNodeLinkProps {
+interface StageNodeLinkProps {
   agent?: string;
 }

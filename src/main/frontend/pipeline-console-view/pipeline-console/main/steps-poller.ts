@@ -56,43 +56,43 @@ export function useStepsPoller(props: RunPollerProps) {
 
   const parseUrlParams = useCallback(
     (steps: StepInfo[]): boolean => {
-      const params = new URLSearchParams(document.location.search.substring(1));
-      let selected = params.get("selected-node") || "";
-      if (!selected) return false;
-
-      const step = steps.find((s) => s.id === selected);
-      const expanded: string[] = [];
-
-      if (step) {
-        selected = step.stageId;
-        expanded.push(step.id);
-
-        updateStepConsoleOffset(
-          step.id,
-          false,
-          parseInt(params.get("start-byte") || `${0 - LOG_FETCH_SIZE}`),
-        );
-      }
-
-      setOpenStage(selected);
-      setExpandedSteps(expanded);
+      // const params = new URLSearchParams(document.location.search.substring(1));
+      // let selected = params.get("selected-node") || "";
+      // if (!selected) return false;
+      //
+      // const step = steps.find((s) => s.id === selected);
+      // const expanded: string[] = [];
+      //
+      // if (step) {
+      //   selected = step.stageId;
+      //   expanded.push(step.id);
+      //
+      //   updateStepConsoleOffset(
+      //     step.id,
+      //     false,
+      //     parseInt(params.get("start-byte") || `${0 - LOG_FETCH_SIZE}`),
+      //   );
+      // }
+      //
+      // setOpenStage(selected);
+      // setExpandedSteps(expanded);
       return true;
     },
     [updateStepConsoleOffset],
   );
 
-  const selectDefaultNode = useCallback((steps: StepInfo[]) => {
-    const step = steps.find((s) => s !== undefined);
-    if (!step) return;
-    setOpenStage(step.stageId);
-    setExpandedSteps([step.id]);
-
-    setTimeout(() => {
-      document
-        .getElementById(`stage-tree-icon-${step.stageId}`)
-        ?.scrollIntoView();
-    }, 0);
-  }, []);
+  // const selectDefaultNode = useCallback((steps: StepInfo[]) => {
+  //   const step = steps.find((s) => s !== undefined);
+  //   if (!step) return;
+  //   setOpenStage(step.stageId);
+  //   setExpandedSteps([step.id]);
+  //
+  //   setTimeout(() => {
+  //     document
+  //       .getElementById(`stage-tree-icon-${step.stageId}`)
+  //       ?.scrollIntoView();
+  //   }, 0);
+  // }, []);
 
   //
   useEffect(() => {
@@ -105,9 +105,9 @@ export function useStepsPoller(props: RunPollerProps) {
       setSteps(steps);
 
       const usedUrl = parseUrlParams(steps);
-      if (!usedUrl && !openStage) {
-        selectDefaultNode(steps);
-      }
+      // if (!usedUrl && !openStage) {
+      //   selectDefaultNode(steps);
+      // }
 
       if (!run?.complete) {
         startPollingPipeline({

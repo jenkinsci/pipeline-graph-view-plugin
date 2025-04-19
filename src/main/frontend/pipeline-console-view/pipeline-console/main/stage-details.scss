@@ -75,6 +75,13 @@
       gap: 1ch;
       text-box: trim-both;
 
+      span {
+        display: flex;
+        align-items: center;
+        gap: 1ch;
+        text-box: trim-both;
+      }
+
       svg {
         width: 1.125rem;
         height: 1.125rem;

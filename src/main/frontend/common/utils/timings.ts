@@ -83,3 +83,19 @@ export function started(since: number): string {
     ? ""
     : `Started ${getTimeSpanString(Math.abs(since - Date.now()))} ago`;
 }
+
+export function exact(since: number): string {
+  if (since === 0) return "";
+
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+
+  return formatter.format(new Date(since));
+}

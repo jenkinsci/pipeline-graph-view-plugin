@@ -3,10 +3,7 @@ import React, { useEffect, useRef } from "react";
 /**
  * Provides a bridge between React and the Jenkins' dropdown component
  */
-export default function DropdownWrapper({
-  items,
-  disabled,
-}: DropdownWrapperProps) {
+export default function Dropdown({ items, disabled }: DropdownProps) {
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -59,7 +56,7 @@ export default function DropdownWrapper({
   );
 }
 
-interface DropdownWrapperProps {
+interface DropdownProps {
   items: DropdownItem[];
   disabled?: boolean;
 }

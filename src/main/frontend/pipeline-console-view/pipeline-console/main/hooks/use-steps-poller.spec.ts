@@ -41,6 +41,7 @@ jest.mock("../PipelineConsoleModel", () => ({
 
 beforeEach(() => {
   (model.getRunSteps as jest.Mock).mockResolvedValue(mockSteps);
+  window.history.pushState({}, "", "/");
 });
 
 afterEach(() => {
@@ -49,7 +50,7 @@ afterEach(() => {
 
 it("selects default step if URL param is missing", async () => {
   const { result } = renderHook(() =>
-    useStepsPoller({ currentRunPath: "/1", previousRunPath: undefined }),
+    useStepsPoller({ currentRunPath: "/run/1", previousRunPath: undefined }),
   );
 
   await waitFor(() =>
@@ -65,7 +66,7 @@ it("selects default step if URL param is missing", async () => {
 it("selects the step from URL on initial load", async () => {
   window.history.pushState({}, "", "/?selected-node=step-1&start-byte=0");
   const { result } = renderHook(() =>
-    useStepsPoller({ currentRunPath: "/1", previousRunPath: undefined }),
+    useStepsPoller({ currentRunPath: "/run/1", previousRunPath: undefined }),
   );
 
   await waitFor(() =>
@@ -79,8 +80,6 @@ it("selects the step from URL on initial load", async () => {
 });
 
 it("switches to next stage when current one finishes", async () => {
-  window.history.pushState({}, "", "/");
-
   let currentSteps = [
     { id: "s1", title: "Step 1", stageId: "stage-1", state: "running" },
     { id: "s2", title: "Step 2", stageId: "stage-2", state: "queued" },
@@ -89,7 +88,7 @@ it("switches to next stage when current one finishes", async () => {
   (model.getRunSteps as jest.Mock).mockImplementation(() => Promise.resolve(currentSteps));
 
   const { result } = renderHook(() =>
-    useStepsPoller({ currentRunPath: "/run" }),
+    useStepsPoller({ currentRunPath: "/run/1" }),
   );
 
   await waitFor(() =>
@@ -112,7 +111,7 @@ it("switches to next stage when current one finishes", async () => {
 
 it("expands and collapses step when toggled", async () => {
   const { result } = renderHook(() =>
-    useStepsPoller({ currentRunPath: "/run" }),
+    useStepsPoller({ currentRunPath: "/run/1" }),
   );
 
   await waitFor(() =>
@@ -128,7 +127,7 @@ it("expands and collapses step when toggled", async () => {
 
 it("does not re-open stage if same stage is clicked", () => {
   const { result } = renderHook(() =>
-    useStepsPoller({ currentRunPath: "/run" }),
+    useStepsPoller({ currentRunPath: "/run/1" }),
   );
 
   act(() => {

@@ -23,10 +23,7 @@ export const MultiPipelineGraph = () => {
       {runs.length > 0 && (
         <table className="jenkins-table sortable">
           <thead>
-            <tr>
-              <th className="jenkins-table__cell--tight">id</th>
-              <th data-sort-disable="true">pipeline</th>
-            </tr>
+            <tr></tr>
           </thead>
           <tbody>
             {runs.map((run) => (

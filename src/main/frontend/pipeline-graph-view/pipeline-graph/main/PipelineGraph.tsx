@@ -7,6 +7,7 @@ import {
   LayoutInfo,
   NodeColumn,
   StageInfo,
+  NodeInfo,
 } from "./PipelineGraphModel";
 import { layoutGraph } from "./PipelineGraphLayout";
 import { Result } from "./PipelineGraphModel";

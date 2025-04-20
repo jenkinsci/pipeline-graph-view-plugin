@@ -11,6 +11,7 @@ import StatusIcon, {
   resultToColor,
 } from "../../../../common/components/status-icon";
 import { CSSProperties } from "react";
+import { Tooltip } from "react-tippy";
 
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck
 
@@ -49,6 +50,16 @@ export function Node({ node }: NodeProps) {
       percentage={node.stage.completePercent}
       skeleton={node.stage.skeleton}
     />,
+    <Tooltip
+      key={node.stage.id}
+      title={`${node.stage.name}: ${node.stage.state}`}
+    >
+      <StatusIcon
+        status={node.stage.state}
+        percentage={node.stage.completePercent}
+        skeleton={node.stage.skeleton}
+      />
+    </Tooltip>,
   );
 
   const clickable =
@@ -106,7 +117,7 @@ export function SelectionHighlight({
   columnLoop: for (const column of nodeColumns) {
     for (const row of column.rows) {
       for (const node of row) {
-        if (node.isPlaceholder === false && isStageSelected(node.stage)) {
+        if (!node.isPlaceholder && isStageSelected(node.stage)) {
           selectedNode = node;
           break columnLoop;
         }

@@ -5,7 +5,7 @@
          xmlns:t="/lib/hudson">
   <l:layout title="${%Graph} [${it.fullBuildDisplayName}]" type="one-column">
     <l:main-panel>
-      <p:symbols />
+      <link rel="stylesheet" href="${resURL}/plugin/pipeline-graph-view/js/style.css" type="text/css" />
 
       <j:set var="controls">
         <j:if test="${it.buildable}">
@@ -33,14 +33,14 @@
 
       <t:buildCaption controls="${controls}">
         <j:if test="${it.previousBuildNumber!=null}">
-          <a href="../../${it.previousBuildNumber}/pipeline-graph" class="app-details__prev_next">
-            <l:icon class="symbol-chevron-back-outline plugin-ionicons-api icon-md" tooltip="${%Previous Build}" />
+          <a href="../../${it.previousBuildNumber}/pipeline-graph" class="jenkins-button jenkins-button--tertiary app-details__prev_next" tooltip="${%Previous Build}">
+            <l:icon class="symbol-chevron-back-outline plugin-ionicons-api icon-md" />
           </a>
         </j:if>
-        ${%Build} ${it.buildDisplayName}
+        ${it.buildDisplayName}
         <j:if test="${it.nextBuildNumber!=null}">
-          <a href="../../${it.nextBuildNumber}/pipeline-graph" class="app-details__prev_next">
-            <l:icon class="symbol-chevron-forward-outline plugin-ionicons-api icon-md" tooltip="${%Next Build}"/>
+          <a href="../../${it.nextBuildNumber}/pipeline-graph" class="jenkins-button jenkins-button--tertiary app-details__prev_next" tooltip="${%Next Build}">
+            <l:icon class="symbol-chevron-forward-outline plugin-ionicons-api icon-md" />
           </a>
         </j:if>
       </t:buildCaption>

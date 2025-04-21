@@ -43,14 +43,14 @@
 h1 {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1rem;
 }
 
 .app-details__prev_next {
   padding: 0.5rem;
   min-width: 2.375rem;
   border-radius: 100px;
-  margin-inline: -0.375rem;
+  margin-inline: -0.75rem;
   color: var(--text-color-secondary) !important;
 
   &::before,

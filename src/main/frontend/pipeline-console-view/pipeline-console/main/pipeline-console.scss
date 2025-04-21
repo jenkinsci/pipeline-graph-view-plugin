@@ -3,7 +3,7 @@
 h1 {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1rem;
 }
 
 .ansi-fg-0 {
@@ -80,7 +80,7 @@ h1 {
   padding: 0.5rem;
   min-width: 2.375rem;
   border-radius: 100px;
-  margin-inline: -0.375rem;
+  margin-inline: -0.75rem;
   color: var(--text-color-secondary) !important;
 
   &::before,

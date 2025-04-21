@@ -41,13 +41,13 @@
 
             <t:buildCaption controls="${controls}">
                 <j:if test="${it.previousBuildNumber!=null}">
-                    <a href="../../${it.previousBuildNumber}/pipeline-graph" class="jenkins-button jenkins-button--tertiary app-details__prev_next" tooltip="${%Previous Build}">
+                    <a href="../../${it.previousBuildNumber}/pipeline-console" class="jenkins-button jenkins-button--tertiary app-details__prev_next" tooltip="${%Previous Build}">
                         <l:icon class="symbol-chevron-back-outline plugin-ionicons-api icon-md" />
                     </a>
                 </j:if>
                 ${it.buildDisplayName}
                 <j:if test="${it.nextBuildNumber!=null}">
-                    <a href="../../${it.nextBuildNumber}/pipeline-graph" class="jenkins-button jenkins-button--tertiary app-details__prev_next" tooltip="${%Next Build}">
+                    <a href="../../${it.nextBuildNumber}/pipeline-console" class="jenkins-button jenkins-button--tertiary app-details__prev_next" tooltip="${%Next Build}">
                         <l:icon class="symbol-chevron-forward-outline plugin-ionicons-api icon-md" />
                     </a>
                 </j:if>

@@ -42,7 +42,7 @@ export async function getRunStatusFromPath(
   url: string,
 ): Promise<RunStatus | null> {
   try {
-    const response = await fetch(url + "/pipeline-graph/tree");
+    const response = await fetch(url + "pipeline-graph/tree");
     if (!response.ok) {
       throw response.statusText;
     }

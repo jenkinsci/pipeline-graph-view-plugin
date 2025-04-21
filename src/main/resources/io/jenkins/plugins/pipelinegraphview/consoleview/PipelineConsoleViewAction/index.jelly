@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns"
-         xmlns:p="/lib/pipeline-graph-view" xmlns:t="/lib/hudson">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns" xmlns:t="/lib/hudson">
     <l:layout title="${%Build log} [${it.buildDisplayName}]">
         <l:main-panel>
-            <p:symbols />
-
+            <link rel="stylesheet" href="${resURL}/plugin/pipeline-graph-view/js/style.css" type="text/css" />
             <j:out value="${h.generateConsoleAnnotationScriptAndStylesheet()}"/>
 
             <j:set var="controls">

@@ -1,0 +1,23 @@
+h1 {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.app-details__prev_next {
+  padding: 0.5rem;
+  min-width: 2.375rem;
+  border-radius: 100px;
+  margin-inline: -0.75rem;
+  color: var(--text-color-secondary) !important;
+
+  &::before,
+  &::after {
+    inset: 0.375rem;
+  }
+
+  svg {
+    width: 1.175rem !important;
+    height: 1.175rem !important;
+  }
+}

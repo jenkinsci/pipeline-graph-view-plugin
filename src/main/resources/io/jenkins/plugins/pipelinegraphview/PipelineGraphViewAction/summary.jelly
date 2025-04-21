@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:p="/lib/pipeline-graph-view">
+<j:jelly xmlns:j="jelly:core">
   <j:if test="${it.showGraphOnBuildPage}">
-    <p:symbols />
     <div class="pgw-graph-container">
       <div id="graph"
            data-current-run-path="${rootURL + '/' + it.buildUrl}"

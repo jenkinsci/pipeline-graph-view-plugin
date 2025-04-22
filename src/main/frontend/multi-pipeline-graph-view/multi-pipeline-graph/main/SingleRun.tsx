@@ -3,7 +3,6 @@ import { RunInfo } from "./MultiPipelineGraphModel";
 import {
   LayoutInfo,
   PipelineGraph,
-  Result,
   StageInfo,
 } from "../../../pipeline-graph-view/pipeline-graph/main";
 import { defaultLayout } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";

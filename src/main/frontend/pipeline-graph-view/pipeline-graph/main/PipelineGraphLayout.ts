@@ -10,7 +10,7 @@ import {
 
 export const sequentialStagesLabelOffset = 80;
 
-const maxColumnsWhenCollapsed = 8;
+const maxColumnsWhenCollapsed = 13;
 
 /**
  * Main process for laying out the graph. Creates and positions markers for each component, but creates no components.

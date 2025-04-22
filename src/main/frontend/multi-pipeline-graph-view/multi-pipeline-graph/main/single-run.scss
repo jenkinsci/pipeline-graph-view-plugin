@@ -20,11 +20,12 @@
     display: grid;
     grid-template-columns: auto 1fr;
     align-items: start;
-    overflow-wrap: break-word;
     gap: 0.125rem 0.625rem;
     color: var(--text-color);
     text-decoration: none;
     transition: opacity var(--standard-transition);
+    word-break: normal;
+    overflow-wrap: anywhere;
 
     span {
       grid-area: 2 / 2;

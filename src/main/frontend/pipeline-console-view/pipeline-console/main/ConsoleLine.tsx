@@ -47,7 +47,10 @@ export const ConsoleLine = (props: ConsoleLineProps) => {
       >
         <a
           className="console-line-number"
-          href={`?start-byte=${props.startByte}&selected-node=${props.stepId}#log-${props.lineNumber}`} //`}
+          href={`?start-byte=${props.startByte}&selected-node=${props.stepId}#log-${props.lineNumber}`}
+          style={{
+            width: Math.max(9 * String(props.lineNumber).length, 28) + "px",
+          }}
         >
           {props.lineNumber}
         </a>

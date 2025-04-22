@@ -6,7 +6,7 @@ import { ConsoleLine } from "./ConsoleLine";
 export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   const appendInterval = useRef<NodeJS.Timeout | null>(null);
   const virtuosoRef = useRef<VirtuosoHandle>(null);
-  const [stickToBottom, setStickToBottom] = useState(true);
+  const [stickToBottom, setStickToBottom] = useState(false);
   const [maxConsoleLineHeight, setMaxConsoleLineHeight] = useState(1);
 
   useEffect(() => {
@@ -19,7 +19,13 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
 
   useEffect(() => {
     if (stickToBottom && props.logBuffer.lines.length > 0) {
-      scrollListBottom();
+      // Scroll to bottom of the log stream
+      if (virtuosoRef.current && props.logBuffer.lines) {
+        requestAnimationFrame(() => {
+          const scrollTarget = document.documentElement.scrollHeight;
+          window.scrollTo({ top: scrollTarget });
+        });
+      }
     }
   }, [props.logBuffer.lines]);
 
@@ -27,7 +33,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
     const handleScroll = () => {
       const scrollPosition = window.scrollY + window.innerHeight;
       const pageHeight = document.body.scrollHeight;
-      const isAtBottom = pageHeight - scrollPosition < 100;
+      const isAtBottom = pageHeight - scrollPosition < 300;
 
       setStickToBottom(isAtBottom);
     };
@@ -60,17 +66,6 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
     },
     [maxConsoleLineHeight],
   );
-
-  const scrollListBottom = () => {
-    if (virtuosoRef.current && props.logBuffer.lines) {
-      requestAnimationFrame(() => {
-        const scrollTarget = document.documentElement.scrollHeight;
-        window.scrollTo({ top: scrollTarget });
-      });
-    } else {
-      console.debug("Log buffer is empty or virtuosoRef is not available.");
-    }
-  };
 
   const shouldRequestMoreLogs = () => {
     return props.step.state === Result.running || props.logBuffer.startByte < 0;

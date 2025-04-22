@@ -1,7 +1,7 @@
 import * as React from "react";
+import { CSSProperties } from "react";
 
 import {
-  decodeResultValue,
   LayoutInfo,
   NodeColumn,
   NodeInfo,
@@ -41,8 +41,6 @@ export function Node({ node }: NodeProps) {
   }
 
   const { title, state, url } = node.stage ?? {};
-  const resultClean = decodeResultValue(state);
-
   groupChildren.push(
     <StatusIcon
       key={`icon-${node.id}`}
@@ -78,7 +76,7 @@ export function Node({ node }: NodeProps) {
     } as CSSProperties,
     className:
       "PWGx-pipeline-node PWGx-pipeline-node--" +
-      resultClean +
+      state +
       " " +
       resultToColor(node.stage.state, node.stage.skeleton),
   };

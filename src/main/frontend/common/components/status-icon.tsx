@@ -11,8 +11,6 @@ export default function StatusIcon({
   percentage,
   skeleton,
 }: StatusIconProps) {
-  status = decodeResultValue(status);
-
   const viewBoxSize = 512;
   const strokeWidth = status === "running" ? 50 : 0;
   const radius = (viewBoxSize - strokeWidth) / 2.2;

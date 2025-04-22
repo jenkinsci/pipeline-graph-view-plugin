@@ -79,13 +79,13 @@ export function paused(since: number): string {
 }
 
 export function started(since: number): string {
-  return since == 0
+  return since === 0
     ? ""
     : `Started ${getTimeSpanString(Math.abs(since - Date.now()))} ago`;
 }
 
 export function time(since: number): string {
-  return since == 0
+  return since === 0
     ? ""
     : new Date(since).toLocaleTimeString("en-GB", {
         hour: "2-digit",

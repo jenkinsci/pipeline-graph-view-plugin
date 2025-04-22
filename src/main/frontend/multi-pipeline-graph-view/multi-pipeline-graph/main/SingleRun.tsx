@@ -25,7 +25,7 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
         <a href={currentJobPath + run.id} className="pgw-user-specified-text">
           <StatusIcon status={run.result} />
           {run.displayName}
-          <span className={"jenkins-subtitle"}>
+          <span>
             {time(run.timestamp)} - {total(run.duration)}
           </span>
         </a>

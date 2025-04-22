@@ -85,7 +85,7 @@ function TreeNode({ stage, selected, onSelect }: TreeNodeProps) {
             <span className="task-link-text">{stage.name}</span>
             {stage.state === Result.running && (
               <span className="pgv-tree-item__description">
-                <Total ms={stage.totalDurationMillis}/>
+                <Total ms={stage.totalDurationMillis} />
               </span>
             )}
           </div>

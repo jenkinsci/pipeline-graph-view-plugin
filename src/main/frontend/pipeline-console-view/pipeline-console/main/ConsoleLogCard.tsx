@@ -228,7 +228,7 @@ export class ConsoleLogCard extends React.Component<
                 component="div"
                 key={`step-duration-text-${this.props.step.id}`}
               >
-                <Total ms={this.props.step.totalDurationMillis}/>
+                <Total ms={this.props.step.totalDurationMillis} />
               </Typography>
             </Grid>
 

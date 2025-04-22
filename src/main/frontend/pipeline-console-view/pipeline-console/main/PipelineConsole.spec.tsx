@@ -1,6 +1,5 @@
 /** * @jest-environment jsdom */
 
-import "@testing-library/jest-dom";
 import React from "react";
 import {
   default as PipelineConsole,

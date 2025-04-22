@@ -77,7 +77,7 @@
   "jest": {
     "rootDir": "src/main/frontend",
     "setupFilesAfterEnv": [
-      "<rootDir>setupTests.js"
+      "<rootDir>setupTests.ts"
     ],
     "transform": {
       "^.+\\.(ts|tsx)$": "ts-jest"

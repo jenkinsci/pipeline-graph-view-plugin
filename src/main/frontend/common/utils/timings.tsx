@@ -10,13 +10,13 @@ const ONE_DAY_MS: number = 24 * ONE_HOUR_MS;
 const ONE_MONTH_MS: number = 30 * ONE_DAY_MS;
 const ONE_YEAR_MS: number = 365 * ONE_DAY_MS;
 // TODO: 22/04/2025 Can these keys become predefined types?
-const YEAR = 'Util.year';
-const MONTH = 'Util.month';
-const HOURS = 'Util.hour';
-const DAY = 'Util.day';
-const MINUTE = 'Util.minute';
-const SECOND = 'Util.second';
-const MILLIS = 'Util.millisecond';
+const YEAR = "Util.year";
+const MONTH = "Util.month";
+const HOURS = "Util.hour";
+const DAY = "Util.day";
+const MINUTE = "Util.minute";
+const SECOND = "Util.second";
+const MILLIS = "Util.millisecond";
 
 /**
  * Create a string representation of a time duration.
@@ -42,7 +42,10 @@ function makeTimeSpanString(
  * @param duration number of milliseconds.
  * @param translations the translations to get the labels from.
  */
-function getTimeSpanString(duration: number, translations: Translations): string {
+function getTimeSpanString(
+  duration: number,
+  translations: Translations,
+): string {
   const years = Math.floor(duration / ONE_YEAR_MS);
   duration %= ONE_YEAR_MS;
   const months = Math.floor(duration / ONE_MONTH_MS);
@@ -57,23 +60,50 @@ function getTimeSpanString(duration: number, translations: Translations): string
 
   const millis = duration % ONE_SECOND_MS;
   if (years > 0) {
-    return makeTimeSpanString(years, translations.get(YEAR)({ "0" : years }), months, translations.get(MONTH)({ "0" : months }));
+    return makeTimeSpanString(
+      years,
+      translations.get(YEAR)({ "0": years }),
+      months,
+      translations.get(MONTH)({ "0": months }),
+    );
   } else if (months > 0) {
-    return makeTimeSpanString(months, translations.get(MONTH)({ "0" : months }), days, translations.get(DAY)({ "0" : days }));
+    return makeTimeSpanString(
+      months,
+      translations.get(MONTH)({ "0": months }),
+      days,
+      translations.get(DAY)({ "0": days }),
+    );
   } else if (days > 0) {
-    return makeTimeSpanString(days, translations.get(DAY)({ "0" : days }), hours, translations.get(HOURS)({ "0" : hours }));
+    return makeTimeSpanString(
+      days,
+      translations.get(DAY)({ "0": days }),
+      hours,
+      translations.get(HOURS)({ "0": hours }),
+    );
   } else if (hours > 0) {
-    return makeTimeSpanString(hours, translations.get(HOURS)({ "0" : hours }), minutes, translations.get(MINUTE)({ "0" : minutes }));
+    return makeTimeSpanString(
+      hours,
+      translations.get(HOURS)({ "0": hours }),
+      minutes,
+      translations.get(MINUTE)({ "0": minutes }),
+    );
   } else if (minutes > 0) {
-    return makeTimeSpanString(minutes, translations.get(MINUTE)({ "0" : minutes }), seconds, translations.get(SECOND)({ "0" : seconds }));
+    return makeTimeSpanString(
+      minutes,
+      translations.get(MINUTE)({ "0": minutes }),
+      seconds,
+      translations.get(SECOND)({ "0": seconds }),
+    );
   } else if (seconds >= 10) {
-    return translations.get(SECOND)({ "0" : seconds });
+    return translations.get(SECOND)({ "0": seconds });
   } else if (seconds >= 1) {
-    return translations.get(SECOND)({ "0" : seconds + Math.floor(millis / 100) / 10 });
+    return translations.get(SECOND)({
+      "0": seconds + Math.floor(millis / 100) / 10,
+    });
   } else if (millis >= 100) {
-    return translations.get(SECOND)({ "0" : Math.floor(millis / 10) / 100 });
+    return translations.get(SECOND)({ "0": Math.floor(millis / 10) / 100 });
   } else {
-    return translations.get(MILLIS)({ "0" : millis });
+    return translations.get(MILLIS)({ "0": millis });
   }
 }
 
@@ -82,26 +112,18 @@ export function Total({ ms }: { ms: number }) {
   return <>{getTimeSpanString(ms, translations)}</>;
 }
 
-export function Paused({since}: { since: number }) {
+export function Paused({ since }: { since: number }) {
   const translations = useContext(I18NContext);
   return <>{`Queued ${getTimeSpanString(since, translations)}`}</>;
 }
 
-export function Started({since}: { since: number }){
+export function Started({ since }: { since: number }) {
   const translations = useContext(I18NContext);
-  return <>{since == 0 ? "" : `Started ${getTimeSpanString(Math.abs(since - Date.now()), translations)} ago`}</>;
-}
-
-export function total(ms: number): string {
-  return `${(getTimeSpanString(ms, new Translations({})))}`;
-}
-
-export function paused(since: number): string {
-  return `Queued ${(getTimeSpanString(since, new Translations({})))}`;
-}
-
-export function started(since: number): string {
-  return since == 0
-    ? ""
-    : `Started ${(getTimeSpanString(Math.abs(since - Date.now()), new Translations({})))} ago`;
+  return (
+    <>
+      {since == 0
+        ? ""
+        : `Started ${getTimeSpanString(Math.abs(since - Date.now()), translations)} ago`}
+    </>
+  );
 }

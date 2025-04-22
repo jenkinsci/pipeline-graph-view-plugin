@@ -50,26 +50,19 @@ public class PipelineGraphApi {
 
     private List<PipelineStageInternal> getPipelineNodes(PipelineGraphBuilderApi builder) {
         return builder.getPipelineNodes().stream()
-                .map(flowNodeWrapper -> {
-                    String state =
-                            flowNodeWrapper.getStatus().getResult().name().toLowerCase(Locale.ROOT);
-                    if (flowNodeWrapper.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
-                        state = flowNodeWrapper.getStatus().getState().name().toLowerCase(Locale.ROOT);
-                    }
-                    return new PipelineStageInternal(
-                            flowNodeWrapper.getId(), // TODO no need to parse it BO returns a string even though the
-                            // datatype is number on the frontend
-                            flowNodeWrapper.getDisplayName(),
-                            flowNodeWrapper.getParents().stream()
-                                    .map(FlowNodeWrapper::getId)
-                                    .collect(Collectors.toList()),
-                            state,
-                            flowNodeWrapper.getType().name(),
-                            flowNodeWrapper.getDisplayName(), // TODO blue ocean uses timing information: "Passed in 0s"
-                            flowNodeWrapper.isSynthetic(),
-                            flowNodeWrapper.getTiming(),
-                            getStageNode(flowNodeWrapper));
-                })
+                .map(flowNodeWrapper -> new PipelineStageInternal(
+                        flowNodeWrapper.getId(), // TODO no need to parse it BO returns a string even though the
+                        // datatype is number on the frontend
+                        flowNodeWrapper.getDisplayName(),
+                        flowNodeWrapper.getParents().stream()
+                                .map(FlowNodeWrapper::getId)
+                                .collect(Collectors.toList()),
+                        PipelineState.of(flowNodeWrapper.getStatus()),
+                        flowNodeWrapper.getType().name(),
+                        flowNodeWrapper.getDisplayName(), // TODO blue ocean uses timing information: "Passed in 0s"
+                        flowNodeWrapper.isSynthetic(),
+                        flowNodeWrapper.getTiming(),
+                        getStageNode(flowNodeWrapper)))
                 .collect(Collectors.toList());
     }
 

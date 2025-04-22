@@ -1,8 +1,5 @@
 // re-export Result so the relative path exists in one location.
-export {
-  Result,
-  decodeResultValue,
-} from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
+export { Result } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
 
 export type {
   StageInfo,

@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns"
-         xmlns:p="/lib/pipeline-graph-view" xmlns:t="/lib/hudson">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns" xmlns:t="/lib/hudson">
     <l:layout title="${%Build log} [${it.buildDisplayName}]" type="one-column">
         <l:main-panel>
-            <p:symbols />
-
+            <link rel="stylesheet" href="${resURL}/plugin/pipeline-graph-view/js/style.css" type="text/css" />
             <j:out value="${h.generateConsoleAnnotationScriptAndStylesheet()}"/>
 
             <j:set var="controls">
@@ -43,14 +41,14 @@
 
             <t:buildCaption controls="${controls}">
                 <j:if test="${it.previousBuildNumber!=null}">
-                    <a href="../../${it.previousBuildNumber}/pipeline-console" class="app-details__prev_next">
-                        <l:icon class="symbol-chevron-back-outline plugin-ionicons-api icon-md" tooltip="${%Previous Build}"/>
+                    <a href="../../${it.previousBuildNumber}/pipeline-console" class="jenkins-button jenkins-button--tertiary app-details__prev_next" tooltip="${%Previous Build}">
+                        <l:icon class="symbol-chevron-back-outline plugin-ionicons-api icon-md" />
                     </a>
                 </j:if>
-                ${%Build} ${it.buildDisplayName}
+                ${it.buildDisplayName}
                 <j:if test="${it.nextBuildNumber!=null}">
-                    <a href="../../${it.nextBuildNumber}/pipeline-console" class="app-details__prev_next">
-                        <l:icon class="symbol-chevron-forward-outline plugin-ionicons-api icon-md" tooltip="${%Next Build}"/>
+                    <a href="../../${it.nextBuildNumber}/pipeline-console" class="jenkins-button jenkins-button--tertiary app-details__prev_next" tooltip="${%Next Build}">
+                        <l:icon class="symbol-chevron-forward-outline plugin-ionicons-api icon-md" />
                     </a>
                 </j:if>
             </t:buildCaption>

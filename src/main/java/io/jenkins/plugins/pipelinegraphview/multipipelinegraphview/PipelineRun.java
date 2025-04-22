@@ -16,7 +16,7 @@ public class PipelineRun {
         this.displayName = run.getDisplayName();
         this.timestamp = run.getTimeInMillis();
         this.duration = run.getDuration();
-        this.result = PipelineState.of(run.getResult());
+        this.result = PipelineState.of(run);
     }
 
     public String getId() {

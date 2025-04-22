@@ -3,6 +3,7 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 import com.fasterxml.jackson.annotation.JsonValue;
 import hudson.model.Result;
 import java.util.Locale;
+import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 public enum PipelineState {
     // BlueRunState
@@ -19,7 +20,8 @@ public enum PipelineState {
     UNKNOWN,
     ABORTED;
 
-    public static PipelineState of(Result result) {
+    public static PipelineState of(WorkflowRun run) {
+        Result result = run.getResult();
         if (result == Result.SUCCESS) {
             return SUCCESS;
         } else if (result == Result.UNSTABLE) {
@@ -30,6 +32,8 @@ public enum PipelineState {
             return NOT_BUILT;
         } else if (result == Result.ABORTED) {
             return ABORTED;
+        } else if (run.isInProgress()) {
+            return RUNNING;
         } else {
             return UNKNOWN;
         }

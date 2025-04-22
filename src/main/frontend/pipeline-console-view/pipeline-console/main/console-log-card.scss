@@ -1,22 +1,6 @@
 .pgv-step-detail-group {
   position: relative;
 
-  &::before {
-    content: "";
-    position: absolute;
-    inset: -3px;
-    background: color-mix(
-      in srgb,
-      var(--text-color-secondary) 2.5%,
-      transparent
-    );
-    border: var(--jenkins-border);
-    border-radius: 10px;
-    opacity: 0;
-    transition: var(--standard-transition);
-    scale: 97.5%;
-  }
-
   // Increase z-index of cards so that their focus glow is visible
   &:hover {
     z-index: 100;
@@ -127,7 +111,8 @@ div.console-output-line {
       var(--text-color-secondary) 5%,
       transparent
     );
-    border: var(--jenkins-border-width) solid
+    // TODO - var fallback can removed after baseline is moved >= 2.496
+    border: var(--jenkins-border-width, 2px) solid
       color-mix(in srgb, var(--text-color-secondary) 2.5%, transparent);
     border-radius: 0.375rem;
     opacity: 0;

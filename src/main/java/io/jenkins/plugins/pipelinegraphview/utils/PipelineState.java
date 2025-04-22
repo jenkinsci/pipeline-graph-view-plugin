@@ -3,7 +3,7 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Locale;
 
-public enum PipelineStatus {
+public enum PipelineState {
     // BlueRunState
     QUEUED,
     RUNNING,
@@ -18,7 +18,7 @@ public enum PipelineStatus {
     UNKNOWN,
     ABORTED;
 
-    public static PipelineStatus of(NodeRunStatus status) {
+    public static PipelineState of(NodeRunStatus status) {
         if (status.getState() == BlueRun.BlueRunState.FINISHED) {
             return switch (status.getResult()) {
                 case SUCCESS -> SUCCESS;

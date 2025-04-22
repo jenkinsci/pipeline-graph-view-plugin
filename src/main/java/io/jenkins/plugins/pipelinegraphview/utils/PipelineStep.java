@@ -8,7 +8,7 @@ public class PipelineStep extends AbstractPipelineNode {
     public PipelineStep(
             String id,
             String name,
-            PipelineStatus state,
+            PipelineState state,
             String type,
             String title,
             String stageId,

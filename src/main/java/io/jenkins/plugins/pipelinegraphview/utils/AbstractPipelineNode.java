@@ -4,7 +4,7 @@ import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 
 public class AbstractPipelineNode {
     private String name;
-    private PipelineStatus state;
+    private PipelineState state;
     private String type; // TODO enum
     private String title;
     private String id;
@@ -13,7 +13,7 @@ public class AbstractPipelineNode {
     private TimingInfo timingInfo;
 
     public AbstractPipelineNode(
-            String id, String name, PipelineStatus state, String type, String title, TimingInfo timingInfo) {
+            String id, String name, PipelineState state, String type, String title, TimingInfo timingInfo) {
         this.id = id;
         this.name = name;
         this.state = state;
@@ -45,7 +45,7 @@ public class AbstractPipelineNode {
         return name;
     }
 
-    public PipelineStatus getState() {
+    public PipelineState getState() {
         return state;
     }
 

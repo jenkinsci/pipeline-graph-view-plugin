@@ -17,7 +17,7 @@ public class PipelineStage extends AbstractPipelineNode {
             String id,
             String name,
             List<PipelineStage> children,
-            PipelineStatus state,
+            PipelineState state,
             String type,
             String title,
             String seqContainerName,

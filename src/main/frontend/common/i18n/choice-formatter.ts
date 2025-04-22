@@ -1,7 +1,8 @@
-import MessageFormat, { MessageFunction } from "@messageformat/core";
-
-let mapping: Map<string, MessageFunction<"string">> | undefined = undefined;
-
+// The library @messageformat/core supports all the Java MessageFormat
+// implementation apart from ChoiceFormat which it states is deprecated,
+// this is a simple attempt at implementing this without any of the required
+// validation as it is expected that this
+// would already have happened to be used within Jelly
 function nextUp(current: number): number {
   if (isNaN(current) || current === Number.POSITIVE_INFINITY) {
     return current;
@@ -22,8 +23,8 @@ type Choice = {
   limit: number;
 };
 
-function choice(value: unknown, locale: string, arg: string | null): string {
-  const parts = (arg! as Array)[0].split("|");
+export function choice(value: unknown, locale: string, arg: string | null): string {
+  const parts = (arg! as unknown as Array<string>)[0].split("|");
   const _value = Number(value);
   const choices: Choice[] = [];
   // a simple attempt to copy java.text.ChoiceFormat.applyPattern
@@ -39,7 +40,7 @@ function choice(value: unknown, locale: string, arg: string | null): string {
         const number = Number(part.substring(0, i));
         choices.push({
           value: part.substring(i + 1),
-          limit: operator === "<" ? nextUp(number) : number,
+          limit: operator === "<" ? nextUp(number) : number
         });
         break;
       }
@@ -48,7 +49,7 @@ function choice(value: unknown, locale: string, arg: string | null): string {
   // now we copy java.text.ChoiceFormat.format(double, java.lang.StringBuffer, java.text.FieldPosition)
   let i = 0;
   for (i = 0; i < choices.length; ++i) {
-    if (!(_value >= choices[i])) {
+    if (!(_value >= choices[i].limit)) {
       // same as number < choiceLimits, except catches NaN
       break;
     }
@@ -58,37 +59,4 @@ function choice(value: unknown, locale: string, arg: string | null): string {
     i = 0;
   }
   return choices[i].value;
-}
-
-export async function i18n(): Promise<Map<string, MessageFunction<"string">>> {
-  // add some sort of locking?
-  if (mapping !== undefined) {
-    return mapping;
-  }
-  try {
-    let response = await fetch("i18n");
-    if (!response.ok) {
-      throw response.statusText;
-    }
-    const _mapping = new Map<string, MessageFunction<"string">>();
-    let json = await response.json();
-    const locale = Object.keys(json.data)[0];
-    const localizations = json.data[locale];
-    const mf = new MessageFormat(locale, {
-      customFormatters: {
-        choice: {
-          arg: "raw",
-          formatter: choice,
-        },
-      },
-    });
-    for (const key in localizations) {
-      _mapping.set(key, mf.compile(localizations[key]));
-    }
-    mapping = _mapping;
-    return mapping;
-  } catch (e) {
-    console.error(`Caught error getting i18n: '${e}'`);
-    return new Map<string, MessageFunction<"string">>();
-  }
 }

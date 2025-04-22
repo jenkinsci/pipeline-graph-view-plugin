@@ -16,7 +16,7 @@ import {
 } from "./PipelineConsoleModel";
 import { ConsoleLogCard } from "./ConsoleLogCard";
 import StageNodeLink from "./StageNodeLink";
-import { paused, started, total } from "../../../common/utils/timings";
+import { Paused, Started, Total } from "../../../common/utils/timings";
 
 export interface StageSummaryProps {
   stage: StageInfo;
@@ -47,7 +47,7 @@ const StageSummary = (props: StageSummaryProps) => (
             key={`stage-detail-start-time-icon-${props.stage.id}`}
           />
         )}
-        {started(props.stage.startTimeMillis)}
+        <Started since={props.stage.startTimeMillis}/>
       </div>
       <div
         className="detail-element"
@@ -57,7 +57,7 @@ const StageSummary = (props: StageSummaryProps) => (
           className="detail-icon"
           key={`stage-detail-pause-duration-icon-${props.stage.id}`}
         />
-        {paused(props.stage.pauseDurationMillis)}
+        <Paused since={props.stage.pauseDurationMillis}/>
       </div>
       <div
         className="detail-element"
@@ -67,7 +67,7 @@ const StageSummary = (props: StageSummaryProps) => (
           className="detail-icon"
           key={`stage-detail-duration-icon-${props.stage.id}`}
         />
-        {total(props.stage.totalDurationMillis)}
+        <Total ms={props.stage.totalDurationMillis}/>
       </div>
       <div
         className="detail-element"

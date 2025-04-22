@@ -4,7 +4,7 @@ import {
   StageInfo,
 } from "../../../pipeline-graph-view/pipeline-graph/main/";
 import "./data-tree-view.scss";
-import { total } from "../../../common/utils/timings";
+import { Total } from "../../../common/utils/timings";
 import StatusIcon from "../../../common/components/status-icon";
 
 export default function DataTreeView({
@@ -85,7 +85,7 @@ function TreeNode({ stage, selected, onSelect }: TreeNodeProps) {
             <span className="task-link-text">{stage.name}</span>
             {stage.state === Result.running && (
               <span className="pgv-tree-item__description">
-                {total(stage.totalDurationMillis)}
+                <Total ms={stage.totalDurationMillis}/>
               </span>
             )}
           </div>

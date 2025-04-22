@@ -83,3 +83,12 @@ export function started(since: number): string {
     ? ""
     : `Started ${getTimeSpanString(Math.abs(since - Date.now()))} ago`;
 }
+
+export function time(since: number): string {
+  return since == 0
+    ? ""
+    : new Date(since).toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+}

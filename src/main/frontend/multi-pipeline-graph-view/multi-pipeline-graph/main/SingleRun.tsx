@@ -7,7 +7,7 @@ import {
   StageInfo,
 } from "../../../pipeline-graph-view/pipeline-graph/main";
 import { defaultLayout } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
-import { total } from "../../../common/utils/timings";
+import { time, total } from "../../../common/utils/timings";
 import "./single-run.scss";
 import StatusIcon from "../../../common/components/status-icon";
 
@@ -25,7 +25,7 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
         <a href={currentJobPath + run.id} className="pgw-user-specified-text">
           <StatusIcon status={run.result} />
           {run.displayName}
-          <span className={"jenkins-subtitle"}>{total(run.duration)}</span>
+          <span className={"jenkins-subtitle"}>{time(run.timestamp)} - {total(run.duration)}</span>
         </a>
       </div>
       <PipelineGraph

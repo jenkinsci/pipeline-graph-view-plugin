@@ -2,7 +2,15 @@
   display: grid;
   grid-template-columns: 200px 1fr;
   align-items: center;
-  height: 55px;
+
+  // This is hacky - the pipeline graph is too tall and isn't centered
+  .PWGx-PipelineGraph-container {
+    height: 28px;
+
+    & > div {
+      margin-top: -40px;
+    }
+  }
 
   &:last-of-type {
     border-bottom: none;

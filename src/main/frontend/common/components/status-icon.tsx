@@ -1,6 +1,7 @@
 import React from "react";
 import "./status-icon.scss";
 import { Result } from "../../pipeline-graph-view/pipeline-graph/main";
+import { decodeResultValue } from "../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
 
 /**
  * Visual representation of a job or build status
@@ -10,6 +11,8 @@ export default function StatusIcon({
   percentage,
   skeleton,
 }: StatusIconProps) {
+  status = decodeResultValue(status);
+
   const viewBoxSize = 512;
   const strokeWidth = status === "running" ? 50 : 0;
   const radius = (viewBoxSize - strokeWidth) / 2.2;

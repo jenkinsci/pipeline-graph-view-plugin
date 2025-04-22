@@ -3,10 +3,13 @@ import { RunInfo } from "./MultiPipelineGraphModel";
 import {
   LayoutInfo,
   PipelineGraph,
+  Result,
   StageInfo,
 } from "../../../pipeline-graph-view/pipeline-graph/main";
 import { defaultLayout } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
 import { total } from "../../../common/utils/timings";
+import "./single-run.scss";
+import StatusIcon from "../../../common/components/status-icon";
 
 export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
   const [stages, setStages] = useState<Array<StageInfo>>([]);
@@ -17,36 +20,22 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
   };
 
   return (
-    <tr>
-      <td>
-        <div>
-          <a
-            // style={{textOverflow: "ellipsis"}}
-            href={currentJobPath + run.id}
-            className="jenkins-table__link pgw-user-specified-text"
-          >
-            {run.displayName}
-          </a>
-        </div>
-      </td>
-      <td>
-        <PipelineGraph
-          stages={stages}
-          setStages={setStages}
-          currentRunPath={currentJobPath + run.id}
-          layout={layout}
-          collapsed={true}
-        />
-      </td>
-      <td>
-        <div>
-          <span>{new Date(run.timestamp).toLocaleDateString()}</span>
-        </div>
-        <div>
+    <div className="pgv-single-run">
+      <div>
+        <a href={currentJobPath + run.id} className="pgw-user-specified-text">
+          <StatusIcon status={run.result} />
+          {run.displayName}
           <span className={"jenkins-subtitle"}>{total(run.duration)}</span>
-        </div>
-      </td>
-    </tr>
+        </a>
+      </div>
+      <PipelineGraph
+        stages={stages}
+        setStages={setStages}
+        currentRunPath={currentJobPath + run.id}
+        layout={layout}
+        collapsed={true}
+      />
+    </div>
   );
 }
 

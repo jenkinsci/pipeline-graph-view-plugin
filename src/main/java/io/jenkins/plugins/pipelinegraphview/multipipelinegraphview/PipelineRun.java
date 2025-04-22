@@ -1,6 +1,6 @@
 package io.jenkins.plugins.pipelinegraphview.multipipelinegraphview;
 
-import io.jenkins.plugins.pipelinegraphview.utils.BlueRun;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 public class PipelineRun {
@@ -9,14 +9,14 @@ public class PipelineRun {
     private final String displayName;
     private final long timestamp;
     private final long duration;
-    private final BlueRun.BlueRunResult result;
+    private final PipelineState result;
 
     public PipelineRun(WorkflowRun run) {
         this.id = run.getId();
         this.displayName = run.getDisplayName();
         this.timestamp = run.getTimeInMillis();
         this.duration = run.getDuration();
-        this.result = BlueRun.BlueRunResult.fromResult(run.getResult());
+        this.result = PipelineState.of(run.getResult());
     }
 
     public String getId() {
@@ -35,7 +35,7 @@ public class PipelineRun {
         return duration;
     }
 
-    public BlueRun.BlueRunResult getResult() {
+    public PipelineState getResult() {
         return result;
     }
 }

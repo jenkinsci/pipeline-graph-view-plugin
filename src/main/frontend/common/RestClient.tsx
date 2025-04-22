@@ -103,20 +103,27 @@ export async function getConsoleTextOffset(
   }
 }
 
-const baseUrl = (): string => document.getElementsByTagName('head')[0].getAttribute('data-rooturl') ?? '';
+const baseUrl = (): string =>
+  document.getElementsByTagName("head")[0].getAttribute("data-rooturl") ?? "";
 
 export interface ResourceBundle {
   [key: string]: string;
 }
 
 // return null or empty?
-export async function getResourceBundle(resource: string): Promise<ResourceBundle> {
+export async function getResourceBundle(
+  resource: string,
+): Promise<ResourceBundle> {
   try {
-    let response = await fetch(`${baseUrl()}/i18n/resourceBundle?baseName=${resource}`);
+    let response = await fetch(
+      `${baseUrl()}/i18n/resourceBundle?baseName=${resource}`,
+    );
     if (!response.ok) throw response.statusText;
     return (await response.json()).data;
   } catch (e) {
-    console.error(`Caught error when fetching resource bundle ${resource}: '${e}'`);
-    return { };
+    console.error(
+      `Caught error when fetching resource bundle ${resource}: '${e}'`,
+    );
+    return {};
   }
 }

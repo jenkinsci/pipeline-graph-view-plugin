@@ -23,7 +23,11 @@ type Choice = {
   limit: number;
 };
 
-export function choice(value: unknown, locale: string, arg: string | null): string {
+export function choice(
+  value: unknown,
+  locale: string,
+  arg: string | null,
+): string {
   const parts = (arg! as unknown as Array<string>)[0].split("|");
   const _value = Number(value);
   const choices: Choice[] = [];
@@ -40,7 +44,7 @@ export function choice(value: unknown, locale: string, arg: string | null): stri
         const number = Number(part.substring(0, i));
         choices.push({
           value: part.substring(i + 1),
-          limit: operator === "<" ? nextUp(number) : number
+          limit: operator === "<" ? nextUp(number) : number,
         });
         break;
       }

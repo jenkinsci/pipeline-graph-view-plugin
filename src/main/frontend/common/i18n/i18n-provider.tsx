@@ -16,7 +16,9 @@ interface I18NProviderProps {
   children: ReactNode;
 }
 
-export const I18NProvider: FunctionComponent<I18NProviderProps> = ({ children }) => {
+export const I18NProvider: FunctionComponent<I18NProviderProps> = ({
+  children,
+}) => {
   const [translations, setTranslations] = useState<Translations | null>(null);
 
   useEffect(() => {

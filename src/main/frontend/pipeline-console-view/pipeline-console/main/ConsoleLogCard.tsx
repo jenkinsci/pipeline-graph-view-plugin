@@ -10,6 +10,7 @@ import {
 import StatusIcon from "../../../common/components/status-icon";
 import { total } from "../../../common/utils/timings";
 import { classNames } from "../../../common/utils/classnames";
+import Tooltip from "../../../common/components/tooltip";
 
 const ConsoleLogStream = React.lazy(() => import("./ConsoleLogStream"));
 
@@ -68,57 +69,79 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
 
   return (
     <div className={"pgv-step-detail-group"} key={`step-card-${props.step.id}`}>
-      <a
-        href={`?selected-node=` + props.step.id}
-        onClick={handleToggle}
+      <div
         className={classNames("pgv-step-detail-header", "jenkins-button", {
           "jenkins-button--tertiary": !props.isExpanded,
         })}
-        key={`step-action-area-${props.step.id}`}
       >
-        <div className="pgv-step-detail-header__content">
-          <StatusIcon
-            status={props.step.state}
-            percentage={props.step.completePercent}
-          />
-          <span style={{ fontWeight: "450" }}>{props.step.name}</span>
-          <span
-            style={{
-              color: "var(--text-color-secondary)",
-              fontFamily: "var(--font-family-mono)",
-            }}
-          >
-            {props.step.title}
-          </span>
-        </div>
-
-        <div className="pgv-step-detail-header__actions">
-          <span
-            style={{
-              color: "var(--text-color-secondary)",
-            }}
-          >
-            {total(props.step.totalDurationMillis)}
-          </span>
-
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 512 512"
-            className={"svgtest"}
-            style={{ rotate: props.isExpanded ? "90deg" : "0deg" }}
-          >
-            <path
-              fill="none"
-              stroke="var(--text-color-secondary)"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="48"
-              opacity={0.75}
-              d="M184 112l144 144-144 144"
+        <a
+          href={`?selected-node=` + props.step.id}
+          onClick={handleToggle}
+          key={`step-action-area-${props.step.id}`}
+        >
+          <div className="pgv-step-detail-header__content">
+            <StatusIcon
+              status={props.step.state}
+              percentage={props.step.completePercent}
             />
-          </svg>
-        </div>
-      </a>
+            <span style={{ fontWeight: "450" }}>{props.step.name}</span>
+            <span
+              style={{
+                color: "var(--text-color-secondary)",
+                fontFamily: "var(--font-family-mono)",
+              }}
+            >
+              {props.step.title}
+            </span>
+
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 512 512"
+              className={"pgv-step-detail-header__chevron"}
+              style={{ rotate: props.isExpanded ? "90deg" : "0deg" }}
+            >
+              <path
+                fill="none"
+                stroke="var(--text-color-secondary)"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="48"
+                opacity={0.75}
+                d="M184 112l144 144-144 144"
+              />
+            </svg>
+          </div>
+
+          <div className="pgv-step-detail-header__actions">
+            <span
+              style={{
+                color: "var(--text-color-secondary)",
+              }}
+            >
+              {total(props.step.totalDurationMillis)}
+            </span>
+          </div>
+        </a>
+
+        <Tooltip text={"View step as plain text"}>
+          <a
+            href={`log?nodeId=${props.step.id}`}
+            className={"jenkins-button jenkins-button--tertiary"}
+            target="_blank"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+              <path
+                d="M384 224v184a40 40 0 01-40 40H104a40 40 0 01-40-40V168a40 40 0 0140-40h167.48M336 64h112v112M224 288L440 72"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="32"
+              />
+            </svg>
+          </a>
+        </Tooltip>
+      </div>
 
       {props.isExpanded && (
         <div style={{ paddingTop: "0.5rem" }}>

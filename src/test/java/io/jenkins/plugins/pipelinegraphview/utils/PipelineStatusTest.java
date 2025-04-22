@@ -1,9 +1,13 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.stream.Stream;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 class PipelineStatusTest {
@@ -15,7 +19,7 @@ class PipelineStatusTest {
 
         PipelineStatus status = PipelineStatus.of(runStatus);
 
-        Assertions.assertEquals(expected, status);
+        assertEquals(expected, status);
     }
 
     private static Stream<Arguments> whenFinished() {
@@ -35,7 +39,7 @@ class PipelineStatusTest {
 
         PipelineStatus status = PipelineStatus.of(runStatus);
 
-        Assertions.assertEquals(expected, status);
+        assertEquals(expected, status);
     }
 
     private static Stream<Arguments> whenNotFinished() {
@@ -45,5 +49,29 @@ class PipelineStatusTest {
                 Arguments.arguments(BlueRun.BlueRunState.PAUSED, PipelineStatus.PAUSED),
                 Arguments.arguments(BlueRun.BlueRunState.SKIPPED, PipelineStatus.SKIPPED),
                 Arguments.arguments(BlueRun.BlueRunState.NOT_BUILT, PipelineStatus.NOT_BUILT));
+    }
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+
+    @ParameterizedTest
+    @CsvSource({
+        "QUEUED, queued",
+        "RUNNING, running",
+        "PAUSED, paused",
+        "SKIPPED, skipped",
+        "NOT_BUILT, not_built",
+        "FINISHED, finished",
+        "SUCCESS, success",
+        "UNSTABLE, unstable",
+        "FAILURE, failure",
+        "UNKNOWN, unknown",
+        "ABORTED, aborted"
+    })
+    void serialization(String input, String expected) throws JsonProcessingException {
+        PipelineStatus status = PipelineStatus.valueOf(input);
+
+        String serialized = MAPPER.writeValueAsString(status);
+
+        assertEquals("\"%s\"".formatted(expected), serialized);
     }
 }

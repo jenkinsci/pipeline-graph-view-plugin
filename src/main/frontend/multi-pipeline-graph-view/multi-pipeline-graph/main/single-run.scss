@@ -5,10 +5,10 @@
 
   // This is hacky - the pipeline graph is too tall and isn't centered
   .PWGx-PipelineGraph-container {
-    height: 28px;
+    height: 36px;
 
     & > div {
-      margin-top: -40px;
+      margin-top: -36px;
     }
   }
 

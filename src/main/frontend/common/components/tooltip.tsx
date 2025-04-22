@@ -9,7 +9,11 @@ declare global {
 /**
  * Provides a bridge between React and the Jenkins' tooltip component
  */
-export default function Tooltip({ text, children, properties = {} }: TooltipProps) {
+export default function Tooltip({
+  text,
+  children,
+  properties = {},
+}: TooltipProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -28,7 +32,7 @@ export default function Tooltip({ text, children, properties = {} }: TooltipProp
 }
 
 interface TooltipProps {
-  text: string;
+  text?: string;
   children: React.ReactNode;
   properties?: React.HTMLProps<HTMLDivElement>;
 }

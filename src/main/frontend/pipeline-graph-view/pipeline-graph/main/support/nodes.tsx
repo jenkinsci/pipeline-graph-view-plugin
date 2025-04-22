@@ -16,11 +16,13 @@ type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should
 
 interface NodeProps {
   node: NodeInfo;
+  collapsed?: boolean;
 }
+
 /**
  * Generate the SVG elements to represent a node.
  */
-export function Node({ node }: NodeProps) {
+export function Node({ node, collapsed }: NodeProps) {
   const key = node.key;
   const groupChildren: SVGChildren = [];
 
@@ -72,8 +74,9 @@ export function Node({ node }: NodeProps) {
 
   return (
     <Tooltip
-      text={`${node.stage.name}: ${node.stage.state}`}
-      properties={groupProps}>
+      text={collapsed ? node.stage.name : undefined}
+      properties={groupProps}
+    >
       {groupChildren}
       {clickable && (
         <a href={document.head.dataset.rooturl + url}>
@@ -89,6 +92,7 @@ interface SelectionHighlightProps {
   nodeColumns: Array<NodeColumn>;
   isStageSelected: (stage: StageInfo) => boolean;
 }
+
 /**
  * Generates SVG for visual highlight to show which node is selected.
  */

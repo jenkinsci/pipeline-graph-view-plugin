@@ -141,7 +141,7 @@ export function PipelineGraph(props: Props) {
         </svg>
 
         {nodes.map((node) => (
-          <Node key={node.id} node={node} />
+          <Node key={node.id} node={node} collapsed={collapsed} />
         ))}
 
         {bigLabels.map((label) => (

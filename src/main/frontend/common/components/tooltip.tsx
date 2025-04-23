@@ -11,7 +11,6 @@ export default function Tooltip(props: TippyProps) {
 
   return (
     <Tippy
-      content="hello"
       theme="tooltip"
       animation="tooltip"
       duration={250}

@@ -5,7 +5,7 @@ import StageNodeLink from "./StageNodeLink";
 import StatusIcon, {
   resultToColor,
 } from "../../../common/components/status-icon";
-import { exact, paused, started, total } from "../../../common/utils/timings";
+import { exact, Paused, Started, Total } from "../../../common/utils/timings";
 import Dropdown from "../../../common/components/dropdown";
 import Tooltip from "../../../common/components/tooltip";
 
@@ -47,7 +47,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
               fill="currentColor"
             />
           </svg>
-          {total(stage.totalDurationMillis)}
+          <Total ms={stage.totalDurationMillis} />
         </li>
         <li>
           <Tooltip text={exact(stage.startTimeMillis)}>
@@ -68,7 +68,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
                 d="M256 128v144h96"
               />
             </svg>
-            {started(stage.startTimeMillis)}
+            <Started since={stage.startTimeMillis} />
           </Tooltip>
         </li>
         {stage.pauseDurationMillis !== 0 && (
@@ -87,7 +87,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
                 fill="currentColor"
               />
             </svg>
-            {paused(stage.pauseDurationMillis)}
+            <Paused since={stage.pauseDurationMillis} />
           </li>
         )}
         <StageNodeLink agent={stage.agent} />

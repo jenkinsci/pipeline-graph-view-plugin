@@ -26,6 +26,7 @@ export default function useRunPoller({
         }) => {
           setRun({
             stages: mergeStageInfos(r!.stages, data.stages),
+            complete: data.complete,
           });
         };
 
@@ -44,9 +45,13 @@ export default function useRunPoller({
         );
       });
     } else {
-      const onPipelineDataReceived = (data: { stages: StageInfo[] }) => {
+      const onPipelineDataReceived = (data: {
+        stages: StageInfo[];
+        complete: boolean;
+      }) => {
         setRun({
           stages: data.stages,
+          complete: data.complete,
         });
       };
 
@@ -70,6 +75,7 @@ export default function useRunPoller({
 
 interface Run {
   stages: StageInfo[];
+  complete: boolean;
 }
 
 interface RunPollerProps {

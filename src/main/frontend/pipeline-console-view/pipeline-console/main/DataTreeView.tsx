@@ -6,6 +6,7 @@ import {
 import "./data-tree-view.scss";
 import { Total } from "../../../common/utils/timings";
 import StatusIcon from "../../../common/components/status-icon";
+import { classNames } from "../../../common/utils/classnames";
 
 export default function DataTreeView({
   stages,
@@ -25,7 +26,7 @@ export default function DataTreeView({
         <TreeNode
           key={stage.id}
           stage={stage}
-          selected={selected}
+          selected={String(selected)}
           onSelect={handleSelect}
         />
       ))}
@@ -33,7 +34,7 @@ export default function DataTreeView({
   );
 }
 
-function TreeNode({ stage, selected, onSelect }: TreeNodeProps) {
+const TreeNode = React.memo(({ stage, selected, onSelect }: TreeNodeProps) => {
   const hasChildren = stage.children && stage.children.length > 0;
   const isSelected = String(stage.id) === selected;
   const [isExpanded, setIsExpanded] = useState<boolean>(
@@ -70,9 +71,10 @@ function TreeNode({ stage, selected, onSelect }: TreeNodeProps) {
             }
             setIsExpanded(!isExpanded);
           }}
-          className={`pgv-tree-item task-link ${
-            isSelected ? "task-link--active" : ""
-          }`}
+          className={classNames("pgv-tree-item", "task-link", {
+            "task-link--active": isSelected,
+            "pgv-tree-item--skeleton": stage.skeleton,
+          })}
         >
           <div>
             <span className="task-icon-link">
@@ -93,9 +95,9 @@ function TreeNode({ stage, selected, onSelect }: TreeNodeProps) {
 
         {hasChildren && (
           <button
-            className={`pgv-toggle-icon ${
-              isExpanded ? "pgv-toggle-icon--active" : ""
-            }`}
+            className={classNames("pgv-toggle-icon", {
+              "pgv-toggle-icon--active": isExpanded,
+            })}
             onClick={handleToggleClick}
             aria-label={isExpanded ? "Collapse" : "Expand"}
           >
@@ -127,11 +129,11 @@ function TreeNode({ stage, selected, onSelect }: TreeNodeProps) {
       )}
     </div>
   );
-}
+});
 
 interface DataTreeViewProps {
   stages: StageInfo[];
-  selected: string;
+  selected?: number;
   onNodeSelect: (event: React.MouseEvent, nodeId: string) => void;
 }
 

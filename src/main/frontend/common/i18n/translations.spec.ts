@@ -1,0 +1,47 @@
+jest.mock("../RestClient", () => ({
+  getResourceBundle: jest.fn().mockResolvedValue({
+    "A.property": "a value",
+    "Another.property": "with another value",
+    "One.more.property": "with {one} more value",
+  }),
+}));
+
+import { getResourceBundle } from "../RestClient";
+import { getTranslations, messageFormat, Translations } from "./translations";
+
+describe("Translations", () => {
+  describe("Get translation", () => {
+    const fmt = messageFormat("en");
+
+    const translations = new Translations({
+      "Property.name": fmt.compile("{arg} world"),
+    });
+
+    it("should use known mapped message", () => {
+      expect(translations.get("Property.name")({ arg: "hello" })).toEqual(
+        "hello world",
+      );
+    });
+
+    it("should use fallback formatter with unknown property", () => {
+      expect(
+        translations.get("Unknown.property.name")({ arg: "hello" }),
+      ).toEqual("hello");
+    });
+  });
+
+  describe("Get Translations", () => {
+    it("should compile found resource bundle", async () => {
+      const translations = await getTranslations("en");
+
+      expect(getResourceBundle).toBeCalledWith("hudson.Messages");
+      expect(translations.get("A.property")()).toEqual("a value");
+      expect(translations.get("Another.property")()).toEqual(
+        "with another value",
+      );
+      expect(translations.get("One.more.property")({ one: "some" })).toEqual(
+        "with some more value",
+      );
+    });
+  });
+});

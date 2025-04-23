@@ -3,6 +3,8 @@
 // this is a simple attempt at implementing this without any of the required
 // validation as it is expected that this
 // would already have happened to be used within Jelly
+import { CustomFormatter } from "@messageformat/core";
+
 function nextUp(current: number): number {
   if (isNaN(current) || current === Number.POSITIVE_INFINITY) {
     return current;
@@ -23,12 +25,8 @@ type Choice = {
   limit: number;
 };
 
-export function choice(
-  value: unknown,
-  locale: string,
-  arg: string | null,
-): string {
-  const parts = (arg! as unknown as Array<string>)[0].split("|");
+function choice(value: unknown, locale: string, arg: string | null): string {
+  const parts = arg!.split("|");
   const _value = Number(value);
   const choices: Choice[] = [];
   // a simple attempt to copy java.text.ChoiceFormat.applyPattern
@@ -64,3 +62,8 @@ export function choice(
   }
   return choices[i].value;
 }
+
+export const choiceFormatter: { arg: "string"; formatter: CustomFormatter } = {
+  arg: "string",
+  formatter: choice,
+};

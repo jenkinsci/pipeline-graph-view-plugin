@@ -1,8 +1,7 @@
 import MessageFormat, { MessageFunction } from "@messageformat/core";
 import { getResourceBundle } from "../RestClient";
-import { choice } from "./choice-formatter";
+import { choiceFormatter } from "./choice-formatter";
 
-// plural name?
 interface Message {
   [key: string]: MessageFunction<"string">;
 }
@@ -27,12 +26,9 @@ export class Translations {
 export function messageFormat(locale: string) {
   return new MessageFormat(locale, {
     customFormatters: {
-      choice: {
-        arg: "raw",
-        formatter: choice,
-      }
-    }
-  })
+      choice: choiceFormatter,
+    },
+  });
 }
 
 export async function getTranslations(locale: string): Promise<Translations> {
@@ -41,10 +37,7 @@ export async function getTranslations(locale: string): Promise<Translations> {
   const fmt = messageFormat(locale);
 
   const mapping: Message = Object.fromEntries(
-    Object.entries(messages).map(([key, value]) => [
-      key,
-      fmt.compile(value),
-    ]),
+    Object.entries(messages).map(([key, value]) => [key, fmt.compile(value)]),
   );
 
   return new Translations(mapping);

@@ -26,11 +26,11 @@
     "@babel/helpers": "^7.20.7",
     "@babel/preset-typescript": "^7.21.0",
     "@babel/traverse": "^7.20.7",
-    "@tippyjs/react": "^4.2.6",
     "babel-loader": "^9.1.2",
     "babel-plugin-import": "^1.13.6",
     "react": "18.3.1",
     "react-dom": "18.3.1",
+    "react-tippy": "^1.4.0",
     "react-virtuoso": "^4.6.2"
   },
   "devDependencies": {
@@ -40,7 +40,6 @@
     "@babel/preset-typescript": "^7.21.0",
     "@testing-library/jest-dom": "^6.0.0",
     "@testing-library/react": "^16.0.0",
-    "@types/enzyme": "3.10.18",
     "@types/jest": "29.5.14",
     "@types/node": "22.14.0",
     "@types/react": "18.3.12",

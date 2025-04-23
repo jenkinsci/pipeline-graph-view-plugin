@@ -18,6 +18,7 @@ describe("Timings", () => {
     "Util.minute": msg.compile("{0} min"),
     "Util.second": msg.compile("{0} sec"),
     "Util.millisecond": msg.compile("{0} ms"),
+    startedAgo: msg.compile("Started {0} ago"),
   });
 
   function process(child: any) {

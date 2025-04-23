@@ -32,7 +32,7 @@ describe("Translations", () => {
         "A.property": "a value",
         "Another.property": "with another value",
         "One.more.property": "with {one} more value",
-      })
+      });
       const translations = await getTranslations("en");
 
       expect(getResourceBundle).toHaveBeenCalledWith("hudson.Messages");

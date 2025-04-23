@@ -1,4 +1,6 @@
 .pgv-status-icon {
+  flex-shrink: 0;
+
   * {
     transition: var(--elastic-transition);
     transform-origin: center;

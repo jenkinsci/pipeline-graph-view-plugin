@@ -88,6 +88,7 @@
       svg {
         width: 1.125rem;
         height: 1.125rem;
+        flex-shrink: 0;
 
         * {
           stroke-width: 36px;

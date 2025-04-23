@@ -45,13 +45,19 @@ public class PipelineStepApi {
                     displayName = cleanTextContent(displayName);
                     logger.debug("DisplayName After: '" + displayName + "'.");
 
+                    // Ignore certain titles
+                    if (!displayName.isBlank()) {
+                        if (title.equals("Shell Script") || title.equals("Print Message")) {
+                            title = "";
+                        }
+                    }
+
                     return new PipelineStep(
                             flowNodeWrapper.getId(),
                             displayName,
                             PipelineState.of(flowNodeWrapper.getStatus()),
                             flowNodeWrapper.getType().name(),
-                            title, // TODO blue ocean uses timing information: "Passed in
-                            // 0s"
+                            title,
                             stageId,
                             flowNodeWrapper.getTiming());
                 })

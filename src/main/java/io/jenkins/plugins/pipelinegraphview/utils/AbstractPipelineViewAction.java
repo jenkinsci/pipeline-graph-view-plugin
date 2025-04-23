@@ -2,7 +2,6 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hudson.Messages;
 import hudson.model.Action;
 import hudson.model.BallColor;
 import hudson.model.Item;
@@ -10,7 +9,6 @@ import hudson.model.Queue;
 import hudson.security.Permission;
 import hudson.util.HttpResponses;
 import java.io.IOException;
-import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
@@ -19,7 +17,6 @@ import net.sf.json.JSONObject;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.workflow.cps.replay.ReplayAction;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.jvnet.localizer.ResourceBundleHolder;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.WebMethod;
@@ -159,16 +156,6 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
         }
 
         return string + "/";
-    }
-
-    @WebMethod(name = "i18n")
-    public HttpResponse getI18n(StaplerRequest2 request) {
-        ResourceBundle bundle = ResourceBundleHolder.get(Messages.class).get(request.getLocale());
-        JSONObject locale = new JSONObject();
-        bundle.keySet().forEach(key -> locale.put(key, bundle.getString(key)));
-        JSONObject map = new JSONObject();
-        map.put(request.getLocale().getLanguage(), locale);
-        return HttpResponses.okJSON(map);
     }
 
     @Override

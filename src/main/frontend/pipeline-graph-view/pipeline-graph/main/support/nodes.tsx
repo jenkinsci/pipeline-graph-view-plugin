@@ -73,16 +73,15 @@ export function Node({ node, collapsed }: NodeProps) {
   };
 
   return (
-    <Tooltip
-      text={collapsed ? node.stage.name : undefined}
-      properties={groupProps}
-    >
-      {groupChildren}
-      {clickable && (
-        <a href={document.head.dataset.rooturl + url}>
-          <span className="jenkins-visually-hidden">{title}</span>
-        </a>
-      )}
+    <Tooltip content="hello">
+      <div {...groupProps}>
+        {groupChildren}
+        {clickable && (
+          <a href={document.head.dataset.rooturl + url}>
+            <span className="jenkins-visually-hidden">{title}</span>
+          </a>
+        )}
+      </div>
     </Tooltip>
   );
 }

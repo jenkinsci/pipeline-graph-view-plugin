@@ -14,7 +14,6 @@ import CardActionArea from "@mui/material/CardActions";
 import IconButton, { IconButtonProps } from "@mui/material/IconButton";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import LinkIcon from "@mui/icons-material/Link";
-import { Tooltip } from "react-tippy";
 
 import {
   LOG_FETCH_SIZE,
@@ -25,17 +24,12 @@ import ConsoleLogModal from "./ConsoleLogModal";
 import ResizeIcon from "./ResizeIcon";
 import { total } from "../../../common/utils/timings";
 import StatusIcon from "../../../common/components/status-icon";
+import Tooltip from "../../../common/components/tooltip";
 
 const ConsoleLogStream = lazy(() => import("./ConsoleLogStream"));
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
-}
-
-declare module "react-tippy" {
-  export interface TooltipProps {
-    children?: React.ReactNode;
-  }
 }
 
 const ExpandMore = styled((props: ExpandMoreProps) => {
@@ -233,7 +227,7 @@ export class ConsoleLogCard extends React.Component<
             </Grid>
 
             <Grid item xs={2} alignItems="center" sx={{ margin: "auto" }}>
-              <Tooltip title="Open console log in full-screen mode">
+              <Tooltip content="Open console log in full-screen mode">
                 <IconButton
                   aria-label={"Open console log in full-screen mode"}
                   onClick={handleOpen}
@@ -243,7 +237,7 @@ export class ConsoleLogCard extends React.Component<
                   </div>
                 </IconButton>
               </Tooltip>
-              <Tooltip title="View step as plain text">
+              <Tooltip content="View step as plain text">
                 <IconButton
                   onClick={() =>
                     window.open(`log?nodeId=${this.props.step.id}`)
@@ -255,7 +249,7 @@ export class ConsoleLogCard extends React.Component<
               </Tooltip>
             </Grid>
             <Grid item xs={1} alignItems="center" sx={{ margin: "auto" }}>
-              <Tooltip title="Open console log">
+              <Tooltip content="Open console log">
                 <ExpandMore
                   expand={this.props.isExpanded}
                   aria-label={"Open console log"}

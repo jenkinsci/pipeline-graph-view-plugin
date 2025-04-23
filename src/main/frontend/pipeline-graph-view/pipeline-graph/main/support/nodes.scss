@@ -6,5 +6,6 @@
 
   div:last-of-type {
     color: var(--text-color-secondary);
+    text-wrap: nowrap;
   }
 }

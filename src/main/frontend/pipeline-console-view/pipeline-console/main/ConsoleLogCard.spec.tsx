@@ -4,8 +4,7 @@
 
 import "@testing-library/jest-dom";
 import React from "react";
-import { ConsoleLogCard } from "./ConsoleLogCard";
-import type { ConsoleLogCardProps } from "./ConsoleLogCard";
+import ConsoleLogCard, { ConsoleLogCardProps } from "./ConsoleLogCard";
 import { ConsoleLogStreamProps } from "./ConsoleLogStream";
 import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
 import { render } from "@testing-library/react";
@@ -51,7 +50,6 @@ describe("ConsoleLogCard", () => {
     handleMoreConsoleClick: () => {
       console.log("handleMoreConsoleClick triggered");
     },
-    scrollParentId: "test-parent",
   } as ConsoleLogCardProps;
 
   it("renders step header only when not expanded", async () => {

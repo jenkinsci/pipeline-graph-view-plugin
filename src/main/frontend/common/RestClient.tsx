@@ -81,8 +81,6 @@ export async function getConsoleTextOffset(
   }
 }
 
-const baseUrl = (): string => document.head.dataset.rooturl ?? "";
-
 export interface ResourceBundle {
   [key: string]: string;
 }
@@ -91,8 +89,9 @@ export async function getResourceBundle(
   resource: string,
 ): Promise<ResourceBundle> {
   try {
+    const baseUrl: string = document.head.dataset.rooturl ?? "";
     let response = await fetch(
-      `${baseUrl()}/i18n/resourceBundle?baseName=${resource}`,
+      `${baseUrl}/i18n/resourceBundle?baseName=${resource}`,
     );
     if (!response.ok) {
       throw response.statusText;

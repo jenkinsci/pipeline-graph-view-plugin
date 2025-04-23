@@ -25,6 +25,7 @@
     grid-template-columns: 1fr auto;
     align-items: center;
     justify-content: stretch;
+    gap: 1rem;
     text-decoration: none;
     color: var(--text-color);
     min-height: 38px;
@@ -63,6 +64,10 @@
     max-width: 80%;
     overflow: hidden;
     text-overflow: ellipsis;
+
+    &:empty {
+      display: none;
+    }
   }
 
   .pgv-step-detail-header__chevron {
@@ -70,6 +75,7 @@
     width: 1rem;
     height: 1rem;
     margin-inline: -0.25rem;
+    flex-shrink: 0;
   }
 
   & > svg:first-of-type {

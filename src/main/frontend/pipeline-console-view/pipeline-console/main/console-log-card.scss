@@ -64,9 +64,13 @@
     max-width: 80%;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: var(--text-color-secondary);
+    font-family: var(--font-family-mono);
 
-    &:empty {
-      display: none;
+    &:first-of-type {
+      color: var(--text-color);
+      font-weight: var(--font-bold-weight);
+      font-family: var(--font-family-sans);
     }
   }
 

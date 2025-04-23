@@ -32,7 +32,7 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
       <PipelineGraph
         stages={stages}
         setStages={setStages}
-        currentRunPath={currentJobPath + run.id}
+        currentRunPath={currentJobPath + run.id + "/"}
         layout={layout}
         collapsed={true}
       />

@@ -123,7 +123,7 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
           </div>
         </a>
 
-        <Tooltip text={"View step as plain text"}>
+        <Tooltip content={"View step as plain text"}>
           <a
             href={`log?nodeId=${props.step.id}`}
             className={"jenkins-button jenkins-button--tertiary"}

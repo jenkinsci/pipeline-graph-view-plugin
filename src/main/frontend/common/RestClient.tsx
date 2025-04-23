@@ -81,8 +81,7 @@ export async function getConsoleTextOffset(
   }
 }
 
-const baseUrl = (): string =>
-  document.getElementsByTagName("head")[0].getAttribute("data-rooturl") ?? "";
+const baseUrl = (): string => document.head.dataset.rooturl ?? "";
 
 export interface ResourceBundle {
   [key: string]: string;
@@ -95,7 +94,9 @@ export async function getResourceBundle(
     let response = await fetch(
       `${baseUrl()}/i18n/resourceBundle?baseName=${resource}`,
     );
-    if (!response.ok) throw response.statusText;
+    if (!response.ok) {
+      throw response.statusText;
+    }
     return (await response.json()).data;
   } catch (e) {
     console.error(

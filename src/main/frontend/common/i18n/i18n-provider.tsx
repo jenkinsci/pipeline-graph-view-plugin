@@ -38,10 +38,7 @@ function defaultTranslations() {
 export const I18NProvider: FunctionComponent<I18NProviderProps> = ({
   children,
 }) => {
-  const locale =
-    document
-      .querySelector("div[data-user-locale]")
-      ?.getAttribute("data-user-locale") ?? "en";
+  const locale = document.getElementById("root")?.dataset.userLocale ?? "en";
   const [translations, setTranslations] = useState<Translations>(
     defaultTranslations(),
   );

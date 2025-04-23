@@ -84,18 +84,10 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
               status={props.step.state}
               percentage={props.step.completePercent}
             />
-            <span style={{ fontWeight: "450" }}>{props.step.title || props.step.name}</span>
 
-            {props.step.title !== '' && (
-              <span
-                style={{
-                  color: "var(--text-color-secondary)",
-                  fontFamily: "var(--font-family-mono)",
-                }}
-              >
-              {props.step.name}
-            </span>
-            )}
+            {props.step.title !== "" && <span>{props.step.title}</span>}
+
+            {props.step.name !== "" && <span>{props.step.name}</span>}
 
             <svg
               xmlns="http://www.w3.org/2000/svg"

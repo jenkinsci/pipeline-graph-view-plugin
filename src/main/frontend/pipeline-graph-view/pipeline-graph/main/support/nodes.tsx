@@ -73,7 +73,7 @@ export function Node({ node, collapsed }: NodeProps) {
   };
 
   return (
-    <Tooltip content={collapsed ? title : null}>
+    <Tooltip content={collapsed ? title : undefined}>
       <div {...groupProps}>
         {groupChildren}
         {clickable && (

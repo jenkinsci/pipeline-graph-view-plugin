@@ -5,6 +5,10 @@ import React from "react";
  * A customized (and customizable) implementation of Tippy tooltips
  */
 export default function Tooltip(props: TippyProps) {
+  if (props.content === undefined) {
+    return props.children;
+  }
+
   return (
     <Tippy
       content="hello"

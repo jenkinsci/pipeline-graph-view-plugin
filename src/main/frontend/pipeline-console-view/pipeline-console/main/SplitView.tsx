@@ -15,7 +15,7 @@ export default function SplitView(props: SplitViewNewProps) {
 
   const handleDragging = (e: MouseEvent) => {
     if (isDragging) {
-      const newWidth = e.clientX - 24; // Update to be section padding
+      const newWidth = e.clientX - 40;
       setPanelWidth(Math.max(200, Math.min(newWidth, 500)));
     }
   };

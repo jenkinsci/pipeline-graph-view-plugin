@@ -1,302 +1,169 @@
-import React from "react";
-import { lazy, Suspense } from "react";
-import { styled } from "@mui/material/styles";
-import {
-  Button,
-  Card,
-  CardContent,
-  CircularProgress,
-  Collapse,
-  Grid,
-  Typography,
-} from "@mui/material";
-import CardActionArea from "@mui/material/CardActions";
-import IconButton, { IconButtonProps } from "@mui/material/IconButton";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import LinkIcon from "@mui/icons-material/Link";
+import React, { useEffect, Suspense } from "react";
+import "./console-log-card.scss";
 
 import {
   LOG_FETCH_SIZE,
   StepInfo,
   StepLogBufferInfo,
 } from "./PipelineConsoleModel";
-import ConsoleLogModal from "./ConsoleLogModal";
-import ResizeIcon from "./ResizeIcon";
-import { total } from "../../../common/utils/timings";
+
 import StatusIcon from "../../../common/components/status-icon";
+import { total } from "../../../common/utils/timings";
+import { classNames } from "../../../common/utils/classnames";
 import Tooltip from "../../../common/components/tooltip";
 
-const ConsoleLogStream = lazy(() => import("./ConsoleLogStream"));
+const ConsoleLogStream = React.lazy(() => import("./ConsoleLogStream"));
 
-interface ExpandMoreProps extends IconButtonProps {
-  expand: boolean;
+export default function ConsoleLogCard(props: ConsoleLogCardProps) {
+  useEffect(() => {
+    if (props.isExpanded) {
+      props.handleMoreConsoleClick(props.step.id, props.stepBuffer.startByte);
+    }
+  }, [props.isExpanded]);
+
+  const handleToggle = (e: React.MouseEvent<HTMLElement>) => {
+    // Only prevent left clicks
+    if (e.button !== 0 || e.metaKey || e.ctrlKey) {
+      return;
+    }
+
+    e.preventDefault();
+
+    history.replaceState({}, "", `?selected-node=` + props.step.id);
+
+    props.handleStepToggle(props.step.id);
+  };
+
+  const showMoreLogs = () => {
+    let startByte = props.stepBuffer.startByte - LOG_FETCH_SIZE;
+    if (startByte < 0) startByte = 0;
+    props.handleMoreConsoleClick(props.step.id, startByte);
+  };
+
+  const getTruncatedLogWarning = () => {
+    if (props.stepBuffer.lines && props.stepBuffer.startByte > 0) {
+      return (
+        <button
+          onClick={showMoreLogs}
+          className={
+            "pgv-show-more-logs jenkins-button jenkins-!-warning-color"
+          }
+        >
+          There’s more to see - {prettySizeString(props.stepBuffer.startByte)}{" "}
+          of logs hidden
+        </button>
+      );
+    }
+    return undefined;
+  };
+
+  const prettySizeString = (size: number) => {
+    const kib = 1024;
+    const mib = 1024 * 1024;
+    const gib = 1024 * 1024 * 1024;
+    if (size < kib) return `${size}B`;
+    if (size < mib) return `${(size / kib).toFixed(2)}KiB`;
+    if (size < gib) return `${(size / mib).toFixed(2)}MiB`;
+    return `${(size / gib).toFixed(2)}GiB`;
+  };
+
+  return (
+    <div className={"pgv-step-detail-group"} key={`step-card-${props.step.id}`}>
+      <div
+        className={classNames("pgv-step-detail-header", "jenkins-button", {
+          "jenkins-button--tertiary": !props.isExpanded,
+        })}
+      >
+        <a
+          href={`?selected-node=` + props.step.id}
+          onClick={handleToggle}
+          key={`step-action-area-${props.step.id}`}
+        >
+          <div className="pgv-step-detail-header__content">
+            <StatusIcon
+              status={props.step.state}
+              percentage={props.step.completePercent}
+            />
+            <span style={{ fontWeight: "450" }}>{props.step.name}</span>
+            <span
+              style={{
+                color: "var(--text-color-secondary)",
+                fontFamily: "var(--font-family-mono)",
+              }}
+            >
+              {props.step.title}
+            </span>
+
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 512 512"
+              className={"pgv-step-detail-header__chevron"}
+              style={{ rotate: props.isExpanded ? "90deg" : "0deg" }}
+            >
+              <path
+                fill="none"
+                stroke="var(--text-color-secondary)"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="48"
+                opacity={0.75}
+                d="M184 112l144 144-144 144"
+              />
+            </svg>
+          </div>
+
+          <div className="pgv-step-detail-header__actions">
+            <span
+              style={{
+                color: "var(--text-color-secondary)",
+              }}
+            >
+              {total(props.step.totalDurationMillis)}
+            </span>
+          </div>
+        </a>
+
+        <Tooltip text={"View step as plain text"}>
+          <a
+            href={`log?nodeId=${props.step.id}`}
+            className={"jenkins-button jenkins-button--tertiary"}
+            target="_blank"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+              <path
+                d="M384 224v184a40 40 0 01-40 40H104a40 40 0 01-40-40V168a40 40 0 0140-40h167.48M336 64h112v112M224 288L440 72"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="32"
+              />
+            </svg>
+          </a>
+        </Tooltip>
+      </div>
+
+      {props.isExpanded && (
+        <div style={{ paddingTop: "0.5rem" }}>
+          {getTruncatedLogWarning()}
+          <Suspense>
+            <ConsoleLogStream
+              logBuffer={props.stepBuffer}
+              handleMoreConsoleClick={props.handleMoreConsoleClick}
+              step={props.step}
+              maxHeightScale={0.65}
+            />
+          </Suspense>
+        </div>
+      )}
+    </div>
+  );
 }
-
-const ExpandMore = styled((props: ExpandMoreProps) => {
-  const { expand, ...other } = props;
-  return <IconButton {...other} />;
-})(({ theme, expand }) => ({
-  transform: !expand ? "rotate(0deg)" : "rotate(180deg)",
-  marginLeft: "auto",
-  transition: theme.transitions.create("transform", {
-    duration: theme.transitions.duration.shortest,
-  }),
-}));
 
 export type ConsoleLogCardProps = {
   step: StepInfo;
   stepBuffer: StepLogBufferInfo;
   isExpanded: boolean;
-  handleStepToggle: (event: React.SyntheticEvent<{}>, nodeId: string) => void;
+  handleStepToggle: (nodeId: string) => void;
   handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
-  // Id of the element whose scroll bar we wish to use.
-  scrollParentId: string;
 };
-
-export type ConsoleLogCardState = {
-  open: boolean;
-};
-
-export class ConsoleLogCard extends React.Component<
-  ConsoleLogCardProps,
-  ConsoleLogCardState
-> {
-  constructor(props: ConsoleLogCardProps) {
-    super(props);
-    this.handleStepToggle = this.handleStepToggle.bind(this);
-
-    this.state = {
-      open: false,
-    };
-  }
-
-  handleStepToggle(event: React.MouseEvent<HTMLElement>) {
-    this.props.handleStepToggle(event, this.props.step.id);
-  }
-
-  componentDidMount(): void {
-    if (this.props.isExpanded) {
-      // If we start expanded then request logs.
-      this.props.handleMoreConsoleClick(
-        this.props.step.id,
-        this.props.stepBuffer.startByte,
-      );
-    }
-  }
-
-  getTruncatedLogWarning() {
-    if (this.props.stepBuffer.lines && this.props.stepBuffer.startByte > 0) {
-      return (
-        <Grid container>
-          <Grid item xs={6} sm className="show-more-console">
-            <Typography align="right" className="step-header">
-              {`Missing ${this.prettySizeString(
-                this.props.stepBuffer.startByte,
-              )} of logs.`}
-            </Typography>
-          </Grid>
-          <Grid item xs={6} sm className="show-more-console">
-            <Button
-              variant="text"
-              sx={{
-                padding: "0px",
-                textTransform: "none",
-                marginLeft: "0.25rem",
-              }}
-              onClick={() => {
-                let startByte =
-                  this.props.stepBuffer.startByte - LOG_FETCH_SIZE;
-                console.debug(
-                  `startByte '${this.props.stepBuffer.startByte}' -> '${startByte}'`,
-                );
-                if (startByte < 0) {
-                  startByte = 0;
-                }
-                this.props.handleMoreConsoleClick(
-                  this.props.step.id,
-                  startByte,
-                );
-              }}
-            >
-              Show more logs
-            </Button>
-          </Grid>
-        </Grid>
-      );
-    } else {
-      <div></div>;
-    }
-  }
-
-  prettySizeString(size: number) {
-    let kib = 1024;
-    let mib = 1024 * 1024;
-    let gib = 1024 * 1024 * 1024;
-    if (size < kib) {
-      return `${size}B`;
-    } else if (size < mib) {
-      return `${(size / kib).toFixed(2)}KiB`;
-    } else if (size < gib) {
-      return `${(size / mib).toFixed(2)}MiB`;
-    }
-    return `${(size / gib).toFixed(2)}GiB`;
-  }
-
-  getStepHeaderTitle(stepTitle: string, stepId: string) {
-    if (stepTitle) {
-      return (
-        <Typography
-          className="log-card--text"
-          component="div"
-          key={`step-duration-text-${stepId}`}
-        >
-          {stepTitle}
-        </Typography>
-      );
-    } else {
-      return null;
-    }
-  }
-
-  render() {
-    const handleOpen = () => this.setState({ open: true });
-    const handleClose = () => this.setState({ open: false });
-
-    return (
-      <Card
-        className="step-detail-group"
-        key={`step-card-${this.props.step.id}`}
-        style={{ marginBottom: "5px" }}
-      >
-        <CardActionArea
-          onClick={this.handleStepToggle}
-          aria-label="Show console log."
-          className={`step-header step-header-${this.props.step.state.toLowerCase()} step-detail-group-${
-            this.props.isExpanded ? "expanded" : "collapsed"
-          }`}
-          key={`step-action-area-${this.props.step.id}`}
-        >
-          <span className="pgv-step-header__icon">
-            <StatusIcon
-              status={this.props.step.state}
-              percentage={this.props.step.completePercent}
-            />
-          </span>
-          <Grid
-            container
-            wrap="nowrap"
-            columns={{ xs: 20 }}
-            key={`step-root-container-${this.props.step.id}`}
-          >
-            <Grid
-              item
-              container
-              xs={16}
-              sx={{ display: "block", margin: "auto" }}
-              width="80%"
-            >
-              <Typography
-                className="log-card--header"
-                noWrap={true}
-                component="div"
-                key={`step-name-text-${this.props.step.id}`}
-                sx={{ flexGrow: 3 }}
-              >
-                {this.props.step.name}
-              </Typography>
-              {this.getStepHeaderTitle(
-                this.props.step.title,
-                this.props.step.id,
-              )}
-            </Grid>
-            <Grid
-              item
-              xs={2}
-              sx={{ margin: "auto", padding: "0px" }}
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Typography
-                className="log-card--text log-card--text-duration"
-                align="right"
-                component="div"
-                key={`step-duration-text-${this.props.step.id}`}
-              >
-                {total(this.props.step.totalDurationMillis)}
-              </Typography>
-            </Grid>
-
-            <Grid item xs={2} alignItems="center" sx={{ margin: "auto" }}>
-              <Tooltip content="Open console log in full-screen mode">
-                <IconButton
-                  aria-label={"Open console log in full-screen mode"}
-                  onClick={handleOpen}
-                >
-                  <div className="svg-icon--expand">
-                    <ResizeIcon />
-                  </div>
-                </IconButton>
-              </Tooltip>
-              <Tooltip content="View step as plain text">
-                <IconButton
-                  onClick={() =>
-                    window.open(`log?nodeId=${this.props.step.id}`)
-                  }
-                  aria-label="View step as plain text"
-                >
-                  <LinkIcon className="svg-icon--expand" />
-                </IconButton>
-              </Tooltip>
-            </Grid>
-            <Grid item xs={1} alignItems="center" sx={{ margin: "auto" }}>
-              <Tooltip content="Open console log">
-                <ExpandMore
-                  expand={this.props.isExpanded}
-                  aria-label={"Open console log"}
-                  aria-expanded
-                  key={`step-expand-button-${this.props.step.id}`}
-                  sx={{ display: "block", marginLeft: "auto" }}
-                >
-                  <ExpandMoreIcon
-                    key={`step-expand-icon-${this.props.step.id}`}
-                    className="svg-icon svg-icon--expand"
-                  />
-                </ExpandMore>
-              </Tooltip>
-            </Grid>
-          </Grid>
-        </CardActionArea>
-        <ConsoleLogModal
-          logBuffer={this.props.stepBuffer}
-          handleMoreConsoleClick={this.props.handleMoreConsoleClick}
-          step={this.props.step}
-          truncatedLogWarning={this.getTruncatedLogWarning()}
-          maxHeightScale={0.85}
-          open={this.state.open}
-          setClose={handleClose}
-        />
-        <Collapse
-          in={this.props.isExpanded}
-          timeout={50}
-          unmountOnExit
-          key={`step-colapsable-console-${this.props.step.id}`}
-        >
-          <CardContent
-            className="step-content"
-            key={`step-console-content-${this.props.step.id}`}
-          >
-            <div>{this.getTruncatedLogWarning()}</div>
-            <Suspense fallback={<CircularProgress />}>
-              <ConsoleLogStream
-                logBuffer={this.props.stepBuffer}
-                handleMoreConsoleClick={this.props.handleMoreConsoleClick}
-                step={this.props.step}
-                maxHeightScale={0.65}
-              />
-            </Suspense>
-          </CardContent>
-        </Collapse>
-      </Card>
-    );
-  }
-}

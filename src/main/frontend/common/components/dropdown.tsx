@@ -17,6 +17,16 @@ export default function Dropdown({ items, disabled }: DropdownProps) {
       return;
     }
 
+    const parentNode = buttonRef.current.parentNode;
+    if (!parentNode) {
+      return;
+    }
+
+    const existingTemplates = parentNode.querySelectorAll("template");
+    existingTemplates.forEach((template) => template.remove());
+
+    console.log("called on items", items)
+
     const template = document.createElement("template");
     template.innerHTML = `
     <div class="jenkins-dropdown">
@@ -36,10 +46,10 @@ export default function Dropdown({ items, disabled }: DropdownProps) {
         .join("")}
     </div>
   `;
-    buttonRef.current.parentNode?.appendChild(template);
+    parentNode.appendChild(template);
 
-    window.Behaviour?.applySubtree(buttonRef.current.parentNode, true);
-  }, []);
+    window.Behaviour?.applySubtree(parentNode, true);
+  }, [items]);
 
   return (
     <>

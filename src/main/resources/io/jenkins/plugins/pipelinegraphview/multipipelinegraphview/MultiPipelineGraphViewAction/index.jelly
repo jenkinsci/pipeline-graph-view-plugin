@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:p="/lib/pipeline-graph-view">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <l:layout title="Stages [${it.jobDisplayName}]" type="one-column">
     <l:main-panel>
       <l:app-bar title="${%Build} ${it.jobDisplayName}">
@@ -23,7 +23,6 @@
           </a>
         </l:hasPermission>
       </l:app-bar>
-      <p:symbols />
       <div id="multiple-pipeline-root"
            data-current-job-path="${rootURL + '/' + it.jobUrl}" />
       <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/multi-pipeline-graph-view-bundle.js"/>

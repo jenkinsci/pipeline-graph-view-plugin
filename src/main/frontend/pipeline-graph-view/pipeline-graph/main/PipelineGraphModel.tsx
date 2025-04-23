@@ -8,18 +8,7 @@ export enum Result {
   aborted = "aborted",
   not_built = "not_built", // May be pending, or job was ended before this point
   skipped = "skipped", // excluded via pipeline "when" clause
-  unknown = "unknown", // bad data or client code needs updating for new values
-}
-
-export function decodeResultValue(resultMaybe: any): Result {
-  const lcase = String(resultMaybe).toLowerCase();
-
-  // TODO: validate this
-  if ((Object.values(Result) as any).includes(lcase)) {
-    return lcase as Result;
-  }
-
-  return Result.unknown;
+  unknown = "unknown", // bad data
 }
 
 // Dimensions used for layout, px

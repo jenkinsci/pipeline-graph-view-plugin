@@ -46,8 +46,10 @@ public class PipelineStepApi {
                     logger.debug("DisplayName After: '" + displayName + "'.");
 
                     // Ignore certain titles
-                    if (title.equals("Shell Script") || title.equals("Print Message")) {
-                        title = "";
+                    if (!displayName.isBlank()) {
+                        if (title.equals("Shell Script") || title.equals("Print Message")) {
+                            title = "";
+                        }
                     }
 
                     return new PipelineStep(

@@ -17,6 +17,7 @@ const DAY = "Util.day";
 const MINUTE = "Util.minute";
 const SECOND = "Util.second";
 const MILLIS = "Util.millisecond";
+const STARTED_AGO = "startedAgo"
 
 /**
  * Create a string representation of a time duration.
@@ -119,11 +120,13 @@ export function Paused({ since }: { since: number }) {
 
 export function Started({ since }: { since: number }) {
   const translations = useContext(I18NContext);
+  if (since == 0) {
+    return <></>;
+  }
+
   return (
     <>
-      {since == 0
-        ? ""
-        : `Started ${getTimeSpanString(Math.abs(since - Date.now()), translations)} ago`}
+      {translations.get(STARTED_AGO)({ "0": getTimeSpanString(Math.abs(since - Date.now()), translations)})}
     </>
   );
 }

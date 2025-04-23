@@ -1,9 +1,5 @@
 jest.mock("../RestClient", () => ({
-  getResourceBundle: jest.fn().mockResolvedValue({
-    "A.property": "a value",
-    "Another.property": "with another value",
-    "One.more.property": "with {one} more value",
-  }),
+  getResourceBundle: jest.fn(),
 }));
 
 import { getResourceBundle } from "../RestClient";
@@ -32,9 +28,15 @@ describe("Translations", () => {
 
   describe("Get Translations", () => {
     it("should compile found resource bundle", async () => {
+      (getResourceBundle as jest.Mock).mockResolvedValue({
+        "A.property": "a value",
+        "Another.property": "with another value",
+        "One.more.property": "with {one} more value",
+      })
       const translations = await getTranslations("en");
 
       expect(getResourceBundle).toHaveBeenCalledWith("hudson.Messages");
+      expect(getResourceBundle).toHaveBeenCalledWith("hudson.model.Run.index");
       expect(translations.get("A.property")()).toEqual("a value");
       expect(translations.get("Another.property")()).toEqual(
         "with another value",
@@ -45,11 +47,10 @@ describe("Translations", () => {
     });
 
     it("should use the default messages if undefined returned", async () => {
-      (getResourceBundle as jest.Mock).mockResolvedValueOnce(undefined);
+      (getResourceBundle as jest.Mock).mockResolvedValue(undefined);
 
       const translations = await getTranslations("en");
 
-      expect(getResourceBundle).toHaveBeenCalledWith("hudson.Messages");
       expect(translations.get("Util.second")({ 0: 5 })).toEqual("5 sec");
       expect(translations.get("Util.day")({ 0: 1 })).toEqual("1 day");
       expect(translations.get("Util.day")({ 0: 2 })).toEqual("2 days");

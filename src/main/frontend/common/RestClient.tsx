@@ -1,4 +1,5 @@
 import { Result, StageInfo } from "../pipeline-graph-view/pipeline-graph/main";
+import { ResourceBundle } from "./i18n/translations";
 
 export interface RunStatus {
   stages: StageInfo[];
@@ -79,10 +80,6 @@ export async function getConsoleTextOffset(
     console.error(`Caught error when fetching console: '${e}'`);
     return null;
   }
-}
-
-export interface ResourceBundle {
-  [key: string]: string;
 }
 
 export async function getResourceBundle(

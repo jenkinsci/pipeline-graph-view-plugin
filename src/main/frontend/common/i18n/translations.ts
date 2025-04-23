@@ -24,25 +24,29 @@ export class Translations {
   }
 }
 
+export function messageFormat(locale: string) {
+  return new MessageFormat(locale, {
+    customFormatters: {
+      choice: {
+        arg: "raw",
+        formatter: choice,
+      }
+    }
+  })
+}
+
 // get the locale somehow
 export async function getTranslations(
   locale: string = "en",
 ): Promise<Translations> {
   const messages = await getResourceBundle("hudson.Messages");
 
-  const format = new MessageFormat(locale, {
-    customFormatters: {
-      choice: {
-        arg: "raw",
-        formatter: choice,
-      },
-    },
-  });
+  const fmt = messageFormat(locale);
 
   const mapping: Message = Object.fromEntries(
     Object.entries(messages).map(([key, value]) => [
       key,
-      format.compile(value),
+      fmt.compile(value),
     ]),
   );
 

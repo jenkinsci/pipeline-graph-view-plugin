@@ -88,7 +88,6 @@ export interface ResourceBundle {
   [key: string]: string;
 }
 
-// return null or empty?
 export async function getResourceBundle(
   resource: string,
 ): Promise<ResourceBundle> {

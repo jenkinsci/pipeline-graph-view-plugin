@@ -9,7 +9,7 @@ const ONE_HOUR_MS: number = 60 * ONE_MINUTE_MS;
 const ONE_DAY_MS: number = 24 * ONE_HOUR_MS;
 const ONE_MONTH_MS: number = 30 * ONE_DAY_MS;
 const ONE_YEAR_MS: number = 365 * ONE_DAY_MS;
-// TODO: 22/04/2025 Can these keys become predefined types?
+
 const YEAR = "Util.year";
 const MONTH = "Util.month";
 const HOURS = "Util.hour";

@@ -11,6 +11,8 @@ import StatusIcon, {
 } from "../../../../common/components/status-icon";
 import { CSSProperties } from "react";
 import Tooltip from "../../../../common/components/tooltip";
+import { total } from "../../../../common/utils/timings";
+import "./nodes.scss";
 
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck
 
@@ -72,8 +74,18 @@ export function Node({ node, collapsed }: NodeProps) {
       resultToColor(node.stage.state, node.stage.skeleton),
   };
 
+  let tooltip: React.ReactElement | undefined;
+  if (collapsed) {
+    tooltip = (
+      <div className="pgv-node-tooltip">
+        <div>{title}</div>
+        <div>{total(node.stage.totalDurationMillis)}</div>
+      </div>
+    );
+  }
+
   return (
-    <Tooltip content={collapsed ? title : undefined}>
+    <Tooltip content={tooltip}>
       <div {...groupProps}>
         {groupChildren}
         {clickable && (

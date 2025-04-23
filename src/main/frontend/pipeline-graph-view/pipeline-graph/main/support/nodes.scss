@@ -1,0 +1,10 @@
+.pgv-node-tooltip {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  gap: 1px;
+
+  div:last-of-type {
+    color: var(--text-color-secondary);
+  }
+}

@@ -43,10 +43,20 @@ export function layoutGraph(
     x: 0,
     y: 0,
     name: "End",
-    id: -2,
+    id: -3,
     isPlaceholder: true,
     key: "end-node",
     type: "end",
+  };
+
+  const counterNode: NodeInfo = {
+    x: 0,
+    y: 0,
+    name: "Counter",
+    id: -2,
+    isPlaceholder: true,
+    key: "counter-node",
+    type: "counter",
   };
 
   function filterWhenCollapsed(nodes: NodeColumn[]) {
@@ -56,17 +66,18 @@ export function layoutGraph(
 
     const start = nodes[0];
     const end = nodes[nodes.length - 1];
+    const counter = nodes[nodes.length - 2];
     const result = nodes
-      .filter((node) => node !== start && node !== end)
+      .filter((node) => node !== start && node !== counter && node !== end)
       .slice(0, maxColumnsWhenCollapsed);
-    // TODO add placeholder counting remaining columns
 
-    return [start, ...result, end];
+    return [start, ...result, counter, end];
   }
 
   const allNodeColumns: Array<NodeColumn> = filterWhenCollapsed([
     { rows: [[startNode]], centerX: 0, hasBranchLabels: false, startX: 0 }, // Column X positions calculated later
     ...stageNodeColumns,
+    { rows: [[counterNode]], centerX: 0, hasBranchLabels: false, startX: 0 },
     { rows: [[endNode]], centerX: 0, hasBranchLabels: false, startX: 0 },
   ]);
 

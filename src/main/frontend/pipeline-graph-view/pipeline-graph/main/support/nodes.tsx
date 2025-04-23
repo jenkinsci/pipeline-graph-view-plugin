@@ -1,15 +1,16 @@
 import * as React from "react";
+import { CSSProperties } from "react";
 
 import {
   LayoutInfo,
   NodeColumn,
   NodeInfo,
+  Result,
   StageInfo,
 } from "../PipelineGraphModel";
 import StatusIcon, {
   resultToColor,
 } from "../../../../common/components/status-icon";
-import { CSSProperties } from "react";
 import Tooltip from "../../../../common/components/tooltip";
 import { total } from "../../../../common/utils/timings";
 import "./nodes.scss";
@@ -26,23 +27,63 @@ interface NodeProps {
  */
 export function Node({ node, collapsed }: NodeProps) {
   const key = node.key;
-  const groupChildren: SVGChildren = [];
 
   if (node.isPlaceholder) {
-    groupChildren.push(<span className={"PWGx-pipeline-node-terminal"}></span>);
-    const groupProps = {
-      key,
-      style: {
-        position: "absolute",
-        top: node.y,
-        left: node.x,
-        translate: "-50% -50%",
-      },
-      className: "PWGx-pipeline-node",
-    };
-    return React.createElement("div", groupProps, ...groupChildren);
+    if (node.type === "counter") {
+      const tooltip = (
+        <ol className="pgv-node__counter-tooltip">
+          <li>
+            <a className={"jenkins-button jenkins-button--tertiary"} href="">
+              <StatusIcon status={Result.success} />
+              hello
+              <span style={{ color: "var(--text-color-secondary)" }}>4 sec</span>
+            </a>
+          </li>
+          <li>
+            <a className={"jenkins-button jenkins-button--tertiary"} href="">
+              <StatusIcon status={Result.success} />
+              hello hello wello bello
+              <span style={{ color: "var(--text-color-secondary)" }}>21 sec</span>
+            </a>
+          </li>
+        </ol>
+      );
+
+      return (
+        <Tooltip content={tooltip} interactive appendTo={document.body}>
+          <div
+            key={key}
+            style={{
+              position: "absolute",
+              top: node.y,
+              left: node.x,
+              translate: "-50% -50%",
+            }}
+            className={"PWGx-pipeline-node"}
+          >
+            5
+          </div>
+        </Tooltip>
+      );
+    }
+
+    return (
+      <div
+        key={key}
+        style={{
+          position: "absolute",
+          top: node.y,
+          left: node.x,
+          translate: "-50% -50%",
+        }}
+        className="PWGx-pipeline-node"
+      >
+        <span className={"PWGx-pipeline-node-terminal"}></span>
+      </div>
+    );
   }
 
+  const groupChildren: SVGChildren = [];
   const { title, state, url } = node.stage ?? {};
   groupChildren.push(
     <StatusIcon

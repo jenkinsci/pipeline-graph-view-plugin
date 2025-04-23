@@ -42,11 +42,12 @@ function defaultTranslations() {
 export const I18NProvider: FunctionComponent<I18NProviderProps> = ({
   children,
 }) => {
+  const locale = document.querySelector('div[data-user-locale]')?.getAttribute('data-user-locale') ?? 'en';
   const [translations, setTranslations] = useState<Translations>(defaultTranslations());
 
   useEffect(() => {
     const fetchTranslations = async () => {
-      const translations = await getTranslations();
+      const translations = await getTranslations(locale);
       setTranslations(translations);
     };
     fetchTranslations();

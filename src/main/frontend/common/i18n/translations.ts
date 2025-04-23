@@ -35,10 +35,7 @@ export function messageFormat(locale: string) {
   })
 }
 
-// get the locale somehow
-export async function getTranslations(
-  locale: string = "en",
-): Promise<Translations> {
+export async function getTranslations(locale: string): Promise<Translations> {
   const messages = await getResourceBundle("hudson.Messages");
 
   const fmt = messageFormat(locale);

@@ -34,7 +34,7 @@ describe("Translations", () => {
     it("should compile found resource bundle", async () => {
       const translations = await getTranslations("en");
 
-      expect(getResourceBundle).toBeCalledWith("hudson.Messages");
+      expect(getResourceBundle).toHaveBeenCalledWith("hudson.Messages");
       expect(translations.get("A.property")()).toEqual("a value");
       expect(translations.get("Another.property")()).toEqual(
         "with another value",
@@ -42,6 +42,18 @@ describe("Translations", () => {
       expect(translations.get("One.more.property")({ one: "some" })).toEqual(
         "with some more value",
       );
+    });
+
+    it("should use the default messages if undefined returned", async () => {
+      (getResourceBundle as jest.Mock).mockResolvedValueOnce(undefined);
+
+      const translations = await getTranslations("en");
+
+      expect(getResourceBundle).toHaveBeenCalledWith("hudson.Messages");
+      expect(translations.get("Util.second")({ 0: 5 })).toEqual("5 sec");
+      expect(translations.get("Util.day")({ 0: 1 })).toEqual("1 day");
+      expect(translations.get("Util.day")({ 0: 2 })).toEqual("2 days");
+      expect(translations.get("A.property")()).toEqual("");
     });
   });
 });

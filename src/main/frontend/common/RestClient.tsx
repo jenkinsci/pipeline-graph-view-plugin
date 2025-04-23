@@ -87,7 +87,7 @@ export interface ResourceBundle {
 
 export async function getResourceBundle(
   resource: string,
-): Promise<ResourceBundle> {
+): Promise<ResourceBundle | undefined> {
   try {
     const baseUrl: string = document.head.dataset.rooturl ?? "";
     let response = await fetch(
@@ -101,6 +101,6 @@ export async function getResourceBundle(
     console.error(
       `Caught error when fetching resource bundle ${resource}: '${e}'`,
     );
-    return {};
+    return undefined;
   }
 }

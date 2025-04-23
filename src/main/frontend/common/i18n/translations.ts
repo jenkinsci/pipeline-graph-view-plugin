@@ -19,7 +19,9 @@ export class Translations {
       return message;
     }
     console.debug(`Translation for ${key} not found, using fallback`);
-    return (params) => Object.values(params as any).join(" ");
+    return (params) => {
+      return params == undefined ? "" : Object.values(params as any).join(" ");
+    }
   }
 }
 
@@ -34,6 +36,13 @@ export function messageFormat(locale: string) {
 export async function getTranslations(locale: string): Promise<Translations> {
   const messages = await getResourceBundle("hudson.Messages");
 
+  if (messages === undefined) {
+    console.debug(
+      `Unable to get resource bundle for ${locale}, using default translations`,
+    );
+    return defaultTranslations(locale);
+  }
+
   const fmt = messageFormat(locale);
 
   const mapping: Message = Object.fromEntries(
@@ -41,4 +50,23 @@ export async function getTranslations(locale: string): Promise<Translations> {
   );
 
   return new Translations(mapping);
+}
+
+export function defaultTranslations(locale: string) {
+  const fmt = messageFormat(locale);
+  const messages = {
+    "Util.millisecond": "{0} ms",
+    "Util.second": "{0} sec",
+    "Util.minute": "{0} min",
+    "Util.hour": "{0} hr",
+    "Util.day": "{0} {0,choice,0#days|1#day|1<days}",
+    "Util.month": "{0} mo",
+    "Util.year": "{0} yr",
+  };
+
+  return new Translations(
+    Object.fromEntries(
+      Object.entries(messages).map(([key, value]) => [key, fmt.compile(value)]),
+    ),
+  );
 }

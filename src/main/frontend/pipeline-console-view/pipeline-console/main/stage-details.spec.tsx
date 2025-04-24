@@ -8,7 +8,6 @@ import {
   Result,
   StageInfo,
 } from "../../../pipeline-graph-view/pipeline-graph/main";
-import { paused } from "../../../common/utils/timings";
 import StageDetails from "./stage-details";
 
 describe("StageDetails", () => {
@@ -41,7 +40,7 @@ describe("StageDetails", () => {
   it("does not show pause time if pauseDurationMillis is 0", () => {
     render(<StageDetails stage={{ ...mockStage, pauseDurationMillis: 0 }} />);
 
-    expect(screen.queryByText(paused(0))).not.toBeInTheDocument();
+    expect(screen.queryByText("Queued")).not.toBeInTheDocument();
   });
 
   it("disables dropdown if stage is synthetic", () => {

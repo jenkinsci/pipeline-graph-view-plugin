@@ -1,3 +1,8 @@
+import React from "react";
+import { useContext } from "react";
+import { Translations } from "../i18n/translations";
+import { I18NContext } from "../i18n/i18n-provider";
+
 const ONE_SECOND_MS: number = 1000;
 const ONE_MINUTE_MS: number = 60 * ONE_SECOND_MS;
 const ONE_HOUR_MS: number = 60 * ONE_MINUTE_MS;
@@ -5,7 +10,14 @@ const ONE_DAY_MS: number = 24 * ONE_HOUR_MS;
 const ONE_MONTH_MS: number = 30 * ONE_DAY_MS;
 const ONE_YEAR_MS: number = 365 * ONE_DAY_MS;
 
-// TODO: 16/04/2025 How to support i18n like the methods this was copied from
+const YEAR = "Util.year";
+const MONTH = "Util.month";
+const HOURS = "Util.hour";
+const DAY = "Util.day";
+const MINUTE = "Util.minute";
+const SECOND = "Util.second";
+const MILLIS = "Util.millisecond";
+const STARTED_AGO = "startedAgo";
 
 /**
  * Create a string representation of a time duration.
@@ -29,8 +41,12 @@ function makeTimeSpanString(
  * @see https://github.com/jenkinsci/jenkins/blob/f9edeb0c0485fddfc03a7e1710ac5cf2b35ec497/core/src/main/java/hudson/Util.java#L734
  *
  * @param duration number of milliseconds.
+ * @param translations the translations to get the labels from.
  */
-function getTimeSpanString(duration: number): string {
+function getTimeSpanString(
+  duration: number,
+  translations: Translations,
+): string {
   const years = Math.floor(duration / ONE_YEAR_MS);
   duration %= ONE_YEAR_MS;
   const months = Math.floor(duration / ONE_MONTH_MS);
@@ -42,55 +58,88 @@ function getTimeSpanString(duration: number): string {
   const minutes = Math.floor(duration / ONE_MINUTE_MS);
   duration %= ONE_MINUTE_MS;
   const seconds = Math.floor(duration / ONE_SECOND_MS);
-  const millis = duration % ONE_SECOND_MS;
 
+  const millis = duration % ONE_SECOND_MS;
   if (years > 0) {
-    return makeTimeSpanString(years, `${years} yr`, months, `${months} mo`);
+    return makeTimeSpanString(
+      years,
+      translations.get(YEAR)({ "0": years }),
+      months,
+      translations.get(MONTH)({ "0": months }),
+    );
   } else if (months > 0) {
-    return makeTimeSpanString(months, `${months} mo`, days, `${days} day`);
+    return makeTimeSpanString(
+      months,
+      translations.get(MONTH)({ "0": months }),
+      days,
+      translations.get(DAY)({ "0": days }),
+    );
   } else if (days > 0) {
-    return makeTimeSpanString(days, `${days} day`, hours, `${hours} hr`);
+    return makeTimeSpanString(
+      days,
+      translations.get(DAY)({ "0": days }),
+      hours,
+      translations.get(HOURS)({ "0": hours }),
+    );
   } else if (hours > 0) {
-    return makeTimeSpanString(hours, `${hours} hr`, minutes, `${minutes} min`);
+    return makeTimeSpanString(
+      hours,
+      translations.get(HOURS)({ "0": hours }),
+      minutes,
+      translations.get(MINUTE)({ "0": minutes }),
+    );
   } else if (minutes > 0) {
     return makeTimeSpanString(
       minutes,
-      `${minutes} min`,
+      translations.get(MINUTE)({ "0": minutes }),
       seconds,
-      `${seconds} sec`,
+      translations.get(SECOND)({ "0": seconds }),
     );
   } else if (seconds >= 10) {
-    return `${seconds} sec`;
+    return translations.get(SECOND)({ "0": seconds });
   } else if (seconds >= 1) {
-    return `${seconds + Math.floor(millis / 100) / 10} sec`;
+    return translations.get(SECOND)({
+      "0": seconds + Math.floor(millis / 100) / 10,
+    });
   } else if (millis >= 100) {
-    return `${Math.floor(millis / 10) / 100} sec`;
+    return translations.get(SECOND)({ "0": Math.floor(millis / 10) / 100 });
   } else {
-    return `${millis} ms`;
+    return translations.get(MILLIS)({ "0": millis });
   }
 }
 
-export function total(ms: number): string {
-  return `${getTimeSpanString(ms)}`;
+export function Total({ ms }: { ms: number }) {
+  const translations = useContext(I18NContext);
+  return <>{getTimeSpanString(ms, translations)}</>;
 }
 
-export function paused(since: number): string {
-  return `Queued ${getTimeSpanString(since)}`;
+export function Paused({ since }: { since: number }) {
+  const translations = useContext(I18NContext);
+  return <>{`Queued ${getTimeSpanString(since, translations)}`}</>;
 }
 
-export function started(since: number): string {
-  return since === 0
-    ? ""
-    : `Started ${getTimeSpanString(Math.abs(since - Date.now()))} ago`;
+export function Started({ since }: { since: number }) {
+  const translations = useContext(I18NContext);
+  if (since === 0) {
+    return <></>;
+  }
+
+  return (
+    <>
+      {translations.get(STARTED_AGO)({
+        "0": getTimeSpanString(Math.abs(since - Date.now()), translations),
+      })}
+    </>
+  );
 }
 
 export function time(since: number): string {
   return since === 0
     ? ""
     : new Date(since).toLocaleTimeString("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 }
 
 export function exact(since: number): string {

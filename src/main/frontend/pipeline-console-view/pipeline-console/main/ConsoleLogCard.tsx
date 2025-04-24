@@ -8,9 +8,9 @@ import {
 } from "./PipelineConsoleModel";
 
 import StatusIcon from "../../../common/components/status-icon";
-import { total } from "../../../common/utils/timings";
 import { classNames } from "../../../common/utils/classnames";
 import Tooltip from "../../../common/components/tooltip";
+import { Total } from "../../../common/utils/timings";
 
 const ConsoleLogStream = React.lazy(() => import("./ConsoleLogStream"));
 
@@ -113,7 +113,7 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
                 color: "var(--text-color-secondary)",
               }}
             >
-              {total(props.step.totalDurationMillis)}
+              <Total ms={props.step.totalDurationMillis} />
             </span>
           </div>
         </a>

@@ -5,7 +5,7 @@ import StageNodeLink from "./StageNodeLink";
 import StatusIcon, {
   resultToColor,
 } from "../../../common/components/status-icon";
-import { exact, paused, started, total } from "../../../common/utils/timings";
+import { exact, Paused, Started, Total } from "../../../common/utils/timings";
 import Dropdown from "../../../common/components/dropdown";
 import Tooltip from "../../../common/components/tooltip";
 
@@ -47,29 +47,29 @@ export default function StageDetails({ stage }: StageDetailsProps) {
               fill="currentColor"
             />
           </svg>
-          {total(stage.totalDurationMillis)}
+          <Total ms={stage.totalDurationMillis} />
         </li>
         <li>
           <Tooltip content={exact(stage.startTimeMillis)}>
             <span>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                <path
-                  d="M256 64C150 64 64 150 64 256s86 192 192 192 192-86 192-192S362 64 256 64z"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeMiterlimit="10"
-                  strokeWidth="32"
-                />
-                <path
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="32"
-                  d="M256 128v144h96"
-                />
-              </svg>
-              {started(stage.startTimeMillis)}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+              <path
+                d="M256 64C150 64 64 150 64 256s86 192 192 192 192-86 192-192S362 64 256 64z"
+                fill="none"
+                stroke="currentColor"
+                strokeMiterlimit="10"
+                strokeWidth="32"
+              />
+              <path
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="32"
+                d="M256 128v144h96"
+              />
+            </svg>
+            <Started since={stage.startTimeMillis} />
             </span>
           </Tooltip>
         </li>
@@ -89,7 +89,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
                 fill="currentColor"
               />
             </svg>
-            {paused(stage.pauseDurationMillis)}
+            <Paused since={stage.pauseDurationMillis} />
           </li>
         )}
         <StageNodeLink agent={stage.agent} />

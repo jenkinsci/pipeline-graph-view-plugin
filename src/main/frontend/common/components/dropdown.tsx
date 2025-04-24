@@ -43,7 +43,6 @@ export default function Dropdown({ items, disabled }: DropdownProps) {
         <button
           className="jenkins-button jenkins-button--tertiary"
           type="button"
-          data-dropdown="true"
           disabled={disabled}
           onClick={visible ? hide : show}
         >

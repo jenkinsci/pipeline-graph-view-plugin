@@ -101,7 +101,6 @@ export default function StageDetails({ stage }: StageDetailsProps) {
                 text: "View stage as plain text",
                 icon: (
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                    <title>Document Text</title>
                     <path
                       d="M416 221.25V416a48 48 0 01-48 48H144a48 48 0 01-48-48V96a48 48 0 0148-48h98.75a32 32 0 0122.62 9.37l141.26 141.26a32 32 0 019.37 22.62z"
                       fill="none"
@@ -127,10 +126,8 @@ export default function StageDetails({ stage }: StageDetailsProps) {
                 icon: (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="ionicon"
                     viewBox="0 0 512 512"
                   >
-                    <title>Download</title>
                     <path
                       d="M336 176h40a40 40 0 0140 40v208a40 40 0 01-40 40H136a40 40 0 01-40-40V216a40 40 0 0140-40h40"
                       fill="none"

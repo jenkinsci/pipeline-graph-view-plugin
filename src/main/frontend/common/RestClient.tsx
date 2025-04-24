@@ -1,7 +1,5 @@
-import {
-  Result,
-  StageInfo,
-} from "../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
+import { Result, StageInfo } from "../pipeline-graph-view/pipeline-graph/main";
+import { ResourceBundle } from "./i18n/translations";
 
 export interface RunStatus {
   stages: StageInfo[];
@@ -81,5 +79,25 @@ export async function getConsoleTextOffset(
   } catch (e) {
     console.error(`Caught error when fetching console: '${e}'`);
     return null;
+  }
+}
+
+export async function getResourceBundle(
+  resource: string,
+): Promise<ResourceBundle | undefined> {
+  try {
+    const baseUrl: string = document.head.dataset.rooturl ?? "";
+    let response = await fetch(
+      `${baseUrl}/i18n/resourceBundle?baseName=${resource}`,
+    );
+    if (!response.ok) {
+      throw response.statusText;
+    }
+    return (await response.json()).data;
+  } catch (e) {
+    console.error(
+      `Caught error when fetching resource bundle ${resource}: '${e}'`,
+    );
+    return undefined;
   }
 }

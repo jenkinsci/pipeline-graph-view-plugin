@@ -259,7 +259,11 @@ function positionNodes(
       // Advance X position
       if (previousTopNode.isPlaceholder || topNode.isPlaceholder) {
         // Don't space placeholder nodes (start/end) as wide as normal.
-        xp += Math.floor(nodeSpacingH * 0.7);
+        if (topNode.key === "counter-node") {
+          xp += nodeSpacingH;
+        } else {
+          xp += Math.floor(nodeSpacingH * 0.7);
+        }
       } else {
         xp += nodeSpacingH;
       }

@@ -9,7 +9,7 @@
   padding: 0.125rem calc(1rem + var(--jenkins-border-width, 2px));
   padding-right: 0.85rem;
   border-radius: var(--form-input-border-radius);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   z-index: 101;
 
   &::before {
@@ -45,8 +45,8 @@
   }
 
   h2 {
-    font-size: var(--font-size-base);
-    font-weight: 450;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-bold-weight);
     margin: 0;
     text-box: trim-both;
   }

@@ -124,10 +124,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
               {
                 text: "Download stage logs",
                 icon: (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 512 512"
-                  >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
                     <path
                       d="M336 176h40a40 40 0 0140 40v208a40 40 0 01-40 40H136a40 40 0 01-40-40V216a40 40 0 0140-40h40"
                       fill="none"

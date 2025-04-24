@@ -7,12 +7,16 @@ import "./data-tree-view.scss";
 import { Total } from "../../../common/utils/timings";
 import StatusIcon from "../../../common/components/status-icon";
 import { classNames } from "../../../common/utils/classnames";
+import Filter from "../../../common/components/filter";
+import { useFilter } from "./providers/filter-provider";
 
 export default function DataTreeView({
   stages,
   selected,
   onNodeSelect,
 }: DataTreeViewProps) {
+  const { search, setSearch, checkedStatuses } = useFilter();
+
   const handleSelect = useCallback(
     (event: React.MouseEvent, nodeId: string) => {
       onNodeSelect(event, nodeId);
@@ -22,13 +26,10 @@ export default function DataTreeView({
 
   return (
     <div>
-      <div className="jenkins-search-container">
+      <div className={"pgw-filter-bar"}>
         <div className="jenkins-search">
           <div className="jenkins-search__icon">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 512 512"
-            >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
               <path
                 d="M221.09 64a157.09 157.09 0 10157.09 157.09A157.1 157.1 0 00221.09 64z"
                 fill="none"
@@ -54,19 +55,25 @@ export default function DataTreeView({
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck="false"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+        <Filter />
       </div>
 
       <div id="tasks" style={{ marginLeft: "0.7rem" }}>
-        {stages.map((stage) => (
-          <TreeNode
-            key={stage.id}
-            stage={stage}
-            selected={String(selected)}
-            onSelect={handleSelect}
-          />
-        ))}
+        {stages
+          .filter((e) => e.name.toLowerCase().includes(search.toLowerCase()))
+          .filter((e) => checkedStatuses[e.state])
+          .map((stage) => (
+            <TreeNode
+              key={stage.id}
+              stage={stage}
+              selected={String(selected)}
+              onSelect={handleSelect}
+            />
+          ))}
       </div>
     </div>
   );

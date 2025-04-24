@@ -1,5 +1,7 @@
 package io.jenkins.plugins.pipelinegraphview;
 
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.microsoft.playwright.Browser;
@@ -8,7 +10,8 @@ import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.Response;
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
-import java.io.IOException;
+import jenkins.test.RunMatchers;
+import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
@@ -36,7 +39,7 @@ class PipelineGraphViewRebuildTest {
         startBuildAndAssertPageIsTheSame(j, run);
     }
 
-    private static void startBuildAndAssertPageIsTheSame(JenkinsRule j, WorkflowRun run) throws IOException {
+    private static void startBuildAndAssertPageIsTheSame(JenkinsRule j, WorkflowRun run) throws Exception {
         try (Playwright playwright = Playwright.create();
                 Browser browser = playwright.chromium().launch()) {
             Page page = browser.newPage();
@@ -48,6 +51,19 @@ class PipelineGraphViewRebuildTest {
             String newUrl = page.url();
 
             assertEquals(currentUrl, newUrl);
+
+            waitUntilBuildIsComplete(j, run);
         }
+    }
+
+    // We don't care about the build result but Windows fails with
+    // file locking issues if we don't wait for the build to finish.
+    private static void waitUntilBuildIsComplete(JenkinsRule j, WorkflowRun run) {
+        await().until(() -> j.jenkins.getQueue().isEmpty(), is(true));
+        WorkflowJob parent = run.getParent();
+        await().until(() -> parent.getBuilds().size(), is(2));
+
+        WorkflowRun lastBuild = parent.getLastBuild();
+        await().until(() -> lastBuild, RunMatchers.completed());
     }
 }

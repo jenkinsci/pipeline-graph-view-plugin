@@ -8,9 +8,13 @@ const PipelineConsole = lazy(
 );
 
 export default function App() {
+  const locale =
+    document.getElementById("console-pipeline-root")?.dataset.userLocale ??
+    "en";
   return (
     <I18NProvider
       bundles={[ResourceBundleName.messages, ResourceBundleName.run]}
+      locale={locale}
     >
       <PipelineConsole />
     </I18NProvider>

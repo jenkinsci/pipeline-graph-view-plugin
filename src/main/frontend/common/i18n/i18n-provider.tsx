@@ -20,13 +20,14 @@ export const I18NContext: Context<Translations> = createContext(
 interface I18NProviderProps {
   children: ReactNode;
   bundles: ResourceBundleName[];
+  locale: string;
 }
 
 export const I18NProvider: FunctionComponent<I18NProviderProps> = ({
   children,
   bundles,
+  locale,
 }) => {
-  const locale = document.getElementById("root")?.dataset.userLocale ?? "en";
   const [translations, setTranslations] = useState<Translations>(
     defaultTranslations(locale),
   );

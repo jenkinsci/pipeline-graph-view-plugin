@@ -1,0 +1,169 @@
+.pgv-step-detail-group {
+  position: relative;
+
+  // Increase z-index of cards so that their focus glow is visible
+  &:hover {
+    z-index: 100;
+  }
+}
+
+.pgv-step-detail-header {
+  position: sticky;
+  top: calc(var(--header-height) + 0.375rem);
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  width: 100%;
+  box-shadow: 0 0 0 0.375rem var(--card-background);
+  background-color: var(--card-background);
+  padding: 0 0 0 0.5rem !important;
+
+  & > a:first-of-type {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    justify-content: stretch;
+    gap: 1rem;
+    text-decoration: none;
+    color: var(--text-color);
+    min-height: 38px;
+  }
+
+  .jenkins-button {
+    padding: 0 0.6rem;
+    color: var(--text-color-secondary) !important;
+    margin-left: 0.45rem;
+
+    &::before,
+    &::after {
+      display: none;
+    }
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+    }
+
+    &:hover {
+      color: var(--text-color) !important;
+    }
+  }
+}
+
+.pgv-step-detail-header__content {
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-sm);
+  gap: 0.75rem;
+  padding-left: 0.15rem;
+  overflow: hidden;
+
+  span {
+    max-width: 80%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--text-color-secondary);
+    font-family: var(--font-family-mono);
+
+    &:first-of-type {
+      color: var(--text-color);
+      font-weight: var(--font-bold-weight);
+      font-family: var(--font-family-sans);
+    }
+  }
+
+  .pgv-step-detail-header__chevron {
+    transition: var(--standard-transition);
+    width: 1rem;
+    height: 1rem;
+    margin-inline: -0.25rem;
+    flex-shrink: 0;
+  }
+
+  & > svg:first-of-type {
+    width: 1.375rem;
+    height: 1.375rem;
+  }
+}
+
+.pgv-step-detail-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+
+  & > button {
+    min-width: 38px;
+    padding-inline: 0 !important;
+  }
+}
+
+.pgv-show-more-logs {
+  position: sticky;
+  top: calc(var(--header-height) + 0.375rem + 0.375rem + 2.375rem);
+  background: var(--card-background);
+  box-shadow: 0 0 0.375rem var(--card-background);
+  z-index: 10;
+  border-radius: 0.375rem;
+  width: 100%;
+}
+
+.console-text div {
+  text-indent: 0;
+  display: inline-block;
+}
+
+pre.console-output-line {
+  text-align: left;
+  padding: 0;
+  margin: 0;
+  border-radius: 0;
+}
+
+a.console-line-number {
+  text-align: right;
+  margin-right: 14px;
+  color: var(--text-color-secondary);
+  white-space: nowrap;
+  display: inline-block;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+div.console-output-line-anchor {
+  position: relative;
+  // This is the width of the '.jenkins-breadcrumbs' div + a little extra.
+  top: -50px;
+  visibility: hidden;
+}
+
+div.console-output-line {
+  position: relative;
+  display: flex;
+  padding-block: 2px;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-color: color-mix(
+      in srgb,
+      var(--text-color-secondary) 5%,
+      transparent
+    );
+    // TODO - var fallback can removed after baseline is moved >= 2.496
+    border: var(--jenkins-border-width, 2px) solid
+      color-mix(in srgb, var(--text-color-secondary) 2.5%, transparent);
+    border-radius: 0.375rem;
+    opacity: 0;
+    transition: opacity var(--standard-transition);
+    pointer-events: none;
+  }
+
+  &:hover {
+    &::before {
+      opacity: 1;
+    }
+  }
+}

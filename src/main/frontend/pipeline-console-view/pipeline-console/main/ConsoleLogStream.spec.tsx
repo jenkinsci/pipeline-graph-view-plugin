@@ -1,6 +1,5 @@
 /** * @jest-environment jsdom */
 
-import "@testing-library/jest-dom";
 import React, { ReactElement } from "react";
 import ConsoleLogStream, { ConsoleLogStreamProps } from "./ConsoleLogStream";
 import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";

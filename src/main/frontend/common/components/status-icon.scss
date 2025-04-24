@@ -1,4 +1,6 @@
 .pgv-status-icon {
+  flex-shrink: 0;
+
   * {
     transition: var(--elastic-transition);
     transform-origin: center;
@@ -20,4 +22,5 @@
 // TODO - can be removed when Jenkins >= 2.506
 .jenkins-\!-skipped-color {
   --color: var(--text-color-secondary);
+  color: var(--color);
 }

@@ -1,22 +1,16 @@
 import React from "react";
-import { lazy, Suspense } from "react";
-import { FunctionComponent } from "react";
+import { lazy } from "react";
 
-import { CircularProgress } from "@mui/material";
+import { I18NProvider } from "../common/i18n/i18n-provider";
 
 const PipelineConsole = lazy(
   () => import("./pipeline-console/main/PipelineConsole"),
 );
 
-const App: FunctionComponent = () => {
+export default function App() {
   return (
-    <React.Fragment>
-      <div>
-        <Suspense fallback={<CircularProgress />}>
-          <PipelineConsole />
-        </Suspense>
-      </div>
-    </React.Fragment>
+    <I18NProvider>
+      <PipelineConsole />
+    </I18NProvider>
   );
-};
-export default App;
+}

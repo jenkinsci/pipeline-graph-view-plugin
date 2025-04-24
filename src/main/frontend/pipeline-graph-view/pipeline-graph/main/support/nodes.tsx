@@ -1,7 +1,7 @@
 import * as React from "react";
+import { CSSProperties } from "react";
 
 import {
-  decodeResultValue,
   LayoutInfo,
   NodeColumn,
   NodeInfo,
@@ -10,7 +10,6 @@ import {
 import StatusIcon, {
   resultToColor,
 } from "../../../../common/components/status-icon";
-import { CSSProperties } from "react";
 
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck
 
@@ -40,10 +39,9 @@ export function Node({ node }: NodeProps) {
   }
 
   const { title, state, url } = node.stage ?? {};
-  const resultClean = decodeResultValue(state);
-
   groupChildren.push(
     <StatusIcon
+      key={`icon-${node.id}`}
       status={node.stage.state}
       percentage={node.stage.completePercent}
       skeleton={node.stage.skeleton}
@@ -66,7 +64,7 @@ export function Node({ node }: NodeProps) {
     } as CSSProperties,
     className:
       "PWGx-pipeline-node PWGx-pipeline-node--" +
-      resultClean +
+      state +
       " " +
       resultToColor(node.stage.state, node.stage.skeleton),
   };

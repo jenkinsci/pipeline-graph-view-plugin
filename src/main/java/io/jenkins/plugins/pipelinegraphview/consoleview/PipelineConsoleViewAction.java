@@ -82,11 +82,11 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     }
 
     private JSONObject getSteps(String nodeId) throws IOException {
-        logger.debug("getSteps was passed nodeId '" + nodeId + "'.");
+        logger.debug("getSteps was passed nodeId '{}'.", nodeId);
         PipelineStepList steps = stepApi.getSteps(nodeId);
         String stepsJson = MAPPER.writeValueAsString(steps);
         if (logger.isDebugEnabled()) {
-            logger.debug("Steps: '" + stepsJson + "'.");
+            logger.debug("Steps for {}: '{}'.", nodeId, stepsJson);
         }
         return JSONObject.fromObject(stepsJson);
     }
@@ -105,7 +105,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         PipelineStepList steps = stepApi.getAllSteps();
         String stepsJson = MAPPER.writeValueAsString(steps);
         if (logger.isDebugEnabled()) {
-            logger.debug("Steps: '" + stepsJson + "'.");
+            logger.debug("Steps: '{}'.", stepsJson);
         }
         return JSONObject.fromObject(stepsJson);
     }
@@ -117,7 +117,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
             logger.error("'consoleText' was not passed 'nodeId'.");
             return HttpResponses.errorJSON("Error getting console text");
         }
-        logger.debug("getConsoleText was passed node id '" + nodeId + "'.");
+        logger.debug("getConsoleText was passed node id '{}'.", nodeId);
         // This will be a step, so return its log output.
         AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
 
@@ -165,7 +165,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
             logger.error("'consoleJson' was not passed 'nodeId'.");
             return HttpResponses.errorJSON("Error getting console json");
         }
-        logger.debug("getConsoleOutput was passed node id '" + nodeId + "'.");
+        logger.debug("getConsoleOutput was passed node id '{}'.", nodeId);
         // This will be a step, so return it's log output.
         // startByte to start getting data from. If negative will startByte from end of string with
         // LOG_THRESHOLD.
@@ -194,18 +194,18 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
             }
             // if startByte is negative make sure we don't try and get a byte before 0.
             if (requestStartByte < 0L) {
-                logger.debug("consoleJson - requested negative startByte '" + requestStartByte + "'.");
+                logger.debug("consoleJson - requested negative startByte '{}'.", requestStartByte);
                 startByte = textLength + requestStartByte;
                 if (startByte < 0L) {
-                    logger.debug("consoleJson - requested negative startByte '"
-                            + requestStartByte
-                            + "' out of bounds, starting at 0.");
+                    logger.debug(
+                            "consoleJson - requested negative startByte '{}' out of bounds, starting at 0.",
+                            requestStartByte);
                     startByte = 0L;
                 }
             } else {
                 startByte = requestStartByte;
             }
-            logger.debug("Returning '" + (textLength - startByte) + "' bytes from 'getConsoleOutput'.");
+            logger.debug("Returning '{}' bytes from 'getConsoleOutput'.", textLength - startByte);
             text = PipelineNodeUtil.convertLogToString(logText, startByte, true);
             endByte = textLength;
         }
@@ -254,10 +254,10 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
 
     private static long parseIntWithDefault(String s, long defaultValue) {
         try {
-            logger.debug("Parsing user provided value of '" + s + "'");
+            logger.debug("Parsing user provided value of '{}'", s);
             return Long.parseLong(s);
         } catch (NumberFormatException e) {
-            logger.debug("Using default value of '" + defaultValue + "'");
+            logger.debug("Using default value of '{}'", defaultValue);
             return defaultValue;
         }
     }

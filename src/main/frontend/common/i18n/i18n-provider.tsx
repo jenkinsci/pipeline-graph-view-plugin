@@ -9,6 +9,7 @@ import React, {
 import {
   defaultTranslations,
   getTranslations,
+  ResourceBundleName,
   Translations,
 } from "./translations";
 
@@ -18,10 +19,12 @@ export const I18NContext: Context<Translations> = createContext(
 
 interface I18NProviderProps {
   children: ReactNode;
+  bundles: ResourceBundleName[];
 }
 
 export const I18NProvider: FunctionComponent<I18NProviderProps> = ({
   children,
+  bundles,
 }) => {
   const locale = document.getElementById("root")?.dataset.userLocale ?? "en";
   const [translations, setTranslations] = useState<Translations>(
@@ -30,7 +33,7 @@ export const I18NProvider: FunctionComponent<I18NProviderProps> = ({
 
   useEffect(() => {
     const fetchTranslations = async () => {
-      const translations = await getTranslations(locale);
+      const translations = await getTranslations(locale, bundles);
       setTranslations(translations);
     };
     fetchTranslations();

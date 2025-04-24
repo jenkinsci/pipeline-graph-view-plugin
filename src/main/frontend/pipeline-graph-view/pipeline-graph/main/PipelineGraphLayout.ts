@@ -4,13 +4,15 @@ import {
   NodeColumn,
   NodeInfo,
   NodeLabelInfo,
+  PlaceholderNodeInfo,
   PositionedGraph,
   StageInfo,
+  StageNodeInfo,
 } from "./PipelineGraphModel";
 
 export const sequentialStagesLabelOffset = 80;
 
-const maxColumnsWhenCollapsed = 13;
+const maxColumnsWhenCollapsed = 5;
 
 /**
  * Main process for laying out the graph. Creates and positions markers for each component, but creates no components.
@@ -49,7 +51,7 @@ export function layoutGraph(
     type: "end",
   };
 
-  const counterNode: NodeInfo = {
+  const counterNode: CounterNodeInfo = {
     x: 0,
     y: 0,
     name: "Counter",
@@ -57,6 +59,7 @@ export function layoutGraph(
     isPlaceholder: true,
     key: "counter-node",
     type: "counter",
+    stages: [],
   };
 
   function filterWhenCollapsed(nodes: NodeColumn[]) {
@@ -67,11 +70,28 @@ export function layoutGraph(
     const start = nodes[0];
     const end = nodes[nodes.length - 1];
     const counter = nodes[nodes.length - 2];
-    const result = nodes
-      .filter((node) => node !== start && node !== counter && node !== end)
-      .slice(0, maxColumnsWhenCollapsed);
 
-    return [start, ...result, counter, end];
+    const middleNodes = nodes.filter(
+      (node) => node !== start && node !== counter && node !== end,
+    );
+
+    const visibleNodes = middleNodes.slice(0, maxColumnsWhenCollapsed);
+    const hiddenNodes = middleNodes.slice(maxColumnsWhenCollapsed);
+
+    const result = [start, ...visibleNodes];
+
+    if (hiddenNodes.length > 0) {
+      (counter.rows[0][0] as CounterNodeInfo).stages = hiddenNodes.flatMap(
+        (node) =>
+          node.rows.flatMap((row) =>
+            row.flatMap((e) => (e as StageNodeInfo).stage),
+          ),
+      );
+      result.push(counter);
+    }
+
+    result.push(end);
+    return result;
   }
 
   const allNodeColumns: Array<NodeColumn> = filterWhenCollapsed([
@@ -110,6 +130,10 @@ export function layoutGraph(
     measuredWidth,
     measuredHeight,
   };
+}
+
+export interface CounterNodeInfo extends PlaceholderNodeInfo {
+  stages: StageInfo[];
 }
 
 /**

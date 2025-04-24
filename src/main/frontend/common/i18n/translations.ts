@@ -47,7 +47,7 @@ export async function getTranslations(
   bundleNames: ResourceBundleName[],
 ): Promise<Translations> {
   const bundles = await Promise.all(
-    bundleNames.map((name) => getResourceBundle(name).then(r => r ?? {})),
+    bundleNames.map((name) => getResourceBundle(name).then((r) => r ?? {})),
   );
 
   const messages = bundles.reduce(

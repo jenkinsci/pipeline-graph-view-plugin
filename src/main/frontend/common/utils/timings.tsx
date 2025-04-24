@@ -137,9 +137,9 @@ export function time(since: number): string {
   return since === 0
     ? ""
     : new Date(since).toLocaleTimeString("en-GB", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+        hour: "2-digit",
+        minute: "2-digit",
+      });
 }
 
 export function exact(since: number): string {

@@ -206,17 +206,15 @@ circle.halo {
 }
 
 .PWGx-pipeline-node-counter {
-  width: 1.65rem;
-  background: $graph-connector-grey;
+  width: 1.25rem;
   border-radius: 1rem;
-  line-height: 1.15rem;
+  line-height: 1rem;
   text-align: center;
   font-size: var(--font-size-xs);
-  color: var(--background);
   font-weight: var(--font-bold-weight);
   cursor: default;
-  text-shadow: 0 1px 0 rgb(0 0 0 / 10%);
-  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 5%);
+  border: 2px solid $graph-connector-grey;
+  color: var(--text-color-secondary);
 
   &::before {
     display: none !important;

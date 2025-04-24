@@ -14,6 +14,7 @@ import StatusIcon, {
 import Tooltip from "../../../../common/components/tooltip";
 import { Total } from "../../../../common/utils/timings";
 import "./nodes.scss";
+import { CounterNodeInfo } from "../PipelineGraphLayout";
 
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck
 
@@ -30,22 +31,28 @@ export function Node({ node, collapsed }: NodeProps) {
 
   if (node.isPlaceholder) {
     if (node.type === "counter") {
+      const mappedNode = node as CounterNodeInfo;
+
       const tooltip = (
         <ol className="pgv-node__counter-tooltip">
-          <li>
-            <a className={"jenkins-button jenkins-button--tertiary"} href="">
-              <StatusIcon status={Result.success} />
-              hello
-              <span style={{ color: "var(--text-color-secondary)" }}>4 sec</span>
-            </a>
-          </li>
-          <li>
-            <a className={"jenkins-button jenkins-button--tertiary"} href="">
-              <StatusIcon status={Result.success} />
-              hello hello wello bello
-              <span style={{ color: "var(--text-color-secondary)" }}>21 sec</span>
-            </a>
-          </li>
+          {mappedNode.stages.map((stage) => (
+            <li key={stage.id}>
+              <a
+                className={"jenkins-button jenkins-button--tertiary"}
+                href={document.head.dataset.rooturl + stage.url}
+              >
+                <StatusIcon
+                  status={stage.state}
+                  percentage={stage.completePercent}
+                  skeleton={stage.skeleton}
+                />
+                {stage.name}
+                <span style={{ color: "var(--text-color-secondary)" }}>
+                  <Total ms={stage.totalDurationMillis} />
+                </span>
+              </a>
+            </li>
+          ))}
         </ol>
       );
 
@@ -61,7 +68,9 @@ export function Node({ node, collapsed }: NodeProps) {
             }}
             className={"PWGx-pipeline-node"}
           >
-            <span className={"PWGx-pipeline-node-counter"}>5</span>
+            <span className={"PWGx-pipeline-node-counter"}>
+              {mappedNode.stages.length}
+            </span>
           </div>
         </Tooltip>
       );
@@ -120,7 +129,9 @@ export function Node({ node, collapsed }: NodeProps) {
     tooltip = (
       <div className="pgv-node-tooltip">
         <div>{title}</div>
-        <div><Total ms={node.stage.totalDurationMillis} /></div>
+        <div>
+          <Total ms={node.stage.totalDurationMillis} />
+        </div>
       </div>
     );
   }

@@ -6,21 +6,23 @@ import Tooltip from "./tooltip";
  * A customized (and customizable) implementation of Tippy dropdowns
  */
 export default function Dropdown({ items, disabled }: DropdownProps) {
-  const [dropdownVisible, setDropdownVisible] = useState(false);
-  const showDropdown = () => setDropdownVisible(true);
-  const hideDropdown = () => setDropdownVisible(false);
+  const [visible, setVisible] = useState(false);
+  const show = () => setVisible(true);
+  const hide = () => setVisible(false);
 
   return (
     <Tooltip content={"More actions"}>
       <Tippy
         theme="dropdown"
-        duration={300}
+        duration={250}
         touch={true}
-        visible={dropdownVisible}
+        visible={visible}
         animation="dropdown"
-        onClickOutside={hideDropdown}
+        onClickOutside={hide}
         interactive={true}
-        placement="bottom-end"
+        offset={[0, 0]}
+        placement="bottom-start"
+        arrow={false}
         content={
           <div className="jenkins-dropdown">
             {items.map((item, index) => (
@@ -43,7 +45,7 @@ export default function Dropdown({ items, disabled }: DropdownProps) {
           type="button"
           data-dropdown="true"
           disabled={disabled}
-          onClick={dropdownVisible ? hideDropdown : showDropdown}
+          onClick={visible ? hide : show}
         >
           <div className="jenkins-overflow-button__ellipsis">
             <span></span>

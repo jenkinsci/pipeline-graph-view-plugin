@@ -3,6 +3,15 @@
   padding-right: 0.7rem;
 }
 
+.jenkins-search {
+  --search-bar-height: 2.625rem;
+  margin-bottom: 0.5rem;
+
+  input {
+    border: var(--jenkins-border, 2px solid color-mix(in srgb, var(--text-color-secondary) 10%, transparent));
+  }
+}
+
 .pgv-tree-item {
   display: block !important;
   font-family: var(--font-family-sans) !important;

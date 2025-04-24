@@ -21,15 +21,53 @@ export default function DataTreeView({
   );
 
   return (
-    <div id="tasks">
-      {stages.map((stage) => (
-        <TreeNode
-          key={stage.id}
-          stage={stage}
-          selected={String(selected)}
-          onSelect={handleSelect}
-        />
-      ))}
+    <div>
+      <div className="jenkins-search-container">
+        <div className="jenkins-search">
+          <div className="jenkins-search__icon">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 512 512"
+            >
+              <path
+                d="M221.09 64a157.09 157.09 0 10157.09 157.09A157.1 157.1 0 00221.09 64z"
+                fill="none"
+                stroke="currentColor"
+                stroke-miterlimit="10"
+                stroke-width="32"
+              />
+              <path
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-miterlimit="10"
+                stroke-width="32"
+                d="M338.29 338.29L448 448"
+              />
+            </svg>
+          </div>
+          <input
+            className="jenkins-input jenkins-search__input"
+            placeholder="Search"
+            type="search"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck="false"
+          />
+        </div>
+      </div>
+
+      <div id="tasks" style={{ marginLeft: "0.7rem" }}>
+        {stages.map((stage) => (
+          <TreeNode
+            key={stage.id}
+            stage={stage}
+            selected={String(selected)}
+            onSelect={handleSelect}
+          />
+        ))}
+      </div>
     </div>
   );
 }

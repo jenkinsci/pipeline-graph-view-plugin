@@ -1,18 +1,10 @@
 import React from "react";
-import ReactDomServer from "react-dom/server";
-
-import { Tooltip } from "react-tippy";
+import Tooltip from "../../../../common/components/tooltip";
 
 type MatrixValue = {
   key: string;
   value: string;
 };
-
-declare module "react-tippy" {
-  export interface TooltipProps {
-    children?: React.ReactNode;
-  }
-}
 
 export function convertLabelToTooltip(content: string): string | MatrixValue[] {
   if (content.startsWith("Matrix -")) {
@@ -32,7 +24,7 @@ export function convertLabelToTooltip(content: string): string | MatrixValue[] {
 
 export type TooltipLabelProps = {
   content: string;
-  children: React.ReactNode;
+  children: React.ReactElement;
 };
 
 export function TooltipLabel(props: TooltipLabelProps) {
@@ -42,7 +34,7 @@ export function TooltipLabel(props: TooltipLabelProps) {
     return (
       <>
         <Tooltip
-          title={result as string}
+          content={result as string}
           interactive={true}
           followCursor={true}
         >
@@ -52,7 +44,7 @@ export function TooltipLabel(props: TooltipLabelProps) {
     );
   }
 
-  const table = ReactDomServer.renderToString(
+  const table = (
     <table>
       {(result as MatrixValue[]).map((val, key) => {
         return (
@@ -62,12 +54,12 @@ export function TooltipLabel(props: TooltipLabelProps) {
           </tr>
         );
       })}
-    </table>,
+    </table>
   );
 
   return (
     <>
-      <Tooltip title={table} interactive={true} followCursor={true}>
+      <Tooltip content={table} interactive={true} followCursor={true}>
         {props.children}
       </Tooltip>
     </>

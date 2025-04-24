@@ -6,7 +6,7 @@ import {
   StageInfo,
 } from "../../../pipeline-graph-view/pipeline-graph/main";
 import { defaultLayout } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
-import { time, total } from "../../../common/utils/timings";
+import { time, Total } from "../../../common/utils/timings";
 import "./single-run.scss";
 import StatusIcon from "../../../common/components/status-icon";
 
@@ -25,7 +25,7 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
           <StatusIcon status={run.result} />
           {run.displayName}
           <span>
-            {time(run.timestamp)} - {total(run.duration)}
+            {time(run.timestamp)} - <Total ms={run.timestamp} />
           </span>
         </a>
       </div>

@@ -12,7 +12,7 @@ import StatusIcon, {
   resultToColor,
 } from "../../../../common/components/status-icon";
 import Tooltip from "../../../../common/components/tooltip";
-import { total } from "../../../../common/utils/timings";
+import { Total } from "../../../../common/utils/timings";
 import "./nodes.scss";
 
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck
@@ -120,7 +120,7 @@ export function Node({ node, collapsed }: NodeProps) {
     tooltip = (
       <div className="pgv-node-tooltip">
         <div>{title}</div>
-        <div>{total(node.stage.totalDurationMillis)}</div>
+        <div><Total ms={node.stage.totalDurationMillis} /></div>
       </div>
     );
   }

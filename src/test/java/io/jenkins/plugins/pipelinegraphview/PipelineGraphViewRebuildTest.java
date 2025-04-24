@@ -2,9 +2,13 @@ package io.jenkins.plugins.pipelinegraphview;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.microsoft.playwright.Browser;
+import com.microsoft.playwright.Page;
+import com.microsoft.playwright.Playwright;
+import com.microsoft.playwright.Response;
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
-import org.htmlunit.html.HtmlPage;
+import java.io.IOException;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
@@ -20,11 +24,7 @@ class PipelineGraphViewRebuildTest {
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "hello_world", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
-        try (JenkinsRule.WebClient webClient = j.createWebClient()) {
-            HtmlPage page = webClient.getPage(run, new PipelineGraphViewAction(run).getUrlName());
-            HtmlPage newPage = page.getElementById("pgv-rebuild").click();
-            assertEquals(page.getBaseURL(), newPage.getBaseURL());
-        }
+        startBuildAndAssertPageIsTheSame(j, run);
     }
 
     @Issue("GH#330")
@@ -33,14 +33,21 @@ class PipelineGraphViewRebuildTest {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "echo_parameterized", "gh330_parameterizedBuild.jenkinsfile", Result.SUCCESS);
 
-        try (JenkinsRule.WebClient webClient = j.createWebClient()) {
-            // the build page is returned with a 405 Method Not Allowed status code, but the page
-            // exists and can be worked with; we should not fail on this status code
-            webClient.getOptions().setThrowExceptionOnFailingStatusCode(false);
+        startBuildAndAssertPageIsTheSame(j, run);
+    }
 
-            HtmlPage page = webClient.getPage(run, new PipelineGraphViewAction(run).getUrlName());
-            HtmlPage newPage = page.getElementById("pgv-rebuild").click();
-            assertEquals(page.getBaseURL(), newPage.getBaseURL());
+    private static void startBuildAndAssertPageIsTheSame(JenkinsRule j, WorkflowRun run) throws IOException {
+        try (Playwright playwright = Playwright.create();
+                Browser browser = playwright.chromium().launch()) {
+            Page page = browser.newPage();
+            String urlName = new PipelineGraphViewAction(run).getUrlName();
+            Response navigate = page.navigate(j.getURL() + run.getUrl() + urlName);
+            String currentUrl = navigate.url();
+
+            page.click("#pgv-rebuild");
+            String newUrl = page.url();
+
+            assertEquals(currentUrl, newUrl);
         }
     }
 }

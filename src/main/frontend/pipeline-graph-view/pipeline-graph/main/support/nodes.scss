@@ -4,7 +4,7 @@
   list-style-type: none;
   padding: 0;
   margin: 0;
-  margin-inline: -0.35rem;
+  margin: -0.15rem -0.5rem;
 
   li {
     display: contents;
@@ -16,7 +16,7 @@
     color: var(--text-color);
     text-decoration: none;
     min-height: 0;
-    padding: 0.3rem 1rem 0.3rem 0.35rem;
+    padding: 0.25rem 1rem 0.25rem 0.35rem;
     border-radius: 0.45rem;
     font-size: var(--font-size-xs);
 

@@ -61,7 +61,7 @@ export function Node({ node, collapsed }: NodeProps) {
             }}
             className={"PWGx-pipeline-node"}
           >
-            5
+            <span className={"PWGx-pipeline-node-counter"}>5</span>
           </div>
         </Tooltip>
       );

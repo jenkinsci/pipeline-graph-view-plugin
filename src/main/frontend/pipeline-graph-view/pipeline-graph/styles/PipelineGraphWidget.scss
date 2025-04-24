@@ -205,6 +205,24 @@ circle.halo {
   }
 }
 
+.PWGx-pipeline-node-counter {
+  width: 1.65rem;
+  background: $graph-connector-grey;
+  border-radius: 1rem;
+  line-height: 1.15rem;
+  text-align: center;
+  font-size: var(--font-size-xs);
+  color: var(--background);
+  font-weight: var(--font-bold-weight);
+  cursor: default;
+  text-shadow: 0 1px 0 rgb(0 0 0 / 10%);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 5%);
+
+  &::before {
+    display: none !important;
+  }
+}
+
 .PWGx-pipeline-node-terminal {
   width: 10px;
   height: 10px;

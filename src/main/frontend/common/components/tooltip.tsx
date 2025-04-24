@@ -1,33 +1,23 @@
-import React, { useEffect, useRef } from "react";
-
-declare global {
-  interface Window {
-    Behaviour: any;
-  }
-}
+import Tippy, { TippyProps } from "@tippyjs/react";
+import React from "react";
 
 /**
- * Provides a bridge between React and the Jenkins' tooltip component
+ * A customized (and customizable) implementation of Tippy tooltips
  */
-export default function Tooltip({ text, children }: TooltipProps) {
-  const ref = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    if (!ref.current) {
-      return;
-    }
-
-    window.Behaviour?.applySubtree(ref.current.parentNode, true);
-  }, []);
+export default function Tooltip(props: TippyProps) {
+  if (props.content === undefined) {
+    return props.children;
+  }
 
   return (
-    <span {...{ tooltip: text }} ref={ref}>
-      {children}
-    </span>
+    <Tippy
+      theme="tooltip"
+      animation="tooltip"
+      duration={250}
+      touch={false}
+      {...props}
+    >
+      {props.children}
+    </Tippy>
   );
-}
-
-interface TooltipProps {
-  text: string;
-  children: React.ReactNode;
 }

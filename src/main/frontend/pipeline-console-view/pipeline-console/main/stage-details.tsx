@@ -14,24 +14,89 @@ export default function StageDetails({ stage }: StageDetailsProps) {
     return null;
   }
 
-  const dropdownItems = useMemo(() => [
-    {
-      text: `Hello ${stage.id}`,
-      icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><title>${stage.id}</title><path d="M416 221.25V416a48 48 0 01-48 48H144a48 48 0 01-48-48V96a48 48 0 0148-48h98.75a32 32 0 0122.62 9.37l141.26 141.26a32 32 0 019.37 22.62z" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="32"/><path d="M256 56v120a32 32 0 0032 32h120M176 288h160M176 368h160" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="32"/></svg>,
-    },
-    {
-      text: "View stage as plain text",
-      icon: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><title>Document Text</title><path d="M416 221.25V416a48 48 0 01-48 48H144a48 48 0 01-48-48V96a48 48 0 0148-48h98.75a32 32 0 0122.62 9.37l141.26 141.26a32 32 0 019.37 22.62z" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="32"/><path d="M256 56v120a32 32 0 0032 32h120M176 288h160M176 368h160" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="32"/></svg>,
-      href: `log?nodeId=${stage.id}`,
-      target: "_blank",
-    },
-    {
-      text: "Download stage logs",
-      icon: <svg xmlns="http://www.w3.org/2000/svg" className="ionicon" viewBox="0 0 512 512"><title>Download</title><path d="M336 176h40a40 40 0 0140 40v208a40 40 0 01-40 40H136a40 40 0 01-40-40V216a40 40 0 0140-40h40" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="32"/><path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="32" d="M176 272l80 80 80-80M256 48v288"/></svg>,
-      href: `log?nodeId=${stage.id}`,
-      download: `${stage.name}.txt`,
-    },
-  ], [stage]);
+  const dropdownItems = useMemo(
+    () => [
+      {
+        text: `Hello ${stage.id}`,
+        icon: (
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <title>${stage.id}</title>
+            <path
+              d="M416 221.25V416a48 48 0 01-48 48H144a48 48 0 01-48-48V96a48 48 0 0148-48h98.75a32 32 0 0122.62 9.37l141.26 141.26a32 32 0 019.37 22.62z"
+              fill="none"
+              stroke="currentColor"
+              strokeLinejoin="round"
+              strokeWidth="32"
+            />
+            <path
+              d="M256 56v120a32 32 0 0032 32h120M176 288h160M176 368h160"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="32"
+            />
+          </svg>
+        ),
+      },
+      {
+        text: "View stage as plain text",
+        icon: (
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <title>Document Text</title>
+            <path
+              d="M416 221.25V416a48 48 0 01-48 48H144a48 48 0 01-48-48V96a48 48 0 0148-48h98.75a32 32 0 0122.62 9.37l141.26 141.26a32 32 0 019.37 22.62z"
+              fill="none"
+              stroke="currentColor"
+              strokeLinejoin="round"
+              strokeWidth="32"
+            />
+            <path
+              d="M256 56v120a32 32 0 0032 32h120M176 288h160M176 368h160"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="32"
+            />
+          </svg>
+        ),
+        href: `log?nodeId=${stage.id}`,
+        target: "_blank",
+      },
+      {
+        text: "Download stage logs",
+        icon: (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="ionicon"
+            viewBox="0 0 512 512"
+          >
+            <title>Download</title>
+            <path
+              d="M336 176h40a40 40 0 0140 40v208a40 40 0 01-40 40H136a40 40 0 01-40-40V216a40 40 0 0140-40h40"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="32"
+            />
+            <path
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="32"
+              d="M176 272l80 80 80-80M256 48v288"
+            />
+          </svg>
+        ),
+        href: `log?nodeId=${stage.id}`,
+        download: `${stage.name}.txt`,
+      },
+    ],
+    [stage],
+  );
 
   return (
     <div
@@ -69,25 +134,27 @@ export default function StageDetails({ stage }: StageDetailsProps) {
           <Total ms={stage.totalDurationMillis} />
         </li>
         <li>
-          <Tooltip text={exact(stage.startTimeMillis)}>
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-              <path
-                d="M256 64C150 64 64 150 64 256s86 192 192 192 192-86 192-192S362 64 256 64z"
-                fill="none"
-                stroke="currentColor"
-                strokeMiterlimit="10"
-                strokeWidth="32"
-              />
-              <path
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="32"
-                d="M256 128v144h96"
-              />
-            </svg>
-            <Started since={stage.startTimeMillis} />
+          <Tooltip content={exact(stage.startTimeMillis)}>
+            <span>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <path
+                  d="M256 64C150 64 64 150 64 256s86 192 192 192 192-86 192-192S362 64 256 64z"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeMiterlimit="10"
+                  strokeWidth="32"
+                />
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="32"
+                  d="M256 128v144h96"
+                />
+              </svg>
+              <Started since={stage.startTimeMillis} />
+            </span>
           </Tooltip>
         </li>
         {stage.pauseDurationMillis !== 0 && (
@@ -111,10 +178,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
         )}
         <StageNodeLink agent={stage.agent} />
         <li>
-          <Dropdown
-            disabled={stage.synthetic}
-            items={dropdownItems}
-          />
+          <Dropdown disabled={stage.synthetic} items={dropdownItems} />
         </li>
       </ul>
     </div>

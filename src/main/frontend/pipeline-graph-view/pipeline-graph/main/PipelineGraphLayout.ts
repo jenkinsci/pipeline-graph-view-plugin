@@ -12,7 +12,7 @@ import {
 
 export const sequentialStagesLabelOffset = 80;
 
-const maxColumnsWhenCollapsed = 5;
+const maxColumnsWhenCollapsed = 13;
 
 /**
  * Main process for laying out the graph. Creates and positions markers for each component, but creates no components.
@@ -69,11 +69,14 @@ export function layoutGraph(
 
     const start = nodes[0];
     const end = nodes[nodes.length - 1];
-    const counter = nodes[nodes.length - 2];
+    const counter = {
+      rows: [[counterNode]],
+      centerX: 0,
+      hasBranchLabels: false,
+      startX: 0,
+    };
 
-    const middleNodes = nodes.filter(
-      (node) => node !== start && node !== counter && node !== end,
-    );
+    const middleNodes = nodes.filter((node) => node !== start && node !== end);
 
     const visibleNodes = middleNodes.slice(0, maxColumnsWhenCollapsed);
     const hiddenNodes = middleNodes.slice(maxColumnsWhenCollapsed);
@@ -97,7 +100,6 @@ export function layoutGraph(
   const allNodeColumns: Array<NodeColumn> = filterWhenCollapsed([
     { rows: [[startNode]], centerX: 0, hasBranchLabels: false, startX: 0 }, // Column X positions calculated later
     ...stageNodeColumns,
-    { rows: [[counterNode]], centerX: 0, hasBranchLabels: false, startX: 0 },
     { rows: [[endNode]], centerX: 0, hasBranchLabels: false, startX: 0 },
   ]);
 

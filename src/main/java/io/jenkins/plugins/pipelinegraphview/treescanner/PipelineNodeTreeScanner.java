@@ -397,8 +397,7 @@ public class PipelineNodeTreeScanner {
                     }
                     return (BlockEndNode<?>) node;
                 }
-                logger.error(
-                        "Could not find BlockEndNode that threw exception:{}.", errorAction.getDisplayName());
+                logger.error("Could not find BlockEndNode that threw exception:{}.", errorAction.getDisplayName());
             }
             return null;
         }
@@ -431,7 +430,10 @@ public class PipelineNodeTreeScanner {
         private void assignParent(@NonNull FlowNodeWrapper wrappedNode, @CheckForNull FlowNode parent) {
             if (parent != null) {
                 if (!wrappedNodeMap.containsKey(parent.getId())) {
-                    logger.error("Couldn't find start of node {} (parent of {}) in wrappedNodeMap.", parent.getId(), wrappedNode.getId());
+                    logger.error(
+                            "Couldn't find start of node {} (parent of {}) in wrappedNodeMap.",
+                            parent.getId(),
+                            wrappedNode.getId());
                 } else {
                     FlowNodeWrapper wrappedParent = wrappedNodeMap.get(parent.getId());
                     assignParent(wrappedNode, wrappedParent);

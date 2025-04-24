@@ -190,7 +190,10 @@ public class PipelineGraphApi {
                     topLevelStageIds.add(stage.getId());
                 }
             } catch (IOException ex) {
-                logger.error("Caught a {} when trying to find parent of stage '{}'", ex.getClass().getSimpleName(), stage.getName());
+                logger.error(
+                        "Caught a {} when trying to find parent of stage '{}'",
+                        ex.getClass().getSimpleName(),
+                        stage.getName());
             }
         });
 

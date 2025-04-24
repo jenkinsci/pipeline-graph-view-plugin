@@ -125,7 +125,10 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements Pi
                 // Log run ID, because the eventual exception handler (probably Stapler) isn't
                 // specific
                 // enough to do so
-                logger.error("Caught a {} traversing the graph for run {}", t.getClass().getSimpleName(), run.getExternalizableId());
+                logger.error(
+                        "Caught a {} traversing the graph for run {}",
+                        t.getClass().getSimpleName(),
+                        run.getExternalizableId());
                 throw t;
             }
         } else {
@@ -366,7 +369,10 @@ public class PipelineNodeGraphVisitor extends StandardChunkVisitor implements Pi
         }
 
         if (nestedbranches.size() != parallelBranchEndNodes.size()) {
-            logger.debug("nestedBranches size: {} not equal to parallelBranchEndNodes: {}", nestedbranches.size(), parallelBranchEndNodes.size());
+            logger.debug(
+                    "nestedBranches size: {} not equal to parallelBranchEndNodes: {}",
+                    nestedbranches.size(),
+                    parallelBranchEndNodes.size());
             if (!parallelEnds.isEmpty()) {
                 parallelEnds.pop();
             }

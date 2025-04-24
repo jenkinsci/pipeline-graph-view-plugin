@@ -85,7 +85,10 @@ public class PipelineStepVisitor extends StandardChunkVisitor implements Pipelin
                 // Log run ID, because the eventual exception handler (probably Stapler) isn't
                 // specific
                 // enough to do so
-                logger.debug("Caught a {} traversing the graph for run {}", t.getClass().getSimpleName(), run.getExternalizableId());
+                logger.debug(
+                        "Caught a {} traversing the graph for run {}",
+                        t.getClass().getSimpleName(),
+                        run.getExternalizableId());
                 throw t;
             }
         } else {
@@ -101,11 +104,20 @@ public class PipelineStepVisitor extends StandardChunkVisitor implements Pipelin
             finishedBlock = pendingBlocks.pop();
             // Finished processing atom nodes in this block
             if (logger.isDebugEnabled()) {
-                logger.debug("parallelBranchStart. Removed Node ID: {}({}-) from pendingBlocks.", finishedBlock.getId(), finishedBlock.getDisplayName());
+                logger.debug(
+                        "parallelBranchStart. Removed Node ID: {}({}-) from pendingBlocks.",
+                        finishedBlock.getId(),
+                        finishedBlock.getDisplayName());
             }
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("parallelBranchStart. Node ID: {} - {} - {} - {} - {} .", branchStartNode.getId(), branchStartNode.getDisplayName(), PipelineNodeUtil.isStage(branchStartNode), PipelineNodeUtil.isParallelBranch(branchStartNode), PipelineNodeUtil.isSyntheticStage(branchStartNode));
+            logger.debug(
+                    "parallelBranchStart. Node ID: {} - {} - {} - {} - {} .",
+                    branchStartNode.getId(),
+                    branchStartNode.getDisplayName(),
+                    PipelineNodeUtil.isStage(branchStartNode),
+                    PipelineNodeUtil.isParallelBranch(branchStartNode),
+                    PipelineNodeUtil.isSyntheticStage(branchStartNode));
         }
 
         if (logger.isDebugEnabled()) {
@@ -121,7 +133,12 @@ public class PipelineStepVisitor extends StandardChunkVisitor implements Pipelin
         if (branchEndNode instanceof StepEndNode) {
             FlowNode branchStartNode = ((StepEndNode) branchEndNode).getStartNode();
             if (logger.isDebugEnabled()) {
-                logger.debug("Node ID: {} - {} - {} - {} .", branchStartNode.getId(), PipelineNodeUtil.isStage(branchStartNode), PipelineNodeUtil.isParallelBranch(branchStartNode), PipelineNodeUtil.isSyntheticStage(branchStartNode));
+                logger.debug(
+                        "Node ID: {} - {} - {} - {} .",
+                        branchStartNode.getId(),
+                        PipelineNodeUtil.isStage(branchStartNode),
+                        PipelineNodeUtil.isParallelBranch(branchStartNode),
+                        PipelineNodeUtil.isSyntheticStage(branchStartNode));
             }
             pendingBlocks.push(branchStartNode);
         }
@@ -136,11 +153,20 @@ public class PipelineStepVisitor extends StandardChunkVisitor implements Pipelin
             finishedBlock = pendingBlocks.pop();
             // Finished processing atom nodes in this block
             if (logger.isDebugEnabled()) {
-                logger.debug("chunkStart. Removed Node ID: {}({}} from pendingBlocks.", finishedBlock.getId(), finishedBlock.getDisplayName());
+                logger.debug(
+                        "chunkStart. Removed Node ID: {}({}} from pendingBlocks.",
+                        finishedBlock.getId(),
+                        finishedBlock.getDisplayName());
             }
         }
         if (logger.isDebugEnabled()) {
-            logger.debug("Node ID: {} - {} - {} - {} - {} .", startNode.getId(), startNode.getDisplayName(), PipelineNodeUtil.isStage(startNode), PipelineNodeUtil.isParallelBranch(startNode), PipelineNodeUtil.isSyntheticStage(startNode));
+            logger.debug(
+                    "Node ID: {} - {} - {} - {} - {} .",
+                    startNode.getId(),
+                    startNode.getDisplayName(),
+                    PipelineNodeUtil.isStage(startNode),
+                    PipelineNodeUtil.isParallelBranch(startNode),
+                    PipelineNodeUtil.isSyntheticStage(startNode));
         }
         // Do not add steps to this stage if it's parent is a parallel block and it's a
         // declarative
@@ -149,7 +175,9 @@ public class PipelineStepVisitor extends StandardChunkVisitor implements Pipelin
         // This could be a quirk of how the GraphVisitor works - possible
         if (PipelineNodeUtil.isParallelBranch(pendingBlocks.peek()) && isDeclarative()) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Not pushing steps to stage '{}' in chunkStart as parent is parallel block in declarative pipeline.", startNode.getDisplayName());
+                logger.debug(
+                        "Not pushing steps to stage '{}' in chunkStart as parent is parallel block in declarative pipeline.",
+                        startNode.getDisplayName());
             }
         } else {
             if (logger.isDebugEnabled()) {
@@ -166,7 +194,13 @@ public class PipelineStepVisitor extends StandardChunkVisitor implements Pipelin
         if (endNode instanceof StepEndNode) {
             FlowNode startNode = ((StepEndNode) endNode).getStartNode();
             if (logger.isDebugEnabled()) {
-                logger.debug("chunkEnd. Node ID: {} - {} - {} - {} - {} .", startNode.getId(), startNode.getDisplayName(), PipelineNodeUtil.isStage(startNode), PipelineNodeUtil.isParallelBranch(startNode), PipelineNodeUtil.isSyntheticStage(startNode));
+                logger.debug(
+                        "chunkEnd. Node ID: {} - {} - {} - {} - {} .",
+                        startNode.getId(),
+                        startNode.getDisplayName(),
+                        PipelineNodeUtil.isStage(startNode),
+                        PipelineNodeUtil.isParallelBranch(startNode),
+                        PipelineNodeUtil.isSyntheticStage(startNode));
             }
             pendingBlocks.push(startNode);
         }
@@ -191,10 +225,14 @@ public class PipelineStepVisitor extends StandardChunkVisitor implements Pipelin
             if (errorAction != null && !PipelineNodeUtil.isJenkinsFailureException(errorAction.getError())) {
                 // Store node that threw exception as step so we can find it's parent stage
                 // later.
-                logger.debug("Found unhandled exception: {}", errorAction.getError().getMessage());
+                logger.debug(
+                        "Found unhandled exception: {}", errorAction.getError().getMessage());
                 this.nodeThatThrewException = errorAction.findOrigin(errorAction.getError(), this.execution);
                 if (this.nodeThatThrewException != null) {
-                    logger.debug("Found that node '{}' threw unhandled exception: {}", this.nodeThatThrewException.getId(), this.nodeThatThrewException.getDisplayName());
+                    logger.debug(
+                            "Found that node '{}' threw unhandled exception: {}",
+                            this.nodeThatThrewException.getId(),
+                            this.nodeThatThrewException.getDisplayName());
                 }
             }
         }
@@ -291,7 +329,11 @@ public class PipelineStepVisitor extends StandardChunkVisitor implements Pipelin
         List<FlowNodeWrapper> stageStepsList = stageStepMap.getOrDefault(stage.getId(), new ArrayList<>());
         for (FlowNodeWrapper step : stageSteps) {
             if (logger.isDebugEnabled()) {
-                logger.debug("Adding step '{}' to '{}' ({}) .", step.getArgumentsAsString(), stage.getId(), stage.getDisplayName());
+                logger.debug(
+                        "Adding step '{}' to '{}' ({}) .",
+                        step.getArgumentsAsString(),
+                        stage.getId(),
+                        stage.getDisplayName());
             }
 
             stageStepsList.add(step);
@@ -320,7 +362,11 @@ public class PipelineStepVisitor extends StandardChunkVisitor implements Pipelin
         FlowNodeWrapper erroredStep = new FlowNodeWrapper(exceptionNode, status, times, null, run);
         stepMap.put(erroredStep.getId(), erroredStep);
         if (logger.isDebugEnabled()) {
-            logger.debug("Found step exception from step: {}({}) to stack.\nError:\n{}", erroredStep.getId(), erroredStep.getArgumentsAsString(), erroredStep.nodeError());
+            logger.debug(
+                    "Found step exception from step: {}({}) to stack.\nError:\n{}",
+                    erroredStep.getId(),
+                    erroredStep.getArgumentsAsString(),
+                    erroredStep.nodeError());
         }
         if (!stageSteps.contains(erroredStep)) {
             stageSteps.push(erroredStep);

@@ -197,7 +197,9 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
                 logger.debug("consoleJson - requested negative startByte '{}'.", requestStartByte);
                 startByte = textLength + requestStartByte;
                 if (startByte < 0L) {
-                    logger.debug("consoleJson - requested negative startByte '{}' out of bounds, starting at 0.", requestStartByte);
+                    logger.debug(
+                            "consoleJson - requested negative startByte '{}' out of bounds, starting at 0.",
+                            requestStartByte);
                     startByte = 0L;
                 }
             } else {

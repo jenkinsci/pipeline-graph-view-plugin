@@ -1,73 +1,60 @@
-import React, { useEffect, useRef } from "react";
-
-declare global {
-  interface Window {
-    Behaviour: any;
-  }
-}
+import Tippy from "@tippyjs/react";
+import React, { useState } from "react";
+import Tooltip from "./tooltip-tippy";
 
 /**
- * Provides a bridge between React and the Jenkins' dropdown component
+ * A customized (and customizable) implementation of Tippy dropdowns
  */
 export default function Dropdown({ items, disabled }: DropdownProps) {
-  const buttonRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    if (!buttonRef.current) {
-      return;
-    }
-
-    const parentNode = buttonRef.current.parentNode;
-    if (!parentNode) {
-      return;
-    }
-
-    const existingTemplates = parentNode.querySelectorAll("template");
-    existingTemplates.forEach((template) => template.remove());
-
-    console.log("called on items", items)
-
-    const template = document.createElement("template");
-    template.innerHTML = `
-    <div class="jenkins-dropdown">
-      ${items
-        .map(
-          (item) => `
-        <template data-dropdown-type="CUSTOM">
-          <a class="jenkins-dropdown__item" href=${item.href}
-             ${item.target ? `target="${item.target}"` : ""}
-             ${item.download ? `download="${item.download}"` : ""}>
-            <div class="jenkins-dropdown__item__icon">${item.icon}</div>
-            ${item.text}
-          </a>
-        </template>
-      `,
-        )
-        .join("")}
-    </div>
-  `;
-    parentNode.appendChild(template);
-
-    window.Behaviour?.applySubtree(parentNode, true);
-  }, [items]);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const showDropdown = () => setDropdownVisible(true);
+  const hideDropdown = () => setDropdownVisible(false);
 
   return (
-    <>
-      <button
-        className="jenkins-button jenkins-button--tertiary"
-        type="button"
-        data-dropdown="true"
-        {...{ tooltip: "More actions" }}
-        ref={buttonRef}
-        disabled={disabled}
-      >
-        <div className="jenkins-overflow-button__ellipsis">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-      </button>
-    </>
+      <Tooltip content={"More actions"}>
+        <Tippy
+          theme="dropdown"
+          duration={300}
+          touch={true}
+          visible={dropdownVisible}
+          animation="dropdown"
+          onClickOutside={hideDropdown}
+          interactive={true}
+          placement="bottom-end"
+          content={
+            <div className="jenkins-dropdown">
+              {items.map((item, index) => (
+                <a
+                  key={index}
+                  className="jenkins-dropdown__item"
+                  href={item.href}
+                  target={item.target}
+                  download={item.download}
+                >
+                  <div className="jenkins-dropdown__item__icon">
+                    {item.icon}
+                  </div>
+                  {item.text}
+                </a>
+              ))}
+            </div>
+          }
+        >
+          <button
+            className="jenkins-button jenkins-button--tertiary"
+            type="button"
+            data-dropdown="true"
+            disabled={disabled}
+            onClick={dropdownVisible ? hideDropdown : showDropdown}
+          >
+            <div className="jenkins-overflow-button__ellipsis">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </button>
+        </Tippy>
+      </Tooltip>
   );
 }
 
@@ -79,7 +66,7 @@ interface DropdownProps {
 interface DropdownItem {
   text: string;
   href?: string;
-  icon: string;
+  icon: React.ReactNode;
   target?: string;
   download?: string;
 }

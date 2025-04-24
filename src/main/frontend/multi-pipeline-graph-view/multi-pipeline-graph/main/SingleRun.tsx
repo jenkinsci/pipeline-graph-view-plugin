@@ -25,7 +25,7 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
           <StatusIcon status={run.result} />
           {run.displayName}
           <span>
-            {time(run.timestamp)} - <Total ms={run.timestamp} />
+            {time(run.timestamp)} - <Total ms={run.duration} />
           </span>
         </a>
       </div>

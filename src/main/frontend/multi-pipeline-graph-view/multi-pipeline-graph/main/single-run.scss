@@ -1,0 +1,49 @@
+.pgv-single-run {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  align-items: center;
+
+  // This is hacky - the pipeline graph is too tall and isn't centered
+  .PWGx-PipelineGraph-container {
+    height: 36px;
+
+    & > div {
+      margin-top: -36px;
+    }
+  }
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+
+  .pgw-user-specified-text {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: 0.125rem 0.625rem;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: opacity var(--standard-transition);
+    word-break: normal;
+    overflow-wrap: anywhere;
+
+    span {
+      grid-area: 2 / 2;
+      color: var(--text-color-secondary);
+      font-size: var(--font-size-xs);
+    }
+
+    &:hover {
+      opacity: 0.75;
+    }
+
+    &:active {
+      opacity: 0.5;
+    }
+
+    svg {
+      width: 1.375rem;
+      height: 1.375rem;
+    }
+  }
+}

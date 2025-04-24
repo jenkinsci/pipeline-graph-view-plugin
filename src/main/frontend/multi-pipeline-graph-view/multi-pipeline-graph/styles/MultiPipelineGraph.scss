@@ -1,0 +1,19 @@
+.pgv-stages__group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+
+  .pgv-stages__heading {
+    display: flex;
+    font-size: var(--font-size-xs);
+    color: var(--text-color-secondary);
+    font-weight: var(--font-bold-weight);
+    margin-bottom: 0.25rem;
+    margin-top: 0;
+  }
+
+  &:first-of-type {
+    margin-top: 0;
+  }
+}

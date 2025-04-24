@@ -3,7 +3,12 @@ jest.mock("../RestClient", () => ({
 }));
 
 import { getResourceBundle } from "../RestClient";
-import { getTranslations, messageFormat, Translations } from "./translations";
+import {
+  getTranslations,
+  messageFormat,
+  ResourceBundleName,
+  Translations,
+} from "./translations";
 
 describe("Translations", () => {
   describe("Get translation", () => {
@@ -33,7 +38,10 @@ describe("Translations", () => {
         "Another.property": "with another value",
         "One.more.property": "with {one} more value",
       });
-      const translations = await getTranslations("en");
+      const translations = await getTranslations("en", [
+        ResourceBundleName.run,
+        ResourceBundleName.messages,
+      ]);
 
       expect(getResourceBundle).toHaveBeenCalledWith("hudson.Messages");
       expect(getResourceBundle).toHaveBeenCalledWith("hudson.model.Run.index");
@@ -49,7 +57,9 @@ describe("Translations", () => {
     it("should use the default messages if undefined returned", async () => {
       (getResourceBundle as jest.Mock).mockResolvedValue(undefined);
 
-      const translations = await getTranslations("en");
+      const translations = await getTranslations("en", [
+        ResourceBundleName.run,
+      ]);
 
       expect(translations.get("Util.second")({ 0: 5 })).toEqual("5 sec");
       expect(translations.get("Util.day")({ 0: 1 })).toEqual("1 day");

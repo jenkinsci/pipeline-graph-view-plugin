@@ -4,7 +4,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
   <l:layout title="Stages [${it.jobDisplayName}]" type="one-column">
     <l:main-panel>
-      <l:app-bar title="${it.jobDisplayName}">
+      <l:app-bar title="${%Stages}">
         <j:if test="${it.buildable}">
           <l:hasPermission permission="${it.permission}">
             <j:set var="proxyId" value="${h.generateId()}" />
@@ -23,8 +23,11 @@
           </a>
         </l:hasPermission>
       </l:app-bar>
-      <div id="multiple-pipeline-root"
-           data-current-job-path="${rootURL + '/' + it.jobUrl}" />
+      <l:card title="${%Stages}">
+        <div id="multiple-pipeline-root"
+             data-current-job-path="${rootURL + '/' + it.jobUrl}"
+             data-user-locale="${request2.getLocale().toLanguageTag()}" />
+      </l:card>
       <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/multi-pipeline-graph-view-bundle.js"/>
       <script src="${rootURL}/plugin/pipeline-graph-view/js/build.js"/>
     </l:main-panel>

@@ -1,4 +1,3 @@
-// TODO: Remove manual PWGx- namespacing, replace with tooling
 circle.halo {
   fill: none;
 }
@@ -203,6 +202,22 @@ circle.halo {
     &::before {
       inset: 4px;
     }
+  }
+}
+
+.PWGx-pipeline-node-counter {
+  width: 1.25rem;
+  border-radius: 1rem;
+  line-height: 1rem;
+  text-align: center;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-bold-weight);
+  cursor: default;
+  border: 2px solid $graph-connector-grey;
+  color: var(--text-color-secondary);
+
+  &::before {
+    display: none !important;
   }
 }
 

@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
-import { getRunStatusFromPath } from "./RestClient";
-import { StageInfo } from "../pipeline-graph-view/pipeline-graph/main";
+import { getRunStatusFromPath, RunStatus } from "./RestClient";
 import startPollingPipelineStatus from "../pipeline-graph-view/pipeline-graph/main/support/startPollingPipelineStatus";
 import { mergeStageInfos } from "./utils/stage-merge";
+
+const onPipelineComplete = () => undefined;
+
+const onPollingError = (err: Error) =>
+  console.log("There was an error when polling the pipeline status", err);
 
 /**
  * Polls a run, stopping once the run has completed
@@ -12,70 +16,45 @@ export default function useRunPoller({
   currentRunPath,
   previousRunPath,
 }: RunPollerProps) {
-  const [run, setRun] = useState<Run>();
+  const [run, setRun] = useState<RunStatus>();
 
   useEffect(() => {
-    const onPipelineComplete = () => undefined;
-
+    let onPipelineDataReceived: (data: RunStatus) => void;
     if (previousRunPath) {
-      getRunStatusFromPath(previousRunPath).then((r) => {
-        // This should be a Result - not 'complete'
-        const onPipelineDataReceived = (data: {
-          stages: StageInfo[];
-          complete: boolean;
-        }) => {
-          setRun({
-            stages: mergeStageInfos(r!.stages, data.stages),
-            complete: data.complete,
-          });
-        };
-
-        const onPollingError = (err: Error) => {
-          console.log(
-            "There was an error when polling the pipeline status",
-            err,
-          );
-        };
-
-        startPollingPipelineStatus(
-          onPipelineDataReceived,
-          onPollingError,
-          onPipelineComplete,
-          currentRunPath,
-        );
-      });
+      let previousRun: RunStatus | null = null;
+      onPipelineDataReceived = async (current: RunStatus) => {
+        if (current.complete) {
+          setRun(current);
+        } else {
+          if (previousRun == null) {
+            // only set the previous run if it is not yet set
+            previousRun = await getRunStatusFromPath(previousRunPath);
+          }
+          // error getting previous run
+          if (previousRun == null) {
+            setRun(current);
+          } else {
+            setRun({
+              stages: mergeStageInfos(previousRun!.stages, current.stages),
+              complete: false,
+            });
+          }
+        }
+      };
     } else {
-      const onPipelineDataReceived = (data: {
-        stages: StageInfo[];
-        complete: boolean;
-      }) => {
-        setRun({
-          stages: data.stages,
-          complete: data.complete,
-        });
-      };
-
-      const onPollingError = (err: Error) => {
-        console.log("There was an error when polling the pipeline status", err);
-      };
-
-      startPollingPipelineStatus(
-        onPipelineDataReceived,
-        onPollingError,
-        onPipelineComplete,
-        currentRunPath,
-      );
+      onPipelineDataReceived = (data: RunStatus) => setRun(data);
     }
+    startPollingPipelineStatus(
+      onPipelineDataReceived,
+      onPollingError,
+      onPipelineComplete,
+      currentRunPath,
+    );
   }, []);
 
   return {
     run,
   };
-}
-
-interface Run {
-  stages: StageInfo[];
-  complete: boolean;
 }
 
 interface RunPollerProps {

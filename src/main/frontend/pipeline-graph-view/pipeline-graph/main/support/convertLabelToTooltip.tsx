@@ -59,7 +59,7 @@ export function TooltipLabel(props: TooltipLabelProps) {
 
   return (
     <>
-      <Tooltip content={table} interactive={true} followCursor={true}>
+      <Tooltip content={table} interactive={true}>
         {props.children}
       </Tooltip>
     </>

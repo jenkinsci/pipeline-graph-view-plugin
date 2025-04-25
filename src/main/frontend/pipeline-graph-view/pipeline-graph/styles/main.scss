@@ -1,5 +1,5 @@
-@import "variables";
-@import "PipelineGraphWidget";
+@use "../../../common/styles/variables";
+@use "PipelineGraphWidget";
 
 .PWGx-PipelineGraph-container {
   display: flex;
@@ -12,7 +12,7 @@
   }
 
   .PWGx-PipelineGraph {
-    --graph-connector-grey: #{$graph-connector-grey};
+    --graph-connector-grey: #{variables.$graph-connector-grey};
 
     margin-left: auto;
     margin-right: auto;

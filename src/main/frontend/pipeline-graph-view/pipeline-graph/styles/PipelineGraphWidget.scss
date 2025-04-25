@@ -1,136 +1,7 @@
-circle.halo {
-  fill: none;
-}
-
-.PWGx-svgResultStatusOutline {
-  stroke: $graph-connector-grey;
-  fill: none;
-}
-
-.icon-skipped {
-  color: $graph-connector-grey;
-  fill: $graph-connector-grey;
-
-  .svg-icon {
-    color: $graph-connector-grey;
-    fill: $graph-connector-grey;
-  }
-}
-
-.PWGx-result-status-glyph {
-  stroke: none;
-  fill: #fff;
-}
-
-.PWGx-svgResultStatusSolid {
-  transform: translateZ(0);
-
-  > circle.statusColor {
-    &.success {
-      fill: $status-success;
-    }
-    &.failure {
-      fill: $status-failure;
-    }
-    &.unstable {
-      fill: $status-unstable;
-    }
-    &.aborted {
-      fill: $graph-connector-grey;
-    }
-    &.paused {
-      fill: $status-paused;
-    }
-    &.unknown {
-      fill: $status-unknown;
-    }
-
-    .pipeline-node-selected & {
-      stroke: none;
-    }
-  }
-}
-
-.PWGx-progress-spinner.running circle.statusColor {
-  fill: none;
-  stroke: $progress-bg;
-}
-
-.PWGx-progress-spinner.running path {
-  fill: none;
-  stroke: $progress-bar-color;
-}
-
-.PWGx-progress-spinner.pc-over-100 circle.statusColor {
-  fill: none;
-  stroke: $progress-bar-color;
-}
-
-.PWGx-progress-spinner.pc-over-100 path {
-  fill: none;
-  stroke: $status-unstable;
-}
-
-.PWGx-progress-spinner.running.spin {
-  animation: progress-spinner-rotate 4s linear;
-  animation-iteration-count: infinite;
-}
-
-@keyframes progress-spinner-rotate {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
-.PWGx-progress-spinner circle.inner,
-.PWGx-progress-spinner.running.spin circle.inner {
-  display: none;
-  animation: progress-spinner-pulsate 1.2s ease-out;
-  animation-iteration-count: infinite;
-  opacity: 0;
-}
-
-.PWGx-progress-spinner.running circle.inner {
-  display: block;
-  fill: $progress-bar-color;
-  stroke: $progress-bar-color;
-}
-
-@keyframes progress-spinner-pulsate {
-  0% {
-    transform: scale(0.1, 0.1);
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1.2, 1.2);
-    opacity: 0;
-  }
-}
-
-.PWGx-progress-spinner.queued circle.statusColor {
-  fill: none;
-  stroke: $graph-connector-grey;
-}
-
-.PWGx-progress-spinner.queued circle.statusColor.inner {
-  display: block;
-  fill: $graph-connector-grey;
-  stroke: $graph-connector-grey;
-}
-
-.PWGx-progress-spinner.queued path {
-  fill: none;
-  stroke: none;
-}
+@use "variables";
 
 .PWGx-pipeline-connector {
-  stroke: $graph-connector-grey;
+  stroke: variables.$graph-connector-grey;
 }
 
 .PWGx-pipeline-node {
@@ -213,7 +84,7 @@ circle.halo {
   font-size: var(--font-size-xs);
   font-weight: var(--font-bold-weight);
   cursor: default;
-  border: 2px solid $graph-connector-grey;
+  border: 2px solid variables.$graph-connector-grey;
   color: var(--text-color-secondary);
 
   &::before {
@@ -224,7 +95,7 @@ circle.halo {
 .PWGx-pipeline-node-terminal {
   width: 10px;
   height: 10px;
-  border: 2px solid $graph-connector-grey;
+  border: 2px solid variables.$graph-connector-grey;
   border-radius: 10px;
 
   &::before {
@@ -233,7 +104,7 @@ circle.halo {
 }
 
 .PWGx-pipeline-connector-skipped {
-  stroke: $graph-connector-grey;
+  stroke: variables.$graph-connector-grey;
   stroke-opacity: 0.25;
 }
 
@@ -253,13 +124,4 @@ circle.halo {
 .PWGx-pipeline-big-label.pgv-graph-node--skeleton {
   color: var(--text-color-secondary);
   font-weight: normal;
-}
-
-.PWGx-pipeline-small-label.selected {
-  font-weight: bold;
-  margin-top: 3px;
-}
-
-.PWGx-pipeline-selection-highlight circle {
-  fill: none;
 }

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Result,
   StageInfo,
@@ -16,31 +16,7 @@ export default function DataTreeView({
   onNodeSelect,
 }: DataTreeViewProps) {
   const { search, setSearch, visibleStatuses } = useFilter();
-  const filterStageTree = (stages: StageInfo[]): StageInfo[] => {
-    return stages
-      .map((stage) => {
-        const filteredChildren = stage.children
-          ? filterStageTree(stage.children)
-          : [];
-
-        const matchesSelf =
-          stage.name.toLowerCase().includes(search.toLowerCase()) &&
-          visibleStatuses.includes(stage.state);
-
-        // Include this stage if it matches or has matching children
-        if (matchesSelf || filteredChildren.length > 0) {
-          return {
-            ...stage,
-            children: filteredChildren,
-          };
-        }
-
-        return null;
-      })
-      .filter((stage) => stage !== null);
-  };
-
-  const filteredStages = filterStageTree(stages);
+  const filteredStages = filterStageTree(search, visibleStatuses, stages);
 
   const handleSelect = useCallback(
     (event: React.MouseEvent, nodeId: string) => {
@@ -118,6 +94,7 @@ export default function DataTreeView({
 }
 
 const TreeNode = React.memo(({ stage, selected, onSelect }: TreeNodeProps) => {
+  const { search, visibleStatuses, allVisible } = useFilter();
   const hasChildren = stage.children && stage.children.length > 0;
   const isSelected = String(stage.id) === selected;
   const [isExpanded, setIsExpanded] = useState<boolean>(
@@ -134,6 +111,14 @@ const TreeNode = React.memo(({ stage, selected, onSelect }: TreeNodeProps) => {
     e.stopPropagation();
     setIsExpanded(!isExpanded);
   };
+
+  useEffect(() => {
+    if (search.length || !allVisible) {
+      if (filterStageTree(search, visibleStatuses, [stage]).length !== 0) {
+        setIsExpanded(true);
+      }
+    }
+  }, [search, visibleStatuses, allVisible]);
 
   return (
     <div className="task">
@@ -213,6 +198,34 @@ const TreeNode = React.memo(({ stage, selected, onSelect }: TreeNodeProps) => {
     </div>
   );
 });
+
+const filterStageTree = (
+  search: string,
+  visibleStatuses: Result[],
+  stages: StageInfo[],
+): StageInfo[] => {
+  return stages
+    .map((stage) => {
+      const filteredChildren = stage.children
+        ? filterStageTree(search, visibleStatuses, stage.children)
+        : [];
+
+      const matchesSelf =
+        stage.name.toLowerCase().includes(search.toLowerCase()) &&
+        visibleStatuses.includes(stage.state);
+
+      // Include this stage if it matches or has matching children
+      if (matchesSelf || filteredChildren.length > 0) {
+        return {
+          ...stage,
+          children: filteredChildren,
+        };
+      }
+
+      return null;
+    })
+    .filter((stage) => stage !== null);
+};
 
 interface DataTreeViewProps {
   stages: StageInfo[];

@@ -7,7 +7,7 @@
   gap: 0.5rem;
   // TODO - var fallback can removed after baseline is moved >= 2.496
   padding: 0.125rem calc(1rem + var(--jenkins-border-width, 2px));
-  padding-right: 0.85rem;
+  padding-right: 0.7rem;
   border-radius: var(--form-input-border-radius);
   margin-bottom: 0.75rem;
   z-index: 101;
@@ -57,12 +57,13 @@
     --button-box-shadow--focus: oklch(from currentColor l c h / 0.1);
 
     color: var(--color) !important;
-    border-radius: 0.5rem;
+    border-radius: 0.4rem;
     margin-inline: -0.85rem;
+    padding-inline: 1.125rem;
 
     &::before,
     &::after {
-      inset: 2px 7px;
+      inset: 3px 7px;
     }
   }
 

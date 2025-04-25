@@ -1,6 +1,6 @@
-@import "variables";
-@import "../../../pipeline-graph-view/pipeline-graph/styles/PipelineGraphWidget";
-@import "MultiPipelineGraph";
+@use "../../../common/styles/variables";
+@use "../../../pipeline-graph-view/pipeline-graph/styles/PipelineGraphWidget";
+@use "MultiPipelineGraph";
 
 .PWGx-PipelineGraph-container {
   display: flex;

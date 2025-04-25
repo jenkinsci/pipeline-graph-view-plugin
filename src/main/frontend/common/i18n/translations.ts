@@ -22,7 +22,9 @@ export class Translations {
     if (message != null) {
       return message;
     }
-    console.debug(`Translation for ${key} not found, using fallback`);
+    if (!process.env.JEST_WORKER_ID) {
+      console.debug(`Translation for ${key} not found, using fallback`);
+    }
     return (params) => {
       return params == undefined ? "" : Object.values(params as any).join(" ");
     };

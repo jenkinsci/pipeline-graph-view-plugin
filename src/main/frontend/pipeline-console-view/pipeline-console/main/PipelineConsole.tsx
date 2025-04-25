@@ -7,7 +7,7 @@ const DataTreeView = React.lazy(() => import("./DataTreeView"));
 const StageView = React.lazy(() => import("./StageView"));
 
 export default function PipelineConsole() {
-  const rootElement = document.getElementById("root");
+  const rootElement = document.getElementById("console-pipeline-root");
   const currentRunPath = rootElement?.dataset.currentRunPath!;
   const previousRunPath = rootElement?.dataset.previousRunPath;
 

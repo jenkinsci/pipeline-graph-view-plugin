@@ -1,7 +1,5 @@
 /** * @jest-environment jsdom */
 
-(global as any).TextEncoder = require("util").TextEncoder;
-
 import React from "react";
 import ConsoleLogCard, { ConsoleLogCardProps } from "./ConsoleLogCard";
 import { ConsoleLogStreamProps } from "./ConsoleLogStream";

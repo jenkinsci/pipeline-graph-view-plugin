@@ -1,14 +1,18 @@
-import { CompositeConnection, PositionedGraph } from "./PipelineGraphModel";
-
 import {
-  NodeColumn,
-  NodeLabelInfo,
+  CompositeConnection,
   LayoutInfo,
-  StageInfo,
+  NodeColumn,
   NodeInfo,
+  NodeLabelInfo,
+  PlaceholderNodeInfo,
+  PositionedGraph,
+  StageInfo,
+  StageNodeInfo,
 } from "./PipelineGraphModel";
 
 export const sequentialStagesLabelOffset = 80;
+
+const maxColumnsWhenCollapsed = 13;
 
 /**
  * Main process for laying out the graph. Creates and positions markers for each component, but creates no components.
@@ -22,9 +26,9 @@ export const sequentialStagesLabelOffset = 80;
 export function layoutGraph(
   newStages: Array<StageInfo>,
   layout: LayoutInfo,
-  collasped: boolean,
+  collapsed: boolean,
 ): PositionedGraph {
-  const stageNodeColumns = createNodeColumns(newStages, collasped);
+  const stageNodeColumns = createNodeColumns(newStages, collapsed);
   const { nodeSpacingH, ypStart } = layout;
 
   const startNode: NodeInfo = {
@@ -41,24 +45,70 @@ export function layoutGraph(
     x: 0,
     y: 0,
     name: "End",
-    id: -2,
+    id: -3,
     isPlaceholder: true,
     key: "end-node",
     type: "end",
   };
 
-  const allNodeColumns: Array<NodeColumn> = [
+  const counterNode: CounterNodeInfo = {
+    x: 0,
+    y: 0,
+    name: "Counter",
+    id: -2,
+    isPlaceholder: true,
+    key: "counter-node",
+    type: "counter",
+    stages: [],
+  };
+
+  function filterWhenCollapsed(nodes: NodeColumn[]) {
+    if (!collapsed) {
+      return nodes;
+    }
+
+    const start = nodes[0];
+    const end = nodes[nodes.length - 1];
+    const counter = {
+      rows: [[counterNode]],
+      centerX: 0,
+      hasBranchLabels: false,
+      startX: 0,
+    };
+
+    const middleNodes = nodes.filter((node) => node !== start && node !== end);
+
+    const visibleNodes = middleNodes.slice(0, maxColumnsWhenCollapsed);
+    const hiddenNodes = middleNodes.slice(maxColumnsWhenCollapsed);
+
+    const result = [start, ...visibleNodes];
+
+    if (hiddenNodes.length > 0) {
+      (counter.rows[0][0] as CounterNodeInfo).stages = hiddenNodes.flatMap(
+        (node) =>
+          node.rows.flatMap((row) =>
+            row.flatMap((e) => (e as StageNodeInfo).stage),
+          ),
+      );
+      result.push(counter);
+    }
+
+    result.push(end);
+    return result;
+  }
+
+  const allNodeColumns: Array<NodeColumn> = filterWhenCollapsed([
     { rows: [[startNode]], centerX: 0, hasBranchLabels: false, startX: 0 }, // Column X positions calculated later
     ...stageNodeColumns,
     { rows: [[endNode]], centerX: 0, hasBranchLabels: false, startX: 0 },
-  ];
+  ]);
 
   positionNodes(allNodeColumns, layout);
 
-  const bigLabels = createBigLabels(allNodeColumns);
-  const smallLabels = createSmallLabels(allNodeColumns, collasped);
-  const branchLabels = createBranchLabels(allNodeColumns, collasped);
-  const connections = createConnections(allNodeColumns, collasped);
+  const bigLabels = createBigLabels(allNodeColumns, collapsed);
+  const smallLabels = createSmallLabels(allNodeColumns, collapsed);
+  const branchLabels = createBranchLabels(allNodeColumns, collapsed);
+  const connections = createConnections(allNodeColumns);
 
   // Calculate the size of the graph
   let measuredWidth = 0;
@@ -68,7 +118,9 @@ export function layoutGraph(
     for (const row of column.rows) {
       for (const node of row) {
         measuredWidth = Math.max(measuredWidth, node.x + nodeSpacingH / 2);
-        measuredHeight = Math.max(measuredHeight, node.y + ypStart);
+        measuredHeight = collapsed
+          ? 60
+          : Math.max(measuredHeight, node.y + ypStart);
       }
     }
   }
@@ -84,12 +136,16 @@ export function layoutGraph(
   };
 }
 
+export interface CounterNodeInfo extends PlaceholderNodeInfo {
+  stages: StageInfo[];
+}
+
 /**
  * Generate an array of columns, based on the top-level stages
  */
 export function createNodeColumns(
   topLevelStages: Array<StageInfo> = [],
-  collasped: boolean,
+  collapsed: boolean,
 ): Array<NodeColumn> {
   const nodeColumns: Array<NodeColumn> = [];
 
@@ -126,7 +182,7 @@ export function createNodeColumns(
 
     for (const nodeStage of stagesForColumn) {
       const rowNodes: Array<NodeInfo> = [];
-      if (!collasped && !willRecurse && stageHasChildren(nodeStage)) {
+      if (!collapsed && !willRecurse && stageHasChildren(nodeStage)) {
         column.hasBranchLabels = true;
         forEachChildStage(nodeStage, (parentStage, childStage, _) =>
           rowNodes.push(makeNodeForStage(childStage, parentStage.name)),
@@ -135,7 +191,7 @@ export function createNodeColumns(
         rowNodes.push(makeNodeForStage(nodeStage));
       }
       column.rows.push(rowNodes);
-      if (collasped) {
+      if (collapsed) {
         break;
       }
     }
@@ -207,7 +263,11 @@ function positionNodes(
       // Advance X position
       if (previousTopNode.isPlaceholder || topNode.isPlaceholder) {
         // Don't space placeholder nodes (start/end) as wide as normal.
-        xp += Math.floor(nodeSpacingH * 0.7);
+        if (topNode.key === "counter-node") {
+          xp += nodeSpacingH;
+        } else {
+          xp += Math.floor(nodeSpacingH * 0.7);
+        }
       } else {
         xp += nodeSpacingH;
       }
@@ -254,8 +314,15 @@ function positionNodes(
 /**
  * Generate label descriptions for big labels at the top of each column
  */
-function createBigLabels(columns: Array<NodeColumn>): Array<NodeLabelInfo> {
+function createBigLabels(
+  columns: Array<NodeColumn>,
+  collapsed: boolean,
+): Array<NodeLabelInfo> {
   const labels: Array<NodeLabelInfo> = [];
+
+  if (collapsed) {
+    return [];
+  }
 
   for (const column of columns) {
     const node = column.rows[0][0];
@@ -287,10 +354,10 @@ function createBigLabels(columns: Array<NodeColumn>): Array<NodeLabelInfo> {
  */
 function createSmallLabels(
   columns: Array<NodeColumn>,
-  collasped: boolean,
+  collapsed: boolean,
 ): Array<NodeLabelInfo> {
   const labels: Array<NodeLabelInfo> = [];
-  if (collasped) {
+  if (collapsed) {
     return labels;
   }
   for (const column of columns) {
@@ -308,7 +375,7 @@ function createSmallLabels(
           node,
         };
 
-        if (node.isPlaceholder === false) {
+        if (!node.isPlaceholder) {
           label.stage = node.stage;
         }
 
@@ -325,10 +392,10 @@ function createSmallLabels(
  */
 function createBranchLabels(
   columns: Array<NodeColumn>,
-  collasped: boolean,
+  collapsed: boolean,
 ): Array<NodeLabelInfo> {
   const labels: Array<NodeLabelInfo> = [];
-  if (collasped) {
+  if (collapsed) {
     return labels;
   }
   let count = 0;
@@ -358,7 +425,6 @@ function createBranchLabels(
  */
 function createConnections(
   columns: Array<NodeColumn>,
-  collasped: boolean,
 ): Array<CompositeConnection> {
   const connections: Array<CompositeConnection> = [];
 

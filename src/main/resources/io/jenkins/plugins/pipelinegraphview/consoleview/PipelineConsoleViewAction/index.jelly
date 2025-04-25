@@ -55,7 +55,7 @@
 
             <p class="jenkins-page-description">${it.iconColor.description} ${it.startTimeString} ago in ${it.durationString}</p>
 
-            <div id="root" data-current-run-path="${rootURL + '/' + it.buildUrl}"
+            <div id="console-pipeline-root" data-current-run-path="${rootURL + '/' + it.buildUrl}"
                            data-previous-run-path="${it.previousBuildUrl != null ? rootURL + '/' + it.previousBuildUrl : null}"
                            data-user-locale="${request2.getLocale().toLanguageTag()}"/>
             <script src="${rootURL}/plugin/pipeline-graph-view/js/build.js"/>

@@ -37,17 +37,23 @@ export function messageFormat(locale: string) {
   });
 }
 
-export async function getTranslations(locale: string): Promise<Translations> {
-  let [timingMessages, runMessages] = await Promise.all([
-    getResourceBundle("hudson.Messages"),
-    getResourceBundle("hudson.model.Run.index"),
-  ]);
+export enum ResourceBundleName {
+  messages = "hudson.Messages",
+  run = "hudson.model.Run.index",
+}
 
-  const messages = {
-    ...DEFAULT_MESSAGES,
-    ...timingMessages,
-    ...runMessages,
-  };
+export async function getTranslations(
+  locale: string,
+  bundleNames: ResourceBundleName[],
+): Promise<Translations> {
+  const bundles = await Promise.all(
+    bundleNames.map((name) => getResourceBundle(name).then((r) => r ?? {})),
+  );
+
+  const messages = bundles.reduce(
+    (acc, bundle) => ({ ...acc, ...bundle }),
+    DEFAULT_MESSAGES,
+  );
 
   const fmt = messageFormat(locale);
 

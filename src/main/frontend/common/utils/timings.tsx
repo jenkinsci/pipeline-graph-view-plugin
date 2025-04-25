@@ -120,7 +120,7 @@ export function Paused({ since }: { since: number }) {
 
 export function Started({ since }: { since: number }) {
   const translations = useContext(I18NContext);
-  if (since == 0) {
+  if (since === 0) {
     return <></>;
   }
 
@@ -131,6 +131,15 @@ export function Started({ since }: { since: number }) {
       })}
     </>
   );
+}
+
+export function time(since: number): string {
+  return since === 0
+    ? ""
+    : new Date(since).toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
 }
 
 export function exact(since: number): string {

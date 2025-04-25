@@ -1,47 +1,53 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, ReactNode, useContext, useState } from "react";
+import { Result } from "../../../../pipeline-graph-view/pipeline-graph/main";
 
 interface FilterContextType {
-  checkedStatuses: Record<string, boolean>;
-  toggleStatus: (key: string) => void;
+  visibleStatuses: Result[];
+  toggleStatus: (key: Result) => void;
   resetStatuses: () => void;
+  allVisible: boolean;
   search: string;
   setSearch: (value: string) => void;
 }
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
 
-const defaultStatuses = {
-  running: true,
-  success: true,
-  failure: true,
-  unstable: true,
-  aborted: true,
-  skipped: true,
-  not_built: true,
-};
+const defaultStatuses: Result[] = [
+  Result.running,
+  Result.success,
+  Result.failure,
+  Result.unstable,
+  Result.aborted,
+  Result.skipped,
+  Result.not_built,
+];
 
 export const FilterProvider = ({ children }: { children: ReactNode }) => {
-  const [checkedStatuses, setCheckedStatuses] =
-    useState<Record<string, boolean>>(defaultStatuses);
+  const [visibleStatuses, setVisibleStatuses] = useState<Result[]>([]);
   const [search, setSearch] = useState("");
 
-  const toggleStatus = (key: string) => {
-    setCheckedStatuses((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
+  const toggleStatus = (key: Result) => {
+    if (visibleStatuses.includes(key as Result)) {
+      setVisibleStatuses(visibleStatuses.filter((s) => s !== (key as Result)));
+    } else {
+      setVisibleStatuses([...visibleStatuses, key as Result]);
+    }
   };
 
   const resetStatuses = () => {
-    setCheckedStatuses({ ...defaultStatuses });
+    setVisibleStatuses([]);
   };
 
   return (
     <FilterContext.Provider
       value={{
-        checkedStatuses,
+        visibleStatuses:
+          visibleStatuses.length > 0 ? visibleStatuses : defaultStatuses,
         toggleStatus,
         resetStatuses,
+        allVisible:
+          (visibleStatuses.length > 0 ? visibleStatuses : defaultStatuses)
+            .length === defaultStatuses.length,
         search,
         setSearch,
       }}

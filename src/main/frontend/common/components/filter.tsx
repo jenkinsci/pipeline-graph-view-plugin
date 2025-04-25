@@ -9,11 +9,8 @@ import { useFilter } from "../../pipeline-console-view/pipeline-console/main/pro
 
 export default function Filter({ disabled }: FilterProps) {
   const [visible, setVisible] = useState(false);
-  const { checkedStatuses, toggleStatus, resetStatuses } = useFilter();
-
-  const anyUnchecked = Object.values(checkedStatuses).some(
-    (checked) => !checked,
-  );
+  const { visibleStatuses, toggleStatus, resetStatuses, allVisible } =
+    useFilter();
 
   const statuses = [
     {
@@ -74,24 +71,15 @@ export default function Filter({ disabled }: FilterProps) {
           <div className="jenkins-dropdown">
             <div className="jenkins-dropdown__heading">
               Filter
-              {anyUnchecked && (
-                <>
-                  {" "}
-                  (
-                  {
-                    Object.values(checkedStatuses).filter((checked) => checked)
-                      .length
+              {!allVisible && (
+                <button
+                  className={
+                    "jenkins-button jenkins-button--tertiary jenkins-!-accent-color pgv-reset-button"
                   }
-                  /{Object.keys(checkedStatuses).length})
-                  <button
-                    className={
-                      "jenkins-button jenkins-button--tertiary jenkins-!-accent-color pgv-reset-button"
-                    }
-                    onClick={resetStatuses}
-                  >
-                    Reset
-                  </button>
-                </>
+                  onClick={resetStatuses}
+                >
+                  Reset
+                </button>
               )}
             </div>
             {statuses.map((item, index) => (
@@ -101,15 +89,17 @@ export default function Filter({ disabled }: FilterProps) {
                   "jenkins-dropdown__item",
                   "pgv-filter-button",
                   {
-                    "pgv-filter-button--unchecked": !checkedStatuses[item.key],
+                    "pgv-filter-button--unchecked": !visibleStatuses.includes(
+                      item.status,
+                    ),
                   },
                 )}
-                onClick={() => toggleStatus(item.key)}
+                onClick={() => toggleStatus(item.status)}
               >
                 <div className="jenkins-dropdown__item__icon">
                   <StatusIcon
                     status={item.status}
-                    skeleton={!checkedStatuses[item.key]}
+                    skeleton={!visibleStatuses.includes(item.status)}
                     percentage={0}
                   />
                 </div>
@@ -123,10 +113,10 @@ export default function Filter({ disabled }: FilterProps) {
           className={classNames(
             "jenkins-button",
             {
-              "jenkins-button--tertiary": !anyUnchecked,
+              "jenkins-button--tertiary": allVisible,
             },
             {
-              "jenkins-!-accent-color": anyUnchecked,
+              "jenkins-!-accent-color": !allVisible,
             },
           )}
           type="button"
@@ -139,7 +129,7 @@ export default function Filter({ disabled }: FilterProps) {
               stroke="currentColor"
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth={anyUnchecked ? 42 : 36}
+              strokeWidth={!allVisible ? 42 : 36}
               d="M32 144h448M112 256h288M208 368h96"
             />
           </svg>

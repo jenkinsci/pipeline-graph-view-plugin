@@ -15,10 +15,32 @@ export default function DataTreeView({
   selected,
   onNodeSelect,
 }: DataTreeViewProps) {
-  const { search, setSearch, checkedStatuses } = useFilter();
-  const filteredStages = stages
-    .filter((e) => e.name.toLowerCase().includes(search.toLowerCase()))
-    .filter((e) => checkedStatuses[e.state]);
+  const { search, setSearch, visibleStatuses } = useFilter();
+  const filterStageTree = (stages: StageInfo[]): StageInfo[] => {
+    return stages
+      .map((stage) => {
+        const filteredChildren = stage.children
+          ? filterStageTree(stage.children)
+          : [];
+
+        const matchesSelf =
+          stage.name.toLowerCase().includes(search.toLowerCase()) &&
+          visibleStatuses.includes(stage.state);
+
+        // Include this stage if it matches or has matching children
+        if (matchesSelf || filteredChildren.length > 0) {
+          return {
+            ...stage,
+            children: filteredChildren,
+          };
+        }
+
+        return null;
+      })
+      .filter((stage): stage is StageInfo => stage !== null);
+  };
+
+  const filteredStages = filterStageTree(stages);
 
   const handleSelect = useCallback(
     (event: React.MouseEvent, nodeId: string) => {
@@ -82,15 +104,14 @@ export default function DataTreeView({
       )}
 
       <div id="tasks" style={{ marginLeft: "0.7rem" }}>
-        {filteredStages
-          .map((stage) => (
-            <TreeNode
-              key={stage.id}
-              stage={stage}
-              selected={String(selected)}
-              onSelect={handleSelect}
-            />
-          ))}
+        {filteredStages.map((stage) => (
+          <TreeNode
+            key={stage.id}
+            stage={stage}
+            selected={String(selected)}
+            onSelect={handleSelect}
+          />
+        ))}
       </div>
     </div>
   );

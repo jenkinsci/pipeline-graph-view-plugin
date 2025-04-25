@@ -1,8 +1,9 @@
-/** * @jest-environment jsdom */
+/** * @vitest-environment jsdom */
 
+import { vi } from "vitest";
 import React, { ReactElement } from "react";
-import ConsoleLogStream, { ConsoleLogStreamProps } from "./ConsoleLogStream";
-import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
+import ConsoleLogStream, { ConsoleLogStreamProps } from "./ConsoleLogStream.js";
+import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel.js";
 import { render } from "@testing-library/react";
 import { VirtuosoMockContext } from "react-virtuoso";
 
@@ -26,7 +27,7 @@ const TestComponent = (props: ConsoleLogStreamProps) => {
   );
 };
 
-window.HTMLElement.prototype.scrollBy = jest.fn();
+window.HTMLElement.prototype.scrollBy = vi.fn();
 
 describe("ConsoleLogStream", () => {
   const baseStep: StepInfo = {

@@ -5,14 +5,14 @@ import {
   LOG_FETCH_SIZE,
   StepInfo,
   StepLogBufferInfo,
-} from "./PipelineConsoleModel";
+} from "./PipelineConsoleModel.js";
 
-import StatusIcon from "../../../common/components/status-icon";
-import { classNames } from "../../../common/utils/classnames";
-import Tooltip from "../../../common/components/tooltip";
-import { Total } from "../../../common/utils/timings";
+import StatusIcon from "../../../common/components/status-icon.js";
+import { classNames } from "../../../common/utils/classnames.js";
+import Tooltip from "../../../common/components/tooltip.js";
+import { Total } from "../../../common/utils/timings.js";
 
-const ConsoleLogStream = React.lazy(() => import("./ConsoleLogStream"));
+const ConsoleLogStream = React.lazy(() => import("./ConsoleLogStream.js"));
 
 export default function ConsoleLogCard(props: ConsoleLogCardProps) {
   useEffect(() => {

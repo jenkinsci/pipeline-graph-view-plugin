@@ -1,4 +1,4 @@
-/** * @jest-environment jsdom */
+/** * @vitest-environment jsdom */
 
 (global as any).TextEncoder = require("util").TextEncoder;
 
@@ -7,8 +7,8 @@ import { render, screen } from "@testing-library/react";
 import {
   Result,
   StageInfo,
-} from "../../../pipeline-graph-view/pipeline-graph/main";
-import StageDetails from "./stage-details";
+} from "../../../pipeline-graph-view/pipeline-graph/main/index.js";
+import StageDetails from "./stage-details.js";
 
 describe("StageDetails", () => {
   it("renders null when stage is null", () => {

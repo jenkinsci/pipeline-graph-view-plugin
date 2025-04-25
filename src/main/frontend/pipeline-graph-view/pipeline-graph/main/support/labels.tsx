@@ -1,11 +1,11 @@
 import * as React from "react";
 
-import { nodeStrokeWidth } from "../support/StatusIcons";
-import { TruncatingLabel } from "../support/TruncatingLabel";
-import { NodeLabelInfo, LayoutInfo, StageInfo } from "../PipelineGraphModel";
-import { sequentialStagesLabelOffset } from "../PipelineGraphLayout";
+import { nodeStrokeWidth } from "../support/StatusIcons.js";
+import { TruncatingLabel } from "../support/TruncatingLabel.js";
+import { NodeLabelInfo, LayoutInfo, StageInfo } from "../PipelineGraphModel.js";
+import { sequentialStagesLabelOffset } from "../PipelineGraphLayout.js";
 
-import { TooltipLabel } from "./convertLabelToTooltip";
+import { TooltipLabel } from "./convertLabelToTooltip.js";
 
 interface RenderBigLabelProps {
   details: NodeLabelInfo;

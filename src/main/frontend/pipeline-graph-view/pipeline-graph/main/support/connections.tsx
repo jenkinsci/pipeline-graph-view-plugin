@@ -1,12 +1,12 @@
 import * as React from "react";
 
-import { nodeStrokeWidth } from "../support/StatusIcons";
+import { nodeStrokeWidth } from "../support/StatusIcons.js";
 import {
   CompositeConnection,
   LayoutInfo,
   NodeInfo,
-} from "../PipelineGraphModel";
-import { sequentialStagesLabelOffset } from "../PipelineGraphLayout";
+} from "../PipelineGraphModel.js";
+import { sequentialStagesLabelOffset } from "../PipelineGraphLayout.js";
 
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck
 

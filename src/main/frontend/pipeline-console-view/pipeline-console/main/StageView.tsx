@@ -1,8 +1,8 @@
 import React from "react";
 
-import { StepInfo, StageInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
-import StageDetails from "./stage-details";
-import StageSteps from "./stage-steps";
+import { StepInfo, StageInfo, StepLogBufferInfo } from "./PipelineConsoleModel.js";
+import StageDetails from "./stage-details.js";
+import StageSteps from "./stage-steps.js";
 
 export default function StageView(props: StageViewProps) {
   return (

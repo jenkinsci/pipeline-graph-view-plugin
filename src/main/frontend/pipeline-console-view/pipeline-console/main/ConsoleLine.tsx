@@ -1,6 +1,6 @@
 import React from "react";
 import { useEffect, useRef } from "react";
-import { makeReactChildren, tokenizeANSIString } from "./Ansi";
+import { makeReactChildren, tokenizeANSIString } from "./Ansi.js";
 
 export interface ConsoleLineProps {
   lineNumber: string;

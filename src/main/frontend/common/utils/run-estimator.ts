@@ -1,7 +1,7 @@
 import {
   Result,
   StageInfo,
-} from "../../pipeline-graph-view/pipeline-graph/main";
+} from "../../pipeline-graph-view/pipeline-graph/main/index.js";
 
 export default class RunEstimator {
   private stagesLookup: Map<String, StageInfo>;

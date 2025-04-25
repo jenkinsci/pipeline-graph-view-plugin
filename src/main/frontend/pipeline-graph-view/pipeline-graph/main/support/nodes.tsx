@@ -5,16 +5,15 @@ import {
   LayoutInfo,
   NodeColumn,
   NodeInfo,
-  Result,
   StageInfo,
-} from "../PipelineGraphModel";
+} from "../PipelineGraphModel.js";
 import StatusIcon, {
   resultToColor,
-} from "../../../../common/components/status-icon";
-import Tooltip from "../../../../common/components/tooltip";
-import { Total } from "../../../../common/utils/timings";
+} from "../../../../common/components/status-icon.js";
+import Tooltip from "../../../../common/components/tooltip.js";
+import { Total } from "../../../../common/utils/timings.js";
 import "./nodes.scss";
-import { CounterNodeInfo } from "../PipelineGraphLayout";
+import { CounterNodeInfo } from "../PipelineGraphLayout.js";
 
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck
 

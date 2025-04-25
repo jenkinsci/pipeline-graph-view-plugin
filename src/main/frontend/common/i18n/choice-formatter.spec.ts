@@ -1,4 +1,4 @@
-import { choiceFormatter } from "./choice-formatter";
+import { choiceFormatter } from "./choice-formatter.js";
 
 describe("Choice formatter", () => {
   const { formatter: choice } = choiceFormatter;

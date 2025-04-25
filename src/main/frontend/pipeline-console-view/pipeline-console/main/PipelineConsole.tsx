@@ -1,10 +1,10 @@
 import React from "react";
-import SplitView from "./SplitView";
+import SplitView from "./SplitView.js";
 import "./pipeline-console.scss";
-import { useStepsPoller } from "./hooks/use-steps-poller";
+import { useStepsPoller } from "./hooks/use-steps-poller.js";
 
-const DataTreeView = React.lazy(() => import("./DataTreeView"));
-const StageView = React.lazy(() => import("./StageView"));
+const DataTreeView = React.lazy(() => import("./DataTreeView.js"));
+const StageView = React.lazy(() => import("./StageView.js"));
 
 export default function PipelineConsole() {
   const rootElement = document.getElementById("console-pipeline-root");

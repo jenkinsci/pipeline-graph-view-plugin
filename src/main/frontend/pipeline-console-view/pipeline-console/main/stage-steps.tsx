@@ -1,9 +1,9 @@
 import React from "react";
-import { StepInfo, StepLogBufferInfo } from "../../../common/RestClient";
-import ConsoleLogCard from "./ConsoleLogCard";
-import { LOG_FETCH_SIZE, StageInfo } from "./PipelineConsoleModel";
+import { StepInfo, StepLogBufferInfo } from "../../../common/RestClient.js";
+import ConsoleLogCard from "./ConsoleLogCard.js";
+import { LOG_FETCH_SIZE, StageInfo } from "./PipelineConsoleModel.js";
 import "./stage-steps.scss";
-import ScrollToTopBottom from "./scroll-to-top-bottom";
+import ScrollToTopBottom from "./scroll-to-top-bottom.js";
 
 export default function StageSteps({
   stage,

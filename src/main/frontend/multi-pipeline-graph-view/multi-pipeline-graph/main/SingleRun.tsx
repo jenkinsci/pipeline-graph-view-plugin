@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-import { RunInfo } from "./MultiPipelineGraphModel";
+import { RunInfo } from "./MultiPipelineGraphModel.js";
 import {
   LayoutInfo,
   PipelineGraph,
   StageInfo,
-} from "../../../pipeline-graph-view/pipeline-graph/main";
-import { defaultLayout } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
-import { time, Total } from "../../../common/utils/timings";
+} from "../../../pipeline-graph-view/pipeline-graph/main/index.js";
+import { defaultLayout } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.js";
+import { time, Total } from "../../../common/utils/timings.js";
 import "./single-run.scss";
-import StatusIcon from "../../../common/components/status-icon";
+import StatusIcon from "../../../common/components/status-icon.js";
 
 export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
   const [stages, setStages] = useState<Array<StageInfo>>([]);

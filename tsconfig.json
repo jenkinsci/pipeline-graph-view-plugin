@@ -1,15 +1,16 @@
 {
-    "compilerOptions": {
-      "outDir": "./src/main/webapp/js",
-      "sourceMap": true,
-      "noImplicitAny": true,
-      "strict": true,
-      "module": "commonjs",
-      "target": "es6",
-      "jsx": "react",
-      "resolveJsonModule": true,
-      "esModuleInterop": true,
-      "useUnknownInCatchVariables": false,
-      "types": ["node", "jest", "@testing-library/jest-dom"]
-    }
-  }
+  "compilerOptions": {
+    "outDir": "./src/main/webapp/js",
+    "noEmit": true,
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "strict": true,
+    "module": "Node16",
+    "moduleResolution": "node16",
+    "target": "ES6",
+    "jsx": "react",
+    "useUnknownInCatchVariables": false,
+    "types": ["node", "vitest/globals", "@testing-library/jest-dom/vitest"],
+  },
+  "include": ["./src/main/frontend/"]
+}

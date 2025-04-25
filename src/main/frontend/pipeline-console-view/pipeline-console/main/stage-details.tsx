@@ -1,13 +1,13 @@
 import React from "react";
-import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main";
+import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/index.js";
 import "./stage-details.scss";
-import StageNodeLink from "./StageNodeLink";
+import StageNodeLink from "./StageNodeLink.js";
 import StatusIcon, {
   resultToColor,
-} from "../../../common/components/status-icon";
-import { exact, Paused, Started, Total } from "../../../common/utils/timings";
-import Dropdown from "../../../common/components/dropdown";
-import Tooltip from "../../../common/components/tooltip";
+} from "../../../common/components/status-icon.js";
+import { exact, Paused, Started, Total } from "../../../common/utils/timings.js";
+import Dropdown from "../../../common/components/dropdown.js";
+import Tooltip from "../../../common/components/tooltip.js";
 
 export default function StageDetails({ stage }: StageDetailsProps) {
   if (!stage) {

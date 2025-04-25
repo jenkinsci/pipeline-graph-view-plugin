@@ -1,12 +1,12 @@
 import Tippy from "@tippyjs/react";
 import React, { useState } from "react";
-import Tooltip from "./tooltip";
-import StatusIcon from "./status-icon";
-import { Result } from "../../pipeline-graph-view/pipeline-graph/main";
-import { classNames } from "../utils/classnames";
+import Tooltip from "./tooltip.js";
+import StatusIcon from "./status-icon.js";
+import { Result } from "../../pipeline-graph-view/pipeline-graph/main/index.js";
+import { classNames } from "../utils/classnames.js";
 import "./filter.scss";
-import { useFilter } from "../../pipeline-console-view/pipeline-console/main/providers/filter-provider";
-import { DefaultDropdownProps } from "./dropdown";
+import { useFilter } from "../../pipeline-console-view/pipeline-console/main/providers/filter-provider.js";
+import { DefaultDropdownProps } from "./dropdown.js";
 
 export default function Filter({ disabled }: FilterProps) {
   const [visible, setVisible] = useState(false);

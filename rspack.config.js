@@ -1,6 +1,13 @@
-const path = require('path');
+// @ts-check
 
-const wrapWithDefaultModule = (config) => {
+import path from 'node:path'
+
+/**
+ * @typedef {import('@rspack/core').RspackOptions} RspackOptions
+ * @param {RspackOptions} config
+ * @returns {RspackOptions}
+ */
+function wrapWithDefaultModule(config) {
   return {
     devtool: 'source-map',
     module: {
@@ -50,25 +57,25 @@ const wrapWithDefaultModule = (config) => {
   }
 }
 
-module.exports = [
+export default [
   wrapWithDefaultModule({
     entry: './src/main/frontend/pipeline-console-view',
     output: {
-      path: path.resolve(__dirname, 'src/main/webapp/js/bundles'),
+      path: path.resolve(import.meta.dirname, 'src/main/webapp/js/bundles'),
       filename: 'pipeline-console-view-bundle.js',
     },
   }),
   wrapWithDefaultModule({
     entry: './src/main/frontend/pipeline-graph-view',
     output: {
-      path: path.resolve(__dirname, 'src/main/webapp/js/bundles'),
+      path: path.resolve(import.meta.dirname, 'src/main/webapp/js/bundles'),
       filename: 'pipeline-graph-view-bundle.js',
     },
   }),
   wrapWithDefaultModule({
     entry: './src/main/frontend/multi-pipeline-graph-view',
     output: {
-      path: path.resolve(__dirname, 'src/main/webapp/js/bundles'),
+      path: path.resolve(import.meta.dirname, 'src/main/webapp/js/bundles'),
       filename: 'multi-pipeline-graph-view-bundle.js',
     },
   }),

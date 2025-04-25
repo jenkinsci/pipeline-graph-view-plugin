@@ -1,13 +1,14 @@
-/** * @jest-environment jsdom */
+/** * @vitest-environment jsdom */
 
+import { vi } from "vitest";
 import React from "react";
-import ConsoleLogCard, { ConsoleLogCardProps } from "./ConsoleLogCard";
-import { ConsoleLogStreamProps } from "./ConsoleLogStream";
-import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
+import ConsoleLogCard, { ConsoleLogCardProps } from "./ConsoleLogCard.js";
+import { ConsoleLogStreamProps } from "./ConsoleLogStream.js";
+import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel.js";
 import { render } from "@testing-library/react";
 
-jest.mock("./ConsoleLogStream", () => {
-  return jest.fn((props: ConsoleLogStreamProps) => {
+vi.mock("./ConsoleLogStream", () => {
+  return vi.fn((props: ConsoleLogStreamProps) => {
     return (
       <div>
         <div>SimpleConsoleLogStream...</div>
@@ -63,7 +64,7 @@ describe("ConsoleLogCard", () => {
   });
 
   it("calls handleMoreConsoleClick on load was card isExpanded set", async () => {
-    console.log = jest.fn();
+    console.log = vi.fn();
     render(<ConsoleLogCard {...DefaultTestProps} isExpanded={true} />);
     expect(console.log).toHaveBeenCalledWith(
       "handleMoreConsoleClick triggered",
@@ -71,7 +72,7 @@ describe("ConsoleLogCard", () => {
   });
 
   it("does not call handleMoreConsoleClick on load was card isExpanded set", async () => {
-    console.log = jest.fn();
+    console.log = vi.fn();
     render(<ConsoleLogCard {...DefaultTestProps} />);
     expect(console.log).not.toHaveBeenCalledWith(
       "handleMoreConsoleClick triggered",

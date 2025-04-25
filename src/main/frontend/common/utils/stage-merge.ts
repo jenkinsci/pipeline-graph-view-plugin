@@ -1,5 +1,5 @@
-import { StageInfo } from "../../pipeline-graph-view/pipeline-graph/main";
-import RunEstimator from "./run-estimator";
+import { StageInfo } from "../../pipeline-graph-view/pipeline-graph/main/index.js";
+import RunEstimator from "./run-estimator.js";
 
 export const mergeStageInfos = (
   skeletons: StageInfo[],

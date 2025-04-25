@@ -1,8 +1,9 @@
-/** * @jest-environment jsdom */
+/** * @vitest-environment jsdom */
 
+import { Mock, vi } from 'vitest'
 import { act, renderHook, waitFor } from "@testing-library/react";
-import * as model from "../PipelineConsoleModel";
-import { useStepsPoller } from "./use-steps-poller";
+import * as model from "../PipelineConsoleModel.js";
+import { useStepsPoller } from "./use-steps-poller.js";
 
 const mockSteps = [
   {
@@ -24,15 +25,15 @@ const mockStages = [
   { id: "stage-2", name: "Stage 2", children: [] },
 ];
 
-jest.mock("../../../../common/tree-api", () => ({
+vi.mock("../../../../common/tree-api", () => ({
   __esModule: true,
-  default: jest.fn(() => ({ run: { stages: mockStages, complete: false } })),
+  default: vi.fn(() => ({ run: { stages: mockStages, complete: false } })),
 }));
 
-jest.mock("../PipelineConsoleModel", () => ({
-  ...jest.requireActual("../PipelineConsoleModel"),
-  getRunSteps: jest.fn(),
-  getConsoleTextOffset: jest.fn().mockResolvedValue({
+vi.mock("../PipelineConsoleModel", async () => ({
+  ...(await vi.importActual("../PipelineConsoleModel")),
+  getRunSteps: vi.fn(),
+  getConsoleTextOffset: vi.fn().mockResolvedValue({
     text: "log line",
     startByte: 0,
     endByte: 100,
@@ -40,12 +41,12 @@ jest.mock("../PipelineConsoleModel", () => ({
 }));
 
 beforeEach(() => {
-  (model.getRunSteps as jest.Mock).mockResolvedValue(mockSteps);
+  (model.getRunSteps as Mock).mockResolvedValue(mockSteps);
   window.history.pushState({}, "", "/");
 });
 
 afterEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 it("selects default step if URL param is missing", async () => {
@@ -85,7 +86,7 @@ it("switches to next stage when current one finishes", async () => {
     { id: "s2", title: "Step 2", stageId: "stage-2", state: "queued" },
   ];
 
-  (model.getRunSteps as jest.Mock).mockImplementation(() =>
+  (model.getRunSteps as Mock).mockImplementation(() =>
     Promise.resolve(currentSteps),
   );
 
@@ -100,7 +101,7 @@ it("switches to next stage when current one finishes", async () => {
     { id: "s1", title: "Step 1", stageId: "stage-1", state: "success" },
     { id: "s2", title: "Step 2", stageId: "stage-2", state: "running" },
   ];
-  (model.getRunSteps as jest.Mock).mockResolvedValue(currentSteps);
+  (model.getRunSteps as Mock).mockResolvedValue(currentSteps);
 
   await waitFor(() => expect(result.current.openStage?.id).toBe("stage-1"));
 

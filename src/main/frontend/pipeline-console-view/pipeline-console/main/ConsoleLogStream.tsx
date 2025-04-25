@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useEffect, useRef } from "react";
 import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
-import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
-import { ConsoleLine } from "./ConsoleLine";
+import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel.js";
+import { ConsoleLine } from "./ConsoleLine.js";
 
 export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   const appendInterval = useRef<NodeJS.Timeout | null>(null);

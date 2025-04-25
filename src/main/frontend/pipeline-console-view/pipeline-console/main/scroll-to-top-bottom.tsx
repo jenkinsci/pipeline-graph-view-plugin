@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./scroll-to-top-bottom.scss";
-import { classNames } from "../../../common/utils/classnames";
+import { classNames } from "../../../common/utils/classnames.js";
 
 export default function ScrollToTopBottom() {
   const [isAtTop, setIsAtTop] = useState(true);

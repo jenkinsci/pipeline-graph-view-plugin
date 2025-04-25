@@ -1,12 +1,12 @@
 import * as React from "react";
 import { FunctionComponent } from "react";
 
-import { MultiPipelineGraph } from "./multi-pipeline-graph/main";
+import { MultiPipelineGraph } from "./multi-pipeline-graph/main/index.js";
 
 import "./app.scss";
 import "./multi-pipeline-graph/styles/main.scss";
-import { I18NProvider } from "../common/i18n/i18n-provider";
-import { ResourceBundleName } from "../common/i18n/translations";
+import { I18NProvider } from "../common/i18n/i18n-provider.js";
+import { ResourceBundleName } from "../common/i18n/translations.js";
 
 const App: FunctionComponent = () => {
   const locale =

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { getRunStatusFromPath, RunStatus } from "./RestClient";
-import startPollingPipelineStatus from "../pipeline-graph-view/pipeline-graph/main/support/startPollingPipelineStatus";
-import { mergeStageInfos } from "./utils/stage-merge";
+import { getRunStatusFromPath, RunStatus } from "./RestClient.js";
+import startPollingPipelineStatus from "../pipeline-graph-view/pipeline-graph/main/support/startPollingPipelineStatus.js";
+import { mergeStageInfos } from "./utils/stage-merge.js";
 
 const onPipelineComplete = () => undefined;
 

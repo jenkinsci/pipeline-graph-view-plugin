@@ -1,4 +1,4 @@
-import { getRunStatusFromPath, RunStatus } from "../../../../common/RestClient";
+import { getRunStatusFromPath, RunStatus } from "../../../../common/RestClient.js";
 /**
  * Starts polling the server to retrieve pipeline status.
  * Will only stop once the run is finished.

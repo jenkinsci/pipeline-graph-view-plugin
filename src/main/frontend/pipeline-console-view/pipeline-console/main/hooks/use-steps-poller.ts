@@ -8,8 +8,8 @@ import {
   StageInfo,
   StepInfo,
   StepLogBufferInfo,
-} from "../PipelineConsoleModel";
-import useRunPoller from "../../../../common/tree-api";
+} from "../PipelineConsoleModel.js";
+import useRunPoller from "../../../../common/tree-api.js";
 
 export function useStepsPoller(props: RunPollerProps) {
   const { run } = useRunPoller({

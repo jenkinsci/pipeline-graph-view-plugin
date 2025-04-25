@@ -11,7 +11,7 @@ import {
   getTranslations,
   ResourceBundleName,
   Translations,
-} from "./translations";
+} from "./translations.js";
 
 export const I18NContext: Context<Translations> = createContext(
   new Translations({}),

@@ -1,4 +1,4 @@
-import { Result } from "../../../pipeline-graph-view/pipeline-graph/main";
+import { Result } from "../../../pipeline-graph-view/pipeline-graph/main/index.js";
 
 export interface RunInfo {
   id: string;

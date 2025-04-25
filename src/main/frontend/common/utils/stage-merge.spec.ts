@@ -1,8 +1,8 @@
 import {
   Result,
   StageInfo,
-} from "../../pipeline-graph-view/pipeline-graph/main";
-import { mergeStageInfos } from "./stage-merge";
+} from "../../pipeline-graph-view/pipeline-graph/main/index.js";
+import { mergeStageInfos } from "./stage-merge.js";
 
 describe("mergeStageInfos", () => {
   it("merges matching items by name", () => {

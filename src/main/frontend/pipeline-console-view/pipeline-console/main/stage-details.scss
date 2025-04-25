@@ -1,0 +1,116 @@
+.pgv-stage-details {
+  --bg-color: var(--color, var(--text-color-secondary));
+
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  // TODO - var fallback can removed after baseline is moved >= 2.496
+  padding: 0.125rem calc(1rem + var(--jenkins-border-width, 2px));
+  padding-right: 0.7rem;
+  border-radius: var(--form-input-border-radius);
+  margin-bottom: 0.75rem;
+  z-index: 101;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: oklch(from var(--bg-color) l c h / 0.075);
+    // TODO - var fallback can removed after baseline is moved >= 2.496
+    border: var(--jenkins-border-width, 2px) solid
+      oklch(from var(--bg-color) l c h / 0.1);
+    border-radius: inherit;
+    transition: var(--standard-transition);
+    pointer-events: none;
+
+    @media (prefers-contrast: more) {
+      border-color: var(--text-color);
+    }
+  }
+
+  & > div {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+
+    & > div {
+      display: contents;
+    }
+
+    svg {
+      width: 1.375rem;
+      height: 1.375rem;
+    }
+  }
+
+  h2 {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-bold-weight);
+    margin: 0;
+    text-box: trim-both;
+  }
+
+  .jenkins-button {
+    --button-background--hover: oklch(from currentColor l c h / 0.1);
+    --button-background--active: oklch(from currentColor l c h / 0.2);
+    --button-box-shadow--focus: oklch(from currentColor l c h / 0.1);
+
+    color: var(--color) !important;
+    border-radius: 0.4rem;
+    margin-inline: -0.85rem;
+    padding-inline: 1.125rem;
+
+    &::before,
+    &::after {
+      inset: 3px 7px;
+    }
+  }
+
+  ul {
+    display: flex;
+    gap: 1.25rem;
+    padding: 0;
+    margin: 0;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 1ch;
+      text-box: trim-both;
+
+      span {
+        display: flex;
+        align-items: center;
+        gap: 1ch;
+        text-box: trim-both;
+      }
+
+      svg {
+        width: 1.125rem;
+        height: 1.125rem;
+        flex-shrink: 0;
+
+        * {
+          stroke-width: 36px;
+        }
+      }
+    }
+  }
+
+  &__running {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--bg-color);
+    pointer-events: none;
+    animation: pulse 2s ease-in-out infinite;
+    opacity: 0;
+
+    @keyframes pulse {
+      50% {
+        opacity: 0.1;
+      }
+    }
+  }
+}

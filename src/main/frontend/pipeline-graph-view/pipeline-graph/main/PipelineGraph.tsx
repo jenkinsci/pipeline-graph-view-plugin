@@ -1,6 +1,5 @@
-import * as React from "react";
+import React, { useEffect, useState } from "react";
 
-import startPollingPipelineStatus from "./support/startPollingPipelineStatus";
 import {
   CompositeConnection,
   defaultLayout,
@@ -18,220 +17,177 @@ import {
   SequentialContainerLabel,
 } from "./support/labels";
 import { GraphConnections } from "./support/connections";
+import useRunPoller from "../../../common/tree-api";
+
+export function PipelineGraph(props: Props) {
+  const {
+    stages = [],
+    layout,
+    setStages,
+    selectedStage,
+    currentRunPath,
+    previousRunPath,
+    collapsed,
+  } = props;
+
+  const { run } = useRunPoller({
+    currentRunPath: currentRunPath,
+    previousRunPath: previousRunPath,
+  });
+
+  const [nodeColumns, setNodeColumns] = useState<NodeColumn[]>([]);
+  const [connections, setConnections] = useState<CompositeConnection[]>([]);
+  const [bigLabels, setBigLabels] = useState<NodeLabelInfo[]>([]);
+  const [smallLabels, setSmallLabels] = useState<NodeLabelInfo[]>([]);
+  const [branchLabels, setBranchLabels] = useState<NodeLabelInfo[]>([]);
+  const [measuredWidth, setMeasuredWidth] = useState<number>(0);
+  const [measuredHeight, setMeasuredHeight] = useState<number>(0);
+  const [layoutState, setLayoutState] = useState<LayoutInfo>({
+    ...defaultLayout,
+    ...layout,
+  });
+  const [currentSelectedStage, setCurrentSelectedStage] = useState<
+    StageInfo | undefined
+  >(selectedStage);
+
+  useEffect(() => {
+    if (run) {
+      updateLayout(run.stages);
+
+      if (setStages) {
+        setStages(run.stages);
+      }
+    }
+  }, [run]);
+
+  useEffect(() => {
+    let needsLayout = false;
+    let newLayoutState = layoutState;
+
+    if (layout !== props.layout) {
+      newLayoutState = { ...defaultLayout, ...layout };
+      setLayoutState(newLayoutState);
+      needsLayout = true;
+    }
+
+    if (selectedStage !== currentSelectedStage) {
+      setCurrentSelectedStage(selectedStage);
+    }
+
+    if (stages !== props.stages) {
+      needsLayout = true;
+    }
+
+    if (needsLayout) {
+      updateLayout(stages);
+    }
+  }, [layout, selectedStage, stages]);
+
+  const updateLayout = (newStages: StageInfo[] = []) => {
+    const newLayout = layoutGraph(newStages, layoutState, collapsed ?? false);
+    setNodeColumns(newLayout.nodeColumns);
+    setConnections(newLayout.connections);
+    setBigLabels(newLayout.bigLabels);
+    setSmallLabels(newLayout.smallLabels);
+    setBranchLabels(newLayout.branchLabels);
+    setMeasuredWidth(newLayout.measuredWidth);
+    setMeasuredHeight(newLayout.measuredHeight);
+  };
+
+  const stageIsSelected = (stage?: StageInfo): boolean => {
+    return (
+      (currentSelectedStage && stage && currentSelectedStage.id === stage.id) ||
+      false
+    );
+  };
+
+  const nodes = nodeColumns.flatMap((column) => {
+    const topStageState = column.topStage?.state ?? Result.unknown;
+
+    return column.rows.flatMap((row) =>
+      row.map((node) => {
+        if (
+          column.topStage &&
+          "stage" in node &&
+          node.stage &&
+          Array.isArray(column.topStage.children) &&
+          column.topStage.children.includes(node.stage) &&
+          collapsed
+        ) {
+          node.stage.state = topStageState;
+        }
+
+        return node;
+      }),
+    );
+  });
+
+  const outerDivStyle = {
+    position: "relative" as const,
+    overflow: "visible" as const,
+  };
+
+  return (
+    <div className="PWGx-PipelineGraph-container">
+      <div style={outerDivStyle} className="PWGx-PipelineGraph">
+        <svg width={measuredWidth} height={measuredHeight}>
+          <GraphConnections connections={connections} layout={layoutState} />
+
+          <SelectionHighlight
+            layout={layoutState}
+            nodeColumns={nodeColumns}
+            isStageSelected={stageIsSelected}
+          />
+        </svg>
+
+        {nodes.map((node) => (
+          <Node key={node.id} node={node} collapsed={collapsed} />
+        ))}
+
+        {bigLabels.map((label) => (
+          <BigLabel
+            key={label.key}
+            details={label}
+            layout={layoutState}
+            measuredHeight={measuredHeight}
+            selectedStage={currentSelectedStage}
+            isStageSelected={stageIsSelected}
+          />
+        ))}
+
+        {smallLabels.map((label) => (
+          <SmallLabel
+            key={label.key}
+            details={label}
+            layout={layoutState}
+            isStageSelected={stageIsSelected}
+          />
+        ))}
+
+        {branchLabels.map((label) => (
+          <SequentialContainerLabel
+            key={label.key}
+            details={label}
+            layout={layoutState}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 interface Props {
   stages: Array<StageInfo>;
   layout?: Partial<LayoutInfo>;
   setStages?: (stages: Array<StageInfo>) => void;
   selectedStage?: StageInfo;
-  path?: string;
+  /**
+   * Path of the current run
+   */
+  currentRunPath: string;
+  /**
+   * Optional path of the previous run
+   */
+  previousRunPath?: string;
   collapsed?: boolean;
-}
-
-interface State {
-  nodeColumns: Array<NodeColumn>;
-  connections: Array<CompositeConnection>;
-  bigLabels: Array<NodeLabelInfo>;
-  smallLabels: Array<NodeLabelInfo>;
-  branchLabels: Array<NodeLabelInfo>;
-  measuredWidth: number;
-  measuredHeight: number;
-  layout: LayoutInfo;
-  selectedStage?: StageInfo;
-}
-
-export class PipelineGraph extends React.Component {
-  props!: Props;
-  state: State;
-
-  constructor(props: Props) {
-    super(props);
-    this.state = {
-      nodeColumns: [],
-      connections: [],
-      bigLabels: [],
-      smallLabels: [],
-      branchLabels: [],
-      measuredWidth: 0,
-      measuredHeight: 0,
-      layout: { ...defaultLayout, ...props.layout },
-      selectedStage: props.selectedStage,
-    };
-  }
-
-  componentDidMount() {
-    const onPipelineDataReceived = (data: { stages: Array<StageInfo> }) => {
-      const { stages } = data;
-      this.setState({ stages });
-      this.stagesUpdated(stages);
-    };
-    const onPollingError = (err: Error) => {
-      console.log("There was an error when polling the pipeline status", err);
-    };
-    const onPipelineComplete = () => undefined;
-
-    startPollingPipelineStatus(
-      onPipelineDataReceived,
-      onPollingError,
-      onPipelineComplete,
-      this.props.path ?? this.getTreePath(),
-    );
-  }
-
-  getTreePath() {
-    const url = new URL(window.location.href);
-
-    if (!url.pathname.endsWith("pipeline-graph/")) {
-      return "pipeline-graph/tree";
-    }
-
-    return "tree";
-  }
-
-  componentWillReceiveProps(nextProps: Props) {
-    let newState: Partial<State> | undefined;
-    let needsLayout = false;
-
-    if (nextProps.layout != this.props.layout) {
-      newState = {
-        ...newState,
-        layout: { ...defaultLayout, ...this.props.layout },
-      };
-      needsLayout = true;
-    }
-
-    if (nextProps.selectedStage !== this.props.selectedStage) {
-      // If we're just changing selectedStage, we don't need to re-generate the children
-      newState = { ...newState, selectedStage: nextProps.selectedStage };
-    }
-
-    if (nextProps.stages !== this.props.stages) {
-      needsLayout = true;
-    }
-
-    const doLayoutIfNeeded = () => {
-      if (needsLayout) {
-        this.stagesUpdated(nextProps.stages);
-      }
-    };
-
-    if (newState) {
-      // If we need to update the state, then we'll delay any layout changes
-      this.setState(newState, doLayoutIfNeeded);
-    } else {
-      doLayoutIfNeeded();
-    }
-  }
-
-  /**
-   * Main process for laying out the graph. Calls out to PipelineGraphLayout module.
-   */
-  private stagesUpdated(newStages: Array<StageInfo> = []) {
-    if (this.props.setStages != undefined) {
-      this.props.setStages(newStages);
-    }
-    this.setState(
-      layoutGraph(newStages, this.state.layout, this.props.collapsed ?? false),
-    );
-  }
-
-  /**
-   * Is this stage currently selected?
-   */
-  private stageIsSelected = (stage?: StageInfo): boolean => {
-    const { selectedStage } = this.state;
-    return (selectedStage && stage && selectedStage.id === stage.id) || false;
-  };
-
-  render() {
-    const {
-      nodeColumns,
-      connections,
-      bigLabels,
-      smallLabels,
-      branchLabels,
-      measuredWidth,
-      measuredHeight,
-    } = this.state;
-
-    // Without these we get fire, so they're hardcoded
-    const outerDivStyle = {
-      position: "relative", // So we can put the labels where we need them
-      overflow: "visible", // So long labels can escape this component in layout
-    };
-
-    let nodes = [];
-    for (const column of nodeColumns) {
-      const topStageState = column.topStage?.state ?? Result.unknown;
-
-      for (const row of column.rows) {
-        for (const node of row) {
-          // If the topStage is still running but one of its child nodes has completed,
-          // the UI may incorrectly display the childs status instead of the topStages.
-          // To ensure consistency, override the nodes state with the topStages state.
-          // This issue is reproducible in the complexSmokes test.
-          if (
-            column.topStage &&
-            "stage" in node &&
-            node.stage &&
-            Array.isArray(column.topStage.children) &&
-            column.topStage.children.includes(node.stage) &&
-            this.props.collapsed
-          ) {
-            node.stage.state = topStageState;
-          }
-
-          nodes.push(node);
-        }
-      }
-    }
-
-    return (
-      <div className="PWGx-PipelineGraph-container">
-        <div style={outerDivStyle as any} className="PWGx-PipelineGraph">
-          <svg width={measuredWidth} height={measuredHeight}>
-            <GraphConnections
-              connections={connections}
-              layout={this.state.layout}
-            />
-
-            <SelectionHighlight
-              layout={this.state.layout}
-              nodeColumns={this.state.nodeColumns}
-              isStageSelected={this.stageIsSelected}
-            />
-          </svg>
-
-          {nodes.map((node) => (
-            <Node key={node.id} node={node} />
-          ))}
-          {bigLabels.map((label) => (
-            <BigLabel
-              key={label.key}
-              details={label}
-              layout={this.state.layout}
-              measuredHeight={measuredHeight}
-              selectedStage={this.state.selectedStage}
-              isStageSelected={this.stageIsSelected}
-            />
-          ))}
-          {smallLabels.map((label) => (
-            <SmallLabel
-              key={label.key}
-              details={label}
-              layout={this.state.layout}
-              isStageSelected={this.stageIsSelected}
-            />
-          ))}
-          {branchLabels.map((label) => (
-            <SequentialContainerLabel
-              key={label.key}
-              details={label}
-              layout={this.state.layout}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  }
 }

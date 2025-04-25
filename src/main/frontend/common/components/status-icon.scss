@@ -1,0 +1,26 @@
+.pgv-status-icon {
+  flex-shrink: 0;
+
+  * {
+    transition: var(--elastic-transition);
+    transform-origin: center;
+  }
+
+  .pgv-scale {
+    animation: pulseScale 2s both ease-in-out infinite;
+    opacity: 0.25;
+
+    @keyframes pulseScale {
+      50% {
+        scale: 2.25;
+        opacity: 1;
+      }
+    }
+  }
+}
+
+// TODO - can be removed when Jenkins >= 2.506
+.jenkins-\!-skipped-color {
+  --color: var(--text-color-secondary);
+  color: var(--color);
+}

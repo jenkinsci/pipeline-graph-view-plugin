@@ -1,6 +1,5 @@
 /** * @jest-environment jsdom */
 
-import "@testing-library/jest-dom";
 import React, { ReactElement } from "react";
 import ConsoleLogStream, { ConsoleLogStreamProps } from "./ConsoleLogStream";
 import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
@@ -37,9 +36,9 @@ describe("ConsoleLogStream", () => {
     completePercent: 50,
     id: "2",
     type: "STAGE",
-    pauseDurationMillis: "",
-    startTimeMillis: "",
-    totalDurationMillis: "",
+    pauseDurationMillis: 0,
+    startTimeMillis: 0,
+    totalDurationMillis: 0,
     stageId: "1",
   };
 

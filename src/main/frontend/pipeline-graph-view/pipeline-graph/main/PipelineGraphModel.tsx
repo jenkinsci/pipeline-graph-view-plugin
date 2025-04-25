@@ -8,30 +8,19 @@ export enum Result {
   aborted = "aborted",
   not_built = "not_built", // May be pending, or job was ended before this point
   skipped = "skipped", // excluded via pipeline "when" clause
-  unknown = "unknown", // bad data or client code needs updating for new values
-}
-
-export function decodeResultValue(resultMaybe: any): Result {
-  const lcase = String(resultMaybe).toLowerCase();
-
-  // TODO: validate this
-  if ((Object.values(Result) as any).includes(lcase)) {
-    return lcase as Result;
-  }
-
-  return Result.unknown;
+  unknown = "unknown", // bad data
 }
 
 // Dimensions used for layout, px
 export const defaultLayout = {
-  nodeSpacingH: 120,
-  parallelSpacingH: 120,
+  nodeSpacingH: 140,
+  parallelSpacingH: 140,
   nodeSpacingV: 70,
   nodeRadius: 12,
-  terminalRadius: 7,
-  curveRadius: 12,
-  connectorStrokeWidth: 3.5,
-  labelOffsetV: 20,
+  terminalRadius: 10,
+  curveRadius: 15,
+  connectorStrokeWidth: 2,
+  labelOffsetV: 22,
   smallLabelOffsetV: 15,
   ypStart: 55,
 };
@@ -59,11 +48,13 @@ export interface StageInfo {
   nextSibling?: StageInfo; // Used within a parallel branch to denote sequential stages
   isSequential?: boolean;
   synthetic?: boolean;
-  pauseDurationMillis: string;
-  startTimeMillis: string;
-  totalDurationMillis: string;
+  pauseDurationMillis: number;
+  startTimeMillis: number;
+  totalDurationMillis: number;
   agent: string;
   url: string;
+
+  skeleton?: boolean;
 }
 
 interface BaseNodeInfo {
@@ -91,7 +82,7 @@ export interface PlaceholderNodeInfo extends BaseNodeInfo {
   isPlaceholder: true;
 
   // -- Unique
-  type: "start" | "end";
+  type: "start" | "end" | "counter";
 }
 
 export type NodeInfo = StageNodeInfo | PlaceholderNodeInfo;

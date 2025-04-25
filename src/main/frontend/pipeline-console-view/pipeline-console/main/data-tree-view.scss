@@ -1,12 +1,68 @@
 #tasks {
   margin: 0;
-  padding-right: 1.4rem;
+  padding-right: 0.7rem;
+}
+
+.pgw-filter-bar {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  margin-bottom: 0.75rem;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: var(--form-input-border-radius);
+    // TODO - var fallback can removed after baseline is moved >= 2.496
+    border: var(
+      --jenkins-border,
+      2px solid color-mix(in srgb, var(--text-color-secondary) 10%, transparent)
+    );
+    box-shadow: var(--form-input-glow);
+    transition: var(--standard-transition);
+  }
+
+  button {
+    border-radius: 0.4rem;
+    padding-inline: 0;
+    width: 42px;
+
+    &::before,
+    &::after {
+      inset: 5px;
+    }
+  }
+
+  .jenkins-search {
+    --search-bar-height: 2.625rem;
+
+    input {
+      border: none !important;
+      box-shadow: none !important;
+      background: none !important;
+      padding: 0 0 0 var(--search-bar-height);
+    }
+  }
+
+  &:hover {
+    &::before {
+      border-color: var(--input-border-hover);
+    }
+  }
+
+  &:has(input:focus) {
+    &::before {
+      border-color: var(--focus-input-border);
+      box-shadow: var(--form-input-glow--focus);
+    }
+  }
 }
 
 .pgv-tree-item {
   display: block !important;
   font-family: var(--font-family-sans) !important;
-  padding-block: 0.3125rem !important;
+  padding-block: 0.5rem !important;
   padding-right: 1rem;
   cursor: pointer !important;
 
@@ -36,12 +92,17 @@
   &__description {
     color: var(--text-color-secondary);
   }
+
+  &--skeleton {
+    pointer-events: none;
+    color: var(--text-color-secondary) !important;
+  }
 }
 
 .pgv-toggle-icon {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
+  top: 0.6875rem;
+  right: 0.55rem;
   width: 1rem;
   height: 1rem;
   margin-left: auto;
@@ -101,6 +162,6 @@
     );
     // TODO - var fallback can removed after baseline is moved >= 2.496
     width: var(--jenkins-border-width, 2px);
-    border-radius: 10px;
+    border-radius: var(--form-input-border-radius);
   }
 }

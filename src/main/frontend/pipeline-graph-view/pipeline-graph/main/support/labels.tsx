@@ -84,6 +84,12 @@ export function BigLabel({
   if (details.stage && details.stage.synthetic) {
     classNames.push("pgv-graph-node--synthetic");
   }
+  if (details.stage?.skeleton) {
+    classNames.push("pgv-graph-node--skeleton");
+  }
+  if (details.node.id < 0) {
+    classNames.push("pgv-graph-node--skeleton");
+  }
 
   return (
     <TruncatingLabel
@@ -185,11 +191,11 @@ export function SequentialContainerLabel({
     maxWidth: sequentialStagesLabelOffset,
     overflow: "hidden",
     textOverflow: "ellipsis",
-    background: "var(--background, white)",
-    padding: "0 3px",
+    background: "var(--card-background)",
+    fontSize: "0.8125rem",
+    fontWeight: "var(--font-bold-weight)",
+    padding: "0 5px",
     whiteSpace: "nowrap" as const,
-    outline: "1px solid var(--graph-connector-grey, gray)",
-    borderRadius: "3px",
   };
 
   return (

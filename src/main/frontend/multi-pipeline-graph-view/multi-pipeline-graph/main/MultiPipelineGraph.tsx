@@ -1,37 +1,52 @@
 import React, { useEffect, useState } from "react";
 import { RunInfo } from "./MultiPipelineGraphModel";
 import startPollingRunsStatus from "./support/startPollingRunsStatus";
-import { SingleRun } from "./SingleRun";
+import SingleRun from "./SingleRun";
 
 export const MultiPipelineGraph = () => {
   const [runs, setRuns] = useState<Array<RunInfo>>([]);
   const [poll, setPoll] = useState(false);
 
+  const rootElement = document.getElementById("multiple-pipeline-root");
+  const currentJobPath = rootElement?.dataset.currentJobPath!;
+
   useEffect(() => {
     if (!poll) {
       setPoll(true);
-      startPollingRunsStatus(setRuns, (err) => {
+      startPollingRunsStatus(currentJobPath, setRuns, (err) => {
         console.log(err);
       });
     }
   }, [runs, poll]);
+
+  const groupedRuns: Record<string, RunInfo[]> = runs.reduce(
+    (acc: Record<string, RunInfo[]>, run) => {
+      const date = new Date(run.timestamp).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+
+      if (!acc[date]) {
+        acc[date] = [];
+      }
+      acc[date].push(run);
+
+      return acc;
+    },
+    {},
+  );
+
   return (
     <>
-      {runs.length > 0 && (
-        <table className="jenkins-table sortable">
-          <thead>
-            <tr>
-              <th className="jenkins-table__cell--tight">id</th>
-              <th data-sort-disable="true">pipeline</th>
-            </tr>
-          </thead>
-          <tbody>
-            {runs.map((run) => (
-              <SingleRun key={run.id} run={run} />
-            ))}
-          </tbody>
-        </table>
-      )}
+      {Object.entries(groupedRuns).map(([date, runsOnDate]) => (
+        <div className={"pgv-stages__group"} key={date}>
+          <p className="pgv-stages__heading">{date}</p>
+          {runsOnDate.map((run) => (
+            <SingleRun key={run.id} run={run} currentJobPath={currentJobPath} />
+          ))}
+        </div>
+      ))}
     </>
   );
 };

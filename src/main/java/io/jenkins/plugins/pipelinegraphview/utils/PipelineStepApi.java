@@ -1,9 +1,7 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
-import io.jenkins.plugins.pipelinegraphview.utils.legacy.PipelineStepVisitor;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -20,16 +18,10 @@ public class PipelineStepApi {
 
     private List<PipelineStep> parseSteps(List<FlowNodeWrapper> stepNodes, String stageId) {
         if (logger.isDebugEnabled()) {
-            logger.debug("PipelineStepApi steps: '" + stepNodes + "'.");
+            logger.debug("PipelineStepApi steps: '{}'.", stepNodes);
         }
-        List<PipelineStep> steps = stepNodes.stream()
+        return stepNodes.stream()
                 .map(flowNodeWrapper -> {
-                    String state =
-                            flowNodeWrapper.getStatus().getResult().name().toLowerCase(Locale.ROOT);
-                    if (flowNodeWrapper.getStatus().getState() != BlueRun.BlueRunState.FINISHED) {
-                        state = flowNodeWrapper.getStatus().getState().name().toLowerCase(Locale.ROOT);
-                    }
-
                     String displayName = flowNodeWrapper.getDisplayName();
                     String title = "";
                     if (flowNodeWrapper.getType() == FlowNodeWrapper.NodeType.UNHANDLED_EXCEPTION) {
@@ -48,23 +40,27 @@ public class PipelineStepApi {
                         }
                     }
                     // Remove non-printable chars (e.g. ANSI color codes).
-                    logger.debug("DisplayName Before: '" + displayName + "'.");
+                    logger.debug("DisplayName Before: '{}'.", displayName);
                     displayName = cleanTextContent(displayName);
-                    logger.debug("DisplayName After: '" + displayName + "'.");
+                    logger.debug("DisplayName After: '{}'.", displayName);
+
+                    // Ignore certain titles
+                    if (!displayName.isBlank()) {
+                        if (title.equals("Shell Script") || title.equals("Print Message")) {
+                            title = "";
+                        }
+                    }
 
                     return new PipelineStep(
                             flowNodeWrapper.getId(),
                             displayName,
-                            state,
-                            50, // TODO how ???
+                            PipelineState.of(flowNodeWrapper.getStatus()),
                             flowNodeWrapper.getType().name(),
-                            title, // TODO blue ocean uses timing information: "Passed in
-                            // 0s"
+                            title,
                             stageId,
                             flowNodeWrapper.getTiming());
                 })
                 .collect(Collectors.toList());
-        return steps;
     }
 
     static String cleanTextContent(String text) {
@@ -98,24 +94,5 @@ public class PipelineStepApi {
     /* Returns a PipelineStepList, sorted by stageId and Id. */
     public PipelineStepList getAllSteps() {
         return getAllSteps(new PipelineNodeGraphAdapter(run));
-    }
-
-    /**
-     * Find steps using the legacy PipelineStepVisitor class.
-     * This is useful for testing and could be useful for bridging the gap between
-     * representations.
-     */
-    protected PipelineStepList getLegacySteps(String stageId) {
-        return getSteps(stageId, new PipelineStepVisitor(run));
-    }
-
-    /**
-     * Gets all steps using the legacy PipelineStepVisitor class.
-     * This is useful for testing and could be useful for bridging the gap between
-     * representations.
-     * Returns a PipelineStepList, sorted by stageId and Id.
-     */
-    protected PipelineStepList getAllLegacySteps() {
-        return getAllSteps(new PipelineStepVisitor(run));
     }
 }

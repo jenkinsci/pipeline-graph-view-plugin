@@ -1,11 +1,9 @@
-import {
-  Result,
-  StageInfo,
-} from "../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel";
+import { Result, StageInfo } from "../pipeline-graph-view/pipeline-graph/main";
+import { ResourceBundle } from "./i18n/translations";
 
 export interface RunStatus {
   stages: StageInfo[];
-  isComplete: boolean;
+  complete: boolean;
 }
 
 /**
@@ -19,9 +17,9 @@ export interface StepInfo {
   id: string;
   type: string;
   stageId: string;
-  pauseDurationMillis: string;
-  startTimeMillis: string;
-  totalDurationMillis: string;
+  pauseDurationMillis: number;
+  startTimeMillis: number;
+  totalDurationMillis: number;
 }
 
 // Internal representation of console log.
@@ -38,21 +36,15 @@ export interface ConsoleLogData {
   endByte: number;
 }
 
-export async function getRunStatus(): Promise<RunStatus | null> {
+export async function getRunStatusFromPath(
+  url: string,
+): Promise<RunStatus | null> {
   try {
-    let response = await fetch("tree");
-    if (!response.ok) throw response.statusText;
-    let json = await response.json();
-    if (json.data.hasOwnProperty("complete")) {
-      // The API returned 'complete' but we expect 'isComplete'.
-      if ("complete" in json.data) {
-        json.data["isComplete"] = json.data["complete"];
-        delete json.data["complete"];
-      }
-      if (!("isComplete" in json.data)) {
-        console.error("Did not get 'complete' status from API.");
-      }
+    const response = await fetch(url + "pipeline-graph/tree");
+    if (!response.ok) {
+      throw response.statusText;
     }
+    let json = await response.json();
     return json.data;
   } catch (e) {
     console.error(`Caught error getting tree: '${e}'`);
@@ -65,7 +57,7 @@ export async function getRunSteps(): Promise<StepInfo[] | null> {
     let response = await fetch("allSteps");
     if (!response.ok) throw response.statusText;
     let json = await response.json();
-    return json.data;
+    return json.data.steps;
   } catch (e) {
     console.warn(`Caught error getting steps: '${e}'`);
     return null;
@@ -87,5 +79,25 @@ export async function getConsoleTextOffset(
   } catch (e) {
     console.error(`Caught error when fetching console: '${e}'`);
     return null;
+  }
+}
+
+export async function getResourceBundle(
+  resource: string,
+): Promise<ResourceBundle | undefined> {
+  try {
+    const baseUrl: string = document.head.dataset.rooturl ?? "";
+    let response = await fetch(
+      `${baseUrl}/i18n/resourceBundle?baseName=${resource}`,
+    );
+    if (!response.ok) {
+      throw response.statusText;
+    }
+    return (await response.json()).data;
+  } catch (e) {
+    console.error(
+      `Caught error when fetching resource bundle ${resource}: '${e}'`,
+    );
+    return undefined;
   }
 }

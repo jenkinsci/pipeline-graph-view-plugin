@@ -1,67 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns" xmlns:p="/lib/pipeline-graph-view">
-    <l:layout title="${%Build log} [${it.buildDisplayName}]" type="one-column">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns" xmlns:t="/lib/hudson">
+    <l:layout title="${%Build log} [${it.buildDisplayName}]">
         <l:main-panel>
-            <p:symbols />
-
+            <link rel="stylesheet" href="${resURL}/plugin/pipeline-graph-view/js/style.css" type="text/css" />
             <j:out value="${h.generateConsoleAnnotationScriptAndStylesheet()}"/>
 
-            <div class="jenkins-app-bar">
-                <div class="jenkins-app-bar__content">
-                    <h1>
-                        <l:icon alt="${it.iconColor.description}" class="symbol-status-${it.iconColor.iconName} icon-lg" tooltip="${it.iconColor.description}"/>
-                        <j:if test="${it.previousBuildNumber!=null}">
-                            <a href="../../${it.previousBuildNumber}/pipeline-console" class="app-details__prev_next">
-                                <l:icon class="symbol-chevron-back-outline plugin-ionicons-api icon-md" tooltip="${%Previous Build}"/>
-                            </a>
-                        </j:if>
-                        ${%Build} ${it.buildDisplayName}
-                        <j:if test="${it.nextBuildNumber!=null}">
-                            <a href="../../${it.nextBuildNumber}/pipeline-console" class="app-details__prev_next">
-                                <l:icon class="symbol-chevron-forward-outline plugin-ionicons-api icon-md" tooltip="${%Next Build}"/>
-                            </a>
-                        </j:if>
-                    </h1>
-                </div>
-                <div class="jenkins-app-bar__controls">
-                    <j:if test="${it.buildable}">
-                        <l:hasPermission permission="${it.permission}">
-                            <j:set var="proxyId" value="${h.generateId()}" />
-                            <st:bind value="${it}" var="rebuildAction${proxyId}"/>
-                            <button id="pgv-rebuild" data-success-message="${%Build scheduled}"
-                                    data-proxy-name="rebuildAction${proxyId}"
-                                    class="jenkins-button jenkins-!-build-color">
-                                <l:icon src="symbol-play-outline plugin-ionicons-api"/>
-                                ${%Rebuild}
-                            </button>
-                        </l:hasPermission>
-                    </j:if>
-                    <a href="../pipeline-graph" class="jenkins-button">
-                        <l:icon src="symbol-git-network-outline plugin-ionicons-api"/>
-                        ${%Overview}
-                    </a>
-                    <l:hasPermission permission="${it.configurePermission}">
-                        <a href="../../configure" class="jenkins-button">
-                            ${%Configure}
-                        </a>
+            <j:set var="controls">
+                <j:if test="${it.buildable}">
+                    <l:hasPermission permission="${it.permission}">
+                        <j:set var="proxyId" value="${h.generateId()}" />
+                        <st:bind value="${it}" var="rebuildAction${proxyId}"/>
+                        <button id="pgv-rebuild" data-success-message="${%Build scheduled}"
+                                data-proxy-name="rebuildAction${proxyId}"
+                                class="jenkins-button jenkins-!-build-color">
+                            <l:icon src="symbol-play-outline plugin-ionicons-api"/>
+                            ${%Rebuild}
+                        </button>
                     </l:hasPermission>
-                    <l:overflowButton>
-                        <dd:item icon="symbol-terminal"
-                                 text="${%View classic console}"
-                                 href="../console" />
-                        <dd:item icon="symbol-document-text"
-                                 text="${%View as plain text}"
-                                 href="../consoleText" />
-                    </l:overflowButton>
-                </div>
-                <script src="${rootURL}/plugin/pipeline-graph-view/js/build.js"/>
-            </div>
+                </j:if>
+                <a href="../pipeline-graph" class="jenkins-button">
+                    <l:icon src="symbol-git-network-outline plugin-ionicons-api"/>
+                    ${%Overview}
+                </a>
+                <l:hasPermission permission="${it.configurePermission}">
+                    <a href="../../configure" class="jenkins-button">
+                        ${%Configure}
+                    </a>
+                </l:hasPermission>
+                <l:overflowButton>
+                    <dd:item icon="symbol-terminal"
+                             text="${%View classic console}"
+                             href="../console" />
+                    <dd:item icon="symbol-document-text"
+                             text="${%View as plain text}"
+                             href="../consoleText" />
+                </l:overflowButton>
+            </j:set>
 
-            <p>${it.iconColor.description} ${it.startTimeString} ago in ${it.durationString}</p>
+            <t:buildCaption controls="${controls}">
+                <j:if test="${it.previousBuildNumber!=null}">
+                    <a href="../../${it.previousBuildNumber}/pipeline-console" class="jenkins-button jenkins-button--tertiary app-details__prev_next" tooltip="${%Previous Build}">
+                        <l:icon class="symbol-chevron-back-outline plugin-ionicons-api icon-md" />
+                    </a>
+                </j:if>
+                ${it.buildDisplayName}
+                <j:if test="${it.nextBuildNumber!=null}">
+                    <a href="../../${it.nextBuildNumber}/pipeline-console" class="jenkins-button jenkins-button--tertiary app-details__prev_next" tooltip="${%Next Build}">
+                        <l:icon class="symbol-chevron-forward-outline plugin-ionicons-api icon-md" />
+                    </a>
+                </j:if>
+            </t:buildCaption>
 
-            <div id="root"/>
+            <p class="jenkins-page-description">${it.iconColor.description} ${it.startTimeString} ago in ${it.durationString}</p>
+
+            <div id="console-pipeline-root" data-current-run-path="${rootURL + '/' + it.buildUrl}"
+                           data-previous-run-path="${it.previousBuildUrl != null ? rootURL + '/' + it.previousBuildUrl : null}"
+                           data-user-locale="${request2.getLocale().toLanguageTag()}"/>
+            <script src="${rootURL}/plugin/pipeline-graph-view/js/build.js"/>
             <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/pipeline-console-view-bundle.js"/>
         </l:main-panel>
     </l:layout>

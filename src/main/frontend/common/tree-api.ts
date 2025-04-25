@@ -25,7 +25,9 @@ export default function useRunPoller({
           complete: boolean;
         }) => {
           setRun({
-            stages: mergeStageInfos(r!.stages, data.stages),
+            stages: data.complete
+              ? data.stages
+              : mergeStageInfos(r!.stages, data.stages),
             complete: data.complete,
           });
         };

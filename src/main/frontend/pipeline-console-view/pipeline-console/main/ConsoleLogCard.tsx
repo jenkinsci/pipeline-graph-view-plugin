@@ -111,6 +111,7 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
             <span
               style={{
                 color: "var(--text-color-secondary)",
+                fontWeight: "normal",
               }}
             >
               <Total ms={props.step.totalDurationMillis} />

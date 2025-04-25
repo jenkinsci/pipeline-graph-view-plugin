@@ -1,4 +1,4 @@
-import Tippy from "@tippyjs/react";
+import Tippy, { TippyProps } from "@tippyjs/react";
 import React, { useState } from "react";
 import Tooltip from "./tooltip";
 
@@ -13,16 +13,9 @@ export default function Dropdown({ items, disabled }: DropdownProps) {
   return (
     <Tooltip content={"More actions"}>
       <Tippy
-        theme="dropdown"
-        duration={250}
-        touch={true}
         visible={visible}
-        animation="dropdown"
         onClickOutside={hide}
-        interactive={true}
-        offset={[0, 0]}
-        placement="bottom-start"
-        arrow={false}
+        {...DefaultDropdownProps}
         content={
           <div className="jenkins-dropdown">
             {items.map((item, index) => (
@@ -56,6 +49,17 @@ export default function Dropdown({ items, disabled }: DropdownProps) {
     </Tooltip>
   );
 }
+
+export const DefaultDropdownProps: TippyProps = {
+  theme: "dropdown",
+  duration: 250,
+  touch: true,
+  animation: "dropdown",
+  interactive: true,
+  offset: [0, 0],
+  placement: "bottom-start",
+  arrow: false,
+};
 
 interface DropdownProps {
   items: DropdownItem[];

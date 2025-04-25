@@ -6,6 +6,7 @@ import { Result } from "../../pipeline-graph-view/pipeline-graph/main";
 import { classNames } from "../utils/classnames";
 import "./filter.scss";
 import { useFilter } from "../../pipeline-console-view/pipeline-console/main/providers/filter-provider";
+import { DefaultDropdownProps } from "./dropdown";
 
 export default function Filter({ disabled }: FilterProps) {
   const [visible, setVisible] = useState(false);
@@ -56,17 +57,12 @@ export default function Filter({ disabled }: FilterProps) {
   return (
     <Tooltip content={"Filter"}>
       <Tippy
-        theme="dropdown"
-        duration={250}
-        touch={true}
+        {...DefaultDropdownProps}
         visible={visible}
-        animation="dropdown"
         onClickOutside={hide}
-        interactive={true}
+        placement="bottom"
         appendTo={document.body}
         offset={[0, -1]}
-        placement="bottom"
-        arrow={false}
         content={
           <div className="jenkins-dropdown">
             <div className="jenkins-dropdown__heading">

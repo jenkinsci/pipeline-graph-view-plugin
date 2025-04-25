@@ -1,7 +1,6 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
-import io.jenkins.plugins.pipelinegraphview.utils.legacy.PipelineStepVisitor;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,7 +20,7 @@ public class PipelineStepApi {
         if (logger.isDebugEnabled()) {
             logger.debug("PipelineStepApi steps: '{}'.", stepNodes);
         }
-        List<PipelineStep> steps = stepNodes.stream()
+        return stepNodes.stream()
                 .map(flowNodeWrapper -> {
                     String displayName = flowNodeWrapper.getDisplayName();
                     String title = "";
@@ -62,7 +61,6 @@ public class PipelineStepApi {
                             flowNodeWrapper.getTiming());
                 })
                 .collect(Collectors.toList());
-        return steps;
     }
 
     static String cleanTextContent(String text) {
@@ -96,24 +94,5 @@ public class PipelineStepApi {
     /* Returns a PipelineStepList, sorted by stageId and Id. */
     public PipelineStepList getAllSteps() {
         return getAllSteps(new PipelineNodeGraphAdapter(run));
-    }
-
-    /**
-     * Find steps using the legacy PipelineStepVisitor class.
-     * This is useful for testing and could be useful for bridging the gap between
-     * representations.
-     */
-    protected PipelineStepList getLegacySteps(String stageId) {
-        return getSteps(stageId, new PipelineStepVisitor(run));
-    }
-
-    /**
-     * Gets all steps using the legacy PipelineStepVisitor class.
-     * This is useful for testing and could be useful for bridging the gap between
-     * representations.
-     * Returns a PipelineStepList, sorted by stageId and Id.
-     */
-    protected PipelineStepList getAllLegacySteps() {
-        return getAllSteps(new PipelineStepVisitor(run));
     }
 }

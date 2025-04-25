@@ -37,7 +37,7 @@ export default function DataTreeView({
 
         return null;
       })
-      .filter((stage): stage is StageInfo => stage !== null);
+      .filter((stage) => stage !== null);
   };
 
   const filteredStages = filterStageTree(stages);

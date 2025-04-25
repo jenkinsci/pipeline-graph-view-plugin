@@ -49,7 +49,7 @@ afterEach(() => {
 });
 
 it("selects default step if URL param is missing", async () => {
-  const { result } = renderHook(() =>
+  const { result, unmount } = renderHook(() =>
     useStepsPoller({ currentRunPath: "/run/1", previousRunPath: undefined }),
   );
 
@@ -59,11 +59,13 @@ it("selects default step if URL param is missing", async () => {
 
   expect(openStage?.id).toBe("stage-2");
   expect(expandedSteps).toContain("step-2");
+
+  unmount();
 });
 
 it("selects the step from URL on initial load", async () => {
   window.history.pushState({}, "", "/?selected-node=step-1&start-byte=0");
-  const { result } = renderHook(() =>
+  const { result, unmount } = renderHook(() =>
     useStepsPoller({ currentRunPath: "/run/1", previousRunPath: undefined }),
   );
 
@@ -73,6 +75,8 @@ it("selects the step from URL on initial load", async () => {
 
   expect(openStage?.id).toBe("stage-1");
   expect(expandedSteps).toContain("step-1");
+
+  unmount();
 });
 
 it("switches to next stage when current one finishes", async () => {
@@ -85,7 +89,7 @@ it("switches to next stage when current one finishes", async () => {
     Promise.resolve(currentSteps),
   );
 
-  const { result } = renderHook(() =>
+  const { result, unmount } = renderHook(() =>
     useStepsPoller({ currentRunPath: "/run/1" }),
   );
 
@@ -101,10 +105,12 @@ it("switches to next stage when current one finishes", async () => {
   await waitFor(() => expect(result.current.openStage?.id).toBe("stage-1"));
 
   expect(result.current.expandedSteps).toContain("s1");
+
+  unmount();
 });
 
 it("expands and collapses step when toggled", async () => {
-  const { result } = renderHook(() =>
+  const { result, unmount } = renderHook(() =>
     useStepsPoller({ currentRunPath: "/run/1" }),
   );
 
@@ -115,4 +121,6 @@ it("expands and collapses step when toggled", async () => {
 
   act(() => result.current.handleStepToggle("step-2"));
   expect(result.current.expandedSteps).toContain("step-2");
+
+  unmount();
 });

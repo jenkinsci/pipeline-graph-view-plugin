@@ -16,6 +16,9 @@ export default function DataTreeView({
   onNodeSelect,
 }: DataTreeViewProps) {
   const { search, setSearch, checkedStatuses } = useFilter();
+  const filteredStages = stages
+    .filter((e) => e.name.toLowerCase().includes(search.toLowerCase()))
+    .filter((e) => checkedStatuses[e.state]);
 
   const handleSelect = useCallback(
     (event: React.MouseEvent, nodeId: string) => {
@@ -62,10 +65,24 @@ export default function DataTreeView({
         <Filter />
       </div>
 
+      {filteredStages.length === 0 && (
+        <div className={"jenkins-notice"}>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <path
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={36}
+              d="M32 144h448M112 256h288M208 368h96"
+            />
+          </svg>
+          <div>No stages</div>
+        </div>
+      )}
+
       <div id="tasks" style={{ marginLeft: "0.7rem" }}>
-        {stages
-          .filter((e) => e.name.toLowerCase().includes(search.toLowerCase()))
-          .filter((e) => checkedStatuses[e.state])
+        {filteredStages
           .map((stage) => (
             <TreeNode
               key={stage.id}

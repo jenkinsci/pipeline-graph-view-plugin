@@ -1,6 +1,10 @@
 import React from "react";
 
-import { StepInfo, StageInfo, StepLogBufferInfo } from "./PipelineConsoleModel.tsx";
+import {
+  StepInfo,
+  StageInfo,
+  StepLogBufferInfo,
+} from "./PipelineConsoleModel.tsx";
 import StageDetails from "./stage-details.tsx";
 import StageSteps from "./stage-steps.tsx";
 

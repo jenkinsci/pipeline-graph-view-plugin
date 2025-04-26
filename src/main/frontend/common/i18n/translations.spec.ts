@@ -1,4 +1,4 @@
-import { Mock, vi } from 'vitest'
+import { Mock, vi } from "vitest";
 
 vi.mock("../RestClient", () => ({
   getResourceBundle: vi.fn(),

@@ -1,6 +1,6 @@
 /** * @vitest-environment jsdom */
 
-import { vi } from 'vitest'
+import { vi } from "vitest";
 import { TextEncoder } from "util";
 import React from "react";
 import { act, render, screen } from "@testing-library/react";

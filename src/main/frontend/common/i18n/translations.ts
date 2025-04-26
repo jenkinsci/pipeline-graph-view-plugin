@@ -22,7 +22,7 @@ export class Translations {
     if (message != null) {
       return message;
     }
-    if (process.env.NODE_ENV !== 'test') {
+    if (process.env.NODE_ENV !== "test") {
       console.debug(`Translation for ${key} not found, using fallback`);
     }
     return (params) => {

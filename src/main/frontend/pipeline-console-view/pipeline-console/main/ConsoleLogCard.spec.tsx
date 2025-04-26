@@ -4,7 +4,11 @@ import { vi } from "vitest";
 import React from "react";
 import ConsoleLogCard, { ConsoleLogCardProps } from "./ConsoleLogCard.tsx";
 import { ConsoleLogStreamProps } from "./ConsoleLogStream.tsx";
-import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel.tsx";
+import {
+  Result,
+  StepInfo,
+  StepLogBufferInfo,
+} from "./PipelineConsoleModel.tsx";
 import { render } from "@testing-library/react";
 
 vi.mock("./ConsoleLogStream", () => {

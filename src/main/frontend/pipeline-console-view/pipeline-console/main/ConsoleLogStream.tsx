@@ -1,6 +1,10 @@
 import React, { useCallback, useState, useEffect, useRef } from "react";
 import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
-import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel.tsx";
+import {
+  Result,
+  StepInfo,
+  StepLogBufferInfo,
+} from "./PipelineConsoleModel.tsx";
 import { ConsoleLine } from "./ConsoleLine.tsx";
 
 export default function ConsoleLogStream(props: ConsoleLogStreamProps) {

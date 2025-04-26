@@ -10,9 +10,9 @@
     "build": "vite build --mode production",
     "build:dev": "vite build --mode development --watch",
     "test": "CI=true vitest",
-    "posttest": "tsc && prettier --check src/main/frontend/",
+    "posttest": "tsc && prettier --check .",
     "vitest": "vitest",
-    "prettier": "prettier --write src/main/frontend/"
+    "prettier": "prettier --write ."
   },
   "repository": {
     "type": "git",

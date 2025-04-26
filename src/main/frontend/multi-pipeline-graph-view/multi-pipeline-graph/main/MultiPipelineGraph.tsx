@@ -41,7 +41,7 @@ export const MultiPipelineGraph = () => {
     <>
       {Object.keys(groupedRuns).length === 0 ? (
         <div className="pgv-stages__group">
-            <div className="pgv-stages__heading">No runs found</div>
+            <div className="pgv-stages__heading">No builds found</div>
         </div>
       ) : (
         Object.entries(groupedRuns).map(([date, runsOnDate]) => (

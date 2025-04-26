@@ -20,10 +20,6 @@
                         </button>
                     </l:hasPermission>
                 </j:if>
-                <a href="../pipeline-graph" class="jenkins-button">
-                    <l:icon src="symbol-git-network-outline plugin-ionicons-api"/>
-                    ${%Overview}
-                </a>
                 <l:hasPermission permission="${it.configurePermission}">
                     <a href="../../configure" class="jenkins-button">
                         ${%Configure}
@@ -53,7 +49,7 @@
                 </j:if>
             </t:buildCaption>
 
-            <p class="jenkins-page-description">${it.iconColor.description} ${it.startTimeString} ago in ${it.durationString}</p>
+<!--            <p class="jenkins-page-description">${it.iconColor.description} ${it.startTimeString} ago in ${it.durationString}</p>-->
 
             <div id="console-pipeline-root" data-current-run-path="${rootURL + '/' + it.buildUrl}"
                            data-previous-run-path="${it.previousBuildUrl != null ? rootURL + '/' + it.previousBuildUrl : null}"

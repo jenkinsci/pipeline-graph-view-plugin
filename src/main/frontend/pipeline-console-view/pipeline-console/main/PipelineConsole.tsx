@@ -2,6 +2,9 @@ import React from "react";
 import SplitView from "./SplitView";
 import "./pipeline-console.scss";
 import { useStepsPoller } from "./hooks/use-steps-poller";
+import { PipelineGraph } from "../../../pipeline-graph-view/pipeline-graph/main";
+import "../../../pipeline-graph-view/app.scss";
+import "../../../pipeline-graph-view/pipeline-graph/styles/main.scss";
 
 const DataTreeView = React.lazy(() => import("./DataTreeView"));
 const StageView = React.lazy(() => import("./StageView"));
@@ -23,25 +26,43 @@ export default function PipelineConsole() {
   } = useStepsPoller({ currentRunPath, previousRunPath });
 
   return (
-    <SplitView>
-      <div key="tree-view" id="tree-view-pane" className="pgv-sticky-sidebar">
-        <DataTreeView
-          onNodeSelect={(_, nodeId) => handleStageSelect(nodeId)}
-          selected={openStage?.id}
-          stages={stages}
-        />
+    <div>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "35vh",
+          background: "color-mix(in srgb, var(--text-color-secondary) 3%, transparent)",
+          marginTop: "-130px",
+          paddingTop: "130px",
+          marginInline: "calc(var(--section-padding) * -1)",
+          borderBottom: "var(--jenkins-border)",
+          marginBottom: "var(--section-padding)",
+        }}
+      >
+        <PipelineGraph stages={stages} currentRunPath={currentRunPath} />
       </div>
+      <SplitView>
+        <div key="tree-view" id="tree-view-pane" className="pgv-sticky-sidebar">
+          <DataTreeView
+            onNodeSelect={(_, nodeId) => handleStageSelect(nodeId)}
+            selected={openStage?.id}
+            stages={stages}
+          />
+        </div>
 
-      <div key="stage-view" id="stage-view-pane">
-        <StageView
-          stage={openStage}
-          steps={openStageSteps}
-          stepBuffers={openStageStepBuffers}
-          expandedSteps={expandedSteps}
-          handleStepToggle={handleStepToggle}
-          handleMoreConsoleClick={handleMoreConsoleClick}
-        />
-      </div>
-    </SplitView>
+        <div key="stage-view" id="stage-view-pane">
+          <StageView
+            stage={openStage}
+            steps={openStageSteps}
+            stepBuffers={openStageStepBuffers}
+            expandedSteps={expandedSteps}
+            handleStepToggle={handleStepToggle}
+            handleMoreConsoleClick={handleMoreConsoleClick}
+          />
+        </div>
+      </SplitView>
+    </div>
   );
 }

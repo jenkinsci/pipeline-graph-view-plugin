@@ -18,6 +18,7 @@ import {
 } from "./support/labels";
 import { GraphConnections } from "./support/connections";
 import useRunPoller from "../../../common/tree-api";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 export function PipelineGraph(props: Props) {
   const {
@@ -128,51 +129,58 @@ export function PipelineGraph(props: Props) {
   };
 
   return (
-    <div className="PWGx-PipelineGraph-container">
-      <div style={outerDivStyle} className="PWGx-PipelineGraph">
-        <svg width={measuredWidth} height={measuredHeight}>
-          <GraphConnections connections={connections} layout={layoutState} />
+    <TransformWrapper>
+      <TransformComponent wrapperStyle={{ width: "unset" }}>
+        <div className="PWGx-PipelineGraph-container">
+          <div style={outerDivStyle} className="PWGx-PipelineGraph">
+            <svg width={measuredWidth} height={measuredHeight}>
+              <GraphConnections
+                connections={connections}
+                layout={layoutState}
+              />
 
-          <SelectionHighlight
-            layout={layoutState}
-            nodeColumns={nodeColumns}
-            isStageSelected={stageIsSelected}
-          />
-        </svg>
+              <SelectionHighlight
+                layout={layoutState}
+                nodeColumns={nodeColumns}
+                isStageSelected={stageIsSelected}
+              />
+            </svg>
 
-        {nodes.map((node) => (
-          <Node key={node.id} node={node} collapsed={collapsed} />
-        ))}
+            {nodes.map((node) => (
+              <Node key={node.id} node={node} collapsed={collapsed} />
+            ))}
 
-        {bigLabels.map((label) => (
-          <BigLabel
-            key={label.key}
-            details={label}
-            layout={layoutState}
-            measuredHeight={measuredHeight}
-            selectedStage={currentSelectedStage}
-            isStageSelected={stageIsSelected}
-          />
-        ))}
+            {bigLabels.map((label) => (
+              <BigLabel
+                key={label.key}
+                details={label}
+                layout={layoutState}
+                measuredHeight={measuredHeight}
+                selectedStage={currentSelectedStage}
+                isStageSelected={stageIsSelected}
+              />
+            ))}
 
-        {smallLabels.map((label) => (
-          <SmallLabel
-            key={label.key}
-            details={label}
-            layout={layoutState}
-            isStageSelected={stageIsSelected}
-          />
-        ))}
+            {smallLabels.map((label) => (
+              <SmallLabel
+                key={label.key}
+                details={label}
+                layout={layoutState}
+                isStageSelected={stageIsSelected}
+              />
+            ))}
 
-        {branchLabels.map((label) => (
-          <SequentialContainerLabel
-            key={label.key}
-            details={label}
-            layout={layoutState}
-          />
-        ))}
-      </div>
-    </div>
+            {branchLabels.map((label) => (
+              <SequentialContainerLabel
+                key={label.key}
+                details={label}
+                layout={layoutState}
+              />
+            ))}
+          </div>
+        </div>
+      </TransformComponent>
+    </TransformWrapper>
   );
 }
 

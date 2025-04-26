@@ -1,14 +1,15 @@
 /** * @vitest-environment jsdom */
 
-(global as any).TextEncoder = require("util").TextEncoder;
-
+import { TextEncoder } from "util";
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import {
   Result,
   StageInfo,
-} from "../../../pipeline-graph-view/pipeline-graph/main/index.js";
-import StageDetails from "./stage-details.js";
+} from "../../../pipeline-graph-view/pipeline-graph/main/index.ts";
+import StageDetails from "./stage-details.tsx";
+
+(globalThis as any).TextEncoder = TextEncoder;
 
 describe("StageDetails", () => {
   it("renders null when stage is null", () => {

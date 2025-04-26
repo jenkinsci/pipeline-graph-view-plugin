@@ -45,14 +45,14 @@
         </j:if>
       </t:buildCaption>
 
-      <script src="${rootURL}/plugin/pipeline-graph-view/js/build.js"/>
+      <script src="${rootURL}/plugin/pipeline-graph-view/js/build.js" type="module"/>
       <div class="pgv-cards">
         <p:card title="${%Pipeline}" type="wide" expandable="true">
           <div id="graph"
                data-current-run-path="${rootURL + '/' + it.buildUrl}"
                data-previous-run-path="${it.previousBuildUrl != null ? rootURL + '/' + it.previousBuildUrl : null}"
                data-user-locale="${request2.getLocale().toLanguageTag()}" />
-          <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/pipeline-graph-view-bundle.js"/>
+          <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/pipeline-graph-view-bundle.js" type="module"/>
         </p:card>
         <p:card title="${it.runDetailsCard.title}">
           <div class="pgv-details-card">

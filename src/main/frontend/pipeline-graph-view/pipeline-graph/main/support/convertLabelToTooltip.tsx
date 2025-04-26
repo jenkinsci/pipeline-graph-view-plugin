@@ -1,5 +1,5 @@
 import React from "react";
-import Tooltip from "../../../../common/components/tooltip.js";
+import Tooltip from "../../../../common/components/tooltip.tsx";
 
 type MatrixValue = {
   key: string;

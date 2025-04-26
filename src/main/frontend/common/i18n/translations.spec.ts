@@ -4,13 +4,13 @@ vi.mock("../RestClient", () => ({
   getResourceBundle: vi.fn(),
 }));
 
-import { getResourceBundle } from "../RestClient.js";
+import { getResourceBundle } from "../RestClient.tsx";
 import {
   getTranslations,
   messageFormat,
   ResourceBundleName,
   Translations,
-} from "./translations.js";
+} from "./translations.ts";
 
 describe("Translations", () => {
   describe("Get translation", () => {

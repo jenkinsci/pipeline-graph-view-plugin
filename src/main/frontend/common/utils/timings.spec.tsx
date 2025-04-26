@@ -2,10 +2,10 @@
 
 import { vi } from "vitest";
 import React from "react";
-import { Paused, Started, Total } from "./timings.js";
+import { Paused, Started, Total } from "./timings.tsx";
 import { render } from "@testing-library/react";
-import { I18NContext } from "../i18n/i18n-provider.js";
-import { Translations } from "../i18n/translations.js";
+import { I18NContext } from "../i18n/i18n-provider.tsx";
+import { Translations } from "../i18n/translations.ts";
 import MessageFormat from "@messageformat/core";
 
 describe("Timings", () => {

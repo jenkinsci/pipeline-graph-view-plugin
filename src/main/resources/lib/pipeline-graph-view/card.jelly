@@ -41,6 +41,6 @@
     </j:choose>
   </div>
   <st:once>
-    <script src="${resURL}/plugin/pipeline-graph-view/js/card.js" type="text/javascript"/>
+    <script src="${resURL}/plugin/pipeline-graph-view/js/card.js" type="module"/>
   </st:once>
 </j:jelly>

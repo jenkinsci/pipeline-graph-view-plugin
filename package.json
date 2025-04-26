@@ -7,10 +7,11 @@
   "scripts": {
     "mvnbuild": "npm run build",
     "mvntest": "npm test",
-    "build": "rspack --mode production",
-    "build:dev": "rspack --mode development --watch",
-    "pretest": "tsc && prettier --check src/main/frontend/",
+    "build": "vite build --mode production",
+    "build:dev": "vite build --mode development --watch",
     "test": "CI=true vitest",
+    "posttest": "tsc && prettier --check src/main/frontend/",
+    "vitest": "vitest",
     "prettier": "prettier --write src/main/frontend/"
   },
   "repository": {
@@ -24,40 +25,23 @@
   },
   "homepage": "https://github.com/jenkinsci/pipeline-graph-view-plugin/#readme",
   "dependencies": {
-    "@babel/helpers": "^7.27.0",
-    "@babel/preset-typescript": "^7.27.0",
-    "@babel/traverse": "^7.27.0",
     "@messageformat/core": "3.4.0",
     "@tippyjs/react": "^4.2.6",
-    "babel-loader": "^10.0.0",
-    "babel-plugin-import": "^1.13.8",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-virtuoso": "^4.12.6"
   },
   "devDependencies": {
-    "@babel/core": "^7.26.10",
-    "@babel/preset-env": "7.26.9",
-    "@babel/preset-react": "7.26.3",
-    "@babel/preset-typescript": "^7.27.0",
-    "@rspack/cli": "^1.3.7",
-    "@rspack/core": "^1.3.7",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
     "@types/node": "22.15.2",
     "@types/react": "18.3.20",
     "@types/react-dom": "18.3.6",
-    "babel-loader": "^10.0.0",
-    "babel-plugin-import": "^1.13.8",
-    "css-loader": "7.1.2",
+    "@vitejs/plugin-react": "^4.4.1",
     "prettier": "3.5.3",
-    "sass": "1.87.0",
-    "sass-loader": "16.0.5",
-    "source-map-loader": "5.0.0",
-    "style-loader": "^4.0.0",
-    "styled-components": "^6.1.17",
-    "ts-loader": "^9.5.2",
+    "sass-embedded": "^1.87.0",
     "typescript": "5.8",
+    "vite": "^6.3.3",
     "vitest": "^3.1.2"
   }
 }

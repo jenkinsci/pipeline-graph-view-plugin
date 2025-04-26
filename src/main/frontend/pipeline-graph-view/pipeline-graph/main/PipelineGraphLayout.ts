@@ -8,7 +8,7 @@ import {
   PositionedGraph,
   StageInfo,
   StageNodeInfo,
-} from "./PipelineGraphModel.js";
+} from "./PipelineGraphModel.ts";
 
 export const sequentialStagesLabelOffset = 80;
 

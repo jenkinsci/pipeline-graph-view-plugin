@@ -1,8 +1,8 @@
 import {
   Result,
   StageInfo,
-} from "../../pipeline-graph-view/pipeline-graph/main/index.js";
-import RunEstimator from "./run-estimator.js";
+} from "../../pipeline-graph-view/pipeline-graph/main/index.ts";
+import RunEstimator from "./run-estimator.ts";
 
 const previous: StageInfo[] = [
   makeStage("success", Result.success, 1000),

@@ -1,12 +1,13 @@
 /** * @vitest-environment jsdom */
 
-(global as any).TextEncoder = require("util").TextEncoder;
-
 import { vi } from 'vitest'
+import { TextEncoder } from "util";
 import React from "react";
 import { act, render, screen } from "@testing-library/react";
-import StageView from "./StageView.js";
-import { Result, StageInfo, StepInfo } from "./PipelineConsoleModel.js";
+import StageView from "./StageView.tsx";
+import { Result, StageInfo, StepInfo } from "./PipelineConsoleModel.tsx";
+
+(globalThis as any).TextEncoder = TextEncoder;
 
 const mockStage: StageInfo = {
   id: 1,

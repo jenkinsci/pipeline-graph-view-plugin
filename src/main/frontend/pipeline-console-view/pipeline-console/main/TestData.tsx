@@ -1,4 +1,4 @@
-import { Result, StageType, StageInfo, StepInfo } from "./PipelineConsoleModel.js";
+import { Result, StageType, StageInfo, StepInfo } from "./PipelineConsoleModel.tsx";
 export const defaultStagesList: StageInfo[] = [
   {
     name: "Stage A",

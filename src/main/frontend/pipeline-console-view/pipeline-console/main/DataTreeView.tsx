@@ -2,13 +2,13 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   Result,
   StageInfo,
-} from "../../../pipeline-graph-view/pipeline-graph/main/index.js";
+} from "../../../pipeline-graph-view/pipeline-graph/main/index.ts";
 import "./data-tree-view.scss";
-import { Total } from "../../../common/utils/timings.js";
-import StatusIcon from "../../../common/components/status-icon.js";
-import { classNames } from "../../../common/utils/classnames.js";
-import Filter from "../../../common/components/filter.js";
-import { useFilter } from "./providers/filter-provider.js";
+import { Total } from "../../../common/utils/timings.tsx";
+import StatusIcon from "../../../common/components/status-icon.tsx";
+import { classNames } from "../../../common/utils/classnames.ts";
+import Filter from "../../../common/components/filter.tsx";
+import { useFilter } from "./providers/filter-provider.tsx";
 
 export default function DataTreeView({
   stages,

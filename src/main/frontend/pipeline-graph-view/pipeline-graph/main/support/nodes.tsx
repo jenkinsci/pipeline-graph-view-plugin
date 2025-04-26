@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import { CSSProperties } from "react";
 
 import {
@@ -6,14 +6,14 @@ import {
   NodeColumn,
   NodeInfo,
   StageInfo,
-} from "../PipelineGraphModel.js";
+} from "../PipelineGraphModel.tsx";
 import StatusIcon, {
   resultToColor,
-} from "../../../../common/components/status-icon.js";
-import Tooltip from "../../../../common/components/tooltip.js";
-import { Total } from "../../../../common/utils/timings.js";
+} from "../../../../common/components/status-icon.tsx";
+import Tooltip from "../../../../common/components/tooltip.tsx";
+import { Total } from "../../../../common/utils/timings.tsx";
 import "./nodes.scss";
-import { CounterNodeInfo } from "../PipelineGraphLayout.js";
+import { CounterNodeInfo } from "../PipelineGraphLayout.tsx";
 
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck
 

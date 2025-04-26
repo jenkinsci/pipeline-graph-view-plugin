@@ -1,5 +1,5 @@
-import { Result, StageInfo } from "../pipeline-graph-view/pipeline-graph/main/index.js";
-import { ResourceBundle } from "./i18n/translations.js";
+import { Result, StageInfo } from "../pipeline-graph-view/pipeline-graph/main/index.tsx";
+import { ResourceBundle } from "./i18n/translations.ts";
 
 export interface RunStatus {
   stages: StageInfo[];

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { RunInfo } from "./MultiPipelineGraphModel.js";
-import startPollingRunsStatus from "./support/startPollingRunsStatus.js";
-import SingleRun from "./SingleRun.js";
+import { RunInfo } from "./MultiPipelineGraphModel.tsx";
+import startPollingRunsStatus from "./support/startPollingRunsStatus.ts";
+import SingleRun from "./SingleRun.tsx";
 
 export const MultiPipelineGraph = () => {
   const [runs, setRuns] = useState<Array<RunInfo>>([]);

@@ -2,8 +2,8 @@
 
 import { Mock, vi } from 'vitest'
 import { act, renderHook, waitFor } from "@testing-library/react";
-import * as model from "../PipelineConsoleModel.js";
-import { useStepsPoller } from "./use-steps-poller.js";
+import * as model from "../PipelineConsoleModel.tsx";
+import { useStepsPoller } from "./use-steps-poller.ts";
 
 const mockSteps = [
   {

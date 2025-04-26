@@ -1,1 +1,1 @@
-export { MultiPipelineGraph } from "./MultiPipelineGraph.js";
+export { MultiPipelineGraph } from "./MultiPipelineGraph.tsx";

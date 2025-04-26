@@ -1,5 +1,5 @@
-export { PipelineGraph } from "./PipelineGraph.js";
-export { Result } from "./PipelineGraphModel.js";
+export { PipelineGraph } from "./PipelineGraph.tsx";
+export { Result } from "./PipelineGraphModel.tsx";
 
 export type {
   CompositeConnection,
@@ -8,4 +8,4 @@ export type {
   LayoutInfo,
   StageInfo,
   NodeInfo,
-} from "./PipelineGraphModel.js";
+} from "./PipelineGraphModel.tsx";

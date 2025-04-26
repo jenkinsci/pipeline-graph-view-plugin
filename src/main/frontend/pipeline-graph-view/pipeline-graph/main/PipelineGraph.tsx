@@ -7,17 +7,17 @@ import {
   LayoutInfo,
   NodeColumn,
   StageInfo,
-} from "./PipelineGraphModel.js";
-import { layoutGraph } from "./PipelineGraphLayout.js";
-import { Result } from "./PipelineGraphModel.js";
-import { Node, SelectionHighlight } from "./support/nodes.js";
+} from "./PipelineGraphModel.tsx";
+import { layoutGraph } from "./PipelineGraphLayout.ts";
+import { Result } from "./PipelineGraphModel.tsx";
+import { Node, SelectionHighlight } from "./support/nodes.tsx";
 import {
   BigLabel,
   SmallLabel,
   SequentialContainerLabel,
-} from "./support/labels.js";
-import { GraphConnections } from "./support/connections.js";
-import useRunPoller from "../../../common/tree-api.js";
+} from "./support/labels.tsx";
+import { GraphConnections } from "./support/connections.tsx";
+import useRunPoller from "../../../common/tree-api.ts";
 
 export function PipelineGraph(props: Props) {
   const {

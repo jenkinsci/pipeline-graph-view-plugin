@@ -2,8 +2,8 @@
 
 import { vi } from "vitest";
 import React, { ReactElement } from "react";
-import ConsoleLogStream, { ConsoleLogStreamProps } from "./ConsoleLogStream.js";
-import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel.js";
+import ConsoleLogStream, { ConsoleLogStreamProps } from "./ConsoleLogStream.tsx";
+import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel.tsx";
 import { render } from "@testing-library/react";
 import { VirtuosoMockContext } from "react-virtuoso";
 

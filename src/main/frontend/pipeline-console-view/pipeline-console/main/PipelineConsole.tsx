@@ -29,15 +29,12 @@ export default function PipelineConsole() {
     <div>
       <div
         style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "25vh",
+          position: "relative",
           background: "var(--button-background)",
-          paddingTop: "30px",
           border: "var(--jenkins-border)",
           marginBottom: "var(--section-padding)",
           borderRadius: "var(--form-input-border-radius)",
+          overflow: "hidden",
         }}
       >
         <PipelineGraph stages={stages} currentRunPath={currentRunPath} />

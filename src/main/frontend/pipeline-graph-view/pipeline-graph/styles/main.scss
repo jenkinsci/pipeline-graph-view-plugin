@@ -3,18 +3,6 @@
 
 .PWGx-PipelineGraph-container {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  overflow-x: auto;
-
-  * {
-    box-sizing: border-box;
-  }
-
-  .PWGx-PipelineGraph {
-    --graph-connector-grey: #{variables.$graph-connector-grey};
-
-    margin-left: auto;
-    margin-right: auto;
-  }
+  min-height: 25vh;
 }

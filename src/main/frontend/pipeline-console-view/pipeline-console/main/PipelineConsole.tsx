@@ -33,13 +33,11 @@ export default function PipelineConsole() {
           alignItems: "center",
           justifyContent: "center",
           minHeight: "25vh",
-          background: "color-mix(in srgb, var(--text-color-secondary) 3%, transparent)",
-          // marginTop: "-130px",
+          background: "var(--button-background)",
           paddingTop: "30px",
-          marginInline: "calc(var(--section-padding) * -1)",
-          borderTop: "var(--jenkins-border)",
-          borderBottom: "var(--jenkins-border)",
+          border: "var(--jenkins-border)",
           marginBottom: "var(--section-padding)",
+          borderRadius: "var(--form-input-border-radius)",
         }}
       >
         <PipelineGraph stages={stages} currentRunPath={currentRunPath} />

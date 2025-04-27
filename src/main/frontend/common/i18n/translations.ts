@@ -75,7 +75,7 @@ const DEFAULT_MESSAGES: ResourceBundle = {
   "Util.month": "{0} mo",
   "Util.year": "{0} yr",
   startedAgo: "Started {0} ago",
-  noBuilds: "No builds found",
+  noBuilds: "No builds",
 };
 
 export function defaultTranslations(locale: string) {

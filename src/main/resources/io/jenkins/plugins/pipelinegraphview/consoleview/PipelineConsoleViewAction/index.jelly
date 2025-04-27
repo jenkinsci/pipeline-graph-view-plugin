@@ -4,7 +4,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns" xmlns:t="/lib/hudson">
     <l:layout title="${%Build log} [${it.buildDisplayName}]">
         <l:main-panel>
-            <link rel="stylesheet" href="${resURL}/plugin/pipeline-graph-view/js/style.css" type="text/css" />
+            <link rel="stylesheet" href="${rootURL}/plugin/pipeline-graph-view/js/style.css" type="text/css" />
             <j:out value="${h.generateConsoleAnnotationScriptAndStylesheet()}"/>
 
             <j:set var="controls">

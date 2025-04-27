@@ -5,7 +5,7 @@
          xmlns:t="/lib/hudson">
   <l:layout title="${%Graph} [${it.fullBuildDisplayName}]" type="one-column">
     <l:main-panel>
-      <link rel="stylesheet" href="${resURL}/plugin/pipeline-graph-view/js/style.css" type="text/css" />
+      <link rel="stylesheet" href="${rootURL}/plugin/pipeline-graph-view/js/style.css" type="text/css" />
 
       <j:set var="controls">
         <j:if test="${it.buildable}">

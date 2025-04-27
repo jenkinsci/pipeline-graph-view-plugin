@@ -3,6 +3,8 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
+  // TODO: remove hardcoded /jenkins/
+  base: "/jenkins/plugin/pipeline-graph-view/js/bundles/",
   build: {
     rollupOptions: {
       input: {

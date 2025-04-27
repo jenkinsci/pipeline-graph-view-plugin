@@ -11,7 +11,7 @@
     "build:dev": "vite build --mode development --watch",
     "lint": "tsc && prettier --check .",
     "lint:fix": "prettier --write .",
-    "test": "CI=true vitest && npm run lint",
+    "test": "vitest --watch=false --reporter default --reporter junit && npm run lint",
     "test:dev": "vitest --watch"
   },
   "repository": {

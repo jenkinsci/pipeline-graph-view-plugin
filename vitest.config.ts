@@ -7,7 +7,6 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: ["setupTests.ts"],
-    reporters: ["default", "junit"],
     outputFile: path.resolve(
       import.meta.dirname,
       "target/surefire-reports/vitest-junit.xml",

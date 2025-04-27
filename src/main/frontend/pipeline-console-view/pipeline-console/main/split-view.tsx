@@ -44,7 +44,10 @@ export default function SplitView(props: SplitViewNewProps) {
         ? e.clientY - getContainerOffset()
         : e.clientX - getContainerOffset();
 
-    const clampedSize = Math.max(100, Math.min(newSize, 1000)); // clamp between 100px and 1000px
+    const clampedSize = Math.max(
+      direction === "vertical" ? 100 : 200,
+      Math.min(newSize, 1500),
+    ); // clamp between 100px and 1000px
     setPanelSize(clampedSize);
 
     // Update context sizes

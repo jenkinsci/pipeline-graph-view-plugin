@@ -80,13 +80,13 @@ export const LayoutPreferencesProvider = ({
       loadFromLocalStorage(LS_KEYS.mainViewVisibility, MainViewVisibility.BOTH),
     );
   const [treeViewWidth, setTreeViewWidthState] = useState<number>(
-    loadFromLocalStorage(LS_KEYS.treeViewWidth, 250),
+    loadFromLocalStorage(LS_KEYS.treeViewWidth, 300),
   );
   const [stageViewWidth, setStageViewWidthState] = useState<number>(
-    loadFromLocalStorage(LS_KEYS.stageViewWidth, 800),
+    loadFromLocalStorage(LS_KEYS.stageViewWidth, 600),
   );
   const [stageViewHeight, setStageViewHeightState] = useState<number>(
-    loadFromLocalStorage(LS_KEYS.stageViewHeight, 600),
+    loadFromLocalStorage(LS_KEYS.stageViewHeight, 250),
   );
 
   // Save to localStorage

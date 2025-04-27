@@ -25,14 +25,7 @@
                         ${%Configure}
                     </a>
                 </l:hasPermission>
-                <l:overflowButton>
-                    <dd:item icon="symbol-terminal"
-                             text="${%View classic console}"
-                             href="../console" />
-                    <dd:item icon="symbol-document-text"
-                             text="${%View as plain text}"
-                             href="../consoleText" />
-                </l:overflowButton>
+                <div id="console-pipeline-overflow-root" />
             </j:set>
 
             <t:buildCaption controls="${controls}">

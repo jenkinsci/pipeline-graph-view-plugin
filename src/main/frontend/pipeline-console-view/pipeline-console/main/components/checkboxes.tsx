@@ -24,14 +24,7 @@ export default function VisibilitySelect() {
   };
 
   return (
-    <div
-      style={{
-        marginBottom: "1rem",
-        display: "flex",
-        alignItems: "center",
-        gap: "16px",
-      }}
-    >
+    <>
       {/* View Selector */}
       <div>
         <label style={{ marginRight: "8px" }}>Visible Views:</label>
@@ -53,6 +46,6 @@ export default function VisibilitySelect() {
           Show StageView on Top
         </label>
       </div>
-    </div>
+    </>
   );
 }

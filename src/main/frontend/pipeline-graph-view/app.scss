@@ -52,13 +52,14 @@
   display: flex;
   z-index: 1;
   backdrop-filter: blur(20px);
-  border-radius: var(--form-input-border-radius);
+  border-radius: 0.45rem;
   padding: 0.125rem;
 
   .jenkins-button {
     padding: 0;
     width: 1.75rem;
     min-height: 1.75rem;
+    border-radius: 0.4rem;
 
     svg {
       width: 1rem;

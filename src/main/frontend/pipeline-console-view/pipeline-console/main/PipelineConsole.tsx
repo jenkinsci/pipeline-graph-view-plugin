@@ -7,9 +7,11 @@ import "../../../pipeline-graph-view/pipeline-graph/styles/main.scss";
 import SplitView from "./split-view";
 import { useLayoutPreferences } from "./providers/user-preference-provider";
 import VisibilitySelect from "./components/checkboxes";
-
-const DataTreeView = React.lazy(() => import("./DataTreeView"));
-const StageView = React.lazy(() => import("./StageView"));
+import Dropdown from "../../../common/components/dropdown";
+import { CONSOLE, DOCUMENT } from "./symbols";
+import DropdownPortal from "../../../common/components/dropdown-portal";
+import StageView from "./StageView";
+import DataTreeView from "./DataTreeView";
 
 export default function PipelineConsole() {
   const rootElement = document.getElementById("console-pipeline-root");
@@ -30,9 +32,25 @@ export default function PipelineConsole() {
 
   return (
     <>
-      <div>
-        <VisibilitySelect />
-      </div>
+      <DropdownPortal>
+        <Dropdown
+          items={[
+            <VisibilitySelect />,
+            "separator",
+            {
+              text: "View as plain text",
+              icon: DOCUMENT,
+              href: `../consoleText`,
+            },
+            {
+              text: "View classic console",
+              icon: CONSOLE,
+              href: `../console`,
+            },
+          ]}
+        />
+      </DropdownPortal>
+
       <SplitView
         direction={stageViewPosition === "top" ? "vertical" : "horizontal"}
         storageKey="stage"

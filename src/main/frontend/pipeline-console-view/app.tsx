@@ -14,7 +14,7 @@ export default function App() {
     "en";
   return (
     <I18NProvider
-      bundles={[ResourceBundleName.messages, ResourceBundleName.run]}
+      bundles={[ResourceBundleName.messages, ResourceBundleName.timing]}
       locale={locale}
     >
       <FilterProvider>

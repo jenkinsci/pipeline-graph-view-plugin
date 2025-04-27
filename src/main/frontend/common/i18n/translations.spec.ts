@@ -41,12 +41,14 @@ describe("Translations", () => {
         "One.more.property": "with {one} more value",
       });
       const translations = await getTranslations("en", [
-        ResourceBundleName.run,
         ResourceBundleName.messages,
+        ResourceBundleName.timing,
       ]);
 
       expect(getResourceBundle).toHaveBeenCalledWith("hudson.Messages");
-      expect(getResourceBundle).toHaveBeenCalledWith("hudson.model.Run.index");
+      expect(getResourceBundle).toHaveBeenCalledWith(
+        "io.jenkins.plugins.pipelinegraphview.Messages",
+      );
       expect(translations.get("A.property")()).toEqual("a value");
       expect(translations.get("Another.property")()).toEqual(
         "with another value",
@@ -60,7 +62,7 @@ describe("Translations", () => {
       (getResourceBundle as Mock).mockResolvedValue(undefined);
 
       const translations = await getTranslations("en", [
-        ResourceBundleName.run,
+        ResourceBundleName.messages,
       ]);
 
       expect(translations.get("Util.second")({ 0: 5 })).toEqual("5 sec");

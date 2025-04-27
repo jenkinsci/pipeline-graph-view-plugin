@@ -5,7 +5,6 @@ import {
   LayoutInfo,
   NodeColumn,
   NodeInfo,
-  Result,
   StageInfo,
 } from "../PipelineGraphModel";
 import StatusIcon, {
@@ -21,12 +20,13 @@ type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should
 interface NodeProps {
   node: NodeInfo;
   collapsed?: boolean;
+  handleStageSelect: (nodeId: string) => void;
 }
 
 /**
  * Generate the SVG elements to represent a node.
  */
-export function Node({ node, collapsed }: NodeProps) {
+export function Node({ node, collapsed, handleStageSelect }: NodeProps) {
   const key = node.key;
 
   if (node.isPlaceholder) {
@@ -141,7 +141,13 @@ export function Node({ node, collapsed }: NodeProps) {
       <div {...groupProps}>
         {groupChildren}
         {clickable && (
-          <a href={document.head.dataset.rooturl + url}>
+          <a
+            href={document.head.dataset.rooturl + url}
+            onClick={(e) => {
+              e.preventDefault();
+              handleStageSelect(String(node.stage.id));
+            }}
+          >
             <span className="jenkins-visually-hidden">{title}</span>
           </a>
         )}

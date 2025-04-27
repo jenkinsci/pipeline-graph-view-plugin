@@ -3,6 +3,7 @@ import React, { lazy } from "react";
 import { I18NProvider } from "../common/i18n/i18n-provider";
 import { FilterProvider } from "./pipeline-console/main/providers/filter-provider";
 import { ResourceBundleName } from "../common/i18n/translations";
+import { LayoutPreferencesProvider } from "./pipeline-console/main/providers/user-preference-provider";
 
 const PipelineConsole = lazy(
   () => import("./pipeline-console/main/PipelineConsole"),
@@ -18,7 +19,9 @@ export default function App() {
       locale={locale}
     >
       <FilterProvider>
-        <PipelineConsole />
+        <LayoutPreferencesProvider>
+          <PipelineConsole />
+        </LayoutPreferencesProvider>
       </FilterProvider>
     </I18NProvider>
   );

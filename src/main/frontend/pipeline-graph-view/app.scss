@@ -47,16 +47,18 @@
 
 .pgw-zoom-controls {
   position: absolute;
-  right: 1rem;
-  bottom: 1rem;
+  right: 0.75rem;
+  bottom: 0.75rem;
   display: flex;
-  gap: 0.5rem;
   z-index: 1;
+  backdrop-filter: blur(20px);
+  border-radius: var(--form-input-border-radius);
+  padding: 0.125rem;
 
   .jenkins-button {
     padding: 0;
-    width: 1.25rem;
-    min-height: 1.25rem;
+    width: 1.75rem;
+    min-height: 1.75rem;
 
     svg {
       width: 1rem;

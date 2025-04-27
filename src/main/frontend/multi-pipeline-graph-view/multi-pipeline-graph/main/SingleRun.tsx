@@ -29,13 +29,13 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
           </span>
         </a>
       </div>
-      <PipelineGraph
-        stages={stages}
-        setStages={setStages}
-        currentRunPath={currentJobPath + run.id + "/"}
-        layout={layout}
-        collapsed={true}
-      />
+      {/*<PipelineGraph*/}
+      {/*  stages={stages}*/}
+      {/*  setStages={setStages}*/}
+      {/*  currentRunPath={currentJobPath + run.id + "/"}*/}
+      {/*  layout={layout}*/}
+      {/*  collapsed={true}*/}
+      {/*/>*/}
     </div>
   );
 }

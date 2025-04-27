@@ -11,12 +11,12 @@ export default function App() {
 
   return (
     <div>
-      <PipelineGraph
-        stages={[]}
-        collapsed={false}
-        currentRunPath={currentRunPath}
-        previousRunPath={previousRunPath}
-      />
+      {/*<PipelineGraph*/}
+      {/*  stages={[]}*/}
+      {/*  collapsed={false}*/}
+      {/*  currentRunPath={currentRunPath}*/}
+      {/*  previousRunPath={previousRunPath}*/}
+      {/*/>*/}
     </div>
   );
 }

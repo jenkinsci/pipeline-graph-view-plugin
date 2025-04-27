@@ -1,3 +1,9 @@
+.testthing {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: var(--section-padding);
+}
+
 .ansi-fg-0 {
   color: var(--black, #333);
 }

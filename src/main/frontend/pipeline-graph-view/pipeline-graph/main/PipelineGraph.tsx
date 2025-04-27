@@ -17,25 +17,15 @@ import {
   SequentialContainerLabel,
 } from "./support/labels";
 import { GraphConnections } from "./support/connections";
-import useRunPoller from "../../../common/tree-api";
-import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import {
+  TransformWrapper,
+  TransformComponent,
+  useControls,
+} from "react-zoom-pan-pinch";
 import Tooltip from "../../../common/components/tooltip";
 
 export function PipelineGraph(props: Props) {
-  const {
-    stages = [],
-    layout,
-    setStages,
-    selectedStage,
-    currentRunPath,
-    previousRunPath,
-    collapsed,
-  } = props;
-
-  const { run } = useRunPoller({
-    currentRunPath: currentRunPath,
-    previousRunPath: previousRunPath,
-  });
+  const { stages = [], layout, selectedStage, collapsed } = props;
 
   const [nodeColumns, setNodeColumns] = useState<NodeColumn[]>([]);
   const [connections, setConnections] = useState<CompositeConnection[]>([]);
@@ -53,14 +43,8 @@ export function PipelineGraph(props: Props) {
   >(selectedStage);
 
   useEffect(() => {
-    if (run) {
-      updateLayout(run.stages);
-
-      if (setStages) {
-        setStages(run.stages);
-      }
-    }
-  }, [run]);
+    updateLayout(stages);
+  }, [stages]);
 
   useEffect(() => {
     let needsLayout = false;
@@ -131,123 +115,132 @@ export function PipelineGraph(props: Props) {
 
   return (
     <TransformWrapper>
-      {({ zoomIn, zoomOut, resetTransform }) => (
-        <>
-          <div className="pgw-zoom-controls">
-            <Tooltip content={"Zoom in"}>
-              <button
-                className={"jenkins-button jenkins-button--tertiary"}
-                onClick={() => zoomIn()}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                  <path
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="32"
-                    d="M256 112v288M400 256H112"
-                  />
-                </svg>
-              </button>
-            </Tooltip>
-            <Tooltip content={"Zoom out"}>
-              <button
-                className={"jenkins-button jenkins-button--tertiary"}
-                onClick={() => zoomOut()}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                  <path
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="32"
-                    d="M400 256H112"
-                  />
-                </svg>
-              </button>
-            </Tooltip>
-            <Tooltip content={"Reset"}>
-              <button
-                className={"jenkins-button jenkins-button--tertiary"}
-                onClick={() => resetTransform()}
-              >
-                <svg className="ionicon" viewBox="0 0 512 512">
-                  <path
-                    d="M320 146s24.36-12-64-12a160 160 0 10160 160"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeMiterlimit="10"
-                    strokeWidth="32"
-                  />
-                  <path
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="32"
-                    d="M256 58l80 80-80 80"
-                  />
-                </svg>
-              </button>
-            </Tooltip>
+      <ZoomControls />
+
+      <TransformComponent wrapperStyle={{ width: "unset" }}>
+        <div className="PWGx-PipelineGraph-container">
+          <div style={outerDivStyle} className="PWGx-PipelineGraph">
+            <svg width={measuredWidth} height={measuredHeight}>
+              <GraphConnections
+                connections={connections}
+                layout={layoutState}
+              />
+
+              <SelectionHighlight
+                layout={layoutState}
+                nodeColumns={nodeColumns}
+                isStageSelected={stageIsSelected}
+              />
+            </svg>
+
+            {nodes.map((node) => (
+              <Node
+                key={node.id}
+                node={node}
+                collapsed={collapsed}
+                handleStageSelect={props.handleStageSelect}
+              />
+            ))}
+
+            {bigLabels.map((label) => (
+              <BigLabel
+                key={label.key}
+                details={label}
+                layout={layoutState}
+                measuredHeight={measuredHeight}
+                selectedStage={currentSelectedStage}
+                isStageSelected={stageIsSelected}
+              />
+            ))}
+
+            {smallLabels.map((label) => (
+              <SmallLabel
+                key={label.key}
+                details={label}
+                layout={layoutState}
+                isStageSelected={stageIsSelected}
+              />
+            ))}
+
+            {branchLabels.map((label) => (
+              <SequentialContainerLabel
+                key={label.key}
+                details={label}
+                layout={layoutState}
+              />
+            ))}
           </div>
-
-          <TransformComponent wrapperStyle={{ width: "unset" }}>
-            <div className="PWGx-PipelineGraph-container">
-              <div style={outerDivStyle} className="PWGx-PipelineGraph">
-                <svg width={measuredWidth} height={measuredHeight}>
-                  <GraphConnections
-                    connections={connections}
-                    layout={layoutState}
-                  />
-
-                  <SelectionHighlight
-                    layout={layoutState}
-                    nodeColumns={nodeColumns}
-                    isStageSelected={stageIsSelected}
-                  />
-                </svg>
-
-                {nodes.map((node) => (
-                  <Node key={node.id} node={node} collapsed={collapsed} />
-                ))}
-
-                {bigLabels.map((label) => (
-                  <BigLabel
-                    key={label.key}
-                    details={label}
-                    layout={layoutState}
-                    measuredHeight={measuredHeight}
-                    selectedStage={currentSelectedStage}
-                    isStageSelected={stageIsSelected}
-                  />
-                ))}
-
-                {smallLabels.map((label) => (
-                  <SmallLabel
-                    key={label.key}
-                    details={label}
-                    layout={layoutState}
-                    isStageSelected={stageIsSelected}
-                  />
-                ))}
-
-                {branchLabels.map((label) => (
-                  <SequentialContainerLabel
-                    key={label.key}
-                    details={label}
-                    layout={layoutState}
-                  />
-                ))}
-              </div>
-            </div>
-          </TransformComponent>
-        </>
-      )}
+        </div>
+      </TransformComponent>
     </TransformWrapper>
+  );
+}
+
+function ZoomControls() {
+  const { zoomIn, zoomOut, resetTransform } = useControls();
+
+  return (
+    <div className="pgw-zoom-controls">
+      <Tooltip content={"Zoom in"}>
+        <button
+          className={"jenkins-button jenkins-button--tertiary"}
+          onClick={() => zoomIn()}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <path
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="32"
+              d="M256 112v288M400 256H112"
+            />
+          </svg>
+        </button>
+      </Tooltip>
+      <Tooltip content={"Zoom out"}>
+        <button
+          className={"jenkins-button jenkins-button--tertiary"}
+          onClick={() => zoomOut()}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <path
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="32"
+              d="M400 256H112"
+            />
+          </svg>
+        </button>
+      </Tooltip>
+      <Tooltip content={"Reset"}>
+        <button
+          className={"jenkins-button jenkins-button--tertiary"}
+          onClick={() => resetTransform()}
+        >
+          <svg className="ionicon" viewBox="0 0 512 512">
+            <path
+              d="M320 146s24.36-12-64-12a160 160 0 10160 160"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeMiterlimit="10"
+              strokeWidth="32"
+            />
+            <path
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="32"
+              d="M256 58l80 80-80 80"
+            />
+          </svg>
+        </button>
+      </Tooltip>
+    </div>
   );
 }
 
@@ -256,13 +249,6 @@ interface Props {
   layout?: Partial<LayoutInfo>;
   setStages?: (stages: Array<StageInfo>) => void;
   selectedStage?: StageInfo;
-  /**
-   * Path of the current run
-   */
-  currentRunPath: string;
-  /**
-   * Optional path of the previous run
-   */
-  previousRunPath?: string;
   collapsed?: boolean;
+  handleStageSelect: (nodeId: string) => void;
 }

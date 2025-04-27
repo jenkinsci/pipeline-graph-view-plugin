@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { RunInfo } from "./MultiPipelineGraphModel";
 import startPollingRunsStatus from "./support/startPollingRunsStatus";
 import SingleRun from "./SingleRun";
+import { I18NContext } from "../../../common/i18n/i18n-provider";
 
 export const MultiPipelineGraph = () => {
   const [runs, setRuns] = useState<Array<RunInfo>>([]);
@@ -37,11 +38,15 @@ export const MultiPipelineGraph = () => {
     {},
   );
 
+  const translations = useContext(I18NContext);
+
   return (
     <>
       {Object.keys(groupedRuns).length === 0 ? (
         <div className="pgv-stages__group">
-            <div className="pgv-stages__heading">No builds found</div>
+          <div className="pgv-stages__heading">
+            {translations.get("noBuilds")()}
+          </div>
         </div>
       ) : (
         Object.entries(groupedRuns).map(([date, runsOnDate]) => (

@@ -9,10 +9,10 @@
     "mvntest": "npm test",
     "build": "vite build --mode production",
     "build:dev": "vite build --mode development --watch",
-    "test": "CI=true vitest",
-    "posttest": "prettier --check .",
-    "vitest": "vitest",
-    "prettier": "prettier --write ."
+    "lint": "tsc && prettier --check .",
+    "lint:fix": "prettier --write .",
+    "test": "CI=true vitest && npm run lint",
+    "test:dev": "vitest --watch"
   },
   "repository": {
     "type": "git",
@@ -43,7 +43,6 @@
     "sass-embedded": "^1.87.0",
     "typescript": "^5.8.3",
     "vite": "^6.3.3",
-    "vite-plugin-checker": "^0.9.1",
     "vite-plugin-css-injected-by-js": "^3.5.2",
     "vitest": "^3.1.2"
   }

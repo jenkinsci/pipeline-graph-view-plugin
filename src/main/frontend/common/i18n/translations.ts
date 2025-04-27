@@ -40,8 +40,8 @@ export function messageFormat(locale: string) {
 }
 
 export enum ResourceBundleName {
-  messages = "hudson.Messages",
-  run = "hudson.model.Run.index",
+  messages = "io.jenkins.plugins.pipelinegraphview.Messages",
+  timing = "hudson.Messages",
 }
 
 export async function getTranslations(
@@ -75,6 +75,7 @@ const DEFAULT_MESSAGES: ResourceBundle = {
   "Util.month": "{0} mo",
   "Util.year": "{0} yr",
   startedAgo: "Started {0} ago",
+  noBuilds: "No builds found",
 };
 
 export function defaultTranslations(locale: string) {

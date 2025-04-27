@@ -1,6 +1,6 @@
 import MessageFormat, { MessageFunction } from "@messageformat/core";
-import { getResourceBundle } from "../RestClient";
-import { choiceFormatter } from "./choice-formatter";
+import { getResourceBundle } from "../RestClient.tsx";
+import { choiceFormatter } from "./choice-formatter.ts";
 
 export interface ResourceBundle {
   [key: string]: string;
@@ -22,7 +22,7 @@ export class Translations {
     if (message != null) {
       return message;
     }
-    if (!process.env.JEST_WORKER_ID) {
+    if (process.env.NODE_ENV !== "test") {
       console.debug(`Translation for ${key} not found, using fallback`);
     }
     return (params) => {

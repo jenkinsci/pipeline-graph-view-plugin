@@ -1,4 +1,7 @@
-import { getRunStatusFromPath, RunStatus } from "../../../../common/RestClient";
+import {
+  getRunStatusFromPath,
+  RunStatus,
+} from "../../../../common/RestClient.tsx";
 /**
  * Starts polling the server to retrieve pipeline status.
  * Will only stop once the run is finished.

@@ -1,4 +1,4 @@
-import { PipelineGraph } from "./pipeline-graph/main";
+import { PipelineGraph } from "./pipeline-graph/main/PipelineGraph.tsx";
 
 import "./app.scss";
 import "./pipeline-graph/styles/main.scss";

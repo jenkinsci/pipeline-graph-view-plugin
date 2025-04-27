@@ -1,14 +1,16 @@
-jest.mock("../RestClient", () => ({
-  getResourceBundle: jest.fn(),
+import { Mock, vi } from "vitest";
+
+vi.mock("../RestClient.tsx", () => ({
+  getResourceBundle: vi.fn(),
 }));
 
-import { getResourceBundle } from "../RestClient";
+import { getResourceBundle } from "../RestClient.tsx";
 import {
   getTranslations,
   messageFormat,
   ResourceBundleName,
   Translations,
-} from "./translations";
+} from "./translations.ts";
 
 describe("Translations", () => {
   describe("Get translation", () => {
@@ -33,7 +35,7 @@ describe("Translations", () => {
 
   describe("Get Translations", () => {
     it("should compile found resource bundle", async () => {
-      (getResourceBundle as jest.Mock).mockResolvedValue({
+      (getResourceBundle as Mock).mockResolvedValue({
         "A.property": "a value",
         "Another.property": "with another value",
         "One.more.property": "with {one} more value",
@@ -57,7 +59,7 @@ describe("Translations", () => {
     });
 
     it("should use the default messages if undefined returned", async () => {
-      (getResourceBundle as jest.Mock).mockResolvedValue(undefined);
+      (getResourceBundle as Mock).mockResolvedValue(undefined);
 
       const translations = await getTranslations("en", [
         ResourceBundleName.messages,

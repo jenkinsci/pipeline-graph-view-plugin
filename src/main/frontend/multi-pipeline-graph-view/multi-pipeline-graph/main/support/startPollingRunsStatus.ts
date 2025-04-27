@@ -1,4 +1,4 @@
-import { RunInfo } from "../MultiPipelineGraphModel";
+import { RunInfo } from "../MultiPipelineGraphModel.ts";
 
 /**
  * Starts polling the server to retrieve pipeline status.

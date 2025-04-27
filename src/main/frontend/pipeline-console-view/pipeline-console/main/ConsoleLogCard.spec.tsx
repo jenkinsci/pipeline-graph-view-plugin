@@ -11,7 +11,7 @@ import {
 } from "./PipelineConsoleModel.tsx";
 import { render } from "@testing-library/react";
 
-vi.mock("./ConsoleLogStream", () => {
+vi.mock("./ConsoleLogStream.tsx", () => {
   return vi.fn((props: ConsoleLogStreamProps) => {
     return (
       <div>

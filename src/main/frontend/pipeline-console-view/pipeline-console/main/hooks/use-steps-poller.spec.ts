@@ -25,13 +25,13 @@ const mockStages = [
   { id: "stage-2", name: "Stage 2", children: [] },
 ];
 
-vi.mock("../../../../common/tree-api", () => ({
+vi.mock("../../../../common/tree-api.ts", () => ({
   __esModule: true,
   default: vi.fn(() => ({ run: { stages: mockStages, complete: false } })),
 }));
 
-vi.mock("../PipelineConsoleModel", async () => ({
-  ...(await vi.importActual("../PipelineConsoleModel")),
+vi.mock("../PipelineConsoleModel.tsx", async () => ({
+  ...(await vi.importActual("../PipelineConsoleModel.tsx")),
   getRunSteps: vi.fn(),
   getConsoleTextOffset: vi.fn().mockResolvedValue({
     text: "log line",

@@ -1,6 +1,6 @@
 import { Mock, vi } from "vitest";
 
-vi.mock("../RestClient", () => ({
+vi.mock("../RestClient.tsx", () => ({
   getResourceBundle: vi.fn(),
 }));
 

@@ -33,11 +33,7 @@ export function TooltipLabel(props: TooltipLabelProps) {
   if (typeof result === "string") {
     return (
       <>
-        <Tooltip
-          content={result as string}
-          interactive={true}
-          followCursor={true}
-        >
+        <Tooltip content={result as string} interactive followCursor>
           {props.children}
         </Tooltip>
       </>
@@ -59,7 +55,7 @@ export function TooltipLabel(props: TooltipLabelProps) {
 
   return (
     <>
-      <Tooltip content={table} interactive={true}>
+      <Tooltip content={table} interactive>
         {props.children}
       </Tooltip>
     </>

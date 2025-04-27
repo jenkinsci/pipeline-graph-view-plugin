@@ -7,5 +7,6 @@
 !/package.json
 !/tsconfig.json
 !/.prettierrc.json
+!/eslint.config.js
 !/vite.config.ts
 !/vitest.config.ts

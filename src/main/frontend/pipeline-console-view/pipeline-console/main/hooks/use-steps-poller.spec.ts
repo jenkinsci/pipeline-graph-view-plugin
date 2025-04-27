@@ -117,10 +117,10 @@ it("expands and collapses step when toggled", async () => {
 
   await waitFor(() => expect(result.current.expandedSteps).toContain("step-2"));
 
-  act(() => result.current.handleStepToggle("step-2"));
+  act(() => result.current.onStepToggle("step-2"));
   expect(result.current.expandedSteps).not.toContain("step-2");
 
-  act(() => result.current.handleStepToggle("step-2"));
+  act(() => result.current.onStepToggle("step-2"));
   expect(result.current.expandedSteps).toContain("step-2");
 
   unmount();

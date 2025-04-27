@@ -141,7 +141,7 @@ export function SmallLabel({
 
   // These are about layout more than appearance, so they're inline
   const style = {
-    top: top,
+    top,
     left: x,
     position: "absolute",
     width: smallLabelWidth,

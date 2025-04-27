@@ -34,7 +34,7 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
         setStages={setStages}
         currentRunPath={currentJobPath + run.id + "/"}
         layout={layout}
-        collapsed={true}
+        collapsed
       />
     </div>
   );

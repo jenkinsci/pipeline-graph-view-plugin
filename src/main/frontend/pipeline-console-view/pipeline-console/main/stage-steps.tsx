@@ -9,9 +9,9 @@ export default function StageSteps({
   stage,
   stepBuffers,
   steps,
-  handleStepToggle,
+  onStepToggle,
   expandedSteps,
-  handleMoreConsoleClick,
+  onMoreConsoleClick,
 }: StageStepsProps) {
   if (steps.length === 0) {
     return null;
@@ -34,9 +34,9 @@ export default function StageSteps({
                 endByte: -1,
               } as StepLogBufferInfo)
             }
-            handleStepToggle={handleStepToggle}
+            onStepToggle={onStepToggle}
             isExpanded={expandedSteps.includes(stepItemData.id)}
-            handleMoreConsoleClick={handleMoreConsoleClick}
+            onMoreConsoleClick={onMoreConsoleClick}
             key={`step-console-card-${stepItemData.id}`}
           />
         );
@@ -51,6 +51,6 @@ interface StageStepsProps {
   steps: Array<StepInfo>;
   stepBuffers: Map<string, StepLogBufferInfo>;
   expandedSteps: string[];
-  handleStepToggle: (nodeId: string) => void;
-  handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
+  onStepToggle: (nodeId: string) => void;
+  onMoreConsoleClick: (nodeId: string, startByte: number) => void;
 }

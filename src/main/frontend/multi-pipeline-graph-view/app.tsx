@@ -1,5 +1,4 @@
-import React from "react";
-import { FunctionComponent } from "react";
+import React, { FunctionComponent } from "react";
 
 import { MultiPipelineGraph } from "./multi-pipeline-graph/main/index.ts";
 

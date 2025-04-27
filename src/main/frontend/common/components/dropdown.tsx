@@ -40,9 +40,9 @@ export default function Dropdown({ items, disabled }: DropdownProps) {
           onClick={visible ? hide : show}
         >
           <div className="jenkins-overflow-button__ellipsis">
-            <span></span>
-            <span></span>
-            <span></span>
+            <span />
+            <span />
+            <span />
           </div>
         </button>
       </Tippy>

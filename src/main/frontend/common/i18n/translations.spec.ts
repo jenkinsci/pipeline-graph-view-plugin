@@ -1,9 +1,5 @@
 import { Mock, vi } from "vitest";
 
-vi.mock("../RestClient.tsx", () => ({
-  getResourceBundle: vi.fn(),
-}));
-
 import { getResourceBundle } from "../RestClient.tsx";
 import {
   getTranslations,
@@ -11,6 +7,10 @@ import {
   ResourceBundleName,
   Translations,
 } from "./translations.ts";
+
+vi.mock("../RestClient.tsx", () => ({
+  getResourceBundle: vi.fn(),
+}));
 
 describe("Translations", () => {
   describe("Get translation", () => {

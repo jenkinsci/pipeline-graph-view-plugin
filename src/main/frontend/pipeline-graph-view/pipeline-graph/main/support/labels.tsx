@@ -6,6 +6,7 @@ import { NodeLabelInfo, LayoutInfo, StageInfo } from "../PipelineGraphModel";
 import { sequentialStagesLabelOffset } from "../PipelineGraphLayout";
 
 import { TooltipLabel } from "./convertLabelToTooltip";
+import { CSSProperties } from "react";
 
 interface RenderBigLabelProps {
   details: NodeLabelInfo;
@@ -55,7 +56,7 @@ export function BigLabel({
   const labelOffsetH = Math.floor(labelWidth / -2);
 
   // These are about layout more than appearance, so they should probably remain inline
-  const bigLabelStyle = {
+  const bigLabelStyle: CSSProperties = {
     position: "absolute",
     width: labelWidth,
     maxHeight: labelHeight + "px",
@@ -67,7 +68,7 @@ export function BigLabel({
   const bottom = measuredHeight - details.y + labelOffsetV;
 
   // These are about layout more than appearance, so they're inline
-  const style = {
+  const style: CSSProperties = {
     ...bigLabelStyle,
     bottom: bottom + "px",
     left: x + "px",
@@ -136,7 +137,7 @@ export function SmallLabel({
   const top = details.y + smallLabelOffsetV;
 
   // These are about layout more than appearance, so they're inline
-  const style = {
+  const style: CSSProperties = {
     top: top,
     left: x,
     position: "absolute",

@@ -57,17 +57,7 @@ export default function PipelineConsole() {
       >
         {(mainViewVisibility === "both" ||
           mainViewVisibility === "stageOnly") && (
-          <div
-            style={{
-              position: "relative",
-              background: "var(--button-background)",
-              border: "var(--jenkins-border)",
-              marginBottom: "var(--section-padding)",
-              borderRadius: "var(--form-input-border-radius)",
-              overflow: "hidden",
-              height: "100%",
-            }}
-          >
+          <div className={"pgv-graph-view-thing"}>
             <PipelineGraph
               stages={stages}
               handleStageSelect={handleStageSelect}

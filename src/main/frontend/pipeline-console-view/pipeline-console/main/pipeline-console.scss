@@ -4,6 +4,16 @@
   gap: var(--section-padding);
 }
 
+.pgv-graph-view-thing {
+  position: relative;
+  background: color-mix(in srgb, var(--button-background) 50%, transparent);
+  border: var(--jenkins-border);
+  margin-bottom: var(--section-padding);
+  border-radius: var(--form-input-border-radius);
+  overflow: hidden;
+  height: 100%;
+}
+
 .ansi-fg-0 {
   color: var(--black, #333);
 }

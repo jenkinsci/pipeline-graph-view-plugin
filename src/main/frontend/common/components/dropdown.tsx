@@ -1,6 +1,6 @@
 import Tippy, { TippyProps } from "@tippyjs/react";
 import React, { useState } from "react";
-import Tooltip from "./tooltip";
+import Tooltip from "./tooltip.tsx";
 
 /**
  * A customized (and customizable) implementation of Tippy dropdowns

@@ -72,7 +72,7 @@ On one terminal, start a development server that will not process frontend asset
 mvn hpi:run -Dskip.npm -P quick-build
 ```
 
-On another terminal, start a [webpack](https://webpack.js.org/) dev server:
+On another terminal, start a [vite](https://vite.dev/) build command that automatically rebuilds on code changes:
 ```sh
 npm run build:dev
 ```
@@ -96,7 +96,7 @@ Code style will be enforced by GitHub pull request checks.
 
 For frontend code we use [prettier](https://prettier.io/).
 
-You can automatically fix issues with `npm run prettier`
+You can automatically fix issues with `npm run lint:fix`
 
 For java code we use [spotless](https://github.com/diffplug/spotless).
 

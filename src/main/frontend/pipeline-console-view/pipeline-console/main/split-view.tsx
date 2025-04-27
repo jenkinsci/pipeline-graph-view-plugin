@@ -62,6 +62,26 @@ export default function SplitView(props: SplitViewNewProps) {
     }
   };
 
+  const handleDoubleClick = () => {
+    const resetSize = (() => {
+      if (storageKey === "tree") return 300;
+      if (storageKey === "stage") return isVertical ? 250 : 600;
+      return 300;
+    })();
+
+    setPanelSize(resetSize);
+
+    if (storageKey === "tree") {
+      setTreeViewWidth(resetSize);
+    } else if (storageKey === "stage") {
+      if (direction === "vertical") {
+        setStageViewHeight(resetSize);
+      } else {
+        setStageViewWidth(resetSize);
+      }
+    }
+  };
+
   const containerRef = useRef<HTMLDivElement>(null);
 
   const getContainerOffset = () => {
@@ -106,6 +126,7 @@ export default function SplitView(props: SplitViewNewProps) {
         <div
           ref={dividerRef}
           onMouseDown={startDragging}
+          onDoubleClick={handleDoubleClick}
           className={`pgv-split-view__divider ${
             direction === "vertical" ? "pgv-split-view__divider--vertical" : ""
           }`}

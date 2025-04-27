@@ -1,5 +1,5 @@
 import React from "react";
-import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/index.tsx";
+import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/index.ts";
 import "./stage-details.scss";
 import StageNodeLink from "./StageNodeLink.tsx";
 import StatusIcon, {

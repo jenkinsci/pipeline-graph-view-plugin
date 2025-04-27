@@ -13,7 +13,7 @@ import StatusIcon, {
 import Tooltip from "../../../../common/components/tooltip.tsx";
 import { Total } from "../../../../common/utils/timings.tsx";
 import "./nodes.scss";
-import { CounterNodeInfo } from "../PipelineGraphLayout.tsx";
+import { CounterNodeInfo } from "../PipelineGraphLayout.ts";
 
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck
 

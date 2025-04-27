@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { RunInfo } from "./MultiPipelineGraphModel.tsx";
+import { RunInfo } from "./MultiPipelineGraphModel.ts";
 import startPollingRunsStatus from "./support/startPollingRunsStatus.ts";
 import SingleRun from "./SingleRun.tsx";
 

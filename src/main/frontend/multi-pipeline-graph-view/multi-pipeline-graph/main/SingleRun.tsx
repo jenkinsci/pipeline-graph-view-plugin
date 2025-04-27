@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { RunInfo } from "./MultiPipelineGraphModel.tsx";
+import { RunInfo } from "./MultiPipelineGraphModel.ts";
 import {
   LayoutInfo,
   StageInfo,
-} from "../../../pipeline-graph-view/pipeline-graph/main/index.tsx";
+} from "../../../pipeline-graph-view/pipeline-graph/main/index.ts";
 import { PipelineGraph } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraph.tsx";
 import { defaultLayout } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import { time, Total } from "../../../common/utils/timings.tsx";

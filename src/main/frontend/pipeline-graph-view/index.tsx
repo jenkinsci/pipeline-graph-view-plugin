@@ -8,3 +8,5 @@ const root = ReactDOMClient.createRoot(rootElement);
 
 // Render App
 root.render(<App />);
+
+const felipe = "unused";

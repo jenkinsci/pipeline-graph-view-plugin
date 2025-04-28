@@ -25,6 +25,18 @@ export default function SplitView(props: SplitViewNewProps) {
     return 300; // fallback
   })();
 
+  useEffect(() => {
+    const newSize = (() => {
+      if (storageKey === "tree") return treeViewWidth;
+      if (storageKey === "stage") {
+        return direction === "vertical" ? stageViewHeight : stageViewWidth;
+      }
+      return 300;
+    })();
+
+    setPanelSize(newSize);
+  }, [direction, treeViewWidth, stageViewWidth, stageViewHeight, storageKey]);
+
   const [panelSize, setPanelSize] = useState<number>(initialSize);
 
   const dividerRef = useRef<HTMLDivElement>(null);

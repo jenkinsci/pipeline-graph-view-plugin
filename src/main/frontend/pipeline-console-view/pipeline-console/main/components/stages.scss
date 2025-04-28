@@ -1,0 +1,32 @@
+.pgv-graph-view-thing {
+  --card-background: color-mix(
+                  in srgb,
+                  var(--text-color-secondary) 4%,
+                  var(--background)
+  );
+  position: relative;
+  background: var(--card-background);
+  border: var(--jenkins-border);
+  margin-bottom: var(--section-padding);
+  border-radius: var(--form-input-border-radius);
+  overflow: hidden;
+  min-height: 100%;
+
+  &--left {
+    --additional-height: 0px;
+    position: sticky;
+    top: calc(var(--header-height) + var(--section-padding));
+    min-height: unset;
+    height: calc(((100vh + var(--section-padding) + min(var(--additional-height), var(--section-padding))) - (var(--header-height) + 46px + 64px)));
+  }
+
+  &__heading {
+    display: flex;
+    min-height: 40px;
+    align-items: center;
+    padding-left: 0.75rem;
+    font-weight: var(--font-bold-weight);
+    font-size: var(--font-size-sm);
+    color: var(--text-color-secondary);
+  }
+}

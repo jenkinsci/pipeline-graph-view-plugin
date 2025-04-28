@@ -4,7 +4,12 @@ import StageNodeLink from "./StageNodeLink.tsx";
 import StatusIcon, {
   resultToColor,
 } from "../../../common/components/status-icon.tsx";
-import { exact, Paused, Started, Total } from "../../../common/utils/timings.tsx";
+import {
+  exact,
+  Paused,
+  Started,
+  Total,
+} from "../../../common/utils/timings.tsx";
 import Dropdown from "../../../common/components/dropdown.tsx";
 import Tooltip from "../../../common/components/tooltip.tsx";
 import { DOCUMENT } from "./symbols.tsx";

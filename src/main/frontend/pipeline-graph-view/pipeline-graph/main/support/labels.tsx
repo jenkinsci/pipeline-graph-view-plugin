@@ -5,7 +5,11 @@ import { TooltipLabel } from "./convertLabelToTooltip.tsx";
 import { TruncatingLabel } from "./TruncatingLabel.tsx";
 import { CSSProperties } from "react";
 import { sequentialStagesLabelOffset } from "../PipelineGraphLayout.ts";
-import { LayoutInfo, NodeLabelInfo, StageInfo } from "../PipelineGraphModel.tsx";
+import {
+  LayoutInfo,
+  NodeLabelInfo,
+  StageInfo,
+} from "../PipelineGraphModel.tsx";
 
 interface RenderBigLabelProps {
   details: NodeLabelInfo;

@@ -1,7 +1,6 @@
 import React from "react";
 import "./pipeline-console.scss";
 import { useStepsPoller } from "./hooks/use-steps-poller.ts";
-import { PipelineGraph } from "../../../pipeline-graph-view/pipeline-graph/main/index.ts";
 import "../../../pipeline-graph-view/app.scss";
 import "../../../pipeline-graph-view/pipeline-graph/styles/main.scss";
 import SplitView from "./split-view.tsx";
@@ -12,6 +11,7 @@ import { CONSOLE, DOCUMENT } from "./symbols.tsx";
 import DropdownPortal from "../../../common/components/dropdown-portal.tsx";
 import StageView from "./StageView.tsx";
 import DataTreeView from "./DataTreeView.tsx";
+import Stages from "./components/stages.tsx";
 
 export default function PipelineConsole() {
   const rootElement = document.getElementById("console-pipeline-root");
@@ -57,13 +57,11 @@ export default function PipelineConsole() {
       >
         {(mainViewVisibility === "both" ||
           mainViewVisibility === "stageOnly") && (
-          <div className={"pgv-graph-view-thing"}>
-            <div className={"pgv-graph-view-thing__heading"}>Stage</div>
-            <PipelineGraph
-              stages={stages}
-              onStageSelect={handleStageSelect}
-            />
-          </div>
+          <Stages
+            stages={stages}
+            stageViewPosition={stageViewPosition}
+            handleStageSelect={handleStageSelect}
+          />
         )}
 
         <SplitView storageKey="tree">

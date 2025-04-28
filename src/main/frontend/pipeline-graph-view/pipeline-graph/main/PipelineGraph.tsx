@@ -6,7 +6,8 @@ import {
   NodeLabelInfo,
   LayoutInfo,
   NodeColumn,
-  StageInfo, Result 
+  StageInfo,
+  Result,
 } from "./PipelineGraphModel.tsx";
 import { layoutGraph } from "./PipelineGraphLayout";
 import { Node, SelectionHighlight } from "./support/nodes.tsx";

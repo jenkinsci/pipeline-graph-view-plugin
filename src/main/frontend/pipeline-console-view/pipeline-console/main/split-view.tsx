@@ -19,8 +19,9 @@ export default function SplitView(props: SplitViewNewProps) {
 
   const initialSize = (() => {
     if (storageKey === "tree") return treeViewWidth;
-    if (storageKey === "stage")
-      {return isVertical ? stageViewHeight : stageViewWidth;}
+    if (storageKey === "stage") {
+      return isVertical ? stageViewHeight : stageViewWidth;
+    }
     return 300; // fallback
   })();
 

@@ -14,7 +14,7 @@ import {
 } from "./translations.ts";
 
 export const I18NContext: Context<Translations> = createContext(
-  new Translations({}),
+  defaultTranslations("en"),
 );
 
 interface I18NProviderProps {

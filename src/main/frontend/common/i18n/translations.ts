@@ -2,19 +2,23 @@ import MessageFormat, { MessageFunction } from "@messageformat/core";
 import { getResourceBundle } from "../RestClient.tsx";
 import { choiceFormatter } from "./choice-formatter.ts";
 
-export interface ResourceBundle {
+export type ResourceBundle = {
   [key: string]: string;
-}
-
-interface Message {
-  [key: string]: MessageFunction<"string">;
-}
+};
 
 export class Translations {
-  private readonly mapping: Message;
+  private readonly mapping: Record<string, MessageFunction<"string">>;
 
-  constructor(mapping: Message) {
-    this.mapping = mapping;
+  constructor(messages: ResourceBundle, locale: string) {
+    const entries = Object.entries(messages);
+    if (entries.length === 0) {
+      this.mapping = {};
+    } else {
+      const fmt = messageFormat(locale);
+      this.mapping = Object.fromEntries(
+        entries.map(([key, value]) => [key, fmt.compile(value)]),
+      );
+    }
   }
 
   private get(key: string): MessageFunction<"string"> {
@@ -36,7 +40,7 @@ export class Translations {
   }
 }
 
-export function messageFormat(locale: string) {
+function messageFormat(locale: string) {
   return new MessageFormat(locale, {
     customFormatters: {
       choice: choiceFormatter,
@@ -61,13 +65,7 @@ export async function getTranslations(
     DEFAULT_MESSAGES,
   );
 
-  const fmt = messageFormat(locale);
-
-  const mapping: Message = Object.fromEntries(
-    Object.entries(messages).map(([key, value]) => [key, fmt.compile(value)]),
-  );
-
-  return new Translations(mapping);
+  return new Translations(messages, locale);
 }
 
 const DEFAULT_MESSAGES: ResourceBundle = {
@@ -83,14 +81,5 @@ const DEFAULT_MESSAGES: ResourceBundle = {
 };
 
 export function defaultTranslations(locale: string) {
-  const fmt = messageFormat(locale);
-
-  return new Translations(
-    Object.fromEntries(
-      Object.entries(DEFAULT_MESSAGES).map(([key, value]) => [
-        key,
-        fmt.compile(value),
-      ]),
-    ),
-  );
+  return new Translations(DEFAULT_MESSAGES, locale);
 }

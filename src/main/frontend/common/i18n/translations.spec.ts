@@ -3,7 +3,6 @@ import { Mock, vi } from "vitest";
 import { getResourceBundle } from "../RestClient.tsx";
 import {
   getTranslations,
-  messageFormat,
   ResourceBundleName,
   Translations,
 } from "./translations.ts";
@@ -14,11 +13,12 @@ vi.mock("../RestClient.tsx", () => ({
 
 describe("Translations", () => {
   describe("Format translation", () => {
-    const fmt = messageFormat("en");
-
-    const translations = new Translations({
-      "Property.name": fmt.compile("{arg} world"),
-    });
+    const translations = new Translations(
+      {
+        "Property.name": "{arg} world",
+      },
+      "en",
+    );
 
     it("should use known mapped message", () => {
       expect(translations.format("Property.name", { arg: "hello" })).toEqual(

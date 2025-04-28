@@ -98,9 +98,9 @@ mvn package -P quick-build
 
 Code style will be enforced by GitHub pull request checks.
 
-For frontend code we use [eslint](https://eslint.org) and [prettier](https://prettier.io/).
+For frontend code we use [prettier](https://prettier.io/) and [eslint](https://eslint.org).
 
-You can automatically fix issues with `npm run lint:fix`
+You can automatically fix issues with `npm run format && npm run eslint:fix`
 
 For java code we use [spotless](https://github.com/diffplug/spotless).
 

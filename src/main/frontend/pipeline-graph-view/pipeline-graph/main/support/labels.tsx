@@ -1,4 +1,4 @@
-import React from "react";
+import React, { CSSProperties } from "react";
 
 import { nodeStrokeWidth } from "../support/StatusIcons.tsx";
 import { TruncatingLabel } from "../support/TruncatingLabel.tsx";
@@ -9,7 +9,6 @@ import {
 } from "../PipelineGraphModel.tsx";
 import { sequentialStagesLabelOffset } from "../PipelineGraphLayout.ts";
 
-import { CSSProperties } from "react";
 import { TooltipLabel } from "./convertLabelToTooltip.tsx";
 
 interface RenderBigLabelProps {
@@ -142,7 +141,7 @@ export function SmallLabel({
 
   // These are about layout more than appearance, so they're inline
   const style: CSSProperties = {
-    top: top,
+    top,
     left: x,
     position: "absolute",
     width: smallLabelWidth,

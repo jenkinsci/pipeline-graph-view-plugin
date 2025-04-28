@@ -179,7 +179,7 @@ export function PipelineGraph(props: Props) {
 
 function ZoomControls() {
   const { zoomIn, zoomOut, resetTransform } = useControls();
-  const [disabledButtons, setDisabledButtons] = useState({
+  const [buttonState, setbuttonState] = useState({
     zoomIn: false,
     zoomOut: false,
     reset: true,
@@ -190,7 +190,7 @@ function ZoomControls() {
     const cantZoomOut = state.scale <= instance.props.minScale!;
     const cantReset = state.scale === 1;
 
-    setDisabledButtons({
+    setbuttonState({
       zoomIn: cantZoomIn,
       zoomOut: cantZoomOut,
       reset: cantReset,
@@ -203,7 +203,7 @@ function ZoomControls() {
         <button
           className={"jenkins-button jenkins-button--tertiary"}
           onClick={() => zoomIn()}
-          disabled={disabledButtons.zoomIn}
+          disabled={buttonState.zoomIn}
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
             <path
@@ -221,7 +221,7 @@ function ZoomControls() {
         <button
           className={"jenkins-button jenkins-button--tertiary"}
           onClick={() => zoomOut()}
-          disabled={disabledButtons.zoomOut}
+          disabled={buttonState.zoomOut}
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
             <path
@@ -239,7 +239,7 @@ function ZoomControls() {
         <button
           className={"jenkins-button jenkins-button--tertiary"}
           onClick={() => resetTransform()}
-          disabled={disabledButtons.reset}
+          disabled={buttonState.reset}
         >
           <svg className="ionicon" viewBox="0 0 512 512">
             <path

@@ -3,6 +3,12 @@ package io.jenkins.plugins.pipelinegraphview.consoleview;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.console.AnnotatedLargeText;
 import hudson.util.HttpResponses;
+import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsCard;
+import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
+import io.jenkins.plugins.pipelinegraphview.cards.items.SCMRunDetailsItems;
+import io.jenkins.plugins.pipelinegraphview.cards.items.TimingRunDetailsItems;
+import io.jenkins.plugins.pipelinegraphview.cards.items.UpstreamCauseRunDetailsItem;
+import io.jenkins.plugins.pipelinegraphview.cards.items.UserIdCauseRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.utils.AbstractPipelineViewAction;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStep;
@@ -10,7 +16,10 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
@@ -260,5 +269,25 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
             logger.debug("Using default value of '{}'", defaultValue);
             return defaultValue;
         }
+    }
+
+
+    @SuppressWarnings("unused")
+    public RunDetailsCard getRunDetailsCard() {
+
+        List<RunDetailsItem> runDetailsItems = new ArrayList<>();
+
+        runDetailsItems.addAll(SCMRunDetailsItems.get(run));
+
+        if (!runDetailsItems.isEmpty()) {
+            runDetailsItems.add(new RunDetailsItem.Builder().separator().build());
+        }
+
+        UpstreamCauseRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
+        UserIdCauseRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
+
+        runDetailsItems.addAll(TimingRunDetailsItems.get(run));
+
+        return new RunDetailsCard(runDetailsItems);
     }
 }

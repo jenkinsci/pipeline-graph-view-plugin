@@ -42,7 +42,32 @@
                 </j:if>
             </t:buildCaption>
 
-<!--            <p class="jenkins-page-description">${it.iconColor.description} ${it.startTimeString} ago in ${it.durationString}</p>-->
+            <div class="pgv-header">
+                <j:forEach var="card" items="${it.runDetailsCard.items}">
+                    <j:choose>
+                        <j:when test="${card.separator}">
+<!--                            <hr/>-->
+                        </j:when>
+                        <j:otherwise>
+                            <div>
+                                <l:icon src="${card.icon}"/>
+                                <j:choose>
+                                    <j:when test="${!empty(card.href)}">
+                                        <a
+                                                href="${card.href}"
+                                        >
+                                            ${card.text}
+                                        </a>
+                                    </j:when>
+                                    <j:otherwise>
+                                        ${card.text}
+                                    </j:otherwise>
+                                </j:choose>
+                            </div>
+                        </j:otherwise>
+                    </j:choose>
+                </j:forEach>
+            </div>
 
             <div id="console-pipeline-root" data-current-run-path="${rootURL + '/' + it.buildUrl}"
                            data-previous-run-path="${it.previousBuildUrl != null ? rootURL + '/' + it.previousBuildUrl : null}"

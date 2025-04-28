@@ -48,12 +48,13 @@
 .pgw-zoom-controls {
   left: unset !important;
   top: unset !important;
+  padding: 0.2rem !important;
 
   .jenkins-button {
     padding: 0;
     width: 1.75rem;
     min-height: 1.75rem;
-    border-radius: 0.4rem;
+    border-radius: 0.35rem;
 
     svg {
       width: 1rem;

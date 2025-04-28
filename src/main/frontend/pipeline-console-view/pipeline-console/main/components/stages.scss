@@ -29,16 +29,16 @@
 
 .test-floaty-material {
   position: absolute;
-  inset: 0.5rem 0.4rem;
+  inset: 0.4rem 0.3rem;
   display: flex;
   z-index: 1;
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(10px);
   background: red;
   border-radius: 0.45rem;
   padding: 0.2rem 0.4375rem;
   align-items: center;
   color: var(--text-color-secondary);
-  background: color-mix(in srgb, var(--card-background) 75%, transparent);
-  border: 1.5px solid transparent;
+  background: color-mix(in srgb, var(--card-background) 80%, transparent);
+  border: var(--jenkins-border-width) solid transparent;
   background-clip: padding-box;
 }

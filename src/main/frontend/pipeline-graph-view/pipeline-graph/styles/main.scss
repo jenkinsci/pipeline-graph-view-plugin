@@ -4,7 +4,5 @@
 .PWGx-PipelineGraph-container {
   display: flex;
   align-items: center;
-  //height: 25vh;
-  //min-height: 200px;
-  //max-height: 500px;
+  padding: var(--section-padding);
 }

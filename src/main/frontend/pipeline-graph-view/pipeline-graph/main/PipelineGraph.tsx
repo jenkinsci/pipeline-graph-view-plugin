@@ -117,7 +117,7 @@ export function PipelineGraph(props: Props) {
     <TransformWrapper>
       <ZoomControls />
 
-      <TransformComponent wrapperStyle={{ width: "unset" }}>
+      <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
         <div className="PWGx-PipelineGraph-container">
           <div style={outerDivStyle} className="PWGx-PipelineGraph">
             <svg width={measuredWidth} height={measuredHeight}>

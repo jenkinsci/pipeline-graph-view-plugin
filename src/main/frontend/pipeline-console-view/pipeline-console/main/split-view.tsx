@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./split-view.scss";
-import { useLayoutPreferences } from "./providers/user-preference-provider";
+import { useLayoutPreferences } from "./providers/user-preference-provider.tsx";
 
 export default function SplitView(props: SplitViewNewProps) {
   const {

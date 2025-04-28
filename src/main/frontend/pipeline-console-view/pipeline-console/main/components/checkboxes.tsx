@@ -3,7 +3,7 @@ import {
   MainViewVisibility,
   StageViewPosition,
   useLayoutPreferences,
-} from "../providers/user-preference-provider";
+} from "../providers/user-preference-provider.tsx";
 import "./checkboxes.scss";
 
 export default function VisibilitySelect() {

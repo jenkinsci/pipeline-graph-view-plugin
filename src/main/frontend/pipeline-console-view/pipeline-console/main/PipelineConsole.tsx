@@ -26,8 +26,8 @@ export default function PipelineConsole() {
     expandedSteps,
     stages,
     handleStageSelect,
-    handleStepToggle,
-    handleMoreConsoleClick,
+    onStepToggle,
+    onMoreConsoleClick,
   } = useStepsPoller({ currentRunPath, previousRunPath });
 
   return (
@@ -60,7 +60,7 @@ export default function PipelineConsole() {
           <div className={"pgv-graph-view-thing"}>
             <PipelineGraph
               stages={stages}
-              handleStageSelect={handleStageSelect}
+              onStageSelect={handleStageSelect}
             />
           </div>
         )}
@@ -87,8 +87,8 @@ export default function PipelineConsole() {
               steps={openStageSteps}
               stepBuffers={openStageStepBuffers}
               expandedSteps={expandedSteps}
-              handleStepToggle={handleStepToggle}
-              handleMoreConsoleClick={handleMoreConsoleClick}
+              onStepToggle={onStepToggle}
+              onMoreConsoleClick={onMoreConsoleClick}
             />
           </div>
         </SplitView>

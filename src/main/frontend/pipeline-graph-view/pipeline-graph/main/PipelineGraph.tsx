@@ -137,7 +137,7 @@ export function PipelineGraph(props: Props) {
                 key={node.id}
                 node={node}
                 collapsed={collapsed}
-                handleStageSelect={props.handleStageSelect}
+                onStageSelect={props.onStageSelect}
               />
             ))}
 
@@ -249,5 +249,5 @@ interface Props {
   setStages?: (stages: Array<StageInfo>) => void;
   selectedStage?: StageInfo;
   collapsed?: boolean;
-  handleStageSelect: (nodeId: string) => void;
+  onStageSelect: (nodeId: string) => void;
 }

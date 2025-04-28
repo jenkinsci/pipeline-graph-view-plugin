@@ -19,13 +19,13 @@ type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should
 interface NodeProps {
   node: NodeInfo;
   collapsed?: boolean;
-  handleStageSelect: (nodeId: string) => void;
+  onStageSelect: (nodeId: string) => void;
 }
 
 /**
  * Generate the SVG elements to represent a node.
  */
-export function Node({ node, collapsed, handleStageSelect }: NodeProps) {
+export function Node({ node, collapsed, onStageSelect }: NodeProps) {
   const key = node.key;
 
   if (node.isPlaceholder) {
@@ -144,7 +144,7 @@ export function Node({ node, collapsed, handleStageSelect }: NodeProps) {
             href={document.head.dataset.rooturl + url}
             onClick={(e) => {
               e.preventDefault();
-              handleStageSelect(String(node.stage.id));
+              onStageSelect(String(node.stage.id));
             }}
           >
             <span className="jenkins-visually-hidden">{title}</span>

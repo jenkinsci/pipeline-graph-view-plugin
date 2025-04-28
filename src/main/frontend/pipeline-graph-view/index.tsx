@@ -8,3 +8,10 @@ const root = ReactDOMClient.createRoot(rootElement);
 
 // Render App
 root.render(<App />);
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const unusedVariable = "intentional typescript failure";
+
+const _not_camel_case = "intentional eslint failure"
+
+  console.log(_not_camel_case) // intentional prettier failure

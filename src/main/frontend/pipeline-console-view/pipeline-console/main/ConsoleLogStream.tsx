@@ -1,7 +1,11 @@
 import React, { useCallback, useState, useEffect, useRef } from "react";
 import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
-import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
-import { ConsoleLine } from "./ConsoleLine";
+import {
+  Result,
+  StepInfo,
+  StepLogBufferInfo,
+} from "./PipelineConsoleModel.tsx";
+import { ConsoleLine } from "./ConsoleLine.tsx";
 
 export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   const appendInterval = useRef<NodeJS.Timeout | null>(null);
@@ -46,10 +50,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
     if (stickToBottom && shouldRequestMoreLogs()) {
       if (!appendInterval.current) {
         appendInterval.current = setInterval(() => {
-          props.handleMoreConsoleClick(
-            props.step.id,
-            props.logBuffer.startByte,
-          );
+          props.onMoreConsoleClick(props.step.id, props.logBuffer.startByte);
         }, 1000);
       }
     } else if (appendInterval.current) {
@@ -91,7 +92,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
 
 export interface ConsoleLogStreamProps {
   logBuffer: StepLogBufferInfo;
-  handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
+  onMoreConsoleClick: (nodeId: string, startByte: number) => void;
   step: StepInfo;
   maxHeightScale: number;
 }

@@ -1,4 +1,4 @@
-import { convertLabelToTooltip } from "./convertLabelToTooltip";
+import { convertLabelToTooltip } from "./convertLabelToTooltip.tsx";
 
 describe("convertLabelToTooltip", () => {
   it("converts matrix labels to a tooltip", () => {

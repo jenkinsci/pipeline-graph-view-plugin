@@ -1,6 +1,6 @@
 import MessageFormat, { MessageFunction } from "@messageformat/core";
-import { getResourceBundle } from "../RestClient";
-import { choiceFormatter } from "./choice-formatter";
+import { getResourceBundle } from "../RestClient.tsx";
+import { choiceFormatter } from "./choice-formatter.ts";
 
 export interface ResourceBundle {
   [key: string]: string;
@@ -22,11 +22,11 @@ export class Translations {
     if (message != null) {
       return message;
     }
-    if (!process.env.JEST_WORKER_ID) {
+    if (process.env.NODE_ENV !== "test") {
       console.debug(`Translation for ${key} not found, using fallback`);
     }
     return (params) => {
-      return params == undefined ? "" : Object.values(params as any).join(" ");
+      return params === undefined ? "" : Object.values(params as any).join(" ");
     };
   }
 }
@@ -40,8 +40,7 @@ export function messageFormat(locale: string) {
 }
 
 export enum ResourceBundleName {
-  messages = "hudson.Messages",
-  run = "hudson.model.Run.index",
+  messages = "io.jenkins.plugins.pipelinegraphview.Messages",
 }
 
 export async function getTranslations(
@@ -75,6 +74,7 @@ const DEFAULT_MESSAGES: ResourceBundle = {
   "Util.month": "{0} mo",
   "Util.year": "{0} yr",
   startedAgo: "Started {0} ago",
+  noBuilds: "No builds",
 };
 
 export function defaultTranslations(locale: string) {

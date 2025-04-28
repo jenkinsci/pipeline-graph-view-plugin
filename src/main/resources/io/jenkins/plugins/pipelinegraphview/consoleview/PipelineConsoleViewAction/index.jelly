@@ -47,8 +47,8 @@
             <div id="console-pipeline-root" data-current-run-path="${rootURL + '/' + it.buildUrl}"
                            data-previous-run-path="${it.previousBuildUrl != null ? rootURL + '/' + it.previousBuildUrl : null}"
                            data-user-locale="${request2.getLocale().toLanguageTag()}"/>
-            <script src="${rootURL}/plugin/pipeline-graph-view/js/build.js"/>
-            <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/pipeline-console-view-bundle.js"/>
+            <script src="${rootURL}/plugin/pipeline-graph-view/js/build.js" type="module"/>
+            <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/pipeline-console-view-bundle.js" type="module"/>
         </l:main-panel>
     </l:layout>
 </j:jelly>

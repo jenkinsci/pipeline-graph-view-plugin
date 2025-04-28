@@ -1,17 +1,17 @@
 import React from "react";
-import { StepInfo, StepLogBufferInfo } from "../../../common/RestClient";
-import ConsoleLogCard from "./ConsoleLogCard";
-import { LOG_FETCH_SIZE, StageInfo } from "./PipelineConsoleModel";
+import { StepInfo, StepLogBufferInfo } from "../../../common/RestClient.tsx";
+import ConsoleLogCard from "./ConsoleLogCard.tsx";
+import { LOG_FETCH_SIZE, StageInfo } from "./PipelineConsoleModel.tsx";
 import "./stage-steps.scss";
-import ScrollToTopBottom from "./scroll-to-top-bottom";
+import ScrollToTopBottom from "./scroll-to-top-bottom.tsx";
 
 export default function StageSteps({
   stage,
   stepBuffers,
   steps,
-  handleStepToggle,
+  onStepToggle,
   expandedSteps,
-  handleMoreConsoleClick,
+  onMoreConsoleClick,
 }: StageStepsProps) {
   if (steps.length === 0) {
     return null;
@@ -34,9 +34,9 @@ export default function StageSteps({
                 endByte: -1,
               } as StepLogBufferInfo)
             }
-            handleStepToggle={handleStepToggle}
+            onStepToggle={onStepToggle}
             isExpanded={expandedSteps.includes(stepItemData.id)}
-            handleMoreConsoleClick={handleMoreConsoleClick}
+            onMoreConsoleClick={onMoreConsoleClick}
             key={`step-console-card-${stepItemData.id}`}
           />
         );
@@ -51,6 +51,6 @@ interface StageStepsProps {
   steps: Array<StepInfo>;
   stepBuffers: Map<string, StepLogBufferInfo>;
   expandedSteps: string[];
-  handleStepToggle: (nodeId: string) => void;
-  handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
+  onStepToggle: (nodeId: string) => void;
+  onMoreConsoleClick: (nodeId: string, startByte: number) => void;
 }

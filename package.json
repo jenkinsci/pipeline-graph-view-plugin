@@ -1,18 +1,20 @@
 {
   "name": "pipeline-graph-view-plugin",
-  "version": "1.0.0",
+  "version": "0.0.0-development",
   "description": "Pipeline Graph visualization for Jenkins pipelines",
   "private": true,
   "type": "module",
   "scripts": {
     "mvnbuild": "npm run build",
-    "mvntest": "npm test",
+    "mvntest": "echo \"Tests should be executed through 'npm test' instead\"",
     "build": "vite build --mode production",
-    "build:dev": "vite build --mode development --watch",
-    "lint": "tsc && eslint && prettier --check .",
-    "lint:fix": "eslint --fix && prettier --write .",
-    "test": "vitest --watch=false --reporter default --reporter junit && npm run lint",
-    "test:dev": "vitest --watch"
+    "build:dev": "vite build --mode production --watch",
+    "format:check": "prettier --check .",
+    "format": "prettier --write .",
+    "lint": "tsc && eslint && npm run format:check",
+    "lint:fix": "eslint --fix && npm run format",
+    "test": "vitest run",
+    "test:dev": "vitest watch"
   },
   "repository": {
     "type": "git",

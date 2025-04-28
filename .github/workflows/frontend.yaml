@@ -1,0 +1,29 @@
+name: frontend
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Extract versions from pom.xml
+        id: extract_versions
+        run: |
+          NODE_VERSION=$(sed -n 's/.*<node.version>\(.*\)<\/node.version>.*/\1/p' pom.xml)
+          NPM_VERSION=$(sed -n 's/.*<npm.version>\(.*\)<\/npm.version>.*/\1/p' pom.xml)
+          echo "NODE_VERSION=$NODE_VERSION" >> "$GITHUB_ENV"
+          echo "NPM_VERSION=$NPM_VERSION" >> "$GITHUB_ENV"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "${{ env.NODE_VERSION }}"
+          cache: "npm"
+      - run: npm install --global 'npm@${{ env.NPM_VERSION }}'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+      - run: npm test

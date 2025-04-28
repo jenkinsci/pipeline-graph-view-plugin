@@ -2,22 +2,26 @@ import MessageFormat, { MessageFunction } from "@messageformat/core";
 import { getResourceBundle } from "../RestClient.tsx";
 import { choiceFormatter } from "./choice-formatter.ts";
 
-export interface ResourceBundle {
+export type ResourceBundle = {
   [key: string]: string;
-}
+};
 
-interface Message {
-  [key: string]: MessageFunction<"string">;
-}
+export class Messages {
+  private readonly mapping: Record<string, MessageFunction<"string">>;
 
-export class Translations {
-  private readonly mapping: Message;
-
-  constructor(mapping: Message) {
-    this.mapping = mapping;
+  constructor(messages: ResourceBundle, locale: string) {
+    const entries = Object.entries(messages);
+    if (entries.length === 0) {
+      this.mapping = {};
+    } else {
+      const fmt = messageFormat(locale);
+      this.mapping = Object.fromEntries(
+        entries.map(([key, value]) => [key, fmt.compile(value)]),
+      );
+    }
   }
 
-  get(key: string): MessageFunction<"string"> {
+  private get(key: string): MessageFunction<"string"> {
     const message = this.mapping[key];
     if (message != null) {
       return message;
@@ -29,9 +33,14 @@ export class Translations {
       return params === undefined ? "" : Object.values(params as any).join(" ");
     };
   }
+
+  format(key: string, args: Record<string, any> | null = null): string {
+    const message = this.get(key);
+    return args === null ? message() : message(args);
+  }
 }
 
-export function messageFormat(locale: string) {
+function messageFormat(locale: string) {
   return new MessageFormat(locale, {
     customFormatters: {
       choice: choiceFormatter,
@@ -43,10 +52,10 @@ export enum ResourceBundleName {
   messages = "io.jenkins.plugins.pipelinegraphview.Messages",
 }
 
-export async function getTranslations(
+export async function getMessages(
   locale: string,
   bundleNames: ResourceBundleName[],
-): Promise<Translations> {
+): Promise<Messages> {
   const bundles = await Promise.all(
     bundleNames.map((name) => getResourceBundle(name).then((r) => r ?? {})),
   );
@@ -56,13 +65,7 @@ export async function getTranslations(
     DEFAULT_MESSAGES,
   );
 
-  const fmt = messageFormat(locale);
-
-  const mapping: Message = Object.fromEntries(
-    Object.entries(messages).map(([key, value]) => [key, fmt.compile(value)]),
-  );
-
-  return new Translations(mapping);
+  return new Messages(messages, locale);
 }
 
 const DEFAULT_MESSAGES: ResourceBundle = {
@@ -77,15 +80,6 @@ const DEFAULT_MESSAGES: ResourceBundle = {
   noBuilds: "No builds",
 };
 
-export function defaultTranslations(locale: string) {
-  const fmt = messageFormat(locale);
-
-  return new Translations(
-    Object.fromEntries(
-      Object.entries(DEFAULT_MESSAGES).map(([key, value]) => [
-        key,
-        fmt.compile(value),
-      ]),
-    ),
-  );
+export function defaultMessages(locale: string): Messages {
+  return new Messages(DEFAULT_MESSAGES, locale);
 }

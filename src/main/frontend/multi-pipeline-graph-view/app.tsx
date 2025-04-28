@@ -4,8 +4,7 @@ import { MultiPipelineGraph } from "./multi-pipeline-graph/main/index.ts";
 
 import "./app.scss";
 import "./multi-pipeline-graph/styles/main.scss";
-import { I18NProvider } from "../common/i18n/i18n-provider.tsx";
-import { ResourceBundleName } from "../common/i18n/translations.ts";
+import { I18NProvider, ResourceBundleName } from "../common/i18n/index.ts";
 
 const App: FunctionComponent = () => {
   const locale =

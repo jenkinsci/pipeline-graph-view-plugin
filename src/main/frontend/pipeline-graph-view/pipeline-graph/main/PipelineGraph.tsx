@@ -6,23 +6,22 @@ import {
   NodeLabelInfo,
   LayoutInfo,
   NodeColumn,
-  StageInfo,
-} from "./PipelineGraphModel";
+  StageInfo, Result 
+} from "./PipelineGraphModel.tsx";
 import { layoutGraph } from "./PipelineGraphLayout";
-import { Result } from "./PipelineGraphModel";
-import { Node, SelectionHighlight } from "./support/nodes";
+import { Node, SelectionHighlight } from "./support/nodes.tsx";
 import {
   BigLabel,
   SmallLabel,
   SequentialContainerLabel,
-} from "./support/labels";
-import { GraphConnections } from "./support/connections";
+} from "./support/labels.tsx";
+import { GraphConnections } from "./support/connections.tsx";
 import {
   TransformWrapper,
   TransformComponent,
   useControls,
 } from "react-zoom-pan-pinch";
-import Tooltip from "../../../common/components/tooltip";
+import Tooltip from "../../../common/components/tooltip.tsx";
 
 export function PipelineGraph(props: Props) {
   const { stages = [], layout, selectedStage, collapsed } = props;

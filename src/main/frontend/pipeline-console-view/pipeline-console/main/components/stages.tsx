@@ -33,9 +33,10 @@ export default function Stages({
     <div
       className={classNames("pgv-graph-view-thing", {
         "pgv-graph-view-thing--left": stageViewPosition === StageViewPosition.LEFT,
-      })} style={{ '--additional-height': sidebarHeight + "px" } as CSSProperties}
+      })}
+      style={{ '--additional-height': sidebarHeight + "px" } as CSSProperties}
     >
-      <div className={"pgv-graph-view-thing__heading"}>Stages ({sidebarHeight})</div>
+      <div className={"test-floaty-material pgv-graph-view-thing__heading"}>Stages</div>
       <PipelineGraph stages={stages} onStageSelect={handleStageSelect} />
     </div>
   );

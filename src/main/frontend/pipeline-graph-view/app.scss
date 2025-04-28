@@ -46,14 +46,8 @@
 }
 
 .pgw-zoom-controls {
-  position: absolute;
-  right: 0.5rem;
-  bottom: 0.5rem;
-  display: flex;
-  z-index: 1;
-  backdrop-filter: blur(20px);
-  border-radius: 0.45rem;
-  padding: 0.125rem;
+  left: unset !important;
+  top: unset !important;
 
   .jenkins-button {
     padding: 0;

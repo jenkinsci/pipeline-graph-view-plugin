@@ -180,7 +180,7 @@ function ZoomControls() {
   const { zoomIn, zoomOut, resetTransform } = useControls();
 
   return (
-    <div className="pgw-zoom-controls">
+    <div className="test-floaty-material pgw-zoom-controls">
       <Tooltip content={"Zoom in"}>
         <button
           className={"jenkins-button jenkins-button--tertiary"}

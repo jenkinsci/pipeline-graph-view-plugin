@@ -1,6 +1,6 @@
 import React, { lazy } from "react";
 
-import { I18NProvider } from "../common/i18n/i18n-provider.tsx";
+import { I18NProvider, ResourceBundleName } from "../common/i18n/index.ts";
 import { FilterProvider } from "./pipeline-console/main/providers/filter-provider.tsx";
 import { ResourceBundleName } from "../common/i18n/translations.ts";
 import { LayoutPreferencesProvider } from "./pipeline-console/main/providers/user-preference-provider.tsx";

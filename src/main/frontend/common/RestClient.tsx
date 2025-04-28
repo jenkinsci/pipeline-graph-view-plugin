@@ -2,7 +2,7 @@ import {
   Result,
   StageInfo,
 } from "../pipeline-graph-view/pipeline-graph/main/index.ts";
-import { ResourceBundle } from "./i18n/translations.ts";
+import { ResourceBundle } from "./i18n/index.ts";
 
 export interface RunStatus {
   stages: StageInfo[];

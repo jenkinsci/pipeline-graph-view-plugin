@@ -1,6 +1,5 @@
 import React, { useContext } from "react";
-import { Translations } from "../i18n/translations.ts";
-import { I18NContext } from "../i18n/i18n-provider.tsx";
+import { Messages, I18NContext } from "../i18n/index.ts";
 
 const ONE_SECOND_MS: number = 1000;
 const ONE_MINUTE_MS: number = 60 * ONE_SECOND_MS;
@@ -40,12 +39,9 @@ function makeTimeSpanString(
  * @see https://github.com/jenkinsci/jenkins/blob/f9edeb0c0485fddfc03a7e1710ac5cf2b35ec497/core/src/main/java/hudson/Util.java#L734
  *
  * @param duration number of milliseconds.
- * @param translations the translations to get the labels from.
+ * @param messages the messages to get the labels from.
  */
-function getTimeSpanString(
-  duration: number,
-  translations: Translations,
-): string {
+function getTimeSpanString(duration: number, messages: Messages): string {
   const years = Math.floor(duration / ONE_YEAR_MS);
   duration %= ONE_YEAR_MS;
   const months = Math.floor(duration / ONE_MONTH_MS);
@@ -62,71 +58,71 @@ function getTimeSpanString(
   if (years > 0) {
     return makeTimeSpanString(
       years,
-      translations.get(YEAR)({ "0": years }),
+      messages.format(YEAR, { "0": years }),
       months,
-      translations.get(MONTH)({ "0": months }),
+      messages.format(MONTH, { "0": months }),
     );
   } else if (months > 0) {
     return makeTimeSpanString(
       months,
-      translations.get(MONTH)({ "0": months }),
+      messages.format(MONTH, { "0": months }),
       days,
-      translations.get(DAY)({ "0": days }),
+      messages.format(DAY, { "0": days }),
     );
   } else if (days > 0) {
     return makeTimeSpanString(
       days,
-      translations.get(DAY)({ "0": days }),
+      messages.format(DAY, { "0": days }),
       hours,
-      translations.get(HOURS)({ "0": hours }),
+      messages.format(HOURS, { "0": hours }),
     );
   } else if (hours > 0) {
     return makeTimeSpanString(
       hours,
-      translations.get(HOURS)({ "0": hours }),
+      messages.format(HOURS, { "0": hours }),
       minutes,
-      translations.get(MINUTE)({ "0": minutes }),
+      messages.format(MINUTE, { "0": minutes }),
     );
   } else if (minutes > 0) {
     return makeTimeSpanString(
       minutes,
-      translations.get(MINUTE)({ "0": minutes }),
+      messages.format(MINUTE, { "0": minutes }),
       seconds,
-      translations.get(SECOND)({ "0": seconds }),
+      messages.format(SECOND, { "0": seconds }),
     );
   } else if (seconds >= 10) {
-    return translations.get(SECOND)({ "0": seconds });
+    return messages.format(SECOND, { "0": seconds });
   } else if (seconds >= 1) {
-    return translations.get(SECOND)({
+    return messages.format(SECOND, {
       "0": seconds + Math.floor(millis / 100) / 10,
     });
   } else if (millis >= 100) {
-    return translations.get(SECOND)({ "0": Math.floor(millis / 10) / 100 });
+    return messages.format(SECOND, { "0": Math.floor(millis / 10) / 100 });
   } else {
-    return translations.get(MILLIS)({ "0": millis });
+    return messages.format(MILLIS, { "0": millis });
   }
 }
 
 export function Total({ ms }: { ms: number }) {
-  const translations = useContext(I18NContext);
-  return <>{getTimeSpanString(ms, translations)}</>;
+  const messages = useContext(I18NContext);
+  return <>{getTimeSpanString(ms, messages)}</>;
 }
 
 export function Paused({ since }: { since: number }) {
-  const translations = useContext(I18NContext);
-  return <>{`Queued ${getTimeSpanString(since, translations)}`}</>;
+  const messages = useContext(I18NContext);
+  return <>{`Queued ${getTimeSpanString(since, messages)}`}</>;
 }
 
 export function Started({ since }: { since: number }) {
-  const translations = useContext(I18NContext);
+  const messages = useContext(I18NContext);
   if (since === 0) {
     return <></>;
   }
 
   return (
     <>
-      {translations.get(STARTED_AGO)({
-        "0": getTimeSpanString(Math.abs(since - Date.now()), translations),
+      {messages.format(STARTED_AGO, {
+        "0": getTimeSpanString(Math.abs(since - Date.now()), messages),
       })}
     </>
   );

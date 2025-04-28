@@ -26,7 +26,7 @@ export class Translations {
       console.debug(`Translation for ${key} not found, using fallback`);
     }
     return (params) => {
-      return params == undefined ? "" : Object.values(params as any).join(" ");
+      return params === undefined ? "" : Object.values(params as any).join(" ");
     };
   }
 }

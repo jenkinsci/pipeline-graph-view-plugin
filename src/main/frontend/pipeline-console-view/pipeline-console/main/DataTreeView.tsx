@@ -93,7 +93,11 @@ export default function DataTreeView({
   );
 }
 
-const TreeNode = React.memo(({ stage, selected, onSelect }: TreeNodeProps) => {
+const TreeNode = React.memo(function TreeNode({
+  stage,
+  selected,
+  onSelect,
+}: TreeNodeProps) {
   const { search, visibleStatuses, allVisible } = useFilter();
   const hasChildren = stage.children && stage.children.length > 0;
   const isSelected = String(stage.id) === selected;

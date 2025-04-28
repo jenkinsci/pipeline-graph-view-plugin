@@ -46,11 +46,11 @@ describe("ConsoleLogCard", () => {
     step: baseStep,
     stepBuffer: baseBuffer,
     isExpanded: false,
-    handleStepToggle: () => {
-      console.log("handleStepToggle triggered");
+    onStepToggle: () => {
+      console.log("onStepToggle triggered");
     },
-    handleMoreConsoleClick: () => {
-      console.log("handleMoreConsoleClick triggered");
+    onMoreConsoleClick: () => {
+      console.log("onMoreConsoleClick triggered");
     },
   } as ConsoleLogCardProps;
 
@@ -67,19 +67,17 @@ describe("ConsoleLogCard", () => {
     expect(findByText(/Hello, world!/));
   });
 
-  it("calls handleMoreConsoleClick on load was card isExpanded set", async () => {
+  it("calls onMoreConsoleClick on load was card isExpanded set", async () => {
     console.log = vi.fn();
-    render(<ConsoleLogCard {...DefaultTestProps} isExpanded={true} />);
-    expect(console.log).toHaveBeenCalledWith(
-      "handleMoreConsoleClick triggered",
-    );
+    render(<ConsoleLogCard {...DefaultTestProps} isExpanded />);
+    expect(console.log).toHaveBeenCalledWith("onMoreConsoleClick triggered");
   });
 
-  it("does not call handleMoreConsoleClick on load was card isExpanded set", async () => {
+  it("does not call onMoreConsoleClick on load was card isExpanded set", async () => {
     console.log = vi.fn();
     render(<ConsoleLogCard {...DefaultTestProps} />);
     expect(console.log).not.toHaveBeenCalledWith(
-      "handleMoreConsoleClick triggered",
+      "onMoreConsoleClick triggered",
     );
   });
 });

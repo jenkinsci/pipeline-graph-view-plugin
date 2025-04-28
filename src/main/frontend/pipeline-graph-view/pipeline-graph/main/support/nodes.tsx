@@ -1,5 +1,4 @@
-import React from "react";
-import { CSSProperties } from "react";
+import React, { CSSProperties } from "react";
 
 import {
   LayoutInfo,
@@ -86,7 +85,7 @@ export function Node({ node, collapsed }: NodeProps) {
         }}
         className="PWGx-pipeline-node"
       >
-        <span className={"PWGx-pipeline-node-terminal"}></span>
+        <span className={"PWGx-pipeline-node-terminal"} />
       </div>
     );
   }
@@ -167,18 +166,19 @@ export function SelectionHighlight({
   const highlightRadius = Math.ceil(
     nodeRadius + 0.5 * connectorStrokeWidth + 1,
   );
-  let selectedNode: NodeInfo | undefined;
 
-  columnLoop: for (const column of nodeColumns) {
-    for (const row of column.rows) {
-      for (const node of row) {
-        if (!node.isPlaceholder && isStageSelected(node.stage)) {
-          selectedNode = node;
-          break columnLoop;
+  const selectedNode: NodeInfo | undefined = (() => {
+    for (const column of nodeColumns) {
+      for (const row of column.rows) {
+        for (const node of row) {
+          if (!node.isPlaceholder && isStageSelected(node.stage)) {
+            return node;
+          }
         }
       }
     }
-  }
+    return undefined;
+  })();
 
   if (!selectedNode) return null;
 

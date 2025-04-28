@@ -7,9 +7,9 @@ import {
   LayoutInfo,
   NodeColumn,
   StageInfo,
+  Result,
 } from "./PipelineGraphModel.tsx";
 import { layoutGraph } from "./PipelineGraphLayout.ts";
-import { Result } from "./PipelineGraphModel.tsx";
 import { Node, SelectionHighlight } from "./support/nodes.tsx";
 import {
   BigLabel,
@@ -31,8 +31,8 @@ export function PipelineGraph(props: Props) {
   } = props;
 
   const { run } = useRunPoller({
-    currentRunPath: currentRunPath,
-    previousRunPath: previousRunPath,
+    currentRunPath,
+    previousRunPath,
   });
 
   const [nodeColumns, setNodeColumns] = useState<NodeColumn[]>([]);

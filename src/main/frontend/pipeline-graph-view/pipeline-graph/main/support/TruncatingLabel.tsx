@@ -1,5 +1,4 @@
 import React from "react";
-import ReactDOM from "react-dom";
 
 //--------------------------------------
 //  Safety constants
@@ -35,6 +34,8 @@ interface Props {
  * Use with a set width + height (or maxWidth / maxHeight) to get any use from it :D
  */
 export class TruncatingLabel extends React.Component<Props> {
+  private containerRef = React.createRef<HTMLDivElement>();
+
   //--------------------------------------
   //  Component state / lifecycle
   //--------------------------------------
@@ -57,11 +58,11 @@ export class TruncatingLabel extends React.Component<Props> {
   //  React Lifecycle
   //--------------------------------------
 
-  componentWillMount() {
+  UNSAFE_componentWillMount() {
     this.handleProps(this.props);
   }
 
-  componentWillReceiveProps(nextProps: Props) {
+  UNSAFE_componentWillReceiveProps(nextProps: Props) {
     this.handleProps(nextProps);
   }
 
@@ -101,6 +102,7 @@ export class TruncatingLabel extends React.Component<Props> {
 
     return (
       <div
+        ref={this.containerRef}
         style={mergedStyle}
         className={"TruncatingLabel " + className}
         title={this.completeText}
@@ -150,7 +152,7 @@ export class TruncatingLabel extends React.Component<Props> {
       return; // Nothing to check, no more checks to schedule
     }
 
-    const thisElement = ReactDOM.findDOMNode(this) as HTMLElement;
+    const thisElement = this.containerRef.current as HTMLElement;
     const { scrollHeight, clientHeight, scrollWidth, clientWidth } =
       thisElement;
 

@@ -50,10 +50,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
     if (stickToBottom && shouldRequestMoreLogs()) {
       if (!appendInterval.current) {
         appendInterval.current = setInterval(() => {
-          props.handleMoreConsoleClick(
-            props.step.id,
-            props.logBuffer.startByte,
-          );
+          props.onMoreConsoleClick(props.step.id, props.logBuffer.startByte);
         }, 1000);
       }
     } else if (appendInterval.current) {
@@ -95,7 +92,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
 
 export interface ConsoleLogStreamProps {
   logBuffer: StepLogBufferInfo;
-  handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
+  onMoreConsoleClick: (nodeId: string, startByte: number) => void;
   step: StepInfo;
   maxHeightScale: number;
 }

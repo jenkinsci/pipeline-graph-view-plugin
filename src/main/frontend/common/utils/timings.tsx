@@ -1,5 +1,4 @@
-import React from "react";
-import { useContext } from "react";
+import React, { useContext } from "react";
 import { Translations } from "../i18n/translations.ts";
 import { I18NContext } from "../i18n/i18n-provider.tsx";
 

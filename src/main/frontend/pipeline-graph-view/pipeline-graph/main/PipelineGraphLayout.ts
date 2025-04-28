@@ -232,11 +232,11 @@ function forEachChildStage(
   }
   for (const stage of topStage.children) {
     // This can be in the graph if there is an unhandled exception.
-    if (stage.type == "PIPELINE_START") {
+    if (stage.type === "PIPELINE_START") {
       continue;
     }
     const needToRecurse =
-      stageHasChildren(stage) && stage.children[0].type != "PARALLEL";
+      stageHasChildren(stage) && stage.children[0].type !== "PARALLEL";
     callback(topStage, stage, needToRecurse);
     if (needToRecurse) {
       forEachChildStage(stage, callback);
@@ -442,7 +442,7 @@ function createConnections(
       connections.push({
         sourceNodes,
         destinationNodes: column.rows.map((row) => row[0]), // First node of each row
-        skippedNodes: skippedNodes,
+        skippedNodes,
         hasBranchLabels: column.hasBranchLabels,
       });
     }

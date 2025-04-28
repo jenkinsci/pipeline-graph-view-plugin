@@ -49,8 +49,8 @@ describe("StageView", () => {
           steps={mockSteps}
           stepBuffers={new Map()}
           expandedSteps={["step-1"]}
-          handleStepToggle={vi.fn()}
-          handleMoreConsoleClick={vi.fn()}
+          onStepToggle={vi.fn()}
+          onMoreConsoleClick={vi.fn()}
         />,
       );
     });

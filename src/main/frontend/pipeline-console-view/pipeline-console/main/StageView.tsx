@@ -17,8 +17,8 @@ export default function StageView(props: StageViewProps) {
         steps={props.steps}
         stepBuffers={props.stepBuffers}
         expandedSteps={props.expandedSteps}
-        handleStepToggle={props.handleStepToggle}
-        handleMoreConsoleClick={props.handleMoreConsoleClick}
+        onStepToggle={props.onStepToggle}
+        onMoreConsoleClick={props.onMoreConsoleClick}
       />
     </>
   );
@@ -29,6 +29,6 @@ export interface StageViewProps {
   steps: Array<StepInfo>;
   stepBuffers: Map<string, StepLogBufferInfo>;
   expandedSteps: string[];
-  handleStepToggle: (nodeId: string) => void;
-  handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
+  onStepToggle: (nodeId: string) => void;
+  onMoreConsoleClick: (nodeId: string, startByte: number) => void;
 }

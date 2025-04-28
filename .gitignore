@@ -12,7 +12,8 @@ src/main/webapp/js/bundles
 *.iml
 *.iws
 *.ipr
-.idea
+.idea/*
+!.idea/icon.svg
 
 # Eclipse project files
 .settings

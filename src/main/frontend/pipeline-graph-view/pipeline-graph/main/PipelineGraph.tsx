@@ -114,7 +114,7 @@ export function PipelineGraph(props: Props) {
   };
 
   return (
-    <TransformWrapper>
+    <TransformWrapper minScale={0.75}>
       <ZoomControls />
 
       <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>

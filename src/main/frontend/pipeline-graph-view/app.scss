@@ -45,9 +45,8 @@
   overflow: auto;
 }
 
+.pgw-fullscreen-controls,
 .pgw-zoom-controls {
-  left: unset !important;
-  top: unset !important;
   padding: 0.2rem !important;
 
   .jenkins-button {
@@ -62,4 +61,14 @@
       color: var(--text-color-secondary);
     }
   }
+}
+
+.pgw-fullscreen-controls {
+  left: unset !important;
+  bottom: unset !important;
+}
+
+.pgw-zoom-controls {
+  left: unset !important;
+  top: unset !important;
 }

@@ -5,19 +5,19 @@ import {
   LOG_FETCH_SIZE,
   StepInfo,
   StepLogBufferInfo,
-} from "./PipelineConsoleModel";
+} from "./PipelineConsoleModel.tsx";
 
-import StatusIcon from "../../../common/components/status-icon";
-import { classNames } from "../../../common/utils/classnames";
-import Tooltip from "../../../common/components/tooltip";
-import { Total } from "../../../common/utils/timings";
+import StatusIcon from "../../../common/components/status-icon.tsx";
+import { classNames } from "../../../common/utils/classnames.ts";
+import Tooltip from "../../../common/components/tooltip.tsx";
+import { Total } from "../../../common/utils/timings.tsx";
 
-const ConsoleLogStream = React.lazy(() => import("./ConsoleLogStream"));
+const ConsoleLogStream = React.lazy(() => import("./ConsoleLogStream.tsx"));
 
 export default function ConsoleLogCard(props: ConsoleLogCardProps) {
   useEffect(() => {
     if (props.isExpanded) {
-      props.handleMoreConsoleClick(props.step.id, props.stepBuffer.startByte);
+      props.onMoreConsoleClick(props.step.id, props.stepBuffer.startByte);
     }
   }, [props.isExpanded]);
 
@@ -31,13 +31,13 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
 
     history.replaceState({}, "", `?selected-node=` + props.step.id);
 
-    props.handleStepToggle(props.step.id);
+    props.onStepToggle(props.step.id);
   };
 
   const showMoreLogs = () => {
     let startByte = props.stepBuffer.startByte - LOG_FETCH_SIZE;
     if (startByte < 0) startByte = 0;
-    props.handleMoreConsoleClick(props.step.id, startByte);
+    props.onMoreConsoleClick(props.step.id, startByte);
   };
 
   const getTruncatedLogWarning = () => {
@@ -124,6 +124,7 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
             href={`log?nodeId=${props.step.id}`}
             className={"jenkins-button jenkins-button--tertiary"}
             target="_blank"
+            rel="noreferrer"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
               <path
@@ -145,7 +146,7 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
           <Suspense>
             <ConsoleLogStream
               logBuffer={props.stepBuffer}
-              handleMoreConsoleClick={props.handleMoreConsoleClick}
+              onMoreConsoleClick={props.onMoreConsoleClick}
               step={props.step}
               maxHeightScale={0.65}
             />
@@ -160,6 +161,6 @@ export type ConsoleLogCardProps = {
   step: StepInfo;
   stepBuffer: StepLogBufferInfo;
   isExpanded: boolean;
-  handleStepToggle: (nodeId: string) => void;
-  handleMoreConsoleClick: (nodeId: string, startByte: number) => void;
+  onStepToggle: (nodeId: string) => void;
+  onMoreConsoleClick: (nodeId: string, startByte: number) => void;
 };

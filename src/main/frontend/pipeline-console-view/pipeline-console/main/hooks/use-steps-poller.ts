@@ -8,8 +8,8 @@ import {
   StageInfo,
   StepInfo,
   StepLogBufferInfo,
-} from "../PipelineConsoleModel";
-import useRunPoller from "../../../../common/tree-api";
+} from "../PipelineConsoleModel.tsx";
+import useRunPoller from "../../../../common/tree-api.ts";
 
 export function useStepsPoller(props: RunPollerProps) {
   const { run } = useRunPoller({
@@ -29,7 +29,7 @@ export function useStepsPoller(props: RunPollerProps) {
 
   const updateStepConsoleOffset = useCallback(
     async (stepId: string, forceUpdate: boolean, startByte: number) => {
-      let stepBuffer = stepBuffers.get(stepId) ?? {
+      const stepBuffer = stepBuffers.get(stepId) ?? {
         lines: [],
         startByte: 0 - LOG_FETCH_SIZE,
         endByte: -1,
@@ -92,12 +92,12 @@ export function useStepsPoller(props: RunPollerProps) {
     }
 
     let selectedStep = steps.find((step) => step !== undefined);
-    if (!steps || steps.length == 0 || !selectedStep) {
+    if (!steps || steps.length === 0 || !selectedStep) {
       return null;
     }
-    for (let step of steps) {
-      let stepResult = step.state.toLowerCase() as Result;
-      let selectedStepResult = selectedStep?.state.toLowerCase() as Result;
+    for (const step of steps) {
+      const stepResult = step.state.toLowerCase() as Result;
+      const selectedStepResult = selectedStep?.state.toLowerCase() as Result;
       switch (stepResult) {
         case Result.running:
         case Result.queued:
@@ -124,56 +124,65 @@ export function useStepsPoller(props: RunPollerProps) {
   };
 
   useEffect(() => {
-    getRunSteps().then((steps) => {
-      steps = steps || [];
-      setSteps(steps);
+    getRunSteps()
+      .then((steps) => {
+        steps = steps || [];
+        setSteps(steps);
 
-      const usedUrl = parseUrlParams(steps);
-      if (!usedUrl) {
-        const defaultStep = getDefaultSelectedStep(steps);
-        if (defaultStep) {
-          setOpenStage(defaultStep.stageId);
+        const usedUrl = parseUrlParams(steps);
+        if (!usedUrl) {
+          const defaultStep = getDefaultSelectedStep(steps);
+          if (defaultStep) {
+            setOpenStage(defaultStep.stageId);
 
-          if (defaultStep.stageId) {
-            setExpandedSteps((prev) => [...prev, defaultStep.id]);
-            updateStepConsoleOffset(defaultStep.id, false, 0 - LOG_FETCH_SIZE);
+            if (defaultStep.stageId) {
+              setExpandedSteps((prev) => [...prev, defaultStep.id]);
+              updateStepConsoleOffset(
+                defaultStep.id,
+                false,
+                0 - LOG_FETCH_SIZE,
+              );
+            }
           }
         }
-      }
 
-      if (!run?.complete) {
-        startPollingPipeline({
-          getStateUpdateFn: getRunSteps,
-          onData: (data) => {
-            const hasNewSteps =
-              JSON.stringify(stepsRef.current) !== JSON.stringify(data);
+        if (!run?.complete) {
+          startPollingPipeline({
+            getStateUpdateFn: getRunSteps,
+            onData: (data) => {
+              const hasNewSteps =
+                JSON.stringify(stepsRef.current) !== JSON.stringify(data);
 
-            if (userManuallySetNode) {
-              const defaultStep = getDefaultSelectedStep(steps);
-              if (defaultStep) {
-                setOpenStage(defaultStep.stageId);
+              if (userManuallySetNode) {
+                const defaultStep = getDefaultSelectedStep(steps);
+                if (defaultStep) {
+                  setOpenStage(defaultStep.stageId);
 
-                if (defaultStep.stageId) {
-                  setExpandedSteps((prev) => [...prev, defaultStep.id]);
-                  updateStepConsoleOffset(
-                    defaultStep.id,
-                    false,
-                    0 - LOG_FETCH_SIZE,
-                  );
+                  if (defaultStep.stageId) {
+                    setExpandedSteps((prev) => [...prev, defaultStep.id]);
+                    updateStepConsoleOffset(
+                      defaultStep.id,
+                      false,
+                      0 - LOG_FETCH_SIZE,
+                    );
+                  }
                 }
               }
-            }
 
-            if (hasNewSteps) {
-              setSteps(data);
-              stepsRef.current = data;
-            }
-          },
-          checkComplete: () => !run?.complete,
-          interval: POLL_INTERVAL,
-        });
-      }
-    });
+              if (hasNewSteps) {
+                setSteps(data);
+                stepsRef.current = data;
+              }
+            },
+            checkComplete: () => !run?.complete,
+            interval: POLL_INTERVAL,
+          });
+        }
+        return null;
+      })
+      .catch((error) => {
+        console.error("Error in getRunSteps:", error);
+      });
   }, [run?.stages]);
 
   const handleStageSelect = useCallback(
@@ -197,7 +206,7 @@ export function useStepsPoller(props: RunPollerProps) {
     [openStage, steps, updateStepConsoleOffset],
   );
 
-  const handleStepToggle = (nodeId: string) => {
+  const onStepToggle = (nodeId: string) => {
     setUserManuallySetNode(true);
     if (!expandedSteps.includes(nodeId)) {
       setExpandedSteps((prev) => [...prev, nodeId]);
@@ -207,7 +216,7 @@ export function useStepsPoller(props: RunPollerProps) {
     }
   };
 
-  const handleMoreConsoleClick = (nodeId: string, startByte: number) => {
+  const onMoreConsoleClick = (nodeId: string, startByte: number) => {
     updateStepConsoleOffset(nodeId, true, startByte);
   };
 
@@ -227,7 +236,7 @@ export function useStepsPoller(props: RunPollerProps) {
 
   const getOpenStage = (): StageInfo | null => {
     const findStage = (stages: StageInfo[]): StageInfo | null => {
-      for (let stage of stages) {
+      for (const stage of stages) {
         if (String(stage.id) === openStage) return stage;
         if (stage.children.length > 0) {
           const result = findStage(stage.children);
@@ -246,8 +255,8 @@ export function useStepsPoller(props: RunPollerProps) {
     expandedSteps,
     stages: run?.stages || [],
     handleStageSelect,
-    handleStepToggle,
-    handleMoreConsoleClick,
+    onStepToggle,
+    onMoreConsoleClick,
   };
 }
 

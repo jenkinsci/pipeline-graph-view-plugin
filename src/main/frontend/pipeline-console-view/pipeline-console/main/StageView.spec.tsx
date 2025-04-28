@@ -1,11 +1,13 @@
-/** * @jest-environment jsdom */
+/** * @vitest-environment jsdom */
 
-(global as any).TextEncoder = require("util").TextEncoder;
-
+import { vi } from "vitest";
+import { TextEncoder } from "util";
 import React from "react";
 import { act, render, screen } from "@testing-library/react";
-import StageView from "./StageView";
-import { Result, StageInfo, StepInfo } from "./PipelineConsoleModel";
+import StageView from "./StageView.tsx";
+import { Result, StageInfo, StepInfo } from "./PipelineConsoleModel.tsx";
+
+(globalThis as any).TextEncoder = TextEncoder;
 
 const mockStage: StageInfo = {
   id: 1,
@@ -47,8 +49,8 @@ describe("StageView", () => {
           steps={mockSteps}
           stepBuffers={new Map()}
           expandedSteps={["step-1"]}
-          handleStepToggle={jest.fn()}
-          handleMoreConsoleClick={jest.fn()}
+          onStepToggle={vi.fn()}
+          onMoreConsoleClick={vi.fn()}
         />,
       );
     });

@@ -1,14 +1,16 @@
-jest.mock("../RestClient", () => ({
-  getResourceBundle: jest.fn(),
-}));
+import { Mock, vi } from "vitest";
 
-import { getResourceBundle } from "../RestClient";
+import { getResourceBundle } from "../RestClient.tsx";
 import {
   getTranslations,
   messageFormat,
   ResourceBundleName,
   Translations,
-} from "./translations";
+} from "./translations.ts";
+
+vi.mock("../RestClient.tsx", () => ({
+  getResourceBundle: vi.fn(),
+}));
 
 describe("Translations", () => {
   describe("Get translation", () => {
@@ -33,18 +35,20 @@ describe("Translations", () => {
 
   describe("Get Translations", () => {
     it("should compile found resource bundle", async () => {
-      (getResourceBundle as jest.Mock).mockResolvedValue({
+      (getResourceBundle as Mock).mockResolvedValue({
         "A.property": "a value",
         "Another.property": "with another value",
         "One.more.property": "with {one} more value",
       });
       const translations = await getTranslations("en", [
-        ResourceBundleName.run,
         ResourceBundleName.messages,
+        ResourceBundleName.timing,
       ]);
 
       expect(getResourceBundle).toHaveBeenCalledWith("hudson.Messages");
-      expect(getResourceBundle).toHaveBeenCalledWith("hudson.model.Run.index");
+      expect(getResourceBundle).toHaveBeenCalledWith(
+        "io.jenkins.plugins.pipelinegraphview.Messages",
+      );
       expect(translations.get("A.property")()).toEqual("a value");
       expect(translations.get("Another.property")()).toEqual(
         "with another value",
@@ -55,10 +59,10 @@ describe("Translations", () => {
     });
 
     it("should use the default messages if undefined returned", async () => {
-      (getResourceBundle as jest.Mock).mockResolvedValue(undefined);
+      (getResourceBundle as Mock).mockResolvedValue(undefined);
 
       const translations = await getTranslations("en", [
-        ResourceBundleName.run,
+        ResourceBundleName.messages,
       ]);
 
       expect(translations.get("Util.second")({ 0: 5 })).toEqual("5 sec");

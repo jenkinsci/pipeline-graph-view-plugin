@@ -33,7 +33,7 @@ function choice(value: unknown, locale: string, arg: string | null): string {
   // we can assume that these are correctly parsed formats as otherwise java code would have complained
   // so a part is made up of a number and operator and a value
   // the valid operators are <, ≤, # (which means equal)
-  for (let part of parts) {
+  for (const part of parts) {
     // let's iterate through the part until we reach an operator
     for (let i = 0; i < part.length; i++) {
       const char = part.charAt(i);

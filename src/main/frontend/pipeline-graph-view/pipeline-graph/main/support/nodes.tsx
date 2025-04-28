@@ -1,20 +1,18 @@
-import * as React from "react";
-import { CSSProperties } from "react";
+import React, { CSSProperties } from "react";
 
 import {
   LayoutInfo,
   NodeColumn,
   NodeInfo,
-  Result,
   StageInfo,
-} from "../PipelineGraphModel";
+} from "../PipelineGraphModel.tsx";
 import StatusIcon, {
   resultToColor,
-} from "../../../../common/components/status-icon";
-import Tooltip from "../../../../common/components/tooltip";
-import { Total } from "../../../../common/utils/timings";
+} from "../../../../common/components/status-icon.tsx";
+import Tooltip from "../../../../common/components/tooltip.tsx";
+import { Total } from "../../../../common/utils/timings.tsx";
 import "./nodes.scss";
-import { CounterNodeInfo } from "../PipelineGraphLayout";
+import { CounterNodeInfo } from "../PipelineGraphLayout.ts";
 
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck
 
@@ -87,7 +85,7 @@ export function Node({ node, collapsed }: NodeProps) {
         }}
         className="PWGx-pipeline-node"
       >
-        <span className={"PWGx-pipeline-node-terminal"}></span>
+        <span className={"PWGx-pipeline-node-terminal"} />
       </div>
     );
   }
@@ -168,18 +166,19 @@ export function SelectionHighlight({
   const highlightRadius = Math.ceil(
     nodeRadius + 0.5 * connectorStrokeWidth + 1,
   );
-  let selectedNode: NodeInfo | undefined;
 
-  columnLoop: for (const column of nodeColumns) {
-    for (const row of column.rows) {
-      for (const node of row) {
-        if (!node.isPlaceholder && isStageSelected(node.stage)) {
-          selectedNode = node;
-          break columnLoop;
+  const selectedNode: NodeInfo | undefined = (() => {
+    for (const column of nodeColumns) {
+      for (const row of column.rows) {
+        for (const node of row) {
+          if (!node.isPlaceholder && isStageSelected(node.stage)) {
+            return node;
+          }
         }
       }
     }
-  }
+    return undefined;
+  })();
 
   if (!selectedNode) return null;
 

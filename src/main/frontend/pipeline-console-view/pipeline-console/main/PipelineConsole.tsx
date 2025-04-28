@@ -1,10 +1,10 @@
 import React from "react";
-import SplitView from "./SplitView";
+import SplitView from "./SplitView.tsx";
 import "./pipeline-console.scss";
-import { useStepsPoller } from "./hooks/use-steps-poller";
+import { useStepsPoller } from "./hooks/use-steps-poller.ts";
 
-const DataTreeView = React.lazy(() => import("./DataTreeView"));
-const StageView = React.lazy(() => import("./StageView"));
+const DataTreeView = React.lazy(() => import("./DataTreeView.tsx"));
+const StageView = React.lazy(() => import("./StageView.tsx"));
 
 export default function PipelineConsole() {
   const rootElement = document.getElementById("console-pipeline-root");
@@ -18,8 +18,8 @@ export default function PipelineConsole() {
     expandedSteps,
     stages,
     handleStageSelect,
-    handleStepToggle,
-    handleMoreConsoleClick,
+    onStepToggle,
+    onMoreConsoleClick,
   } = useStepsPoller({ currentRunPath, previousRunPath });
 
   return (
@@ -38,8 +38,8 @@ export default function PipelineConsole() {
           steps={openStageSteps}
           stepBuffers={openStageStepBuffers}
           expandedSteps={expandedSteps}
-          handleStepToggle={handleStepToggle}
-          handleMoreConsoleClick={handleMoreConsoleClick}
+          onStepToggle={onStepToggle}
+          onMoreConsoleClick={onMoreConsoleClick}
         />
       </div>
     </SplitView>

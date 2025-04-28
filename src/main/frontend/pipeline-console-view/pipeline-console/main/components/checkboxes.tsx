@@ -30,25 +30,10 @@ export default function VisibilitySelect() {
         htmlFor="main-view-visibility"
       >
         <div className="jenkins-dropdown__item__icon">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <path
-              d="M255.66 112c-77.94 0-157.89 45.11-220.83 135.33a16 16 0 00-.27 17.77C82.92 340.8 161.8 400 255.66 400c92.84 0 173.34-59.38 221.79-135.25a16.14 16.14 0 000-17.47C428.89 172.28 347.8 112 255.66 112z"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="32"
-            />
-            <circle
-              cx="256"
-              cy="256"
-              r="80"
-              fill="none"
-              stroke="currentColor"
-              strokeMiterlimit="10"
-              strokeWidth="32"
-            />
-          </svg>
+          <ViewIcon
+            mainViewVisibility={mainViewVisibility}
+            stageViewPosition={stageViewPosition}
+          />
         </div>
         Views
         <span>
@@ -74,11 +59,24 @@ export default function VisibilitySelect() {
       >
         <div className="jenkins-dropdown__item__icon">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <path
-              d="M448 256c0-106-86-192-192-192S64 150 64 256s86 192 192 192 192-86 192-192z"
+            <circle
+              cx="128"
+              cy="96"
+              r="48"
               fill="none"
               stroke="currentColor"
-              strokeMiterlimit="10"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="32"
+            />
+            <circle
+              cx="256"
+              cy="416"
+              r="48"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
               strokeWidth="32"
             />
             <path
@@ -87,7 +85,25 @@ export default function VisibilitySelect() {
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth="32"
-              d="M352 176L217.6 336 160 272"
+              d="M256 256v112"
+            />
+            <circle
+              cx="384"
+              cy="96"
+              r="48"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="32"
+            />
+            <path
+              d="M128 144c0 74.67 68.92 112 128 112M384 144c0 74.67-68.92 112-128 112"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="32"
             />
           </svg>
         </div>
@@ -107,4 +123,105 @@ export default function VisibilitySelect() {
       </label>
     </>
   );
+}
+
+function ViewIcon({
+  mainViewVisibility,
+  stageViewPosition,
+}: {
+  mainViewVisibility: MainViewVisibility;
+  stageViewPosition: StageViewPosition;
+}) {
+  if (mainViewVisibility === "both" && stageViewPosition === "top") {
+    return (
+      <svg
+        width="512px"
+        height="512px"
+        viewBox="0 0 512 512"
+        version="1.1"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <g
+          fill="none"
+          fillRule="evenodd"
+          stroke="currentColor"
+          strokeWidth="32"
+        >
+          <rect x="31" y="86" width="450" height="340" rx="70" />
+          <line x1="31" y1="180" x2="470" y2="180" />
+          <line x1="184" y1="180" x2="184" y2="420" />
+        </g>
+      </svg>
+    );
+  }
+
+  if (mainViewVisibility === "both" && stageViewPosition === "left") {
+    return (
+      <svg
+        width="512px"
+        height="512px"
+        viewBox="0 0 512 512"
+        version="1.1"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <g
+          fill="none"
+          fillRule="evenodd"
+          stroke="currentColor"
+          strokeWidth="32"
+        >
+          <rect x="31" y="86" width="450" height="340" rx="70" />
+          <line x1="150" y1="100" x2="150" y2="420" />
+          <line x1="280" y1="100" x2="280" y2="420" />
+        </g>
+      </svg>
+    );
+  }
+
+  if (mainViewVisibility === "stageOnly" && stageViewPosition === "top") {
+    return (
+      <svg
+        width="512px"
+        height="512px"
+        viewBox="0 0 512 512"
+        version="1.1"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <g
+          fill="none"
+          fillRule="evenodd"
+          stroke="currentColor"
+          strokeWidth="32"
+        >
+          <rect x="31" y="86" width="450" height="340" rx="70" />
+          <line x1="31" y1="180" x2="470" y2="180" />
+        </g>
+      </svg>
+    );
+  }
+
+  if (
+    mainViewVisibility === "treeOnly" ||
+    (mainViewVisibility === "stageOnly" && stageViewPosition === "left")
+  ) {
+    return (
+      <svg
+        width="512px"
+        height="512px"
+        viewBox="0 0 512 512"
+        version="1.1"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <g
+          fill="none"
+          fillRule="evenodd"
+          stroke="currentColor"
+          strokeWidth="32"
+        >
+          <rect x="31" y="86" width="450" height="340" rx="70" />
+          <line x1="184" y1="100" x2="184" y2="420" />
+        </g>
+      </svg>
+    );
+  }
 }

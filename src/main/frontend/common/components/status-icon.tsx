@@ -113,24 +113,24 @@ export default function StatusIcon({
       </Group>
 
       <Group currentStatus={status} status={Result.skipped}>
-        <g transform="scale(0.9)">
+        <g transform="scale(0.8)">
           <path
             fill="none"
             stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="32"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="36"
             d="M216 352l96-96-96-96"
-            transform="translate(-50, 0)"
+            transform="translate(-55, 0)"
           />
           <path
             fill="none"
             stroke="currentColor"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="32"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="36"
             d="M216 352l96-96-96-96"
-            transform="translate(70, 0)"
+            transform="translate(75, 0)"
           />
         </g>
       </Group>

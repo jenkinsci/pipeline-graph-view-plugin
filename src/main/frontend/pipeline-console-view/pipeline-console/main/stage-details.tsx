@@ -8,7 +8,7 @@ import { exact, Paused, Started, Total } from "../../../common/utils/timings.tsx
 import Dropdown from "../../../common/components/dropdown.tsx";
 import Tooltip from "../../../common/components/tooltip.tsx";
 import { DOCUMENT } from "./symbols.tsx";
-import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main";
+import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/index.ts";
 
 export default function StageDetails({ stage }: StageDetailsProps) {
   if (!stage) {

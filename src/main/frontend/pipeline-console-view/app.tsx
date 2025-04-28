@@ -6,7 +6,7 @@ import { ResourceBundleName } from "../common/i18n/translations.ts";
 import { LayoutPreferencesProvider } from "./pipeline-console/main/providers/user-preference-provider.tsx";
 
 const PipelineConsole = lazy(
-  () => import("./pipeline-console/main/PipelineConsole"),
+  () => import("./pipeline-console/main/PipelineConsole.tsx"),
 );
 
 export default function App() {

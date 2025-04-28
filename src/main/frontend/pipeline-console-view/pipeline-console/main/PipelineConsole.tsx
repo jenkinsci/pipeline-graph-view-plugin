@@ -1,17 +1,17 @@
 import React from "react";
 import "./pipeline-console.scss";
-import { useStepsPoller } from "./hooks/use-steps-poller";
-import { PipelineGraph } from "../../../pipeline-graph-view/pipeline-graph/main";
+import { useStepsPoller } from "./hooks/use-steps-poller.ts";
+import { PipelineGraph } from "../../../pipeline-graph-view/pipeline-graph/main/index.ts";
 import "../../../pipeline-graph-view/app.scss";
 import "../../../pipeline-graph-view/pipeline-graph/styles/main.scss";
-import SplitView from "./split-view";
-import { useLayoutPreferences } from "./providers/user-preference-provider";
-import VisibilitySelect from "./components/checkboxes";
-import Dropdown from "../../../common/components/dropdown";
-import { CONSOLE, DOCUMENT } from "./symbols";
-import DropdownPortal from "../../../common/components/dropdown-portal";
-import StageView from "./StageView";
-import DataTreeView from "./DataTreeView";
+import SplitView from "./split-view.tsx";
+import { useLayoutPreferences } from "./providers/user-preference-provider.tsx";
+import VisibilitySelect from "./components/checkboxes.tsx";
+import Dropdown from "../../../common/components/dropdown.tsx";
+import { CONSOLE, DOCUMENT } from "./symbols.tsx";
+import DropdownPortal from "../../../common/components/dropdown-portal.tsx";
+import StageView from "./StageView.tsx";
+import DataTreeView from "./DataTreeView.tsx";
 
 export default function PipelineConsole() {
   const rootElement = document.getElementById("console-pipeline-root");
@@ -35,7 +35,7 @@ export default function PipelineConsole() {
       <DropdownPortal>
         <Dropdown
           items={[
-            <VisibilitySelect />,
+            <VisibilitySelect key="visibility-select" />,
             "separator",
             {
               text: "View as plain text",

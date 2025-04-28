@@ -62,48 +62,48 @@ function getTimeSpanString(
   if (years > 0) {
     return makeTimeSpanString(
       years,
-      translations.get(YEAR)({ "0": years }),
+      translations.format(YEAR, { "0": years }),
       months,
-      translations.get(MONTH)({ "0": months }),
+      translations.format(MONTH, { "0": months }),
     );
   } else if (months > 0) {
     return makeTimeSpanString(
       months,
-      translations.get(MONTH)({ "0": months }),
+      translations.format(MONTH, { "0": months }),
       days,
-      translations.get(DAY)({ "0": days }),
+      translations.format(DAY, { "0": days }),
     );
   } else if (days > 0) {
     return makeTimeSpanString(
       days,
-      translations.get(DAY)({ "0": days }),
+      translations.format(DAY, { "0": days }),
       hours,
-      translations.get(HOURS)({ "0": hours }),
+      translations.format(HOURS, { "0": hours }),
     );
   } else if (hours > 0) {
     return makeTimeSpanString(
       hours,
-      translations.get(HOURS)({ "0": hours }),
+      translations.format(HOURS, { "0": hours }),
       minutes,
-      translations.get(MINUTE)({ "0": minutes }),
+      translations.format(MINUTE, { "0": minutes }),
     );
   } else if (minutes > 0) {
     return makeTimeSpanString(
       minutes,
-      translations.get(MINUTE)({ "0": minutes }),
+      translations.format(MINUTE, { "0": minutes }),
       seconds,
-      translations.get(SECOND)({ "0": seconds }),
+      translations.format(SECOND, { "0": seconds }),
     );
   } else if (seconds >= 10) {
-    return translations.get(SECOND)({ "0": seconds });
+    return translations.format(SECOND, { "0": seconds });
   } else if (seconds >= 1) {
-    return translations.get(SECOND)({
+    return translations.format(SECOND, {
       "0": seconds + Math.floor(millis / 100) / 10,
     });
   } else if (millis >= 100) {
-    return translations.get(SECOND)({ "0": Math.floor(millis / 10) / 100 });
+    return translations.format(SECOND, { "0": Math.floor(millis / 10) / 100 });
   } else {
-    return translations.get(MILLIS)({ "0": millis });
+    return translations.format(MILLIS, { "0": millis });
   }
 }
 
@@ -125,7 +125,7 @@ export function Started({ since }: { since: number }) {
 
   return (
     <>
-      {translations.get(STARTED_AGO)({
+      {translations.format(STARTED_AGO, {
         "0": getTimeSpanString(Math.abs(since - Date.now()), translations),
       })}
     </>

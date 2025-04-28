@@ -17,7 +17,7 @@ export class Translations {
     this.mapping = mapping;
   }
 
-  get(key: string): MessageFunction<"string"> {
+  private get(key: string): MessageFunction<"string"> {
     const message = this.mapping[key];
     if (message != null) {
       return message;
@@ -28,6 +28,11 @@ export class Translations {
     return (params) => {
       return params === undefined ? "" : Object.values(params as any).join(" ");
     };
+  }
+
+  format(key: string, args: Record<string, any> | null = null): string {
+    const message = this.get(key);
+    return args === null ? message() : message(args);
   }
 }
 

@@ -45,7 +45,7 @@ export const MultiPipelineGraph = () => {
       {Object.keys(groupedRuns).length === 0 ? (
         <div className="pgv-stages__group">
           <div className="pgv-stages__heading">
-            {translations.get("noBuilds")()}
+            {translations.format("noBuilds")}
           </div>
         </div>
       ) : (

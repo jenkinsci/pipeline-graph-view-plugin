@@ -13,7 +13,7 @@ vi.mock("../RestClient.tsx", () => ({
 }));
 
 describe("Translations", () => {
-  describe("Get translation", () => {
+  describe("Format translation", () => {
     const fmt = messageFormat("en");
 
     const translations = new Translations({
@@ -21,14 +21,14 @@ describe("Translations", () => {
     });
 
     it("should use known mapped message", () => {
-      expect(translations.get("Property.name")({ arg: "hello" })).toEqual(
+      expect(translations.format("Property.name", { arg: "hello" })).toEqual(
         "hello world",
       );
     });
 
     it("should use fallback formatter with unknown property", () => {
       expect(
-        translations.get("Unknown.property.name")({ arg: "hello" }),
+        translations.format("Unknown.property.name", { arg: "hello" }),
       ).toEqual("hello");
     });
   });
@@ -47,11 +47,11 @@ describe("Translations", () => {
       expect(getResourceBundle).toHaveBeenCalledWith(
         "io.jenkins.plugins.pipelinegraphview.Messages",
       );
-      expect(translations.get("A.property")()).toEqual("a value");
-      expect(translations.get("Another.property")()).toEqual(
+      expect(translations.format("A.property")).toEqual("a value");
+      expect(translations.format("Another.property")).toEqual(
         "with another value",
       );
-      expect(translations.get("One.more.property")({ one: "some" })).toEqual(
+      expect(translations.format("One.more.property", { one: "some" })).toEqual(
         "with some more value",
       );
     });
@@ -63,10 +63,10 @@ describe("Translations", () => {
         ResourceBundleName.messages,
       ]);
 
-      expect(translations.get("Util.second")({ 0: 5 })).toEqual("5 sec");
-      expect(translations.get("Util.day")({ 0: 1 })).toEqual("1 day");
-      expect(translations.get("Util.day")({ 0: 2 })).toEqual("2 days");
-      expect(translations.get("A.property")()).toEqual("");
+      expect(translations.format("Util.second", { 0: 5 })).toEqual("5 sec");
+      expect(translations.format("Util.day", { 0: 1 })).toEqual("1 day");
+      expect(translations.format("Util.day", { 0: 2 })).toEqual("2 days");
+      expect(translations.format("A.property")).toEqual("");
     });
   });
 });

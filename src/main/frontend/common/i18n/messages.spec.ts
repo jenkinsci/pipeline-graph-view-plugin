@@ -1,11 +1,7 @@
 import { Mock, vi } from "vitest";
 
 import { getResourceBundle } from "../RestClient.tsx";
-import {
-  getMessages,
-  ResourceBundleName,
-  Messages,
-} from "./messages.ts";
+import { getMessages, ResourceBundleName, Messages } from "./messages.ts";
 
 vi.mock("../RestClient.tsx", () => ({
   getResourceBundle: vi.fn(),
@@ -40,17 +36,13 @@ describe("Messages", () => {
         "Another.property": "with another value",
         "One.more.property": "with {one} more value",
       });
-      const messages = await getMessages("en", [
-        ResourceBundleName.messages,
-      ]);
+      const messages = await getMessages("en", [ResourceBundleName.messages]);
 
       expect(getResourceBundle).toHaveBeenCalledWith(
         "io.jenkins.plugins.pipelinegraphview.Messages",
       );
       expect(messages.format("A.property")).toEqual("a value");
-      expect(messages.format("Another.property")).toEqual(
-        "with another value",
-      );
+      expect(messages.format("Another.property")).toEqual("with another value");
       expect(messages.format("One.more.property", { one: "some" })).toEqual(
         "with some more value",
       );
@@ -59,9 +51,7 @@ describe("Messages", () => {
     it("should use the default messages if undefined returned", async () => {
       (getResourceBundle as Mock).mockResolvedValue(undefined);
 
-      const messages = await getMessages("en", [
-        ResourceBundleName.messages,
-      ]);
+      const messages = await getMessages("en", [ResourceBundleName.messages]);
 
       expect(messages.format("Util.second", { 0: 5 })).toEqual("5 sec");
       expect(messages.format("Util.day", { 0: 1 })).toEqual("1 day");

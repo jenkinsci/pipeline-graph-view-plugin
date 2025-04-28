@@ -28,9 +28,7 @@ export const I18NProvider: FunctionComponent<I18NProviderProps> = ({
   bundles,
   locale,
 }) => {
-  const [messages, setMessages] = useState<Messages>(
-    defaultMessages(locale),
-  );
+  const [messages, setMessages] = useState<Messages>(defaultMessages(locale));
 
   useEffect(() => {
     const fetchMessages = async () => {

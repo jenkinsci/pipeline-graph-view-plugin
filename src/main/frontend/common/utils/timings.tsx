@@ -41,10 +41,7 @@ function makeTimeSpanString(
  * @param duration number of milliseconds.
  * @param messages the messages to get the labels from.
  */
-function getTimeSpanString(
-  duration: number,
-  messages: Messages,
-): string {
+function getTimeSpanString(duration: number, messages: Messages): string {
   const years = Math.floor(duration / ONE_YEAR_MS);
   duration %= ONE_YEAR_MS;
   const months = Math.floor(duration / ONE_MONTH_MS);

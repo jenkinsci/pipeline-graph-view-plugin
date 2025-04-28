@@ -6,7 +6,7 @@ export type ResourceBundle = {
   [key: string]: string;
 };
 
-export class Translations {
+export class Messages {
   private readonly mapping: Record<string, MessageFunction<"string">>;
 
   constructor(messages: ResourceBundle, locale: string) {
@@ -52,10 +52,10 @@ export enum ResourceBundleName {
   messages = "io.jenkins.plugins.pipelinegraphview.Messages",
 }
 
-export async function getTranslations(
+export async function getMessages(
   locale: string,
   bundleNames: ResourceBundleName[],
-): Promise<Translations> {
+): Promise<Messages> {
   const bundles = await Promise.all(
     bundleNames.map((name) => getResourceBundle(name).then((r) => r ?? {})),
   );
@@ -65,7 +65,7 @@ export async function getTranslations(
     DEFAULT_MESSAGES,
   );
 
-  return new Translations(messages, locale);
+  return new Messages(messages, locale);
 }
 
 const DEFAULT_MESSAGES: ResourceBundle = {
@@ -80,6 +80,6 @@ const DEFAULT_MESSAGES: ResourceBundle = {
   noBuilds: "No builds",
 };
 
-export function defaultTranslations(locale: string) {
-  return new Translations(DEFAULT_MESSAGES, locale);
+export function defaultMessages(locale: string): Messages {
+  return new Messages(DEFAULT_MESSAGES, locale);
 }

@@ -4,11 +4,10 @@ import { vi } from "vitest";
 import React from "react";
 import { Paused, Started, Total } from "./timings.tsx";
 import { render } from "@testing-library/react";
-import { I18NContext } from "../i18n/i18n-provider.tsx";
-import { Translations } from "../i18n/translations.ts";
+import { I18NContext, Messages } from "../i18n/index.ts";
 
 describe("Timings", () => {
-  const translations = new Translations(
+  const translations = new Messages(
     {
       "Util.year": "{0} yr",
       "Util.month": "{0} mo",

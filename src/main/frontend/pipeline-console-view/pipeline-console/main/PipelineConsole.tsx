@@ -58,6 +58,7 @@ export default function PipelineConsole() {
         {(mainViewVisibility === "both" ||
           mainViewVisibility === "stageOnly") && (
           <div className={"pgv-graph-view-thing"}>
+            <div className={"pgv-graph-view-thing__heading"}>Stage</div>
             <PipelineGraph
               stages={stages}
               onStageSelect={handleStageSelect}

@@ -12,6 +12,16 @@
   border-radius: var(--form-input-border-radius);
   overflow: hidden;
   height: 100%;
+
+  &__heading {
+    display: flex;
+    min-height: 40px;
+    align-items: center;
+    padding-left: 0.75rem;
+    font-weight: var(--font-bold-weight);
+    font-size: var(--font-size-sm);
+    color: var(--text-color-secondary);
+  }
 }
 
 .ansi-fg-0 {

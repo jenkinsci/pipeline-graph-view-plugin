@@ -41,7 +41,6 @@ export function messageFormat(locale: string) {
 
 export enum ResourceBundleName {
   messages = "io.jenkins.plugins.pipelinegraphview.Messages",
-  timing = "hudson.Messages",
 }
 
 export async function getTranslations(

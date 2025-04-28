@@ -13,10 +13,7 @@ const App: FunctionComponent = () => {
     "en";
   return (
     <div>
-      <I18NProvider
-        bundles={[ResourceBundleName.messages, ResourceBundleName.timing]}
-        locale={locale}
-      >
+      <I18NProvider bundles={[ResourceBundleName.messages]} locale={locale}>
         <MultiPipelineGraph />
       </I18NProvider>
     </div>

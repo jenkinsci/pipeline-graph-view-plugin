@@ -99,6 +99,7 @@ export default function VisibilitySelect() {
           id="stage-view-position"
           value={stageViewPosition}
           onChange={handlePositionChange}
+          disabled={mainViewVisibility === MainViewVisibility.TREE_ONLY}
         >
           <option value={StageViewPosition.TOP}>Top</option>
           <option value={StageViewPosition.LEFT}>Left</option>

@@ -14,4 +14,9 @@
     opacity: 0;
     cursor: pointer;
   }
+
+  &:has(select:disabled) {
+    opacity: 0.5;
+    pointer-events: none;
+  }
 }

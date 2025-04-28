@@ -23,8 +23,10 @@
   }
 
   &__heading {
+    padding: 0 0.55rem;
     bottom: unset !important;
     right: unset !important;
+    line-height: 2rem;
     font-weight: var(--font-bold-weight);
     font-size: var(--font-size-sm);
   }
@@ -32,13 +34,12 @@
 
 .test-floaty-material {
   position: absolute;
-  inset: 0.4rem 0.3rem;
+  inset: 0.1rem;
   display: flex;
   z-index: 1;
   backdrop-filter: blur(10px);
   background: red;
   border-radius: 0.45rem;
-  padding: 0.2rem 0.4375rem;
   align-items: center;
   color: var(--text-color-secondary);
   background: color-mix(in srgb, var(--card-background) 80%, transparent);

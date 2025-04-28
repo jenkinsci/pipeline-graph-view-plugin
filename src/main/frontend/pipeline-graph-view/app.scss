@@ -47,18 +47,39 @@
 
 .pgw-fullscreen-controls,
 .pgw-zoom-controls {
-  padding: 0.2rem !important;
-
   .jenkins-button {
+    --button-background: transparent;
+    --button-background--hover: transparent;
+    --button-background--active: transparent;
+    --button-box-shadow--focus: transparent;
+
     padding: 0;
-    width: 1.75rem;
-    min-height: 1.75rem;
+    width: 2rem;
+    min-height: 2rem;
     border-radius: 0.35rem;
+
+    &::before {
+      border: none;
+    }
 
     svg {
       width: 1rem;
       height: 1rem;
       color: var(--text-color-secondary);
+    }
+
+    &:not(:disabled) {
+      &:hover {
+        svg {
+          opacity: 0.75;
+        }
+      }
+
+      &:active {
+        svg {
+          opacity: 0.5;
+        }
+      }
     }
   }
 }

@@ -21,6 +21,7 @@ import {
   TransformWrapper,
   TransformComponent,
   useControls,
+  useTransformEffect,
 } from "react-zoom-pan-pinch";
 import Tooltip from "../../../common/components/tooltip.tsx";
 
@@ -114,7 +115,7 @@ export function PipelineGraph(props: Props) {
   };
 
   return (
-    <TransformWrapper minScale={0.75}>
+    <TransformWrapper minScale={0.75} maxScale={3}>
       <ZoomControls />
 
       <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
@@ -178,6 +179,23 @@ export function PipelineGraph(props: Props) {
 
 function ZoomControls() {
   const { zoomIn, zoomOut, resetTransform } = useControls();
+  const [disabledButtons, setDisabledButtons] = useState({
+    zoomIn: false,
+    zoomOut: false,
+    reset: true,
+  });
+
+  useTransformEffect(({ state, instance }) => {
+    const cantZoomIn = state.scale >= instance.props.maxScale!;
+    const cantZoomOut = state.scale <= instance.props.minScale!;
+    const cantReset = state.scale === 1;
+
+    setDisabledButtons({
+      zoomIn: cantZoomIn,
+      zoomOut: cantZoomOut,
+      reset: cantReset,
+    });
+  });
 
   return (
     <div className="test-floaty-material pgw-zoom-controls">
@@ -185,6 +203,7 @@ function ZoomControls() {
         <button
           className={"jenkins-button jenkins-button--tertiary"}
           onClick={() => zoomIn()}
+          disabled={disabledButtons.zoomIn}
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
             <path
@@ -202,6 +221,7 @@ function ZoomControls() {
         <button
           className={"jenkins-button jenkins-button--tertiary"}
           onClick={() => zoomOut()}
+          disabled={disabledButtons.zoomOut}
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
             <path
@@ -219,6 +239,7 @@ function ZoomControls() {
         <button
           className={"jenkins-button jenkins-button--tertiary"}
           onClick={() => resetTransform()}
+          disabled={disabledButtons.reset}
         >
           <svg className="ionicon" viewBox="0 0 512 512">
             <path

@@ -13,10 +13,7 @@ export default function App() {
     document.getElementById("console-pipeline-root")?.dataset.userLocale ??
     "en";
   return (
-    <I18NProvider
-      bundles={[ResourceBundleName.messages, ResourceBundleName.timing]}
-      locale={locale}
-    >
+    <I18NProvider bundles={[ResourceBundleName.messages]} locale={locale}>
       <FilterProvider>
         <PipelineConsole />
       </FilterProvider>

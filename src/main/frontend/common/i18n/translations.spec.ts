@@ -42,10 +42,8 @@ describe("Translations", () => {
       });
       const translations = await getTranslations("en", [
         ResourceBundleName.messages,
-        ResourceBundleName.timing,
       ]);
 
-      expect(getResourceBundle).toHaveBeenCalledWith("hudson.Messages");
       expect(getResourceBundle).toHaveBeenCalledWith(
         "io.jenkins.plugins.pipelinegraphview.Messages",
       );

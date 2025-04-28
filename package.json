@@ -6,13 +6,15 @@
   "type": "module",
   "scripts": {
     "mvnbuild": "npm run build",
-    "mvntest": "npm test",
+    "mvntest": "eslint --format checkstyle --output-file target/eslint-warnings.xml; vitest run --reporter junit",
     "build": "vite build --mode production",
-    "build:dev": "vite build --mode development --watch",
-    "lint": "eslint --format checkstyle && tsc && prettier --check .",
-    "lint:fix": "eslint --fix && prettier --write .",
-    "test": "vitest --watch=false --reporter default --reporter junit && npm run lint",
-    "test:dev": "vitest --watch"
+    "build:dev": "vite build --mode production --watch",
+    "format:check": "prettier --check .",
+    "format": "prettier --write .",
+    "lint": "tsc && eslint && npm run format:check",
+    "lint:fix": "eslint --fix && npm run format",
+    "test": "vitest run",
+    "test:dev": "vitest watch"
   },
   "repository": {
     "type": "git",

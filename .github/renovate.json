@@ -12,10 +12,6 @@
       "matchDatasources": ["npm"],
       "addLabels": ["javascript"],
       "automerge": false
-    },
-    {
-      "matchPackageNames": ["node"],
-      "allowedVersions": "/22.[0-9]+.[0-9]+(.[0-9]+)?$/"
     }
   ],
   "customManagers": [

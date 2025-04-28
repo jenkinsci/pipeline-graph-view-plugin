@@ -13,7 +13,6 @@ export default [
         version: "detect",
       },
     },
-
   },
   plugins.n.configs["flat/recommended"],
   plugins.promise.configs["flat/recommended"],

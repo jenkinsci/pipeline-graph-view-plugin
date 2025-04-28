@@ -32,6 +32,7 @@ export interface Result {
  * ```
  */
 export function parseEscapeCode(escapeCode: string): Result {
+  // eslint-disable-next-line no-control-regex
   const graphicsPattern = /^\u001b\[([;0-9]*)m$/; // We only care about SGR codes
 
   const result: Result = {
@@ -98,13 +99,13 @@ export function tokenizeANSIString(input?: string): string[] | Result[] {
     commentStartIndex   - The start index of the next comment block, or -1.
     commentEndIndex     - The end index of the next comment block, or -1.
   */
-  let loopCounter = 0,
-    escapeCodeIndex = 0,
-    parsedPointer = 0,
-    // comment start
-    commentStartIndex = 0,
-    // comment end
-    commentEndIndex = 0;
+  let loopCounter = 0;
+  let escapeCodeIndex = 0;
+  let parsedPointer = 0;
+  // comment start
+  let commentStartIndex = 0;
+  // comment end
+  let commentEndIndex = 0;
   const result: string[] | Result[] = [];
 
   while (loopCounter < len) {
@@ -190,7 +191,7 @@ export function makeReactChildren(
   };
 
   for (let i = 0; i < tokenizedInput.length; i++) {
-    let codeOrString = tokenizedInput[i];
+    const codeOrString = tokenizedInput[i];
     if (typeof codeOrString === "string") {
       // Need to output a <span> or plain text if there's no interesting current state
       if (!currentState.setFG && !currentState.setBG) {

@@ -1,3 +1,5 @@
+@use "cards";
+
 :root {
   --card-gap: 1rem;
 }
@@ -6,8 +8,6 @@
   margin: unset;
   max-width: unset;
 }
-
-@import "cards";
 
 .pgv-details-card {
   display: flex;

@@ -1,6 +1,6 @@
 import Tippy, { TippyProps } from "@tippyjs/react";
 import React, { useState } from "react";
-import Tooltip from "./tooltip";
+import Tooltip from "./tooltip.tsx";
 
 /**
  * A customized (and customizable) implementation of Tippy dropdowns
@@ -40,9 +40,9 @@ export default function Dropdown({ items, disabled }: DropdownProps) {
           onClick={visible ? hide : show}
         >
           <div className="jenkins-overflow-button__ellipsis">
-            <span></span>
-            <span></span>
-            <span></span>
+            <span />
+            <span />
+            <span />
           </div>
         </button>
       </Tippy>

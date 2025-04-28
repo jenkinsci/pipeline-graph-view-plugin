@@ -7,17 +7,17 @@ import {
   LayoutInfo,
   NodeColumn,
   StageInfo,
-} from "./PipelineGraphModel";
-import { layoutGraph } from "./PipelineGraphLayout";
-import { Result } from "./PipelineGraphModel";
-import { Node, SelectionHighlight } from "./support/nodes";
+  Result,
+} from "./PipelineGraphModel.tsx";
+import { layoutGraph } from "./PipelineGraphLayout.ts";
+import { Node, SelectionHighlight } from "./support/nodes.tsx";
 import {
   BigLabel,
   SmallLabel,
   SequentialContainerLabel,
-} from "./support/labels";
-import { GraphConnections } from "./support/connections";
-import useRunPoller from "../../../common/tree-api";
+} from "./support/labels.tsx";
+import { GraphConnections } from "./support/connections.tsx";
+import useRunPoller from "../../../common/tree-api.ts";
 
 export function PipelineGraph(props: Props) {
   const {
@@ -31,8 +31,8 @@ export function PipelineGraph(props: Props) {
   } = props;
 
   const { run } = useRunPoller({
-    currentRunPath: currentRunPath,
-    previousRunPath: previousRunPath,
+    currentRunPath,
+    previousRunPath,
   });
 
   const [nodeColumns, setNodeColumns] = useState<NodeColumn[]>([]);

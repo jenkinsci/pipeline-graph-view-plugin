@@ -1,5 +1,8 @@
-import { Result, StageInfo } from "../pipeline-graph-view/pipeline-graph/main";
-import { ResourceBundle } from "./i18n/translations";
+import {
+  Result,
+  StageInfo,
+} from "../pipeline-graph-view/pipeline-graph/main/index.ts";
+import { ResourceBundle } from "./i18n/translations.ts";
 
 export interface RunStatus {
   stages: StageInfo[];
@@ -44,7 +47,7 @@ export async function getRunStatusFromPath(
     if (!response.ok) {
       throw response.statusText;
     }
-    let json = await response.json();
+    const json = await response.json();
     return json.data;
   } catch (e) {
     console.error(`Caught error getting tree: '${e}'`);
@@ -54,9 +57,9 @@ export async function getRunStatusFromPath(
 
 export async function getRunSteps(): Promise<StepInfo[] | null> {
   try {
-    let response = await fetch("allSteps");
+    const response = await fetch("allSteps");
     if (!response.ok) throw response.statusText;
-    let json = await response.json();
+    const json = await response.json();
     return json.data.steps;
   } catch (e) {
     console.warn(`Caught error getting steps: '${e}'`);
@@ -69,12 +72,11 @@ export async function getConsoleTextOffset(
   startByte: number,
 ): Promise<ConsoleLogData | null> {
   try {
-    let response = await fetch(
+    const response = await fetch(
       `consoleOutput?nodeId=${stepId}&startByte=${startByte}`,
     );
     if (!response.ok) throw response.statusText;
-    let json = await response.json();
-    json.data.text = json.data.text;
+    const json = await response.json();
     return json.data;
   } catch (e) {
     console.error(`Caught error when fetching console: '${e}'`);
@@ -87,7 +89,7 @@ export async function getResourceBundle(
 ): Promise<ResourceBundle | undefined> {
   try {
     const baseUrl: string = document.head.dataset.rooturl ?? "";
-    let response = await fetch(
+    const response = await fetch(
       `${baseUrl}/i18n/resourceBundle?baseName=${resource}`,
     );
     if (!response.ok) {

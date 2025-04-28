@@ -15,7 +15,7 @@
     },
     {
       "matchPackageNames": ["node"],
-      "allowedVersions": "/20.[0-9]+.[0-9]+(.[0-9]+)?$/"
+      "allowedVersions": "/22.[0-9]+.[0-9]+(.[0-9]+)?$/"
     }
   ],
   "customManagers": [
@@ -24,7 +24,7 @@
       "fileMatch": ["pom.xml"],
       "matchStrings": ["<node.version>(?<currentValue>.*?)</node.version>"],
       "depNameTemplate": "node",
-      "datasourceTemplate": "npm"
+      "datasourceTemplate": "node-version"
     },
     {
       "customType": "regex",

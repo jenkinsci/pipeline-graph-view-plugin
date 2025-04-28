@@ -1,22 +1,16 @@
-/** * @jest-environment jsdom */
+/** * @vitest-environment jsdom */
 
-import React, { ReactElement } from "react";
-import ConsoleLogStream, { ConsoleLogStreamProps } from "./ConsoleLogStream";
-import { Result, StepInfo, StepLogBufferInfo } from "./PipelineConsoleModel";
+import { vi } from "vitest";
+import React from "react";
+import ConsoleLogStream, {
+  ConsoleLogStreamProps,
+} from "./ConsoleLogStream.tsx";
+import {
+  Result,
+  StepInfo,
+  StepLogBufferInfo,
+} from "./PipelineConsoleModel.tsx";
 import { render } from "@testing-library/react";
-import { VirtuosoMockContext } from "react-virtuoso";
-
-function renderInContext(element: ReactElement) {
-  return render(element, {
-    wrapper: ({ children }) => (
-      <VirtuosoMockContext.Provider
-        value={{ viewportHeight: 300, itemHeight: 100 }}
-      >
-        {children}
-      </VirtuosoMockContext.Provider>
-    ),
-  });
-}
 
 const TestComponent = (props: ConsoleLogStreamProps) => {
   return (
@@ -26,7 +20,7 @@ const TestComponent = (props: ConsoleLogStreamProps) => {
   );
 };
 
-window.HTMLElement.prototype.scrollBy = jest.fn();
+window.HTMLElement.prototype.scrollBy = vi.fn();
 
 describe("ConsoleLogStream", () => {
   const baseStep: StepInfo = {
@@ -53,8 +47,8 @@ describe("ConsoleLogStream", () => {
     logBuffer: baseBuffer,
     isExpanded: false,
     maxHeightScale: 1,
-    handleMoreConsoleClick: () => {
-      console.log("handleMoreConsoleClick triggered");
+    onMoreConsoleClick: () => {
+      console.log("onMoreConsoleClick triggered");
     },
   } as ConsoleLogStreamProps;
 

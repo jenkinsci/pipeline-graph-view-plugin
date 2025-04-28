@@ -2,13 +2,13 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   Result,
   StageInfo,
-} from "../../../pipeline-graph-view/pipeline-graph/main/";
+} from "../../../pipeline-graph-view/pipeline-graph/main/index.ts";
 import "./data-tree-view.scss";
-import { Total } from "../../../common/utils/timings";
-import StatusIcon from "../../../common/components/status-icon";
-import { classNames } from "../../../common/utils/classnames";
-import Filter from "../../../common/components/filter";
-import { useFilter } from "./providers/filter-provider";
+import { Total } from "../../../common/utils/timings.tsx";
+import StatusIcon from "../../../common/components/status-icon.tsx";
+import { classNames } from "../../../common/utils/classnames.ts";
+import Filter from "../../../common/components/filter.tsx";
+import { useFilter } from "./providers/filter-provider.tsx";
 
 export default function DataTreeView({
   stages,
@@ -35,15 +35,15 @@ export default function DataTreeView({
                 d="M221.09 64a157.09 157.09 0 10157.09 157.09A157.1 157.1 0 00221.09 64z"
                 fill="none"
                 stroke="currentColor"
-                stroke-miterlimit="10"
-                stroke-width="32"
+                strokeMiterlimit="10"
+                strokeWidth="32"
               />
               <path
                 fill="none"
                 stroke="currentColor"
-                stroke-linecap="round"
-                stroke-miterlimit="10"
-                stroke-width="32"
+                strokeLinecap="round"
+                strokeMiterlimit="10"
+                strokeWidth="32"
                 d="M338.29 338.29L448 448"
               />
             </svg>
@@ -93,7 +93,11 @@ export default function DataTreeView({
   );
 }
 
-const TreeNode = React.memo(({ stage, selected, onSelect }: TreeNodeProps) => {
+const TreeNode = React.memo(function TreeNode({
+  stage,
+  selected,
+  onSelect,
+}: TreeNodeProps) {
   const { search, visibleStatuses, allVisible } = useFilter();
   const hasChildren = stage.children && stage.children.length > 0;
   const isSelected = String(stage.id) === selected;

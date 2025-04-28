@@ -5,12 +5,12 @@ export default function StageNodeLink({ agent }: StageNodeLinkProps) {
     return null;
   }
 
-  const agentName = agent == "built-in" ? "Jenkins" : agent;
+  const agentName = agent === "built-in" ? "Jenkins" : agent;
   const href = getAgentUrl(agent);
 
   function getAgentUrl(name: string) {
     // Wrap built-in in brackets
-    const id = name == "built-in" ? "(built-in)" : name;
+    const id = name === "built-in" ? "(built-in)" : name;
     const rootPath = document.head.dataset.rooturl;
     return `${rootPath}/computer/${id}/`;
   }
@@ -21,6 +21,7 @@ export default function StageNodeLink({ agent }: StageNodeLinkProps) {
         href={href}
         className={"jenkins-button jenkins-button--tertiary"}
         target="_blank"
+        rel="noreferrer"
       >
         <svg
           width="512px"
@@ -41,19 +42,13 @@ export default function StageNodeLink({ agent }: StageNodeLinkProps) {
               stroke="currentColor"
               strokeWidth="32"
             >
-              <rect x="0" y="0" width="448" height="320" rx="32"></rect>
+              <rect x="0" y="0" width="448" height="320" rx="32" />
               <polygon
                 strokeLinecap="round"
                 fillRule="nonzero"
                 points="272 384 264 320 184 320 176 384"
-              ></polygon>
-              <line
-                x1="336"
-                y1="384"
-                x2="112"
-                y2="384"
-                strokeLinecap="round"
-              ></line>
+              />
+              <line x1="336" y1="384" x2="112" y2="384" strokeLinecap="round" />
             </g>
           </g>
         </svg>

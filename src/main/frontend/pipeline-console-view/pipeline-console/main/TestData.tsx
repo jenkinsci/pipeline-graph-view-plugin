@@ -1,4 +1,9 @@
-import { Result, StageType, StageInfo, StepInfo } from "./PipelineConsoleModel";
+import {
+  Result,
+  StageType,
+  StageInfo,
+  StepInfo,
+} from "./PipelineConsoleModel.tsx";
 export const defaultStagesList: StageInfo[] = [
   {
     name: "Stage A",
@@ -258,12 +263,12 @@ export const findStage = (
   stageList: Array<StageInfo>,
   id: number,
 ): StageInfo | null => {
-  for (let stage of stageList) {
-    if (stage.id == id) {
+  for (const stage of stageList) {
+    if (stage.id === id) {
       return stage;
     }
     if (stage.children) {
-      let foundStage = findStage(stage.children, id);
+      const foundStage = findStage(stage.children, id);
       if (foundStage) {
         return foundStage;
       }
@@ -276,9 +281,9 @@ export const findStageSteps = (
   stepList: Array<StepInfo>,
   id: number,
 ): StepInfo[] => {
-  let steps = [] as StepInfo[];
-  for (let step of stepList) {
-    if (step.stageId == `${id}`) {
+  const steps = [] as StepInfo[];
+  for (const step of stepList) {
+    if (step.stageId === `${id}`) {
       steps.push(step);
     }
   }

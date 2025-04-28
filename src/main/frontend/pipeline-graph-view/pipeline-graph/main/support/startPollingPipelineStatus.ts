@@ -1,17 +1,13 @@
-import { StageInfo } from "../PipelineGraphModel";
-import { getRunStatusFromPath } from "../../../../common/RestClient";
-
-interface ApiResult {
-  complete: boolean;
-  stages: Array<StageInfo>;
-}
-
+import {
+  getRunStatusFromPath,
+  RunStatus,
+} from "../../../../common/RestClient.tsx";
 /**
  * Starts polling the server to retrieve pipeline status.
  * Will only stop once the run is finished.
  */
-export default function startPollingPipelineStatus(
-  onFetchSuccess: (data: ApiResult) => void,
+export default async function startPollingPipelineStatus(
+  onFetchSuccess: (data: RunStatus) => void,
   onFetchError: (err: Error) => void,
   onPipelineComplete: () => void,
   path: string,

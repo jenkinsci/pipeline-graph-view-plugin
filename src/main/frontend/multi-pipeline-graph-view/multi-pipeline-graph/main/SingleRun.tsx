@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { RunInfo } from "./MultiPipelineGraphModel.ts";
 import { time, Total } from "../../../common/utils/timings.tsx";
 import "./single-run.scss";
@@ -6,12 +6,14 @@ import StatusIcon from "../../../common/components/status-icon.tsx";
 import {
   LayoutInfo,
   PipelineGraph,
-  StageInfo,
 } from "../../../pipeline-graph-view/pipeline-graph/main";
 import { defaultLayout } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
+import useRunPoller from "../../../common/tree-api.ts";
 
 export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
-  const [stages, setStages] = useState<Array<StageInfo>>([]);
+  const { run: runInfo } = useRunPoller({
+    currentRunPath: currentJobPath + run.id + "/",
+  });
 
   const layout: LayoutInfo = {
     ...defaultLayout,
@@ -30,10 +32,9 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
         </a>
       </div>
       <PipelineGraph
-        stages={stages}
-        setStages={setStages}
+        stages={runInfo?.stages || []}
         layout={layout}
-        collapsed={true}
+        collapsed
         onStageSelect={() => {}}
       />
     </div>

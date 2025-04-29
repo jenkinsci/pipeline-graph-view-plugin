@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOMClient from "react-dom/client";
+
 import App from "./app.tsx";
 
 const rootElement = document.getElementById("console-pipeline-root");

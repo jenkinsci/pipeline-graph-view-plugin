@@ -6,11 +6,12 @@ import React, {
   useEffect,
   useState,
 } from "react";
+
 import {
   defaultMessages,
   getMessages,
-  ResourceBundleName,
   Messages,
+  ResourceBundleName,
 } from "./messages.ts";
 
 export const I18NContext: Context<Messages> = createContext(

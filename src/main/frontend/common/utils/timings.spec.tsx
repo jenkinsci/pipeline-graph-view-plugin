@@ -1,10 +1,11 @@
 /** * @vitest-environment jsdom */
 
-import { vi } from "vitest";
-import React from "react";
-import { Paused, Started, Total } from "./timings.tsx";
 import { render } from "@testing-library/react";
+import React from "react";
+import { vi } from "vitest";
+
 import { I18NContext, Messages } from "../i18n/index.ts";
+import { Paused, Started, Total } from "./timings.tsx";
 
 describe("Timings", () => {
   const translations = new Messages(

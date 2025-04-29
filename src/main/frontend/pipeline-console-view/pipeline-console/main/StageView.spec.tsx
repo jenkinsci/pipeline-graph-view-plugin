@@ -1,11 +1,12 @@
 /** * @vitest-environment jsdom */
 
-import { vi } from "vitest";
-import { TextEncoder } from "util";
-import React from "react";
 import { act, render, screen } from "@testing-library/react";
-import StageView from "./StageView.tsx";
+import React from "react";
+import { TextEncoder } from "util";
+import { vi } from "vitest";
+
 import { Result, StageInfo, StepInfo } from "./PipelineConsoleModel.tsx";
+import StageView from "./StageView.tsx";
 
 (globalThis as any).TextEncoder = TextEncoder;
 

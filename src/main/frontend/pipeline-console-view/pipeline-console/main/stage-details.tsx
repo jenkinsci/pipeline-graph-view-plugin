@@ -1,18 +1,20 @@
-import React from "react";
-import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/index.ts";
 import "./stage-details.scss";
-import StageNodeLink from "./StageNodeLink.tsx";
+
+import React from "react";
+
+import Dropdown from "../../../common/components/dropdown.tsx";
 import StatusIcon, {
   resultToColor,
 } from "../../../common/components/status-icon.tsx";
+import Tooltip from "../../../common/components/tooltip.tsx";
 import {
   exact,
   Paused,
   Started,
   Total,
 } from "../../../common/utils/timings.tsx";
-import Dropdown from "../../../common/components/dropdown.tsx";
-import Tooltip from "../../../common/components/tooltip.tsx";
+import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/index.ts";
+import StageNodeLink from "./StageNodeLink.tsx";
 
 export default function StageDetails({ stage }: StageDetailsProps) {
   if (!stage) {

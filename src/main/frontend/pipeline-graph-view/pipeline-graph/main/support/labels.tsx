@@ -1,14 +1,13 @@
 import React from "react";
 
-import { nodeStrokeWidth } from "../support/StatusIcons.tsx";
-import { TruncatingLabel } from "../support/TruncatingLabel.tsx";
+import { sequentialStagesLabelOffset } from "../PipelineGraphLayout.ts";
 import {
-  NodeLabelInfo,
   LayoutInfo,
+  NodeLabelInfo,
   StageInfo,
 } from "../PipelineGraphModel.tsx";
-import { sequentialStagesLabelOffset } from "../PipelineGraphLayout.ts";
-
+import { nodeStrokeWidth } from "../support/StatusIcons.tsx";
+import { TruncatingLabel } from "../support/TruncatingLabel.tsx";
 import { TooltipLabel } from "./convertLabelToTooltip.tsx";
 
 interface RenderBigLabelProps {

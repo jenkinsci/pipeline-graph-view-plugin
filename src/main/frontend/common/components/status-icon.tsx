@@ -1,5 +1,7 @@
-import React from "react";
 import "./status-icon.scss";
+
+import React from "react";
+
 import { Result } from "../../pipeline-graph-view/pipeline-graph/main/index.ts";
 
 /**

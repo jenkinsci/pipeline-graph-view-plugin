@@ -3,6 +3,7 @@ package io.jenkins.plugins.pipelinegraphview.consoleview;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.console.AnnotatedLargeText;
 import hudson.util.HttpResponses;
+import io.jenkins.plugins.pipelinegraphview.PipelineGraphViewConfiguration;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsCard;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.SCMRunDetailsItems;
@@ -287,5 +288,9 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         runDetailsItems.addAll(TimingRunDetailsItems.get(run));
 
         return new RunDetailsCard(runDetailsItems);
+    }
+
+    public boolean isShowGraphOnBuildPage() {
+        return PipelineGraphViewConfiguration.get().isShowGraphOnBuildPage();
     }
 }

@@ -33,6 +33,11 @@
       margin: 1rem;
       color: var(--text-color);
     }
+
+    .jenkins-button svg {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
   }
 
   &__heading {

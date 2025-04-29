@@ -50,7 +50,7 @@ export default function Stages({
         Graph
       </div>
       <div className={"test-floaty-material pgw-fullscreen-controls"}>
-        <Tooltip content={"Expand"}>
+        <Tooltip content={isExpanded ? "Close" : "Expand"}>
           <button
             className={"jenkins-button jenkins-button--tertiary"}
             onClick={() => setIsExpanded(!isExpanded)}

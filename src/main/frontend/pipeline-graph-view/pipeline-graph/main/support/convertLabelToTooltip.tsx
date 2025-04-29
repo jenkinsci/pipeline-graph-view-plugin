@@ -55,7 +55,7 @@ export function TooltipLabel(props: TooltipLabelProps) {
 
   return (
     <>
-      <Tooltip content={table} interactive>
+      <Tooltip content={table} interactive appendTo={document.body}>
         {props.children}
       </Tooltip>
     </>

@@ -1,16 +1,22 @@
-import React from "react";
+import React, { useState } from "react";
 import { RunInfo } from "./MultiPipelineGraphModel.ts";
 import { time, Total } from "../../../common/utils/timings.tsx";
 import "./single-run.scss";
 import StatusIcon from "../../../common/components/status-icon.tsx";
+import {
+  LayoutInfo,
+  PipelineGraph,
+  StageInfo,
+} from "../../../pipeline-graph-view/pipeline-graph/main";
+import { defaultLayout } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 
 export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
-  // const [stages, setStages] = useState<Array<StageInfo>>([]);
+  const [stages, setStages] = useState<Array<StageInfo>>([]);
 
-  // const layout: LayoutInfo = {
-  //   ...defaultLayout,
-  //   nodeSpacingH: 45,
-  // };
+  const layout: LayoutInfo = {
+    ...defaultLayout,
+    nodeSpacingH: 45,
+  };
 
   return (
     <div className="pgv-single-run">
@@ -23,13 +29,13 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
           </span>
         </a>
       </div>
-      {/*<PipelineGraph*/}
-      {/*  stages={stages}*/}
-      {/*  setStages={setStages}*/}
-      {/*  currentRunPath={currentJobPath + run.id + "/"}*/}
-      {/*  layout={layout}*/}
-      {/*  collapsed={true}*/}
-      {/*/>*/}
+      <PipelineGraph
+        stages={stages}
+        setStages={setStages}
+        layout={layout}
+        collapsed={true}
+        onStageSelect={() => {}}
+      />
     </div>
   );
 }

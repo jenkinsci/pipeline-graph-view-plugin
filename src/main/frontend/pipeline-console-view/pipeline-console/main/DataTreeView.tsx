@@ -117,6 +117,12 @@ const TreeNode = React.memo(function TreeNode({
   };
 
   useEffect(() => {
+    if (hasSelectedDescendant(stage)) {
+      setIsExpanded(true);
+    }
+  }, [selected]);
+
+  useEffect(() => {
     if (search.length || !allVisible) {
       if (filterStageTree(search, visibleStatuses, [stage]).length !== 0) {
         setIsExpanded(true);

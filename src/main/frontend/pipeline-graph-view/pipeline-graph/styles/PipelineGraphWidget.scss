@@ -24,7 +24,9 @@
 
   &--selected {
     &::after {
-      box-shadow: 0 0 0 0.125rem currentColor, 0 0 0 0.5rem var(--card-background) !important;
+      box-shadow:
+        0 0 0 0.125rem currentColor,
+        0 0 0 0.5rem var(--card-background) !important;
     }
   }
 
@@ -116,11 +118,21 @@
 
 .PWGx-pipeline-small-label {
   font-size: 0.75rem;
+  transition: translate var(--standard-transition);
+
+  &--selected {
+    translate: 0 2px;
+  }
 }
 
 .PWGx-pipeline-big-label {
   font-weight: var(--font-bold-weight);
   font-size: 0.8125rem;
+  transition: translate var(--standard-transition);
+
+  &--selected {
+    translate: 0 -2px;
+  }
 }
 
 .PWGx-pipeline-big-label.pgv-graph-node--synthetic {

@@ -9,6 +9,7 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import com.microsoft.playwright.Response;
 import hudson.model.Result;
+import io.jenkins.plugins.pipelinegraphview.consoleview.PipelineConsoleViewAction;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import jenkins.test.RunMatchers;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
@@ -43,7 +44,7 @@ class PipelineGraphViewRebuildTest {
         try (Playwright playwright = Playwright.create();
                 Browser browser = playwright.chromium().launch()) {
             Page page = browser.newPage();
-            String urlName = new PipelineGraphViewAction(run).getUrlName();
+            String urlName = new PipelineConsoleViewAction(run).getUrlName();
             Response navigate = page.navigate(j.getURL() + run.getUrl() + urlName);
             String currentUrl = navigate.url();
 

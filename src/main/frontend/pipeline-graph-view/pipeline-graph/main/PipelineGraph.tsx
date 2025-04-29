@@ -125,7 +125,7 @@ export function PipelineGraph(props: Props) {
             key={node.id}
             node={node}
             collapsed={collapsed}
-            selected={
+            isSelected={
               node.isPlaceholder ? false : selectedStage?.id === node.stage.id
             }
             onStageSelect={props.onStageSelect}
@@ -138,8 +138,7 @@ export function PipelineGraph(props: Props) {
             details={label}
             layout={layoutState}
             measuredHeight={measuredHeight}
-            selectedStage={currentSelectedStage}
-            isStageSelected={stageIsSelected}
+            isSelected={selectedStage?.id === label.stage?.id}
           />
         ))}
 
@@ -148,7 +147,7 @@ export function PipelineGraph(props: Props) {
             key={label.key}
             details={label}
             layout={layoutState}
-            isStageSelected={stageIsSelected}
+            isSelected={selectedStage?.id === label.stage?.id}
           />
         ))}
 

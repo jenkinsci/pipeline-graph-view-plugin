@@ -21,13 +21,18 @@ interface NodeProps {
   node: NodeInfo;
   collapsed?: boolean;
   onStageSelect: (nodeId: string) => void;
-  selected: boolean;
+  isSelected: boolean;
 }
 
 /**
  * Generate the SVG elements to represent a node.
  */
-export function Node({ node, collapsed, onStageSelect, selected }: NodeProps) {
+export function Node({
+  node,
+  collapsed,
+  onStageSelect,
+  isSelected,
+}: NodeProps) {
   const key = node.key;
 
   if (node.isPlaceholder) {
@@ -123,7 +128,7 @@ export function Node({ node, collapsed, onStageSelect, selected }: NodeProps) {
       "PWGx-pipeline-node--" + state,
       resultToColor(node.stage.state, node.stage.skeleton),
       {
-        "PWGx-pipeline-node--selected": selected,
+        "PWGx-pipeline-node--selected": isSelected,
       },
     ),
   };

@@ -8,15 +8,13 @@ import { sequentialStagesLabelOffset } from "../PipelineGraphLayout.ts";
 import {
   LayoutInfo,
   NodeLabelInfo,
-  StageInfo,
 } from "../PipelineGraphModel.tsx";
 
 interface RenderBigLabelProps {
   details: NodeLabelInfo;
   layout: LayoutInfo;
   measuredHeight: number;
-  selectedStage?: StageInfo;
-  isStageSelected: (stage?: StageInfo) => boolean;
+  isSelected: boolean;
 }
 
 /**
@@ -26,32 +24,8 @@ export function BigLabel({
   details,
   layout,
   measuredHeight,
-  isStageSelected,
-  selectedStage,
+  isSelected,
 }: RenderBigLabelProps) {
-  /**
-   * Is any child of this stage currently selected?
-   */
-  function isStageChildSelected(stage?: StageInfo, selectedStage?: StageInfo) {
-    if (stage) {
-      const { children } = stage;
-
-      if (children && selectedStage) {
-        for (const childStage of children) {
-          let currentStage: StageInfo | undefined = childStage;
-
-          while (currentStage) {
-            if (currentStage.id === selectedStage.id) {
-              return true;
-            }
-            currentStage = currentStage.nextSibling;
-          }
-        }
-      }
-    }
-    return false;
-  }
-
   const { nodeSpacingH, labelOffsetV, connectorStrokeWidth, ypStart } = layout;
 
   const labelWidth = nodeSpacingH - connectorStrokeWidth * 2;
@@ -78,11 +52,8 @@ export function BigLabel({
   };
 
   const classNames = ["PWGx-pipeline-big-label"];
-  if (
-    isStageSelected(details.stage) ||
-    isStageChildSelected(details.stage, selectedStage)
-  ) {
-    classNames.push("selected");
+  if (isSelected) {
+    classNames.push("PWGx-pipeline-big-label--selected");
   }
   if (details.stage && details.stage.synthetic) {
     classNames.push("pgv-graph-node--synthetic");
@@ -108,17 +79,13 @@ export function BigLabel({
 interface SmallLabelProps {
   details: NodeLabelInfo;
   layout: LayoutInfo;
-  isStageSelected: (stage?: StageInfo) => boolean;
+  isSelected?: boolean;
 }
 
 /**
  * Generate the Component for a small label
  */
-export function SmallLabel({
-  details,
-  layout,
-  isStageSelected,
-}: SmallLabelProps) {
+export function SmallLabel({ details, layout, isSelected }: SmallLabelProps) {
   const {
     nodeSpacingH,
     nodeSpacingV,
@@ -150,8 +117,8 @@ export function SmallLabel({
   };
 
   const classNames = ["PWGx-pipeline-small-label"];
-  if (details.stage && isStageSelected(details.stage)) {
-    classNames.push("selected");
+  if (details.stage && isSelected) {
+    classNames.push("PWGx-pipeline-small-label--selected");
   }
 
   return (

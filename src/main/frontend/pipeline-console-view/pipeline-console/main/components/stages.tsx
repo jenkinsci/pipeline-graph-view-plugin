@@ -16,7 +16,7 @@ import {
 
 export default function Stages({
   stages,
-                                 selectedStage,
+  selectedStage,
   stageViewPosition,
   onStageSelect,
 }: StagesProps) {

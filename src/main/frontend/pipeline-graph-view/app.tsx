@@ -1,8 +1,9 @@
-import { PipelineGraph } from "./pipeline-graph/main/PipelineGraph.tsx";
-
 import "./app.scss";
 import "./pipeline-graph/styles/main.scss";
+
 import React from "react";
+
+import { PipelineGraph } from "./pipeline-graph/main/PipelineGraph.tsx";
 
 export default function App() {
   const rootElement = document.getElementById("graph");

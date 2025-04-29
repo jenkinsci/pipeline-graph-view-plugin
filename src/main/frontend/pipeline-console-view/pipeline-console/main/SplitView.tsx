@@ -1,5 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
 import "./split-view.scss";
+
+import React, { useEffect, useRef, useState } from "react";
 
 export default function SplitView(props: SplitViewNewProps) {
   const [isDragging, setIsDragging] = useState(false);

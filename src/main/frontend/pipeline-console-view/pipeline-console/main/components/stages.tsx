@@ -11,7 +11,7 @@ import Tooltip from "../../../../common/components/tooltip.tsx";
 export default function Stages({
   stages,
   stageViewPosition,
-  handleStageSelect,
+  onStageSelect,
 }: StagesProps) {
   const [sidebarHeight, setSidebarHeight] = useState(0);
 
@@ -64,7 +64,7 @@ export default function Stages({
           </button>
         </Tooltip>
       </div>
-      <PipelineGraph stages={stages} onStageSelect={handleStageSelect} />
+      <PipelineGraph stages={stages} onStageSelect={onStageSelect} />
     </div>
   );
 }
@@ -72,5 +72,5 @@ export default function Stages({
 interface StagesProps {
   stages: StageInfo[];
   stageViewPosition: StageViewPosition;
-  handleStageSelect: (nodeId: string) => void;
+  onStageSelect: (nodeId: string) => void;
 }

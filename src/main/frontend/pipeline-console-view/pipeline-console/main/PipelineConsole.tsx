@@ -60,7 +60,7 @@ export default function PipelineConsole() {
           <Stages
             stages={stages}
             stageViewPosition={stageViewPosition}
-            handleStageSelect={handleStageSelect}
+            onStageSelect={handleStageSelect}
           />
         )}
 

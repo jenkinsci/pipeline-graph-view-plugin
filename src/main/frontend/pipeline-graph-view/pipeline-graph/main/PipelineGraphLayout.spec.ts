@@ -1,6 +1,7 @@
 import { describe } from "vitest";
-import { Result, StageInfo, StageType } from "./PipelineGraphModel.tsx";
+
 import { createNodeColumns } from "./PipelineGraphLayout.ts";
+import { Result, StageInfo, StageType } from "./PipelineGraphModel.tsx";
 
 describe("PipelineGraphLayout", () => {
   describe("createNodeColumns", () => {

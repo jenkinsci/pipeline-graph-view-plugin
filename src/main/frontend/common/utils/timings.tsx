@@ -1,5 +1,6 @@
 import React, { useContext } from "react";
-import { Messages, I18NContext } from "../i18n/index.ts";
+
+import { I18NContext, Messages } from "../i18n/index.ts";
 
 const ONE_SECOND_MS: number = 1000;
 const ONE_MINUTE_MS: number = 60 * ONE_SECOND_MS;

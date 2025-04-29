@@ -1,7 +1,7 @@
 import { Mock, vi } from "vitest";
 
 import { getResourceBundle } from "../RestClient.tsx";
-import { getMessages, ResourceBundleName, Messages } from "./messages.ts";
+import { getMessages, Messages, ResourceBundleName } from "./messages.ts";
 
 vi.mock("../RestClient.tsx", () => ({
   getResourceBundle: vi.fn(),

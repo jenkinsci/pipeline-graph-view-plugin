@@ -1,4 +1,5 @@
 import MessageFormat, { MessageFunction } from "@messageformat/core";
+
 import { getResourceBundle } from "../RestClient.tsx";
 import { choiceFormatter } from "./choice-formatter.ts";
 

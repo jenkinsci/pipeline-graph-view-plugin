@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+
+import useRunPoller from "../../../../common/tree-api.ts";
 import {
   getConsoleTextOffset,
   getRunSteps,
@@ -9,7 +11,6 @@ import {
   StepInfo,
   StepLogBufferInfo,
 } from "../PipelineConsoleModel.tsx";
-import useRunPoller from "../../../../common/tree-api.ts";
 
 export function useStepsPoller(props: RunPollerProps) {
   const { run } = useRunPoller({

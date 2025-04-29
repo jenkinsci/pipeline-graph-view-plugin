@@ -1,12 +1,12 @@
 import React from "react";
 
-import { nodeStrokeWidth } from "../support/StatusIcons.tsx";
+import { sequentialStagesLabelOffset } from "../PipelineGraphLayout.ts";
 import {
   CompositeConnection,
   LayoutInfo,
   NodeInfo,
 } from "../PipelineGraphModel.tsx";
-import { sequentialStagesLabelOffset } from "../PipelineGraphLayout.ts";
+import { nodeStrokeWidth } from "../support/StatusIcons.tsx";
 
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck
 

@@ -37,6 +37,11 @@ export default [
               importNames: ["default"],
               message: "Please use named imports instead.",
             },
+            {
+              name: "react-dom/client",
+              importNames: ["default"],
+              message: "Please use named imports instead.",
+            },
           ],
         },
       ],

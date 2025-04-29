@@ -15,6 +15,7 @@
     width: 2rem;
     min-height: 2rem;
     border-radius: 0.35rem;
+    color: inherit !important;
 
     &::before {
       border: none;
@@ -23,7 +24,6 @@
     svg {
       width: 1rem;
       height: 1rem;
-      color: var(--text-color-secondary);
     }
 
     &:not(:disabled) {

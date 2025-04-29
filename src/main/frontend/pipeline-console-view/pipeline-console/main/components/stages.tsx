@@ -19,6 +19,7 @@ export default function Stages({
   stageViewPosition,
   onStageSelect,
 }: StagesProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const [sidebarHeight, setSidebarHeight] = useState(0);
 
   useEffect(() => {
@@ -41,6 +42,7 @@ export default function Stages({
       className={classNames("pgv-graph-view-thing", {
         "pgv-graph-view-thing--left":
           stageViewPosition === StageViewPosition.LEFT,
+        "pgv-graph-view-thing--dialog": isExpanded
       })}
       style={{ "--additional-height": sidebarHeight + "px" } as CSSProperties}
     >
@@ -51,22 +53,40 @@ export default function Stages({
         <Tooltip content={"Expand"}>
           <button
             className={"jenkins-button jenkins-button--tertiary"}
-            onClick={() => alert("This will expand")}
+            onClick={() => setIsExpanded(!isExpanded)}
           >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 20 20"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M10 4H15C15.5523 4 16 4.44772 16 5V10M10 16H5C4.44772 16 4 15.5523 4 15V10"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-              />
-            </svg>
+            {isExpanded && (
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M10 4H15C15.5523 4 16 4.44772 16 5V10M10 16H5C4.44772 16 4 15.5523 4 15V10"
+                  stroke="red"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+            )}
+            {!isExpanded && (
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M10 4H15C15.5523 4 16 4.44772 16 5V10M10 16H5C4.44772 16 4 15.5523 4 15V10"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+            )}
           </button>
         </Tooltip>
       </div>

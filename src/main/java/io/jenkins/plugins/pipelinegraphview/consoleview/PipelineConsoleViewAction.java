@@ -19,7 +19,6 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
@@ -270,7 +269,6 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
             return defaultValue;
         }
     }
-
 
     @SuppressWarnings("unused")
     public RunDetailsCard getRunDetailsCard() {

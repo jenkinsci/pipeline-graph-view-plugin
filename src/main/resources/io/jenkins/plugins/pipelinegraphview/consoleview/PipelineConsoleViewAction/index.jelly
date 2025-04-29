@@ -42,30 +42,25 @@
                 </j:if>
             </t:buildCaption>
 
-            <div class="pgv-header">
+            <div class="pgv-details">
                 <j:forEach var="card" items="${it.runDetailsCard.items}">
-                    <j:choose>
-                        <j:when test="${card.separator}">
-<!--                            <hr/>-->
-                        </j:when>
-                        <j:otherwise>
-                            <div>
-                                <l:icon src="${card.icon}"/>
-                                <j:choose>
-                                    <j:when test="${!empty(card.href)}">
-                                        <a
-                                                href="${card.href}"
-                                        >
-                                            ${card.text}
-                                        </a>
-                                    </j:when>
-                                    <j:otherwise>
+                    <j:if test="${!card.separator}">
+                        <div>
+                            <l:icon src="${card.icon}"/>
+                            <j:choose>
+                                <j:when test="${!empty(card.href)}">
+                                    <a
+                                            href="${card.href}"
+                                    >
                                         ${card.text}
-                                    </j:otherwise>
-                                </j:choose>
-                            </div>
-                        </j:otherwise>
-                    </j:choose>
+                                    </a>
+                                </j:when>
+                                <j:otherwise>
+                                    ${card.text}
+                                </j:otherwise>
+                            </j:choose>
+                        </div>
+                    </j:if>
                 </j:forEach>
             </div>
 

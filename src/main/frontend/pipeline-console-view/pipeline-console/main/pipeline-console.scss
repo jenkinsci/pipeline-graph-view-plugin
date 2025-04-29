@@ -1,27 +1,27 @@
 .pgv-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-left: 0.65rem;
+  margin-bottom: 1.25rem;
+  margin-top: -0.25rem;
+
+  & > div {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
-    margin-left: 0.65rem;
-    margin-bottom: 1.25rem;
-    margin-top: -0.25rem;
+    gap: 1ch;
+    font-size: 14px;
+    color: var(--text-color-secondary);
+    font-weight: 450;
+    text-box: trim-both;
 
-    & > div {
-      display: flex;
-      align-items: center;
-      gap: 1ch;
-      font-size: 14px;
-      color: var(--text-color-secondary);
-      font-weight: 450;
-      text-box: trim-both;
+    a {
+      color: inherit;
+    }
 
-      a {
-        color: inherit;
-      }
-
-      svg {
-        width: 1.125rem;
-        height: 1.125rem;
+    svg {
+      width: 1.125rem;
+      height: 1.125rem;
     }
   }
 }

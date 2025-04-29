@@ -94,7 +94,13 @@ export default function Stages({
         <ZoomControls />
 
         <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
-          <PipelineGraph stages={stages} onStageSelect={onStageSelect} />
+          <PipelineGraph
+            stages={stages}
+            onStageSelect={(e) => {
+              onStageSelect(e);
+              setIsExpanded(false);
+            }}
+          />
         </TransformComponent>
       </TransformWrapper>
     </div>

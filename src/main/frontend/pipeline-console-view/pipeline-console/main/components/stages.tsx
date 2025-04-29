@@ -42,7 +42,7 @@ export default function Stages({
       className={classNames("pgv-graph-view-thing", {
         "pgv-graph-view-thing--left":
           stageViewPosition === StageViewPosition.LEFT,
-        "pgv-graph-view-thing--dialog": isExpanded
+        "pgv-graph-view-thing--dialog": isExpanded,
       })}
       style={{ "--additional-height": sidebarHeight + "px" } as CSSProperties}
     >
@@ -56,18 +56,14 @@ export default function Stages({
             onClick={() => setIsExpanded(!isExpanded)}
           >
             {isExpanded && (
-              <svg
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
                 <path
-                  d="M10 4H15C15.5523 4 16 4.44772 16 5V10M10 16H5C4.44772 16 4 15.5523 4 15V10"
-                  stroke="red"
-                  strokeWidth="1.5"
+                  fill="none"
+                  stroke="currentColor"
                   strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="32"
+                  d="M368 368L144 144M368 144L144 368"
                 />
               </svg>
             )}

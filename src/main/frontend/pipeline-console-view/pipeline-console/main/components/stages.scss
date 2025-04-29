@@ -45,6 +45,10 @@
   }
 }
 
+#page-body:has(.pgv-graph-view-thing--dialog) {
+  z-index: 1001;
+}
+
 .test-floaty-material {
   position: absolute;
   inset: 0.1rem;

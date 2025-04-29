@@ -1,6 +1,6 @@
 import "./nodes.scss";
 
-import React, { CSSProperties } from "react";
+import { CSSProperties, ReactElement } from "react";
 
 import StatusIcon, {
   resultToColor,
@@ -137,7 +137,7 @@ export function Node({
     ),
   };
 
-  let tooltip: React.ReactElement | undefined;
+  let tooltip: ReactElement | undefined;
   if (collapsed) {
     tooltip = (
       <div className="pgv-node-tooltip">

@@ -1,5 +1,5 @@
 import Tippy, { TippyProps } from "@tippyjs/react";
-import React, { useState } from "react";
+import { ReactNode, useState } from "react";
 
 import Tooltip from "./tooltip.tsx";
 
@@ -97,7 +97,7 @@ interface DropdownProps {
 interface DropdownItem {
   text: string;
   href?: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   target?: string;
   download?: string;
 }

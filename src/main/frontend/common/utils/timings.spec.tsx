@@ -1,7 +1,6 @@
 /** * @vitest-environment jsdom */
 
 import { render } from "@testing-library/react";
-import React from "react";
 import { vi } from "vitest";
 
 import { I18NContext, Messages } from "../i18n/index.ts";

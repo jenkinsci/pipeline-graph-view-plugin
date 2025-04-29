@@ -1,6 +1,6 @@
 import "./status-icon.scss";
 
-import React from "react";
+import { ReactNode } from "react";
 
 import { Result } from "../../pipeline-graph-view/pipeline-graph/main/index.ts";
 
@@ -176,7 +176,7 @@ function Group({
 }: {
   currentStatus: Result;
   status: Result;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <g

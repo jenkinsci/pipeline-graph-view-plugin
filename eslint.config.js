@@ -15,6 +15,7 @@ export default [
       },
     },
   },
+  plugins.react.configs.flat["jsx-runtime"],
   plugins.promise.configs["flat/recommended"],
   {
     plugins: {

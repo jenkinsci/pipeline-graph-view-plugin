@@ -1,5 +1,3 @@
-import React from "react";
-
 export interface Result {
   isSelectGraphicRendition?: boolean;
   escapeCode?: string; // input

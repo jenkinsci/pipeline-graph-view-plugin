@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode, useContext, useState } from "react";
+import { createContext, ReactNode, useContext, useState } from "react";
 
 import { Result } from "../../../../pipeline-graph-view/pipeline-graph/main/index.ts";
 

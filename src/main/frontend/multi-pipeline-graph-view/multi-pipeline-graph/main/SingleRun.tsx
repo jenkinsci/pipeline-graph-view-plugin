@@ -1,7 +1,5 @@
 import "./single-run.scss";
 
-import React from "react";
-
 import StatusIcon from "../../../common/components/status-icon.tsx";
 import useRunPoller from "../../../common/tree-api.ts";
 import { time, Total } from "../../../common/utils/timings.tsx";

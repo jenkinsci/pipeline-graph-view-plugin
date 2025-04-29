@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 
 import { I18NContext, Messages } from "../i18n/index.ts";
 

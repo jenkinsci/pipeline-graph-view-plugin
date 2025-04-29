@@ -1,4 +1,4 @@
-import React from "react";
+import { Component } from "react";
 
 import { sequentialStagesLabelOffset } from "../PipelineGraphLayout.ts";
 import {
@@ -20,7 +20,7 @@ interface Props {
   layout: LayoutInfo;
 }
 
-export class GraphConnections extends React.Component {
+export class GraphConnections extends Component {
   declare props: Props;
 
   /**

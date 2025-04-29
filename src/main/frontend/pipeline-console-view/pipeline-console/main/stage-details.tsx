@@ -1,7 +1,5 @@
 import "./stage-details.scss";
 
-import React from "react";
-
 import Dropdown from "../../../common/components/dropdown.tsx";
 import StatusIcon, {
   resultToColor,

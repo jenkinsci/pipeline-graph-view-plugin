@@ -1,4 +1,4 @@
-import React, { lazy } from "react";
+import { lazy } from "react";
 
 import { I18NProvider, ResourceBundleName } from "../common/i18n/index.ts";
 import { FilterProvider } from "./pipeline-console/main/providers/filter-provider.tsx";

@@ -1,4 +1,4 @@
-import React, { CSSProperties } from "react";
+import { CSSProperties } from "react";
 
 import { sequentialStagesLabelOffset } from "../PipelineGraphLayout.ts";
 import { LayoutInfo, NodeLabelInfo } from "../PipelineGraphModel.tsx";

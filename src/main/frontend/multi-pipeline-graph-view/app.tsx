@@ -1,7 +1,7 @@
 import "./app.scss";
 import "./multi-pipeline-graph/styles/main.scss";
 
-import React, { FunctionComponent } from "react";
+import { FunctionComponent } from "react";
 
 import { I18NProvider, ResourceBundleName } from "../common/i18n/index.ts";
 import { MultiPipelineGraph } from "./multi-pipeline-graph/main/index.ts";

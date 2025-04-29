@@ -1,5 +1,3 @@
-import React from "react";
-
 export default function StageNodeLink({ agent }: StageNodeLinkProps) {
   if (!agent) {
     return null;

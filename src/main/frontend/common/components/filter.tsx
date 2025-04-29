@@ -1,7 +1,7 @@
 import "./filter.scss";
 
 import Tippy from "@tippyjs/react";
-import React, { useState } from "react";
+import { useState } from "react";
 
 import { useFilter } from "../../pipeline-console-view/pipeline-console/main/providers/filter-provider.tsx";
 import { Result } from "../../pipeline-graph-view/pipeline-graph/main/index.ts";

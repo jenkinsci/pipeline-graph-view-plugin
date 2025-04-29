@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import { I18NContext } from "../../../common/i18n/index.ts";
 import { RunInfo } from "./MultiPipelineGraphModel.ts";

@@ -1,43 +1,6 @@
-@use "cards";
-
-:root {
-  --card-gap: 1rem;
-}
-
 .app-page-body--one-column {
   margin: unset;
   max-width: unset;
-}
-
-.pgv-details-card {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.pgv-details__item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0;
-
-  span {
-    display: contents;
-  }
-
-  svg {
-    color: currentColor !important;
-    width: 1.125rem;
-    height: 1.125rem;
-  }
-
-  &--link {
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
 }
 
 .pgw-graph-container {

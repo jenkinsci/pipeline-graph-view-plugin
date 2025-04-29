@@ -16,6 +16,7 @@ import {
 
 export default function Stages({
   stages,
+                                 selectedStage,
   stageViewPosition,
   onStageSelect,
 }: StagesProps) {
@@ -96,6 +97,7 @@ export default function Stages({
         <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
           <PipelineGraph
             stages={stages}
+            selectedStage={selectedStage}
             onStageSelect={(e) => {
               onStageSelect(e);
               setIsExpanded(false);
@@ -109,6 +111,7 @@ export default function Stages({
 
 interface StagesProps {
   stages: StageInfo[];
+  selectedStage?: StageInfo;
   stageViewPosition: StageViewPosition;
   onStageSelect: (nodeId: string) => void;
 }

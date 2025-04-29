@@ -125,6 +125,9 @@ export function PipelineGraph(props: Props) {
             key={node.id}
             node={node}
             collapsed={collapsed}
+            selected={
+              node.isPlaceholder ? false : selectedStage?.id === node.stage.id
+            }
             onStageSelect={props.onStageSelect}
           />
         ))}

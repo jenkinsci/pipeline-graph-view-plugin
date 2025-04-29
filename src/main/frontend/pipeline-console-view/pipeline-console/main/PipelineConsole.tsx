@@ -59,6 +59,7 @@ export default function PipelineConsole() {
           mainViewVisibility === "graphOnly") && (
           <Stages
             stages={stages}
+            selectedStage={openStage || undefined}
             stageViewPosition={stageViewPosition}
             onStageSelect={handleStageSelect}
           />

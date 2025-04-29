@@ -13,6 +13,7 @@ import Tooltip from "../../../../common/components/tooltip.tsx";
 import { Total } from "../../../../common/utils/timings.tsx";
 import "./nodes.scss";
 import { CounterNodeInfo } from "../PipelineGraphLayout.ts";
+import { classNames } from "../../../../common/utils/classnames.ts";
 
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck
 
@@ -20,12 +21,13 @@ interface NodeProps {
   node: NodeInfo;
   collapsed?: boolean;
   onStageSelect: (nodeId: string) => void;
+  selected: boolean;
 }
 
 /**
  * Generate the SVG elements to represent a node.
  */
-export function Node({ node, collapsed, onStageSelect }: NodeProps) {
+export function Node({ node, collapsed, onStageSelect, selected }: NodeProps) {
   const key = node.key;
 
   if (node.isPlaceholder) {
@@ -116,11 +118,14 @@ export function Node({ node, collapsed, onStageSelect }: NodeProps) {
       left: node.x,
       translate: "-50% -50%",
     } as CSSProperties,
-    className:
-      "PWGx-pipeline-node PWGx-pipeline-node--" +
-      state +
-      " " +
+    className: classNames(
+      "PWGx-pipeline-node",
+      "PWGx-pipeline-node--" + state,
       resultToColor(node.stage.state, node.stage.skeleton),
+      {
+        "PWGx-pipeline-node--selected": selected,
+      },
+    ),
   };
 
   let tooltip: React.ReactElement | undefined;

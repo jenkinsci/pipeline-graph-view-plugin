@@ -21,6 +21,9 @@ type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should
 interface NodeProps {
   node: NodeInfo;
   collapsed?: boolean;
+  /**
+   * If provided stages won't navigate on click, instead calling onStageSelect with the selected stage
+   */
   onStageSelect?: (nodeId: string) => void;
   isSelected: boolean;
 }

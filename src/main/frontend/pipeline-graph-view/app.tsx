@@ -2,9 +2,7 @@ import "./app.scss";
 import "./pipeline-graph/styles/main.scss";
 import React from "react";
 import Stages from "../pipeline-console-view/pipeline-console/main/components/stages.tsx";
-import {
-  StageViewPosition
-} from "../pipeline-console-view/pipeline-console/main/providers/user-preference-provider.tsx";
+import { StageViewPosition } from "../pipeline-console-view/pipeline-console/main/providers/user-preference-provider.tsx";
 import useRunPoller from "../common/tree-api.ts";
 
 export default function App() {

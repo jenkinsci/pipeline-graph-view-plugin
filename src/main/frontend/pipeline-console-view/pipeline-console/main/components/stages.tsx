@@ -7,6 +7,12 @@ import {
 import React, { CSSProperties, useEffect, useState } from "react";
 import "./stages.scss";
 import Tooltip from "../../../../common/components/tooltip.tsx";
+import {
+  TransformComponent,
+  TransformWrapper,
+  useControls,
+  useTransformEffect,
+} from "react-zoom-pan-pinch";
 
 export default function Stages({
   stages,
@@ -64,7 +70,17 @@ export default function Stages({
           </button>
         </Tooltip>
       </div>
-      <PipelineGraph stages={stages} onStageSelect={onStageSelect} />
+      <TransformWrapper
+        minScale={0.75}
+        maxScale={3}
+        wheel={{ activationKeys: ["Control"] }}
+      >
+        <ZoomControls />
+
+        <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
+          <PipelineGraph stages={stages} onStageSelect={onStageSelect} />
+        </TransformComponent>
+      </TransformWrapper>
     </div>
   );
 }
@@ -73,4 +89,92 @@ interface StagesProps {
   stages: StageInfo[];
   stageViewPosition: StageViewPosition;
   onStageSelect: (nodeId: string) => void;
+}
+
+function ZoomControls() {
+  const { zoomIn, zoomOut, resetTransform } = useControls();
+  const [buttonState, setbuttonState] = useState({
+    zoomIn: false,
+    zoomOut: false,
+    reset: true,
+  });
+
+  useTransformEffect(({ state, instance }) => {
+    const cantZoomIn = state.scale >= instance.props.maxScale!;
+    const cantZoomOut = state.scale <= instance.props.minScale!;
+    const cantReset = state.scale === 1;
+
+    setbuttonState({
+      zoomIn: cantZoomIn,
+      zoomOut: cantZoomOut,
+      reset: cantReset,
+    });
+  });
+
+  return (
+    <div className="test-floaty-material pgw-zoom-controls">
+      <Tooltip content={"Zoom in"}>
+        <button
+          className={"jenkins-button jenkins-button--tertiary"}
+          onClick={() => zoomIn()}
+          disabled={buttonState.zoomIn}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <path
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="32"
+              d="M256 112v288M400 256H112"
+            />
+          </svg>
+        </button>
+      </Tooltip>
+      <Tooltip content={"Zoom out"}>
+        <button
+          className={"jenkins-button jenkins-button--tertiary"}
+          onClick={() => zoomOut()}
+          disabled={buttonState.zoomOut}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <path
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="32"
+              d="M400 256H112"
+            />
+          </svg>
+        </button>
+      </Tooltip>
+      <Tooltip content={"Reset"}>
+        <button
+          className={"jenkins-button jenkins-button--tertiary"}
+          onClick={() => resetTransform()}
+          disabled={buttonState.reset}
+        >
+          <svg className="ionicon" viewBox="0 0 512 512">
+            <path
+              d="M320 146s24.36-12-64-12a160 160 0 10160 160"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeMiterlimit="10"
+              strokeWidth="32"
+            />
+            <path
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="32"
+              d="M256 58l80 80-80 80"
+            />
+          </svg>
+        </button>
+      </Tooltip>
+    </div>
+  );
 }

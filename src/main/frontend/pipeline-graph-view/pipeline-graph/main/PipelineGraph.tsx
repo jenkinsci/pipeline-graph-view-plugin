@@ -17,13 +17,6 @@ import {
   SequentialContainerLabel,
 } from "./support/labels.tsx";
 import { GraphConnections } from "./support/connections.tsx";
-import {
-  TransformWrapper,
-  TransformComponent,
-  useControls,
-  useTransformEffect,
-} from "react-zoom-pan-pinch";
-import Tooltip from "../../../common/components/tooltip.tsx";
 
 export function PipelineGraph(props: Props) {
   const { stages = [], layout, selectedStage, collapsed } = props;
@@ -115,156 +108,55 @@ export function PipelineGraph(props: Props) {
   };
 
   return (
-    <TransformWrapper
-      minScale={0.75}
-      maxScale={3}
-      wheel={{ activationKeys: ["Control"] }}
-    >
-      <ZoomControls />
+    <div className="PWGx-PipelineGraph-container">
+      <div style={outerDivStyle} className="PWGx-PipelineGraph">
+        <svg width={measuredWidth} height={measuredHeight}>
+          <GraphConnections connections={connections} layout={layoutState} />
 
-      <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
-        <div className="PWGx-PipelineGraph-container">
-          <div style={outerDivStyle} className="PWGx-PipelineGraph">
-            <svg width={measuredWidth} height={measuredHeight}>
-              <GraphConnections
-                connections={connections}
-                layout={layoutState}
-              />
+          <SelectionHighlight
+            layout={layoutState}
+            nodeColumns={nodeColumns}
+            isStageSelected={stageIsSelected}
+          />
+        </svg>
 
-              <SelectionHighlight
-                layout={layoutState}
-                nodeColumns={nodeColumns}
-                isStageSelected={stageIsSelected}
-              />
-            </svg>
+        {nodes.map((node) => (
+          <Node
+            key={node.id}
+            node={node}
+            collapsed={collapsed}
+            onStageSelect={props.onStageSelect}
+          />
+        ))}
 
-            {nodes.map((node) => (
-              <Node
-                key={node.id}
-                node={node}
-                collapsed={collapsed}
-                onStageSelect={props.onStageSelect}
-              />
-            ))}
+        {bigLabels.map((label) => (
+          <BigLabel
+            key={label.key}
+            details={label}
+            layout={layoutState}
+            measuredHeight={measuredHeight}
+            selectedStage={currentSelectedStage}
+            isStageSelected={stageIsSelected}
+          />
+        ))}
 
-            {bigLabels.map((label) => (
-              <BigLabel
-                key={label.key}
-                details={label}
-                layout={layoutState}
-                measuredHeight={measuredHeight}
-                selectedStage={currentSelectedStage}
-                isStageSelected={stageIsSelected}
-              />
-            ))}
+        {smallLabels.map((label) => (
+          <SmallLabel
+            key={label.key}
+            details={label}
+            layout={layoutState}
+            isStageSelected={stageIsSelected}
+          />
+        ))}
 
-            {smallLabels.map((label) => (
-              <SmallLabel
-                key={label.key}
-                details={label}
-                layout={layoutState}
-                isStageSelected={stageIsSelected}
-              />
-            ))}
-
-            {branchLabels.map((label) => (
-              <SequentialContainerLabel
-                key={label.key}
-                details={label}
-                layout={layoutState}
-              />
-            ))}
-          </div>
-        </div>
-      </TransformComponent>
-    </TransformWrapper>
-  );
-}
-
-function ZoomControls() {
-  const { zoomIn, zoomOut, resetTransform } = useControls();
-  const [buttonState, setbuttonState] = useState({
-    zoomIn: false,
-    zoomOut: false,
-    reset: true,
-  });
-
-  useTransformEffect(({ state, instance }) => {
-    const cantZoomIn = state.scale >= instance.props.maxScale!;
-    const cantZoomOut = state.scale <= instance.props.minScale!;
-    const cantReset = state.scale === 1;
-
-    setbuttonState({
-      zoomIn: cantZoomIn,
-      zoomOut: cantZoomOut,
-      reset: cantReset,
-    });
-  });
-
-  return (
-    <div className="test-floaty-material pgw-zoom-controls">
-      <Tooltip content={"Zoom in"}>
-        <button
-          className={"jenkins-button jenkins-button--tertiary"}
-          onClick={() => zoomIn()}
-          disabled={buttonState.zoomIn}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <path
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="32"
-              d="M256 112v288M400 256H112"
-            />
-          </svg>
-        </button>
-      </Tooltip>
-      <Tooltip content={"Zoom out"}>
-        <button
-          className={"jenkins-button jenkins-button--tertiary"}
-          onClick={() => zoomOut()}
-          disabled={buttonState.zoomOut}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <path
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="32"
-              d="M400 256H112"
-            />
-          </svg>
-        </button>
-      </Tooltip>
-      <Tooltip content={"Reset"}>
-        <button
-          className={"jenkins-button jenkins-button--tertiary"}
-          onClick={() => resetTransform()}
-          disabled={buttonState.reset}
-        >
-          <svg className="ionicon" viewBox="0 0 512 512">
-            <path
-              d="M320 146s24.36-12-64-12a160 160 0 10160 160"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeMiterlimit="10"
-              strokeWidth="32"
-            />
-            <path
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="32"
-              d="M256 58l80 80-80 80"
-            />
-          </svg>
-        </button>
-      </Tooltip>
+        {branchLabels.map((label) => (
+          <SequentialContainerLabel
+            key={label.key}
+            details={label}
+            layout={layoutState}
+          />
+        ))}
+      </div>
     </div>
   );
 }

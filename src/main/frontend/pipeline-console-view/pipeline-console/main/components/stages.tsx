@@ -101,7 +101,9 @@ export default function Stages({
             stages={stages}
             selectedStage={selectedStage}
             onStageSelect={(e) => {
-              onStageSelect(e);
+              if (onStageSelect) {
+                onStageSelect(e);
+              }
               setIsExpanded(false);
             }}
           />
@@ -115,12 +117,12 @@ interface StagesProps {
   stages: StageInfo[];
   selectedStage?: StageInfo;
   stageViewPosition: StageViewPosition;
-  onStageSelect: (nodeId: string) => void;
+  onStageSelect?: (nodeId: string) => void;
 }
 
 function ZoomControls() {
   const { zoomIn, zoomOut, resetTransform } = useControls();
-  const [buttonState, setbuttonState] = useState({
+  const [buttonState, setButtonState] = useState({
     zoomIn: false,
     zoomOut: false,
     reset: true,
@@ -131,7 +133,7 @@ function ZoomControls() {
     const cantZoomOut = state.scale <= instance.props.minScale!;
     const cantReset = state.scale === 1;
 
-    setbuttonState({
+    setButtonState({
       zoomIn: cantZoomIn,
       zoomOut: cantZoomOut,
       reset: cantReset,

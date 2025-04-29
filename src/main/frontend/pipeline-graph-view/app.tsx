@@ -21,7 +21,6 @@ export default function App() {
       <Stages
         stages={run?.stages || []}
         stageViewPosition={StageViewPosition.TOP}
-        onStageSelect={() => {}}
       />
     </div>
   );

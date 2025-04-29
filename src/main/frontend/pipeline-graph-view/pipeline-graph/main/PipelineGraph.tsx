@@ -168,5 +168,5 @@ interface Props {
   layout?: Partial<LayoutInfo>;
   selectedStage?: StageInfo;
   collapsed?: boolean;
-  onStageSelect: (nodeId: string) => void;
+  onStageSelect?: (nodeId: string) => void;
 }

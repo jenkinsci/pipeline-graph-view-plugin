@@ -21,7 +21,7 @@ type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should
 interface NodeProps {
   node: NodeInfo;
   collapsed?: boolean;
-  onStageSelect: (nodeId: string) => void;
+  onStageSelect?: (nodeId: string) => void;
   isSelected: boolean;
 }
 
@@ -154,8 +154,10 @@ export function Node({
           <a
             href={document.head.dataset.rooturl + url}
             onClick={(e) => {
-              e.preventDefault();
-              onStageSelect(String(node.stage.id));
+              if (onStageSelect) {
+                e.preventDefault();
+                onStageSelect(String(node.stage.id));
+              }
             }}
           >
             <span className="jenkins-visually-hidden">{title}</span>

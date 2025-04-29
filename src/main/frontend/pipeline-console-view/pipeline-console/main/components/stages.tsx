@@ -89,7 +89,7 @@ export default function Stages({
       <TransformWrapper
         minScale={0.75}
         maxScale={3}
-        wheel={{ activationKeys: ["Control"] }}
+        wheel={{ activationKeys: isExpanded ? [] : ["Control"] }}
       >
         <ZoomControls />
 

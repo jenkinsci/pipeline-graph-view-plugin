@@ -1,22 +1,22 @@
 import React, { useEffect, useState } from "react";
 
+import { layoutGraph } from "./PipelineGraphLayout";
 import {
   CompositeConnection,
   defaultLayout,
-  NodeLabelInfo,
   LayoutInfo,
   NodeColumn,
-  StageInfo,
+  NodeLabelInfo,
   Result,
+  StageInfo,
 } from "./PipelineGraphModel.tsx";
-import { layoutGraph } from "./PipelineGraphLayout";
-import { Node, SelectionHighlight } from "./support/nodes.tsx";
+import { GraphConnections } from "./support/connections.tsx";
 import {
   BigLabel,
-  SmallLabel,
   SequentialContainerLabel,
+  SmallLabel,
 } from "./support/labels.tsx";
-import { GraphConnections } from "./support/connections.tsx";
+import { Node, SelectionHighlight } from "./support/nodes.tsx";
 
 export function PipelineGraph(props: Props) {
   const { stages = [], layout, selectedStage, collapsed } = props;

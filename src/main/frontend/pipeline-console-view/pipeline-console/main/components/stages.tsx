@@ -1,18 +1,20 @@
-import { classNames } from "../../../../common/utils/classnames.ts";
-import { StageViewPosition } from "../providers/user-preference-provider.tsx";
-import {
-  PipelineGraph,
-  StageInfo,
-} from "../../../../pipeline-graph-view/pipeline-graph/main/index.ts";
-import React, { CSSProperties, useEffect, useState } from "react";
 import "./stages.scss";
-import Tooltip from "../../../../common/components/tooltip.tsx";
+
+import React, { CSSProperties, useEffect, useState } from "react";
 import {
   TransformComponent,
   TransformWrapper,
   useControls,
   useTransformEffect,
 } from "react-zoom-pan-pinch";
+
+import Tooltip from "../../../../common/components/tooltip.tsx";
+import { classNames } from "../../../../common/utils/classnames.ts";
+import {
+  PipelineGraph,
+  StageInfo,
+} from "../../../../pipeline-graph-view/pipeline-graph/main/index.ts";
+import { StageViewPosition } from "../providers/user-preference-provider.tsx";
 
 export default function Stages({
   stages,

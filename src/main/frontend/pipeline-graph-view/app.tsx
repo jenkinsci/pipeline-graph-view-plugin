@@ -2,11 +2,10 @@ import "./app.scss";
 import "./pipeline-graph/styles/main.scss";
 
 import React from "react";
+
+import useRunPoller from "../common/tree-api.ts";
 import Stages from "../pipeline-console-view/pipeline-console/main/components/stages.tsx";
 import { StageViewPosition } from "../pipeline-console-view/pipeline-console/main/providers/user-preference-provider.tsx";
-import useRunPoller from "../common/tree-api.ts";
-
-import { PipelineGraph } from "./pipeline-graph/main/PipelineGraph.tsx";
 
 export default function App() {
   const rootElement = document.getElementById("graph");

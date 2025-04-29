@@ -53,10 +53,10 @@ export default function PipelineConsole() {
 
       <SplitView
         direction={stageViewPosition === "top" ? "vertical" : "horizontal"}
-        storageKey="stage"
+        storageKey="graph"
       >
         {(mainViewVisibility === "both" ||
-          mainViewVisibility === "stageOnly") && (
+          mainViewVisibility === "graphOnly") && (
           <Stages
             stages={stages}
             stageViewPosition={stageViewPosition}
@@ -64,9 +64,9 @@ export default function PipelineConsole() {
           />
         )}
 
-        <SplitView storageKey="tree">
+        <SplitView storageKey="stages">
           {(mainViewVisibility === "both" ||
-            mainViewVisibility === "treeOnly") && (
+            mainViewVisibility === "stagesOnly") && (
             <div
               key="tree-view"
               id="tree-view-pane"

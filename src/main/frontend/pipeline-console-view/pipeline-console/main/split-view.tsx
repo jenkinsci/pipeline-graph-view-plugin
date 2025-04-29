@@ -18,8 +18,8 @@ export default function SplitView(props: SplitViewNewProps) {
   const isVertical = direction === "vertical";
 
   const initialSize = (() => {
-    if (storageKey === "tree") return treeViewWidth;
-    if (storageKey === "stage") {
+    if (storageKey === "stages") return treeViewWidth;
+    if (storageKey === "graph") {
       return isVertical ? stageViewHeight : stageViewWidth;
     }
     return 300; // fallback
@@ -27,8 +27,8 @@ export default function SplitView(props: SplitViewNewProps) {
 
   useEffect(() => {
     const newSize = (() => {
-      if (storageKey === "tree") return treeViewWidth;
-      if (storageKey === "stage") {
+      if (storageKey === "stages") return treeViewWidth;
+      if (storageKey === "graph") {
         return direction === "vertical" ? stageViewHeight : stageViewWidth;
       }
       return 300;
@@ -64,9 +64,9 @@ export default function SplitView(props: SplitViewNewProps) {
     setPanelSize(clampedSize);
 
     // Update context sizes
-    if (storageKey === "tree") {
+    if (storageKey === "stages") {
       setTreeViewWidth(clampedSize);
-    } else if (storageKey === "stage") {
+    } else if (storageKey === "graph") {
       if (direction === "vertical") {
         setStageViewHeight(clampedSize);
       } else {
@@ -77,16 +77,16 @@ export default function SplitView(props: SplitViewNewProps) {
 
   const handleDoubleClick = () => {
     const resetSize = (() => {
-      if (storageKey === "tree") return 300;
-      if (storageKey === "stage") return isVertical ? 250 : 600;
+      if (storageKey === "stages") return 300;
+      if (storageKey === "graph") return isVertical ? 250 : 600;
       return 300;
     })();
 
     setPanelSize(resetSize);
 
-    if (storageKey === "tree") {
+    if (storageKey === "stages") {
       setTreeViewWidth(resetSize);
-    } else if (storageKey === "stage") {
+    } else if (storageKey === "graph") {
       if (direction === "vertical") {
         setStageViewHeight(resetSize);
       } else {
@@ -153,5 +153,5 @@ export default function SplitView(props: SplitViewNewProps) {
 interface SplitViewNewProps {
   children: React.ReactNode[];
   direction?: "horizontal" | "vertical";
-  storageKey: "tree" | "stage";
+  storageKey: "stages" | "graph";
 }

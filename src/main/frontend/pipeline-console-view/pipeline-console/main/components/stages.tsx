@@ -39,7 +39,7 @@ export default function Stages({
       style={{ "--additional-height": sidebarHeight + "px" } as CSSProperties}
     >
       <div className={"test-floaty-material pgv-graph-view-thing__heading"}>
-        Stages
+        Graph
       </div>
       <div className={"test-floaty-material pgw-fullscreen-controls"}>
         <Tooltip content={"Expand"}>

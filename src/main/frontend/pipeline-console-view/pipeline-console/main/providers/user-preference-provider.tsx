@@ -14,8 +14,8 @@ export enum StageViewPosition {
 
 export enum MainViewVisibility {
   BOTH = "both",
-  TREE_ONLY = "treeOnly",
-  STAGE_ONLY = "stageOnly",
+  STAGES_ONLY = "stagesOnly",
+  GRAPH_ONLY = "graphOnly",
 }
 
 // TYPES

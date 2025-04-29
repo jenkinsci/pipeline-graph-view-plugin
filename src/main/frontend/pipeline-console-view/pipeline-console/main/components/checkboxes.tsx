@@ -37,18 +37,18 @@ export default function VisibilitySelect() {
         </div>
         Views
         <span>
-          {mainViewVisibility === MainViewVisibility.BOTH && "Stage and tree"}
-          {mainViewVisibility === MainViewVisibility.STAGE_ONLY && "Stage"}
-          {mainViewVisibility === MainViewVisibility.TREE_ONLY && "Tree"}
+          {mainViewVisibility === MainViewVisibility.BOTH && "Graph and stages"}
+          {mainViewVisibility === MainViewVisibility.GRAPH_ONLY && "Graph"}
+          {mainViewVisibility === MainViewVisibility.STAGES_ONLY && "Stages"}
         </span>
         <select
           id="main-view-visibility"
           value={mainViewVisibility}
           onChange={handleViewChange}
         >
-          <option value={MainViewVisibility.BOTH}>Stage and tree</option>
-          <option value={MainViewVisibility.STAGE_ONLY}>Stage</option>
-          <option value={MainViewVisibility.TREE_ONLY}>Tree</option>
+          <option value={MainViewVisibility.BOTH}>Graph and stages</option>
+          <option value={MainViewVisibility.GRAPH_ONLY}>Graph</option>
+          <option value={MainViewVisibility.STAGES_ONLY}>Stages</option>
         </select>
       </label>
 
@@ -107,7 +107,7 @@ export default function VisibilitySelect() {
             />
           </svg>
         </div>
-        Stage view
+        Graph position
         <span>
           {stageViewPosition === StageViewPosition.TOP ? "Top" : "Left"}
         </span>
@@ -115,7 +115,7 @@ export default function VisibilitySelect() {
           id="stage-view-position"
           value={stageViewPosition}
           onChange={handlePositionChange}
-          disabled={mainViewVisibility === MainViewVisibility.TREE_ONLY}
+          disabled={mainViewVisibility === MainViewVisibility.STAGES_ONLY}
         >
           <option value={StageViewPosition.TOP}>Top</option>
           <option value={StageViewPosition.LEFT}>Left</option>
@@ -178,7 +178,7 @@ function ViewIcon({
     );
   }
 
-  if (mainViewVisibility === "stageOnly" && stageViewPosition === "top") {
+  if (mainViewVisibility === "graphOnly" && stageViewPosition === "top") {
     return (
       <svg
         width="512px"
@@ -201,8 +201,8 @@ function ViewIcon({
   }
 
   if (
-    mainViewVisibility === "treeOnly" ||
-    (mainViewVisibility === "stageOnly" && stageViewPosition === "left")
+    mainViewVisibility === "stagesOnly" ||
+    (mainViewVisibility === "graphOnly" && stageViewPosition === "left")
   ) {
     return (
       <svg

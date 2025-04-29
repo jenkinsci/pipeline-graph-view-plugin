@@ -26,4 +26,20 @@ export default [
       "simple-import-sort/exports": "error",
     },
   },
+  {
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "react",
+              importNames: ["default"],
+              message: "Please use named imports instead.",
+            },
+          ],
+        },
+      ],
+    },
+  },
 ];

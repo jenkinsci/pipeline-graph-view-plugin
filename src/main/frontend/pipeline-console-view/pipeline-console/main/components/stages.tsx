@@ -29,8 +29,6 @@ export default function Stages({
     };
 
     window.addEventListener("scroll", handleScroll);
-
-    // Set initial height
     handleScroll();
 
     return () => {

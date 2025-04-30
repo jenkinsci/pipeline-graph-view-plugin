@@ -165,11 +165,9 @@ const TreeNode = React.memo(function TreeNode({
               />
             </span>
             <span className="task-link-text">{stage.name}</span>
-            {stage.state === Result.running && (
-              <span className="pgv-tree-item__description">
-                <Total ms={stage.totalDurationMillis} />
-              </span>
-            )}
+            <span className="pgv-tree-item__description">
+              <Total ms={stage.totalDurationMillis} />
+            </span>
           </div>
         </a>
 

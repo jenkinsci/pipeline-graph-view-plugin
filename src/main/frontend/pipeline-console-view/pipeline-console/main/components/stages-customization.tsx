@@ -1,6 +1,6 @@
 import "./stages-customization.scss";
 
-import React from "react";
+import { ChangeEvent } from "react";
 
 import {
   MainViewVisibility,
@@ -16,11 +16,11 @@ export default function StagesCustomization() {
     setStageViewPosition,
   } = useLayoutPreferences();
 
-  const handleViewChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleViewChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setMainViewVisibility(e.target.value as MainViewVisibility);
   };
 
-  const handlePositionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handlePositionChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setStageViewPosition(e.target.value as StageViewPosition);
   };
 

@@ -1,6 +1,6 @@
 import "./stages.scss";
 
-import React, { CSSProperties, useEffect, useState } from "react";
+import { CSSProperties, useEffect, useState } from "react";
 import {
   TransformComponent,
   TransformWrapper,

@@ -1,0 +1,14 @@
+.pgv-skeleton {
+  background: var(--button-background);
+  border: 1.5px solid
+    color-mix(in srgb, var(--text-color-secondary) 3%, transparent);
+  border-radius: var(--form-input-border-radius);
+  height: 100%;
+  animation: pulse-skeleton 2s both ease-in-out infinite;
+}
+
+@keyframes pulse-skeleton {
+  50% {
+    background: var(--button-background--active);
+  }
+}

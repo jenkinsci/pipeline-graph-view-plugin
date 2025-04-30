@@ -10,10 +10,8 @@ import {
 
 import Tooltip from "../../../../common/components/tooltip.tsx";
 import { classNames } from "../../../../common/utils/classnames.ts";
-import {
-  PipelineGraph,
-  StageInfo,
-} from "../../../../pipeline-graph-view/pipeline-graph/main/index.ts";
+import { StageInfo } from "../../../../pipeline-graph-view/pipeline-graph/main/index.ts";
+import { PipelineGraph } from "../../../../pipeline-graph-view/pipeline-graph/main/PipelineGraph.tsx";
 import { StageViewPosition } from "../providers/user-preference-provider.tsx";
 
 export default function Stages({
@@ -42,17 +40,16 @@ export default function Stages({
 
   return (
     <div
-      className={classNames("pgv-graph-view-thing", {
-        "pgv-graph-view-thing--left":
-          stageViewPosition === StageViewPosition.LEFT,
-        "pgv-graph-view-thing--dialog": isExpanded,
+      className={classNames("pgv-stages-graph", {
+        "pgv-stages-graph--left": stageViewPosition === StageViewPosition.LEFT,
+        "pgv-stages-graph--dialog": isExpanded,
       })}
       style={{ "--additional-height": sidebarHeight + "px" } as CSSProperties}
     >
-      <div className={"test-floaty-material pgv-graph-view-thing__heading"}>
+      <div className={"pgv-stages-graph__controls pgv-stages-graph__heading"}>
         Graph
       </div>
-      <div className={"test-floaty-material pgw-fullscreen-controls"}>
+      <div className={"pgv-stages-graph__controls pgw-fullscreen-controls"}>
         <Tooltip content={isExpanded ? "Close" : "Expand"}>
           <button
             className={"jenkins-button jenkins-button--tertiary"}
@@ -141,7 +138,7 @@ function ZoomControls() {
   });
 
   return (
-    <div className="test-floaty-material pgw-zoom-controls">
+    <div className="pgv-stages-graph__controls pgw-zoom-controls">
       <Tooltip content={"Zoom in"}>
         <button
           className={"jenkins-button jenkins-button--tertiary"}

@@ -1,4 +1,4 @@
-.pgv-graph-view-thing {
+.pgv-stages-graph {
   --card-background: color-mix(
     in srgb,
     var(--text-color-secondary) 4%,
@@ -29,7 +29,7 @@
     border: none;
     height: unset;
 
-    .test-floaty-material {
+    .pgv-stages-graph__controls {
       margin: 1rem;
       color: var(--text-color);
     }
@@ -50,11 +50,11 @@
   }
 }
 
-#page-body:has(.pgv-graph-view-thing--dialog) {
+#page-body:has(.pgv-stages-graph--dialog) {
   z-index: 1001;
 }
 
-.test-floaty-material {
+.pgv-stages-graph__controls {
   position: absolute;
   inset: 0.1rem;
   display: flex;

@@ -11,7 +11,7 @@
 
 This plugin adds a visual representation of Jenkins pipelines, showing each stage of a run in a clear and easy-to-follow graph format. It’s designed to make pipeline progress and structure easier to understand at a glance.
 
-### Features
+## Features
 
 - Visualize pipelines as an interactive, nested graph
 - Navigate pipeline stages in a clear, collapsible list view

@@ -139,6 +139,7 @@
   font-weight: var(--font-bold-weight);
   font-size: 0.8125rem;
   transition: translate var(--standard-transition);
+  -webkit-line-clamp: 1 !important;
 
   &--selected {
     translate: 0 -2px;

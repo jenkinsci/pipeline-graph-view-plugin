@@ -55,7 +55,6 @@ export default function ScrollToTopBottom() {
   };
 
   return (
-    <div className="pgv-scroll-to-top-bottom__container">
       <div
         className={classNames(`pgv-scroll-to-top-bottom`, {
           "pgv-scroll-to-top-bottom--visible": isScrollable,
@@ -94,7 +93,6 @@ export default function ScrollToTopBottom() {
             />
           </svg>
         </button>
-      </div>
     </div>
   );
 }

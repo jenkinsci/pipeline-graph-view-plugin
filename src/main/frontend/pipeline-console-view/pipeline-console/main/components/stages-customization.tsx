@@ -1,4 +1,4 @@
-import "./checkboxes.scss";
+import "./stages-customization.scss";
 
 import React from "react";
 
@@ -8,7 +8,7 @@ import {
   useLayoutPreferences,
 } from "../providers/user-preference-provider.tsx";
 
-export default function VisibilitySelect() {
+export default function StagesCustomization() {
   const {
     mainViewVisibility,
     setMainViewVisibility,
@@ -26,9 +26,8 @@ export default function VisibilitySelect() {
 
   return (
     <>
-      {/* View Selector */}
       <label
-        className="jenkins-dropdown__item idk"
+        className="jenkins-dropdown__item pgv-stages-customization"
         htmlFor="main-view-visibility"
       >
         <div className="jenkins-dropdown__item__icon">
@@ -54,9 +53,8 @@ export default function VisibilitySelect() {
         </select>
       </label>
 
-      {/* Position Toggle */}
       <label
-        className="jenkins-dropdown__item idk"
+        className="jenkins-dropdown__item pgv-stages-customization"
         htmlFor="stage-view-position"
       >
         <div className="jenkins-dropdown__item__icon">

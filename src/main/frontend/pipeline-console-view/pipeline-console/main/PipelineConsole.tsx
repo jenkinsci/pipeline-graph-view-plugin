@@ -6,7 +6,7 @@ import React from "react";
 
 import Dropdown from "../../../common/components/dropdown.tsx";
 import DropdownPortal from "../../../common/components/dropdown-portal.tsx";
-import VisibilitySelect from "./components/checkboxes.tsx";
+import StagesCustomization from "./components/stages-customization.tsx";
 import Stages from "./components/stages.tsx";
 import DataTreeView from "./DataTreeView.tsx";
 import { useStepsPoller } from "./hooks/use-steps-poller.ts";
@@ -14,6 +14,7 @@ import { useLayoutPreferences } from "./providers/user-preference-provider.tsx";
 import SplitView from "./split-view.tsx";
 import StageView from "./StageView.tsx";
 import { CONSOLE, DOCUMENT } from "./symbols.tsx";
+import ScrollToTopBottom from "./scroll-to-top-bottom.tsx";
 
 export default function PipelineConsole() {
   const rootElement = document.getElementById("console-pipeline-root");
@@ -37,7 +38,7 @@ export default function PipelineConsole() {
       <DropdownPortal>
         <Dropdown
           items={[
-            <VisibilitySelect key="visibility-select" />,
+            <StagesCustomization key="visibility-select" />,
             "separator",
             {
               text: "View as plain text",
@@ -95,6 +96,8 @@ export default function PipelineConsole() {
           </div>
         </SplitView>
       </SplitView>
+
+      <ScrollToTopBottom />
     </>
   );
 }

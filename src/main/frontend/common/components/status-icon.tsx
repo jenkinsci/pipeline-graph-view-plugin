@@ -1,8 +1,8 @@
 import "./status-icon.scss";
 
-import React from "react";
+import { ReactNode } from "react";
 
-import { Result } from "../../pipeline-graph-view/pipeline-graph/main/index.ts";
+import { Result } from "../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 
 /**
  * Visual representation of a job or build status
@@ -176,7 +176,7 @@ function Group({
 }: {
   currentStatus: Result;
   status: Result;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <g

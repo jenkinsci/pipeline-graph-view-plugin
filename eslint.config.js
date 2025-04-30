@@ -15,6 +15,7 @@ export default [
       },
     },
   },
+  plugins.react.configs.flat["jsx-runtime"],
   plugins.promise.configs["flat/recommended"],
   {
     plugins: {
@@ -23,6 +24,27 @@ export default [
     rules: {
       "simple-import-sort/imports": "error",
       "simple-import-sort/exports": "error",
+    },
+  },
+  {
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "react",
+              importNames: ["default"],
+              message: "Please use named imports instead.",
+            },
+            {
+              name: "react-dom/client",
+              importNames: ["default"],
+              message: "Please use named imports instead.",
+            },
+          ],
+        },
+      ],
     },
   },
 ];

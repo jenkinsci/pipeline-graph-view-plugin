@@ -1,5 +1,4 @@
 import Tippy, { TippyProps } from "@tippyjs/react";
-import React from "react";
 
 /**
  * A customized (and customizable) implementation of Tippy tooltips

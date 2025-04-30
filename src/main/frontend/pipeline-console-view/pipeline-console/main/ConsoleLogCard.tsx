@@ -1,6 +1,11 @@
 import "./console-log-card.scss";
 
-import React, { Suspense, useEffect } from "react";
+import {
+  lazy,
+  MouseEvent as ReactMouseEvent,
+  Suspense,
+  useEffect,
+} from "react";
 
 import StatusIcon from "../../../common/components/status-icon.tsx";
 import Tooltip from "../../../common/components/tooltip.tsx";
@@ -12,7 +17,7 @@ import {
   StepLogBufferInfo,
 } from "./PipelineConsoleModel.tsx";
 
-const ConsoleLogStream = React.lazy(() => import("./ConsoleLogStream.tsx"));
+const ConsoleLogStream = lazy(() => import("./ConsoleLogStream.tsx"));
 
 export default function ConsoleLogCard(props: ConsoleLogCardProps) {
   useEffect(() => {
@@ -21,7 +26,7 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
     }
   }, [props.isExpanded]);
 
-  const handleToggle = (e: React.MouseEvent<HTMLElement>) => {
+  const handleToggle = (e: ReactMouseEvent<HTMLElement>) => {
     // Only prevent left clicks
     if (e.button !== 0 || e.metaKey || e.ctrlKey) {
       return;

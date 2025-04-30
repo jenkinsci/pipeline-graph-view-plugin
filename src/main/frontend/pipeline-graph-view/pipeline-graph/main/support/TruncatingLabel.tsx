@@ -1,11 +1,11 @@
-import React, { CSSProperties } from "react";
+import { CSSProperties } from "react";
 
 export function TruncatingLabel({
   children,
   style = {},
   className = "",
 }: TruncatingLabelProps) {
-  const mergedStyle: React.CSSProperties = {
+  const mergedStyle: CSSProperties = {
     display: "-webkit-box",
     overflow: "hidden",
     WebkitLineClamp: 2,

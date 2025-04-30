@@ -1,4 +1,4 @@
-import { StageInfo } from "../../pipeline-graph-view/pipeline-graph/main/index.ts";
+import { StageInfo } from "../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import RunEstimator from "./run-estimator.ts";
 
 export const mergeStageInfos = (

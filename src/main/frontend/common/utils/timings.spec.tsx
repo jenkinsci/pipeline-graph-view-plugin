@@ -1,10 +1,10 @@
 /** * @vitest-environment jsdom */
 
 import { render } from "@testing-library/react";
-import React from "react";
 import { vi } from "vitest";
 
-import { I18NContext, Messages } from "../i18n/index.ts";
+import { I18NContext } from "../i18n/i18n-provider.tsx";
+import { Messages } from "../i18n/messages.ts";
 import { Paused, Started, Total } from "./timings.tsx";
 
 describe("Timings", () => {

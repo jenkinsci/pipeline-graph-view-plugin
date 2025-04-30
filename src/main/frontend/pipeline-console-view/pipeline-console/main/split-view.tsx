@@ -1,6 +1,13 @@
 import "./split-view.scss";
 
-import React, { useEffect, useRef, useState } from "react";
+import {
+  Children,
+  MouseEvent as ReactMouseEvent,
+  ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { useLayoutPreferences } from "./providers/user-preference-provider.tsx";
 
@@ -43,7 +50,7 @@ export default function SplitView(props: SplitViewNewProps) {
 
   const dividerRef = useRef<HTMLDivElement>(null);
 
-  const startDragging = (e: React.MouseEvent) => {
+  const startDragging = (e: ReactMouseEvent) => {
     setIsDragging(true);
     e.preventDefault();
   };
@@ -117,7 +124,7 @@ export default function SplitView(props: SplitViewNewProps) {
   });
 
   // If we only have one child, just return it
-  const childrenArray = React.Children.toArray(props.children).filter(Boolean);
+  const childrenArray = Children.toArray(props.children).filter(Boolean);
   if (childrenArray.length === 1) {
     return <>{childrenArray[0]}</>;
   }
@@ -153,7 +160,7 @@ export default function SplitView(props: SplitViewNewProps) {
 }
 
 interface SplitViewNewProps {
-  children: React.ReactNode[];
+  children: ReactNode[];
   direction?: "horizontal" | "vertical";
   storageKey: "stages" | "graph";
 }

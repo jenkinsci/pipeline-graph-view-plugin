@@ -1,8 +1,8 @@
-import React from "react";
-import ReactDOM from "react-dom";
+import { ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 interface DropdownPortalProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export default function DropdownPortal({ children }: DropdownPortalProps) {
@@ -13,5 +13,5 @@ export default function DropdownPortal({ children }: DropdownPortalProps) {
     return null;
   }
 
-  return ReactDOM.createPortal(children, container);
+  return createPortal(children, container);
 }

@@ -1,6 +1,6 @@
 import "./stages.scss";
 
-import React, { CSSProperties, useEffect, useState } from "react";
+import { CSSProperties, useEffect, useState } from "react";
 import {
   TransformComponent,
   TransformWrapper,
@@ -10,8 +10,8 @@ import {
 
 import Tooltip from "../../../../common/components/tooltip.tsx";
 import { classNames } from "../../../../common/utils/classnames.ts";
-import { StageInfo } from "../../../../pipeline-graph-view/pipeline-graph/main/index.ts";
 import { PipelineGraph } from "../../../../pipeline-graph-view/pipeline-graph/main/PipelineGraph.tsx";
+import { StageInfo } from "../../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import { StageViewPosition } from "../providers/user-preference-provider.tsx";
 
 export default function Stages({

@@ -1,5 +1,5 @@
 import Tippy, { TippyProps } from "@tippyjs/react";
-import React, { useState } from "react";
+import { isValidElement, ReactElement, ReactNode, useState } from "react";
 
 import Tooltip from "./tooltip.tsx";
 
@@ -33,7 +33,7 @@ export default function Dropdown({
                 );
               }
 
-              if (React.isValidElement(item)) {
+              if (isValidElement(item)) {
                 return (
                   <div key={index} className="jenkins-dropdown__custom-item">
                     {item}
@@ -89,7 +89,7 @@ export const DefaultDropdownProps: TippyProps = {
 };
 
 interface DropdownProps {
-  items: (DropdownItem | React.ReactElement | "separator")[];
+  items: (DropdownItem | ReactElement | "separator")[];
   disabled?: boolean;
   className?: string;
 }
@@ -97,7 +97,7 @@ interface DropdownProps {
 interface DropdownItem {
   text: string;
   href?: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
   target?: string;
   download?: string;
 }

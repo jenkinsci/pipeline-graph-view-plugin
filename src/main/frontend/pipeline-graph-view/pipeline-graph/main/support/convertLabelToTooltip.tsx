@@ -1,4 +1,4 @@
-import React from "react";
+import { ReactElement } from "react";
 
 import Tooltip from "../../../../common/components/tooltip.tsx";
 
@@ -25,7 +25,7 @@ export function convertLabelToTooltip(content: string): string | MatrixValue[] {
 
 export type TooltipLabelProps = {
   content: string;
-  children: React.ReactElement;
+  children: ReactElement;
 };
 
 export function TooltipLabel(props: TooltipLabelProps) {

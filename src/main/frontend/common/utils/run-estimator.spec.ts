@@ -1,7 +1,7 @@
 import {
   Result,
   StageInfo,
-} from "../../pipeline-graph-view/pipeline-graph/main/index.ts";
+} from "../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import RunEstimator from "./run-estimator.ts";
 
 const previous: StageInfo[] = [

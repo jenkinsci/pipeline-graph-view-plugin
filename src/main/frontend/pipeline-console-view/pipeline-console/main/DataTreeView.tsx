@@ -1,6 +1,12 @@
 import "./data-tree-view.scss";
 
-import React, { useCallback, useEffect, useState } from "react";
+import {
+  memo,
+  MouseEvent as ReactMouseEvent,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 
 import Filter from "../../../common/components/filter.tsx";
 import StatusIcon from "../../../common/components/status-icon.tsx";
@@ -9,7 +15,7 @@ import { Total } from "../../../common/utils/timings.tsx";
 import {
   Result,
   StageInfo,
-} from "../../../pipeline-graph-view/pipeline-graph/main/index.ts";
+} from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import { useFilter } from "./providers/filter-provider.tsx";
 
 export default function DataTreeView({
@@ -21,7 +27,7 @@ export default function DataTreeView({
   const filteredStages = filterStageTree(search, visibleStatuses, stages);
 
   const handleSelect = useCallback(
-    (event: React.MouseEvent, nodeId: string) => {
+    (event: ReactMouseEvent, nodeId: string) => {
       onNodeSelect(event, nodeId);
     },
     [onNodeSelect],
@@ -95,7 +101,7 @@ export default function DataTreeView({
   );
 }
 
-const TreeNode = React.memo(function TreeNode({
+const TreeNode = memo(function TreeNode({
   stage,
   selected,
   onSelect,
@@ -113,7 +119,7 @@ const TreeNode = React.memo(function TreeNode({
     );
   }
 
-  const handleToggleClick = (e: React.MouseEvent) => {
+  const handleToggleClick = (e: ReactMouseEvent) => {
     e.stopPropagation();
     setIsExpanded(!isExpanded);
   };
@@ -240,11 +246,11 @@ const filterStageTree = (
 interface DataTreeViewProps {
   stages: StageInfo[];
   selected?: number;
-  onNodeSelect: (event: React.MouseEvent, nodeId: string) => void;
+  onNodeSelect: (event: ReactMouseEvent, nodeId: string) => void;
 }
 
 interface TreeNodeProps {
   stage: StageInfo;
   selected: string;
-  onSelect: (event: React.MouseEvent, id: string) => void;
+  onSelect: (event: ReactMouseEvent, id: string) => void;
 }

@@ -2,8 +2,6 @@ import "./pipeline-console.scss";
 import "../../../pipeline-graph-view/app.scss";
 import "../../../pipeline-graph-view/pipeline-graph/styles/main.scss";
 
-import React from "react";
-
 import Dropdown from "../../../common/components/dropdown.tsx";
 import DropdownPortal from "../../../common/components/dropdown-portal.tsx";
 import Skeleton from "./components/skeleton.tsx";

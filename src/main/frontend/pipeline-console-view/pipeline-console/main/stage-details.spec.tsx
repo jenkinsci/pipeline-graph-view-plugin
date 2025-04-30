@@ -1,13 +1,12 @@
 /** * @vitest-environment jsdom */
 
 import { render, screen } from "@testing-library/react";
-import React from "react";
 import { TextEncoder } from "util";
 
 import {
   Result,
   StageInfo,
-} from "../../../pipeline-graph-view/pipeline-graph/main/index.ts";
+} from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import StageDetails from "./stage-details.tsx";
 
 (globalThis as any).TextEncoder = TextEncoder;

@@ -1,6 +1,6 @@
 import "./scroll-to-top-bottom.scss";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { classNames } from "../../../common/utils/classnames.ts";
 

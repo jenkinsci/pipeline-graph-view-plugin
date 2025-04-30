@@ -1,7 +1,7 @@
 import {
   Result,
   StageInfo,
-} from "../../pipeline-graph-view/pipeline-graph/main/index.ts";
+} from "../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import { mergeStageInfos } from "./stage-merge.ts";
 
 describe("mergeStageInfos", () => {

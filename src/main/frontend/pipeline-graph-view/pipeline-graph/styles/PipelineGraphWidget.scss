@@ -22,6 +22,24 @@
     z-index: -1;
   }
 
+  &--selected {
+    &::after {
+      box-shadow:
+        0 0 0 0.125rem currentColor,
+        0 0 0 0.5rem var(--card-background) !important;
+    }
+  }
+
+  // The selected state looks rather odd for running jobs, so apply custom styling to make it look better
+  &--running.PWGx-pipeline-node--selected {
+    &::after {
+      inset: 0;
+      box-shadow:
+        0 0 0 0.125rem color-mix(in srgb, currentColor, transparent),
+        0 0 0 0.5rem var(--card-background) !important;
+    }
+  }
+
   &:has(a) {
     &::after {
       content: "";
@@ -110,12 +128,22 @@
 
 .PWGx-pipeline-small-label {
   font-size: 0.75rem;
+  transition: translate var(--standard-transition);
+
+  &--selected {
+    translate: 0 2px;
+  }
 }
 
 .PWGx-pipeline-big-label {
   font-weight: var(--font-bold-weight);
   font-size: 0.8125rem;
+  transition: translate var(--standard-transition);
   -webkit-line-clamp: 1 !important;
+
+  &--selected {
+    translate: 0 -2px;
+  }
 }
 
 .PWGx-pipeline-big-label.pgv-graph-node--synthetic {

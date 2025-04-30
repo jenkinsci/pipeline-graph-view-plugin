@@ -15,7 +15,6 @@ export default [
       },
     },
   },
-  plugins.n.configs["flat/recommended"],
   plugins.promise.configs["flat/recommended"],
   {
     plugins: {

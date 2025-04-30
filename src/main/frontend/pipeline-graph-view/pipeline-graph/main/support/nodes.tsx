@@ -6,6 +6,7 @@ import StatusIcon, {
   resultToColor,
 } from "../../../../common/components/status-icon.tsx";
 import Tooltip from "../../../../common/components/tooltip.tsx";
+import { classNames } from "../../../../common/utils/classnames.ts";
 import { Total } from "../../../../common/utils/timings.tsx";
 import { CounterNodeInfo } from "../PipelineGraphLayout.ts";
 import {
@@ -20,12 +21,22 @@ type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should
 interface NodeProps {
   node: NodeInfo;
   collapsed?: boolean;
+  /**
+   * If provided stages won't navigate on click, instead calling onStageSelect with the selected stage
+   */
+  onStageSelect?: (nodeId: string) => void;
+  isSelected: boolean;
 }
 
 /**
  * Generate the SVG elements to represent a node.
  */
-export function Node({ node, collapsed }: NodeProps) {
+export function Node({
+  node,
+  collapsed,
+  onStageSelect,
+  isSelected,
+}: NodeProps) {
   const key = node.key;
 
   if (node.isPlaceholder) {
@@ -116,11 +127,14 @@ export function Node({ node, collapsed }: NodeProps) {
       left: node.x,
       translate: "-50% -50%",
     } as CSSProperties,
-    className:
-      "PWGx-pipeline-node PWGx-pipeline-node--" +
-      state +
-      " " +
+    className: classNames(
+      "PWGx-pipeline-node",
+      "PWGx-pipeline-node--" + state,
       resultToColor(node.stage.state, node.stage.skeleton),
+      {
+        "PWGx-pipeline-node--selected": isSelected,
+      },
+    ),
   };
 
   let tooltip: React.ReactElement | undefined;
@@ -140,7 +154,15 @@ export function Node({ node, collapsed }: NodeProps) {
       <div {...groupProps}>
         {groupChildren}
         {clickable && (
-          <a href={document.head.dataset.rooturl + url}>
+          <a
+            href={document.head.dataset.rooturl + url}
+            onClick={(e) => {
+              if (onStageSelect) {
+                e.preventDefault();
+                onStageSelect(String(node.stage.id));
+              }
+            }}
+          >
             <span className="jenkins-visually-hidden">{title}</span>
           </a>
         )}

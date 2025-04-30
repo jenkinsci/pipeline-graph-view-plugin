@@ -144,7 +144,7 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
                 "url",
                 appendTrailingSlashIfRequired(req.getContextPath())
                         + run.getUrl().replace("/" + run.getNumber() + "/", "/" + estimatedNextBuildNumber + "/")
-                        + "pipeline-graph/");
+                        + "pipeline-console/");
 
         result.put("success", true);
         return HttpResponses.okJSON(result);
@@ -165,6 +165,6 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
 
     @Override
     public String getIconClassName() {
-        return "symbol-git-network-outline plugin-ionicons-api";
+        return null;
     }
 }

@@ -1,0 +1,22 @@
+.pgv-stages-customization {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  padding-right: 0.6rem;
+  min-width: 220px;
+
+  span {
+    color: var(--text-color-secondary);
+  }
+
+  select {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  &:has(select:disabled) {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}

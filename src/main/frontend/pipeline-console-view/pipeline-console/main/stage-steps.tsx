@@ -5,7 +5,6 @@ import React from "react";
 import { StepInfo, StepLogBufferInfo } from "../../../common/RestClient.tsx";
 import ConsoleLogCard from "./ConsoleLogCard.tsx";
 import { LOG_FETCH_SIZE, StageInfo } from "./PipelineConsoleModel.tsx";
-import ScrollToTopBottom from "./scroll-to-top-bottom.tsx";
 
 export default function StageSteps({
   stage,
@@ -43,7 +42,6 @@ export default function StageSteps({
           />
         );
       })}
-      <ScrollToTopBottom />
     </div>
   );
 }

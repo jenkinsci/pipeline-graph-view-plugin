@@ -119,6 +119,12 @@ const TreeNode = React.memo(function TreeNode({
   };
 
   useEffect(() => {
+    if (hasSelectedDescendant(stage)) {
+      setIsExpanded(true);
+    }
+  }, [selected]);
+
+  useEffect(() => {
     if (search.length || !allVisible) {
       if (filterStageTree(search, visibleStatuses, [stage]).length !== 0) {
         setIsExpanded(true);
@@ -159,11 +165,9 @@ const TreeNode = React.memo(function TreeNode({
               />
             </span>
             <span className="task-link-text">{stage.name}</span>
-            {stage.state === Result.running && (
-              <span className="pgv-tree-item__description">
-                <Total ms={stage.totalDurationMillis} />
-              </span>
-            )}
+            <span className="pgv-tree-item__description">
+              <Total ms={stage.totalDurationMillis} />
+            </span>
           </div>
         </a>
 

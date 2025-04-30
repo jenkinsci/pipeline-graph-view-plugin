@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import useRunPoller from "../../../common/tree-api.ts";
-import { layoutGraph } from "./PipelineGraphLayout.ts";
+import { layoutGraph } from "./PipelineGraphLayout";
 import {
   CompositeConnection,
   defaultLayout,
@@ -20,20 +19,7 @@ import {
 import { Node, SelectionHighlight } from "./support/nodes.tsx";
 
 export function PipelineGraph(props: Props) {
-  const {
-    stages = [],
-    layout,
-    setStages,
-    selectedStage,
-    currentRunPath,
-    previousRunPath,
-    collapsed,
-  } = props;
-
-  const { run } = useRunPoller({
-    currentRunPath,
-    previousRunPath,
-  });
+  const { stages = [], layout, selectedStage, collapsed } = props;
 
   const [nodeColumns, setNodeColumns] = useState<NodeColumn[]>([]);
   const [connections, setConnections] = useState<CompositeConnection[]>([]);
@@ -51,14 +37,8 @@ export function PipelineGraph(props: Props) {
   >(selectedStage);
 
   useEffect(() => {
-    if (run) {
-      updateLayout(run.stages);
-
-      if (setStages) {
-        setStages(run.stages);
-      }
-    }
-  }, [run]);
+    updateLayout(stages);
+  }, [stages]);
 
   useEffect(() => {
     let needsLayout = false;
@@ -141,7 +121,15 @@ export function PipelineGraph(props: Props) {
         </svg>
 
         {nodes.map((node) => (
-          <Node key={node.id} node={node} collapsed={collapsed} />
+          <Node
+            key={node.id}
+            node={node}
+            collapsed={collapsed}
+            isSelected={
+              node.isPlaceholder ? false : selectedStage?.id === node.stage.id
+            }
+            onStageSelect={props.onStageSelect}
+          />
         ))}
 
         {bigLabels.map((label) => (
@@ -150,8 +138,7 @@ export function PipelineGraph(props: Props) {
             details={label}
             layout={layoutState}
             measuredHeight={measuredHeight}
-            selectedStage={currentSelectedStage}
-            isStageSelected={stageIsSelected}
+            isSelected={selectedStage?.id === label.stage?.id}
           />
         ))}
 
@@ -160,7 +147,7 @@ export function PipelineGraph(props: Props) {
             key={label.key}
             details={label}
             layout={layoutState}
-            isStageSelected={stageIsSelected}
+            isSelected={selectedStage?.id === label.stage?.id}
           />
         ))}
 
@@ -179,15 +166,7 @@ export function PipelineGraph(props: Props) {
 interface Props {
   stages: Array<StageInfo>;
   layout?: Partial<LayoutInfo>;
-  setStages?: (stages: Array<StageInfo>) => void;
   selectedStage?: StageInfo;
-  /**
-   * Path of the current run
-   */
-  currentRunPath: string;
-  /**
-   * Optional path of the previous run
-   */
-  previousRunPath?: string;
   collapsed?: boolean;
+  onStageSelect?: (nodeId: string) => void;
 }

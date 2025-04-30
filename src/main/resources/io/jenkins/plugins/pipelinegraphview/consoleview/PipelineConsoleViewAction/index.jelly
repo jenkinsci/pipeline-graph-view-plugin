@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:dd="/lib/layout/dropdowns" xmlns:t="/lib/hudson">
-    <l:layout title="${%Build log} [${it.buildDisplayName}]">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+    <l:layout title="${it.buildDisplayName} - ${it.fullProjectDisplayName}">
         <l:main-panel>
             <link rel="stylesheet" href="${resURL}/plugin/pipeline-graph-view/js/style.css" type="text/css" />
             <j:out value="${h.generateConsoleAnnotationScriptAndStylesheet()}"/>
@@ -20,23 +20,12 @@
                         </button>
                     </l:hasPermission>
                 </j:if>
-                <a href="../pipeline-graph" class="jenkins-button">
-                    <l:icon src="symbol-git-network-outline plugin-ionicons-api"/>
-                    ${%Overview}
-                </a>
                 <l:hasPermission permission="${it.configurePermission}">
                     <a href="../../configure" class="jenkins-button">
                         ${%Configure}
                     </a>
                 </l:hasPermission>
-                <l:overflowButton>
-                    <dd:item icon="symbol-terminal"
-                             text="${%View classic console}"
-                             href="../console" />
-                    <dd:item icon="symbol-document-text"
-                             text="${%View as plain text}"
-                             href="../consoleText" />
-                </l:overflowButton>
+                <div id="console-pipeline-overflow-root" />
             </j:set>
 
             <t:buildCaption controls="${controls}">
@@ -53,7 +42,27 @@
                 </j:if>
             </t:buildCaption>
 
-            <p class="jenkins-page-description">${it.iconColor.description} ${it.startTimeString} ago in ${it.durationString}</p>
+            <div class="pgv-details">
+                <j:forEach var="card" items="${it.runDetailsCard.items}">
+                    <j:if test="${!card.separator}">
+                        <div>
+                            <l:icon src="${card.icon}"/>
+                            <j:choose>
+                                <j:when test="${!empty(card.href)}">
+                                    <a
+                                            href="${card.href}"
+                                    >
+                                        ${card.text}
+                                    </a>
+                                </j:when>
+                                <j:otherwise>
+                                    ${card.text}
+                                </j:otherwise>
+                            </j:choose>
+                        </div>
+                    </j:if>
+                </j:forEach>
+            </div>
 
             <div id="console-pipeline-root" data-current-run-path="${rootURL + '/' + it.buildUrl}"
                            data-previous-run-path="${it.previousBuildUrl != null ? rootURL + '/' + it.previousBuildUrl : null}"

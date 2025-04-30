@@ -6,7 +6,11 @@ import Tooltip from "./tooltip.tsx";
 /**
  * A customized (and customizable) implementation of Tippy dropdowns
  */
-export default function Dropdown({ items, disabled }: DropdownProps) {
+export default function Dropdown({
+  items,
+  disabled,
+  className,
+}: DropdownProps) {
   const [visible, setVisible] = useState(false);
   const show = () => setVisible(true);
   const hide = () => setVisible(false);
@@ -19,23 +23,45 @@ export default function Dropdown({ items, disabled }: DropdownProps) {
         {...DefaultDropdownProps}
         content={
           <div className="jenkins-dropdown">
-            {items.map((item, index) => (
-              <a
-                key={index}
-                className="jenkins-dropdown__item"
-                href={item.href}
-                target={item.target}
-                download={item.download}
-              >
-                <div className="jenkins-dropdown__item__icon">{item.icon}</div>
-                {item.text}
-              </a>
-            ))}
+            {items.map((item, index) => {
+              if (item === "separator") {
+                return (
+                  <div
+                    key={`separator-${index}`}
+                    className="jenkins-dropdown__separator"
+                  />
+                );
+              }
+
+              if (React.isValidElement(item)) {
+                return (
+                  <div key={index} className="jenkins-dropdown__custom-item">
+                    {item}
+                  </div>
+                );
+              }
+
+              const dropdownItem = item as DropdownItem;
+              return (
+                <a
+                  key={index}
+                  className="jenkins-dropdown__item"
+                  href={dropdownItem.href}
+                  target={dropdownItem.target}
+                  download={dropdownItem.download}
+                >
+                  <div className="jenkins-dropdown__item__icon">
+                    {dropdownItem.icon}
+                  </div>
+                  {dropdownItem.text}
+                </a>
+              );
+            })}
           </div>
         }
       >
         <button
-          className="jenkins-button jenkins-button--tertiary"
+          className={"jenkins-button " + className}
           type="button"
           disabled={disabled}
           onClick={visible ? hide : show}
@@ -63,8 +89,9 @@ export const DefaultDropdownProps: TippyProps = {
 };
 
 interface DropdownProps {
-  items: DropdownItem[];
+  items: (DropdownItem | React.ReactElement | "separator")[];
   disabled?: boolean;
+  className?: string;
 }
 
 interface DropdownItem {

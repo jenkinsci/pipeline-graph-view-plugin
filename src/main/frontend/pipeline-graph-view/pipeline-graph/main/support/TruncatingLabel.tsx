@@ -14,14 +14,18 @@ export function TruncatingLabel({
   };
 
   return (
-    <div style={mergedStyle} className={`TruncatingLabel ${className}`.trim()}>
+    <div
+      style={mergedStyle}
+      className={`TruncatingLabel ${className}`.trim()}
+      title={children}
+    >
       {children}
     </div>
   );
 }
 
 interface TruncatingLabelProps {
-  children: React.ReactNode;
+  children: string;
   style?: CSSProperties;
   className?: string;
 }

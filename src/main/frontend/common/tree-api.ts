@@ -23,6 +23,7 @@ export default function useRunPoller({
     if (previousRunPath) {
       let previousRun: RunStatus | null = null;
       onPipelineDataReceived = async (current: RunStatus) => {
+        setLoading(false);
         if (current.complete) {
           setRun(current);
         } else {

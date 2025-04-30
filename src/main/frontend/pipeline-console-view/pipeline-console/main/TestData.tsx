@@ -1,7 +1,7 @@
 import {
   Result,
-  StageType,
   StageInfo,
+  StageType,
   StepInfo,
 } from "./PipelineConsoleModel.tsx";
 export const defaultStagesList: StageInfo[] = [

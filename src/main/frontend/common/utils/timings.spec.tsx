@@ -1,32 +1,33 @@
 /** * @vitest-environment jsdom */
 
-import { vi } from "vitest";
-import React from "react";
-import { Paused, Started, Total } from "./timings.tsx";
 import { render } from "@testing-library/react";
-import { I18NContext } from "../i18n/i18n-provider.tsx";
-import { Translations } from "../i18n/translations.ts";
-import MessageFormat from "@messageformat/core";
+import React from "react";
+import { vi } from "vitest";
+
+import { I18NContext, Messages } from "../i18n/index.ts";
+import { Paused, Started, Total } from "./timings.tsx";
 
 describe("Timings", () => {
-  const msg = new MessageFormat("en");
-
-  const translations = new Translations({
-    "Util.year": msg.compile("{0} yr"),
-    "Util.month": msg.compile("{0} mo"),
-    "Util.day": msg.compile("{0} day"),
-    "Util.hour": msg.compile("{0} hr"),
-    "Util.minute": msg.compile("{0} min"),
-    "Util.second": msg.compile("{0} sec"),
-    "Util.millisecond": msg.compile("{0} ms"),
-    startedAgo: msg.compile("Started {0} ago"),
-  });
+  const translations = new Messages(
+    {
+      "Util.year": "{0} yr",
+      "Util.month": "{0} mo",
+      "Util.day": "{0} day",
+      "Util.hour": "{0} hr",
+      "Util.minute": "{0} min",
+      "Util.second": "{0} sec",
+      "Util.millisecond": "{0} ms",
+      startedAgo: "Started {0} ago",
+    },
+    "en",
+  );
 
   function process(child: any) {
     return render(
       <I18NContext.Provider value={translations}>{child}</I18NContext.Provider>,
     );
   }
+
   describe("Total", () => {
     function getTotal(ms: number) {
       return process(<Total ms={ms} />);

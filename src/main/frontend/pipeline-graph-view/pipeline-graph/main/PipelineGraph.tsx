@@ -1,23 +1,23 @@
 import React, { useEffect, useState } from "react";
 
+import useRunPoller from "../../../common/tree-api.ts";
+import { layoutGraph } from "./PipelineGraphLayout.ts";
 import {
   CompositeConnection,
   defaultLayout,
-  NodeLabelInfo,
   LayoutInfo,
   NodeColumn,
-  StageInfo,
+  NodeLabelInfo,
   Result,
+  StageInfo,
 } from "./PipelineGraphModel.tsx";
-import { layoutGraph } from "./PipelineGraphLayout.ts";
-import { Node, SelectionHighlight } from "./support/nodes.tsx";
+import { GraphConnections } from "./support/connections.tsx";
 import {
   BigLabel,
-  SmallLabel,
   SequentialContainerLabel,
+  SmallLabel,
 } from "./support/labels.tsx";
-import { GraphConnections } from "./support/connections.tsx";
-import useRunPoller from "../../../common/tree-api.ts";
+import { Node, SelectionHighlight } from "./support/nodes.tsx";
 
 export function PipelineGraph(props: Props) {
   const {

@@ -1,11 +1,10 @@
-import React, { FunctionComponent } from "react";
-
-import { MultiPipelineGraph } from "./multi-pipeline-graph/main/index.ts";
-
 import "./app.scss";
 import "./multi-pipeline-graph/styles/main.scss";
-import { I18NProvider } from "../common/i18n/i18n-provider.tsx";
-import { ResourceBundleName } from "../common/i18n/translations.ts";
+
+import React, { FunctionComponent } from "react";
+
+import { I18NProvider, ResourceBundleName } from "../common/i18n/index.ts";
+import { MultiPipelineGraph } from "./multi-pipeline-graph/main/index.ts";
 
 const App: FunctionComponent = () => {
   const locale =
@@ -13,10 +12,7 @@ const App: FunctionComponent = () => {
     "en";
   return (
     <div>
-      <I18NProvider
-        bundles={[ResourceBundleName.messages, ResourceBundleName.timing]}
-        locale={locale}
-      >
+      <I18NProvider bundles={[ResourceBundleName.messages]} locale={locale}>
         <MultiPipelineGraph />
       </I18NProvider>
     </div>

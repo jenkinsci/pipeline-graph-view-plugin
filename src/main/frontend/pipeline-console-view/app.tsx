@@ -1,8 +1,7 @@
 import React, { lazy } from "react";
 
-import { I18NProvider } from "../common/i18n/i18n-provider.tsx";
+import { I18NProvider, ResourceBundleName } from "../common/i18n/index.ts";
 import { FilterProvider } from "./pipeline-console/main/providers/filter-provider.tsx";
-import { ResourceBundleName } from "../common/i18n/translations.ts";
 
 const PipelineConsole = lazy(
   () => import("./pipeline-console/main/PipelineConsole.tsx"),
@@ -13,10 +12,7 @@ export default function App() {
     document.getElementById("console-pipeline-root")?.dataset.userLocale ??
     "en";
   return (
-    <I18NProvider
-      bundles={[ResourceBundleName.messages, ResourceBundleName.timing]}
-      locale={locale}
-    >
+    <I18NProvider bundles={[ResourceBundleName.messages]} locale={locale}>
       <FilterProvider>
         <PipelineConsole />
       </FilterProvider>

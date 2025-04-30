@@ -6,15 +6,16 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import {
-  defaultTranslations,
-  getTranslations,
-  ResourceBundleName,
-  Translations,
-} from "./translations.ts";
 
-export const I18NContext: Context<Translations> = createContext(
-  new Translations({}),
+import {
+  defaultMessages,
+  getMessages,
+  Messages,
+  ResourceBundleName,
+} from "./messages.ts";
+
+export const I18NContext: Context<Messages> = createContext(
+  defaultMessages("en"),
 );
 
 interface I18NProviderProps {
@@ -28,19 +29,17 @@ export const I18NProvider: FunctionComponent<I18NProviderProps> = ({
   bundles,
   locale,
 }) => {
-  const [translations, setTranslations] = useState<Translations>(
-    defaultTranslations(locale),
-  );
+  const [messages, setMessages] = useState<Messages>(defaultMessages(locale));
 
   useEffect(() => {
-    const fetchTranslations = async () => {
-      const translations = await getTranslations(locale, bundles);
-      setTranslations(translations);
+    const fetchMessages = async () => {
+      const found = await getMessages(locale, bundles);
+      setMessages(found);
     };
-    fetchTranslations();
+    fetchMessages();
   }, []);
 
   return (
-    <I18NContext.Provider value={translations}>{children}</I18NContext.Provider>
+    <I18NContext.Provider value={messages}>{children}</I18NContext.Provider>
   );
 };

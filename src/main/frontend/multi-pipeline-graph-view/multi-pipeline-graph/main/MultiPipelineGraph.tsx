@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState } from "react";
+
+import { I18NContext } from "../../../common/i18n/index.ts";
 import { RunInfo } from "./MultiPipelineGraphModel.ts";
-import startPollingRunsStatus from "./support/startPollingRunsStatus.ts";
 import SingleRun from "./SingleRun.tsx";
-import { I18NContext } from "../../../common/i18n/i18n-provider.tsx";
+import startPollingRunsStatus from "./support/startPollingRunsStatus.ts";
 
 export const MultiPipelineGraph = () => {
   const [runs, setRuns] = useState<Array<RunInfo>>([]);
@@ -38,14 +39,14 @@ export const MultiPipelineGraph = () => {
     {},
   );
 
-  const translations = useContext(I18NContext);
+  const messages = useContext(I18NContext);
 
   return (
     <>
       {Object.keys(groupedRuns).length === 0 ? (
         <div className="pgv-stages__group">
           <div className="pgv-stages__heading">
-            {translations.get("noBuilds")()}
+            {messages.format("noBuilds")}
           </div>
         </div>
       ) : (

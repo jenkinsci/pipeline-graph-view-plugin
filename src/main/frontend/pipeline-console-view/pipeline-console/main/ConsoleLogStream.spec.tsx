@@ -1,7 +1,9 @@
 /** * @vitest-environment jsdom */
 
-import { vi } from "vitest";
+import { render } from "@testing-library/react";
 import React from "react";
+import { vi } from "vitest";
+
 import ConsoleLogStream, {
   ConsoleLogStreamProps,
 } from "./ConsoleLogStream.tsx";
@@ -10,7 +12,6 @@ import {
   StepInfo,
   StepLogBufferInfo,
 } from "./PipelineConsoleModel.tsx";
-import { render } from "@testing-library/react";
 
 const TestComponent = (props: ConsoleLogStreamProps) => {
   return (

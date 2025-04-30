@@ -1,5 +1,4 @@
 import { defineConfig } from "vitest/config";
-import path from "node:path";
 
 export default defineConfig({
   test: {
@@ -7,9 +6,5 @@ export default defineConfig({
     globals: true,
     environment: "jsdom",
     setupFiles: ["setupTests.ts"],
-    outputFile: path.resolve(
-      import.meta.dirname,
-      "target/surefire-reports/vitest-junit.xml",
-    ),
   },
 });

@@ -30,6 +30,16 @@
     }
   }
 
+  // The selected state looks rather odd for running jobs, so apply custom styling to make it look better
+  &--running.PWGx-pipeline-node--selected {
+    &::after {
+      inset: 0;
+      box-shadow:
+        0 0 0 0.125rem color-mix(in srgb, currentColor, transparent),
+        0 0 0 0.5rem var(--card-background) !important;
+    }
+  }
+
   &:has(a) {
     &::after {
       content: "";

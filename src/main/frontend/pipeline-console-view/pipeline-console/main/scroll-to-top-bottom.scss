@@ -1,6 +1,6 @@
 .pgv-scroll-to-top-bottom {
   position: fixed;
-  bottom: calc(var(--section-padding) * 1);
+  bottom: calc(var(--section-padding) * 1 + (var(--pgv-offset-bottom, 0px)));
   right: calc(var(--section-padding) * 2);
   display: flex;
   gap: 0.375rem;
@@ -11,7 +11,9 @@
   backdrop-filter: var(--dropdown-backdrop-filter);
   opacity: 0;
   scale: 0.25;
-  transition: var(--elastic-transition);
+  transition:
+    opacity var(--elastic-transition),
+    scale var(--elastic-transition);
   pointer-events: none;
   z-index: 1;
 

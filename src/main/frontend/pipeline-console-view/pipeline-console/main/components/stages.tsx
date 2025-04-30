@@ -95,12 +95,12 @@ export default function Stages({
           <PipelineGraph
             stages={stages}
             selectedStage={selectedStage}
-            onStageSelect={(e) => {
-              if (onStageSelect) {
+            {...(onStageSelect && {
+              onStageSelect: (e) => {
                 onStageSelect(e);
-              }
-              setIsExpanded(false);
-            }}
+                setIsExpanded(false);
+              },
+            })}
           />
         </TransformComponent>
       </TransformWrapper>

@@ -16,7 +16,7 @@ This plugin adds a visual representation of Jenkins pipelines, showing each stag
 - Visualize pipelines as an interactive, nested graph
 - Navigate pipeline stages in a clear, collapsible list view
 - View logs in real time without leaving the interface
-- Customize and resize the UI to fit your workflow
+- Toggle between graph and stage views; move and resize panes to suit your workflow
 - Quickly access details of each step and its results
 - Designed for better readability and faster troubleshooting
 

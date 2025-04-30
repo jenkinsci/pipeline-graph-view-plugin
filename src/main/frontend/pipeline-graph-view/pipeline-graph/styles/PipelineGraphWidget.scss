@@ -115,6 +115,7 @@
 .PWGx-pipeline-big-label {
   font-weight: var(--font-bold-weight);
   font-size: 0.8125rem;
+  -webkit-line-clamp: 1 !important;
 }
 
 .PWGx-pipeline-big-label.pgv-graph-node--synthetic {

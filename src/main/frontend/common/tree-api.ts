@@ -4,8 +4,6 @@ import startPollingPipelineStatus from "../pipeline-graph-view/pipeline-graph/ma
 import { getRunStatusFromPath, RunStatus } from "./RestClient.tsx";
 import { mergeStageInfos } from "./utils/stage-merge.ts";
 
-const onPipelineComplete = () => undefined;
-
 const onPollingError = (err: Error) =>
   console.log("There was an error when polling the pipeline status", err);
 
@@ -18,6 +16,7 @@ export default function useRunPoller({
   previousRunPath,
 }: RunPollerProps) {
   const [run, setRun] = useState<RunStatus>();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let onPipelineDataReceived: (data: RunStatus) => void;
@@ -48,13 +47,14 @@ export default function useRunPoller({
     startPollingPipelineStatus(
       onPipelineDataReceived,
       onPollingError,
-      onPipelineComplete,
+      () => setLoading(false),
       currentRunPath,
     );
   }, []);
 
   return {
     run,
+    loading,
   };
 }
 

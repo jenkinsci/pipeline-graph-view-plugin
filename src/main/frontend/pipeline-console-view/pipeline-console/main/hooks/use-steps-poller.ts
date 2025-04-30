@@ -13,7 +13,7 @@ import {
 } from "../PipelineConsoleModel.tsx";
 
 export function useStepsPoller(props: RunPollerProps) {
-  const { run } = useRunPoller({
+  const { run, loading } = useRunPoller({
     currentRunPath: props.currentRunPath,
     previousRunPath: props.previousRunPath,
   });
@@ -258,6 +258,7 @@ export function useStepsPoller(props: RunPollerProps) {
     handleStageSelect,
     onStepToggle,
     onMoreConsoleClick,
+    loading,
   };
 }
 

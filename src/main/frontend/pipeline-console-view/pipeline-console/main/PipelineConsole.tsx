@@ -6,6 +6,7 @@ import React from "react";
 
 import Dropdown from "../../../common/components/dropdown.tsx";
 import DropdownPortal from "../../../common/components/dropdown-portal.tsx";
+import Skeleton from "./components/skeleton.tsx";
 import Stages from "./components/stages.tsx";
 import StagesCustomization from "./components/stages-customization.tsx";
 import DataTreeView from "./DataTreeView.tsx";
@@ -31,6 +32,7 @@ export default function PipelineConsole() {
     handleStageSelect,
     onStepToggle,
     onMoreConsoleClick,
+    loading,
   } = useStepsPoller({ currentRunPath, previousRunPath });
 
   return (
@@ -59,14 +61,17 @@ export default function PipelineConsole() {
         storageKey="graph"
       >
         {(mainViewVisibility === "both" ||
-          mainViewVisibility === "graphOnly") && (
-          <Stages
-            stages={stages}
-            selectedStage={openStage || undefined}
-            stageViewPosition={stageViewPosition}
-            onStageSelect={handleStageSelect}
-          />
-        )}
+          mainViewVisibility === "graphOnly") &&
+          (loading ? (
+            <Skeleton />
+          ) : (
+            <Stages
+              stages={stages}
+              selectedStage={openStage || undefined}
+              stageViewPosition={stageViewPosition}
+              onStageSelect={handleStageSelect}
+            />
+          ))}
 
         <SplitView storageKey="stages">
           {(mainViewVisibility === "both" ||
@@ -76,23 +81,37 @@ export default function PipelineConsole() {
               id="tree-view-pane"
               className="pgv-sticky-sidebar"
             >
-              <DataTreeView
-                onNodeSelect={(_, nodeId) => handleStageSelect(nodeId)}
-                selected={openStage?.id}
-                stages={stages}
-              />
+              {loading ? (
+                <div className={"pgv-skeleton-column"}>
+                  <Skeleton height={2.625} />
+                  <Skeleton height={20} />
+                </div>
+              ) : (
+                <DataTreeView
+                  onNodeSelect={(_, nodeId) => handleStageSelect(nodeId)}
+                  selected={openStage?.id}
+                  stages={stages}
+                />
+              )}
             </div>
           )}
 
           <div key="stage-view" id="stage-view-pane">
-            <StageView
-              stage={openStage}
-              steps={openStageSteps}
-              stepBuffers={openStageStepBuffers}
-              expandedSteps={expandedSteps}
-              onStepToggle={onStepToggle}
-              onMoreConsoleClick={onMoreConsoleClick}
-            />
+            {loading ? (
+              <div className={"pgv-skeleton-column"}>
+                <Skeleton height={2.625} />
+                <Skeleton height={20} />
+              </div>
+            ) : (
+              <StageView
+                stage={openStage}
+                steps={openStageSteps}
+                stepBuffers={openStageStepBuffers}
+                expandedSteps={expandedSteps}
+                onStepToggle={onStepToggle}
+                onMoreConsoleClick={onMoreConsoleClick}
+              />
+            )}
           </div>
         </SplitView>
       </SplitView>

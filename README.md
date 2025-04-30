@@ -1,18 +1,23 @@
 # Pipeline Graph View Plugin
 
+[![Build Status](https://ci.jenkins.io/job/Plugins/job/pipeline-graph-view-plugin/job/main/badge/icon)](https://ci.jenkins.io/job/Plugins/job/pipeline-graph-view-plugin/job/main/)
+[![Gitter](https://badges.gitter.im/jenkinsci/ux-sig.svg)](https://gitter.im/jenkinsci/ux-sig?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Jenkins Plugin](https://img.shields.io/jenkins/plugin/v/pipeline-graph-view.svg)](https://plugins.jenkins.io/pipeline-graph-view)
+[![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/pipeline-graph-view.svg?color=blue)](https://plugins.jenkins.io/pipeline-graph-view)
+
+![preview.png](docs/images/preview.png)
+
 ## Introduction
 
-This plugin provides new Action and View to view a `WorkflowRun` via the "Pipeline Graph" visualization that was popularized in the [Blue Ocean plugin](https://github.com/jenkinsci/blueocean-plugin).
+This plugin adds a visual representation of Jenkins pipelines, showing each stage of a run in a clear and easy-to-follow graph format. It’s designed to make pipeline progress and structure easier to understand at a glance.
 
 ## Getting started
 
-1. Install the `pipeline-graph-view` plugin
+1. Install the [pipeline-graph-view](https://plugins.jenkins.io/pipeline-graph-view/) plugin
 2. Go to a pipeline run (not a job page)
-3. Click 'Pipeline Overview'
+3. Click 'Pipeline Console'
 
 ## Screenshots
-
-![Pipeline Graph link](docs/images/action.png)
 
 Basic pipeline:
 
@@ -28,20 +33,10 @@ See a live demonstration from a Jenkins Contributor Summit:
 
 [![Demo of Pipeline Graph View plugin](https://img.youtube.com/vi/MBI3MBY2eJ8/0.jpg)](https://www.youtube.com/watch?v=MBI3MBY2eJ8&t=3295 "Pipeline Graph View plugin")
 
-## Vision
-
-This plugin aims to bring the best of Blue Ocean into the regular Jenkins UI.
-
-That means functionality like:
-
-- [x] Pipeline graph
-- [x] Summary of runs in a job (like [Pipeline Stage View Plugin](https://github.com/jenkinsci/pipeline-stage-view-plugin/), but simpler, more modern and more performant)
-- [x] Modern logs viewing
-
-The plugin should be lightweight, using or providing extension points where possible rather than building everything into one plugin.
-
 ## Contributing
 
-Any help is much appreciated, the frontend code is written in React, the backend code is in Java, designers would be greatly appreciated as well.
+Refer to our [contribution guidelines](./CONTRIBUTING.md).
 
-Refer to our [contribution guidelines](./CONTRIBUTING.md)
+## LICENSE
+
+Licensed under MIT, see [LICENSE](LICENSE.md).

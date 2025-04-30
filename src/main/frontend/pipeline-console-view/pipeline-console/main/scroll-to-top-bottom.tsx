@@ -11,15 +11,17 @@ export default function ScrollToTopBottom() {
 
   useEffect(() => {
     const updateScrollState = () => {
-      const scrollY = window.scrollY || document.documentElement.scrollTop;
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
       const windowHeight = window.innerHeight;
       const docHeight = document.documentElement.scrollHeight;
-      const atTop = scrollY < 100;
-      const atBottom = scrollY + windowHeight >= docHeight - 100;
+
+      const atTop = scrollTop <= 10;
+      const atBottom = scrollTop + windowHeight >= docHeight - 10;
+      const scrollable = docHeight > windowHeight + 10;
 
       setIsAtTop(atTop);
       setIsAtBottom(atBottom);
-      setIsScrollable(!(atTop && atBottom));
+      setIsScrollable(scrollable);
     };
 
     updateScrollState();
@@ -50,7 +52,7 @@ export default function ScrollToTopBottom() {
 
   const scrollToBottom = () => {
     window.scrollTo({
-      top: document.body.scrollHeight,
+      top: document.documentElement.scrollHeight,
     });
   };
 

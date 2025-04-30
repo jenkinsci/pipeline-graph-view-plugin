@@ -1,6 +1,13 @@
 import "./split-view.scss";
 
-import { Children, MouseEvent as ReactMouseEvent, ReactNode, useEffect, useRef, useState } from "react";
+import {
+  Children,
+  MouseEvent as ReactMouseEvent,
+  ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { useLayoutPreferences } from "./providers/user-preference-provider.tsx";
 

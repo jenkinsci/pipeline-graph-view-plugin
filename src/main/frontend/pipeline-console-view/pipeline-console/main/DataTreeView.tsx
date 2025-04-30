@@ -15,7 +15,7 @@ import { Total } from "../../../common/utils/timings.tsx";
 import {
   Result,
   StageInfo,
-} from "../../../pipeline-graph-view/pipeline-graph/main/index.ts";
+} from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import { useFilter } from "./providers/filter-provider.tsx";
 
 export default function DataTreeView({

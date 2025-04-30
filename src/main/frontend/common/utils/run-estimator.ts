@@ -1,7 +1,7 @@
 import {
   Result,
   StageInfo,
-} from "../../pipeline-graph-view/pipeline-graph/main/index.ts";
+} from "../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 
 export default class RunEstimator {
   private stagesLookup: Map<String, StageInfo>;

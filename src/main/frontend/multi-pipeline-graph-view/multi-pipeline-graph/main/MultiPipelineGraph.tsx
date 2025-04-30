@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 
-import { I18NContext } from "../../../common/i18n/index.ts";
+import { I18NContext } from "../../../common/i18n/i18n-provider.tsx";
 import { RunInfo } from "./MultiPipelineGraphModel.ts";
 import SingleRun from "./SingleRun.tsx";
 import startPollingRunsStatus from "./support/startPollingRunsStatus.ts";

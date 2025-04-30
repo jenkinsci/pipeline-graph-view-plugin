@@ -11,7 +11,7 @@ import {
   Started,
   Total,
 } from "../../../common/utils/timings.tsx";
-import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/index.ts";
+import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import StageNodeLink from "./StageNodeLink.tsx";
 import { DOCUMENT } from "./symbols.tsx";
 

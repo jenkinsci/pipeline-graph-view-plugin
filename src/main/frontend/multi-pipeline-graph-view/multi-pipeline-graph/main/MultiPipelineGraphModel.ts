@@ -1,4 +1,4 @@
-import { Result } from "../../../pipeline-graph-view/pipeline-graph/main/index.ts";
+import { Result } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 
 export interface RunInfo {
   id: string;

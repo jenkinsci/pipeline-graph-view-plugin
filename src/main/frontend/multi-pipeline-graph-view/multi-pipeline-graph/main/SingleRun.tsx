@@ -3,9 +3,11 @@ import "./single-run.scss";
 import StatusIcon from "../../../common/components/status-icon.tsx";
 import useRunPoller from "../../../common/tree-api.ts";
 import { time, Total } from "../../../common/utils/timings.tsx";
-import { LayoutInfo } from "../../../pipeline-graph-view/pipeline-graph/main/index.ts";
 import { PipelineGraph } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraph.tsx";
-import { defaultLayout } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
+import {
+  defaultLayout,
+  LayoutInfo,
+} from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import { RunInfo } from "./MultiPipelineGraphModel.ts";
 
 export default function SingleRun({ run, currentJobPath }: SingleRunProps) {

@@ -21,7 +21,7 @@ jobs:
       - name: crowdin action
         uses: crowdin/github-action@v2.7.0
         with:
-          upload_translations: false
+          upload_translations: true
           download_translations: true
           skip_untranslated_files: true
           push_translations: true
@@ -34,5 +34,5 @@ jobs:
           config: "crowdin.yml"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CROWDIN_PROJECT_ID: 32
+          CROWDIN_PROJECT_ID: 34
           CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}

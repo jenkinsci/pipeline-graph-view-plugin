@@ -1,7 +1,7 @@
 files:
   - source: "/src/main/resources/io/jenkins/plugins/pipelinegraphview/**/*.properties"
     ignore:
-      - '/src/main/resources/io/jenkins/plugins/pipelinegraphview/**/%file_name%_%two_letters_code%.properties'
+      - "/src/main/resources/io/jenkins/plugins/pipelinegraphview/**/%file_name%_%two_letters_code%.properties"
     translation: "/src/main/resources/io/jenkins/plugins/pipelinegraphview/**/%file_name%_%two_letters_code%.properties"
     escape_quotes: 1
     escape_special_characters: 0

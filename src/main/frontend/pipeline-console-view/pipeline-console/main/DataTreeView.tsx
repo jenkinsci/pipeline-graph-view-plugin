@@ -7,6 +7,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { Virtuoso } from "react-virtuoso";
 
 import Filter from "../../../common/components/filter.tsx";
 import StatusIcon from "../../../common/components/status-icon.tsx";
@@ -17,8 +18,6 @@ import {
   StageInfo,
 } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import { useFilter } from "./providers/filter-provider.tsx";
-import { Virtuoso } from "react-virtuoso";
-import { ConsoleLine } from "./ConsoleLine.tsx";
 
 export default function DataTreeView({
   stages,
@@ -94,7 +93,7 @@ export default function DataTreeView({
           useWindowScroll
           data={filteredStages}
           itemContent={(index: number, stage: StageInfo) => (
-              <TreeNode
+            <TreeNode
               key={stage.id}
               stage={stage}
               selected={String(selected)}
@@ -211,12 +210,14 @@ const TreeNode = memo(function TreeNode({
             useWindowScroll
             data={stage.children}
             itemContent={(index: number, child: StageInfo) => (
-            <TreeNode
-              key={child.id}
-              stage={child}
-              selected={selected}
-              onSelect={onSelect}
-            />)} />
+              <TreeNode
+                key={child.id}
+                stage={child}
+                selected={selected}
+                onSelect={onSelect}
+              />
+            )}
+          />
         </div>
       )}
     </div>

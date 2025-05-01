@@ -121,7 +121,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         String nodeId = req.getParameter("nodeId");
         if (nodeId == null) {
             logger.error("'consoleText' was not passed 'nodeId'.");
-            rsp.getWriter().write("Error getting console text");
+            rsp.getWriter().write("Error getting console text\n");
             return;
         }
         logger.debug("getConsoleText was passed node id '{}'.", nodeId);
@@ -143,7 +143,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
             }
         }
         if (!foundLogs) {
-            rsp.getWriter().write("No logs found");
+            rsp.getWriter().write("No logs found\n");
         }
     }
 
@@ -169,10 +169,10 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         // This will be a step, so return it's log output.
         // startByte to start getting data from. If negative will startByte from end of string with
         // LOG_THRESHOLD.
-        Long startByte = parseIntWithDefault(req.getParameter("startByte"), -LOG_THRESHOLD);
+        long startByte = parseIntWithDefault(req.getParameter("startByte"), -LOG_THRESHOLD);
         AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
         if (logText != null) {
-            logText.writeLogTo(0, res.getOutputStream());
+            logText.writeHtmlTo(startByte, res.getWriter());
         }
     }
 

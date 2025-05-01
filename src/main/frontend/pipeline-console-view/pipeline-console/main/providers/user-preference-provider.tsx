@@ -70,7 +70,6 @@ const loadFromLocalStorage = <T,>(key: string, fallback: T): T => {
   return fallback;
 };
 
-// PROVIDER
 const MOBILE_BREAKPOINT = 700;
 
 // PROVIDER

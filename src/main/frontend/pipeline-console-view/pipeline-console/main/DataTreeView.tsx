@@ -17,6 +17,8 @@ import {
   StageInfo,
 } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import { useFilter } from "./providers/filter-provider.tsx";
+import { Virtuoso } from "react-virtuoso";
+import { ConsoleLine } from "./ConsoleLine.tsx";
 
 export default function DataTreeView({
   stages,
@@ -88,14 +90,18 @@ export default function DataTreeView({
       )}
 
       <div id="tasks" style={{ marginLeft: "0.7rem" }}>
-        {filteredStages.map((stage) => (
-          <TreeNode
-            key={stage.id}
-            stage={stage}
-            selected={String(selected)}
-            onSelect={handleSelect}
-          />
-        ))}
+        <Virtuoso
+          useWindowScroll
+          data={filteredStages}
+          itemContent={(index: number, stage: StageInfo) => (
+              <TreeNode
+              key={stage.id}
+              stage={stage}
+              selected={String(selected)}
+              onSelect={handleSelect}
+            />
+          )}
+        />
       </div>
     </div>
   );
@@ -201,14 +207,16 @@ const TreeNode = memo(function TreeNode({
 
       {hasChildren && isExpanded && (
         <div className="pgv-tree-children">
-          {stage.children.map((child) => (
+          <Virtuoso
+            useWindowScroll
+            data={stage.children}
+            itemContent={(index: number, child: StageInfo) => (
             <TreeNode
               key={child.id}
               stage={child}
               selected={selected}
               onSelect={onSelect}
-            />
-          ))}
+            />)} />
         </div>
       )}
     </div>

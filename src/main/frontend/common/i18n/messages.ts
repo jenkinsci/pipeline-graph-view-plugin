@@ -1,28 +1,29 @@
-import MessageFormat, { MessageFunction } from "@messageformat/core";
-
 import { getResourceBundle } from "../RestClient.tsx";
-import { choiceFormatter } from "./choice-formatter.ts";
+import {
+  CompiledMessage,
+  MessageContext,
+  MessageFormat,
+} from "./message-format.ts";
 
 export type ResourceBundle = {
   [key: string]: string;
 };
 
 export class Messages {
-  private readonly mapping: Record<string, MessageFunction<"string">>;
+  private readonly mapping: Record<string, CompiledMessage>;
 
   constructor(messages: ResourceBundle, locale: string) {
     const entries = Object.entries(messages);
     if (entries.length === 0) {
       this.mapping = {};
     } else {
-      const fmt = messageFormat(locale);
       this.mapping = Object.fromEntries(
-        entries.map(([key, value]) => [key, fmt.compile(value)]),
+        entries.map(([key, value]) => [key, MessageFormat(value, locale)]),
       );
     }
   }
 
-  private get(key: string): MessageFunction<"string"> {
+  private get(key: string): CompiledMessage {
     const message = this.mapping[key];
     if (message != null) {
       return message;
@@ -30,23 +31,16 @@ export class Messages {
     if (process.env.NODE_ENV !== "test") {
       console.debug(`Translation for ${key} not found, using fallback`);
     }
-    return (params) => {
-      return params === undefined ? "" : Object.values(params as any).join(" ");
+    return {
+      format: (args?: MessageContext): string =>
+        args === undefined ? "" : Object.values(args).join(" "),
     };
   }
 
-  format(key: string, args: Record<string, any> | null = null): string {
+  format(key: string, args: MessageContext | undefined = undefined): string {
     const message = this.get(key);
-    return args === null ? message() : message(args);
+    return message.format(args);
   }
-}
-
-function messageFormat(locale: string) {
-  return new MessageFormat(locale, {
-    customFormatters: {
-      choice: choiceFormatter,
-    },
-  });
 }
 
 export enum ResourceBundleName {

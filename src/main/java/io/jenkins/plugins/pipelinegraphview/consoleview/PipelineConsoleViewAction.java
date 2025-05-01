@@ -121,20 +121,23 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     }
 
     @WebMethod(name = "log")
-    public HttpResponse getConsoleText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+    public void getConsoleText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         String nodeId = req.getParameter("nodeId");
         if (nodeId == null) {
             logger.error("'consoleText' was not passed 'nodeId'.");
-            return HttpResponses.errorJSON("Error getting console text");
+            rsp.getWriter().write("Error getting console text");
+            return;
         }
         logger.debug("getConsoleText was passed node id '{}'.", nodeId);
         // This will be a step, so return its log output.
         AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
 
+
         if (logText != null) {
-            return HttpResponses.text(PipelineNodeUtil.convertLogToString(logText));
+            logText.writeLogTo(0L, rsp.getOutputStream());
+            return;
         }
-        return HttpResponses.text("No logs found");
+        rsp.getWriter().write("No logs found");
     }
 
     /*

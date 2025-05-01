@@ -31,7 +31,6 @@
   },
   "homepage": "https://github.com/jenkinsci/pipeline-graph-view-plugin/#readme",
   "dependencies": {
-    "@messageformat/core": "^3.4.0",
     "@tippyjs/react": "^4.2.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

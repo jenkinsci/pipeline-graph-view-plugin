@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import net.sf.json.JSONObject;
+import org.jenkinsci.plugins.workflow.actions.LogAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -129,26 +130,6 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         logger.debug("getConsoleText was passed node id '{}'.", nodeId);
         // This will be a step, so return its log output.
         AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
-
-        long count = 0;
-        PipelineStepList steps = stepApi.getSteps(nodeId);
-        try (CharSpool spool = new CharSpool()) {
-
-            for (PipelineStep step : steps.getSteps()) {
-                AnnotatedLargeText<? extends FlowNode> logForNode = getLogForNode(String.valueOf(step.getId()));
-                if (logForNode != null) {
-                    count += logForNode.writeLogTo(0, spool);
-                }
-            }
-
-            if (count > 0) {
-                rsp.setContentType("text/plain;charset=UTF-8");
-                try (Writer writer = rsp.getWriter()) {
-                    spool.flush();
-                    spool.writeTo(new LineEndNormalizingWriter(writer));
-                }
-            }
-        }
 
         if (logText != null) {
             return HttpResponses.text(PipelineNodeUtil.convertLogToString(logText));

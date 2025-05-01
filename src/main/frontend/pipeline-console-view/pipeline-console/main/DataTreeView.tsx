@@ -92,7 +92,7 @@ export default function DataTreeView({
         <Virtuoso
           useWindowScroll
           data={filteredStages}
-          itemContent={(index: number, stage: StageInfo) => (
+          itemContent={(_: number, stage: StageInfo) => (
             <TreeNode
               key={stage.id}
               stage={stage}
@@ -209,7 +209,7 @@ const TreeNode = memo(function TreeNode({
           <Virtuoso
             useWindowScroll
             data={stage.children}
-            itemContent={(index: number, child: StageInfo) => (
+            itemContent={(_: number, child: StageInfo) => (
               <TreeNode
                 key={child.id}
                 stage={child}

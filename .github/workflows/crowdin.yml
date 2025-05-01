@@ -24,6 +24,7 @@ jobs:
           upload_translations: true
           download_translations: true
           skip_untranslated_files: true
+          auto_approve_imported: true
           push_translations: true
           export_only_approved: true
           commit_message: "feat: New Crowdin translations"

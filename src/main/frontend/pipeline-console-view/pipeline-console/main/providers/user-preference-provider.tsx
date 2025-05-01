@@ -30,6 +30,10 @@ interface LayoutPreferences {
   setTreeViewWidth: (width: number) => void;
   setStageViewWidth: (width: number) => void;
   setStageViewHeight: (height: number) => void;
+  /**
+   * Returns true if the current window width is less than the mobile breakpoint.
+   * Used for disabling customization options in favor of a mobile-friendly layout.
+   */
   isMobile: boolean;
 }
 
@@ -67,7 +71,6 @@ const loadFromLocalStorage = <T,>(key: string, fallback: T): T => {
 };
 
 // PROVIDER
-// Add near the top
 const MOBILE_BREAKPOINT = 700;
 
 // PROVIDER

@@ -16,12 +16,10 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineStep;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import net.sf.json.JSONObject;
-import org.jenkinsci.plugins.workflow.actions.LogAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -29,8 +27,6 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebMethod;
-import org.kohsuke.stapler.framework.io.CharSpool;
-import org.kohsuke.stapler.framework.io.LineEndNormalizingWriter;
 import org.kohsuke.stapler.verb.GET;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -131,13 +127,24 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         logger.debug("getConsoleText was passed node id '{}'.", nodeId);
         // This will be a step, so return its log output.
         AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
-
-
         if (logText != null) {
             logText.writeLogTo(0L, rsp.getOutputStream());
             return;
         }
-        rsp.getWriter().write("No logs found");
+
+        // Potentially a stage, so get the log text for the stage.
+        boolean foundLogs = false;
+        PipelineStepList steps = stepApi.getSteps(nodeId);
+        for (PipelineStep step : steps.getSteps()) {
+            logText = getLogForNode(step.getId());
+            if (logText != null) {
+                foundLogs = true;
+                logText.writeLogTo(0L, rsp.getOutputStream());
+            }
+        }
+        if (!foundLogs) {
+            rsp.getWriter().write("No logs found");
+        }
     }
 
     /*

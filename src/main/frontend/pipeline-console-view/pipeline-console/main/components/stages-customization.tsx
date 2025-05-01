@@ -14,7 +14,12 @@ export default function StagesCustomization() {
     setMainViewVisibility,
     stageViewPosition,
     setStageViewPosition,
+    isMobile,
   } = useLayoutPreferences();
+
+  if (isMobile) {
+    return null;
+  }
 
   const handleViewChange = (e: ChangeEvent<HTMLSelectElement>) => {
     setMainViewVisibility(e.target.value as MainViewVisibility);
@@ -121,6 +126,7 @@ export default function StagesCustomization() {
           <option value={StageViewPosition.LEFT}>Left</option>
         </select>
       </label>
+      <div className="jenkins-dropdown__separator"></div>
     </>
   );
 }

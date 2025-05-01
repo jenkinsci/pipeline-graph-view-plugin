@@ -30,6 +30,7 @@ interface LayoutPreferences {
   setTreeViewWidth: (width: number) => void;
   setStageViewWidth: (width: number) => void;
   setStageViewHeight: (height: number) => void;
+  isMobile: boolean;
 }
 
 // CONTEXT
@@ -66,19 +67,28 @@ const loadFromLocalStorage = <T,>(key: string, fallback: T): T => {
 };
 
 // PROVIDER
+// Add near the top
+const MOBILE_BREAKPOINT = 700;
+
+// PROVIDER
 export const LayoutPreferencesProvider = ({
   children,
 }: {
   children: ReactNode;
 }) => {
-  const [stageViewPosition, setStageViewPositionState] =
+  const [windowWidth, setWindowWidth] = useState<number>(
+    typeof window !== "undefined" ? window.innerWidth : 1000,
+  );
+
+  const [persistedStageViewPosition, setStageViewPositionState] =
     useState<StageViewPosition>(
       loadFromLocalStorage(LS_KEYS.stageViewPosition, StageViewPosition.TOP),
     );
-  const [mainViewVisibility, setMainViewVisibilityState] =
+  const [persistedMainViewVisibility, setMainViewVisibilityState] =
     useState<MainViewVisibility>(
       loadFromLocalStorage(LS_KEYS.mainViewVisibility, MainViewVisibility.BOTH),
     );
+
   const [treeViewWidth, setTreeViewWidthState] = useState<number>(
     loadFromLocalStorage(LS_KEYS.treeViewWidth, 300),
   );
@@ -89,14 +99,33 @@ export const LayoutPreferencesProvider = ({
     loadFromLocalStorage(LS_KEYS.stageViewHeight, 250),
   );
 
-  // Save to localStorage
+  // Handle responsive override
+  const isMobile = windowWidth < MOBILE_BREAKPOINT;
+  const stageViewPosition = isMobile
+    ? StageViewPosition.TOP
+    : persistedStageViewPosition;
+  const mainViewVisibility = isMobile
+    ? MainViewVisibility.GRAPH_ONLY
+    : persistedMainViewVisibility;
+
+  // Save to localStorage only when not in mobile mode
   useEffect(() => {
-    window.localStorage.setItem(LS_KEYS.stageViewPosition, stageViewPosition);
-  }, [stageViewPosition]);
+    if (!isMobile) {
+      window.localStorage.setItem(
+        LS_KEYS.stageViewPosition,
+        persistedStageViewPosition,
+      );
+    }
+  }, [persistedStageViewPosition, isMobile]);
 
   useEffect(() => {
-    window.localStorage.setItem(LS_KEYS.mainViewVisibility, mainViewVisibility);
-  }, [mainViewVisibility]);
+    if (!isMobile) {
+      window.localStorage.setItem(
+        LS_KEYS.mainViewVisibility,
+        persistedMainViewVisibility,
+      );
+    }
+  }, [persistedMainViewVisibility, isMobile]);
 
   useEffect(() => {
     window.localStorage.setItem(
@@ -119,7 +148,13 @@ export const LayoutPreferencesProvider = ({
     );
   }, [stageViewHeight]);
 
-  // Setter wrappers
+  // Update window width on resize
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   const setStageViewPosition = (position: StageViewPosition) =>
     setStageViewPositionState(position);
   const setMainViewVisibility = (visibility: MainViewVisibility) =>
@@ -142,6 +177,7 @@ export const LayoutPreferencesProvider = ({
         setTreeViewWidth,
         setStageViewWidth,
         setStageViewHeight,
+        isMobile,
       }}
     >
       {children}

@@ -1,6 +1,6 @@
 import { useContext, useEffect, useState } from "react";
 
-import { I18NContext } from "../../../common/i18n/i18n-provider.tsx";
+import { I18NContext, LocaleContext } from "../../../common/i18n/index.ts";
 import { RunInfo } from "./MultiPipelineGraphModel.ts";
 import SingleRun from "./SingleRun.tsx";
 import startPollingRunsStatus from "./support/startPollingRunsStatus.ts";
@@ -10,7 +10,7 @@ export const MultiPipelineGraph = () => {
   const [poll, setPoll] = useState(false);
 
   const rootElement = document.getElementById("multiple-pipeline-root");
-  const currentJobPath = rootElement?.dataset.currentJobPath!;
+  const currentJobPath = rootElement!.dataset.currentJobPath!;
 
   useEffect(() => {
     if (!poll) {
@@ -21,9 +21,11 @@ export const MultiPipelineGraph = () => {
     }
   }, [runs, poll]);
 
+  const locale = useContext(LocaleContext);
+
   const groupedRuns: Record<string, RunInfo[]> = runs.reduce(
     (acc: Record<string, RunInfo[]>, run) => {
-      const date = new Date(run.timestamp).toLocaleDateString("en-US", {
+      const date = new Date(run.timestamp).toLocaleDateString(locale, {
         year: "numeric",
         month: "long",
         day: "numeric",

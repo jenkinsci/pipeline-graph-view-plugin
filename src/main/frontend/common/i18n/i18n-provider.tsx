@@ -3,10 +3,12 @@ import {
   createContext,
   FunctionComponent,
   ReactNode,
+  useContext,
   useEffect,
   useState,
 } from "react";
 
+import { DEFAULT_LOCALE, LocaleContext } from "./locale-provider.tsx";
 import {
   defaultMessages,
   getMessages,
@@ -15,20 +17,20 @@ import {
 } from "./messages.ts";
 
 export const I18NContext: Context<Messages> = createContext(
-  defaultMessages("en"),
+  defaultMessages(DEFAULT_LOCALE),
 );
 
 interface I18NProviderProps {
   children: ReactNode;
   bundles: ResourceBundleName[];
-  locale: string;
 }
 
 export const I18NProvider: FunctionComponent<I18NProviderProps> = ({
   children,
   bundles,
-  locale,
 }) => {
+  const locale = useContext(LocaleContext);
+
   const [messages, setMessages] = useState<Messages>(defaultMessages(locale));
 
   useEffect(() => {

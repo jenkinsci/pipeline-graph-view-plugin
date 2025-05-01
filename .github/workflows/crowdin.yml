@@ -34,5 +34,5 @@ jobs:
           config: "crowdin.yml"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CROWDIN_PROJECT_ID: 32
+          CROWDIN_PROJECT_ID: 34
           CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}

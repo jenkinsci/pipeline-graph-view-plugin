@@ -73,6 +73,8 @@ const DEFAULT_MESSAGES: ResourceBundle = {
   "Util.year": "{0} yr",
   startedAgo: "Started {0} ago",
   noBuilds: "No builds",
+  start: "Start",
+  end: "End"
 };
 
 export function defaultMessages(locale: string): Messages {

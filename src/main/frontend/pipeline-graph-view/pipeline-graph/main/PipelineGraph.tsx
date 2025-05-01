@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import { layoutGraph } from "./PipelineGraphLayout";
 import {
@@ -17,6 +17,7 @@ import {
   SmallLabel,
 } from "./support/labels.tsx";
 import { Node, SelectionHighlight } from "./support/nodes.tsx";
+import { I18NContext } from "../../../common/i18n";
 
 export function PipelineGraph(props: Props) {
   const { stages = [], layout, selectedStage, collapsed } = props;
@@ -63,8 +64,10 @@ export function PipelineGraph(props: Props) {
     }
   }, [layout, selectedStage, stages]);
 
+  const messages = useContext(I18NContext);
+
   const updateLayout = (newStages: StageInfo[] = []) => {
-    const newLayout = layoutGraph(newStages, layoutState, collapsed ?? false);
+    const newLayout = layoutGraph(newStages, layoutState, collapsed ?? false, messages);
     setNodeColumns(newLayout.nodeColumns);
     setConnections(newLayout.connections);
     setBigLabels(newLayout.bigLabels);

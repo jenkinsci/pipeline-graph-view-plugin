@@ -143,18 +143,4 @@
       <url>https://repo.jenkins-ci.org/public/</url>
     </pluginRepository>
   </pluginRepositories>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.jenkins-ci.tools</groupId>
-        <artifactId>maven-hpi-plugin</artifactId>
-        <configuration>
-          <loggers>
-            <io.jenkins.plugins.pipelinegraphview>FINEST</io.jenkins.plugins.pipelinegraphview>
-          </loggers>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 </project>

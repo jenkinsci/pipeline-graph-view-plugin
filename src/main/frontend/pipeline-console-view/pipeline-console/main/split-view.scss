@@ -14,6 +14,7 @@
 .pgv-split-view__side-panel {
   position: relative;
   display: grid;
+  grid-template-columns: inherit;
 }
 
 .pgv-split-view__divider {

@@ -80,7 +80,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
           </Tooltip>
         </li>
         {stage.pauseDurationMillis !== 0 && (
-          <li>
+          <li className={"jenkins-mobile-hide"}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
               <path
                 d="M145.61 464h220.78c19.8 0 35.55-16.29 33.42-35.06C386.06 308 304 310 304 256s83.11-51 95.8-172.94c2-18.78-13.61-35.06-33.41-35.06H145.61c-19.8 0-35.37 16.28-33.41 35.06C124.89 205 208 201 208 256s-82.06 52-95.8 172.94c-2.14 18.77 13.61 35.06 33.41 35.06z"

@@ -69,13 +69,13 @@ export async function getMessages(
 export type MessageKeyType = LocalizedMessageKey | string;
 
 export enum LocalizedMessageKey {
-  millisecond = "Util.millisecond",
-  second = "Util.second",
-  minute = "Util.minute",
-  hour = "Util.hour",
-  day = "Util.day",
-  month = "Util.month",
-  year = "Util.year",
+  millisecond = "timings.millisecond",
+  second = "timings.second",
+  minute = "timings.minute",
+  hour = "timings.hour",
+  day = "timings.day",
+  month = "timings.month",
+  year = "timings.year",
   startedAgo = "startedAgo",
   noBuilds = "noBuilds",
   start = "node.start",

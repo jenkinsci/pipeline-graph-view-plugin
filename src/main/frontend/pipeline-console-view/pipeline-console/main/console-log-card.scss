@@ -112,6 +112,7 @@
 .console-text div {
   text-indent: 0;
   display: inline-block;
+  overflow-wrap: anywhere;
 }
 
 pre.console-output-line {

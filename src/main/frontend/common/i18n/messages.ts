@@ -75,8 +75,8 @@ export enum LocalizedMessageKey {
   year = "Util.year",
   startedAgo = "startedAgo",
   noBuilds = "noBuilds",
-  start = "start",
-  end = "end"
+  start = "node.start",
+  end = "node.end"
 }
 
 const DEFAULT_MESSAGES: ResourceBundle = {

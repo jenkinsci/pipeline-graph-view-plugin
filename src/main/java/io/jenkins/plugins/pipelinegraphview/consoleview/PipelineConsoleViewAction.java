@@ -1,6 +1,7 @@
 package io.jenkins.plugins.pipelinegraphview.consoleview;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.console.AnnotatedLargeText;
 import hudson.util.HttpResponses;
 import io.jenkins.plugins.pipelinegraphview.PipelineGraphViewConfiguration;
@@ -117,6 +118,11 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     }
 
     @WebMethod(name = "log")
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @SuppressFBWarnings(
+            value = "RV_RETURN_VALUE_IGNORED",
+            justification =
+                    "Doesn't seem to matter in practice, docs aren't clear on how to handle and most places ignore it")
     public void getConsoleText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         String nodeId = req.getParameter("nodeId");
         if (nodeId == null) {

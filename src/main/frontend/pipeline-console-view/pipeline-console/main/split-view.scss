@@ -3,7 +3,6 @@
   display: grid;
   gap: var(--section-padding);
   animation: fade-in 0.1s ease-in-out both;
-  align-items: start;
 }
 
 @keyframes fade-in {
@@ -13,7 +12,8 @@
 }
 
 .pgv-split-view__side-panel {
-  display: contents;
+  position: relative;
+  display: grid;
 }
 
 .pgv-split-view__divider {

@@ -27,10 +27,10 @@ jobs:
           auto_approve_imported: true
           push_translations: true
           export_only_approved: true
-          commit_message: "feat: New Crowdin translations"
+          commit_message: "Update localization"
           create_pull_request: true
-          pull_request_title: "New Crowdin translations"
-          pull_request_labels: "enhancement"
+          pull_request_title: "Update localization"
+          pull_request_labels: "localization"
           base_url: "https://jenkins.crowdin.com"
           config: "crowdin.yml"
         env:

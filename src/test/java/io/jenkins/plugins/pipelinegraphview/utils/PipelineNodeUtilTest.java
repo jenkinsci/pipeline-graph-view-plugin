@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import hudson.console.AnnotatedLargeText;
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import java.util.List;
@@ -18,22 +17,6 @@ import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @WithJenkins
 class PipelineNodeUtilTest {
-
-    @Issue("GH#224")
-    @Test
-    void canGetLogTextFromStep(JenkinsRule j) throws Exception {
-        WorkflowRun run = TestUtils.createAndRunJob(
-                j, "hello_world_scripted", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
-
-        PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
-        String stageId =
-                TestUtils.getNodesByDisplayName(run, "Say Hello").get(0).getId();
-        List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
-        FlowNodeWrapper echoStep = stepNodes.get(0);
-        AnnotatedLargeText<? extends FlowNode> logText = PipelineNodeUtil.getLogText(echoStep.getNode());
-        String logString = PipelineNodeUtil.convertLogToString(logText);
-        assertThat(logString, equalTo("Hello, World!" + System.lineSeparator()));
-    }
 
     @Issue("GH#224")
     @Test

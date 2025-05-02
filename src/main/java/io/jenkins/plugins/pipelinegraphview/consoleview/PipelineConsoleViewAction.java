@@ -150,6 +150,9 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     /*
      * The default behavior of this functions differs from 'getConsoleOutput' in that it will use LOG_THRESHOLD from the end of the string.
      * Note: if 'startByte' is negative and falls outside of the console text then we will start from byte 0.
+     *
+     * FIXME: This is not performant and needs to be re-written to not buffer in memory. Avoiding JSON for log text.
+     *
      * Example:
      * {
      *   "startByte": 0,
@@ -206,7 +209,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
                 startByte = requestStartByte;
             }
             logger.debug("Returning '{}' bytes from 'getConsoleOutput'.", textLength - startByte);
-            text = PipelineNodeUtil.convertLogToString(logText, startByte, true);
+            text = PipelineNodeUtil.convertLogToString(logText, startByte);
             endByte = textLength;
         }
         // If has an exception, return the exception text (inc. stacktrace).

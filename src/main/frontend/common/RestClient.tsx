@@ -70,15 +70,14 @@ export async function getRunSteps(): Promise<StepInfo[] | null> {
 export async function getConsoleTextOffset(
   stepId: string,
   startByte: number,
-): Promise<string | null> {
+): Promise<ConsoleLogData | null> {
   try {
     const response = await fetch(
       `consoleOutput?nodeId=${stepId}&startByte=${startByte}`,
     );
-    if (!response.ok) {
-      throw response.statusText;
-    }
-    return await response.text();
+    if (!response.ok) throw response.statusText;
+    const json = await response.json();
+    return json.data;
   } catch (e) {
     console.error(`Caught error when fetching console: '${e}'`);
     return null;

@@ -40,16 +40,16 @@ export function useStepsPoller(props: RunPollerProps) {
       const response = await getConsoleTextOffset(stepId, startByte);
       if (!response) return;
 
-      const newLogLines = response.trim().split("\n") || [];
+      const newLogLines = response.text.trim().split("\n") || [];
 
       if (stepBuffer.endByte > 0 && stepBuffer.endByte <= startByte) {
         stepBuffer.lines = [...stepBuffer.lines, ...newLogLines];
       } else {
         stepBuffer.lines = newLogLines;
-        stepBuffer.startByte = 0;
+        stepBuffer.startByte = response.startByte;
       }
 
-      stepBuffer.endByte = 0;
+      stepBuffer.endByte = response.endByte;
 
       setStepBuffers((prev) => new Map(prev).set(stepId, stepBuffer));
     },

@@ -159,21 +159,22 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
      */
     @GET
     @WebMethod(name = "consoleOutput")
-    public void getConsoleOutput(StaplerRequest2 req, StaplerResponse2 res) throws IOException {
+    public HttpResponse getConsoleOutput(StaplerRequest2 req) throws IOException {
         String nodeId = req.getParameter("nodeId");
         if (nodeId == null) {
             logger.error("'consoleJson' was not passed 'nodeId'.");
-            res.getWriter().write("Error getting console json");
+            return HttpResponses.errorJSON("Error getting console json");
         }
         logger.debug("getConsoleOutput was passed node id '{}'.", nodeId);
         // This will be a step, so return it's log output.
         // startByte to start getting data from. If negative will startByte from end of string with
         // LOG_THRESHOLD.
-        long startByte = parseIntWithDefault(req.getParameter("startByte"), -LOG_THRESHOLD);
-        AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
-        if (logText != null) {
-            logText.writeHtmlTo(startByte, res.getWriter());
+        Long startByte = parseIntWithDefault(req.getParameter("startByte"), -LOG_THRESHOLD);
+        JSONObject data = getConsoleOutputJson(nodeId, startByte);
+        if (data == null) {
+            return HttpResponses.errorJSON("Something went wrong - check Jenkins logs.");
         }
+        return HttpResponses.okJSON(data);
     }
 
     protected JSONObject getConsoleOutputJson(String nodeId, Long requestStartByte) throws IOException {

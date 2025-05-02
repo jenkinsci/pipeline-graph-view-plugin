@@ -1,7 +1,12 @@
 import { Mock, vi } from "vitest";
 
 import { getResourceBundle } from "../RestClient.tsx";
-import { getMessages, Messages, ResourceBundleName } from "./messages.ts";
+import {
+  getMessages,
+  LocalizedMessageKey,
+  Messages,
+  ResourceBundleName,
+} from "./messages.ts";
 
 vi.mock("../RestClient.tsx", () => ({
   getResourceBundle: vi.fn(),
@@ -53,9 +58,15 @@ describe("Messages", () => {
 
       const messages = await getMessages("en", [ResourceBundleName.messages]);
 
-      expect(messages.format("Util.second", { 0: 5 })).toEqual("5 sec");
-      expect(messages.format("Util.day", { 0: 1 })).toEqual("1 day");
-      expect(messages.format("Util.day", { 0: 2 })).toEqual("2 days");
+      expect(messages.format(LocalizedMessageKey.second, { 0: 5 })).toEqual(
+        "5 sec",
+      );
+      expect(messages.format(LocalizedMessageKey.day, { 0: 1 })).toEqual(
+        "1 day",
+      );
+      expect(messages.format(LocalizedMessageKey.day, { 0: 2 })).toEqual(
+        "2 days",
+      );
       expect(messages.format("A.property")).toEqual("");
     });
   });

@@ -9,7 +9,7 @@ import {
   StageInfo,
   StageNodeInfo,
 } from "./PipelineGraphModel.tsx";
-import { Messages } from "../../../common/i18n";
+import { LocalizedMessageKey, Messages } from "../../../common/i18n";
 
 export const sequentialStagesLabelOffset = 80;
 
@@ -36,7 +36,7 @@ export function layoutGraph(
   const startNode: NodeInfo = {
     x: 0,
     y: 0,
-    name: messages.format("start"),
+    name: messages.format(LocalizedMessageKey.start),
     id: -1,
     isPlaceholder: true,
     key: "start-node",
@@ -46,7 +46,7 @@ export function layoutGraph(
   const endNode: NodeInfo = {
     x: 0,
     y: 0,
-    name: messages.format("end"),
+    name: messages.format(LocalizedMessageKey.end),
     id: -3,
     isPlaceholder: true,
     key: "end-node",

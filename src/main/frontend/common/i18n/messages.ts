@@ -6,11 +6,11 @@ import {
 } from "./message-format.ts";
 
 export type ResourceBundle = {
-  [key: string]: string;
+  [key: MessageKeyType]: string;
 };
 
 export class Messages {
-  private readonly mapping: Record<string, CompiledMessage>;
+  private readonly mapping: Record<MessageKeyType, CompiledMessage>;
 
   constructor(messages: ResourceBundle, locale: string) {
     const entries = Object.entries(messages);
@@ -23,7 +23,7 @@ export class Messages {
     }
   }
 
-  private get(key: string): CompiledMessage {
+  private get(key: MessageKeyType): CompiledMessage {
     const message = this.mapping[key];
     if (message != null) {
       return message;
@@ -37,7 +37,7 @@ export class Messages {
     };
   }
 
-  format(key: string, args: MessageContext | undefined = undefined): string {
+  format(key: MessageKeyType, args: MessageContext | undefined = undefined): string {
     const message = this.get(key);
     return message.format(args);
   }
@@ -63,18 +63,34 @@ export async function getMessages(
   return new Messages(messages, locale);
 }
 
+export type MessageKeyType = LocalizedMessageKey | string
+
+export enum LocalizedMessageKey {
+  millisecond = "Util.millisecond",
+  second = "Util.second",
+  minute = "Util.minute",
+  hour = "Util.hour",
+  day = "Util.day",
+  month = "Util.month",
+  year = "Util.year",
+  startedAgo = "startedAgo",
+  noBuilds = "noBuilds",
+  start = "start",
+  end = "end"
+}
+
 const DEFAULT_MESSAGES: ResourceBundle = {
-  "Util.millisecond": "{0} ms",
-  "Util.second": "{0} sec",
-  "Util.minute": "{0} min",
-  "Util.hour": "{0} hr",
-  "Util.day": "{0} {0,choice,0#days|1#day|1<days}",
-  "Util.month": "{0} mo",
-  "Util.year": "{0} yr",
-  startedAgo: "Started {0} ago",
-  noBuilds: "No builds",
-  start: "Start",
-  end: "End"
+  [LocalizedMessageKey.millisecond]: "{0} ms",
+  [LocalizedMessageKey.second]: "{0} sec",
+  [LocalizedMessageKey.minute]: "{0} min",
+  [LocalizedMessageKey.hour]: "{0} hr",
+  [LocalizedMessageKey.day]: "{0} {0,choice,0#days|1#day|1<days}",
+  [LocalizedMessageKey.month]: "{0} mo",
+  [LocalizedMessageKey.year]: "{0} yr",
+  [LocalizedMessageKey.startedAgo]: "Started {0} ago",
+  [LocalizedMessageKey.noBuilds]: "No builds",
+  [LocalizedMessageKey.start]: "Start",
+  [LocalizedMessageKey.end]: "End"
 };
 
 export function defaultMessages(locale: string): Messages {

@@ -14,7 +14,7 @@ export default function StageNodeLink({ agent }: StageNodeLinkProps) {
   }
 
   return (
-    <li>
+    <li className={"jenkins-mobile-hide"}>
       <a
         href={href}
         className={"jenkins-button jenkins-button--tertiary"}

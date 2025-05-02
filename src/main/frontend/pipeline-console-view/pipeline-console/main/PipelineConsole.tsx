@@ -39,7 +39,6 @@ export default function PipelineConsole() {
         <Dropdown
           items={[
             <StagesCustomization key="visibility-select" />,
-            "separator",
             {
               text: "View as plain text",
               icon: DOCUMENT,

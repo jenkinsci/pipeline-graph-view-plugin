@@ -3,7 +3,7 @@
 import { render } from "@testing-library/react";
 import { vi } from "vitest";
 
-import { LocalizedMessageKey, Messages, I18NContext } from "../i18n/index.ts";
+import { I18NContext, LocalizedMessageKey, Messages } from "../i18n/index.ts";
 import { Paused, Started, Total } from "./timings.tsx";
 
 describe("Timings", () => {

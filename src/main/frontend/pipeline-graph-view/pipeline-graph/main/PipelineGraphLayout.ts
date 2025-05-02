@@ -1,3 +1,4 @@
+import { LocalizedMessageKey, Messages } from "../../../common/i18n/index.ts";
 import {
   CompositeConnection,
   LayoutInfo,
@@ -9,7 +10,6 @@ import {
   StageInfo,
   StageNodeInfo,
 } from "./PipelineGraphModel.tsx";
-import { LocalizedMessageKey, Messages } from "../../../common/i18n";
 
 export const sequentialStagesLabelOffset = 80;
 

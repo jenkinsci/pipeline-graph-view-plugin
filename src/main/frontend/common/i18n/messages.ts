@@ -37,7 +37,10 @@ export class Messages {
     };
   }
 
-  format(key: MessageKeyType, args: MessageContext | undefined = undefined): string {
+  format(
+    key: MessageKeyType,
+    args: MessageContext | undefined = undefined,
+  ): string {
     const message = this.get(key);
     return message.format(args);
   }
@@ -63,7 +66,7 @@ export async function getMessages(
   return new Messages(messages, locale);
 }
 
-export type MessageKeyType = LocalizedMessageKey | string
+export type MessageKeyType = LocalizedMessageKey | string;
 
 export enum LocalizedMessageKey {
   millisecond = "Util.millisecond",
@@ -76,7 +79,7 @@ export enum LocalizedMessageKey {
   startedAgo = "startedAgo",
   noBuilds = "noBuilds",
   start = "node.start",
-  end = "node.end"
+  end = "node.end",
 }
 
 const DEFAULT_MESSAGES: ResourceBundle = {
@@ -90,7 +93,7 @@ const DEFAULT_MESSAGES: ResourceBundle = {
   [LocalizedMessageKey.startedAgo]: "Started {0} ago",
   [LocalizedMessageKey.noBuilds]: "No builds",
   [LocalizedMessageKey.start]: "Start",
-  [LocalizedMessageKey.end]: "End"
+  [LocalizedMessageKey.end]: "End",
 };
 
 export function defaultMessages(locale: string): Messages {

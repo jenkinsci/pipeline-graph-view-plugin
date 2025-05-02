@@ -1,6 +1,6 @@
 import { useContext } from "react";
 
-import { I18NContext, Messages, LocalizedMessageKey } from "../i18n/index.ts";
+import { I18NContext, LocalizedMessageKey, Messages } from "../i18n/index.ts";
 
 const ONE_SECOND_MS: number = 1000;
 const ONE_MINUTE_MS: number = 60 * ONE_SECOND_MS;
@@ -89,7 +89,9 @@ function getTimeSpanString(duration: number, messages: Messages): string {
       "0": seconds + Math.floor(millis / 100) / 10,
     });
   } else if (millis >= 100) {
-    return messages.format(LocalizedMessageKey.second, { "0": Math.floor(millis / 10) / 100 });
+    return messages.format(LocalizedMessageKey.second, {
+      "0": Math.floor(millis / 10) / 100,
+    });
   } else {
     return messages.format(LocalizedMessageKey.millisecond, { "0": millis });
   }

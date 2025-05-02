@@ -197,6 +197,8 @@ export function useStepsPoller(props: RunPollerProps) {
       const lastStep = stepsForStage[stepsForStage.length - 1];
       const newlyExpandedSteps = lastStep ? [lastStep.id] : [];
 
+      history.replaceState({}, "", `?selected-node=` + nodeId);
+
       setOpenStage(nodeId);
       setExpandedSteps((prev) => [...prev, ...newlyExpandedSteps]);
 

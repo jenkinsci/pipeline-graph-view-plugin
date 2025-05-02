@@ -16,7 +16,6 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineStep;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import java.io.IOException;
-import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,8 +27,6 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebMethod;
-import org.kohsuke.stapler.framework.io.CharSpool;
-import org.kohsuke.stapler.framework.io.LineEndNormalizingWriter;
 import org.kohsuke.stapler.verb.GET;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,45 +117,42 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     }
 
     @WebMethod(name = "log")
-    public HttpResponse getConsoleText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+    public void getConsoleText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         String nodeId = req.getParameter("nodeId");
         if (nodeId == null) {
             logger.error("'consoleText' was not passed 'nodeId'.");
-            return HttpResponses.errorJSON("Error getting console text");
+            rsp.getWriter().write("Error getting console text\n");
+            return;
         }
         logger.debug("getConsoleText was passed node id '{}'.", nodeId);
         // This will be a step, so return its log output.
         AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
-
-        long count = 0;
-        PipelineStepList steps = stepApi.getSteps(nodeId);
-        try (CharSpool spool = new CharSpool()) {
-
-            for (PipelineStep step : steps.getSteps()) {
-                AnnotatedLargeText<? extends FlowNode> logForNode = getLogForNode(String.valueOf(step.getId()));
-                if (logForNode != null) {
-                    count += logForNode.writeLogTo(0, spool);
-                }
-            }
-
-            if (count > 0) {
-                rsp.setContentType("text/plain;charset=UTF-8");
-                try (Writer writer = rsp.getWriter()) {
-                    spool.flush();
-                    spool.writeTo(new LineEndNormalizingWriter(writer));
-                }
-            }
-        }
-
         if (logText != null) {
-            return HttpResponses.text(PipelineNodeUtil.convertLogToString(logText));
+            logText.writeLogTo(0L, rsp.getOutputStream());
+            return;
         }
-        return HttpResponses.text("No logs found");
+
+        // Potentially a stage, so get the log text for the stage.
+        boolean foundLogs = false;
+        PipelineStepList steps = stepApi.getSteps(nodeId);
+        for (PipelineStep step : steps.getSteps()) {
+            logText = getLogForNode(step.getId());
+            if (logText != null) {
+                foundLogs = true;
+                logText.writeLogTo(0L, rsp.getOutputStream());
+            }
+        }
+        if (!foundLogs) {
+            rsp.getWriter().write("No logs found\n");
+        }
     }
 
     /*
      * The default behavior of this functions differs from 'getConsoleOutput' in that it will use LOG_THRESHOLD from the end of the string.
      * Note: if 'startByte' is negative and falls outside of the console text then we will start from byte 0.
+     *
+     * FIXME: This is not performant and needs to be re-written to not buffer in memory. Avoiding JSON for log text.
+     *
      * Example:
      * {
      *   "startByte": 0,
@@ -215,7 +209,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
                 startByte = requestStartByte;
             }
             logger.debug("Returning '{}' bytes from 'getConsoleOutput'.", textLength - startByte);
-            text = PipelineNodeUtil.convertLogToString(logText, startByte, true);
+            text = PipelineNodeUtil.convertLogToString(logText, startByte);
             endByte = textLength;
         }
         // If has an exception, return the exception text (inc. stacktrace).

@@ -4,7 +4,7 @@ import com.google.common.base.Predicate;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.AbortException;
 import hudson.console.AnnotatedLargeText;
 import hudson.model.Action;
@@ -292,18 +292,7 @@ public class PipelineNodeUtil {
 
     /*
      * Get the generated log text for a given node.
-     *
-     * @param log The AnnotatedLargeText object for a given node.
-     *
-     * @return The AnnotatedLargeText object representing the log text for this
-     * node, or null.
-     */
-    public static String convertLogToString(AnnotatedLargeText<? extends FlowNode> log) throws IOException {
-        return convertLogToString(log, 0L, false);
-    }
-
-    /*
-     * Get the generated log text for a given node.
+     * FIXME: This is not performant and needs to be re-written to not buffer in memory.
      *
      * @param log The AnnotatedLargeText object for a given node.
      *
@@ -312,17 +301,14 @@ public class PipelineNodeUtil {
      * @return The AnnotatedLargeText object representing the log text for this
      * node, or null.
      */
-    @SuppressWarnings("RV_RETURN_VALUE_IGNORED")
-    public static String convertLogToString(AnnotatedLargeText<? extends FlowNode> log, Long startByte, boolean html)
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED")
+    public static String convertLogToString(AnnotatedLargeText<? extends FlowNode> log, Long startByte)
             throws IOException {
         Writer stringWriter = new StringBuilderWriter();
         // NOTE: This returns the total length of the console log, not the received
         // bytes.
-        if (html) {
-            log.writeHtmlTo(startByte, stringWriter);
-        } else {
-            log.writeLogTo(startByte, stringWriter);
-        }
+        log.writeHtmlTo(startByte, stringWriter);
         return stringWriter.toString();
     }
 

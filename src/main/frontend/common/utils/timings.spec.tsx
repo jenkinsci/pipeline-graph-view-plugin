@@ -3,21 +3,20 @@
 import { render } from "@testing-library/react";
 import { vi } from "vitest";
 
-import { I18NContext } from "../i18n/i18n-provider.tsx";
-import { Messages } from "../i18n/messages.ts";
+import { I18NContext, LocalizedMessageKey, Messages } from "../i18n/index.ts";
 import { Paused, Started, Total } from "./timings.tsx";
 
 describe("Timings", () => {
   const translations = new Messages(
     {
-      "Util.year": "{0} yr",
-      "Util.month": "{0} mo",
-      "Util.day": "{0} day",
-      "Util.hour": "{0} hr",
-      "Util.minute": "{0} min",
-      "Util.second": "{0} sec",
-      "Util.millisecond": "{0} ms",
-      startedAgo: "Started {0} ago",
+      [LocalizedMessageKey.year]: "{0} yr",
+      [LocalizedMessageKey.month]: "{0} mo",
+      [LocalizedMessageKey.day]: "{0} day",
+      [LocalizedMessageKey.hour]: "{0} hr",
+      [LocalizedMessageKey.minute]: "{0} min",
+      [LocalizedMessageKey.second]: "{0} sec",
+      [LocalizedMessageKey.millisecond]: "{0} ms",
+      [LocalizedMessageKey.startedAgo]: "Started {0} ago",
     },
     "en",
   );

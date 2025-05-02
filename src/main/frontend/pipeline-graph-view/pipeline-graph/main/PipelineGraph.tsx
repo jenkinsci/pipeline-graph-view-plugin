@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 
+import { I18NContext } from "../../../common/i18n/index.ts";
 import { layoutGraph } from "./PipelineGraphLayout";
 import {
   CompositeConnection,
@@ -63,8 +64,15 @@ export function PipelineGraph(props: Props) {
     }
   }, [layout, selectedStage, stages]);
 
+  const messages = useContext(I18NContext);
+
   const updateLayout = (newStages: StageInfo[] = []) => {
-    const newLayout = layoutGraph(newStages, layoutState, collapsed ?? false);
+    const newLayout = layoutGraph(
+      newStages,
+      layoutState,
+      collapsed ?? false,
+      messages,
+    );
     setNodeColumns(newLayout.nodeColumns);
     setConnections(newLayout.connections);
     setBigLabels(newLayout.bigLabels);

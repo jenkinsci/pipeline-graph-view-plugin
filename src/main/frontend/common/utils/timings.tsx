@@ -1,7 +1,6 @@
 import { useContext } from "react";
 
-import { I18NContext } from "../i18n/i18n-provider";
-import { Messages } from "../i18n/messages";
+import { I18NContext, LocalizedMessageKey, Messages } from "../i18n/index.ts";
 
 const ONE_SECOND_MS: number = 1000;
 const ONE_MINUTE_MS: number = 60 * ONE_SECOND_MS;
@@ -9,15 +8,6 @@ const ONE_HOUR_MS: number = 60 * ONE_MINUTE_MS;
 const ONE_DAY_MS: number = 24 * ONE_HOUR_MS;
 const ONE_MONTH_MS: number = 30 * ONE_DAY_MS;
 const ONE_YEAR_MS: number = 365 * ONE_DAY_MS;
-
-const YEAR = "Util.year";
-const MONTH = "Util.month";
-const HOURS = "Util.hour";
-const DAY = "Util.day";
-const MINUTE = "Util.minute";
-const SECOND = "Util.second";
-const MILLIS = "Util.millisecond";
-const STARTED_AGO = "startedAgo";
 
 /**
  * Create a string representation of a time duration.
@@ -60,48 +50,50 @@ function getTimeSpanString(duration: number, messages: Messages): string {
   if (years > 0) {
     return makeTimeSpanString(
       years,
-      messages.format(YEAR, { "0": years }),
+      messages.format(LocalizedMessageKey.year, { "0": years }),
       months,
-      messages.format(MONTH, { "0": months }),
+      messages.format(LocalizedMessageKey.month, { "0": months }),
     );
   } else if (months > 0) {
     return makeTimeSpanString(
       months,
-      messages.format(MONTH, { "0": months }),
+      messages.format(LocalizedMessageKey.month, { "0": months }),
       days,
-      messages.format(DAY, { "0": days }),
+      messages.format(LocalizedMessageKey.day, { "0": days }),
     );
   } else if (days > 0) {
     return makeTimeSpanString(
       days,
-      messages.format(DAY, { "0": days }),
+      messages.format(LocalizedMessageKey.day, { "0": days }),
       hours,
-      messages.format(HOURS, { "0": hours }),
+      messages.format(LocalizedMessageKey.hour, { "0": hours }),
     );
   } else if (hours > 0) {
     return makeTimeSpanString(
       hours,
-      messages.format(HOURS, { "0": hours }),
+      messages.format(LocalizedMessageKey.hour, { "0": hours }),
       minutes,
-      messages.format(MINUTE, { "0": minutes }),
+      messages.format(LocalizedMessageKey.minute, { "0": minutes }),
     );
   } else if (minutes > 0) {
     return makeTimeSpanString(
       minutes,
-      messages.format(MINUTE, { "0": minutes }),
+      messages.format(LocalizedMessageKey.minute, { "0": minutes }),
       seconds,
-      messages.format(SECOND, { "0": seconds }),
+      messages.format(LocalizedMessageKey.second, { "0": seconds }),
     );
   } else if (seconds >= 10) {
-    return messages.format(SECOND, { "0": seconds });
+    return messages.format(LocalizedMessageKey.second, { "0": seconds });
   } else if (seconds >= 1) {
-    return messages.format(SECOND, {
+    return messages.format(LocalizedMessageKey.second, {
       "0": seconds + Math.floor(millis / 100) / 10,
     });
   } else if (millis >= 100) {
-    return messages.format(SECOND, { "0": Math.floor(millis / 10) / 100 });
+    return messages.format(LocalizedMessageKey.second, {
+      "0": Math.floor(millis / 10) / 100,
+    });
   } else {
-    return messages.format(MILLIS, { "0": millis });
+    return messages.format(LocalizedMessageKey.millisecond, { "0": millis });
   }
 }
 
@@ -123,7 +115,7 @@ export function Started({ since }: { since: number }) {
 
   return (
     <>
-      {messages.format(STARTED_AGO, {
+      {messages.format(LocalizedMessageKey.startedAgo, {
         "0": getTimeSpanString(Math.abs(since - Date.now()), messages),
       })}
     </>

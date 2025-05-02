@@ -1,6 +1,10 @@
 import { useContext, useEffect, useState } from "react";
 
-import { I18NContext, LocaleContext } from "../../../common/i18n/index.ts";
+import {
+  I18NContext,
+  LocaleContext,
+  LocalizedMessageKey,
+} from "../../../common/i18n/index.ts";
 import { RunInfo } from "./MultiPipelineGraphModel.ts";
 import SingleRun from "./SingleRun.tsx";
 import startPollingRunsStatus from "./support/startPollingRunsStatus.ts";
@@ -48,7 +52,7 @@ export const MultiPipelineGraph = () => {
       {Object.keys(groupedRuns).length === 0 ? (
         <div className="pgv-stages__group">
           <div className="pgv-stages__heading">
-            {messages.format("noBuilds")}
+            {messages.format(LocalizedMessageKey.noBuilds)}
           </div>
         </div>
       ) : (

@@ -80,8 +80,16 @@ export function layoutGraph(
 
     const middleNodes = nodes.filter((node) => node !== start && node !== end);
 
-    const visibleNodes = middleNodes.slice(0, maxColumnsWhenCollapsed);
-    const hiddenNodes = middleNodes.slice(maxColumnsWhenCollapsed);
+    const middleStages = middleNodes.flatMap((node) =>
+      node.rows.flatMap((row) =>
+        row.flatMap((e) => (e as StageNodeInfo).stage),
+      ),
+    );
+
+    const newMiddleNodes = createNodeColumns(middleStages, collapsed);
+
+    const visibleNodes = newMiddleNodes.slice(0, maxColumnsWhenCollapsed);
+    const hiddenNodes = newMiddleNodes.slice(maxColumnsWhenCollapsed);
 
     const result = [start, ...visibleNodes];
 
@@ -184,7 +192,7 @@ export function createNodeColumns(
 
     for (const nodeStage of stagesForColumn) {
       const rowNodes: Array<NodeInfo> = [];
-      if (!collapsed && !willRecurse && stageHasChildren(nodeStage)) {
+      if (!willRecurse && stageHasChildren(nodeStage)) {
         column.hasBranchLabels = true;
         forEachChildStage(nodeStage, (parentStage, childStage, _) =>
           rowNodes.push(makeNodeForStage(childStage, parentStage.name)),
@@ -193,9 +201,6 @@ export function createNodeColumns(
         rowNodes.push(makeNodeForStage(nodeStage));
       }
       column.rows.push(rowNodes);
-      if (collapsed) {
-        break;
-      }
     }
 
     nodeColumns.push(column);

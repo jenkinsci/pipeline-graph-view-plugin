@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 
+import { classNames } from "../../../common/utils/classnames.ts";
 import { useLayoutPreferences } from "./providers/user-preference-provider.tsx";
 
 export default function SplitView(props: SplitViewNewProps) {
@@ -143,7 +144,11 @@ export default function SplitView(props: SplitViewNewProps) {
         gridTemplateRows: direction === "vertical" ? gridTemplate : undefined,
       }}
     >
-      <div className="pgv-split-view__side-panel">
+      <div
+        className={classNames("pgv-split-view__side-panel", {
+          "pgv-split-view__side-panel--vertical": direction === "vertical",
+        })}
+      >
         {childrenArray[0]}
         <div
           ref={dividerRef}

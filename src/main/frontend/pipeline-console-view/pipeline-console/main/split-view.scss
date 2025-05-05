@@ -13,7 +13,12 @@
 
 .pgv-split-view__side-panel {
   position: relative;
-  display: grid;
+  display: flex;
+  flex-direction: column;
+
+  &--vertical {
+    display: grid;
+  }
 }
 
 .pgv-split-view__divider {

@@ -8,12 +8,14 @@ public class RunDetailsItem {
     private final String text;
     private final String href;
     private final boolean separator;
+    private final String tooltip;
 
-    RunDetailsItem(String icon, String text, String href, boolean separator) {
+    RunDetailsItem(String icon, String text, String href, boolean separator, String tooltip) {
         this.icon = icon;
         this.text = text;
         this.href = href;
         this.separator = separator;
+        this.tooltip = tooltip;
     }
 
     public String getIcon() {
@@ -28,6 +30,10 @@ public class RunDetailsItem {
         return href;
     }
 
+    public String getTooltip() {
+        return tooltip;
+    }
+
     public boolean isSeparator() {
         return separator;
     }
@@ -37,6 +43,7 @@ public class RunDetailsItem {
         private String icon;
         private String text;
         private String href;
+        private String tooltip;
         private boolean separator;
 
         public Builder text(String text) {
@@ -46,6 +53,11 @@ public class RunDetailsItem {
 
         public Builder icon(String icon) {
             this.icon = icon;
+            return this;
+        }
+
+        public Builder tooltip(String tooltip) {
+            this.tooltip = tooltip;
             return this;
         }
 
@@ -68,7 +80,7 @@ public class RunDetailsItem {
             if (!separator) {
                 requireNonNull(icon);
             }
-            return new RunDetailsItem(icon, text, href, separator);
+            return new RunDetailsItem(icon, text, href, separator, tooltip);
         }
     }
 }

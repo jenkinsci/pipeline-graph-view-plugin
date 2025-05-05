@@ -47,18 +47,20 @@
                     <j:if test="${!card.separator}">
                         <div>
                             <l:icon src="${card.icon}"/>
-                            <j:choose>
-                                <j:when test="${!empty(card.href)}">
-                                    <a
+                            <span tooltip="${card.tooltip}">
+                                <j:choose>
+                                    <j:when test="${!empty(card.href)}">
+                                        <a
                                             href="${card.href}"
-                                    >
+                                        >
+                                            ${card.text}
+                                        </a>
+                                    </j:when>
+                                    <j:otherwise>
                                         ${card.text}
-                                    </a>
-                                </j:when>
-                                <j:otherwise>
-                                    ${card.text}
-                                </j:otherwise>
-                            </j:choose>
+                                    </j:otherwise>
+                                </j:choose>
+                            </span>
                         </div>
                     </j:if>
                 </j:forEach>

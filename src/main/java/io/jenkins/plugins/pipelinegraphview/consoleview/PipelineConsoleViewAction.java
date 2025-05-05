@@ -8,6 +8,7 @@ import io.jenkins.plugins.pipelinegraphview.PipelineGraphViewConfiguration;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsCard;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.SCMRunDetailsItems;
+import io.jenkins.plugins.pipelinegraphview.cards.items.TestResultRunDetailsItems;
 import io.jenkins.plugins.pipelinegraphview.cards.items.TimingRunDetailsItems;
 import io.jenkins.plugins.pipelinegraphview.cards.items.UpstreamCauseRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.UserIdCauseRunDetailsItem;
@@ -274,9 +275,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     @SuppressWarnings("unused")
     public RunDetailsCard getRunDetailsCard() {
 
-        List<RunDetailsItem> runDetailsItems = new ArrayList<>();
-
-        runDetailsItems.addAll(SCMRunDetailsItems.get(run));
+        List<RunDetailsItem> runDetailsItems = new ArrayList<>(SCMRunDetailsItems.get(run));
 
         if (!runDetailsItems.isEmpty()) {
             runDetailsItems.add(new RunDetailsItem.Builder().separator().build());
@@ -286,6 +285,8 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         UserIdCauseRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
 
         runDetailsItems.addAll(TimingRunDetailsItems.get(run));
+
+        TestResultRunDetailsItems.get(run).ifPresent(runDetailsItems::add);
 
         return new RunDetailsCard(runDetailsItems);
     }

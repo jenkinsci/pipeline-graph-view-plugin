@@ -8,7 +8,6 @@ import {
   LayoutInfo,
   NodeColumn,
   NodeLabelInfo,
-  Result,
   StageInfo,
 } from "./PipelineGraphModel.tsx";
 import { GraphConnections } from "./support/connections.tsx";

@@ -22,7 +22,7 @@ public class TestResultRunDetailsItems {
                     .ionicon("clipboard-outline")
                     .text(Messages.testResults())
                     .href("../%s".formatted(action.getUrlName()))
-                    .tooltip("Passed: %s\nFailed: %s\nSkipped: %s\nTotal: %s"
+                    .tooltip("Passed: %s%nFailed: %s%nSkipped: %s%nTotal: %s"
                             .formatted(
                                     action.getTotalCount() - action.getFailCount() - action.getSkipCount(),
                                     action.getFailCount(),

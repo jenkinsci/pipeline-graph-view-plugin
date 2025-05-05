@@ -8,7 +8,6 @@ import {
   LayoutInfo,
   NodeColumn,
   NodeLabelInfo,
-  Result,
   StageInfo,
 } from "./PipelineGraphModel.tsx";
 import { GraphConnections } from "./support/connections.tsx";
@@ -90,24 +89,7 @@ export function PipelineGraph(props: Props) {
   };
 
   const nodes = nodeColumns.flatMap((column) => {
-    const topStageState = column.topStage?.state ?? Result.unknown;
-
-    return column.rows.flatMap((row) =>
-      row.map((node) => {
-        if (
-          column.topStage &&
-          "stage" in node &&
-          node.stage &&
-          Array.isArray(column.topStage.children) &&
-          column.topStage.children.includes(node.stage) &&
-          collapsed
-        ) {
-          node.stage.state = topStageState;
-        }
-
-        return node;
-      }),
-    );
+    return column.rows.flatMap((row) => row);
   });
 
   const outerDivStyle = {

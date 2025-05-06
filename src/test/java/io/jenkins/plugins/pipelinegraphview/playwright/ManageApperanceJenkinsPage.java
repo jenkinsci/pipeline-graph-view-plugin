@@ -2,26 +2,19 @@ package io.jenkins.plugins.pipelinegraphview.playwright;
 
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
-import org.jvnet.hudson.test.JenkinsRule;
 
 public class ManageApperanceJenkinsPage extends JenkinsPage<ManageApperanceJenkinsPage> {
 
-    private final String pageUrl;
+    private final String baseUrl;
 
-    public ManageApperanceJenkinsPage(Page page, JenkinsRule rule) {
-        super(page, rule);
-        pageUrl = this.baseUrl + "manage/appearance/";
+    public ManageApperanceJenkinsPage(Page page, String baseUrl) {
+        super(page, baseUrl + "manage/appearance/");
+        this.baseUrl = baseUrl;
     }
 
     @Override
-    ManageApperanceJenkinsPage waitForLoaded() {
-        isAtUrl(pageUrl);
-        return this;
-    }
-
-
-    public ManageApperanceJenkinsPage goTo() {
-        return goTo(pageUrl).waitForLoaded();
+    void waitForLoaded() {
+        isAtUrl(this.pageUrl);
     }
 
     public ManageApperanceJenkinsPage displayPipelineOnJobPage() {
@@ -34,9 +27,11 @@ public class ManageApperanceJenkinsPage extends JenkinsPage<ManageApperanceJenki
         return this;
     }
 
-    public ManageApperanceJenkinsPage addPipelineAsConsoleProvider() {
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add")).click();
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Pipeline Graph View")).click();
+    public ManageApperanceJenkinsPage setPipelineGraphAsConsoleProvider() {
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add"))
+                .click();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Pipeline Graph View"))
+                .click();
         return this;
     }
 

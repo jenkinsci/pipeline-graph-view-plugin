@@ -5,9 +5,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import org.jvnet.hudson.test.JenkinsRule;
+import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,25 +13,19 @@ public class PipelineJobPage extends JenkinsPage<PipelineJobPage> {
 
     private static final Logger log = LoggerFactory.getLogger(PipelineJobPage.class);
     private final String jobName;
-    private final String jobUrl;
 
-    public PipelineJobPage(Page page, JenkinsRule rule, String jobName) {
-        super(page, rule);
-        this.jobName = jobName;
-        this.jobUrl = baseUrl + "job/" + URLEncoder.encode(this.jobName, StandardCharsets.UTF_8).replace("+", "%20") + "/";
+    public PipelineJobPage(Page page, WorkflowJob job) {
+        super(page, job.getAbsoluteUrl());
+        jobName = job.getDisplayName();
     }
 
     @Override
-    PipelineJobPage waitForLoaded() {
-        isAtUrl(jobUrl);
-        Locator heading = page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setName(jobName).setLevel(1));
+    void waitForLoaded() {
+        isAtUrl(pageUrl);
+        Locator heading = page.getByRole(
+                AriaRole.HEADING, new Page.GetByRoleOptions().setName(jobName).setLevel(1));
         assertThat(heading).isVisible();
         assertThat(getPipelineSection()).isVisible();
-        return this;
-    }
-
-    public PipelineJobPage goTo() {
-        return goTo(jobUrl).waitForLoaded();
     }
 
     public PipelineJobPage hasBuilds(int count) {
@@ -60,7 +52,6 @@ public class PipelineJobPage extends JenkinsPage<PipelineJobPage> {
         private final Locator wrapper;
         private final PipelineGraph graph;
 
-
         public PipelineBuild(Locator wrapper) {
             this.wrapper = wrapper;
             this.graph = new PipelineGraph(wrapper.locator(".PWGx-PipelineGraph-container"));
@@ -82,5 +73,4 @@ public class PipelineJobPage extends JenkinsPage<PipelineJobPage> {
             wrapper.getByRole(AriaRole.LINK).nth(0).click();
         }
     }
-
 }

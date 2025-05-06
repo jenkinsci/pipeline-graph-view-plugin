@@ -23,7 +23,8 @@ public class PipelineGraph {
     }
 
     private Locator getStages() {
-        // select all those apart from the start and end nodes which are indicated by the PWGx-pipeline-node-terminal class
+        // select all those apart from the start and end nodes which are indicated by the PWGx-pipeline-node-terminal
+        // class
         return wrapper.locator(".PWGx-pipeline-node:not(:has(.PWGx-pipeline-node-terminal))");
     }
 

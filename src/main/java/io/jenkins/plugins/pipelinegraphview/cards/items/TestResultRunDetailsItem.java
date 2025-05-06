@@ -7,7 +7,7 @@ import java.util.Optional;
 import jenkins.model.Jenkins;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
-public class TestResultRunDetailsItems {
+public class TestResultRunDetailsItem {
 
     public static Optional<RunDetailsItem> get(WorkflowRun run) {
         boolean junitInstalled = Jenkins.get().getPlugin("junit") != null;

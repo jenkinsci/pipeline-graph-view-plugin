@@ -1,6 +1,6 @@
 import "./stages.scss";
 
-import { CSSProperties, useEffect, useState } from "react";
+import { useState } from "react";
 import {
   TransformComponent,
   TransformWrapper,
@@ -21,20 +21,6 @@ export default function Stages({
   onStageSelect,
 }: StagesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [sidebarHeight, setSidebarHeight] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setSidebarHeight(window.scrollY);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    handleScroll();
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
 
   return (
     <div
@@ -42,7 +28,6 @@ export default function Stages({
         "pgv-stages-graph--left": stageViewPosition === StageViewPosition.LEFT,
         "pgv-stages-graph--dialog": isExpanded,
       })}
-      style={{ "--additional-height": sidebarHeight + "px" } as CSSProperties}
     >
       <div className={"pgv-stages-graph__controls pgv-stages-graph__heading"}>
         Graph

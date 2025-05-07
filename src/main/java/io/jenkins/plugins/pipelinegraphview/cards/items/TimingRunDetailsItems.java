@@ -1,6 +1,7 @@
 package io.jenkins.plugins.pipelinegraphview.cards.items;
 
 import hudson.Util;
+import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
 import java.util.ArrayList;
 import java.util.Date;
@@ -15,9 +16,8 @@ public class TimingRunDetailsItems {
 
         RunDetailsItem startedItem = new RunDetailsItem.Builder()
                 .ionicon("time-outline")
-                .text("Started "
-                        + Util.getTimeSpanString(Math.abs(run.getTime().getTime() - new Date().getTime()))
-                        + " ago")
+                .text(Messages.startedAgo(
+                        Util.getTimeSpanString(Math.abs(run.getTime().getTime() - new Date().getTime()))))
                 .build();
         runDetailsItems.add(startedItem);
 
@@ -26,7 +26,7 @@ public class TimingRunDetailsItems {
         if (timeInQueueAction != null) {
             RunDetailsItem queuedItem = new RunDetailsItem.Builder()
                     .ionicon("hourglass-outline")
-                    .text("Queued " + Util.getTimeSpanString(timeInQueueAction.getQueuingDurationMillis()))
+                    .text(Messages.queued(Util.getTimeSpanString(timeInQueueAction.getQueuingDurationMillis())))
                     .build();
 
             runDetailsItems.add(queuedItem);
@@ -34,7 +34,7 @@ public class TimingRunDetailsItems {
 
         RunDetailsItem timerItem = new RunDetailsItem.Builder()
                 .ionicon("timer-outline")
-                .text("Took " + run.getDurationString())
+                .text(Messages.took(run.getDurationString()))
                 .build();
 
         runDetailsItems.add(timerItem);

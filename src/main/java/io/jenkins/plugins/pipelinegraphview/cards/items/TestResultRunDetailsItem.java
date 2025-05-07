@@ -17,21 +17,21 @@ public class TestResultRunDetailsItem {
 
         AbstractTestResultAction<?> action = run.getAction(AbstractTestResultAction.class);
 
-        if (action != null) {
-            RunDetailsItem testResult = new RunDetailsItem.Builder()
-                    .ionicon("clipboard-outline")
-                    .text(Messages.testResults())
-                    .href("../%s".formatted(action.getUrlName()))
-                    .tooltip("Passed: %s%nFailed: %s%nSkipped: %s%nTotal: %s"
-                            .formatted(
-                                    action.getTotalCount() - action.getFailCount() - action.getSkipCount(),
-                                    action.getFailCount(),
-                                    action.getSkipCount(),
-                                    action.getTotalCount()))
-                    .build();
-            return Optional.of(testResult);
+        if (action == null) {
+            return Optional.empty();
         }
 
-        return Optional.empty();
+        String passed =
+                Messages.testResults_passed(action.getTotalCount() - action.getFailCount() - action.getSkipCount());
+        String failed = Messages.testResults_failed(action.getFailCount());
+        String skipped = Messages.testResults_skipped(action.getSkipCount());
+        String total = Messages.testResults_total(action.getTotalCount());
+        RunDetailsItem testResult = new RunDetailsItem.Builder()
+                .ionicon("clipboard-outline")
+                .text(Messages.testResults())
+                .href("../" + action.getUrlName())
+                .tooltip(passed + "\n" + failed + "\n" + skipped + "\n" + total)
+                .build();
+        return Optional.of(testResult);
     }
 }

@@ -44,25 +44,7 @@
 
             <div class="pgv-details">
                 <j:forEach var="card" items="${it.runDetailsCard.items}">
-                    <j:if test="${!card.separator}">
-                        <div>
-                            <l:icon src="${card.icon}"/>
-                            <span tooltip="${card.tooltip}">
-                                <j:choose>
-                                    <j:when test="${!empty(card.href)}">
-                                        <a
-                                            href="${card.href}"
-                                        >
-                                            ${card.text}
-                                        </a>
-                                    </j:when>
-                                    <j:otherwise>
-                                        ${card.text}
-                                    </j:otherwise>
-                                </j:choose>
-                            </span>
-                        </div>
-                    </j:if>
+                    <st:include page="description.jelly" it="${card}" />
                 </j:forEach>
             </div>
 

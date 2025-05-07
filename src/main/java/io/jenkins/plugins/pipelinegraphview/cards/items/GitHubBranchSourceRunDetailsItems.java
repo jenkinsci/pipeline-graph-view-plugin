@@ -1,7 +1,8 @@
 package io.jenkins.plugins.pipelinegraphview.cards.items;
 
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
-import java.util.ArrayList;
+import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.Icon;
+import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.ItemContent;
 import java.util.List;
 import java.util.Optional;
 import jenkins.scm.api.SCMRevisionAction;
@@ -19,8 +20,6 @@ public class GitHubBranchSourceRunDetailsItems {
     }
 
     public static List<RunDetailsItem> getGitInformation(SCMRevisionAction scmRevisionAction) {
-        List<RunDetailsItem> runDetailsItems = new ArrayList<>();
-
         PullRequestSCMRevision revision = (PullRequestSCMRevision) scmRevisionAction.getRevision();
 
         // TODO see if there's a way to get this for branch builds, may need to make changes to
@@ -30,32 +29,24 @@ public class GitHubBranchSourceRunDetailsItems {
         String sourceRepo = head.getSourceRepo();
         String sourceBranch = head.getSourceBranch();
 
-        RunDetailsItem gitRepositoryItem = new RunDetailsItem.Builder()
-                .ionicon("logo-github")
-                .text(sourceOwner + "/" + sourceRepo)
-                .build();
-        runDetailsItems.add(gitRepositoryItem);
+        RunDetailsItem gitRepositoryItem = new RunDetailsItem.Item(
+                new Icon.IonIcon("logo-github"), new ItemContent.PlainContent(sourceOwner + "/" + sourceRepo));
 
-        RunDetailsItem gitBranchItem = new RunDetailsItem.Builder()
-                .ionicon("git-branch-outline")
-                .text(sourceBranch)
-                .build();
-        runDetailsItems.add(gitBranchItem);
+        RunDetailsItem.Item gitBranchItem = new RunDetailsItem.Item(
+                new Icon.IonIcon("git-branch-outline"), new ItemContent.PlainContent(sourceBranch));
 
-        return runDetailsItems;
+        return List.of(gitRepositoryItem, gitBranchItem);
     }
 
     public static Optional<RunDetailsItem> getGitHubLink(WorkflowRun run) {
         GitHubLink gitHubLink = run.getParent().getAction(GitHubLink.class);
-        if (gitHubLink != null) {
-            ObjectMetadataAction action = run.getParent().getAction(ObjectMetadataAction.class);
-            RunDetailsItem build = new RunDetailsItem.Builder()
-                    .ionicon("git-pull-request-outline")
-                    .text(action.getObjectDisplayName())
-                    .href(gitHubLink.getUrl())
-                    .build();
-            return Optional.of(build);
+        if (gitHubLink == null) {
+            return Optional.empty();
         }
-        return Optional.empty();
+        ObjectMetadataAction action = run.getParent().getAction(ObjectMetadataAction.class);
+        RunDetailsItem build = new RunDetailsItem.Item(
+                new Icon.IonIcon("git-pull-request-outline"),
+                new ItemContent.LinkContent(gitHubLink.getUrl(), action.getObjectDisplayName()));
+        return Optional.of(build);
     }
 }

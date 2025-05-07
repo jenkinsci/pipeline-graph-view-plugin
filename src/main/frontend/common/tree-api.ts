@@ -43,7 +43,10 @@ export default function useRunPoller({
         }
       };
     } else {
-      onPipelineDataReceived = (data: RunStatus) => setRun(data);
+      onPipelineDataReceived = (data: RunStatus) => {
+        setLoading(false);
+        setRun(data);
+      }
     }
     startPollingPipelineStatus(
       onPipelineDataReceived,

@@ -3,6 +3,7 @@ package io.jenkins.plugins.pipelinegraphview.cards.items;
 import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.User;
+import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
 import java.util.HashMap;
 import java.util.List;
@@ -20,11 +21,9 @@ public class UserIdCauseRunDetailsItem {
                 .map(userIdCause -> (Cause.UserIdCause) userIdCause)
                 .map(userIdCause -> User.get(userIdCause.getUserId(), false, new HashMap<>()))
                 .filter(Objects::nonNull)
-                // TODO i18n
-                .map(user -> "Manually run by " + user.getDisplayName())
-                .map(startedAt -> new RunDetailsItem.Builder()
+                .map(user -> new RunDetailsItem.Builder()
                         .ionicon("person-outline")
-                        .text(startedAt)
+                        .text(Messages.cause_user(user.getDisplayName()))
                         .build())
                 .findAny();
     }

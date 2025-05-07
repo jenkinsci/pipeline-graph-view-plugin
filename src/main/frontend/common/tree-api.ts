@@ -46,7 +46,7 @@ export default function useRunPoller({
       onPipelineDataReceived = (data: RunStatus) => {
         setLoading(false);
         setRun(data);
-      }
+      };
     }
     startPollingPipelineStatus(
       onPipelineDataReceived,

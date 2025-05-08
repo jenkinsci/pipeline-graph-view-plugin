@@ -127,6 +127,9 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
                     "Doesn't seem to matter in practice, docs aren't clear on how to handle and most places ignore it")
     public void getConsoleText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         String nodeId = req.getParameter("nodeId");
+
+        rsp.setContentType("text/plain");
+
         if (nodeId == null) {
             logger.error("'consoleText' was not passed 'nodeId'.");
             rsp.getWriter().write("Error getting console text\n");

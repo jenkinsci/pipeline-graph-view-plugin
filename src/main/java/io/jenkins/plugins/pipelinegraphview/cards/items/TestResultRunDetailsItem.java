@@ -30,7 +30,7 @@ public class TestResultRunDetailsItem {
         String total = Messages.testResults_total(action.getTotalCount());
         RunDetailsItem testResult = new RunDetailsItem.RunDetail(
                 new Icon.IonIcon("clipboard-outline"),
-                new ItemContent.LinkContent("../" + action.getUrlName(), Messages.testResults()),
+                ItemContent.of("../" + action.getUrlName(), Messages.testResults()),
                 passed + "\n" + failed + "\n" + skipped + "\n" + total);
         return Optional.of(testResult);
     }

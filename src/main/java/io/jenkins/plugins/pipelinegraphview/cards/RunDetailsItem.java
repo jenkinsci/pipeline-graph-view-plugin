@@ -60,6 +60,14 @@ public sealed interface RunDetailsItem {
     }
 
     sealed interface ItemContent {
+        static ItemContent of(@NonNull String text) {
+            return new PlainContent(text);
+        }
+
+        static ItemContent of(String href, @NonNull String text) {
+            return href == null || href.isBlank() ? new PlainContent(text) : new LinkContent(href, text);
+        }
+
         record PlainContent(@NonNull String text) implements ItemContent {
             public PlainContent {
                 requireNonNull(text);

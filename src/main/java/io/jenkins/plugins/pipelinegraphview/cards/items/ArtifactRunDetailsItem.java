@@ -16,7 +16,7 @@ public class ArtifactRunDetailsItem {
             return Optional.empty();
         }
         RunDetailsItem artifacts = new RunDetailsItem.RunDetail(
-                new Icon.IonIcon("cube-outline"), new ItemContent.LinkContent("../artifact", Messages.artifacts()));
+                new Icon.IonIcon("cube-outline"), ItemContent.of("../artifact", Messages.artifacts()));
         return Optional.of(artifacts);
     }
 }

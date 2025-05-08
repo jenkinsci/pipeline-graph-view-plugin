@@ -4,7 +4,6 @@ import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.Icon;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.ItemContent;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import jenkins.model.Jenkins;
 import jenkins.plugins.git.AbstractGitSCMSource;
@@ -16,7 +15,7 @@ public class SCMRunDetailsItems {
     public static List<RunDetailsItem> get(WorkflowRun run) {
         SCMRevisionAction scmRevisionAction = run.getAction(SCMRevisionAction.class);
         if (scmRevisionAction == null) {
-            return Collections.emptyList();
+            return List.of();
         }
 
         List<RunDetailsItem> runDetailsItems = new ArrayList<>();
@@ -42,8 +41,8 @@ public class SCMRunDetailsItems {
         }
 
         if (commit != null) {
-            runDetailsItems.add(new RunDetailsItem.RunDetail(
-                    new Icon.IonIcon("git-commit-outline"), new ItemContent.PlainContent(commit)));
+            runDetailsItems.add(
+                    new RunDetailsItem.RunDetail(new Icon.IonIcon("git-commit-outline"), ItemContent.of(commit)));
         }
 
         return runDetailsItems;

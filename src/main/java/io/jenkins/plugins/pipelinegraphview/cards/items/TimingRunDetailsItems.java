@@ -19,7 +19,7 @@ public class TimingRunDetailsItems {
         long startedTime = Math.abs(run.getTime().getTime() - new Date().getTime());
         RunDetailsItem startedItem = new RunDetailsItem.RunDetail(
                 new Icon.IonIcon("time-outline"),
-                new ItemContent.PlainContent(Messages.startedAgo(Util.getTimeSpanString(startedTime))));
+                ItemContent.of(Messages.startedAgo(Util.getTimeSpanString(startedTime))));
         runDetailsItems.add(startedItem);
 
         TimeInQueueAction timeInQueueAction = run.getAction(TimeInQueueAction.class);
@@ -27,15 +27,14 @@ public class TimingRunDetailsItems {
         if (timeInQueueAction != null) {
             RunDetailsItem queuedItem = new RunDetailsItem.RunDetail(
                     new Icon.IonIcon("hourglass-outline"),
-                    new ItemContent.PlainContent(
+                    ItemContent.of(
                             Messages.queued(Util.getTimeSpanString(timeInQueueAction.getQueuingDurationMillis()))));
 
             runDetailsItems.add(queuedItem);
         }
 
         RunDetailsItem timerItem = new RunDetailsItem.RunDetail(
-                new Icon.IonIcon("timer-outline"),
-                new ItemContent.PlainContent(Messages.took(run.getDurationString())));
+                new Icon.IonIcon("timer-outline"), ItemContent.of(Messages.took(run.getDurationString())));
 
         runDetailsItems.add(timerItem);
 

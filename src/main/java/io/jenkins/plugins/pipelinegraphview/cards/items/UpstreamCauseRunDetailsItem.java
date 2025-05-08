@@ -22,7 +22,7 @@ public class UpstreamCauseRunDetailsItem {
                 .map(upstreamCause -> (Cause.UpstreamCause) upstreamCause)
                 .map(Cause.UpstreamCause::getUpstreamRun)
                 .filter(Objects::nonNull)
-                .map(upstreamRun -> new ItemContent.LinkContent(
+                .map(upstreamRun -> ItemContent.of(
                         DisplayURLProvider.getDefault().getRunURL(upstreamRun),
                         Messages.cause_upstream(upstreamRun.getDisplayName())))
                 .<RunDetailsItem>map(

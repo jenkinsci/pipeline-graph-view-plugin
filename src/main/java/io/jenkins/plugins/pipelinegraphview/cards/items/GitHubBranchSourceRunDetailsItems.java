@@ -1,7 +1,5 @@
 package io.jenkins.plugins.pipelinegraphview.cards.items;
 
-import static java.util.Objects.requireNonNullElse;
-
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.Icon.Ionicon;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.ItemContent;
@@ -46,9 +44,11 @@ public class GitHubBranchSourceRunDetailsItems {
             return Optional.empty();
         }
         ObjectMetadataAction action = run.getParent().getAction(ObjectMetadataAction.class);
+        String name = action.getObjectDisplayName();
+        if (name == null) {
+            return Optional.empty();
+        }
         return Optional.of(new RunDetailsItem.RunDetail(
-                new Ionicon("git-pull-request-outline"),
-                ItemContent.of(
-                        gitHubLink.getUrl(), requireNonNullElse(action.getObjectDisplayName(), gitHubLink.getUrl()))));
+                new Ionicon("git-pull-request-outline"), ItemContent.of(gitHubLink.getUrl(), name)));
     }
 }

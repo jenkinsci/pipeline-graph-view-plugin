@@ -3,7 +3,7 @@ package io.jenkins.plugins.pipelinegraphview.cards.items;
 import static java.util.Objects.requireNonNullElse;
 
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
-import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.Icon.IonIcon;
+import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.Icon.Ionicon;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.ItemContent;
 import java.util.List;
 import java.util.Optional;
@@ -32,10 +32,10 @@ public class GitHubBranchSourceRunDetailsItems {
         String sourceBranch = head.getSourceBranch();
 
         RunDetailsItem gitRepositoryItem = new RunDetailsItem.RunDetail(
-                new IonIcon("logo-github"), ItemContent.of(sourceOwner + "/" + sourceRepo));
+                new Ionicon("logo-github"), ItemContent.of(sourceOwner + "/" + sourceRepo));
 
         RunDetailsItem gitBranchItem =
-                new RunDetailsItem.RunDetail(new IonIcon("git-branch-outline"), ItemContent.of(sourceBranch));
+                new RunDetailsItem.RunDetail(new Ionicon("git-branch-outline"), ItemContent.of(sourceBranch));
 
         return List.of(gitRepositoryItem, gitBranchItem);
     }
@@ -47,7 +47,7 @@ public class GitHubBranchSourceRunDetailsItems {
         }
         ObjectMetadataAction action = run.getParent().getAction(ObjectMetadataAction.class);
         return Optional.of(new RunDetailsItem.RunDetail(
-                new IonIcon("git-pull-request-outline"),
+                new Ionicon("git-pull-request-outline"),
                 ItemContent.of(
                         gitHubLink.getUrl(), requireNonNullElse(action.getObjectDisplayName(), gitHubLink.getUrl()))));
     }

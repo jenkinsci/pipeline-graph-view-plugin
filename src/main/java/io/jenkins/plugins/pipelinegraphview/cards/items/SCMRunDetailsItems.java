@@ -1,7 +1,7 @@
 package io.jenkins.plugins.pipelinegraphview.cards.items;
 
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
-import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.Icon.IonIcon;
+import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.Icon.Ionicon;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.ItemContent;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +42,7 @@ public class SCMRunDetailsItems {
 
         if (commit != null) {
             runDetailsItems.add(
-                    new RunDetailsItem.RunDetail(new IonIcon("git-commit-outline"), ItemContent.of(commit)));
+                    new RunDetailsItem.RunDetail(new Ionicon("git-commit-outline"), ItemContent.of(commit)));
         }
 
         return runDetailsItems;

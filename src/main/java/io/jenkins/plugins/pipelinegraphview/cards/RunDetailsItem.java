@@ -51,8 +51,8 @@ public sealed interface RunDetailsItem {
             }
         }
 
-        record IonIcon(@NonNull String value) implements Icon {
-            public IonIcon(@NonNull String value) {
+        record Ionicon(@NonNull String value) implements Icon {
+            public Ionicon(@NonNull String value) {
                 requireNonNull(value);
                 this.value = String.format("symbol-%s plugin-ionicons-api", value);
             }

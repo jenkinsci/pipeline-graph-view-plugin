@@ -3,7 +3,7 @@ package io.jenkins.plugins.pipelinegraphview.cards.items;
 import hudson.Util;
 import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
-import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.Icon.IonIcon;
+import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.Icon.Ionicon;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.ItemContent;
 import java.util.ArrayList;
 import java.util.Date;
@@ -18,14 +18,14 @@ public class TimingRunDetailsItems {
 
         long startedTime = Math.abs(run.getTime().getTime() - new Date().getTime());
         RunDetailsItem startedItem = new RunDetailsItem.RunDetail(
-                new IonIcon("time-outline"), ItemContent.of(Messages.startedAgo(Util.getTimeSpanString(startedTime))));
+                new Ionicon("time-outline"), ItemContent.of(Messages.startedAgo(Util.getTimeSpanString(startedTime))));
         runDetailsItems.add(startedItem);
 
         TimeInQueueAction timeInQueueAction = run.getAction(TimeInQueueAction.class);
 
         if (timeInQueueAction != null) {
             RunDetailsItem queuedItem = new RunDetailsItem.RunDetail(
-                    new IonIcon("hourglass-outline"),
+                    new Ionicon("hourglass-outline"),
                     ItemContent.of(
                             Messages.queued(Util.getTimeSpanString(timeInQueueAction.getQueuingDurationMillis()))));
 
@@ -33,7 +33,7 @@ public class TimingRunDetailsItems {
         }
 
         RunDetailsItem timerItem = new RunDetailsItem.RunDetail(
-                new IonIcon("timer-outline"), ItemContent.of(Messages.took(run.getDurationString())));
+                new Ionicon("timer-outline"), ItemContent.of(Messages.took(run.getDurationString())));
 
         runDetailsItems.add(timerItem);
 

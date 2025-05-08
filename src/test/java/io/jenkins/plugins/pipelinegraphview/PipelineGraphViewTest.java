@@ -5,7 +5,8 @@ import com.microsoft.playwright.junit.Options;
 import com.microsoft.playwright.junit.OptionsFactory;
 import com.microsoft.playwright.junit.UsePlaywright;
 import hudson.model.Result;
-import io.jenkins.plugins.pipelinegraphview.playwright.ManageApperanceJenkinsPage;
+import io.jenkins.plugins.pipelinegraphview.playwright.ManageAppearancePage;
+import io.jenkins.plugins.pipelinegraphview.playwright.PipelineBuildPage;
 import io.jenkins.plugins.pipelinegraphview.playwright.PipelineJobPage;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import java.util.concurrent.CompletableFuture;
@@ -31,22 +32,31 @@ class PipelineGraphViewTest {
     // http://localhost:8080/jenkins
 
     @Test
-    void doTheThing(Page p, JenkinsRule j) throws Exception {
+    void doTheThing(Page p, JenkinsRule j) {
         String name = "Integration Tests";
         WorkflowRun run = setupJenkins(p, j, name, "nestedScriptedParallel.jenkinsfile");
 
-        new PipelineJobPage(p, run.getParent())
-                .goTo()
-                .hasBuilds(1)
-                .nthBuild(0)
-                .hasStages(4)
-                .stageHasName(0, "Build")
-                .stageHasName(1, "A1")
-                .stageHasName(2, "Build")
-                .stageHasName(3, "B1")
-                .goToBuild();
+        PipelineBuildPage buildPage = new PipelineJobPage(p, run.getParent())
+            .goTo()
+            .hasBuilds(1)
+            .nthBuild(0)
+            .hasStages(6, "Build", "A1", "A2", "Build", "B1", "B2")
+            .goToBuild();
 
-        Thread.sleep(1000000);
+        buildPage.graph()
+            .hasStages(4,/*A*/ "Build", "Test", /*B*/ "Build", "Parallel");
+
+        buildPage.goToPipelineConsole()
+            .hasStagesInGraph(4,/*A*/ "Build", "Test", /*B*/ "Build", "Parallel")
+            .selectStageInGraph("Test")
+            .stageIsSelected("Test")
+            // maybe change this to search
+            .selectStageInTree("B")
+            .selectStageInTree("B","Parallel")
+            .stageIsSelected("Parallel")
+            .selectStageInTree("B","Parallel", "B1");
+
+        System.out.println("Breaking point here :P");
     }
 
     private static WorkflowRun setupJenkins(Page p, JenkinsRule j, String name, String jenkinsFile) {
@@ -58,7 +68,7 @@ class PipelineGraphViewTest {
             }
         });
         CompletableFuture<Void> jenkinsSetup =
-                CompletableFuture.runAsync(() -> new ManageApperanceJenkinsPage(p, j.jenkins.getRootUrl())
+                CompletableFuture.runAsync(() -> new ManageAppearancePage(p, j.jenkins.getRootUrl())
                         .goTo()
                         .displayPipelineOnJobPage()
                         .displayPipelineOnBuildPage()

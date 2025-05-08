@@ -24,7 +24,8 @@ public class UserIdCauseRunDetailsItem {
                 .map(userIdCause -> User.get(userIdCause.getUserId(), false, new HashMap<>()))
                 .filter(Objects::nonNull)
                 .map(user -> new ItemContent.PlainContent(Messages.cause_user(user.getDisplayName())))
-                .<RunDetailsItem>map(content -> new RunDetailsItem.Item(new Icon.IonIcon("person-outline"), content))
+                .<RunDetailsItem>map(
+                        content -> new RunDetailsItem.RunDetail(new Icon.IonIcon("person-outline"), content))
                 .findAny();
     }
 }

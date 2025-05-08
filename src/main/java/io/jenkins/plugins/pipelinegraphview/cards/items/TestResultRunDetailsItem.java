@@ -28,7 +28,7 @@ public class TestResultRunDetailsItem {
         String failed = Messages.testResults_failed(action.getFailCount());
         String skipped = Messages.testResults_skipped(action.getSkipCount());
         String total = Messages.testResults_total(action.getTotalCount());
-        RunDetailsItem testResult = new RunDetailsItem.Item(
+        RunDetailsItem testResult = new RunDetailsItem.RunDetail(
                 new Icon.IonIcon("clipboard-outline"),
                 new ItemContent.LinkContent("../" + action.getUrlName(), Messages.testResults()),
                 passed + "\n" + failed + "\n" + skipped + "\n" + total);

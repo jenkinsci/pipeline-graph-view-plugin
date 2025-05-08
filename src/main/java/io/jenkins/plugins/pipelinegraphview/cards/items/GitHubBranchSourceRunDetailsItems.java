@@ -29,10 +29,10 @@ public class GitHubBranchSourceRunDetailsItems {
         String sourceRepo = head.getSourceRepo();
         String sourceBranch = head.getSourceBranch();
 
-        RunDetailsItem gitRepositoryItem = new RunDetailsItem.Item(
+        RunDetailsItem gitRepositoryItem = new RunDetailsItem.RunDetail(
                 new Icon.IonIcon("logo-github"), new ItemContent.PlainContent(sourceOwner + "/" + sourceRepo));
 
-        RunDetailsItem.Item gitBranchItem = new RunDetailsItem.Item(
+        RunDetailsItem gitBranchItem = new RunDetailsItem.RunDetail(
                 new Icon.IonIcon("git-branch-outline"), new ItemContent.PlainContent(sourceBranch));
 
         return List.of(gitRepositoryItem, gitBranchItem);
@@ -44,8 +44,9 @@ public class GitHubBranchSourceRunDetailsItems {
             return Optional.empty();
         }
         ObjectMetadataAction action = run.getParent().getAction(ObjectMetadataAction.class);
-        RunDetailsItem build = new RunDetailsItem.Item(
+        RunDetailsItem build = new RunDetailsItem.RunDetail(
                 new Icon.IonIcon("git-pull-request-outline"),
+            // TODO: 08/05/2025 could be null 
                 new ItemContent.LinkContent(gitHubLink.getUrl(), action.getObjectDisplayName()));
         return Optional.of(build);
     }

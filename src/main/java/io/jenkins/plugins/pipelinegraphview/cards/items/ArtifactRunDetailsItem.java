@@ -15,7 +15,7 @@ public class ArtifactRunDetailsItem {
         if (!hasArtifacts) {
             return Optional.empty();
         }
-        RunDetailsItem artifacts = new RunDetailsItem.Item(
+        RunDetailsItem artifacts = new RunDetailsItem.RunDetail(
                 new Icon.IonIcon("cube-outline"), new ItemContent.LinkContent("../artifact", Messages.artifacts()));
         return Optional.of(artifacts);
     }

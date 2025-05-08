@@ -26,7 +26,7 @@ public class UpstreamCauseRunDetailsItem {
                         DisplayURLProvider.getDefault().getRunURL(upstreamRun),
                         Messages.cause_upstream(upstreamRun.getDisplayName())))
                 .<RunDetailsItem>map(
-                        content -> new RunDetailsItem.Item(new Icon.IonIcon("play-circle-outline"), content))
+                        content -> new RunDetailsItem.RunDetail(new Icon.IonIcon("play-circle-outline"), content))
                 .findAny();
     }
 }

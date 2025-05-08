@@ -42,7 +42,7 @@ public class SCMRunDetailsItems {
         }
 
         if (commit != null) {
-            runDetailsItems.add(new RunDetailsItem.Item(
+            runDetailsItems.add(new RunDetailsItem.RunDetail(
                     new Icon.IonIcon("git-commit-outline"), new ItemContent.PlainContent(commit)));
         }
 

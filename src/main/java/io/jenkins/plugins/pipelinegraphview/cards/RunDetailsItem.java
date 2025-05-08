@@ -11,18 +11,18 @@ public sealed interface RunDetailsItem {
 
     record Separator() implements RunDetailsItem {}
 
-    final class Item implements RunDetailsItem {
+    final class RunDetail implements RunDetailsItem {
         private final @NonNull Icon icon;
         private final @NonNull ItemContent content;
         private final @Nullable String tooltip;
 
-        public Item(@NonNull Icon icon, @NonNull ItemContent content, @Nullable String tooltip) {
+        public RunDetail(@NonNull Icon icon, @NonNull ItemContent content, @Nullable String tooltip) {
             this.icon = requireNonNull(icon);
             this.content = requireNonNull(content);
             this.tooltip = tooltip;
         }
 
-        public Item(@NonNull Icon icon, @NonNull ItemContent content) {
+        public RunDetail(@NonNull Icon icon, @NonNull ItemContent content) {
             this(icon, content, null);
         }
 

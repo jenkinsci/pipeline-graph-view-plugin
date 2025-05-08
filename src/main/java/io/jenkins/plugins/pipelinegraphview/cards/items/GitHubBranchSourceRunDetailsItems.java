@@ -1,5 +1,7 @@
 package io.jenkins.plugins.pipelinegraphview.cards.items;
 
+import static java.util.Objects.requireNonNullElse;
+
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.Icon;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.ItemContent;
@@ -44,10 +46,9 @@ public class GitHubBranchSourceRunDetailsItems {
             return Optional.empty();
         }
         ObjectMetadataAction action = run.getParent().getAction(ObjectMetadataAction.class);
-        RunDetailsItem build = new RunDetailsItem.RunDetail(
+        return Optional.of(new RunDetailsItem.RunDetail(
                 new Icon.IonIcon("git-pull-request-outline"),
-            // TODO: 08/05/2025 could be null 
-                new ItemContent.LinkContent(gitHubLink.getUrl(), action.getObjectDisplayName()));
-        return Optional.of(build);
+                new ItemContent.LinkContent(
+                        gitHubLink.getUrl(), requireNonNullElse(action.getObjectDisplayName(), gitHubLink.getUrl()))));
     }
 }

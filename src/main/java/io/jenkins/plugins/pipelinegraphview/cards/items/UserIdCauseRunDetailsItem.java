@@ -5,7 +5,7 @@ import hudson.model.CauseAction;
 import hudson.model.User;
 import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
-import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.Icon;
+import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.Icon.IonIcon;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.ItemContent;
 import java.util.HashMap;
 import java.util.List;
@@ -24,8 +24,7 @@ public class UserIdCauseRunDetailsItem {
                 .map(userIdCause -> User.get(userIdCause.getUserId(), false, new HashMap<>()))
                 .filter(Objects::nonNull)
                 .map(user -> ItemContent.of(Messages.cause_user(user.getDisplayName())))
-                .<RunDetailsItem>map(
-                        content -> new RunDetailsItem.RunDetail(new Icon.IonIcon("person-outline"), content))
+                .<RunDetailsItem>map(content -> new RunDetailsItem.RunDetail(new IonIcon("person-outline"), content))
                 .findAny();
     }
 }

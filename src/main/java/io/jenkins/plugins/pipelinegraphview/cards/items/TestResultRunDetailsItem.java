@@ -3,7 +3,7 @@ package io.jenkins.plugins.pipelinegraphview.cards.items;
 import hudson.tasks.test.AbstractTestResultAction;
 import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
-import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.Icon;
+import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.Icon.IonIcon;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.ItemContent;
 import java.util.Optional;
 import jenkins.model.Jenkins;
@@ -29,7 +29,7 @@ public class TestResultRunDetailsItem {
         String skipped = Messages.testResults_skipped(action.getSkipCount());
         String total = Messages.testResults_total(action.getTotalCount());
         RunDetailsItem testResult = new RunDetailsItem.RunDetail(
-                new Icon.IonIcon("clipboard-outline"),
+                new IonIcon("clipboard-outline"),
                 ItemContent.of("../" + action.getUrlName(), Messages.testResults()),
                 passed + "\n" + failed + "\n" + skipped + "\n" + total);
         return Optional.of(testResult);

@@ -1,0 +1,9 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+    <div>
+        <l:icon src="${it.icon()}"/>
+        <span tooltip="${it.tooltip()}">
+            <st:include page="description.jelly" it="${it.content()}" />
+        </span>
+    </div>
+</j:jelly>

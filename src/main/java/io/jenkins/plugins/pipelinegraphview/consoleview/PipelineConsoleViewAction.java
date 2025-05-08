@@ -279,7 +279,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         List<RunDetailsItem> runDetailsItems = new ArrayList<>(SCMRunDetailsItems.get(run));
 
         if (!runDetailsItems.isEmpty()) {
-            runDetailsItems.add(new RunDetailsItem.Builder().separator().build());
+            runDetailsItems.add(RunDetailsItem.SEPARATOR);
         }
 
         UpstreamCauseRunDetailsItem.get(run).ifPresent(runDetailsItems::add);

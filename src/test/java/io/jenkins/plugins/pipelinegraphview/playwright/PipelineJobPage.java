@@ -5,6 +5,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
+import java.net.URI;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,12 +21,13 @@ public class PipelineJobPage extends JenkinsPage<PipelineJobPage> {
     }
 
     @Override
-    void waitForLoaded() {
-        isAtUrl(pageUrl);
+    PipelineJobPage waitForLoaded() {
+        super.waitForLoaded();
         Locator heading = page.getByRole(
                 AriaRole.HEADING, new Page.GetByRoleOptions().setName(jobName).setLevel(1));
         assertThat(heading).isVisible();
         assertThat(getPipelineSection()).isVisible();
+        return this;
     }
 
     public PipelineJobPage hasBuilds(int count) {
@@ -41,36 +43,41 @@ public class PipelineJobPage extends JenkinsPage<PipelineJobPage> {
 
     public PipelineBuild nthBuild(int index) {
         log.info("Getting the {} build for the job {}", index, jobName);
-        Locator build = getPipelineSection().locator(".pgv-single-run").nth(0);
+        Locator build = getPipelineSection().locator(".pgv-single-run").nth(index);
         assertThat(build).isVisible();
 
-        return new PipelineBuild(build);
+        return new PipelineBuild(this, build);
     }
 
     public static class PipelineBuild {
 
+        private final PipelineJobPage parent;
         private final Locator wrapper;
         private final PipelineGraph graph;
 
-        public PipelineBuild(Locator wrapper) {
+        PipelineBuild(PipelineJobPage parent, Locator wrapper) {
+            this.parent = parent;
             this.wrapper = wrapper;
             this.graph = new PipelineGraph(wrapper.locator(".PWGx-PipelineGraph-container"));
         }
 
-        public PipelineBuild hasStages(int count) {
-            graph.hasStages(count);
-
+        public PipelineBuild hasStages(int count, String... names) {
+            graph.hasStages(count, names);
             return this;
         }
 
-        public PipelineBuild stageHasName(int index, String name) {
-            graph.stageHasName(index, name);
+        public PipelineBuildPage goToBuild() {
+            Locator link = wrapper.getByRole(AriaRole.LINK).nth(0);
+            String relativeBuildUrl = link.getAttribute("href");
+            String buildName = link.textContent().replace(link.locator("span").textContent(), "").trim();
 
-            return this;
-        }
+            link.click();
 
-        public void goToBuild() {
-            wrapper.getByRole(AriaRole.LINK).nth(0).click();
+            String pageUrl = URI.create(parent.pageUrl).resolve(relativeBuildUrl).toString();
+
+            pageUrl = pageUrl.endsWith("/") ? pageUrl : pageUrl + "/";
+
+            return new PipelineBuildPage(parent.page, pageUrl, buildName).waitForLoaded();
         }
     }
 }

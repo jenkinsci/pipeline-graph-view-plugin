@@ -1,0 +1,36 @@
+node {
+    parallel([
+        "A": {
+            stage("Checkout") {
+                echo("Checkout A")
+            }
+            stage("Test") {
+                parallel([
+                    "A1" : {
+                       echo("Test A1")
+                    },
+                    "A2" : {
+                       echo("Test A2")
+                       error 'this step fails'
+                    }
+                ])
+            }
+        },
+        "B": {
+            stage("Build") {
+                echo("Build B")
+            }
+            parallel([
+                "B1" : {
+                   echo("Test B1")
+                   sleep time: 1, unit: 'MILLISECONDS'
+                   pwd()
+                },
+                "B2" : {
+                   echo("Test B2")
+                   unstable 'this step is unstable'
+                }
+            ])
+        }
+    ])
+}

@@ -3,6 +3,10 @@ package io.jenkins.plugins.pipelinegraphview.playwright;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.options.AriaRole;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
+import java.util.Locale;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,17 +19,21 @@ public class PipelineGraph {
         this.graph = graph;
     }
 
-    public void hasStages(int count, String... names) {
+    public void isVisible() {
+        assertThat(graph).isVisible();
+    }
+
+    public void hasStages(int count, String... stageNames) {
         log.info("Checking that {} nodes are visible for the build", count);
         Locator stages = getStages();
         assertThat(stages).hasCount(count);
 
-        if (count < names.length) {
-            throw new IllegalArgumentException("Number of names must be less than or equal to the number of stages");
+        if (count < stageNames.length) {
+            throw new IllegalArgumentException("Number of stage names must be less than or equal to the number of stages");
         }
 
-        for (int i = 0; i < names.length; i++) {
-            assertThat(stages.nth(i)).hasText(names[i]);
+        for (int i = 0; i < stageNames.length; i++) {
+            assertThat(stages.nth(i).getByRole(AriaRole.LINK)).hasText(stageNames[i]);
         }
     }
 
@@ -34,7 +42,17 @@ public class PipelineGraph {
     }
 
     public void selectStage(String name) {
-        getStages().filter(new Locator.FilterOptions().setHasText(name)).click();
+        getStageByName(name).click();
+    }
+
+    public void stageHasState(String stage, PipelineState state) {
+        Locator thing = getStageByName(stage);
+
+        assertThat(thing).hasAccessibleName(state.name().toLowerCase(Locale.ROOT));
+    }
+
+    private Locator getStageByName(String name) {
+        return getStages().filter(new Locator.FilterOptions().setHasText(Pattern.compile("^" + name + "$")));
     }
 
     private Locator getStages() {

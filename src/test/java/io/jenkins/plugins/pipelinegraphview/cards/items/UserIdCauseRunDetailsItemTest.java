@@ -7,6 +7,7 @@ import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.Result;
 import hudson.model.User;
+import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import java.io.IOException;
@@ -77,7 +78,8 @@ class UserIdCauseRunDetailsItemTest {
 
         RunDetailsItem.RunDetail userDetails = (RunDetailsItem.RunDetail) detailsItem.get();
 
-        assertEquals(new RunDetailsItem.ItemContent.PlainContent("Manually run by User Id"), userDetails.content());
+        assertEquals(
+                new RunDetailsItem.ItemContent.PlainContent(Messages.cause_user("User Id")), userDetails.content());
         assertEquals("symbol-person-outline plugin-ionicons-api", userDetails.icon());
     }
 }

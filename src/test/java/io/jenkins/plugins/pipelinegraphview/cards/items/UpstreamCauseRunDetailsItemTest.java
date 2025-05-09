@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.Result;
+import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import java.util.Optional;
@@ -60,7 +61,7 @@ class UpstreamCauseRunDetailsItemTest {
         RunDetailsItem.RunDetail userDetails = (RunDetailsItem.RunDetail) detailsItem.get();
 
         assertEquals(
-                new RunDetailsItem.ItemContent.LinkContent(baseUrl + run.getUrl(), "Started by upstream pipeline #1"),
+                new RunDetailsItem.ItemContent.LinkContent(baseUrl + run.getUrl(), Messages.cause_upstream("#1")),
                 userDetails.content());
         assertEquals("symbol-play-circle-outline plugin-ionicons-api", userDetails.icon());
     }

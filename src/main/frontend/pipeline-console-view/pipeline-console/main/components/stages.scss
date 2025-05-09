@@ -32,6 +32,7 @@
     border-radius: 0;
     border: none;
     height: unset;
+    max-height: unset;
 
     .pgv-stages-graph__controls {
       margin: 1rem;
@@ -54,8 +55,14 @@
   }
 }
 
+// Hacky method of getting the full screen graph to
+// overlay the header and scroll up/down controls
 #page-body:has(.pgv-stages-graph--dialog) {
   z-index: 1001;
+
+  .pgv-split-view__container {
+    z-index: 1001;
+  }
 }
 
 .pgv-stages-graph__controls {

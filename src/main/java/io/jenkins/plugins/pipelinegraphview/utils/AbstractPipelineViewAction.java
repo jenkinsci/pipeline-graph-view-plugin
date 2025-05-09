@@ -23,6 +23,8 @@ import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 import org.kohsuke.stapler.interceptor.RequirePOST;
 
+import static io.jenkins.plugins.pipelinegraphview.consoleview.PipelineConsoleViewAction.URL_NAME;
+
 public abstract class AbstractPipelineViewAction implements Action, IconSpec {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final Logger LOGGER = Logger.getLogger(AbstractPipelineViewAction.class.getName());
@@ -144,7 +146,7 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
                 "url",
                 appendTrailingSlashIfRequired(req.getContextPath())
                         + run.getUrl().replace("/" + run.getNumber() + "/", "/" + estimatedNextBuildNumber + "/")
-                        + "pipeline-console/");
+                        + URL_NAME);
 
         result.put("success", true);
         return HttpResponses.okJSON(result);

@@ -1,0 +1,8 @@
+node {
+    def checkoutUrl = 'https://github.com/jenkinsci/pipeline-graph-view-plugin.git'
+    def number = currentBuild.getNumber()
+    def checkoutName = number == 1 ? 'b6dc82faf9248fece30bc704c09edbb4708c9756' : (number == 2 ? '1dc41d9c9758a111baebebe5f6bcd39c66040941' : 'main')
+    stage('Checkout') {
+        checkout scmGit(branches: [[name: checkoutName]], extensions: [], userRemoteConfigs: [[url: checkoutUrl]])
+    }
+}

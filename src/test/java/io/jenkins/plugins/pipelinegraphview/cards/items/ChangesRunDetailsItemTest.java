@@ -8,7 +8,6 @@ import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import java.util.Optional;
-
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.jupiter.api.Test;
@@ -21,8 +20,8 @@ class ChangesRunDetailsItemTest {
     @Test
     void get_noChanges(JenkinsRule j) throws Exception {
         // build once, there should be no change set
-        WorkflowRun run = TestUtils.createAndRunJob(j, "simpleWithSCM", "singleStagePipelineWithSCM.jenkinsfile",
-                Result.SUCCESS);
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "simpleWithSCM", "singleStagePipelineWithSCM.jenkinsfile", Result.SUCCESS);
         Optional<RunDetailsItem> detailsItem = ChangesRunDetailsItem.get(run);
         assertTrue(detailsItem.isEmpty());
     }

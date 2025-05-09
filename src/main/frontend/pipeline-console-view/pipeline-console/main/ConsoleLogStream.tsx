@@ -78,6 +78,8 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
       useWindowScroll
       ref={virtuosoRef}
       data={props.logBuffer.lines}
+      role={"log"}
+      aria-label={(`${props.step.title} ${props.step.name}`).trim()}
       itemContent={(index: number, content: string) => (
         <ConsoleLine
           lineNumber={String(index)}

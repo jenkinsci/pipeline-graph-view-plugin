@@ -1,5 +1,7 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import static io.jenkins.plugins.pipelinegraphview.consoleview.PipelineConsoleViewAction.URL_NAME;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.model.Action;
@@ -22,8 +24,6 @@ import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.bind.JavaScriptMethod;
 import org.kohsuke.stapler.interceptor.RequirePOST;
-
-import static io.jenkins.plugins.pipelinegraphview.consoleview.PipelineConsoleViewAction.URL_NAME;
 
 public abstract class AbstractPipelineViewAction implements Action, IconSpec {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();

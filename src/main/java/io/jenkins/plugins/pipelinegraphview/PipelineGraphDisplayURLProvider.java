@@ -1,13 +1,13 @@
 package io.jenkins.plugins.pipelinegraphview;
 
+import static io.jenkins.plugins.pipelinegraphview.consoleview.PipelineConsoleViewAction.URL_NAME;
+
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.Job;
 import hudson.model.Run;
 import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-
-import static io.jenkins.plugins.pipelinegraphview.consoleview.PipelineConsoleViewAction.URL_NAME;
 
 @Extension(ordinal = 50) // Take precedence over Blue Ocean if both are installed and there is no configured provider.
 public class PipelineGraphDisplayURLProvider extends DisplayURLProvider {

@@ -42,8 +42,7 @@ class ChangesRunDetailsItemTest {
         RunDetailsItem.RunDetail changesDetails = (RunDetailsItem.RunDetail) detailsItem.get();
 
         assertEquals(
-                new RunDetailsItem.ItemContent.LinkContent("../changes", Messages.changes()),
-                changesDetails.content());
+                new RunDetailsItem.ItemContent.LinkContent("../changes", Messages.changes()), changesDetails.content());
         assertEquals("symbol-code-slash-outline plugin-ionicons-api", changesDetails.icon());
     }
 }

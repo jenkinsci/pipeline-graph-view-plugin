@@ -7,6 +7,8 @@ import hudson.model.Run;
 import org.jenkinsci.plugins.displayurlapi.DisplayURLProvider;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
+import static io.jenkins.plugins.pipelinegraphview.consoleview.PipelineConsoleViewAction.URL_NAME;
+
 @Extension(ordinal = 50) // Take precedence over Blue Ocean if both are installed and there is no configured provider.
 public class PipelineGraphDisplayURLProvider extends DisplayURLProvider {
 
@@ -26,7 +28,7 @@ public class PipelineGraphDisplayURLProvider extends DisplayURLProvider {
     @NonNull
     public String getRunURL(Run<?, ?> run) {
         if (run instanceof WorkflowRun) {
-            return DisplayURLProvider.getDefault().getRunURL(run) + "pipeline-console";
+            return DisplayURLProvider.getDefault().getRunURL(run) + URL_NAME;
         }
         return DisplayURLProvider.getDefault().getRunURL(run);
     }

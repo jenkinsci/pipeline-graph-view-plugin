@@ -8,6 +8,7 @@ import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.playwright.ManageAppearancePage;
 import io.jenkins.plugins.pipelinegraphview.playwright.PipelineBuildPage;
 import io.jenkins.plugins.pipelinegraphview.playwright.PipelineJobPage;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import java.util.concurrent.CompletableFuture;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -32,29 +33,31 @@ class PipelineGraphViewTest {
     // http://localhost:8080/jenkins
 
     @Test
-    void doTheThing(Page p, JenkinsRule j) {
+    void smokeTest(Page p, JenkinsRule j) {
         String name = "Integration Tests";
-        WorkflowRun run = setupJenkins(p, j, name, "nestedScriptedParallel.jenkinsfile");
+        WorkflowRun run = setupJenkins(p, j, name, "smokeTest.jenkinsfile");
 
         PipelineBuildPage buildPage = new PipelineJobPage(p, run.getParent())
             .goTo()
             .hasBuilds(1)
             .nthBuild(0)
-            .hasStages(6, "Build", "A1", "A2", "Build", "B1", "B2")
+            .hasStages(6, "Checkout", "A1", "A2", "Build", "B1", "B2")
             .goToBuild();
 
         buildPage.graph()
-            .hasStages(4,/*A*/ "Build", "Test", /*B*/ "Build", "Parallel");
+            .hasStages(4,/*A*/ "Checkout", "Test", /*B*/ "Build", "Parallel");
 
         buildPage.goToPipelineConsole()
-            .hasStagesInGraph(4,/*A*/ "Build", "Test", /*B*/ "Build", "Parallel")
-            .selectStageInGraph("Test")
+            .hasStagesInGraph(4,/*A*/ "Checkout", "Test", /*B*/ "Build", "Parallel")
+            .selectStageInGraph("Test") // failure here right now after introducing accessible elements for status icons
             .stageIsSelected("Test")
-            // maybe change this to search
-            .selectStageInTree("B")
-            .selectStageInTree("B","Parallel")
-            .stageIsSelected("Parallel")
-            .selectStageInTree("B","Parallel", "B1");
+            .searchForStage("B1")
+            .selectStageInTree("B","Parallel", "B1")
+            .stageIsSelectedInLogs("B1")
+            .stageHasSteps("Test B1", "Sleep", "Determine current directory")
+            .stepContainsText("Sleep", "Sleeping for 1 ms")
+            .stageHasState("Checkout", PipelineState.SUCCESS)
+            /*.stageHasStageInTree("A2")*/;
 
         System.out.println("Breaking point here :P");
     }
@@ -62,7 +65,7 @@ class PipelineGraphViewTest {
     private static WorkflowRun setupJenkins(Page p, JenkinsRule j, String name, String jenkinsFile) {
         CompletableFuture<WorkflowRun> run = CompletableFuture.supplyAsync(() -> {
             try {
-                return TestUtils.createAndRunJob(j, name, jenkinsFile, Result.SUCCESS);
+                return TestUtils.createAndRunJob(j, name, jenkinsFile, Result.FAILURE);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

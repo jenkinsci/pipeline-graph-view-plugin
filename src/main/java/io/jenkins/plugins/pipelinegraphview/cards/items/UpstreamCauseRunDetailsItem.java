@@ -16,6 +16,9 @@ public class UpstreamCauseRunDetailsItem {
 
     public static Optional<RunDetailsItem> get(WorkflowRun run) {
         CauseAction causeAction = run.getAction(CauseAction.class);
+        if (causeAction == null) {
+            return Optional.empty();
+        }
         List<Cause> causes = causeAction.getCauses();
         return causes.stream()
                 .filter(cause -> cause instanceof Cause.UpstreamCause)

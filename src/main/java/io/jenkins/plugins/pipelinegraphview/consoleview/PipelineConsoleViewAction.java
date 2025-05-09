@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     public static final long LOG_THRESHOLD = 150 * 1024; // 150KB
-    public static final String URL_NAME = "pipeline-console";
+    public static final String URL_NAME = "pipeline-overview";
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineConsoleViewAction.class);
     private final WorkflowRun target;
@@ -52,7 +52,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
 
     @Override
     public String getDisplayName() {
-        return "Pipeline Console";
+        return "Pipeline Overview";
     }
 
     @Override
@@ -62,7 +62,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
 
     @Override
     public String getIconClassName() {
-        return "symbol-terminal-outline plugin-ionicons-api";
+        return "symbol-git-network-outline plugin-ionicons-api";
     }
 
     public String getDurationString() {

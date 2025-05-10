@@ -1,8 +1,6 @@
-#tasks {
-  margin: 0;
-  padding-right: 0.7rem;
+:root {
+  --pgv-tree-item-toggle-size: 1rem;
 }
-
 .pgw-filter-bar {
   position: relative;
   display: grid;
@@ -16,8 +14,8 @@
     border-radius: var(--form-input-border-radius);
     // TODO - var fallback can removed after baseline is moved >= 2.496
     border: var(
-      --jenkins-border,
-      2px solid color-mix(in srgb, var(--text-color-secondary) 10%, transparent)
+                    --jenkins-border,
+                    2px solid color-mix(in srgb, var(--text-color-secondary) 10%, transparent)
     );
     box-shadow: var(--form-input-glow);
     transition: var(--standard-transition);
@@ -59,39 +57,110 @@
   }
 }
 
-.pgv-tree-item {
-  display: block !important;
-  font-family: var(--font-family-sans) !important;
-  padding-block: 0.5rem !important;
-  padding-right: 1rem;
-  cursor: pointer !important;
+.pgv-tree {
+  margin: 0;
+  margin-block: 0;
+  padding-inline: 0;
 
-  & > div {
-    display: flex;
-    align-items: center;
-    justify-content: stretch;
-    text-wrap: nowrap;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    gap: 0.65rem;
-    mask-image: linear-gradient(
-      90deg,
-      white calc(100% - 2.5rem),
-      transparent calc(100% - 1rem)
-    );
+  ul {
+    margin-left: 1.35rem;
+    padding: 0;
+    list-style: none;
   }
 
-  .task-icon-link > div {
-    display: contents;
+  li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+}
+
+.pgv-tree-item {
+  display: grid;
+  grid-template-columns: auto 1fr auto var(--pgv-tree-item-toggle-size);
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  color: var(--text-color);
+  font-family: var(--font-family-sans) !important;
+  position: relative;
+  text-underline: none;
+  cursor: pointer !important;
+  border-radius: var(--form-input-border-radius);
+
+  &:visited,
+  &:link {
+    color: inherit;
+    text-decoration: none;
   }
 
   svg {
     flex-shrink: 0;
   }
 
+  &:hover:not(.pgv-tree-item--active) {
+    background-color: var(--hover-color, rgba(0, 0, 0, 0.05));
+  }
+
+  &--active {
+    background-color: var(--active-color, rgba(0, 0, 0, 0.1));
+    font-weight: 450;
+
+    .pgv-status-icon {
+      svg > * {
+        stroke-width: 35px;
+      }
+    }
+  }
+
+  &__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   &__description {
     color: var(--text-color-secondary);
   }
+
+  &__toggle {
+    top: 0.6875rem;
+    right: 0.55rem;
+    width: var(--pgv-tree-item-toggle-size);
+    height: var(--pgv-tree-item-toggle-size);
+    margin-left: auto;
+    transition: var(--standard-transition);
+    appearance: none;
+    background: none;
+    padding: 0;
+    border: none;
+    cursor: pointer;
+    color: var(--text-color-secondary);
+
+    &--active {
+      rotate: 90deg;
+    }
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+
+      * {
+        stroke-width: 42px !important;
+      }
+    }
+
+    &:hover {
+      color: var(--text-color);
+    }
+  }
+
 
   &--skeleton {
     pointer-events: none;
@@ -99,69 +168,48 @@
   }
 }
 
-.pgv-toggle-icon {
-  position: absolute;
-  top: 0.6875rem;
-  right: 0.55rem;
-  width: 1rem;
-  height: 1rem;
-  margin-left: auto;
-  transition: var(--standard-transition);
-  appearance: none;
-  background: none;
-  padding: 0;
-  border: none;
-  cursor: pointer;
-  color: var(--text-color-secondary);
-
-  &--active {
-    rotate: 90deg;
-  }
+.pgv-status-icon {
+  display: flex;
+  align-items: center;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 
   svg {
-    width: 1rem;
-    height: 1rem;
-
-    * {
-      stroke-width: 42px !important;
-    }
-  }
-
-  &:hover {
-    color: var(--text-color);
+    width: 1.375rem !important;
+    height: 1.375rem !important;
   }
 }
 
 .pgv-tree-node-header {
-  position: relative;
+  //position: relative;
 }
 
 .pgv-tree-children {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
-  margin-top: 0.125rem;
-  // TODO - var fallback can removed after baseline is moved >= 2.496
-  padding-left: calc(1.35rem + 1.375rem + var(--jenkins-border-width, 2px));
-  padding-right: 0.7rem;
-
-  &::before {
-    content: "";
-    position: absolute;
-    top: 0.375rem;
-    // TODO - var fallback can removed after baseline is moved >= 2.496
-    left: calc(
-      0.7rem + (1.375rem / 2) - (var(--jenkins-border-width, 2px) / 2)
-    );
-    bottom: 0.375rem;
-    // TODO - var fallback can removed after baseline is moved >= 2.496
-    background-color: var(
-      --jenkins-border-color,
-      color-mix(in srgb, var(--text-color-secondary) 25%, transparent)
-    );
-    // TODO - var fallback can removed after baseline is moved >= 2.496
-    width: var(--jenkins-border-width, 2px);
-    border-radius: var(--form-input-border-radius);
-  }
+  padding-left: 20px;
+  //position: relative;
+  //display: flex;
+  //flex-direction: column;
+  ////gap: 0.125rem;
+  ////margin-top: 0.125rem;
+  //// TODO - var fallback can removed after baseline is moved >= 2.496
+  //
+  //&::before {
+  //  content: "";
+  //  position: absolute;
+  //  top: 0.375rem;
+  //  //   TODO - var fallback can removed after baseline is moved >= 2.496
+  //  left: calc(
+  //    0.7rem + (1.375rem / 2) - (var(--jenkins-border-width, 2px) / 2)
+  //  );
+  //  bottom: 0.375rem;
+  //  // TODO - var fallback can removed after baseline is moved >= 2.496
+  //  background-color: var(
+  //    --jenkins-border-color,
+  //    color-mix(in srgb, var(--text-color-secondary) 25%, transparent)
+  //  );
+  //  // TODO - var fallback can removed after baseline is moved >= 2.496
+  //  width: var(--jenkins-border-width, 2px);
+  //  border-radius: var(--form-input-border-radius);
+  //}
 }

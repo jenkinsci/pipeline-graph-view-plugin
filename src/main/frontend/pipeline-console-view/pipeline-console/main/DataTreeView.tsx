@@ -7,6 +7,7 @@ import {
   useEffect,
   useState,
 } from "react";
+import { Virtuoso } from "react-virtuoso";
 
 import Filter from "../../../common/components/filter.tsx";
 import StatusIcon from "../../../common/components/status-icon.tsx";
@@ -88,14 +89,18 @@ export default function DataTreeView({
       )}
 
       <div id="tasks" style={{ marginLeft: "0.7rem" }}>
-        {filteredStages.map((stage) => (
-          <TreeNode
-            key={stage.id}
-            stage={stage}
-            selected={String(selected)}
-            onSelect={handleSelect}
-          />
-        ))}
+        <Virtuoso
+          useWindowScroll
+          data={filteredStages}
+          itemContent={(_: number, stage: StageInfo) => (
+            <TreeNode
+              key={stage.id}
+              stage={stage}
+              selected={String(selected)}
+              onSelect={handleSelect}
+            />
+          )}
+        />
       </div>
     </div>
   );
@@ -201,14 +206,18 @@ const TreeNode = memo(function TreeNode({
 
       {hasChildren && isExpanded && (
         <div className="pgv-tree-children">
-          {stage.children.map((child) => (
-            <TreeNode
-              key={child.id}
-              stage={child}
-              selected={selected}
-              onSelect={onSelect}
-            />
-          ))}
+          <Virtuoso
+            useWindowScroll
+            data={stage.children}
+            itemContent={(_: number, child: StageInfo) => (
+              <TreeNode
+                key={child.id}
+                stage={child}
+                selected={selected}
+                onSelect={onSelect}
+              />
+            )}
+          />
         </div>
       )}
     </div>

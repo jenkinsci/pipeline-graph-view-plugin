@@ -87,7 +87,7 @@ export default function DataTreeView({
         </div>
       )}
 
-      <ul className={"pgv-tree"} role="tree">
+      <ol className={"pgv-tree"} role="tree" aria-label={"Pipeline Stages"}>
         {filteredStages.map((stage) => (
           <TreeNode
             key={stage.id}
@@ -96,7 +96,7 @@ export default function DataTreeView({
             onSelect={handleSelect}
           />
         ))}
-      </ul>
+      </ol>
     </div>
   );
 }
@@ -144,6 +144,7 @@ const TreeNode = memo(function TreeNode({
         role={"treeitem"}
         {...(hasChildren ? { "aria-expanded": isExpanded } : {})}
         aria-selected={isSelected}
+        aria-labelledby={`stage-${stage.id}-name`}
     >
       <a
         href={`?selected-node=` + stage.id}
@@ -165,6 +166,7 @@ const TreeNode = memo(function TreeNode({
           "pgv-tree-item--active": isSelected,
           "pgv-tree-item--skeleton": stage.skeleton,
         })}
+        aria-labelledby={`stage-${stage.id}-name`}
       >
         <div className="pgv-status-icon">
           <StatusIcon
@@ -173,7 +175,9 @@ const TreeNode = memo(function TreeNode({
             skeleton={stage.skeleton}
           />
         </div>
-        <div className="pgv-tree-item__name">{stage.name}</div>
+        <div className="pgv-tree-item__name" id={`stage-${stage.id}-name`}>
+          <span className={"jenkins-visually-hidden"}>Stage </span>{stage.name}
+        </div>
         <div className="pgv-tree-item__description">
           <Total ms={stage.totalDurationMillis} />
         </div>
@@ -201,7 +205,7 @@ const TreeNode = memo(function TreeNode({
 
       {hasChildren && isExpanded && (
         <div className="pgv-tree-children">
-          <ul role={"group"}>
+          <ol role={"group"} aria-label={`Stages in ${stage.name}`}>
             {stage.children.map((child) => (
               <TreeNode
                 key={child.id}
@@ -210,7 +214,7 @@ const TreeNode = memo(function TreeNode({
                 onSelect={onSelect}
               />
             ))}
-          </ul>
+          </ol>
         </div>
       )}
     </li>

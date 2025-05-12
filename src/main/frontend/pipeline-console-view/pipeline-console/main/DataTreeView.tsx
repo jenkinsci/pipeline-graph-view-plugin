@@ -120,6 +120,7 @@ const TreeNode = memo(function TreeNode({
   }
 
   const handleToggleClick = (e: ReactMouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     setIsExpanded(!isExpanded);
   };

@@ -87,7 +87,7 @@ export default function DataTreeView({
         </div>
       )}
 
-      <ol className={"pgv-tree pgv-tree-group"} role="tree" aria-label={"Pipeline Stages"}>
+      <ol className={"pgv-tree"} role="tree" aria-label={"Pipeline Stages"}>
         {filteredStages.map((stage) => (
           <TreeNode
             key={stage.id}

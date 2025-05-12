@@ -58,26 +58,21 @@
 }
 
 .pgv-tree {
-  margin: 0;
-  margin-block: 0;
-  padding-inline: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .pgv-tree-group {
+  @extend .pgv-tree;
   margin-left: 1rem;
-  padding: 0;
-  list-style: none;
-}
-
-.pgv-tree.pgv-tree-group {
-  margin-left: 0;
 }
 
 .pgv-tree-stage {
   position: relative;
   margin: 0;
   padding: 0;
-  list-style: none;
   display: flex;
   flex-direction: column;
   gap: 0.125rem;
@@ -89,7 +84,7 @@
   align-items: center;
   gap: 0.65rem;
   width: 100%;
-  padding: 0.5rem 0.7rem;
+  padding: 0.5rem 0.7rem 0.5rem 0.5rem;
   text-decoration: none;
   color: var(--text-color);
   font-family: var(--font-family-sans) !important;
@@ -104,11 +99,13 @@
   }
 
   &:hover:not(.pgv-tree-item--active) {
-    background-color: var(--hover-color, rgba(0, 0, 0, 0.05));
+    background-color: var(--item-background--hover);
+    transition: var(--standard-transition);
   }
 
   &--active {
-    background-color: var(--active-color, rgba(0, 0, 0, 0.1));
+    background-color: var(--item-background--active);
+    border: var(--jenkins-border--subtle, 2px solid color-mix(in sRGB,currentColor 1.5%,transparent));
     font-weight: 450;
 
     .pgv-status-icon {

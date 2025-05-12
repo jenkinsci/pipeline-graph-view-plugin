@@ -140,11 +140,12 @@ const TreeNode = memo(function TreeNode({
   }, [search, visibleStatuses, allVisible]);
 
   return (
-    <li className="pgv-tree-stage"
-        role={"treeitem"}
-        {...(hasChildren ? { "aria-expanded": isExpanded } : {})}
-        aria-selected={isSelected}
-        aria-labelledby={`stage-${stage.id}-name`}
+    <li
+      className="pgv-tree-stage"
+      role={"treeitem"}
+      {...(hasChildren ? { "aria-expanded": isExpanded } : {})}
+      aria-selected={isSelected}
+      aria-labelledby={`stage-${stage.id}-name`}
     >
       <a
         href={`?selected-node=` + stage.id}
@@ -176,7 +177,8 @@ const TreeNode = memo(function TreeNode({
           />
         </div>
         <div className="pgv-tree-item__name" id={`stage-${stage.id}-name`}>
-          <span className={"jenkins-visually-hidden"}>Stage </span>{stage.name}
+          <span className={"jenkins-visually-hidden"}>Stage </span>
+          {stage.name}
         </div>
         <div className="pgv-tree-item__description">
           <Total ms={stage.totalDurationMillis} />
@@ -205,7 +207,11 @@ const TreeNode = memo(function TreeNode({
 
       {hasChildren && isExpanded && (
         <div className="pgv-tree-children">
-          <ol role={"group"} aria-label={`Stages in ${stage.name}`} className={"pgv-tree-group"}>
+          <ol
+            role={"group"}
+            aria-label={`Stages in ${stage.name}`}
+            className={"pgv-tree-group"}
+          >
             {stage.children.map((child) => (
               <TreeNode
                 key={child.id}

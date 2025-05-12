@@ -105,7 +105,10 @@
 
   &--active {
     background-color: var(--item-background--active);
-    border: var(--jenkins-border--subtle, 2px solid color-mix(in sRGB,currentColor 1.5%,transparent));
+    border: var(
+      --jenkins-border--subtle,
+      2px solid color-mix(in sRGB, currentColor 1.5%, transparent)
+    );
     font-weight: 450;
 
     .pgv-status-icon {
@@ -159,7 +162,6 @@
     }
   }
 
-
   &--skeleton {
     pointer-events: none;
     color: var(--text-color-secondary) !important;
@@ -176,7 +178,6 @@
     flex-shrink: 0;
   }
 }
-
 
 .pgv-tree-children {
   padding-left: 20px;

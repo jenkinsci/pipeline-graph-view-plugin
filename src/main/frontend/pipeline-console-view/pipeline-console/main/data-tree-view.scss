@@ -79,8 +79,7 @@
 }
 
 .pgv-tree-item {
-  display: grid;
-  grid-template-columns: auto 1fr auto var(--pgv-tree-item-toggle-size);
+  display: flex;
   align-items: center;
   gap: 0.65rem;
   width: 100%;
@@ -128,12 +127,14 @@
     color: var(--text-color-secondary);
     overflow: hidden;
     white-space: nowrap;
+    flex-shrink: 0;
   }
 
   &__toggle {
     top: 0.6875rem;
     right: 0.55rem;
     width: var(--pgv-tree-item-toggle-size);
+    min-width: var(--pgv-tree-item-toggle-size);
     height: var(--pgv-tree-item-toggle-size);
     margin-left: auto;
     transition: var(--standard-transition);
@@ -171,6 +172,7 @@
 .pgv-status-icon {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
 
   svg {
     width: 1.375rem;

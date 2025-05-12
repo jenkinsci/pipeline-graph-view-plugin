@@ -87,7 +87,7 @@ export default function DataTreeView({
         </div>
       )}
 
-      <ol className={"pgv-tree"} role="tree" aria-label={"Pipeline Stages"}>
+      <ol className={"pgv-tree pgv-tree-group"} role="tree" aria-label={"Pipeline Stages"}>
         {filteredStages.map((stage) => (
           <TreeNode
             key={stage.id}
@@ -140,7 +140,7 @@ const TreeNode = memo(function TreeNode({
   }, [search, visibleStatuses, allVisible]);
 
   return (
-    <li className="pgv-tree-node-header"
+    <li className="pgv-tree-stage"
         role={"treeitem"}
         {...(hasChildren ? { "aria-expanded": isExpanded } : {})}
         aria-selected={isSelected}
@@ -205,7 +205,7 @@ const TreeNode = memo(function TreeNode({
 
       {hasChildren && isExpanded && (
         <div className="pgv-tree-children">
-          <ol role={"group"} aria-label={`Stages in ${stage.name}`}>
+          <ol role={"group"} aria-label={`Stages in ${stage.name}`} className={"pgv-tree-group"}>
             {stage.children.map((child) => (
               <TreeNode
                 key={child.id}

@@ -61,22 +61,26 @@
   margin: 0;
   margin-block: 0;
   padding-inline: 0;
+}
 
-  ol {
-    margin-left: 1.35rem;
-    padding: 0;
-    list-style: none;
-  }
+.pgv-tree-group {
+  margin-left: 1rem;
+  padding: 0;
+  list-style: none;
+}
 
-  li {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-  }
+.pgv-tree.pgv-tree-group {
+  margin-left: 0;
+}
+
+.pgv-tree-stage {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
 }
 
 .pgv-tree-item {
@@ -119,7 +123,7 @@
     }
   }
 
-  &__name {
+  &__name, &__description {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -181,35 +185,25 @@
   }
 }
 
-.pgv-tree-node-header {
-  //position: relative;
-}
 
 .pgv-tree-children {
   padding-left: 20px;
-  //position: relative;
-  //display: flex;
-  //flex-direction: column;
-  ////gap: 0.125rem;
-  ////margin-top: 0.125rem;
-  //// TODO - var fallback can removed after baseline is moved >= 2.496
-  //
-  //&::before {
-  //  content: "";
-  //  position: absolute;
-  //  top: 0.375rem;
-  //  //   TODO - var fallback can removed after baseline is moved >= 2.496
-  //  left: calc(
-  //    0.7rem + (1.375rem / 2) - (var(--jenkins-border-width, 2px) / 2)
-  //  );
-  //  bottom: 0.375rem;
-  //  // TODO - var fallback can removed after baseline is moved >= 2.496
-  //  background-color: var(
-  //    --jenkins-border-color,
-  //    color-mix(in srgb, var(--text-color-secondary) 25%, transparent)
-  //  );
-  //  // TODO - var fallback can removed after baseline is moved >= 2.496
-  //  width: var(--jenkins-border-width, 2px);
-  //  border-radius: var(--form-input-border-radius);
-  //}
+  position: relative;
+  display: flex;
+  flex-direction: column;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0.375rem;
+    bottom: 0.375rem;
+    // TODO - var fallback can removed after baseline is moved >= 2.496
+    background-color: var(
+                    --jenkins-border-color,
+                    color-mix(in srgb, var(--text-color-secondary) 25%, transparent)
+    );
+    // TODO - var fallback can removed after baseline is moved >= 2.496
+    width: var(--jenkins-border-width, 2px);
+    border-radius: var(--form-input-border-radius);
+  }
 }

@@ -150,14 +150,18 @@ const TreeNode = memo(function TreeNode({
         <a
           href={`?selected-node=` + stage.id}
           onClick={(e) => {
+            // Only prevent left clicks
             if (e.button !== 0 || e.metaKey || e.ctrlKey) {
               return;
             }
+
             e.preventDefault();
+
             history.replaceState({}, "", `?selected-node=` + stage.id);
             if (!isSelected) {
               onSelect(e, String(stage.id));
             }
+            setIsExpanded(!isExpanded);
           }}
           className={classNames("pgv-tree-item", {
             "pgv-tree-item--active": isSelected,

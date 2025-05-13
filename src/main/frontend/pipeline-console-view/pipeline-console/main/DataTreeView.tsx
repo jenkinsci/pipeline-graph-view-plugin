@@ -147,42 +147,43 @@ const TreeNode = memo(function TreeNode({
       aria-selected={isSelected}
       aria-labelledby={`stage-${stage.id}-name`}
     >
-      <a
-        href={`?selected-node=` + stage.id}
-        onClick={(e) => {
-          // Only prevent left clicks
-          if (e.button !== 0 || e.metaKey || e.ctrlKey) {
-            return;
-          }
+      <div className="pgv-tree-item-container">
+        <a
+          href={`?selected-node=` + stage.id}
+          onClick={(e) => {
+            if (e.button !== 0 || e.metaKey || e.ctrlKey) {
+              return;
+            }
+            e.preventDefault();
+            history.replaceState({}, "", `?selected-node=` + stage.id);
+            if (!isSelected) {
+              onSelect(e, String(stage.id));
+            }
+          }}
+          className={classNames("pgv-tree-item", {
+            "pgv-tree-item--active": isSelected,
+            "pgv-tree-item--skeleton": stage.skeleton,
+          })}
+          aria-labelledby={`stage-${stage.id}-name`}
+        >
+          <div className={"pgv-tree-item__content"}>
+            <div className="pgv-status-icon">
+              <StatusIcon
+                status={stage.state}
+                percentage={stage.completePercent}
+                skeleton={stage.skeleton}
+              />
+            </div>
+            <div className="pgv-tree-item__name" id={`stage-${stage.id}-name`}>
+              <span className={"jenkins-visually-hidden"}>Stage </span>
+              {stage.name}
+            </div>
+            <div className="pgv-tree-item__description">
+              <Total ms={stage.totalDurationMillis} />
+            </div>
 
-          e.preventDefault();
-
-          history.replaceState({}, "", `?selected-node=` + stage.id);
-          if (!isSelected) {
-            onSelect(e, String(stage.id));
-          }
-          setIsExpanded(!isExpanded);
-        }}
-        className={classNames("pgv-tree-item", {
-          "pgv-tree-item--active": isSelected,
-          "pgv-tree-item--skeleton": stage.skeleton,
-        })}
-        aria-labelledby={`stage-${stage.id}-name`}
-      >
-        <div className="pgv-status-icon">
-          <StatusIcon
-            status={stage.state}
-            percentage={stage.completePercent}
-            skeleton={stage.skeleton}
-          />
-        </div>
-        <div className="pgv-tree-item__name" id={`stage-${stage.id}-name`}>
-          <span className={"jenkins-visually-hidden"}>Stage </span>
-          {stage.name}
-        </div>
-        <div className="pgv-tree-item__description">
-          <Total ms={stage.totalDurationMillis} />
-        </div>
+          </div>
+        </a>
         {hasChildren && (
           <button
             className={classNames("pgv-tree-item__toggle", {
@@ -203,7 +204,7 @@ const TreeNode = memo(function TreeNode({
             </svg>
           </button>
         )}
-      </a>
+      </div>
 
       {hasChildren && isExpanded && (
         <div className="pgv-tree-children">

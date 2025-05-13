@@ -174,12 +174,14 @@ const TreeNode = memo(function TreeNode({
                 skeleton={stage.skeleton}
               />
             </div>
-            <div className="pgv-tree-item__name" id={`stage-${stage.id}-name`}>
-              <span className={"jenkins-visually-hidden"}>Stage </span>
-              {stage.name}
-            </div>
-            <div className="pgv-tree-item__description">
-              <Total ms={stage.totalDurationMillis} />
+            <div className={"pgv-tree-item__info"}>
+              <div className="pgv-tree-item__name" id={`stage-${stage.id}-name`}>
+                <span className={"jenkins-visually-hidden"}>Stage </span>
+                {stage.name}
+              </div>
+              <div className="pgv-tree-item__description">
+                <Total ms={stage.totalDurationMillis} />
+              </div>
             </div>
 
           </div>

@@ -77,8 +77,6 @@ $pgv-tree-item-toggle-size: 1rem;
   gap: 0.125rem;
 }
 
-// TODO Revet back to magic masking thing rather than collapsing, go for parity first then potential changes
-
 .pgv-tree-item-container {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -140,6 +138,7 @@ $pgv-tree-item-toggle-size: 1rem;
   color: var(--text-color);
   position: relative;
   cursor: pointer;
+  mask-image: linear-gradient(90deg, white calc(100% - 2.5rem),transparent calc(100% - 1rem));
 
   &:visited,
   &:link {
@@ -158,26 +157,27 @@ $pgv-tree-item-toggle-size: 1rem;
   }
 
   &__content {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
     gap: 0.65rem;
     min-width: 0;
-    flex: 1;
   }
+
+  &__info {
+    display: flex;
+    flex-direction: row;
+    gap: 0.65rem;
+  }
+
 
   &__name, &__description {
     overflow: hidden;
     white-space: nowrap;
-    text-overflow: ellipsis;
-  }
-
-  &__name {
-    min-width: 30%;
-    flex-shrink: 2;
   }
 
   &__description {
     color: var(--text-color-secondary);
-    flex-shrink: 1;
   }
 
   &__toggle {
@@ -221,12 +221,10 @@ $pgv-tree-item-toggle-size: 1rem;
 .pgv-status-icon {
   display: flex;
   align-items: center;
-  flex-shrink: 0;
 
   svg {
     width: 1.375rem;
     height: 1.375rem;
-    flex-shrink: 0;
   }
 }
 
@@ -241,6 +239,8 @@ $pgv-tree-item-toggle-size: 1rem;
     position: absolute;
     top: 0.375rem;
     bottom: 0.375rem;
+    // TODO - var fallback can removed after baseline is moved >= 2.496
+    left: calc(1rem + var(--jenkins-border-width, 2px));
     // TODO - var fallback can removed after baseline is moved >= 2.496
     background-color: var(
       --jenkins-border-color,

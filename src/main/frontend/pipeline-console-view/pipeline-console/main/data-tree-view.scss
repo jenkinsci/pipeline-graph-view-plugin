@@ -76,9 +76,8 @@ $pgv-item-padding-inline: 0.7rem;
 
 .pgv-tree-item-container {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr $pgv-tree-item-toggle-size;
   align-items: center;
-  gap: 0.65rem;
   width: 100%;
   padding: 0.5rem $pgv-item-padding-inline;
   border-radius: var(--form-input-border-radius);
@@ -137,8 +136,8 @@ $pgv-item-padding-inline: 0.7rem;
   cursor: pointer;
   mask-image: linear-gradient(
     90deg,
-    white calc(100% - 2.5rem),
-    transparent calc(100% - 1rem)
+    white calc(100% - 1.5rem),
+    transparent calc(100% - 0.5rem)
   );
 
   &:visited,

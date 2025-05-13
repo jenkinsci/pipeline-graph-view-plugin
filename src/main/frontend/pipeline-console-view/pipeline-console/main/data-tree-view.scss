@@ -134,8 +134,8 @@ $pgv-item-padding-inline: 0.7rem;
 
   mask-image: linear-gradient(
     90deg,
-    white calc(100% - 1.5rem),
-    transparent calc(100% - 0.5rem)
+    white calc(100% - 3rem),
+    transparent calc(100% - 1.5rem)
   );
 
   &:visited,

@@ -213,7 +213,7 @@ const TreeNode = memo(function TreeNode({
           <ol
             role={"group"}
             aria-label={`Stages in ${stage.name}`}
-            className={"pgv-tree-group"}
+            className={"pgv-tree"}
           >
             {stage.children.map((child) => (
               <TreeNode

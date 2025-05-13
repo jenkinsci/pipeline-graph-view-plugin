@@ -1,4 +1,3 @@
-$pgv-tree-item-toggle-size: 1rem;
 $pgv-icon-size: 1.375rem;
 $pgv-item-padding-inline: 0.7rem;
 
@@ -75,15 +74,15 @@ $pgv-item-padding-inline: 0.7rem;
 }
 
 .pgv-tree-item-container {
-  width: 100%;
-  border-radius: var(--form-input-border-radius);
   position: relative;
+  appearance: none;
+  z-index: 0;
+  font-weight: normal;
+  border-radius: var(--form-input-border-radius);
   cursor: pointer;
-
-  &:hover:not(.pgv-tree-item--active) {
-    background-color: var(--item-background--hover);
-    transition: var(--standard-transition);
-  }
+  background: transparent;
+  outline: none;
+  border: none;
 
   &::before,
   &::after {
@@ -105,17 +104,50 @@ $pgv-item-padding-inline: 0.7rem;
     box-shadow: 0 0 0 0.5rem transparent;
   }
 
-  &:has(.pgv-tree-item--active) {
-    &::before {
-      background-color: var(--item-background--active) !important;
+  &:focus-visible {
+    outline: none;
+  }
+
+  &:not(:disabled) {
+    &:hover,
+    &:focus-visible,
+    &[aria-describedby],
+    &[aria-expanded="true"] {
+      &::before {
+        background-color: var(--item-background--hover);
+      }
     }
 
-    &::after {
-      box-shadow: none !important;
+    &:active {
+      outline: none !important;
+      z-index: 1;
+
+      &::before {
+        background-color: var(--item-background--active);
+      }
+
+      &:active {
+        &::after {
+          box-shadow: 0 0 0 0.25rem var(--item-box-shadow--focus);
+        }
+      }
+    }
+
+    &:has(.pgv-tree-item--active) {
+      &::before {
+        background-color: var(--item-background--active);
+      }
+    }
+
+    &:focus-visible {
+      &::after {
+        box-shadow: 0 0 0 0.2rem var(--text-color) !important;
+        opacity: 1 !important;
+      }
     }
   }
 
-  &:not(:hover, &:active, &:focus, .pgv-tree-item--active) {
+  &:not(:hover, &:active, &:focus, &:has(.pgv-tree-item--active)) {
     &::before {
       border-color: transparent;
     }

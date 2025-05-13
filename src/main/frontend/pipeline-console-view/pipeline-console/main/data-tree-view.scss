@@ -86,9 +86,8 @@
   padding: 0.5rem 0.7rem 0.5rem 0.5rem;
   text-decoration: none;
   color: var(--text-color);
-  font-family: var(--font-family-sans) !important;
   position: relative;
-  cursor: pointer !important;
+  cursor: pointer;
   border-radius: var(--form-input-border-radius);
 
   &:visited,
@@ -102,18 +101,49 @@
     transition: var(--standard-transition);
   }
 
+  &::before,
+  &::after {
+    position: absolute;
+    content: "";
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    transition: var(--standard-transition);
+    pointer-events: none;
+  }
+
+  &::before {
+    background-color: var(--item-background);
+    border: var(--jenkins-border--subtle);
+  }
+
+  &::after {
+    box-shadow: 0 0 0 0.5rem transparent;
+  }
+
+
   &--active {
     background-color: var(--item-background--active);
-    border: var(
-      --jenkins-border--subtle,
-      2px solid color-mix(in sRGB, currentColor 1.5%, transparent)
-    );
     font-weight: 450;
+
+    &::before {
+      background-color: var(--item-background--active) !important;
+    }
+
+    &::after {
+      box-shadow: none !important;
+    }
 
     .pgv-status-icon {
       svg > * {
         stroke-width: 35px;
       }
+    }
+  }
+
+  &:not(:hover, &:active, &:focus, &--active) {
+    &::before {
+      border-color: transparent;
     }
   }
 

@@ -20,11 +20,11 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @WithJenkins
-class PipelineGraphViewRebuildTest {
+class PipelineGraphViewReplayTest {
 
     @Issue("GH#330")
     @Test
-    void rebuildButtonStartsNewBuild(JenkinsRule j) throws Exception {
+    void replayButtonStartsNewBuild(JenkinsRule j) throws Exception {
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "hello_world", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
@@ -33,7 +33,7 @@ class PipelineGraphViewRebuildTest {
 
     @Issue("GH#330")
     @Test
-    void rebuildButtonRedirectsForParameterizedJob(JenkinsRule j) throws Exception {
+    void replayButtonRedirectsForParameterizedJob(JenkinsRule j) throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "echo_parameterized", "gh330_parameterizedBuild.jenkinsfile", Result.SUCCESS);
 
@@ -48,7 +48,7 @@ class PipelineGraphViewRebuildTest {
             Response navigate = page.navigate(j.getURL() + run.getUrl() + urlName);
             String currentUrl = navigate.url();
 
-            page.click("#pgv-rebuild");
+            page.click("#pgv-replay");
             String newUrl = page.url();
 
             assertEquals(currentUrl, newUrl);

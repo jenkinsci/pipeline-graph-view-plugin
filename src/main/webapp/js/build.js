@@ -1,13 +1,13 @@
-const rebuildButton = document.getElementById('pgv-rebuild');
+const replayButton = document.getElementById('pgv-replay');
 
-if (rebuildButton) {
-  rebuildButton.addEventListener('click', event => {
+if (replayButton) {
+  replayButton.addEventListener('click', event => {
     event.preventDefault();
-    const rebuildAction = window[`${rebuildButton.dataset.proxyName}`];
-    rebuildAction.doRebuild(function (success) {
+    const replayAction = window[`${replayButton.dataset.proxyName}`];
+    replayAction.doReplay(function (success) {
       const result = success.responseJSON;
       if (result) {
-        window.hoverNotification(rebuildButton.dataset.successMessage, rebuildButton);
+        window.hoverNotification(replayButton.dataset.successMessage, replayButton);
       }
     });
   })

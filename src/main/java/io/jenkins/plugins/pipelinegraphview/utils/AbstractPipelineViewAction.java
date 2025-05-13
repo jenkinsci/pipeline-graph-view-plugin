@@ -54,11 +54,11 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
     }
 
     /**
-     * Handles the rebuild request using ReplayAction feature
+     * Handles the replay request using ReplayAction feature
      */
     @RequirePOST
     @JavaScriptMethod
-    public boolean doRebuild() throws IOException, ExecutionException {
+    public boolean doReplay() throws IOException, ExecutionException {
         if (run != null) {
             run.checkAnyPermission(Item.BUILD);
             ReplayAction replayAction = run.getAction(ReplayAction.class);

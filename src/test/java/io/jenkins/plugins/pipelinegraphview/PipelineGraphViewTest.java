@@ -40,17 +40,24 @@ class PipelineGraphViewTest {
 
         buildPage.goToPipelineOverview()
             .hasStagesInGraph(4,/*A*/ "Checkout", "Test", /*B*/ "Build", "Parallel")
-            .selectStageInGraph("Test") // failure here right now after introducing accessible elements for status icons
+            .selectStageInGraph("Test")
             .stageIsSelected("Test")
             .searchForStage("B1")
-            .selectStageInTree("B","Parallel", "B1")
+            .selectStageInTree("B1")
             .stageIsSelectedInLogs("B1")
             .stageHasSteps("Test B1", "Sleep", "Determine current directory")
             .stepContainsText("Sleep", "Sleeping for 1 ms")
             .stageHasState("Checkout", PipelineState.SUCCESS)
-            /*.stageHasStageInTree("A2")*/;
-
-        System.out.println("Breaking point here :P");
+            .clearSearch()
+            .filterBy(PipelineState.UNSTABLE)
+            .stageIsInTree("B2")
+            .filterBy(PipelineState.FAILURE)
+            .stageIsInTree("B2")
+            .stageIsInTree("A2")
+            .resetFilter()
+            .stageIsInTree("Checkout")
+            .stageIsInTree("A2")
+            .stageIsInTree("B2");
     }
 
     private static WorkflowRun setupJenkins(Page p, JenkinsRule j, String name, String jenkinsFile) {

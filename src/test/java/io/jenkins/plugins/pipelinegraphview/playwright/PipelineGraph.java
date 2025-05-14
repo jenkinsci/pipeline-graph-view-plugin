@@ -5,8 +5,6 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.AriaRole;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
-import java.util.Locale;
-import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,22 +35,31 @@ public class PipelineGraph {
         }
     }
 
+    public void stageIsSelected(String name) {
+        log.info("Checking if stage {} is selected", name);
+        assertThat(selectedStage().getByRole(AriaRole.LINK)).hasText(name);
+    }
+
     public Locator selectedStage() {
+        log.info("Getting the selected stage");
         return graph.locator(".PWGx-pipeline-node--selected");
     }
 
     public void selectStage(String name) {
+        log.info("Selecting stage {} in the graph", name);
         getStageByName(name).click();
     }
 
     public void stageHasState(String stage, PipelineState state) {
-        Locator thing = getStageByName(stage);
+        log.info("Checking if stage {} has state {}", stage, state);
+        Locator stateSvg = getStageByName(stage).locator("..").getByRole(AriaRole.IMG);
 
-        assertThat(thing).hasAccessibleName(state.name().toLowerCase(Locale.ROOT));
+        assertThat(stateSvg).hasAccessibleName(state.toString());
     }
 
     private Locator getStageByName(String name) {
-        return getStages().filter(new Locator.FilterOptions().setHasText(Pattern.compile("^" + name + "$")));
+        log.info("Getting stage by name {}", name);
+        return getStages().getByRole(AriaRole.LINK, new Locator.GetByRoleOptions().setName(name));
     }
 
     private Locator getStages() {

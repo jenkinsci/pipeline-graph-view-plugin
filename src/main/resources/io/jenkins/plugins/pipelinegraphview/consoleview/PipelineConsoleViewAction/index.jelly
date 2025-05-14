@@ -15,7 +15,7 @@
                         <button id="pgv-replay" data-success-message="${%Build scheduled}"
                                 data-proxy-name="replayAction${proxyId}"
                                 class="jenkins-button jenkins-!-build-color">
-                            <l:icon src="symbol-reload-outline plugin-ionicons-api"/>
+                            <l:icon src="symbol-arrow-redo-outline plugin-ionicons-api"/>
                             ${%Replay}
                         </button>
                     </l:hasPermission>

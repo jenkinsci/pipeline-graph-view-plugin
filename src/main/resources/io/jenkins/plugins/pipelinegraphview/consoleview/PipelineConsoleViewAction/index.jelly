@@ -16,7 +16,7 @@
                                 data-proxy-name="replayAction${proxyId}"
                                 class="jenkins-button jenkins-!-build-color">
                             <l:icon src="symbol-arrow-redo-outline plugin-ionicons-api"/>
-                            ${%Replay}
+                            ${%Replay Now}
                         </button>
                     </l:hasPermission>
                 </j:if>

@@ -45,7 +45,8 @@ class PipelineConsole {
     }
 
     private boolean isOpenStep(Locator step) {
-        String[] classes = step.locator(".pgv-step-detail-header").getAttribute("class").split(" ");
+        String[] classes =
+                step.locator(".pgv-step-detail-header").getAttribute("class").split(" ");
         for (String clazz : classes) {
             if (clazz.equals("jenkins-button--tertiary")) {
                 return false;
@@ -56,13 +57,12 @@ class PipelineConsole {
 
     public void stepContainsText(String stepName, String textToFind) {
         log.info("Checking that the step {} contains a log with the text {}", stepName, textToFind);
-        // Get the step
-        Locator stepContainer = steps().filter(
-            new Locator.FilterOptions().setHas(page.locator(
-                STEP_NAME_CLASS + " > span",
-                new Page.LocatorOptions().setHasText(Pattern.compile("^" + stepName + "$"))
-            ))
-        ).first();
+
+        Locator stepContainer = steps().filter(new Locator.FilterOptions()
+                        .setHas(page.locator(
+                                STEP_NAME_CLASS + " > span",
+                                new Page.LocatorOptions().setHasText(Pattern.compile("^" + stepName + "$")))))
+                .first();
 
         if (!isOpenStep(stepContainer)) {
             stepContainer.click();
@@ -82,10 +82,8 @@ class PipelineConsole {
         expectedSteps.removeAll(foundSteps);
 
         if (!expectedSteps.isEmpty()) {
-            Assertions.fail(
-                "Could not find steps with the names:\n  " + String.join("\n  ", expectedSteps) +
-                "\nFound steps:\n" + String.join("\n  ", foundSteps)
-            );
+            Assertions.fail("Could not find steps with the names:\n  " + String.join("\n  ", expectedSteps)
+                    + "\nFound steps:\n" + String.join("\n  ", foundSteps));
         }
     }
 

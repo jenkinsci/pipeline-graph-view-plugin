@@ -51,7 +51,10 @@ class OverviewTree {
 
     private Locator getStageByName(String name) {
         log.info("Getting stage in tree with the name of {}", name);
-        return getTree().getByRole(AriaRole.TREEITEM, new Locator.GetByRoleOptions().setName("Stage " + name).setExact(true));
+        return getTree()
+                .getByRole(
+                        AriaRole.TREEITEM,
+                        new Locator.GetByRoleOptions().setName("Stage " + name).setExact(true));
     }
 
     private Locator getTree() {
@@ -68,14 +71,16 @@ class OverviewTree {
         Locator filter = openFilter();
 
         filter.getByRole(AriaRole.BUTTON)
-            .filter(new Locator.FilterOptions()
-                .setHas(page.getByRole(AriaRole.IMG, new Page.GetByRoleOptions().setName(state.toString())))
-            ).click();
+                .filter(new Locator.FilterOptions()
+                        .setHas(page.getByRole(AriaRole.IMG, new Page.GetByRoleOptions().setName(state.toString()))))
+                .click();
     }
 
     public void resetFilter() {
         log.info("Resetting the filter");
-        openFilter().getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Reset")).click();
+        openFilter()
+                .getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Reset"))
+                .click();
     }
 
     private Locator openFilter() {
@@ -83,7 +88,8 @@ class OverviewTree {
 
         if (!dropdown.isVisible()) {
             log.info("Opening the filter dropdown");
-            wrapper.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Filter")).click();
+            wrapper.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Filter"))
+                    .click();
         }
 
         return dropdown;

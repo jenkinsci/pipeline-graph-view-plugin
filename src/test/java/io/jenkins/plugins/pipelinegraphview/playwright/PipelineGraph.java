@@ -27,7 +27,8 @@ class PipelineGraph {
         assertThat(stages).hasCount(count);
 
         if (count < stageNames.length) {
-            throw new IllegalArgumentException("Number of stage names must be less than or equal to the number of stages");
+            throw new IllegalArgumentException(
+                    "Number of stage names must be less than or equal to the number of stages");
         }
 
         for (int i = 0; i < stageNames.length; i++) {

@@ -28,7 +28,8 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
     PipelineOverviewPage waitForLoaded() {
         super.waitForLoaded();
 
-        Locator heading = page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setLevel(1).setName(buildName));
+        Locator heading = page.getByRole(
+                AriaRole.HEADING, new Page.GetByRoleOptions().setLevel(1).setName(buildName));
         assertThat(heading).isVisible();
         assertThat(page.locator("#console-pipeline-root")).isVisible();
         graph.isVisible();
@@ -44,15 +45,14 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
     }
 
     public PipelineOverviewPage stageIsSelected(String stage) {
-        return stageIsSelectedInGraph(stage)
-            .stageIsSelectedInTree(stage)
-            .stageIsSelectedInLogs(stage);
+        return stageIsSelectedInGraph(stage).stageIsSelectedInTree(stage).stageIsSelectedInLogs(stage);
     }
 
     public PipelineOverviewPage stageIsSelectedInGraph(String stage) {
         graph.stageIsSelected(stage);
         return this;
     }
+
     public PipelineOverviewPage stageIsSelectedInTree(String stage) {
         tree.stageIsSelected(stage);
         return this;
@@ -90,8 +90,8 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
 
     public PipelineOverviewPage stageHasState(String stage, PipelineState state) {
         return stageHasStateInGraph(stage, state)
-            .stageHasStateInTree(stage, state)
-            .stageHasStateInLogs(stage, state);
+                .stageHasStateInTree(stage, state)
+                .stageHasStateInLogs(stage, state);
     }
 
     public PipelineOverviewPage stageHasStateInGraph(String stage, PipelineState state) {
@@ -132,5 +132,4 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
         tree.stageIsVisible(stage);
         return this;
     }
-
 }

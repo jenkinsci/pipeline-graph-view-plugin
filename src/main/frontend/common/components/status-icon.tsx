@@ -26,7 +26,6 @@ export default function StatusIcon({
       role={"img"}
       aria-label={status}
     >
-      <title>{status}</title>
       <circle
         cx={viewBoxSize / 2}
         cy={viewBoxSize / 2}

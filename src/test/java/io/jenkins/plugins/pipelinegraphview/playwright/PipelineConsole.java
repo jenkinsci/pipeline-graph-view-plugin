@@ -60,7 +60,7 @@ class PipelineConsole {
 
         Locator stepContainer = steps().filter(new Locator.FilterOptions()
                         .setHas(page.locator(
-                                STEP_NAME_CLASS + " > span",
+                                STEP_NAME_CLASS,
                                 new Page.LocatorOptions().setHasText(Pattern.compile("^" + stepName + "$")))))
                 .first();
 
@@ -77,7 +77,7 @@ class PipelineConsole {
         Collections.addAll(expectedSteps, additional);
         log.info("Checking that the stage has the steps {}", expectedSteps);
 
-        List<String> foundSteps = steps().locator(STEP_NAME_CLASS + " > span").allTextContents();
+        List<String> foundSteps = steps().locator(STEP_NAME_CLASS).allTextContents();
 
         expectedSteps.removeAll(foundSteps);
 

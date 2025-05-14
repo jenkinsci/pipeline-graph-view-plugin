@@ -71,7 +71,6 @@ public class PipelineJobPage extends JenkinsPage<PipelineJobPage> {
             String relativeBuildUrl = link.getAttribute("href");
             String text = link.textContent();
             String buildName = text.replace(link.locator("span").textContent(), "") // remove timing info
-                    .replace(link.getByRole(AriaRole.IMG).textContent(), "") // remove svg title
                     .trim();
 
             link.click();

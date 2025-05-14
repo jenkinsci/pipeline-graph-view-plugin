@@ -9,14 +9,19 @@ import io.jenkins.plugins.pipelinegraphview.playwright.PlaywrightConfig;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.function.ThrowingSupplier;
 
 @WithJenkins
 @UsePlaywright(PlaywrightConfig.class)
 class PipelineGraphViewTest {
+    private static final Logger log = LoggerFactory.getLogger(PipelineGraphViewTest.class);
 
     // Code generation can be generated against local using to give an idea of what commands to use
     // mvn exec:java -e -D exec.mainClass="com.microsoft.playwright.CLI" -Dexec.classpathScope=test -Dexec.args="codegen
@@ -25,7 +30,7 @@ class PipelineGraphViewTest {
     @Test
     void smokeTest(Page p, JenkinsRule j) {
         String name = "Integration Tests";
-        WorkflowRun run = setupJenkins(p, j, name, "smokeTest.jenkinsfile");
+        WorkflowRun run = setupJenkins(p, j.jenkins.getRootUrl(), (ThrowingSupplier<WorkflowRun>) () -> TestUtils.createAndRunJob(j, name, "smokeTest.jenkinsfile", Result.FAILURE));
 
         new PipelineJobPage(p, run.getParent())
                 .goTo()
@@ -56,21 +61,18 @@ class PipelineGraphViewTest {
                 .stageIsVisibleInTree("B2");
     }
 
-    private static WorkflowRun setupJenkins(Page p, JenkinsRule j, String name, String jenkinsFile) {
-        CompletableFuture<WorkflowRun> run = CompletableFuture.supplyAsync(() -> {
-            try {
-                return TestUtils.createAndRunJob(j, name, jenkinsFile, Result.FAILURE);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+    private static WorkflowRun setupJenkins(Page p, String rootUrl, Supplier<WorkflowRun> setupRun) {
+        CompletableFuture<WorkflowRun> run = CompletableFuture.supplyAsync(setupRun);
+        CompletableFuture<Void> jenkinsSetup = CompletableFuture.runAsync(() -> {
+            log.info("Setting up Jenkins to have the Pipeline Graph View on all pages");
+            new ManageAppearancePage(p, rootUrl)
+                .goTo()
+                .displayPipelineOnJobPage()
+                .displayPipelineOnBuildPage()
+                .setPipelineGraphAsConsoleProvider()
+                .save();
+            log.info("Jenkins setup complete");
         });
-        CompletableFuture<Void> jenkinsSetup =
-                CompletableFuture.runAsync(() -> new ManageAppearancePage(p, j.jenkins.getRootUrl())
-                        .goTo()
-                        .displayPipelineOnJobPage()
-                        .displayPipelineOnBuildPage()
-                        .setPipelineGraphAsConsoleProvider()
-                        .save());
 
         CompletableFuture.allOf(run, jenkinsSetup).join();
 

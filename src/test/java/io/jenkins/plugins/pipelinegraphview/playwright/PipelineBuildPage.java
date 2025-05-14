@@ -5,6 +5,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
+import java.net.URI;
 
 public class PipelineBuildPage extends JenkinsPage<PipelineBuildPage> {
     private final String buildName;
@@ -31,11 +32,9 @@ public class PipelineBuildPage extends JenkinsPage<PipelineBuildPage> {
         return new PipelineGraph(getPipelineSection());
     }
 
-    public PipelineConsolePage goToPipelineConsole() {
-        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Pipeline Console")).click();
+    public PipelineOverviewPage goToPipelineOverview() {
+        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Pipeline Overview")).click();
 
-        String pageUrl = this.pageUrl + "pipeline-console/";
-
-        return new PipelineConsolePage(page, pageUrl, this.buildName).waitForLoaded();
+        return new PipelineOverviewPage(page, pageUrl, this.buildName).waitForLoaded();
     }
 }

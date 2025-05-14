@@ -1,13 +1,12 @@
 package io.jenkins.plugins.pipelinegraphview;
 
 import com.microsoft.playwright.Page;
-import com.microsoft.playwright.junit.Options;
-import com.microsoft.playwright.junit.OptionsFactory;
 import com.microsoft.playwright.junit.UsePlaywright;
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.playwright.ManageAppearancePage;
 import io.jenkins.plugins.pipelinegraphview.playwright.PipelineBuildPage;
 import io.jenkins.plugins.pipelinegraphview.playwright.PipelineJobPage;
+import io.jenkins.plugins.pipelinegraphview.playwright.PlaywrightConfig;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import java.util.concurrent.CompletableFuture;
@@ -17,16 +16,8 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @WithJenkins
-@UsePlaywright(PipelineGraphViewTest.TestOptions.class)
+@UsePlaywright(PlaywrightConfig.class)
 class PipelineGraphViewTest {
-
-    public static class TestOptions implements OptionsFactory {
-
-        @Override
-        public Options getOptions() {
-            return new Options().setBrowserName("chromium").setHeadless(false);
-        }
-    }
 
     // Code generation can be generated against local using to give an idea of what commands to use
     // mvn exec:java -e -D exec.mainClass="com.microsoft.playwright.CLI" -Dexec.classpathScope=test -Dexec.args="codegen
@@ -47,7 +38,7 @@ class PipelineGraphViewTest {
         buildPage.graph()
             .hasStages(4,/*A*/ "Checkout", "Test", /*B*/ "Build", "Parallel");
 
-        buildPage.goToPipelineConsole()
+        buildPage.goToPipelineOverview()
             .hasStagesInGraph(4,/*A*/ "Checkout", "Test", /*B*/ "Build", "Parallel")
             .selectStageInGraph("Test") // failure here right now after introducing accessible elements for status icons
             .stageIsSelected("Test")

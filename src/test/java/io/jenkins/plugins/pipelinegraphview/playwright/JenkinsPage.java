@@ -32,7 +32,7 @@ abstract class JenkinsPage<T extends JenkinsPage<T>> {
         try {
             page.waitForURL(url);
         } catch (TimeoutError e) {
-            throw new TimeoutError("Timeout exceeding waiting for the url to be " + url, e);
+            throw new TimeoutError("Timeout exceeding waiting for the url to be " + url + " but it was " + page.url(), e);
         }
     }
 }

@@ -13,14 +13,14 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.Assertions;
 
-public class PipelineConsolePage extends JenkinsPage<PipelineConsolePage> {
+public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
     private final String buildName;
     private final PipelineGraph graph;
     private final ConsoleTree tree;
     private final ConsoleLogs logs;
 
-    public PipelineConsolePage(Page page, String pageUrl, String buildName) {
-        super(page, pageUrl);
+    public PipelineOverviewPage(Page page, String jobUrl, String buildName) {
+        super(page, jobUrl + "pipeline-overview/");
         this.buildName = buildName;
         graph = new PipelineGraph(page.locator(".PWGx-PipelineGraph-container"));
         tree = new ConsoleTree(page.locator("#tree-view-pane"));
@@ -28,7 +28,7 @@ public class PipelineConsolePage extends JenkinsPage<PipelineConsolePage> {
     }
 
     @Override
-    PipelineConsolePage waitForLoaded() {
+    PipelineOverviewPage waitForLoaded() {
         super.waitForLoaded();
 
         Locator heading = page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setLevel(1).setName(buildName));
@@ -41,76 +41,76 @@ public class PipelineConsolePage extends JenkinsPage<PipelineConsolePage> {
         return this;
     }
 
-    public PipelineConsolePage hasStagesInGraph(int count, String... stages) {
+    public PipelineOverviewPage hasStagesInGraph(int count, String... stages) {
         graph.hasStages(count, stages);
         return this;
     }
 
-    public PipelineConsolePage stageIsSelected(String stage) {
+    public PipelineOverviewPage stageIsSelected(String stage) {
         return stageIsSelectedInGraph(stage)
             .selectStageInTree(stage)
             .stageIsSelectedInLogs(stage);
     }
 
-    public PipelineConsolePage stageIsSelectedInGraph(String stage) {
+    public PipelineOverviewPage stageIsSelectedInGraph(String stage) {
         assertThat(graph.selectedStage()).hasText(stage);
 
         return this;
     }
-    public PipelineConsolePage stageIsSelectedInTree(String stage) {
+    public PipelineOverviewPage stageIsSelectedInTree(String stage) {
         assertThat(tree.selectedStage()).hasText(stage);
 
         return this;
     }
-    public PipelineConsolePage stageIsSelectedInLogs(String stage) {
+    public PipelineOverviewPage stageIsSelectedInLogs(String stage) {
         assertThat(logs.selectedStage()).hasText(stage);
 
         return this;
     }
 
-    public PipelineConsolePage selectStageInGraph(String stage) {
+    public PipelineOverviewPage selectStageInGraph(String stage) {
         graph.selectStage(stage);
         return this;
     }
 
-    public PipelineConsolePage selectStageInTree(String stage, String... nested) {
+    public PipelineOverviewPage selectStageInTree(String stage, String... nested) {
         tree.selectStage(stage, nested);
         return this;
     }
 
-    public PipelineConsolePage searchForStage(String stage) {
+    public PipelineOverviewPage searchForStage(String stage) {
         tree.searchForStage(stage);
         return this;
     }
 
-    public PipelineConsolePage stepContainsText(String stepName, String textToFind) {
+    public PipelineOverviewPage stepContainsText(String stepName, String textToFind) {
         logs.stepContainsText(stepName, textToFind);
         return this;
     }
 
-    public PipelineConsolePage stageHasSteps(String step, String... additional) {
+    public PipelineOverviewPage stageHasSteps(String step, String... additional) {
         logs.stageHasSteps(step, additional);
         return this;
     }
 
-    public PipelineConsolePage stageHasState(String stage, PipelineState state) {
+    public PipelineOverviewPage stageHasState(String stage, PipelineState state) {
         return stageHasStateInGraph(stage, state)
             .stageHasStateInTree(stage, state)
             .stageHasStateInLogs(stage, state);
     }
 
-    public PipelineConsolePage stageHasStateInGraph(String stage, PipelineState state) {
+    public PipelineOverviewPage stageHasStateInGraph(String stage, PipelineState state) {
         graph.stageHasState(stage, state);
         return this;
     }
 
-    public PipelineConsolePage stageHasStateInTree(String stage, PipelineState state) {
+    public PipelineOverviewPage stageHasStateInTree(String stage, PipelineState state) {
         tree.searchForStage(stage);
         tree.stageHasState(stage, state);
         return this;
     }
 
-    public PipelineConsolePage stageHasStateInLogs(String stage, PipelineState state) {
+    public PipelineOverviewPage stageHasStateInLogs(String stage, PipelineState state) {
         logs.stageHasState(stage, state);
         return this;
     }

@@ -30,7 +30,8 @@ class PipelineGraphViewTest {
     @Test
     void smokeTest(Page p, JenkinsRule j) {
         String name = "Integration Tests";
-        WorkflowRun run = setupJenkins(p, j.jenkins.getRootUrl(), (ThrowingSupplier<WorkflowRun>) () -> TestUtils.createAndRunJob(j, name, "smokeTest.jenkinsfile", Result.FAILURE));
+        WorkflowRun run = setupJenkins(p, j.jenkins.getRootUrl(), (ThrowingSupplier<WorkflowRun>)
+                () -> TestUtils.createAndRunJob(j, name, "smokeTest.jenkinsfile", Result.FAILURE));
 
         new PipelineJobPage(p, run.getParent())
                 .goTo()
@@ -66,11 +67,11 @@ class PipelineGraphViewTest {
         CompletableFuture<Void> jenkinsSetup = CompletableFuture.runAsync(() -> {
             log.info("Setting up Jenkins to have the Pipeline Graph View on all pages");
             new ManageAppearancePage(p, rootUrl)
-                .goTo()
-                .displayPipelineOnJobPage()
-                .displayPipelineOnBuildPage()
-                .setPipelineGraphAsConsoleProvider()
-                .save();
+                    .goTo()
+                    .displayPipelineOnJobPage()
+                    .displayPipelineOnBuildPage()
+                    .setPipelineGraphAsConsoleProvider()
+                    .save();
             log.info("Jenkins setup complete");
         });
 

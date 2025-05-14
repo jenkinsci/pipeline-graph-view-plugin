@@ -28,6 +28,7 @@ import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.test.steps.SemaphoreStep;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -274,6 +275,29 @@ class PipelineStepApiTest {
         assertThat(steps.get(1).getTitle(), is(""));
         assertThat(steps.get(2).getName(), is("In great-grandchild C"));
         assertThat(steps.get(2).getTitle(), is(""));
+    }
+
+    @Test
+    @DisplayName("When no stage synthetic stage is used")
+    void noStage() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(j, "noStage", "noStage.jenkinsfile", Result.SUCCESS);
+
+        PipelineStepApi api = new PipelineStepApi(run);
+
+        PipelineStepList allSteps = api.getAllSteps();
+        List<PipelineStep> steps = allSteps.getSteps();
+        assertThat(steps, hasSize(2));
+
+        PipelineStep pipelineStep = steps.get(0);
+        assertThat(pipelineStep.getName(), is("Hi 1"));
+        assertThat(pipelineStep.getTitle(), is(""));
+        assertThat(pipelineStep.getStageId(), is("2"));
+
+
+        pipelineStep = steps.get(1);
+        assertThat(pipelineStep.getName(), is("Hi 2"));
+        assertThat(pipelineStep.getTitle(), is(""));
+        assertThat(pipelineStep.getStageId(), is("2"));
     }
 
     @Issue("GH#92")

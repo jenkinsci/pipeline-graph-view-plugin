@@ -207,9 +207,13 @@ public class PipelineNodeTreeScanner {
             }
             Map<String, FlowNodeWrapper> stageMap = this.wrappedNodeMap.entrySet().stream()
                     .filter(e -> shouldBeInStageMap(e.getValue()))
-                    .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
-            List<FlowNodeWrapper> nodeList = new ArrayList<FlowNodeWrapper>(stageMap.values());
-            Collections.sort(nodeList, new FlowNodeWrapper.NodeComparator());
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+            if (stageMap.isEmpty()) {
+                stageMap = this.wrappedNodeMap;
+            }
+            List<FlowNodeWrapper> nodeList = new ArrayList<>(stageMap.values());
+            nodeList.sort(new FlowNodeWrapper.NodeComparator());
             for (FlowNodeWrapper stage : nodeList) {
                 FlowNodeWrapper firstParent = stage.getFirstParent();
                 // Remap parentage of stages that aren't children of stages (e.g. allocate node

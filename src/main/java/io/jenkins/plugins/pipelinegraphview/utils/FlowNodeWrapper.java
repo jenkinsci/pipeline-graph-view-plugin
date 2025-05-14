@@ -5,6 +5,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.Action;
 import hudson.model.Result;
+import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunResult;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunState;
@@ -129,12 +130,12 @@ public class FlowNodeWrapper {
     }
 
     public @NonNull String getDisplayName() {
-        // Make 'PARALLEL_BLOCK' types have the display name as SytheticNodes used to.
+        // Make 'PARALLEL_BLOCK' types have the display name as SyntheticNodes used to.
         if (type == NodeType.PARALLEL_BLOCK) {
-            return "Parallel";
+            return Messages.FlowNodeWrapper_parallel();
         }
         if (type == NodeType.PIPELINE_START) {
-            return "Unhandled Exception";
+            return "(%s)".formatted(Messages.FlowNodeWrapper_noStage());
         }
         return displayName;
     }

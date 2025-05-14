@@ -5,14 +5,15 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.options.AriaRole;
-import java.net.URI;
 
 public class PipelineBuildPage extends JenkinsPage<PipelineBuildPage> {
     private final String buildName;
+    private final PipelineGraph graph;
 
     public PipelineBuildPage(Page page, String pageUrl, String buildName) {
         super(page, pageUrl);
         this.buildName = buildName;
+        this.graph = new PipelineGraph(getPipelineSection());
     }
 
     @Override
@@ -20,7 +21,7 @@ public class PipelineBuildPage extends JenkinsPage<PipelineBuildPage> {
         super.waitForLoaded();
         Locator heading = page.getByRole(AriaRole.HEADING, new Page.GetByRoleOptions().setLevel(1).setName(buildName));
         assertThat(heading).isVisible();
-        assertThat(getPipelineSection()).isVisible();
+        graph.isVisible();
         return this;
     }
 
@@ -28,8 +29,9 @@ public class PipelineBuildPage extends JenkinsPage<PipelineBuildPage> {
         return page.locator("#graph").locator(".PWGx-PipelineGraph-container");
     }
 
-    public PipelineGraph graph() {
-        return new PipelineGraph(getPipelineSection());
+    public PipelineBuildPage hasStagesInGraph(int count, String... stages) {
+        graph.hasStages(count, stages);
+        return this;
     }
 
     public PipelineOverviewPage goToPipelineOverview() {

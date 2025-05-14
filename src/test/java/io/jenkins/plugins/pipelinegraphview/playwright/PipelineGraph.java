@@ -8,7 +8,7 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PipelineGraph {
+class PipelineGraph {
 
     private static final Logger log = LoggerFactory.getLogger(PipelineGraph.class);
     private final Locator graph;

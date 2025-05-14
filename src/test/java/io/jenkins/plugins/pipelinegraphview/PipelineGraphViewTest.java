@@ -4,7 +4,6 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.junit.UsePlaywright;
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.playwright.ManageAppearancePage;
-import io.jenkins.plugins.pipelinegraphview.playwright.PipelineBuildPage;
 import io.jenkins.plugins.pipelinegraphview.playwright.PipelineJobPage;
 import io.jenkins.plugins.pipelinegraphview.playwright.PlaywrightConfig;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
@@ -28,17 +27,14 @@ class PipelineGraphViewTest {
         String name = "Integration Tests";
         WorkflowRun run = setupJenkins(p, j, name, "smokeTest.jenkinsfile");
 
-        PipelineBuildPage buildPage = new PipelineJobPage(p, run.getParent())
+        new PipelineJobPage(p, run.getParent())
             .goTo()
             .hasBuilds(1)
             .nthBuild(0)
             .hasStages(6, "Checkout", "A1", "A2", "Build", "B1", "B2")
-            .goToBuild();
-
-        buildPage.graph()
-            .hasStages(4,/*A*/ "Checkout", "Test", /*B*/ "Build", "Parallel");
-
-        buildPage.goToPipelineOverview()
+            .goToBuild()
+            .hasStagesInGraph(4,/*A*/ "Checkout", "Test", /*B*/ "Build", "Parallel")
+            .goToPipelineOverview()
             .hasStagesInGraph(4,/*A*/ "Checkout", "Test", /*B*/ "Build", "Parallel")
             .selectStageInGraph("Test")
             .stageIsSelected("Test")
@@ -50,14 +46,14 @@ class PipelineGraphViewTest {
             .stageHasState("Checkout", PipelineState.SUCCESS)
             .clearSearch()
             .filterBy(PipelineState.UNSTABLE)
-            .stageIsInTree("B2")
+            .stageIsVisibleInTree("B2")
             .filterBy(PipelineState.FAILURE)
-            .stageIsInTree("B2")
-            .stageIsInTree("A2")
+            .stageIsVisibleInTree("B2")
+            .stageIsVisibleInTree("A2")
             .resetFilter()
-            .stageIsInTree("Checkout")
-            .stageIsInTree("A2")
-            .stageIsInTree("B2");
+            .stageIsVisibleInTree("Checkout")
+            .stageIsVisibleInTree("A2")
+            .stageIsVisibleInTree("B2");
     }
 
     private static WorkflowRun setupJenkins(Page p, JenkinsRule j, String name, String jenkinsFile) {

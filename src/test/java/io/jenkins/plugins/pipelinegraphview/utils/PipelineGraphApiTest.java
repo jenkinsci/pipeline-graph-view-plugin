@@ -379,7 +379,7 @@ class PipelineGraphApiTest {
         List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
         String stagesString = TestUtils.collectStagesAsString(stages, TestUtils::nodeNameAndStatus);
 
-        assertThat(stagesString, equalTo("Unhandled Exception{failure}"));
+        assertThat(stagesString, equalTo("%s{failure}".formatted(Messages.FlowNodeWrapper_noStage())));
     }
 
     @Test

@@ -135,7 +135,7 @@ public class FlowNodeWrapper {
             return Messages.FlowNodeWrapper_parallel();
         }
         if (type == NodeType.PIPELINE_START) {
-            return "(%s)".formatted(Messages.FlowNodeWrapper_noStage());
+            return "%s".formatted(Messages.FlowNodeWrapper_noStage());
         }
         return displayName;
     }
@@ -376,7 +376,7 @@ public class FlowNodeWrapper {
     }
 
     public boolean isSynthetic() {
-        return PipelineNodeUtil.isSyntheticStage(node);
+        return PipelineNodeUtil.isSyntheticStage(node) || getNodeType(node) == NodeType.PIPELINE_START;
     }
 
     public boolean isUnhandledException() {

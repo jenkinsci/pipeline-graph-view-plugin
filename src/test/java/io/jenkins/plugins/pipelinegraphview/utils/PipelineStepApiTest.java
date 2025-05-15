@@ -293,7 +293,6 @@ class PipelineStepApiTest {
         assertThat(pipelineStep.getTitle(), is(""));
         assertThat(pipelineStep.getStageId(), is("2"));
 
-
         pipelineStep = steps.get(1);
         assertThat(pipelineStep.getName(), is("Hi 2"));
         assertThat(pipelineStep.getTitle(), is(""));

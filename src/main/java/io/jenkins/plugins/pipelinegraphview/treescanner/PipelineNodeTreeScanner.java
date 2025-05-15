@@ -210,7 +210,10 @@ public class PipelineNodeTreeScanner {
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
             if (stageMap.isEmpty()) {
-                stageMap = this.wrappedNodeMap;
+                // Force at least one stage so that the log can be viewed
+                stageMap = this.wrappedNodeMap.entrySet().stream()
+                        .filter(e -> isSuperfluousStartNode(e.getValue()))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             }
             List<FlowNodeWrapper> nodeList = new ArrayList<>(stageMap.values());
             nodeList.sort(new FlowNodeWrapper.NodeComparator());

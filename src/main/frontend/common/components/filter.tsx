@@ -66,7 +66,7 @@ export default function Filter({ disabled }: FilterProps) {
         appendTo={document.body}
         offset={[0, -1]}
         content={
-          <div className="jenkins-dropdown">
+          <div className="jenkins-dropdown" data-testid="filter-dropdown">
             <div className="jenkins-dropdown__heading">
               Filter
               {!allVisible && (
@@ -120,6 +120,7 @@ export default function Filter({ disabled }: FilterProps) {
           type="button"
           disabled={disabled}
           onClick={visible ? hide : show}
+          aria-label={"Filter"}
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
             <path

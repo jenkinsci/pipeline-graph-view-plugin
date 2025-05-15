@@ -2,7 +2,10 @@ package io.jenkins.plugins.pipelinegraphview.cards.items;
 
 import hudson.model.Cause;
 import hudson.model.CauseAction;
+import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
+import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.Icon.Ionicon;
+import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.ItemContent;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -13,18 +16,20 @@ public class UpstreamCauseRunDetailsItem {
 
     public static Optional<RunDetailsItem> get(WorkflowRun run) {
         CauseAction causeAction = run.getAction(CauseAction.class);
+        if (causeAction == null) {
+            return Optional.empty();
+        }
         List<Cause> causes = causeAction.getCauses();
         return causes.stream()
                 .filter(cause -> cause instanceof Cause.UpstreamCause)
                 .map(upstreamCause -> (Cause.UpstreamCause) upstreamCause)
-                .map(upstreamCause -> upstreamCause.getUpstreamRun())
+                .map(Cause.UpstreamCause::getUpstreamRun)
                 .filter(Objects::nonNull)
-                // TODO i18n
-                .map(upstreamRun -> new RunDetailsItem.Builder()
-                        .ionicon("play-circle-outline")
-                        .text("Started by upstream pipeline " + upstreamRun.getDisplayName())
-                        .href(DisplayURLProvider.get().getRunURL(upstreamRun))
-                        .build())
+                .map(upstreamRun -> ItemContent.of(
+                        DisplayURLProvider.getDefault().getRunURL(upstreamRun),
+                        Messages.cause_upstream(upstreamRun.getDisplayName())))
+                .<RunDetailsItem>map(
+                        content -> new RunDetailsItem.RunDetail(new Ionicon("play-circle-outline"), content))
                 .findAny();
     }
 }

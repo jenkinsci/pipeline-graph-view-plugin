@@ -2,85 +2,83 @@ package io.jenkins.plugins.pipelinegraphview.cards;
 
 import static java.util.Objects.requireNonNull;
 
-public class RunDetailsItem {
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
-    private final String icon;
-    private final String text;
-    private final String href;
-    private final boolean separator;
-    private final String tooltip;
+public sealed interface RunDetailsItem {
 
-    RunDetailsItem(String icon, String text, String href, boolean separator, String tooltip) {
-        this.icon = icon;
-        this.text = text;
-        this.href = href;
-        this.separator = separator;
-        this.tooltip = tooltip;
-    }
+    RunDetailsItem SEPARATOR = new Separator();
 
-    public String getIcon() {
-        return icon;
-    }
+    record Separator() implements RunDetailsItem {}
 
-    public String getText() {
-        return text;
-    }
+    final class RunDetail implements RunDetailsItem {
+        private final @NonNull Icon icon;
+        private final @NonNull ItemContent content;
+        private final @Nullable String tooltip;
 
-    public String getHref() {
-        return href;
-    }
-
-    public String getTooltip() {
-        return tooltip;
-    }
-
-    public boolean isSeparator() {
-        return separator;
-    }
-
-    public static class Builder {
-
-        private String icon;
-        private String text;
-        private String href;
-        private String tooltip;
-        private boolean separator;
-
-        public Builder text(String text) {
-            this.text = text;
-            return this;
-        }
-
-        public Builder icon(String icon) {
-            this.icon = icon;
-            return this;
-        }
-
-        public Builder tooltip(String tooltip) {
+        public RunDetail(@NonNull Icon icon, @NonNull ItemContent content, @Nullable String tooltip) {
+            this.icon = requireNonNull(icon);
+            this.content = requireNonNull(content);
             this.tooltip = tooltip;
-            return this;
         }
 
-        public Builder ionicon(String ionicon) {
-            this.icon = String.format("symbol-%s plugin-ionicons-api", ionicon);
-            return this;
+        public RunDetail(@NonNull Icon icon, @NonNull ItemContent content) {
+            this(icon, content, null);
         }
 
-        public Builder href(String href) {
-            this.href = href;
-            return this;
+        @Nullable
+        public String tooltip() {
+            return tooltip;
         }
 
-        public Builder separator() {
-            this.separator = true;
-            return this;
+        @NonNull
+        public ItemContent content() {
+            return content;
         }
 
-        public RunDetailsItem build() {
-            if (!separator) {
-                requireNonNull(icon);
+        @NonNull
+        public String icon() {
+            return icon.value();
+        }
+    }
+
+    sealed interface Icon {
+        String value();
+
+        record SimpleIcon(@NonNull String value) implements Icon {
+            public SimpleIcon {
+                requireNonNull(value);
             }
-            return new RunDetailsItem(icon, text, href, separator, tooltip);
+        }
+
+        record Ionicon(@NonNull String value) implements Icon {
+            public Ionicon(@NonNull String value) {
+                requireNonNull(value);
+                this.value = String.format("symbol-%s plugin-ionicons-api", value);
+            }
+        }
+    }
+
+    sealed interface ItemContent {
+        static ItemContent of(@NonNull String text) {
+            return new PlainContent(text);
+        }
+
+        static ItemContent of(String href, @NonNull String text) {
+            return href == null || href.isBlank() ? new PlainContent(text) : new LinkContent(href, text);
+        }
+
+        record PlainContent(@NonNull String text) implements ItemContent {
+            public PlainContent {
+                requireNonNull(text);
+            }
+        }
+
+        record LinkContent(@NonNull String href, @NonNull String text) implements ItemContent {
+            public LinkContent {
+                requireNonNull(href);
+                requireNonNull(text);
+            }
         }
     }
 }

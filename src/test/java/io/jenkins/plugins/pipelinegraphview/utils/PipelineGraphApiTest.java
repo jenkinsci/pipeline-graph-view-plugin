@@ -137,7 +137,7 @@ class PipelineGraphApiTest {
     @Test
     void createTree_nestedSciptedParallel() throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
-                j, "nestedSciptedParallel", "nestedSciptedParallel.jenkinsfile", Result.SUCCESS);
+                j, "nestedSciptedParallel", "nestedScriptedParallel.jenkinsfile", Result.SUCCESS);
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createTree();
 

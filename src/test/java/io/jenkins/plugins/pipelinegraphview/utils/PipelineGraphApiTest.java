@@ -110,7 +110,7 @@ class PipelineGraphApiTest {
         List<PipelineStage> stages = graph.getStages();
 
         String stagesString = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
-        assertThat(stagesString, equalTo("(%s)".formatted(Messages.FlowNodeWrapper_noStage())));
+        assertThat(stagesString, equalTo(Messages.FlowNodeWrapper_noStage()));
     }
 
     @Issue("GH#85")

@@ -23,6 +23,8 @@ export default function StatusIcon({
       viewBox={`0 0 ${viewBoxSize} ${viewBoxSize}`}
       className={"pgv-status-icon " + resultToColor(status, skeleton)}
       opacity={skeleton ? 0.5 : 1}
+      role={"img"}
+      aria-label={status}
     >
       <circle
         cx={viewBoxSize / 2}

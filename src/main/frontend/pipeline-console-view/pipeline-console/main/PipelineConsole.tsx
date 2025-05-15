@@ -14,6 +14,7 @@ import ScrollToTopBottom from "./scroll-to-top-bottom.tsx";
 import SplitView from "./split-view.tsx";
 import StageView from "./StageView.tsx";
 import { CONSOLE, DOCUMENT } from "./symbols.tsx";
+import { NoStageStepsFallback } from "./NoStageStepsFallback.tsx";
 
 export default function PipelineConsole() {
   const rootElement = document.getElementById("console-pipeline-root");
@@ -109,6 +110,8 @@ export default function PipelineConsole() {
                 onMoreConsoleClick={onMoreConsoleClick}
               />
             )}
+
+            {!loading && stages.length === 0 && <NoStageStepsFallback />}
           </div>
         </SplitView>
       </SplitView>

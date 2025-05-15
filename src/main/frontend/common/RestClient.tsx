@@ -84,6 +84,17 @@ export async function getConsoleTextOffset(
   }
 }
 
+export async function getConsoleBuildOutput(): Promise<string | null> {
+  try {
+    const response = await fetch(`consoleBuildOutput`);
+    if (!response.ok) throw response.statusText;
+    return await response.text();
+  } catch (e) {
+    console.error(`Caught error when fetching console: '${e}'`);
+    return null;
+  }
+}
+
 export async function getResourceBundle(
   resource: string,
 ): Promise<ResourceBundle | undefined> {

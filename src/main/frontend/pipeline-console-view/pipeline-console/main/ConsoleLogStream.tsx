@@ -73,6 +73,21 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
     return props.step.state === Result.running || props.logBuffer.startByte < 0;
   };
 
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash.startsWith("#log-")) {
+      return;
+    }
+    const lineNumber = parseInt(hash.substring(5));
+    if (!(!isNaN(lineNumber) && virtuosoRef.current)) {
+      return;
+    }
+    virtuosoRef.current.scrollToIndex({
+      index: lineNumber,
+      align: "center",
+    });
+  }, []);
+
   return (
     <Virtuoso
       useWindowScroll

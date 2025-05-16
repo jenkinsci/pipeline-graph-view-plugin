@@ -162,9 +162,9 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     @WebMethod(name = "consoleBuildOutput")
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @SuppressFBWarnings(
-        value = "RV_RETURN_VALUE_IGNORED",
-        justification =
-            "Doesn't seem to matter in practice, docs aren't clear on how to handle and most places ignore it")
+            value = "RV_RETURN_VALUE_IGNORED",
+            justification =
+                    "Doesn't seem to matter in practice, docs aren't clear on how to handle and most places ignore it")
     public void getBuildConsole(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         run.getLogText().writeHtmlTo(0L, rsp.getWriter());
     }

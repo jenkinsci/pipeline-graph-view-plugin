@@ -131,7 +131,6 @@ public class FlowNodeWrapper {
 
     public @NonNull String getDisplayName() {
         return switch (type) {
-                // Make 'PARALLEL_BLOCK' types have the display name as SyntheticNodes used to.
             case PARALLEL_BLOCK -> Messages.FlowNodeWrapper_parallel();
             case PIPELINE_START -> Messages.FlowNodeWrapper_noStage();
             default -> displayName;

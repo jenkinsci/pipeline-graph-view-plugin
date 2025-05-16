@@ -159,6 +159,17 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         }
     }
 
+    @GET
+    @WebMethod(name = "consoleBuildOutput")
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @SuppressFBWarnings(
+            value = "RV_RETURN_VALUE_IGNORED",
+            justification =
+                    "Doesn't seem to matter in practice, docs aren't clear on how to handle and most places ignore it")
+    public void getBuildConsole(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+        run.getLogText().writeHtmlTo(0L, rsp.getWriter());
+    }
+
     /*
      * The default behavior of this functions differs from 'getConsoleOutput' in that it will use LOG_THRESHOLD from the end of the string.
      * Note: if 'startByte' is negative and falls outside of the console text then we will start from byte 0.

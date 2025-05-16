@@ -12,6 +12,7 @@ public class PipelineStage extends AbstractPipelineNode {
     private final PipelineStage nextSibling;
     private boolean sequential;
     private boolean synthetic;
+    private boolean placeholder;
     private String agent;
     private String url;
 
@@ -26,6 +27,7 @@ public class PipelineStage extends AbstractPipelineNode {
             PipelineStage nextSibling,
             boolean sequential,
             boolean synthetic,
+            boolean placeholder,
             TimingInfo timingInfo,
             String agent,
             String runUrl) {
@@ -35,6 +37,7 @@ public class PipelineStage extends AbstractPipelineNode {
         this.nextSibling = nextSibling;
         this.sequential = sequential;
         this.synthetic = synthetic;
+        this.placeholder = placeholder;
         this.agent = agent;
         this.url = "/" + runUrl + URL_NAME + "?selected-node=" + id;
     }
@@ -59,6 +62,10 @@ public class PipelineStage extends AbstractPipelineNode {
 
     public boolean isSynthetic() {
         return synthetic;
+    }
+
+    public boolean isPlaceholder() {
+        return placeholder;
     }
 
     public String getAgent() {

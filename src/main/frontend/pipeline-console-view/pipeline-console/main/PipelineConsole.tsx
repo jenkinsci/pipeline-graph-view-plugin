@@ -9,6 +9,7 @@ import Stages from "./components/stages.tsx";
 import StagesCustomization from "./components/stages-customization.tsx";
 import DataTreeView from "./DataTreeView.tsx";
 import { useStepsPoller } from "./hooks/use-steps-poller.ts";
+import { NoStageStepsFallback } from "./NoStageStepsFallback.tsx";
 import { useLayoutPreferences } from "./providers/user-preference-provider.tsx";
 import ScrollToTopBottom from "./scroll-to-top-bottom.tsx";
 import SplitView from "./split-view.tsx";
@@ -33,12 +34,20 @@ export default function PipelineConsole() {
     loading,
   } = useStepsPoller({ currentRunPath, previousRunPath });
 
+  const showSplitView = loading || (!loading && stages.length > 0);
+
+  const isOnlyPlaceholderNode = stages.length === 1 && stages[0].placeholder;
+
   return (
     <>
       <DropdownPortal>
         <Dropdown
           items={[
-            <StagesCustomization key="visibility-select" />,
+            showSplitView ? (
+              <StagesCustomization key="visibility-select" />
+            ) : (
+              <></>
+            ),
             {
               text: "View as plain text",
               icon: DOCUMENT,
@@ -53,65 +62,71 @@ export default function PipelineConsole() {
         />
       </DropdownPortal>
 
-      <SplitView
-        direction={stageViewPosition === "top" ? "vertical" : "horizontal"}
-        storageKey="graph"
-      >
-        {(mainViewVisibility === "both" ||
-          mainViewVisibility === "graphOnly") &&
-          (loading ? (
-            <Skeleton />
-          ) : (
-            <Stages
-              stages={stages}
-              selectedStage={openStage || undefined}
-              stageViewPosition={stageViewPosition}
-              onStageSelect={handleStageSelect}
-            />
-          ))}
+      {showSplitView && (
+        <SplitView
+          direction={stageViewPosition === "top" ? "vertical" : "horizontal"}
+          storageKey="graph"
+        >
+          {!isOnlyPlaceholderNode &&
+            (mainViewVisibility === "both" ||
+              mainViewVisibility === "graphOnly") &&
+            (loading ? (
+              <Skeleton />
+            ) : (
+              <Stages
+                stages={stages}
+                selectedStage={openStage || undefined}
+                stageViewPosition={stageViewPosition}
+                onStageSelect={handleStageSelect}
+              />
+            ))}
 
-        <SplitView storageKey="stages">
-          {(mainViewVisibility === "both" ||
-            mainViewVisibility === "stagesOnly") && (
-            <div
-              key="tree-view"
-              id="tree-view-pane"
-              className="pgv-sticky-sidebar"
-            >
+          <SplitView storageKey="stages">
+            {(mainViewVisibility === "both" ||
+              mainViewVisibility === "stagesOnly") &&
+              !isOnlyPlaceholderNode && (
+                <div
+                  key="tree-view"
+                  id="tree-view-pane"
+                  className="pgv-sticky-sidebar"
+                >
+                  {loading ? (
+                    <div className={"pgv-skeleton-column"}>
+                      <Skeleton height={2.625} />
+                      <Skeleton height={20} />
+                    </div>
+                  ) : (
+                    <DataTreeView
+                      onNodeSelect={(_, nodeId) => handleStageSelect(nodeId)}
+                      selected={openStage?.id}
+                      stages={stages}
+                    />
+                  )}
+                </div>
+              )}
+
+            <div key="stage-view" id="stage-view-pane">
               {loading ? (
                 <div className={"pgv-skeleton-column"}>
                   <Skeleton height={2.625} />
                   <Skeleton height={20} />
                 </div>
               ) : (
-                <DataTreeView
-                  onNodeSelect={(_, nodeId) => handleStageSelect(nodeId)}
-                  selected={openStage?.id}
-                  stages={stages}
+                <StageView
+                  stage={openStage}
+                  steps={openStageSteps}
+                  stepBuffers={openStageStepBuffers}
+                  expandedSteps={expandedSteps}
+                  onStepToggle={onStepToggle}
+                  onMoreConsoleClick={onMoreConsoleClick}
                 />
               )}
             </div>
-          )}
-
-          <div key="stage-view" id="stage-view-pane">
-            {loading ? (
-              <div className={"pgv-skeleton-column"}>
-                <Skeleton height={2.625} />
-                <Skeleton height={20} />
-              </div>
-            ) : (
-              <StageView
-                stage={openStage}
-                steps={openStageSteps}
-                stepBuffers={openStageStepBuffers}
-                expandedSteps={expandedSteps}
-                onStepToggle={onStepToggle}
-                onMoreConsoleClick={onMoreConsoleClick}
-              />
-            )}
-          </div>
+          </SplitView>
         </SplitView>
-      </SplitView>
+      )}
+
+      {!loading && stages.length === 0 && <NoStageStepsFallback />}
 
       <ScrollToTopBottom />
     </>

@@ -36,8 +36,7 @@ export default function PipelineConsole() {
 
   const showSplitView = loading || (!loading && stages.length > 0);
 
-  const isOnlyPlaceholderNode =
-    stages.length === 1 && stages[0].placeholder;
+  const isOnlyPlaceholderNode = stages.length === 1 && stages[0].placeholder;
 
   return (
     <>

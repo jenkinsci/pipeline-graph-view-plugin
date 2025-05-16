@@ -15,6 +15,7 @@ class PipelineStageInternal {
     private String seqContainerName;
     private PipelineStageInternal nextSibling;
     private boolean sequential;
+    private boolean placeholder;
     private boolean synthetic;
     private TimingInfo timingInfo;
     private String agent;
@@ -27,6 +28,7 @@ class PipelineStageInternal {
             String type,
             String title,
             boolean synthetic,
+            boolean placeholder,
             TimingInfo times,
             String agent) {
         this.id = id;
@@ -36,6 +38,7 @@ class PipelineStageInternal {
         this.type = type;
         this.title = title;
         this.synthetic = synthetic;
+        this.placeholder = placeholder;
         this.timingInfo = times;
         this.agent = agent;
     }
@@ -132,6 +135,7 @@ class PipelineStageInternal {
                 nextSibling != null ? nextSibling.toPipelineStage(Collections.emptyList(), runUrl) : null,
                 sequential,
                 synthetic,
+                placeholder,
                 timingInfo,
                 agent,
                 runUrl);

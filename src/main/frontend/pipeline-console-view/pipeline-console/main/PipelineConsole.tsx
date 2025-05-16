@@ -9,12 +9,12 @@ import Stages from "./components/stages.tsx";
 import StagesCustomization from "./components/stages-customization.tsx";
 import DataTreeView from "./DataTreeView.tsx";
 import { useStepsPoller } from "./hooks/use-steps-poller.ts";
+import { NoStageStepsFallback } from "./NoStageStepsFallback.tsx";
 import { useLayoutPreferences } from "./providers/user-preference-provider.tsx";
 import ScrollToTopBottom from "./scroll-to-top-bottom.tsx";
 import SplitView from "./split-view.tsx";
 import StageView from "./StageView.tsx";
 import { CONSOLE, DOCUMENT } from "./symbols.tsx";
-import { NoStageStepsFallback } from "./NoStageStepsFallback.tsx";
 
 export default function PipelineConsole() {
   const rootElement = document.getElementById("console-pipeline-root");

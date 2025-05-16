@@ -135,7 +135,7 @@ public class FlowNodeWrapper {
             return Messages.FlowNodeWrapper_parallel();
         }
         if (type == NodeType.PIPELINE_START) {
-            return "%s".formatted(Messages.FlowNodeWrapper_noStage());
+            return Messages.FlowNodeWrapper_noStage();
         }
         return displayName;
     }

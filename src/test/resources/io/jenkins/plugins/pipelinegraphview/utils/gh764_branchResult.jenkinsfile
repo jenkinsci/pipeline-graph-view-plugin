@@ -1,0 +1,26 @@
+import hudson.model.Result
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil
+import org.jenkinsci.plugins.workflow.actions.WarningAction
+import org.jenkinsci.plugins.workflow.graph.FlowNode
+
+void setBranchResult(Result result) {
+    FlowNode branchNode = getContext(FlowNode.class).getEnclosingBlocks().find { PipelineNodeUtil.isParallelBranch(it) }
+    if (branchNode) {
+        branchNode.addOrReplaceAction(new WarningAction(result));
+    }
+}
+
+parallel([
+    "success-branch": {
+         unstable("unstable-step")
+         setBranchResult(Result.SUCCESS)
+    },
+    "failure-branch": {
+        echo("foo")
+        setBranchResult(Result.FAILURE)
+    },
+    "unstable-branch": {
+        echo("foo")
+        setBranchResult(Result.UNSTABLE)
+    }
+])

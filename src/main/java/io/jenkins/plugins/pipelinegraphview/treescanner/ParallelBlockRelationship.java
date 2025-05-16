@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.jenkinsci.plugins.workflow.actions.ThreadNameAction;
+import org.jenkinsci.plugins.workflow.actions.WarningAction;
 import org.jenkinsci.plugins.workflow.graph.BlockStartNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -162,6 +163,12 @@ public class ParallelBlockRelationship extends NodeRelationship {
                     this.branchStatuses.get(getBranchName(branchStartNode)));
         }
         boolean skippedStage = PipelineNodeUtil.isSkippedStage(branchStartNode);
+
+        WarningAction warningAction = branchStartNode.getPersistentAction(WarningAction.class);
+        if (warningAction != null) {
+            return new NodeRunStatus(GenericStatus.fromResult(warningAction.getResult()), skippedStage);
+        }
+
         return new NodeRunStatus(this.branchStatuses.get(getBranchName(branchStartNode)), skippedStage);
     }
 

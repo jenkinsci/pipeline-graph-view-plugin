@@ -514,4 +514,26 @@ class PipelineGraphApiTest {
                         "{failure-stage,failure-stage,STAGE,failure},",
                         "{unstable-stage,unstable-stage,STAGE,unstable}")));
     }
+
+    @Issue("GH#764")
+    @Test
+    void createTree_branchResult() throws Exception {
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "branchResult", "gh764_branchResult.jenkinsfile", Result.UNSTABLE, false);
+        PipelineGraphApi api = new PipelineGraphApi(run);
+        PipelineGraph graph = api.createTree();
+
+        List<PipelineStage> stages = graph.getStages();
+
+        String stagesString = TestUtils.collectStagesAsString(stages, TestUtils::nodeNameAndStatus);
+        assertThat(
+                stagesString,
+                equalTo(String.join(
+                        "",
+                        "Parallel{unstable}[",
+                        "success-branch{success},",
+                        "failure-branch{failure},",
+                        "unstable-branch{unstable}",
+                        "]")));
+    }
 }

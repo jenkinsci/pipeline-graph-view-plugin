@@ -36,6 +36,11 @@ export default function PipelineConsole() {
 
   const showSplitView = loading || (!loading && stages.length > 0);
 
+  const isOnlyPlaceholderNode =
+    stages.length === 1 &&
+    stages[0].synthetic &&
+    stages[0].name === "Placeholder";
+
   return (
     <>
       <DropdownPortal>
@@ -65,8 +70,9 @@ export default function PipelineConsole() {
           direction={stageViewPosition === "top" ? "vertical" : "horizontal"}
           storageKey="graph"
         >
-          {(mainViewVisibility === "both" ||
-            mainViewVisibility === "graphOnly") &&
+          {!isOnlyPlaceholderNode &&
+            (mainViewVisibility === "both" ||
+              mainViewVisibility === "graphOnly") &&
             (loading ? (
               <Skeleton />
             ) : (
@@ -78,7 +84,7 @@ export default function PipelineConsole() {
               />
             ))}
 
-          <SplitView storageKey="stages">
+          <SplitView storageKey="stages" hide={isOnlyPlaceholderNode}>
             {(mainViewVisibility === "both" ||
               mainViewVisibility === "stagesOnly") && (
               <div

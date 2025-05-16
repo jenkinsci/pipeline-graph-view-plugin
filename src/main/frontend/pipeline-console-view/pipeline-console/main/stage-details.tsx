@@ -16,7 +16,7 @@ import StageNodeLink from "./StageNodeLink.tsx";
 import { DOCUMENT } from "./symbols.tsx";
 
 export default function StageDetails({ stage }: StageDetailsProps) {
-  if (!stage) {
+  if (!stage || (stage.synthetic && stage.name === "Placeholder")) {
     return null;
   }
 

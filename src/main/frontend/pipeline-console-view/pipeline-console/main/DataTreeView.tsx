@@ -33,6 +33,14 @@ export default function DataTreeView({
     [onNodeSelect],
   );
 
+  if (
+    stages.length === 1 &&
+    stages[0].synthetic &&
+    stages[0].name === "Placeholder"
+  ) {
+    return null;
+  }
+
   return (
     <div>
       <div className={"pgw-filter-bar"}>

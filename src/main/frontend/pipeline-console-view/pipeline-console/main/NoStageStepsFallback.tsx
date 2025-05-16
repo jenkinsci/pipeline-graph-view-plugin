@@ -45,11 +45,8 @@ export function NoStageStepsFallback() {
 
   return (
     <Suspense>
-      <div
-        className={"pgv-stage-steps"}
-        key={`stage-steps-container-full-build}`}
-      >
-        <div className={"pgv-step-detail-group"} key={`step-card}`}>
+      <div className={"pgv-stage-steps"}>
+        <div className={"pgv-step-detail-group"}>
           <ConsoleLogStream
             logBuffer={logBuffer ?? { lines: [], startByte: 0, endByte: 0 }}
             onMoreConsoleClick={() => {}}

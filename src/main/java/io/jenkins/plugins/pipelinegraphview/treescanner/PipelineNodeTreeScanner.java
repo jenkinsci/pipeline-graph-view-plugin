@@ -212,7 +212,7 @@ public class PipelineNodeTreeScanner {
             if (stageMap.isEmpty()) {
                 // Force at least one stage so that the log can be viewed
                 stageMap = this.wrappedNodeMap.entrySet().stream()
-                        .filter(e -> isSuperfluousStartNode(e.getValue()))
+                        .filter(e -> isStartNode(e.getValue()))
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             }
             List<FlowNodeWrapper> nodeList = new ArrayList<>(stageMap.values());
@@ -240,17 +240,14 @@ public class PipelineNodeTreeScanner {
             // We also want to drop steps blocks - as the front-end doesn't expect them.
             // For the future: Adding Step Blocks as stages might be a good way to handle them in the
             // future.
-            return !shouldBeInStepMap(n) && !isSuperfluousStartNode(n) && !n.isStepsBlock();
+            return !shouldBeInStepMap(n) && !isStartNode(n) && !n.isStepsBlock();
         }
 
         /*
-         * Returns true if this is a start node that we can safely drop.
-         * We only want to keep start nodes that we to represent unhandled exceptions in
-         * the stages map.
-         * Put another way, we only want to need the 'PIPELINE_START' stage if it houses an unhandled exception.
+         * Returns true if this is a start node that we will drop, unless it's the only node.
          */
-        private boolean isSuperfluousStartNode(FlowNodeWrapper n) {
-            return n.getType() == FlowNodeWrapper.NodeType.PIPELINE_START && !n.isUnhandledException();
+        private boolean isStartNode(FlowNodeWrapper n) {
+            return n.getType() == FlowNodeWrapper.NodeType.PIPELINE_START;
         }
 
         /*

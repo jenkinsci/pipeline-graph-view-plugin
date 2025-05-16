@@ -130,14 +130,12 @@ public class FlowNodeWrapper {
     }
 
     public @NonNull String getDisplayName() {
-        // Make 'PARALLEL_BLOCK' types have the display name as SyntheticNodes used to.
-        if (type == NodeType.PARALLEL_BLOCK) {
-            return Messages.FlowNodeWrapper_parallel();
-        }
-        if (type == NodeType.PIPELINE_START) {
-            return Messages.FlowNodeWrapper_noStage();
-        }
-        return displayName;
+        return switch (type) {
+                // Make 'PARALLEL_BLOCK' types have the display name as SyntheticNodes used to.
+            case PARALLEL_BLOCK -> Messages.FlowNodeWrapper_parallel();
+            case PIPELINE_START -> Messages.FlowNodeWrapper_noStage();
+            default -> displayName;
+        };
     }
 
     public @CheckForNull String getLabelDisplayName() {

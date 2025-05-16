@@ -6,7 +6,6 @@ import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.Item;
 import hudson.model.Queue;
-import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import java.io.IOException;
 import java.util.*;
@@ -58,11 +57,9 @@ public class PipelineGraphApi {
                                 .map(FlowNodeWrapper::getId)
                                 .collect(Collectors.toList()),
                         PipelineState.of(flowNodeWrapper.getStatus()),
-                        flowNodeWrapper.getType().name(),
+                        flowNodeWrapper.getType(),
                         flowNodeWrapper.getDisplayName(), // TODO blue ocean uses timing information: "Passed in 0s"
                         flowNodeWrapper.isSynthetic(),
-                        flowNodeWrapper.isSynthetic()
-                                && flowNodeWrapper.getDisplayName().equals(Messages.FlowNodeWrapper_noStage()),
                         flowNodeWrapper.getTiming(),
                         getStageNode(flowNodeWrapper)))
                 .collect(Collectors.toList());

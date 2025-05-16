@@ -133,17 +133,17 @@ export default function SplitView(props: SplitViewNewProps) {
   const gridTemplate =
     direction === "vertical" ? `${panelSize}px 1fr` : `${panelSize}px 1fr`;
 
-  const style = props.hide
-    ? {}
-    : {
+  return (
+    <div
+      ref={containerRef}
+      className="pgv-split-view__container"
+      style={{
         display: "grid",
         gridTemplateColumns:
           direction === "vertical" ? undefined : gridTemplate,
         gridTemplateRows: direction === "vertical" ? gridTemplate : undefined,
-      };
-
-  return (
-    <div ref={containerRef} className="pgv-split-view__container" style={style}>
+      }}
+    >
       <div
         className={classNames("pgv-split-view__side-panel", {
           "pgv-split-view__side-panel--vertical": direction === "vertical",
@@ -168,5 +168,4 @@ interface SplitViewNewProps {
   children: ReactNode[];
   direction?: "horizontal" | "vertical";
   storageKey: "stages" | "graph";
-  hide?: boolean;
 }

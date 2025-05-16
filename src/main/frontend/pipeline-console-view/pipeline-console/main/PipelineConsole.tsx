@@ -81,28 +81,29 @@ export default function PipelineConsole() {
               />
             ))}
 
-          <SplitView storageKey="stages" hide={isOnlyPlaceholderNode}>
+          <SplitView storageKey="stages">
             {(mainViewVisibility === "both" ||
-              mainViewVisibility === "stagesOnly") && (
-              <div
-                key="tree-view"
-                id="tree-view-pane"
-                className="pgv-sticky-sidebar"
-              >
-                {loading ? (
-                  <div className={"pgv-skeleton-column"}>
-                    <Skeleton height={2.625} />
-                    <Skeleton height={20} />
-                  </div>
-                ) : (
-                  <DataTreeView
-                    onNodeSelect={(_, nodeId) => handleStageSelect(nodeId)}
-                    selected={openStage?.id}
-                    stages={stages}
-                  />
-                )}
-              </div>
-            )}
+              mainViewVisibility === "stagesOnly") &&
+              !isOnlyPlaceholderNode && (
+                <div
+                  key="tree-view"
+                  id="tree-view-pane"
+                  className="pgv-sticky-sidebar"
+                >
+                  {loading ? (
+                    <div className={"pgv-skeleton-column"}>
+                      <Skeleton height={2.625} />
+                      <Skeleton height={20} />
+                    </div>
+                  ) : (
+                    <DataTreeView
+                      onNodeSelect={(_, nodeId) => handleStageSelect(nodeId)}
+                      selected={openStage?.id}
+                      stages={stages}
+                    />
+                  )}
+                </div>
+              )}
 
             <div key="stage-view" id="stage-view-pane">
               {loading ? (

@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 
 import {
   getConsoleBuildOutput,
@@ -6,7 +6,8 @@ import {
   StepLogBufferInfo,
 } from "../../../common/RestClient.tsx";
 import { Result } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
-import ConsoleLogStream from "./ConsoleLogStream.tsx";
+
+const ConsoleLogStream = lazy(() => import("./ConsoleLogStream.tsx"));
 
 async function fetchData(): Promise<StepLogBufferInfo> {
   const consoleBuildOutput = await getConsoleBuildOutput();

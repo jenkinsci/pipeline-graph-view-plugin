@@ -16,7 +16,7 @@ import StageNodeLink from "./StageNodeLink.tsx";
 import { DOCUMENT } from "./symbols.tsx";
 
 export default function StageDetails({ stage }: StageDetailsProps) {
-  if (!stage || stage.placeholder) {
+  if (!stage) {
     return null;
   }
 
@@ -102,7 +102,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
         <li>
           <Dropdown
             className={"jenkins-button--tertiary"}
-            disabled={stage.synthetic}
+            disabled={stage.synthetic && !stage.placeholder}
             items={[
               {
                 text: "View stage as plain text",

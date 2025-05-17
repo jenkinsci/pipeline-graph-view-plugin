@@ -1,3 +1,9 @@
+@property --additional-height {
+  syntax: "<length>";
+  initial-value: 0px;
+  inherits: false;
+}
+
 .pgv-stages-graph {
   --card-background: color-mix(
     in srgb,
@@ -23,6 +29,15 @@
       100vh -
         (var(--header-height) + var(--section-padding) + var(--section-padding))
     );
+    animation: grow-height linear forwards;
+    animation-timeline: scroll();
+    animation-range-end: 100px;
+
+    @keyframes grow-height {
+      to {
+        --additional-height: 100px;
+      }
+    }
   }
 
   &--dialog {

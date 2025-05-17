@@ -8,8 +8,10 @@ import hudson.model.Action;
 import hudson.model.BallColor;
 import hudson.model.Item;
 import hudson.model.Queue;
+import hudson.model.Result;
 import hudson.security.Permission;
 import hudson.util.HttpResponses;
+import io.jenkins.plugins.pipelinegraphview.Messages;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -88,7 +90,15 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
     @JavaScriptMethod
     public HttpResponse doCancel() throws IOException, ExecutionException {
         if (run != null) {
-            return run.doStop();
+            if (run.isBuilding()) {
+                run.doTerm();
+                return HttpResponses.okJSON();
+            } else {
+                String message = Result.ABORTED.equals(run.getResult())
+                        ? Messages.run_alreadyCancelled()
+                        : Messages.run_isFinished();
+                return HttpResponses.errorJSON(message);
+            }
         }
         return HttpResponses.errorJSON("No run to cancel");
     }

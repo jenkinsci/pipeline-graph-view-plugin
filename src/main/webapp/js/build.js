@@ -20,8 +20,13 @@ if (cancelButton) {
     event.preventDefault();
     const cancelAction = window[`${cancelButton.dataset.proxyName}`];
     cancelAction.doCancel(function (success) {
-      if (success.status == 200) {
-        window.hoverNotification(cancelButton.dataset.successMessage, cancelButton);
+      const result = success.responseJSON;
+      if (result) {
+        if (result.status == "ok") {
+          window.hoverNotification(cancelButton.dataset.successMessage, cancelButton);
+        } else {
+          window.hoverNotification(result.message, cancelButton);
+        }
       }
     });
   })

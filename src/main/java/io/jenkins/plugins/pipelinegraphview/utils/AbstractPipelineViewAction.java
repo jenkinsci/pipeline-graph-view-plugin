@@ -41,7 +41,7 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
         return run.getParent().isBuildable();
     }
 
-   public boolean isBuilding() {
+    public boolean isBuilding() {
         return run.isBuilding();
     }
 
@@ -49,7 +49,7 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
         return run.getParent().BUILD;
     }
 
-	public Permission getCancelPermission() {
+    public Permission getCancelPermission() {
         return run.getParent().CANCEL;
     }
 

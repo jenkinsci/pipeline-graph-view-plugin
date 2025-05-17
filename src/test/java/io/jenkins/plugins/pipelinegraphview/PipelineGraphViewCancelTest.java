@@ -20,8 +20,7 @@ class PipelineGraphViewCancelTest {
 
     @Test
     void cancelButtonCancelsBuild(JenkinsRule j) throws Exception {
-        WorkflowRun run =
-                TestUtils.createAndRunJob(j, "indefiniteWait", "indefiniteWait.jenkinsfile", Result.SUCCESS);
+        WorkflowRun run = TestUtils.createAndRunJob(j, "indefiniteWait", "indefiniteWait.jenkinsfile", Result.SUCCESS);
 
         try (Playwright playwright = Playwright.create();
                 Browser browser = playwright.chromium().launch()) {
@@ -39,5 +38,4 @@ class PipelineGraphViewCancelTest {
             j.assertBuildStatus(Result.ABORTED, run);
         }
     }
-
 }

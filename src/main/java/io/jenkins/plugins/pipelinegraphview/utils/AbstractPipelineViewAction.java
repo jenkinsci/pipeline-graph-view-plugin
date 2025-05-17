@@ -41,8 +41,16 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
         return run.getParent().isBuildable();
     }
 
+   public boolean isBuilding() {
+        return run.isBuilding();
+    }
+
     public Permission getPermission() {
         return run.getParent().BUILD;
+    }
+
+	public Permission getCancelPermission() {
+        return run.getParent().CANCEL;
     }
 
     public Permission getConfigurePermission() {
@@ -71,6 +79,18 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Handles the cancel request.
+     */
+    @RequirePOST
+    @JavaScriptMethod
+    public HttpResponse doCancel() throws IOException, ExecutionException {
+        if (run != null) {
+            return run.doStop();
+        }
+        return HttpResponses.errorJSON("No run to cancel");
     }
 
     public String getFullBuildDisplayName() {

@@ -12,3 +12,17 @@ if (rebuildButton) {
     });
   })
 }
+
+const cancelButton = document.getElementById('pgv-cancel');
+
+if (cancelButton) {
+  cancelButton.addEventListener('click', event => {
+    event.preventDefault();
+    const cancelAction = window[`${cancelButton.dataset.proxyName}`];
+    cancelAction.doCancel(function (success) {
+      if (success.status == 200) {
+        window.hoverNotification(cancelButton.dataset.successMessage, cancelButton);
+      }
+    });
+  })
+}

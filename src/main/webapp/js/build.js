@@ -22,12 +22,28 @@ if (cancelButton) {
     cancelAction.doCancel(function (success) {
       const result = success.responseJSON;
       if (result) {
-        if (result.status == "ok") {
+        if (result.status === "ok") {
           window.hoverNotification(cancelButton.dataset.successMessage, cancelButton);
         } else {
           window.hoverNotification(result.message, cancelButton);
         }
       }
     });
+
+    function updateCancelButton() {
+      const buildCaption = document.querySelector(".jenkins-build-caption");
+      const url = buildCaption.dataset.statusUrl;
+      fetch(url).then((rsp) => {
+        if (rsp.ok) {
+          let isBuilding = rsp.headers.get("X-Building");
+          if (isBuilding === "true") {
+            setTimeout(updateCancelButton, 5000);
+          } else {
+            cancelButton.style.display = "none";
+          }
+        }
+      })
+    }
+    setTimeout(updateCancelButton, 5000);
   })
 }

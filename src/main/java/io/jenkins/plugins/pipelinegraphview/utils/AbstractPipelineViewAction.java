@@ -90,8 +90,9 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
     @JavaScriptMethod
     public HttpResponse doCancel() throws IOException, ExecutionException {
         if (run != null) {
+            run.checkPermission(getCancelPermission());
             if (run.isBuilding()) {
-                run.doTerm();
+                run.doStop();
                 return HttpResponses.okJSON();
             } else {
                 String message = Result.ABORTED.equals(run.getResult())

@@ -38,6 +38,8 @@
     <node.version>22.15.0</node.version>
     <npm.version>11.3.0</npm.version>
     <spotless.check.skip>false</spotless.check.skip>
+    <!-- for WithConsoleUrl -->
+    <useBeta>true</useBeta>
   </properties>
 
   <dependencyManagement>

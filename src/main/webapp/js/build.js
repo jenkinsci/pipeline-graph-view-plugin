@@ -35,13 +35,17 @@ if (cancelButton) {
       const url = buildCaption.dataset.statusUrl;
       fetch(url).then((rsp) => {
         if (rsp.ok) {
-          let isBuilding = rsp.headers.get("X-Building");
+          const isBuilding = rsp.headers.get("X-Building");
           if (isBuilding === "true") {
             setTimeout(updateCancelButton, 5000);
           } else {
             cancelButton.style.display = "none";
           }
         }
+        return null;
+      })
+      .catch((error) => {
+        console.error("Error fetching build caption statsus:", error);
       })
     }
     setTimeout(updateCancelButton, 5000);

@@ -43,7 +43,7 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
         return run.getParent().isBuildable();
     }
 
-    public boolean isBuilding() {
+    public boolean isBuildInProgress() {
         return run.isBuilding();
     }
 

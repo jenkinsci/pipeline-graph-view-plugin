@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import jenkins.console.WithConsoleUrl;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
@@ -36,7 +35,7 @@ import org.kohsuke.stapler.verb.GET;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PipelineConsoleViewAction extends AbstractPipelineViewAction implements WithConsoleUrl {
+public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     public static final long LOG_THRESHOLD = 150 * 1024; // 150KB
     public static final String URL_NAME = "pipeline-overview";
 
@@ -312,10 +311,5 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction implem
 
     public boolean isShowGraphOnBuildPage() {
         return PipelineGraphViewConfiguration.get().isShowGraphOnBuildPage();
-    }
-
-    @Override
-    public String getConsoleUrl() {
-        return getUrl() + getUrlName();
     }
 }

@@ -8,7 +8,7 @@
             <j:out value="${h.generateConsoleAnnotationScriptAndStylesheet()}"/>
 
             <j:set var="controls">
-                <j:if test="${it.building}">
+                <j:if test="${it.buildInProgress}">
                     <l:hasPermission permission="${it.cancelPermission}">
                         <j:set var="proxyId" value="${h.generateId()}" />
                         <st:bind value="${it}" var="cancelAction${proxyId}"/>

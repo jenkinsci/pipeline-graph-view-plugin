@@ -3,6 +3,7 @@ package io.jenkins.plugins.pipelinegraphview;
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
+import com.microsoft.playwright.options.AriaRole;
 import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
 import io.jenkins.plugins.pipelinegraphview.consoleview.PipelineConsoleViewAction;
@@ -34,6 +35,8 @@ class PipelineGraphViewCancelTest {
             String urlName = new PipelineConsoleViewAction(run).getUrlName();
             page.navigate(j.getURL() + run.getUrl() + urlName);
             page.click("#pgv-cancel");
+            page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Yes"))
+                    .click();
         }
     }
 }

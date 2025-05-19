@@ -25,11 +25,12 @@ if (cancelButton) {
     };
 
     if (question != null) {
-      dialog.confirm(question).then(
-        () => {
-          execute();
-        }
-      );
+      dialog.confirm(question).then(() => {
+        execute();
+        return null;
+      }).catch((error) => {
+        console.error("Error in cancel confirm dialog:", error);
+      })
     } else {
       execute();
     }

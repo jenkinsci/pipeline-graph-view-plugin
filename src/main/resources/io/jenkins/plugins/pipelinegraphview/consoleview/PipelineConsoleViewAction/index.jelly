@@ -12,7 +12,7 @@
                     <l:hasPermission permission="${it.cancelPermission}">
                         <j:set var="proxyId" value="${h.generateId()}" />
                         <st:bind value="${it}" var="cancelAction${proxyId}"/>
-                        <button id="pgv-cancel" data-success-message="${%Build cancelled}"
+                        <button id="pgv-cancel" data-confirm="${%Confirm(it.buildFullDisplayName)}"
                                 data-proxy-name="cancelAction${proxyId}"
                                 class="jenkins-button jenkins-!-error-color">
                             <l:icon src="symbol-stop-circle-outline plugin-ionicons-api"/>

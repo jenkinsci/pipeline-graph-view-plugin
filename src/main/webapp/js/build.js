@@ -18,17 +18,21 @@ const cancelButton = document.getElementById('pgv-cancel');
 if (cancelButton) {
   cancelButton.addEventListener('click', event => {
     event.preventDefault();
-    const cancelAction = window[`${cancelButton.dataset.proxyName}`];
-    cancelAction.doCancel(function (success) {
-      const result = success.responseJSON;
-      if (result) {
-        if (result.status === "ok") {
-          window.hoverNotification(cancelButton.dataset.successMessage, cancelButton);
-        } else {
-          window.hoverNotification(result.message, cancelButton);
+    const question = cancelButton.getAttribute("data-confirm");
+    const execute = function () {
+      const cancelAction = window[`${cancelButton.dataset.proxyName}`];
+      cancelAction.doCancel();
+    };
+
+    if (question != null) {
+      dialog.confirm(question).then(
+        () => {
+          execute();
         }
-      }
-    });
+      );
+    } else {
+      execute();
+    }
 
     function updateCancelButton() {
       const buildCaption = document.querySelector(".jenkins-build-caption");

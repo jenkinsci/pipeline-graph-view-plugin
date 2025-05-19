@@ -63,6 +63,10 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
         return run.getDisplayName();
     }
 
+    public String getBuildFullDisplayName() {
+        return run.getFullDisplayName();
+    }
+
     /**
      * Handles the rebuild request using ReplayAction feature
      */

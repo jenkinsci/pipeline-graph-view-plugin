@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:dd="/lib/layout/dropdowns">
     <l:layout title="${it.buildDisplayName} - ${it.fullProjectDisplayName}">
         <l:main-panel>
             <link rel="stylesheet" href="${resURL}/plugin/pipeline-graph-view/js/style.css" type="text/css" />
@@ -12,12 +12,37 @@
                     <l:hasPermission permission="${it.permission}">
                         <j:set var="proxyId" value="${h.generateId()}" />
                         <st:bind value="${it}" var="rebuildAction${proxyId}"/>
-                        <button id="pgv-rebuild" data-success-message="${%Build scheduled}"
-                                data-proxy-name="rebuildAction${proxyId}"
-                                class="jenkins-button jenkins-!-build-color">
-                            <l:icon src="symbol-play-outline plugin-ionicons-api"/>
-                            ${%Rebuild}
-                        </button>
+                        <div class="jenkins-split-button">
+                            <button id="pgv-replay-now" data-success-message="${%Build scheduled}"
+                                    data-proxy-name="rebuildAction${proxyId}"
+                                    class="jenkins-button jenkins-!-build-color">
+                                <div class="jenkins-dropdown__item__icon">
+                                    <l:icon src="symbol-refresh-outline plugin-ionicons-api"/>
+                                </div>
+                                ${%Replay Now}
+                            </button>
+                            <l:overflowButton id="button-install-after-restart"
+                                icon="symbol-chevron-down"
+                                tooltip="${null}"
+                                clazz="jenkins-button jenkins-!-build-color">
+                                <dd:custom>
+                                    <button id="pgv-replay" class="jenkins-dropdown__item">
+                                        <div class="jenkins-dropdown__item__icon">
+                                            <l:icon src="symbol-arrow-redo-outline plugin-ionicons-api" />
+                                        </div>
+                                        ${%Replay}
+                                    </button>
+                                    <j:if test="${it.rebuildPluginAvailable}">
+                                        <button id="pgv-rebuild" class="jenkins-dropdown__item">
+                                            <div class="jenkins-dropdown__item__icon">
+                                                <l:icon src="symbol-play-outline plugin-ionicons-api"/>
+                                            </div>
+                                            ${%Rebuild}
+                                        </button>
+                                    </j:if>
+                                </dd:custom>
+                            </l:overflowButton>
+                        </div>
                     </l:hasPermission>
                 </j:if>
                 <l:hasPermission permission="${it.configurePermission}">

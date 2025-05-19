@@ -4,6 +4,7 @@ import static io.jenkins.plugins.pipelinegraphview.consoleview.PipelineConsoleVi
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import hudson.Plugin;
 import hudson.model.Action;
 import hudson.model.BallColor;
 import hudson.model.Item;
@@ -15,6 +16,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.workflow.cps.replay.ReplayAction;
@@ -51,6 +53,14 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
 
     public String getBuildDisplayName() {
         return run.getDisplayName();
+    }
+
+    public boolean isRebuildPluginAvailable() {
+        Plugin rebuildPlugin = Jenkins.get().getPlugin("rebuild");
+        if (rebuildPlugin != null) {
+            return rebuildPlugin.getWrapper().isEnabled();
+        }
+        return false;
     }
 
     /**

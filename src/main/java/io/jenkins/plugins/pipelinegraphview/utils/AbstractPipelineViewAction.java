@@ -52,7 +52,7 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
     }
 
     public Permission getCancelPermission() {
-        return run.getParent().CANCEL;
+        return Item.CANCEL;
     }
 
     public Permission getConfigurePermission() {

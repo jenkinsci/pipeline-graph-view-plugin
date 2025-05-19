@@ -25,6 +25,7 @@ if (cancelButton) {
     };
 
     if (question != null) {
+      /*eslint-disable no-undef*/
       dialog.confirm(question).then(() => {
         execute();
         return null;

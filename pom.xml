@@ -112,6 +112,12 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>com.sonyericsson.hudson.plugins.rebuild</groupId>
+      <artifactId>rebuild</artifactId>
+      <version>338.va_0a_b_50e29397</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>io.jenkins.configuration-as-code</groupId>
       <artifactId>test-harness</artifactId>
       <scope>test</scope>

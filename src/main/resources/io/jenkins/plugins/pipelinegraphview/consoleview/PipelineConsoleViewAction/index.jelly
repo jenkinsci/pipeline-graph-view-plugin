@@ -8,6 +8,18 @@
             <j:out value="${h.generateConsoleAnnotationScriptAndStylesheet()}"/>
 
             <j:set var="controls">
+                <j:if test="${it.buildInProgress}">
+                    <l:hasPermission permission="${it.cancelPermission}">
+                        <j:set var="proxyId" value="${h.generateId()}" />
+                        <st:bind value="${it}" var="cancelAction${proxyId}"/>
+                        <button id="pgv-cancel" data-confirm="${%Confirm(it.buildFullDisplayName)}"
+                                data-proxy-name="cancelAction${proxyId}"
+                                class="jenkins-button jenkins-!-error-color">
+                            <l:icon src="symbol-stop-circle-outline plugin-ionicons-api"/>
+                            ${%Cancel}
+                        </button>
+                    </l:hasPermission>
+                </j:if>
                 <j:if test="${it.buildable}">
                     <l:hasPermission permission="${it.permission}">
                         <j:set var="proxyId" value="${h.generateId()}" />

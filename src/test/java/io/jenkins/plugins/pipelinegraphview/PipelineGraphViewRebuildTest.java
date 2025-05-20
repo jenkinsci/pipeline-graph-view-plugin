@@ -8,6 +8,7 @@ import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Response;
 import com.microsoft.playwright.junit.UsePlaywright;
 import hudson.model.Result;
+import io.jenkins.plugins.casc.misc.JenkinsConfiguredWithCodeRule;
 import io.jenkins.plugins.casc.misc.junit.jupiter.WithJenkinsConfiguredWithCode;
 import io.jenkins.plugins.pipelinegraphview.consoleview.PipelineConsoleViewAction;
 import io.jenkins.plugins.pipelinegraphview.playwright.PlaywrightConfig;
@@ -17,7 +18,6 @@ import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
-import org.jvnet.hudson.test.JenkinsRule;
 
 @WithJenkinsConfiguredWithCode
 @UsePlaywright(PlaywrightConfig.class)
@@ -25,7 +25,7 @@ class PipelineGraphViewRebuildTest {
 
     @Issue("GH#330")
     @Test
-    void rerunButtonStartsNewBuild(Page p, JenkinsRule j) throws Exception {
+    void rerunButtonStartsNewBuild(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "hello_world", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
@@ -33,7 +33,7 @@ class PipelineGraphViewRebuildTest {
     }
 
     @Test
-    void replayButtonRedirects(Page p, JenkinsRule j) throws Exception {
+    void replayButtonRedirects(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "hello_world", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
@@ -42,14 +42,15 @@ class PipelineGraphViewRebuildTest {
 
     @Issue("GH#617")
     @Test
-    void rebuildButtonRedirectsForParameterizedJob(Page p, JenkinsRule j) throws Exception {
+    void rebuildButtonRedirectsForParameterizedJob(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "echo_parameterized", "gh330_parameterizedBuild.jenkinsfile", Result.SUCCESS);
 
         rebuildBuildAndAssertRebuildPage(p, j, run);
     }
 
-    private static void rerunBuildAndAssertPageIsTheSame(Page p, JenkinsRule j, WorkflowRun run) throws Exception {
+    private static void rerunBuildAndAssertPageIsTheSame(Page p, JenkinsConfiguredWithCodeRule j, WorkflowRun run)
+            throws Exception {
         String urlName = new PipelineConsoleViewAction(run).getUrlName();
         Response navigate = p.navigate(j.getURL() + run.getUrl() + urlName);
         String currentUrl = navigate.url();
@@ -62,7 +63,8 @@ class PipelineGraphViewRebuildTest {
         waitUntilBuildIsComplete(j, run);
     }
 
-    private static void replayBuildAndAssertReplayPage(Page p, JenkinsRule j, WorkflowRun run) throws Exception {
+    private static void replayBuildAndAssertReplayPage(Page p, JenkinsConfiguredWithCodeRule j, WorkflowRun run)
+            throws Exception {
         String urlName = new PipelineConsoleViewAction(run).getUrlName();
         p.navigate(j.getURL() + run.getUrl() + urlName);
         p.click("#pgv-replay");
@@ -74,7 +76,8 @@ class PipelineGraphViewRebuildTest {
         waitUntilBuildIsComplete(j, run);
     }
 
-    private static void rebuildBuildAndAssertRebuildPage(Page p, JenkinsRule j, WorkflowRun run) throws Exception {
+    private static void rebuildBuildAndAssertRebuildPage(Page p, JenkinsConfiguredWithCodeRule j, WorkflowRun run)
+            throws Exception {
         String urlName = new PipelineConsoleViewAction(run).getUrlName();
         p.navigate(j.getURL() + run.getUrl() + urlName);
         p.click("#pgv-rebuild");
@@ -88,7 +91,7 @@ class PipelineGraphViewRebuildTest {
 
     // We don't care about the build result but Windows fails with
     // file locking issues if we don't wait for the build to finish.
-    private static void waitUntilBuildIsComplete(JenkinsRule j, WorkflowRun run) {
+    private static void waitUntilBuildIsComplete(JenkinsConfiguredWithCodeRule j, WorkflowRun run) {
         await().until(() -> j.jenkins.getQueue().isEmpty(), is(true));
         WorkflowJob parent = run.getParent();
         await().until(() -> parent.getBuilds().size(), is(2));

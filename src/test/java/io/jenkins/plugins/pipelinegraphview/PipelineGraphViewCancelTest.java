@@ -21,7 +21,7 @@ class PipelineGraphViewCancelTest {
     @ConfiguredWithCode("configure-appearance.yml")
     void cancelButtonCancelsBuild(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
         WorkflowRun run = TestUtils.createAndRunJobNoWait(j, "indefiniteWait", "indefiniteWait.jenkinsfile")
-                        .waitForStart();
+                .waitForStart();
         SemaphoreStep.waitForStart("wait/1", run);
         new PipelineJobPage(p, run.getParent())
                 .goTo()

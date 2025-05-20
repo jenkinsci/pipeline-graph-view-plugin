@@ -48,7 +48,7 @@ class PipelineGraphViewRebuildTest {
             Response navigate = page.navigate(j.getURL() + run.getUrl() + urlName);
             String currentUrl = navigate.url();
 
-            page.click("#pgv-rebuild");
+            page.click("#pgv-rerun");
             String newUrl = page.url();
 
             assertEquals(currentUrl, newUrl);

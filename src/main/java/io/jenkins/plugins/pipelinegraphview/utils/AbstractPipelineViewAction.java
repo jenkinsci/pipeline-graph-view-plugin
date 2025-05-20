@@ -8,6 +8,7 @@ import hudson.Plugin;
 import hudson.model.Action;
 import hudson.model.BallColor;
 import hudson.model.Item;
+import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Queue;
 import hudson.security.Permission;
 import hudson.util.HttpResponses;
@@ -55,10 +56,11 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
         return run.getDisplayName();
     }
 
-    public boolean isRebuildPluginAvailable() {
+    public boolean isRebuildAvailable() {
         Plugin rebuildPlugin = Jenkins.get().getPlugin("rebuild");
-        if (rebuildPlugin != null) {
-            return rebuildPlugin.getWrapper().isEnabled();
+        if (rebuildPlugin != null && rebuildPlugin.getWrapper().isEnabled()) {
+            // limit rebuild to parameterized jobs otherwise it duplicates rerun's behaviour
+            return run.getParent().getProperty(ParametersDefinitionProperty.class) != null;
         }
         return false;
     }

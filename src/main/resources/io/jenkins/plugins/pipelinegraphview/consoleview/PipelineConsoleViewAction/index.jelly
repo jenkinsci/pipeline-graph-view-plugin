@@ -25,22 +25,10 @@
                                 icon="symbol-chevron-down"
                                 tooltip="${null}"
                                 clazz="jenkins-button jenkins-!-build-color">
-                                <dd:custom>
-                                    <button id="pgv-replay" class="jenkins-dropdown__item">
-                                        <div class="jenkins-dropdown__item__icon">
-                                            <l:icon src="symbol-arrow-redo-outline plugin-ionicons-api" />
-                                        </div>
-                                        ${%Replay}
-                                    </button>
-                                    <j:if test="${it.rebuildPluginAvailable}">
-                                        <button id="pgv-rebuild" class="jenkins-dropdown__item">
-                                            <div class="jenkins-dropdown__item__icon">
-                                                <l:icon src="symbol-play-outline plugin-ionicons-api"/>
-                                            </div>
-                                            ${%Rebuild}
-                                        </button>
-                                    </j:if>
-                                </dd:custom>
+                                <dd:item icon="symbol-arrow-redo-outline plugin-ionicons-api" id="pgv-replay" text="${%Replay}" href="../replay" />
+                                <j:if test="${it.rebuildAvailable}">
+                                    <dd:item icon="symbol-play-outline plugin-ionicons-api" id="pgv-rebuild" text="${%Rebuild}" href="../rebuild/parameterized" />
+                                </j:if>
                             </l:overflowButton>
                         </div>
                     </l:hasPermission>

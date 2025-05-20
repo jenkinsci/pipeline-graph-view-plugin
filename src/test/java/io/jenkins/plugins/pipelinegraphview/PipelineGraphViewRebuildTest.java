@@ -67,26 +67,28 @@ class PipelineGraphViewRebuildTest {
             throws Exception {
         String urlName = new PipelineConsoleViewAction(run).getUrlName();
         p.navigate(j.getURL() + run.getUrl() + urlName);
+        p.click("#pgv-rerun-overflow");
         p.click("#pgv-replay");
 
         String newUrl = p.url();
-        String targetUrl = j.getURL() + run.getUrl() + "/replay";
+        String targetUrl = j.getURL() + run.getUrl() + "replay/";
         assertEquals(targetUrl, newUrl);
 
-        waitUntilBuildIsComplete(j, run);
+        j.assertBuildStatus(Result.SUCCESS, j.waitForCompletion(run));
     }
 
     private static void rebuildBuildAndAssertRebuildPage(Page p, JenkinsConfiguredWithCodeRule j, WorkflowRun run)
             throws Exception {
         String urlName = new PipelineConsoleViewAction(run).getUrlName();
         p.navigate(j.getURL() + run.getUrl() + urlName);
+        p.click("#pgv-rerun-overflow");
         p.click("#pgv-rebuild");
 
         String newUrl = p.url();
-        String targetUrl = j.getURL() + run.getUrl() + "/rebuild/parameterized";
+        String targetUrl = j.getURL() + run.getUrl() + "rebuild/parameterized";
         assertEquals(targetUrl, newUrl);
 
-        waitUntilBuildIsComplete(j, run);
+        j.assertBuildStatus(Result.SUCCESS, j.waitForCompletion(run));
     }
 
     // We don't care about the build result but Windows fails with

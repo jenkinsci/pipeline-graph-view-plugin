@@ -125,66 +125,67 @@ export function useStepsPoller(props: RunPollerProps) {
   };
 
   useEffect(() => {
-    getRunSteps()
-      .then((steps) => {
-        steps = steps || [];
-        setSteps(steps);
+    if (run?.complete) {
+      // Only fetch once if run is complete
+      getRunSteps()
+        .then((steps) => {
+          steps = steps || [];
+          setSteps(steps);
 
-        const usedUrl = parseUrlParams(steps);
-        if (!usedUrl) {
-          const defaultStep = getDefaultSelectedStep(steps);
-          if (defaultStep) {
-            setOpenStage(defaultStep.stageId);
+          const usedUrl = parseUrlParams(steps);
+          if (!usedUrl) {
+            const defaultStep = getDefaultSelectedStep(steps);
+            if (defaultStep) {
+              setOpenStage(defaultStep.stageId);
 
-            if (defaultStep.stageId) {
-              setExpandedSteps((prev) => [...prev, defaultStep.id]);
-              updateStepConsoleOffset(
-                defaultStep.id,
-                false,
-                0 - LOG_FETCH_SIZE,
-              );
+              if (defaultStep.stageId) {
+                setExpandedSteps((prev) => [...prev, defaultStep.id]);
+                updateStepConsoleOffset(
+                  defaultStep.id,
+                  false,
+                  0 - LOG_FETCH_SIZE,
+                );
+              }
             }
           }
-        }
+        })
+        .catch((error) => {
+          console.error("Error in getRunSteps:", error);
+        });
+    } else {
+      // If run is not complete, start polling (first poll will fetch steps)
+      startPollingPipeline({
+        getStateUpdateFn: getRunSteps,
+        onData: (data) => {
+          const hasNewSteps =
+            JSON.stringify(stepsRef.current) !== JSON.stringify(data);
 
-        if (!run?.complete) {
-          startPollingPipeline({
-            getStateUpdateFn: getRunSteps,
-            onData: (data) => {
-              const hasNewSteps =
-                JSON.stringify(stepsRef.current) !== JSON.stringify(data);
+          if (userManuallySetNode) {
+            const defaultStep = getDefaultSelectedStep(data);
+            if (defaultStep) {
+              setOpenStage(defaultStep.stageId);
 
-              if (userManuallySetNode) {
-                const defaultStep = getDefaultSelectedStep(steps);
-                if (defaultStep) {
-                  setOpenStage(defaultStep.stageId);
-
-                  if (defaultStep.stageId) {
-                    setExpandedSteps((prev) => [...prev, defaultStep.id]);
-                    updateStepConsoleOffset(
-                      defaultStep.id,
-                      false,
-                      0 - LOG_FETCH_SIZE,
-                    );
-                  }
-                }
+              if (defaultStep.stageId) {
+                setExpandedSteps((prev) => [...prev, defaultStep.id]);
+                updateStepConsoleOffset(
+                  defaultStep.id,
+                  false,
+                  0 - LOG_FETCH_SIZE,
+                );
               }
+            }
+          }
 
-              if (hasNewSteps) {
-                setSteps(data);
-                stepsRef.current = data;
-              }
-            },
-            checkComplete: () => !run?.complete,
-            interval: POLL_INTERVAL,
-          });
-        }
-        return null;
-      })
-      .catch((error) => {
-        console.error("Error in getRunSteps:", error);
+          if (hasNewSteps) {
+            setSteps(data);
+            stepsRef.current = data;
+          }
+        },
+        checkComplete: () => !!run?.complete,
+        interval: POLL_INTERVAL,
       });
-  }, [run?.stages]);
+    }
+  }, [run?.stages, run?.complete]);
 
   const handleStageSelect = useCallback(
     (nodeId: string) => {

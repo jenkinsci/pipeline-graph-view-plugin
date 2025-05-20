@@ -21,7 +21,7 @@
                                 </div>
                                 ${%Rerun}
                             </button>
-                            <l:overflowButton id="button-install-after-restart"
+                            <l:overflowButton id="pgv-rerun-overflow"
                                 icon="symbol-chevron-down"
                                 tooltip="${null}"
                                 clazz="jenkins-button jenkins-!-build-color">

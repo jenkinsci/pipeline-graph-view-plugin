@@ -132,4 +132,11 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
         tree.stageIsVisible(stage);
         return this;
     }
+
+    public PipelineOverviewPage cancel() {
+        page.click("#pgv-cancel");
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Yes"))
+                .click();
+        return this;
+    }
 }

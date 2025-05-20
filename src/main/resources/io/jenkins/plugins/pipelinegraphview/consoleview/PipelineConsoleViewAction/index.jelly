@@ -27,7 +27,8 @@
                         <div class="jenkins-split-button">
                             <button id="pgv-rerun" data-success-message="${%Build scheduled}"
                                     data-proxy-name="rerunAction${proxyId}"
-                                    class="jenkins-button jenkins-!-build-color">
+                                    class="jenkins-button jenkins-!-build-color"
+                                    tooltip="${%Rerun now}">
                                 <div class="jenkins-dropdown__item__icon">
                                     <l:icon src="symbol-refresh-outline plugin-ionicons-api"/>
                                 </div>
@@ -36,9 +37,23 @@
                             <l:overflowButton id="pgv-rerun-overflow"
                                 icon="symbol-chevron-down"
                                 clazz="jenkins-button jenkins-!-build-color">
-                                <dd:item icon="symbol-arrow-redo-outline plugin-ionicons-api" id="pgv-replay" text="${%Replay}" href="../replay" />
+                                <dd:custom>
+                                    <a id="pgv-replay" href="../replay" class="jenkins-button" tooltip="${%Edit Pipeline and Replay}">
+                                        <div class="jenkins-dropdown__item__icon">
+                                            <l:icon src="symbol-arrow-redo-outline plugin-ionicons-api"/>
+                                        </div>
+                                        ${%Replay}
+                                    </a>
+                                </dd:custom>
                                 <j:if test="${it.rebuildAvailable}">
-                                    <dd:item icon="symbol-play-outline plugin-ionicons-api" id="pgv-rebuild" text="${%Rebuild}" href="../rebuild/parameterized" />
+                                    <dd:custom>
+                                        <a id="pgv-rebuild" href="../rebuild/parameterized" class="jenkins-button" tooltip="${%Edit Parameters and Rebuild}">
+                                            <div class="jenkins-dropdown__item__icon">
+                                                <l:icon src="symbol-play-outline plugin-ionicons-api"/>
+                                            </div>
+                                            ${%Rebuild}
+                                        </a>
+                                    </dd:custom>
                                 </j:if>
                             </l:overflowButton>
                         </div>

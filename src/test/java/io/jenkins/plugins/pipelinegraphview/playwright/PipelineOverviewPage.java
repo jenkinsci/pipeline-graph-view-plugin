@@ -141,19 +141,22 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
     }
 
     public PipelineOverviewPage rerun() {
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Rerun")).click();
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Rerun"))
+                .click();
         return this;
     }
 
     public PipelineOverviewPage replay() {
         page.click("#pgv-rerun-overflow");
-        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Replay")).click();
+        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Replay"))
+                .click();
         return this;
     }
 
     public PipelineOverviewPage rebuild() {
         page.click("#pgv-rerun-overflow");
-        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Rebuild")).click();
+        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Rebuild"))
+                .click();
         return this;
     }
 }

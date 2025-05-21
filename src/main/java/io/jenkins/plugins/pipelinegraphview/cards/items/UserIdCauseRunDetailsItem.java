@@ -3,9 +3,10 @@ package io.jenkins.plugins.pipelinegraphview.cards.items;
 import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.User;
+import hudson.tasks.UserAvatarResolver;
 import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
-import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.Icon.Ionicon;
+import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.Icon.SimpleIcon;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.ItemContent;
 import java.util.HashMap;
 import java.util.List;
@@ -26,8 +27,9 @@ public class UserIdCauseRunDetailsItem {
                 .map(userIdCause -> (Cause.UserIdCause) userIdCause)
                 .map(userIdCause -> User.get(userIdCause.getUserId(), false, new HashMap<>()))
                 .filter(Objects::nonNull)
-                .map(user -> ItemContent.of(Messages.cause_user(user.getDisplayName())))
-                .<RunDetailsItem>map(content -> new RunDetailsItem.RunDetail(new Ionicon("person-outline"), content))
+                .<RunDetailsItem>map(user -> new RunDetailsItem.RunDetail(
+                        new SimpleIcon(UserAvatarResolver.resolve(user, "48x48")),
+                        ItemContent.of(Messages.cause_user(user.getDisplayName()))))
                 .findAny();
     }
 }

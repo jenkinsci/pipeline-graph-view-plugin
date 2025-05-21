@@ -1,7 +1,7 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
     <div>
-        <l:icon src="${it.icon()}"/>
+        <l:icon src="${it.icon()}" class="jenkins-avatar" />
         <span tooltip="${it.tooltip()}">
             <st:include page="description.jelly" it="${it.content()}" />
         </span>

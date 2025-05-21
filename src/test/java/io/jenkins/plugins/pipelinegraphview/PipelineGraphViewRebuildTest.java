@@ -5,12 +5,13 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.microsoft.playwright.Page;
-import com.microsoft.playwright.Response;
 import com.microsoft.playwright.junit.UsePlaywright;
 import hudson.model.Result;
+import io.jenkins.plugins.casc.misc.ConfiguredWithCode;
 import io.jenkins.plugins.casc.misc.JenkinsConfiguredWithCodeRule;
 import io.jenkins.plugins.casc.misc.junit.jupiter.WithJenkinsConfiguredWithCode;
-import io.jenkins.plugins.pipelinegraphview.consoleview.PipelineConsoleViewAction;
+import io.jenkins.plugins.pipelinegraphview.playwright.PipelineJobPage;
+import io.jenkins.plugins.pipelinegraphview.playwright.PipelineOverviewPage;
 import io.jenkins.plugins.pipelinegraphview.playwright.PlaywrightConfig;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import jenkins.test.RunMatchers;
@@ -25,70 +26,64 @@ class PipelineGraphViewRebuildTest {
 
     @Issue("GH#330")
     @Test
+    @ConfiguredWithCode("configure-appearance.yml")
     void rerunButtonStartsNewBuild(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "hello_world", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
 
-        rerunBuildAndAssertPageIsTheSame(p, j, run);
-    }
+        PipelineOverviewPage op = new PipelineJobPage(p, run.getParent())
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .goToBuild()
+                .goToPipelineOverview();
 
-    @Test
-    void replayButtonRedirects(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
-        WorkflowRun run =
-                TestUtils.createAndRunJob(j, "hello_world", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
+        String currentUrl = p.url();
+        op.rerun();
 
-        replayBuildAndAssertReplayPage(p, j, run);
-    }
-
-    @Issue("GH#617")
-    @Test
-    void rebuildButtonRedirectsForParameterizedJob(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
-        WorkflowRun run = TestUtils.createAndRunJob(
-                j, "echo_parameterized", "gh330_parameterizedBuild.jenkinsfile", Result.SUCCESS);
-
-        rebuildBuildAndAssertRebuildPage(p, j, run);
-    }
-
-    private static void rerunBuildAndAssertPageIsTheSame(Page p, JenkinsConfiguredWithCodeRule j, WorkflowRun run)
-            throws Exception {
-        String urlName = new PipelineConsoleViewAction(run).getUrlName();
-        Response navigate = p.navigate(j.getURL() + run.getUrl() + urlName);
-        String currentUrl = navigate.url();
-
-        p.click("#pgv-rerun");
         String newUrl = p.url();
-
         assertEquals(currentUrl, newUrl);
 
         waitUntilBuildIsComplete(j, run);
     }
 
-    private static void replayBuildAndAssertReplayPage(Page p, JenkinsConfiguredWithCodeRule j, WorkflowRun run)
-            throws Exception {
-        String urlName = new PipelineConsoleViewAction(run).getUrlName();
-        p.navigate(j.getURL() + run.getUrl() + urlName);
-        p.click("#pgv-rerun-overflow");
-        p.click("#pgv-replay");
+    @Test
+    @ConfiguredWithCode("configure-appearance.yml")
+    void replayButtonRedirects(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "hello_world", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
+
+        new PipelineJobPage(p, run.getParent())
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .goToBuild()
+                .goToPipelineOverview()
+                .replay();
 
         String newUrl = p.url();
         String targetUrl = j.getURL() + run.getUrl() + "replay/";
         assertEquals(targetUrl, newUrl);
-
-        j.assertBuildStatus(Result.SUCCESS, j.waitForCompletion(run));
     }
 
-    private static void rebuildBuildAndAssertRebuildPage(Page p, JenkinsConfiguredWithCodeRule j, WorkflowRun run)
-            throws Exception {
-        String urlName = new PipelineConsoleViewAction(run).getUrlName();
-        p.navigate(j.getURL() + run.getUrl() + urlName);
-        p.click("#pgv-rerun-overflow");
-        p.click("#pgv-rebuild");
+    @Issue("GH#617")
+    @Test
+    @ConfiguredWithCode("configure-appearance.yml")
+    void rebuildButtonRedirectsForParameterizedJob(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j, "echo_parameterized", "gh330_parameterizedBuild.jenkinsfile", Result.SUCCESS);
+
+        new PipelineJobPage(p, run.getParent())
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .goToBuild()
+                .goToPipelineOverview()
+                .rebuild();
 
         String newUrl = p.url();
         String targetUrl = j.getURL() + run.getUrl() + "rebuild/parameterized";
         assertEquals(targetUrl, newUrl);
-
-        j.assertBuildStatus(Result.SUCCESS, j.waitForCompletion(run));
     }
 
     // We don't care about the build result but Windows fails with

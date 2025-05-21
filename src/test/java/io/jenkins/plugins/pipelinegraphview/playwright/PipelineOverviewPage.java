@@ -139,4 +139,21 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
                 .click();
         return this;
     }
+
+    public PipelineOverviewPage rerun() {
+        page.click("#pgv-rerun");
+        return this;
+    }
+
+    public PipelineOverviewPage replay() {
+        page.click("#pgv-rerun-overflow");
+        page.click("#pgv-replay");
+        return this;
+    }
+
+    public PipelineOverviewPage rebuild() {
+        page.click("#pgv-rerun-overflow");
+        page.click("#pgv-rebuild");
+        return this;
+    }
 }

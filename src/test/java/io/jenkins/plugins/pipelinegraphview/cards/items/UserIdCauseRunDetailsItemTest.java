@@ -80,6 +80,6 @@ class UserIdCauseRunDetailsItemTest {
 
         assertEquals(
                 new RunDetailsItem.ItemContent.PlainContent(Messages.cause_user("User Id")), userDetails.content());
-        assertEquals("symbol-person-outline plugin-ionicons-api", userDetails.icon());
+        assertEquals("symbol-person-circle", userDetails.icon());
     }
 }

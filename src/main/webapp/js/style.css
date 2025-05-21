@@ -43,7 +43,7 @@ h1 {
       color: inherit;
     }
 
-    svg {
+    svg, img {
       width: 1.125rem;
       height: 1.125rem;
     }

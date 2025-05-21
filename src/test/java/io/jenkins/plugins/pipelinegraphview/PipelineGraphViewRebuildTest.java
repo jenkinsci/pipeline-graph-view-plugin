@@ -86,6 +86,25 @@ class PipelineGraphViewRebuildTest {
         assertEquals(targetUrl, newUrl);
     }
 
+    @Test
+    @ConfiguredWithCode("configure-appearance.yml")
+    void restartFromStageButtonRedirects(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j, "hello_world", "helloWorldDeclarativePipeline.jenkinsfile", Result.SUCCESS);
+
+        new PipelineJobPage(p, run.getParent())
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .goToBuild()
+                .goToPipelineOverview()
+                .restartFromStage();
+
+        String newUrl = p.url();
+        String targetUrl = j.getURL() + run.getUrl() + "restart/";
+        assertEquals(targetUrl, newUrl);
+    }
+
     // We don't care about the build result but Windows fails with
     // file locking issues if we don't wait for the build to finish.
     private static void waitUntilBuildIsComplete(JenkinsConfiguredWithCodeRule j, WorkflowRun run) {

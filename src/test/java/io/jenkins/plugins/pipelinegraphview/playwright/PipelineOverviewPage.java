@@ -159,4 +159,11 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
                 .click();
         return this;
     }
+
+    public PipelineOverviewPage restartFromStage() {
+        page.click("#pgv-rerun-overflow");
+        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Restart from Stage"))
+                .click();
+        return this;
+    }
 }

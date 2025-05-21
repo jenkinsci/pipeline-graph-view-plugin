@@ -47,6 +47,19 @@
                                         </div>
                                     </a>
                                 </dd:custom>
+                                <j:if test="${it.restartFromStageAvailable}">
+                                    <dd:custom>
+                                        <a id="pgv-restart" href="../restart" class="jenkins-dropdown__item pgv-dropdown-item">
+                                            <div class="jenkins-dropdown__item__icon">
+                                                <l:icon src="symbol-refresh-outline plugin-ionicons-api"/>
+                                            </div>
+                                            <span>${%Restart from Stage}</span>
+                                            <div class="pgv-dropdown-item__description">
+                                                ${%Restart Pipeline from a specific Stage}
+                                            </div>
+                                        </a>
+                                    </dd:custom>
+                                </j:if>
                                 <j:if test="${it.rebuildAvailable}">
                                     <dd:custom>
                                         <a id="pgv-rebuild" href="../rebuild/parameterized" class="jenkins-dropdown__item pgv-dropdown-item">

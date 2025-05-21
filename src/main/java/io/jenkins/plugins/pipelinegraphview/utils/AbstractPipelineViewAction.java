@@ -22,6 +22,7 @@ import java.util.logging.Logger;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkins.ui.icon.IconSpec;
+import org.jenkinsci.plugins.pipeline.modeldefinition.actions.RestartDeclarativePipelineAction;
 import org.jenkinsci.plugins.workflow.cps.replay.ReplayAction;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.kohsuke.stapler.HttpResponse;
@@ -75,6 +76,14 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
         if (rebuildPlugin != null && rebuildPlugin.getWrapper().isEnabled()) {
             // limit rebuild to parameterized jobs otherwise it duplicates rerun's behaviour
             return run.getParent().getProperty(ParametersDefinitionProperty.class) != null;
+        }
+        return false;
+    }
+
+    public boolean isRestartFromStageAvailable() {
+        RestartDeclarativePipelineAction action = run.getAction(RestartDeclarativePipelineAction.class);
+        if (action != null) {
+            return action.isRestartEnabled();
         }
         return false;
     }

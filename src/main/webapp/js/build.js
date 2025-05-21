@@ -1,3 +1,5 @@
+/* global dialog, notificationBar */
+
 const rebuildButton = document.getElementById('pgv-rebuild');
 
 if (rebuildButton) {
@@ -7,7 +9,6 @@ if (rebuildButton) {
     rebuildAction.doRebuild(function (success) {
       const result = success.responseJSON;
       if (result) {
-        /*eslint-disable no-undef*/
         notificationBar.show(rebuildButton.dataset.successMessage, notificationBar.SUCCESS);
       }
     });
@@ -34,7 +35,6 @@ if (cancelButton) {
     };
 
     if (question != null) {
-      /*eslint-disable no-undef*/
       dialog.confirm(question).then(() => {
         execute();
         return null;

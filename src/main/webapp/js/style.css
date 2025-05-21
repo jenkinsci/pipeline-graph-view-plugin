@@ -49,3 +49,14 @@ h1 {
     }
   }
 }
+
+.pgv-dropdown-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  row-gap: 0.25rem;
+
+  .pgv-dropdown-item__description {
+    color: var(--text-color-secondary);
+    grid-area: 2 / 2;
+  }
+}

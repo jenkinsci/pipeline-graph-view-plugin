@@ -34,6 +34,7 @@
                 </j:if>
                 <l:hasPermission permission="${it.configurePermission}">
                     <a href="../../configure" class="jenkins-button">
+                        <l:icon class="symbol-settings-outline plugin-ionicons-api" />
                         ${%Configure}
                     </a>
                 </l:hasPermission>

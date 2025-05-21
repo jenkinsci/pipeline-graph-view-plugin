@@ -13,6 +13,7 @@
                         <j:set var="proxyId" value="${h.generateId()}" />
                         <st:bind value="${it}" var="cancelAction${proxyId}"/>
                         <button id="pgv-cancel" data-confirm="${%Confirm(it.buildFullDisplayName)}"
+                                data-success-message="${%Build cancelled}"
                                 data-proxy-name="cancelAction${proxyId}"
                                 class="jenkins-button jenkins-!-error-color">
                             <l:icon src="symbol-stop-circle-outline plugin-ionicons-api"/>

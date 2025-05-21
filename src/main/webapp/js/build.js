@@ -7,7 +7,7 @@ if (rebuildButton) {
     rebuildAction.doRebuild(function (success) {
       const result = success.responseJSON;
       if (result) {
-        window.hoverNotification(rebuildButton.dataset.successMessage, rebuildButton);
+        notificationBar.show(rebuildButton.dataset.successMessage, notificationBar.SUCCESS);
       }
     });
   })
@@ -21,11 +21,18 @@ if (cancelButton) {
     const question = cancelButton.getAttribute("data-confirm");
     const execute = function () {
       const cancelAction = window[`${cancelButton.dataset.proxyName}`];
-      cancelAction.doCancel();
+      cancelAction.doCancel(function (response) {
+        const result = response.responseJSON;
+        if (result.status === "ok") {
+          notificationBar.show(cancelButton.dataset.successMessage)
+        } else {
+          notificationBar.show(result.message, notificationBar.WARNING)
+        }
+      });
+      
     };
 
     if (question != null) {
-      /*eslint-disable no-undef*/
       dialog.confirm(question).then(() => {
         execute();
         return null;

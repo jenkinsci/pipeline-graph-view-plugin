@@ -38,7 +38,7 @@
                                 icon="symbol-chevron-down"
                                 clazz="jenkins-button jenkins-!-build-color">
                                 <dd:custom>
-                                    <a id="pgv-replay" href="../replay" class="jenkins-button" tooltip="${%Edit Pipeline and Replay}">
+                                    <a id="pgv-replay" href="../replay" class="jenkins-button jenkins-button--tertiary" tooltip="${%Edit Pipeline and Replay}">
                                         <div class="jenkins-dropdown__item__icon">
                                             <l:icon src="symbol-arrow-redo-outline plugin-ionicons-api"/>
                                         </div>
@@ -47,7 +47,7 @@
                                 </dd:custom>
                                 <j:if test="${it.rebuildAvailable}">
                                     <dd:custom>
-                                        <a id="pgv-rebuild" href="../rebuild/parameterized" class="jenkins-button" tooltip="${%Edit Parameters and Rebuild}">
+                                        <a id="pgv-rebuild" href="../rebuild/parameterized" class="jenkins-button jenkins-button--tertiary" tooltip="${%Edit Parameters and Rebuild}">
                                             <div class="jenkins-dropdown__item__icon">
                                                 <l:icon src="symbol-play-outline plugin-ionicons-api"/>
                                             </div>

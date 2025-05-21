@@ -1,5 +1,3 @@
-/* global dialog, notificationBar */
-
 const rebuildButton = document.getElementById('pgv-rebuild');
 
 if (rebuildButton) {

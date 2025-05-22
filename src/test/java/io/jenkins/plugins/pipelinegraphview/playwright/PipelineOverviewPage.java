@@ -133,6 +133,13 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
         return this;
     }
 
+    public PipelineOverviewPage configure() {
+        page.click("#console-pipeline-overflow-root");
+        page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Configure"))
+                .click();
+        return this;
+    }
+
     public PipelineOverviewPage cancel() {
         page.click("#pgv-cancel");
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Yes"))

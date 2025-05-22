@@ -59,9 +59,9 @@ export default function PipelineConsole() {
               href: `../console`,
             },
             {
-                text: "Configure",
-                icon: SETTINGS,
-                href: `../../configure`,
+              text: "Configure",
+              icon: SETTINGS,
+              href: `../../configure`,
             },
           ]}
         />

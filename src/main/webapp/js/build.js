@@ -1,13 +1,13 @@
-const rebuildButton = document.getElementById('pgv-rebuild');
+const rerunButton = document.getElementById('pgv-rerun');
 
-if (rebuildButton) {
-  rebuildButton.addEventListener('click', event => {
+if (rerunButton) {
+  rerunButton.addEventListener('click', event => {
     event.preventDefault();
-    const rebuildAction = window[`${rebuildButton.dataset.proxyName}`];
-    rebuildAction.doRebuild(function (success) {
+    const rerunAction = window[`${rerunButton.dataset.proxyName}`];
+    rerunAction.doRerun(function (success) {
       const result = success.responseJSON;
       if (result) {
-        window.hoverNotification(rebuildButton.dataset.successMessage, rebuildButton);
+        notificationBar.show(rerunButton.dataset.successMessage, notificationBar.SUCCESS);
       }
     });
   })
@@ -21,11 +21,18 @@ if (cancelButton) {
     const question = cancelButton.getAttribute("data-confirm");
     const execute = function () {
       const cancelAction = window[`${cancelButton.dataset.proxyName}`];
-      cancelAction.doCancel();
+      cancelAction.doCancel(function (response) {
+        const result = response.responseJSON;
+        if (result.status === "ok") {
+          notificationBar.show(cancelButton.dataset.successMessage)
+        } else {
+          notificationBar.show(result.message, notificationBar.WARNING)
+        }
+      });
+      
     };
 
     if (question != null) {
-      /*eslint-disable no-undef*/
       dialog.confirm(question).then(() => {
         execute();
         return null;

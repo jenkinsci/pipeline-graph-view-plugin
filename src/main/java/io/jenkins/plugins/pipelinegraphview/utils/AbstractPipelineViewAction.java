@@ -4,9 +4,11 @@ import static io.jenkins.plugins.pipelinegraphview.consoleview.PipelineConsoleVi
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import hudson.Plugin;
 import hudson.model.Action;
 import hudson.model.BallColor;
 import hudson.model.Item;
+import hudson.model.ParametersDefinitionProperty;
 import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.security.Permission;
@@ -17,8 +19,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkins.ui.icon.IconSpec;
+import org.jenkinsci.plugins.pipeline.modeldefinition.actions.RestartDeclarativePipelineAction;
 import org.jenkinsci.plugins.workflow.cps.replay.ReplayAction;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.kohsuke.stapler.HttpResponse;
@@ -67,12 +71,29 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
         return run.getFullDisplayName();
     }
 
+    public boolean isRebuildAvailable() {
+        Plugin rebuildPlugin = Jenkins.get().getPlugin("rebuild");
+        if (rebuildPlugin != null && rebuildPlugin.getWrapper().isEnabled()) {
+            // limit rebuild to parameterized jobs otherwise it duplicates rerun's behaviour
+            return run.getParent().getProperty(ParametersDefinitionProperty.class) != null;
+        }
+        return false;
+    }
+
+    public boolean isRestartFromStageAvailable() {
+        RestartDeclarativePipelineAction action = run.getAction(RestartDeclarativePipelineAction.class);
+        if (action != null) {
+            return action.isRestartEnabled();
+        }
+        return false;
+    }
+
     /**
-     * Handles the rebuild request using ReplayAction feature
+     * Handles the rerun request using ReplayAction feature
      */
     @RequirePOST
     @JavaScriptMethod
-    public boolean doRebuild() throws IOException, ExecutionException {
+    public boolean doRerun() throws IOException, ExecutionException {
         if (run != null) {
             run.checkAnyPermission(Item.BUILD);
             ReplayAction replayAction = run.getAction(ReplayAction.class);

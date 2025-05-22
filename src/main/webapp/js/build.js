@@ -1,13 +1,13 @@
-const rebuildButton = document.getElementById('pgv-rebuild');
+const rerunButton = document.getElementById('pgv-rerun');
 
-if (rebuildButton) {
-  rebuildButton.addEventListener('click', event => {
+if (rerunButton) {
+  rerunButton.addEventListener('click', event => {
     event.preventDefault();
-    const rebuildAction = window[`${rebuildButton.dataset.proxyName}`];
-    rebuildAction.doRebuild(function (success) {
+    const rerunAction = window[`${rerunButton.dataset.proxyName}`];
+    rerunAction.doRerun(function (success) {
       const result = success.responseJSON;
       if (result) {
-        notificationBar.show(rebuildButton.dataset.successMessage, notificationBar.SUCCESS);
+        notificationBar.show(rerunButton.dataset.successMessage, notificationBar.SUCCESS);
       }
     });
   })

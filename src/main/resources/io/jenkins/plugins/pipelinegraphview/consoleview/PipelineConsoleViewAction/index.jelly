@@ -78,7 +78,9 @@
                         </div>
                     </l:hasPermission>
                 </j:if>
-                <div id="console-pipeline-overflow-root" />
+                <j:set var="proxyId" value="${h.generateId()}" />
+                <st:bind value="${it}" var="configureAction${proxyId}"/>
+                <div id="console-pipeline-overflow-root" data-proxy-name="configureAction${proxyId}"/>
             </j:set>
 
             <t:buildCaption controls="${controls}">

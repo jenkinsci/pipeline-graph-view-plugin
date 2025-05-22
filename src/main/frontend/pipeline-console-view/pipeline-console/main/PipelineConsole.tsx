@@ -30,11 +30,11 @@ export default function PipelineConsole() {
       "console-pipeline-overflow-root",
     )?.dataset.proxyName;
     if (configureDataProxyName) {
-      window[configureDataProxyName]?.hasConfigurePermission(
-        function (enabled) {
-          setConfigurePermission(enabled?.responseJSON);
-        },
-      );
+      (window as any)[configureDataProxyName]?.hasConfigurePermission(function (
+        enabled: any,
+      ) {
+        setConfigurePermission(enabled?.responseJSON);
+      });
     }
   }, [configurePermission]);
 

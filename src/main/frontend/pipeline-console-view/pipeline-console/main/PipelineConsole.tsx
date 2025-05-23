@@ -2,6 +2,8 @@ import "./pipeline-console.scss";
 import "../../../pipeline-graph-view/app.scss";
 import "../../../pipeline-graph-view/pipeline-graph/styles/main.scss";
 
+import { useEffect, useState } from "react";
+
 import Dropdown from "../../../common/components/dropdown.tsx";
 import DropdownPortal from "../../../common/components/dropdown-portal.tsx";
 import Skeleton from "./components/skeleton.tsx";
@@ -14,12 +16,27 @@ import { useLayoutPreferences } from "./providers/user-preference-provider.tsx";
 import ScrollToTopBottom from "./scroll-to-top-bottom.tsx";
 import SplitView from "./split-view.tsx";
 import StageView from "./StageView.tsx";
-import { CONSOLE, DOCUMENT } from "./symbols.tsx";
+import { CONSOLE, DOCUMENT, SETTINGS } from "./symbols.tsx";
 
 export default function PipelineConsole() {
   const rootElement = document.getElementById("console-pipeline-root");
   const currentRunPath = rootElement?.dataset.currentRunPath!;
   const previousRunPath = rootElement?.dataset.previousRunPath;
+
+  const [configurePermission, setConfigurePermission] = useState(false);
+
+  useEffect(() => {
+    const configureDataProxyName = document.getElementById(
+      "console-pipeline-overflow-root",
+    )?.dataset.proxyName;
+    if (configureDataProxyName) {
+      (window as any)[configureDataProxyName]?.hasConfigurePermission(function (
+        enabled: any,
+      ) {
+        setConfigurePermission(enabled?.responseJSON);
+      });
+    }
+  }, [configurePermission]);
 
   const { stageViewPosition, mainViewVisibility } = useLayoutPreferences();
   const {
@@ -58,6 +75,15 @@ export default function PipelineConsole() {
               icon: CONSOLE,
               href: `../console`,
             },
+            configurePermission ? (
+              {
+                text: "Configure",
+                icon: SETTINGS,
+                href: `../../configure`,
+              }
+            ) : (
+              <></>
+            ),
           ]}
         />
       </DropdownPortal>

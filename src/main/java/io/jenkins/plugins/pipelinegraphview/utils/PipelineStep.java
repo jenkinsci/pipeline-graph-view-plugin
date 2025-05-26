@@ -3,7 +3,7 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 
 public class PipelineStep extends AbstractPipelineNode {
-    private String stageId;
+    private final String stageId;
 
     public PipelineStep(
             String id,

@@ -61,14 +61,12 @@ describe("PipelineGraphLayout", () => {
     });
 
     it("returns proper columns (unstableSmokes)", () => {
-      const columns = createNodeColumns(
-        [
-          makeStage(4, "unstable-one"),
-          makeStage(15, "success"),
-          makeStage(20, "unstable-two"),
-          makeStage(26, "failure"),
-        ],
-      );
+      const columns = createNodeColumns([
+        makeStage(4, "unstable-one"),
+        makeStage(15, "success"),
+        makeStage(20, "unstable-two"),
+        makeStage(26, "failure"),
+      ]);
 
       expect(columns).toMatchObject([
         {
@@ -95,28 +93,26 @@ describe("PipelineGraphLayout", () => {
     });
 
     it("returns proper columns (complexSmokes)", () => {
-      const columns = createNodeColumns(
-        [
-          makeStage(6, "Non-Parallel Stage"),
-          makeStage(11, "Parallel Stage", [
-            makeParallel(15, "Branch A"),
-            makeParallel(16, "Branch B"),
-            makeParallel(17, "Branch C", [
-              makeStage(25, "Nested 1"),
-              makeStage(38, "Nested 2"),
-            ]),
+      const columns = createNodeColumns([
+        makeStage(6, "Non-Parallel Stage"),
+        makeStage(11, "Parallel Stage", [
+          makeParallel(15, "Branch A"),
+          makeParallel(16, "Branch B"),
+          makeParallel(17, "Branch C", [
+            makeStage(25, "Nested 1"),
+            makeStage(38, "Nested 2"),
           ]),
-          makeStage(49, "Skipped stage"),
-          makeStage(53, "Parallel Stage 2", [
-            makeParallel(57, "Branch A"),
-            makeParallel(58, "Branch B"),
-            makeParallel(59, "Branch C", [
-              makeStage(67, "Nested 1"),
-              makeStage(80, "Nested 2"),
-            ]),
+        ]),
+        makeStage(49, "Skipped stage"),
+        makeStage(53, "Parallel Stage 2", [
+          makeParallel(57, "Branch A"),
+          makeParallel(58, "Branch B"),
+          makeParallel(59, "Branch C", [
+            makeStage(67, "Nested 1"),
+            makeStage(80, "Nested 2"),
           ]),
-        ],
-      );
+        ]),
+      ]);
 
       expect(columns).toMatchObject([
         {
@@ -157,22 +153,20 @@ describe("PipelineGraphLayout", () => {
     });
 
     it("returns proper columns (GH#63.1)", () => {
-      const columns = createNodeColumns(
-        [
-          makeStage(6, "Test", [
-            makeParallel(9, "Matrix - PLATFORM = '1'", [
-              makeStage(20, "Stage 1"),
-              makeStage(30, "Stage 2"),
-              makeStage(40, "Stage 3"),
-            ]),
-            makeParallel(10, "Matrix - PLATFORM = '2'", [
-              makeStage(22, "Stage 1"),
-              makeStage(32, "Stage 2"),
-              makeStage(42, "Stage 3"),
-            ]),
+      const columns = createNodeColumns([
+        makeStage(6, "Test", [
+          makeParallel(9, "Matrix - PLATFORM = '1'", [
+            makeStage(20, "Stage 1"),
+            makeStage(30, "Stage 2"),
+            makeStage(40, "Stage 3"),
           ]),
-        ],
-      );
+          makeParallel(10, "Matrix - PLATFORM = '2'", [
+            makeStage(22, "Stage 1"),
+            makeStage(32, "Stage 2"),
+            makeStage(42, "Stage 3"),
+          ]),
+        ]),
+      ]);
 
       expect(columns).toMatchObject([
         {
@@ -195,28 +189,26 @@ describe("PipelineGraphLayout", () => {
     });
 
     it("returns proper columns (GH#63.2)", () => {
-      const columns = createNodeColumns(
-        [
-          makeStage(6, "build and run", [
-            makeParallel(12, "darwin-amd64", [
-              makeStage(24, "build"),
-              makeStage(39, "run"),
-              makeStage(55, "unit test"),
-            ]),
-            makeParallel(11, "linux-amd64", [
-              makeStage(22, "build"),
-              makeStage(36, "run"),
-              makeStage(53, "unit test"),
-              makeStage(64, "load test"),
-              makeStage(71, "deploy to storage"),
-            ]),
-            makeParallel(10, "linux-armv6", [
-              makeStage(20, "build"),
-              makeStage(34, "run"),
-            ]),
+      const columns = createNodeColumns([
+        makeStage(6, "build and run", [
+          makeParallel(12, "darwin-amd64", [
+            makeStage(24, "build"),
+            makeStage(39, "run"),
+            makeStage(55, "unit test"),
           ]),
-        ],
-      );
+          makeParallel(11, "linux-amd64", [
+            makeStage(22, "build"),
+            makeStage(36, "run"),
+            makeStage(53, "unit test"),
+            makeStage(64, "load test"),
+            makeStage(71, "deploy to storage"),
+          ]),
+          makeParallel(10, "linux-armv6", [
+            makeStage(20, "build"),
+            makeStage(34, "run"),
+          ]),
+        ]),
+      ]);
 
       expect(columns).toMatchObject([
         {
@@ -245,20 +237,18 @@ describe("PipelineGraphLayout", () => {
     });
 
     it("returns proper columns (GH#50)", () => {
-      const columns = createNodeColumns(
-        [
-          makeStage(3, "Parallel", [
-            makeParallel(4, "parallel:0", [
-              makeStage(6, "parent:0", [
-                makeStage(9, "child:0"),
-                makeStage(14, "child:1"),
-                makeStage(19, "child:3"),
-              ]),
+      const columns = createNodeColumns([
+        makeStage(3, "Parallel", [
+          makeParallel(4, "parallel:0", [
+            makeStage(6, "parent:0", [
+              makeStage(9, "child:0"),
+              makeStage(14, "child:1"),
+              makeStage(19, "child:3"),
             ]),
           ]),
-          makeStage(29, "parent:1"),
-        ],
-      );
+        ]),
+        makeStage(29, "parent:1"),
+      ]);
 
       expect(columns).toMatchObject([
         {
@@ -282,28 +272,26 @@ describe("PipelineGraphLayout", () => {
     });
 
     it("returns proper columns (GH#18)", () => {
-      const columns = createNodeColumns(
-        [
-          makeStage(6, "Stage 1"),
-          makeStage(11, "Stage 2"),
-          makeStage(31, "Stage6, When anyOf", [
-            makeStage(12, "Stage 3"),
-            makeStage(33, "Parallel", [
-              makeParallel(36, "Parallel Stage 1", [
-                makeStage(43, "Parallel Stage 1.1"),
-                makeStage(61, "Parallel Stage 1.2"),
-              ]),
-              makeParallel(37, "Parallel Stage 2", [
-                makeStage(45, "Parallel Stage 2.1"),
-                makeStage(63, "Parallel Stage 2.2"),
-              ]),
+      const columns = createNodeColumns([
+        makeStage(6, "Stage 1"),
+        makeStage(11, "Stage 2"),
+        makeStage(31, "Stage6, When anyOf", [
+          makeStage(12, "Stage 3"),
+          makeStage(33, "Parallel", [
+            makeParallel(36, "Parallel Stage 1", [
+              makeStage(43, "Parallel Stage 1.1"),
+              makeStage(61, "Parallel Stage 1.2"),
             ]),
-            makeStage(13, "Stage 4", [
-              makeStage(14, "Stage 5", [makeStage(15, "Stage 7")]),
+            makeParallel(37, "Parallel Stage 2", [
+              makeStage(45, "Parallel Stage 2.1"),
+              makeStage(63, "Parallel Stage 2.2"),
             ]),
           ]),
-        ],
-      );
+          makeStage(13, "Stage 4", [
+            makeStage(14, "Stage 5", [makeStage(15, "Stage 7")]),
+          ]),
+        ]),
+      ]);
 
       expect(columns).toMatchObject([
         {

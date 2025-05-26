@@ -64,6 +64,45 @@ export function layoutGraph(
     stages: [],
   };
 
+  function flattenStageInfo(e: StageInfo): StageInfo[] {
+    if (e.children.length) {
+      return e.children.flatMap((child) => {
+        if (child.children.length) {
+          return child.children.flatMap((subChild) =>
+            flattenStageInfo(subChild),
+          );
+        }
+        return flattenStageInfo(child);
+      });
+    }
+    return [e];
+  }
+
+  function flattenStageNodeInfo(e: StageNodeInfo): StageInfo[] {
+    if (e.stage.children.length) {
+      return e.stage.children.flatMap((child) => {
+        if (child.children.length) {
+          return child.children.flatMap((subChild) =>
+            flattenStageInfo(subChild),
+          );
+        }
+        return flattenStageInfo(child);
+      });
+    }
+    return [e.stage];
+  }
+
+  function flattenColumns(middleNodes: NodeColumn[]) {
+    return middleNodes.flatMap((node) =>
+      node.rows.flatMap((row) =>
+        row.flatMap((e) => {
+          const value = e as StageNodeInfo;
+          return flattenStageNodeInfo(value);
+        }),
+      ),
+    );
+  }
+
   function filterWhenCollapsed(nodes: NodeColumn[]) {
     if (!collapsed) {
       return nodes;
@@ -80,11 +119,7 @@ export function layoutGraph(
 
     const middleNodes = nodes.filter((node) => node !== start && node !== end);
 
-    const middleStages = middleNodes.flatMap((node) =>
-      node.rows.flatMap((row) =>
-        row.flatMap((e) => (e as StageNodeInfo).stage),
-      ),
-    );
+    const middleStages = flattenColumns(middleNodes);
 
     const newMiddleNodes = createNodeColumns(middleStages, collapsed);
 

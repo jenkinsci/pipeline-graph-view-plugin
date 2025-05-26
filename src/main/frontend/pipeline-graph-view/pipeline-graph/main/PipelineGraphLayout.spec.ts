@@ -56,7 +56,7 @@ describe("PipelineGraphLayout", () => {
     };
 
     it("returns no columns if no stages", () => {
-      const columns = createNodeColumns([], false);
+      const columns = createNodeColumns([]);
       expect(columns).toEqual([]);
     });
 
@@ -68,7 +68,6 @@ describe("PipelineGraphLayout", () => {
           makeStage(20, "unstable-two"),
           makeStage(26, "failure"),
         ],
-        false,
       );
 
       expect(columns).toMatchObject([
@@ -117,7 +116,6 @@ describe("PipelineGraphLayout", () => {
             ]),
           ]),
         ],
-        false,
       );
 
       expect(columns).toMatchObject([
@@ -174,7 +172,6 @@ describe("PipelineGraphLayout", () => {
             ]),
           ]),
         ],
-        false,
       );
 
       expect(columns).toMatchObject([
@@ -219,7 +216,6 @@ describe("PipelineGraphLayout", () => {
             ]),
           ]),
         ],
-        false,
       );
 
       expect(columns).toMatchObject([
@@ -262,7 +258,6 @@ describe("PipelineGraphLayout", () => {
           ]),
           makeStage(29, "parent:1"),
         ],
-        false,
       );
 
       expect(columns).toMatchObject([
@@ -308,7 +303,6 @@ describe("PipelineGraphLayout", () => {
             ]),
           ]),
         ],
-        false,
       );
 
       expect(columns).toMatchObject([

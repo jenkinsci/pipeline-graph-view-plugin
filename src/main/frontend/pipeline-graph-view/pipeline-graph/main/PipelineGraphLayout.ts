@@ -22,7 +22,7 @@ const maxColumnsWhenCollapsed = 13;
  *  2. Position the nodes in columns for each top stage, and in rows within each column based on execution order
  *  3. Create all the connections between nodes that need to be rendered
  *  4. Create a bigLabel per column, and a smallLabel for any child nodes
- *  5. Measure the extents of the graph
+ *  5. Measure the extent of the graph
  */
 export function layoutGraph(
   newStages: Array<StageInfo>,
@@ -30,7 +30,7 @@ export function layoutGraph(
   collapsed: boolean,
   messages: Messages,
 ): PositionedGraph {
-  const stageNodeColumns = createNodeColumns(newStages, collapsed);
+  const stageNodeColumns = createNodeColumns(newStages);
   const { nodeSpacingH, ypStart } = layout;
 
   const startNode: NodeInfo = {
@@ -78,26 +78,12 @@ export function layoutGraph(
     return [e];
   }
 
-  function flattenStageNodeInfo(e: StageNodeInfo): StageInfo[] {
-    if (e.stage.children.length) {
-      return e.stage.children.flatMap((child) => {
-        if (child.children.length) {
-          return child.children.flatMap((subChild) =>
-            flattenStageInfo(subChild),
-          );
-        }
-        return flattenStageInfo(child);
-      });
-    }
-    return [e.stage];
-  }
-
   function flattenColumns(middleNodes: NodeColumn[]) {
     return middleNodes.flatMap((node) =>
       node.rows.flatMap((row) =>
         row.flatMap((e) => {
           const value = e as StageNodeInfo;
-          return flattenStageNodeInfo(value);
+          return flattenStageInfo(value.stage);
         }),
       ),
     );
@@ -121,7 +107,7 @@ export function layoutGraph(
 
     const middleStages = flattenColumns(middleNodes);
 
-    const newMiddleNodes = createNodeColumns(middleStages, collapsed);
+    const newMiddleNodes = createNodeColumns(middleStages);
 
     const visibleNodes = newMiddleNodes.slice(0, maxColumnsWhenCollapsed);
     const hiddenNodes = newMiddleNodes.slice(maxColumnsWhenCollapsed);
@@ -190,7 +176,6 @@ export interface CounterNodeInfo extends PlaceholderNodeInfo {
  */
 export function createNodeColumns(
   topLevelStages: Array<StageInfo> = [],
-  collapsed: boolean,
 ): Array<NodeColumn> {
   const nodeColumns: Array<NodeColumn> = [];
 

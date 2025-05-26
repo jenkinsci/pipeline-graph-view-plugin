@@ -1,0 +1,10 @@
+pipeline {
+    agent any
+    stages {
+        stage('Input') {
+            steps {
+                input message: 'Shall we continue?', parameters: [string('Hello'), booleanParam('boolean-value')]
+            }
+        }
+    }
+}

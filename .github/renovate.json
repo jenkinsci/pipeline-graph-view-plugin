@@ -10,8 +10,7 @@
   "packageRules": [
     {
       "matchDatasources": ["npm"],
-      "addLabels": ["javascript"],
-      "automerge": false
+      "addLabels": ["javascript"]
     }
   ],
   "customManagers": [

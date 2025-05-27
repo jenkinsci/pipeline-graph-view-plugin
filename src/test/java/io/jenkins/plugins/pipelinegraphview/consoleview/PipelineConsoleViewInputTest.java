@@ -68,7 +68,7 @@ class PipelineConsoleViewInputTest {
                 .goToPipelineOverview();
 
         // Fails if you don't click proceed immediately currently
-        Thread.sleep(1000L);
+        p.waitForTimeout(1000D);
 
         pipelineOverviewPage.clickProceed();
         j.assertBuildStatus(Result.SUCCESS, j.waitForCompletion(run));

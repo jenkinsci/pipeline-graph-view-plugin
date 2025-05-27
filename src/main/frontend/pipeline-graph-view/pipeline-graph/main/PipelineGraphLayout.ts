@@ -66,14 +66,11 @@ export function layoutGraph(
 
   function flattenStageInfo(e: StageInfo): StageInfo[] {
     if (e.children.length) {
-      return e.children.flatMap((child) => {
-        if (child.children.length) {
-          return child.children.flatMap((subChild) =>
-            flattenStageInfo(subChild),
-          );
-        }
-        return flattenStageInfo(child);
-      });
+      const flattened: StageInfo[] =
+        e.type !== "PARALLEL_BLOCK" ? [{ ...e, children: [] }] : [];
+      return flattened.concat(
+        e.children.flatMap((child) => flattenStageInfo(child)),
+      );
     }
     return [e];
   }

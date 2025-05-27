@@ -1,0 +1,10 @@
+pipeline {
+    agent any
+    stages {
+        stage('Input') {
+            steps {
+                input 'Do you allow this?'
+            }
+        }
+    }
+}

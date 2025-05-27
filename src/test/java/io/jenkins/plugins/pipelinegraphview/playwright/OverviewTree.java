@@ -100,4 +100,12 @@ class OverviewTree {
         Locator found = getStageByName(stage);
         assertThat(found).isVisible();
     }
+
+    public void clickProceed() {
+        this.page.getByText("Proceed").click();
+    }
+
+    public void clickInputWithParameters() {
+        this.page.getByText("Input requested").click();
+    }
 }

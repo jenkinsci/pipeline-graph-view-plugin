@@ -15,10 +15,12 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
     private final PipelineGraph graph;
     private final OverviewTree tree;
     private final PipelineConsole logs;
+    private final String jobUrl;
 
     public PipelineOverviewPage(Page page, String jobUrl, String buildName) {
         super(page, jobUrl + "pipeline-overview/");
         this.buildName = buildName;
+        this.jobUrl = jobUrl;
         graph = new PipelineGraph(page.locator(".PWGx-PipelineGraph-container"));
         tree = new OverviewTree(page.locator("#tree-view-pane"));
         logs = new PipelineConsole(page.locator("#stage-view-pane"));
@@ -110,6 +112,17 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
         tree.searchForStage(stage);
         tree.selectStage(stage);
         logs.stageHasState(stage, state);
+        return this;
+    }
+
+    public InputPage clickInputWithParameters() {
+        tree.clickInputWithParameters();
+
+        return new InputPage(page, jobUrl).waitForLoaded();
+    }
+
+    public PipelineOverviewPage clickProceed() {
+        tree.clickProceed();
         return this;
     }
 

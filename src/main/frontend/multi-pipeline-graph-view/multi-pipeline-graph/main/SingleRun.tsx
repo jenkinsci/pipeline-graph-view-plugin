@@ -20,7 +20,7 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
     nodeSpacingH: 45,
   };
 
-  function ChangesText() {
+  function Changes() {
     if (run.changes === 0) {
       return;
     }
@@ -40,7 +40,7 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
           {run.displayName}
           <span>
             {time(run.timestamp)} - <Total ms={run.duration} />
-            <ChangesText />
+            <Changes />
           </span>
         </a>
       </div>

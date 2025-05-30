@@ -42,25 +42,25 @@ if (cancelButton) {
     } else {
       execute();
     }
-
-    function updateCancelButton() {
-      const buildCaption = document.querySelector(".jenkins-build-caption");
-      const url = buildCaption.dataset.statusUrl;
-      fetch(url).then((rsp) => {
-        if (rsp.ok) {
-          const isBuilding = rsp.headers.get("X-Building");
-          if (isBuilding === "true") {
-            setTimeout(updateCancelButton, 5000);
-          } else {
-            cancelButton.style.display = "none";
-          }
-        }
-        return null;
-      })
-      .catch((error) => {
-        console.error("Error fetching build caption statsus:", error);
-      })
-    }
-    setTimeout(updateCancelButton, 5000);
   })
+
+  function updateCancelButton() {
+    const buildCaption = document.querySelector(".jenkins-build-caption");
+    const url = buildCaption.dataset.statusUrl;
+    fetch(url).then((rsp) => {
+      if (rsp.ok) {
+        const isBuilding = rsp.headers.get("X-Building");
+        if (isBuilding === "true") {
+          setTimeout(updateCancelButton, 5000);
+        } else {
+          cancelButton.style.display = "none";
+        }
+      }
+      return null;
+    })
+    .catch((error) => {
+      console.error("Error fetching build caption statsus:", error);
+    })
+  }
+  setTimeout(updateCancelButton, 5000);
 }

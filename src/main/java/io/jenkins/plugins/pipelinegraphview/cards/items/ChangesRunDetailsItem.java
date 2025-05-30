@@ -1,29 +1,24 @@
 package io.jenkins.plugins.pipelinegraphview.cards.items;
 
+import static io.jenkins.plugins.pipelinegraphview.utils.ChangesUtil.getChanges;
+
 import hudson.scm.ChangeLogSet;
 import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.Icon.Ionicon;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.ItemContent;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 public class ChangesRunDetailsItem {
 
     public static Optional<RunDetailsItem> get(WorkflowRun run) {
-        Optional<ChangeLogSet<? extends ChangeLogSet.Entry>> changeSet =
-                run.getChangeSets().stream().filter(cs -> !cs.isEmptySet()).findFirst();
+        List<ChangeLogSet.Entry> changeEntries = getChanges(run);
 
-        if (changeSet.isEmpty()) {
+        if (changeEntries.isEmpty()) {
             return Optional.empty();
         }
-
-        List<ChangeLogSet.Entry> changeEntries = Arrays.stream(changeSet.get().getItems())
-                .map(ChangeLogSet.Entry.class::cast)
-                .collect(Collectors.toList());
 
         ChangeLogSet.Entry changeEntry = changeEntries.get(0);
 

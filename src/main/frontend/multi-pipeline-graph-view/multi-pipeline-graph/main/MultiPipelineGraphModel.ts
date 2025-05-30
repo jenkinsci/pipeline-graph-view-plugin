@@ -5,5 +5,6 @@ export interface RunInfo {
   displayName: string;
   timestamp: number;
   duration: number;
+  changes: number;
   result: Result;
 }

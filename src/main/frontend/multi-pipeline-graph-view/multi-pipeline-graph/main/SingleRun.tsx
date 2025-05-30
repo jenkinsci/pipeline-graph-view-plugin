@@ -20,6 +20,18 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
     nodeSpacingH: 45,
   };
 
+  function ChangesText() {
+    if (run.changes === 0) {
+      return;
+    }
+
+    if (run.changes === 1) {
+      return <> - 1 change</>;
+    }
+
+    return <> - {run.changes} changes</>;
+  }
+
   return (
     <div className="pgv-single-run">
       <div>
@@ -28,6 +40,7 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
           {run.displayName}
           <span>
             {time(run.timestamp)} - <Total ms={run.duration} />
+            <ChangesText />
           </span>
         </a>
       </div>

@@ -108,8 +108,9 @@ export function useStepsPoller(props: RunPollerProps) {
         case Result.unstable:
         case Result.failure:
         case Result.aborted:
-          if (selectedStepResult && stepResult < selectedStepResult) {
-            // Return first unstable/failed/aborted step which has a state worse than the selectedStep.
+          if (run?.complete && selectedStepResult && stepResult < selectedStepResult) {
+            // If the run is complete return first unstable/failed/aborted step which has a state worse 
+            // than the selectedStep.
             // E.g. if the first step state is failure we want to return that over a later unstable step.
             return step;
           }

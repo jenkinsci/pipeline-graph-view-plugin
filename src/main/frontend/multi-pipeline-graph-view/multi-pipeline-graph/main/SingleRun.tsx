@@ -27,7 +27,7 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
   };
 
   function Changes() {
-    if (run.changes === 0) {
+    if (run.changesCount === 0) {
       return;
     }
 
@@ -37,7 +37,7 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
       <>
         {" - "}
         {messages.format(LocalizedMessageKey.changesSummary, {
-          0: run.changes,
+          0: run.changesCount,
         })}
       </>
     );

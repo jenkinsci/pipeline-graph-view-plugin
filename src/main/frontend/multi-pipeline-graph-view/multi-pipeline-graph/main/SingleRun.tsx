@@ -1,6 +1,12 @@
 import "./single-run.scss";
 
+import { useContext } from "react";
+
 import StatusIcon from "../../../common/components/status-icon.tsx";
+import {
+  I18NContext,
+  LocalizedMessageKey,
+} from "../../../common/i18n/index.ts";
 import useRunPoller from "../../../common/tree-api.ts";
 import { time, Total } from "../../../common/utils/timings.tsx";
 import { PipelineGraph } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraph.tsx";
@@ -25,11 +31,16 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
       return;
     }
 
-    if (run.changes === 1) {
-      return <> - 1 change</>;
-    }
+    const messages = useContext(I18NContext);
 
-    return <> - {run.changes} changes</>;
+    return (
+      <>
+        {" - "}
+        {messages.format(LocalizedMessageKey.changesSummary, {
+          0: run.changes,
+        })}
+      </>
+    );
   }
 
   return (

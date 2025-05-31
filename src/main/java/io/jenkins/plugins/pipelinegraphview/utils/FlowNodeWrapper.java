@@ -6,6 +6,7 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.Action;
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.Messages;
+import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunResult;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunState;
@@ -23,7 +24,6 @@ import org.jenkinsci.plugins.workflow.graph.BlockStartNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.graph.FlowStartNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException;
 import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
 

@@ -1,9 +1,9 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
 import io.jenkins.plugins.pipelinegraphview.Messages;
+import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import java.util.Collections;
 import java.util.List;
-import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 
 class PipelineStageInternal {
 

@@ -2,8 +2,8 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 import static io.jenkins.plugins.pipelinegraphview.consoleview.PipelineConsoleViewAction.URL_NAME;
 
+import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import java.util.List;
-import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 
 public class PipelineStage extends AbstractPipelineNode {
 

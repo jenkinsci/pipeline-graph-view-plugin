@@ -1,6 +1,6 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
-import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
+import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 
 public class AbstractPipelineNode {
     private String name;

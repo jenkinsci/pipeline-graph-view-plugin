@@ -2,13 +2,13 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Result;
+import io.jenkins.plugins.pipelinegraphview.analysis.GenericStatus;
+import io.jenkins.plugins.pipelinegraphview.analysis.StatusAndTiming;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.NotExecutedNodeAction;
 import org.jenkinsci.plugins.workflow.actions.QueueItemAction;
 import org.jenkinsci.plugins.workflow.actions.WarningAction;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
-import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.GenericStatus;
-import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.StatusAndTiming;
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException;
 
 /** @author Vivek Pandey */

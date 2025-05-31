@@ -7,7 +7,6 @@ import io.jenkins.plugins.casc.misc.ConfiguredWithCode;
 import io.jenkins.plugins.casc.misc.JenkinsConfiguredWithCodeRule;
 import io.jenkins.plugins.casc.misc.junit.jupiter.WithJenkinsConfiguredWithCode;
 import io.jenkins.plugins.pipelinegraphview.playwright.PipelineJobPage;
-import io.jenkins.plugins.pipelinegraphview.playwright.PipelineOverviewPage;
 import io.jenkins.plugins.pipelinegraphview.playwright.PlaywrightConfig;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
@@ -71,14 +70,17 @@ class PipelineGraphViewTest {
                 .waitForStart();
         SemaphoreStep.waitForStart("wait/1", run);
 
-        PipelineOverviewPage op = new PipelineJobPage(p, run.getParent())
+        new PipelineJobPage(p, run.getParent())
                 .goTo()
                 .hasBuilds(1)
                 .nthBuild(0)
                 .goToBuild()
-                .goToPipelineOverview();
+                .goToPipelineOverview()
+                .hasStagesInGraph(2, "Caught1", "Runs1")
+                .stageIsVisibleInTree("Parallel1")
+                .stageIsVisibleInTree("Runs1")
+                .stageIsSelected("Runs1");
 
-        op.stageIsSelected("Runs1");
         SemaphoreStep.success("wait/1", run);
         j.assertBuildStatus(Result.SUCCESS, j.waitForCompletion(run));
     }
@@ -95,6 +97,10 @@ class PipelineGraphViewTest {
                 .nthBuild(0)
                 .goToBuild()
                 .goToPipelineOverview()
+                .hasStagesInGraph(2, "Caught1", "Runs1")
+                .stageIsVisibleInTree("Parallel1")
+                .stageIsVisibleInTree("Caught1")
+                .stageIsVisibleInTree("Runs1")
                 .stageIsSelected("Caught1");
     }
 }

@@ -29,7 +29,7 @@ public class ChangesRunDetailsItem {
             toolTipBuilder.append("%s by %s".formatted(commitId, author));
             toolTipBuilder.append(System.lineSeparator());
         }
-        toolTipBuilder.append(changeEntry.getMsgEscaped());
+        toolTipBuilder.append(changeEntry.getMsg());
 
         int numEntries = changeEntries.size();
         if (numEntries > 1) {

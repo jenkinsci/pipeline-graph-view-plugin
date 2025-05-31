@@ -3,22 +3,22 @@ package io.jenkins.plugins.pipelinegraphview;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.junit.UsePlaywright;
 import hudson.model.Result;
-import io.jenkins.plugins.pipelinegraphview.playwright.ManageAppearancePage;
+import io.jenkins.plugins.casc.misc.ConfiguredWithCode;
+import io.jenkins.plugins.casc.misc.JenkinsConfiguredWithCodeRule;
+import io.jenkins.plugins.casc.misc.junit.jupiter.WithJenkinsConfiguredWithCode;
 import io.jenkins.plugins.pipelinegraphview.playwright.PipelineJobPage;
+import io.jenkins.plugins.pipelinegraphview.playwright.PipelineOverviewPage;
 import io.jenkins.plugins.pipelinegraphview.playwright.PlaywrightConfig;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.jenkinsci.plugins.workflow.test.steps.SemaphoreStep;
 import org.junit.jupiter.api.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.jvnet.hudson.test.Issue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.function.ThrowingSupplier;
 
-@WithJenkins
+@WithJenkinsConfiguredWithCode
 @UsePlaywright(PlaywrightConfig.class)
 class PipelineGraphViewTest {
     private static final Logger log = LoggerFactory.getLogger(PipelineGraphViewTest.class);
@@ -28,10 +28,10 @@ class PipelineGraphViewTest {
     // http://localhost:8080/jenkins
 
     @Test
-    void smokeTest(Page p, JenkinsRule j) {
+    @ConfiguredWithCode("configure-appearance.yml")
+    void smokeTest(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
         String name = "Integration Tests";
-        WorkflowRun run = setupJenkins(p, j.jenkins.getRootUrl(), (ThrowingSupplier<WorkflowRun>)
-                () -> TestUtils.createAndRunJob(j, name, "smokeTest.jenkinsfile", Result.FAILURE));
+        WorkflowRun run = TestUtils.createAndRunJob(j, name, "smokeTest.jenkinsfile", Result.FAILURE);
 
         new PipelineJobPage(p, run.getParent())
                 .goTo()
@@ -62,21 +62,39 @@ class PipelineGraphViewTest {
                 .stageIsVisibleInTree("B2");
     }
 
-    private static WorkflowRun setupJenkins(Page p, String rootUrl, Supplier<WorkflowRun> setupRun) {
-        CompletableFuture<WorkflowRun> run = CompletableFuture.supplyAsync(setupRun);
-        CompletableFuture<Void> jenkinsSetup = CompletableFuture.runAsync(() -> {
-            log.info("Setting up Jenkins to have the Pipeline Graph View on all pages");
-            new ManageAppearancePage(p, rootUrl)
-                    .goTo()
-                    .displayPipelineOnJobPage()
-                    .displayPipelineOnBuildPage()
-                    .setPipelineGraphAsConsoleProvider()
-                    .save();
-            log.info("Jenkins setup complete");
-        });
+    @Issue("GH#797")
+    @Test
+    @ConfiguredWithCode("configure-appearance.yml")
+    void runningStageSelected(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
+        String name = "gh797";
+        WorkflowRun run = TestUtils.createAndRunJobNoWait(j, name, "gh797_errorAndContinueWithWait.jenkinsfile")
+                .waitForStart();
+        SemaphoreStep.waitForStart("wait/1", run);
 
-        CompletableFuture.allOf(run, jenkinsSetup).join();
+        PipelineOverviewPage op = new PipelineJobPage(p, run.getParent())
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .goToBuild()
+                .goToPipelineOverview();
 
-        return run.join();
+        op.stageIsSelected("Runs1");
+        SemaphoreStep.success("wait/1", run);
+        j.assertBuildStatus(Result.SUCCESS, j.waitForCompletion(run));
+    }
+
+    @Test
+    @ConfiguredWithCode("configure-appearance.yml")
+    void failedStageSelected(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
+        String name = "Pipeline Success Error Caught";
+        WorkflowRun run = TestUtils.createAndRunJob(j, name, "gh797_errorAndContinue.jenkinsfile", Result.SUCCESS);
+
+        new PipelineJobPage(p, run.getParent())
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .goToBuild()
+                .goToPipelineOverview()
+                .stageIsSelected("Caught1");
     }
 }

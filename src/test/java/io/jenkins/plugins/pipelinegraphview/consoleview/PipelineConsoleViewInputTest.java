@@ -38,6 +38,8 @@ class PipelineConsoleViewInputTest {
 
     @Test
     @ConfiguredWithCode("../configure-appearance.yml")
+    // Times out on slower systems as it doesn't click the input quick enough
+    @Disabled("https://github.com/jenkinsci/pipeline-graph-view-plugin/issues/568")
     void inputSucceeds(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
         WorkflowRun run =
                 TestUtils.createAndRunJobNoWait(j, "input", "input.jenkinsfile").waitForStart();

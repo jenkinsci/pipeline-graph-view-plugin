@@ -364,6 +364,201 @@ class StatusAndTimingTest {
         assertEquals(totalBranchTiming, finalTiming.getTotalDurationMillis());
     }
 
+    @Issue("GH#794")
+    @Test
+    void testParallelFailInProgress() throws Exception {
+        WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "Fails");
+        job.setDefinition(new CpsFlowDefinition(
+                """
+                 pipeline {
+                   agent any
+                   stages {
+                     stage('Tests') {
+                       parallel {
+                         stage('Failure caught') {
+                           steps {
+                             catchError(buildResult: 'SUCCESS', catchInterruptions: false, stageResult: 'FAILURE') {
+                               sh 'exit 1'
+                             }
+                           }
+                         }
+                         stage('Fails') {
+                           steps {
+                             sh 'exit 1'
+                           }
+                         }
+                         stage('Passes') {
+                           steps {
+                             sh 'sleep 10s'
+                           }
+                         }
+                       }
+                     }
+                   }
+                   post {
+                     always {
+                       semaphore 'wait'
+                     }
+                   }
+                 }
+                 """,
+                true));
+
+        /*
+        Node dump follows, format:
+        [ID]{parent,ids}(millisSinceStartOfRun) flowNodeClassName stepDisplayName [st=startId if a block end node]
+        Action format:
+                - actionClassName actionDisplayName
+        ------------------------------------------------------------------------------------------
+        [2]{}FlowStartNode Start of Pipeline
+        [3]{2}StepStartNode Allocate node : Start
+        -LogStorageAction Console Output
+        -QueueItemActionImpl null
+        -WorkspaceActionImpl Workspace
+        [4]{3}StepStartNode Allocate node : Body : Start
+        -BodyInvocationAction null
+        [5]{4}StepStartNode Stage : Start
+        -LogStorageAction Console Output
+        -ArgumentsActionImpl null
+        [6]{5}StepStartNode Tests
+        -BodyInvocationAction null
+        -LabelAction Tests
+        -TagsAction Tags
+        [7]{6}StepStartNode Execute in parallel : Start
+        -LogStorageAction Console Output
+        [10]{7}StepStartNode Branch: Failure caught
+        -BodyInvocationAction null
+        -ParallelLabelAction Branch: Failure caught
+        [11]{7}StepStartNode Branch: Fails
+        -BodyInvocationAction null
+        -ParallelLabelAction Branch: Fails
+        -TagsAction Tags
+        [12]{7}StepStartNode Branch: Passes
+        -BodyInvocationAction null
+        -ParallelLabelAction Branch: Passes
+        [13]{10}StepStartNode Stage : Start
+        -LogStorageAction Console Output
+        -ArgumentsActionImpl null
+        [14]{13}StepStartNode Failure caught
+        -BodyInvocationAction null
+        -LabelAction Failure caught
+        [15]{11}StepStartNode Stage : Start
+        -LogStorageAction Console Output
+        -ArgumentsActionImpl null
+        [16]{15}StepStartNode Fails
+        -BodyInvocationAction null
+        -LabelAction Fails
+        -TagsAction Tags
+        [17]{12}StepStartNode Stage : Start
+        -LogStorageAction Console Output
+        -ArgumentsActionImpl null
+        [18]{17}StepStartNode Passes
+        -BodyInvocationAction null
+        -LabelAction Passes
+        [19]{14}StepStartNode Catch error and set build result to failure : Start
+        -LogStorageAction Console Output
+        -ArgumentsActionImpl null
+        [20]{19}StepStartNode Catch error and set build result to failure : Body : Start
+        -BodyInvocationAction null
+        [21]{16}StepAtomNode Shell Script
+        -ArgumentsActionImpl null
+        -LogStorageAction Console Output
+        -ErrorAction script returned exit code 1
+        [22]{18}StepAtomNode Shell Script
+        -ArgumentsActionImpl null
+        -LogStorageAction Console Output
+        [23]{20}StepAtomNode Shell Script
+        -ArgumentsActionImpl null
+        -LogStorageAction Console Output
+        -ErrorAction script returned exit code 1
+        [24]{21}StepEndNode Stage : Body : End  [st=16]
+        -BodyInvocationAction null
+        -ErrorAction script returned exit code 1
+        [25]{24}StepEndNode Stage : End  [st=15]
+        -ErrorAction script returned exit code 1
+        [26]{25}StepEndNode Execute in parallel : Body : End  [st=11]
+        -BodyInvocationAction null
+        -ErrorAction script returned exit code 1
+        -LogStorageAction Console Output
+        [27]{23}StepEndNode Catch error and set build result to failure : Body : End  [st=20]
+        -BodyInvocationAction null
+        -ErrorAction script returned exit code 1
+        -LogStorageAction Console Output
+        -WarningAction Warning
+        [28]{27}StepEndNode Catch error and set build result to failure : End  [st=19]
+        [29]{28}StepEndNode Stage : Body : End  [st=14]
+        -BodyInvocationAction null
+        [30]{29}StepEndNode Stage : End  [st=13]
+        [31]{30}StepEndNode Execute in parallel : Body : End  [st=10]
+        -BodyInvocationAction null
+        [32]{22}StepEndNode Stage : Body : End  [st=18]
+        -BodyInvocationAction null
+        [33]{32}StepEndNode Stage : End  [st=17]
+        [34]{33}StepEndNode Execute in parallel : Body : End  [st=12]
+        -BodyInvocationAction null
+        [35]{31,26,34}StepEndNode Execute in parallel : End  [st=7]
+        -ErrorAction script returned exit code 1
+        [36]{35}StepEndNode Stage : Body : End  [st=6]
+        -BodyInvocationAction null
+        -ErrorAction script returned exit code 1
+        [37]{36}StepEndNode Stage : End  [st=5]
+        -ErrorAction script returned exit code 1
+        [38]{37}StepStartNode Stage : Start
+        -LogStorageAction Console Output
+        -ArgumentsActionImpl null
+        [39]{38}StepStartNode Declarative: Post Actions
+        -BodyInvocationAction null
+        -LabelAction Declarative: Post Actions
+        -TagsAction Tags
+        [40]{39}StepAtomNode Test step
+        -ArgumentsActionImpl null
+        -LogStorageAction Console Output
+        */
+
+        WorkflowRun run = job.scheduleBuild2(0).waitForStart();
+        SemaphoreStep.waitForStart("wait/1", run);
+
+        FlowExecution exec = run.getExecution();
+
+        // Failure Caught branch
+        assertEquals(
+                GenericStatus.FAILURE,
+                StatusAndTiming.computeChunkStatus2(
+                        run, exec.getNode("7"), exec.getNode("10"), exec.getNode("31"), exec.getNode("35")));
+
+        // Failing branch
+        assertEquals(
+                GenericStatus.FAILURE,
+                StatusAndTiming.computeChunkStatus2(
+                        run, exec.getNode("7"), exec.getNode("11"), exec.getNode("26"), exec.getNode("35")));
+
+        // Passing branch
+        assertEquals(
+                GenericStatus.SUCCESS,
+                StatusAndTiming.computeChunkStatus2(
+                        run, exec.getNode("7"), exec.getNode("12"), exec.getNode("34"), exec.getNode("35")));
+
+        // Check that branch statuses match
+        List<BlockStartNode> parallelStarts =
+                Arrays.asList((BlockStartNode) exec.getNode("10"), (BlockStartNode) exec.getNode("11"), (BlockStartNode)
+                        exec.getNode("12"));
+        List<FlowNode> parallelEnds = Arrays.asList(exec.getNode("31"), exec.getNode("26"), exec.getNode("34"));
+        Map<String, GenericStatus> branchStatuses = StatusAndTiming.computeBranchStatuses2(
+                run, exec.getNode("7"), parallelStarts, parallelEnds, exec.getNode("35"));
+
+        assertEquals(3, branchStatuses.size());
+        String[] branches = {"Fails", "Failure caught", "Passes"};
+        List<String> outputBranchList = new ArrayList<>(branchStatuses.keySet());
+        Collections.sort(outputBranchList);
+        assertArrayEquals(branches, outputBranchList.toArray());
+        assertEquals(GenericStatus.FAILURE, branchStatuses.get("Fails"));
+        assertEquals(GenericStatus.FAILURE, branchStatuses.get("Failure caught"));
+        assertEquals(GenericStatus.SUCCESS, branchStatuses.get("Passes"));
+
+        SemaphoreStep.success("wait/1", null);
+        j.assertBuildStatus(Result.FAILURE, run);
+    }
+
     @Test
     void testInProgress() throws Exception {
         WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "Fails");

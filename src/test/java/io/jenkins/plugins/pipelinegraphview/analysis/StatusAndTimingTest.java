@@ -389,15 +389,11 @@ class StatusAndTimingTest {
                          }
                          stage('Passes') {
                            steps {
-                             sh 'sleep 10s'
+                             sleep 1
+                             semaphore 'wait'
                            }
                          }
                        }
-                     }
-                   }
-                   post {
-                     always {
-                       semaphore 'wait'
                      }
                    }
                  }
@@ -464,7 +460,7 @@ class StatusAndTimingTest {
         -ArgumentsActionImpl null
         -LogStorageAction Console Output
         -ErrorAction script returned exit code 1
-        [22]{18}StepAtomNode Shell Script
+        [22]{18}StepAtomNode Sleep
         -ArgumentsActionImpl null
         -LogStorageAction Console Output
         [23]{20}StepAtomNode Shell Script
@@ -491,28 +487,29 @@ class StatusAndTimingTest {
         [30]{29}StepEndNode Stage : End  [st=13]
         [31]{30}StepEndNode Execute in parallel : Body : End  [st=10]
         -BodyInvocationAction null
-        [32]{22}StepEndNode Stage : Body : End  [st=18]
-        -BodyInvocationAction null
-        [33]{32}StepEndNode Stage : End  [st=17]
-        [34]{33}StepEndNode Execute in parallel : Body : End  [st=12]
-        -BodyInvocationAction null
-        [35]{31,26,34}StepEndNode Execute in parallel : End  [st=7]
-        -ErrorAction script returned exit code 1
-        [36]{35}StepEndNode Stage : Body : End  [st=6]
-        -BodyInvocationAction null
-        -ErrorAction script returned exit code 1
-        [37]{36}StepEndNode Stage : End  [st=5]
-        -ErrorAction script returned exit code 1
-        [38]{37}StepStartNode Stage : Start
-        -LogStorageAction Console Output
-        -ArgumentsActionImpl null
-        [39]{38}StepStartNode Declarative: Post Actions
-        -BodyInvocationAction null
-        -LabelAction Declarative: Post Actions
-        -TagsAction Tags
-        [40]{39}StepAtomNode Test step
+        [32]{22}StepAtomNode Test step
         -ArgumentsActionImpl null
         -LogStorageAction Console Output
+        [33]{32}StepEndNode Stage : Body : End  [st=18]
+        -BodyInvocationAction null
+        [34]{33}StepEndNode Stage : End  [st=17]
+        [35]{34}StepEndNode Execute in parallel : Body : End  [st=12]
+        -BodyInvocationAction null
+        [36]{31,26,35}StepEndNode Execute in parallel : End  [st=7]
+        -ErrorAction script returned exit code 1
+        [37]{36}StepEndNode Stage : Body : End  [st=6]
+        -BodyInvocationAction null
+        -ErrorAction script returned exit code 1
+        [38]{37}StepEndNode Stage : End  [st=5]
+        -ErrorAction script returned exit code 1
+        [39]{38}StepEndNode Allocate node : Body : End  [st=4]
+        -BodyInvocationAction null
+        -ErrorAction script returned exit code 1
+        [40]{39}StepEndNode Allocate node : End  [st=3]
+        -ErrorAction script returned exit code 1
+        -ErrorAction script returned exit code 1
+        [41]{40}FlowEndNode End of Pipeline  [st=2]
+        -ErrorAction script returned exit code 1
         */
 
         WorkflowRun run = job.scheduleBuild2(0).waitForStart();
@@ -524,39 +521,37 @@ class StatusAndTimingTest {
         assertEquals(
                 GenericStatus.FAILURE,
                 StatusAndTiming.computeChunkStatus2(
-                        run, exec.getNode("7"), exec.getNode("10"), exec.getNode("31"), exec.getNode("35")));
+                        run, exec.getNode("7"), exec.getNode("10"), exec.getNode("31"), null));
 
         // Failing branch
         assertEquals(
                 GenericStatus.FAILURE,
                 StatusAndTiming.computeChunkStatus2(
-                        run, exec.getNode("7"), exec.getNode("11"), exec.getNode("26"), exec.getNode("35")));
+                        run, exec.getNode("7"), exec.getNode("11"), exec.getNode("26"), null));
 
-        // Passing branch
+        // In-progress Passing branch
         assertEquals(
-                GenericStatus.SUCCESS,
+                GenericStatus.IN_PROGRESS,
                 StatusAndTiming.computeChunkStatus2(
-                        run, exec.getNode("7"), exec.getNode("12"), exec.getNode("34"), exec.getNode("35")));
+                        run, exec.getNode("7"), exec.getNode("12"), exec.getNode("32"), null));
 
         // Check that branch statuses match
         List<BlockStartNode> parallelStarts =
-                Arrays.asList((BlockStartNode) exec.getNode("10"), (BlockStartNode) exec.getNode("11"), (BlockStartNode)
-                        exec.getNode("12"));
-        List<FlowNode> parallelEnds = Arrays.asList(exec.getNode("31"), exec.getNode("26"), exec.getNode("34"));
-        Map<String, GenericStatus> branchStatuses = StatusAndTiming.computeBranchStatuses2(
-                run, exec.getNode("7"), parallelStarts, parallelEnds, exec.getNode("35"));
+                Arrays.asList((BlockStartNode) exec.getNode("10"), (BlockStartNode) exec.getNode("11"));
+        List<FlowNode> parallelEnds = Arrays.asList(exec.getNode("31"), exec.getNode("26"));
+        Map<String, GenericStatus> branchStatuses =
+                StatusAndTiming.computeBranchStatuses2(run, exec.getNode("7"), parallelStarts, parallelEnds, null);
 
-        assertEquals(3, branchStatuses.size());
-        String[] branches = {"Fails", "Failure caught", "Passes"};
+        assertEquals(2, branchStatuses.size());
+        String[] branches = {"Fails", "Failure caught"};
         List<String> outputBranchList = new ArrayList<>(branchStatuses.keySet());
         Collections.sort(outputBranchList);
         assertArrayEquals(branches, outputBranchList.toArray());
         assertEquals(GenericStatus.FAILURE, branchStatuses.get("Fails"));
         assertEquals(GenericStatus.FAILURE, branchStatuses.get("Failure caught"));
-        assertEquals(GenericStatus.SUCCESS, branchStatuses.get("Passes"));
 
         SemaphoreStep.success("wait/1", null);
-        j.assertBuildStatus(Result.FAILURE, run);
+        j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(run));
     }
 
     @Test

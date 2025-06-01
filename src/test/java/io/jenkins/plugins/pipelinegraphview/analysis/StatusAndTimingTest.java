@@ -389,7 +389,7 @@ class StatusAndTimingTest {
                          }
                          stage('Passes') {
                            steps {
-                             sleep 1
+                             sleep 2
                              semaphore 'wait'
                            }
                          }

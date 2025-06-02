@@ -6,8 +6,7 @@
     <div class="clearfix" />
     <div id="graph"
          data-current-run-path="${rootURL + '/' + it.buildUrl}"
-         data-previous-run-path="${it.previousBuildUrl != null ? rootURL + '/' + it.previousBuildUrl : null}" 
-        />
+         data-previous-run-path="${it.previousBuildUrl != null ? rootURL + '/' + it.previousBuildUrl : null}" />
     <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/pipeline-graph-view-bundle.js" type="module"/>
   </j:if>
 </j:jelly>

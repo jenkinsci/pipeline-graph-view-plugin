@@ -1,11 +1,11 @@
 import { CSSProperties } from "react";
 
+import { Total } from "../../../../common/utils/timings.tsx";
 import { sequentialStagesLabelOffset } from "../PipelineGraphLayout.ts";
 import { LayoutInfo, NodeLabelInfo } from "../PipelineGraphModel.tsx";
 import { TooltipLabel } from "./convertLabelToTooltip.tsx";
 import { nodeStrokeWidth } from "./StatusIcons.tsx";
 import { TruncatingLabel } from "./TruncatingLabel.tsx";
-import { Total } from "../../../../common/utils/timings.tsx";
 
 interface RenderBigLabelProps {
   details: NodeLabelInfo;

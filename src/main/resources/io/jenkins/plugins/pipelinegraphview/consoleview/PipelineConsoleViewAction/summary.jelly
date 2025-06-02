@@ -2,6 +2,8 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
   <j:if test="${it.showGraphOnBuildPage}">
+    <!-- workaround floatingBox elements overlapping -->
+    <div class="clearfix" />
     <div id="graph"
          data-current-run-path="${rootURL + '/' + it.buildUrl}"
          data-previous-run-path="${it.previousBuildUrl != null ? rootURL + '/' + it.previousBuildUrl : null}" />

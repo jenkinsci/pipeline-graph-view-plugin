@@ -5,6 +5,7 @@ import { LayoutInfo, NodeLabelInfo } from "../PipelineGraphModel.tsx";
 import { TooltipLabel } from "./convertLabelToTooltip.tsx";
 import { nodeStrokeWidth } from "./StatusIcons.tsx";
 import { TruncatingLabel } from "./TruncatingLabel.tsx";
+import { Total } from "../../../../common/utils/timings.tsx";
 
 interface RenderBigLabelProps {
   details: NodeLabelInfo;
@@ -69,6 +70,61 @@ export function BigLabel({
     >
       {details.text}
     </TruncatingLabel>
+  );
+}
+
+/**
+ * Generate the Component for a big label
+ */
+export function TimingsLabel({
+  details,
+  layout,
+  measuredHeight,
+  isSelected,
+}: RenderBigLabelProps) {
+  const { nodeSpacingH, labelOffsetV, connectorStrokeWidth, ypStart } = layout;
+
+  const labelWidth = nodeSpacingH - connectorStrokeWidth * 2;
+  const labelHeight = ypStart - labelOffsetV;
+  const labelOffsetH = Math.floor(labelWidth / -2);
+
+  // These are about layout more than appearance, so they should probably remain inline
+  const timingsLabelStyle: CSSProperties = {
+    position: "absolute",
+    width: labelWidth,
+    maxHeight: labelHeight + "px",
+    textAlign: "center",
+    marginLeft: labelOffsetH,
+  };
+
+  const x = details.x;
+  const bottom = measuredHeight - details.y + labelOffsetV;
+
+  // These are about layout more than appearance, so they're inline
+  const style: CSSProperties = {
+    ...timingsLabelStyle,
+    bottom: bottom + "px",
+    left: x + "px",
+  };
+
+  const classNames = ["PWGx-pipeline-big-label"];
+  if (isSelected) {
+    classNames.push("PWGx-pipeline-big-label--selected");
+  }
+  if (details.stage && details.stage.synthetic) {
+    classNames.push("pgv-graph-node--synthetic");
+  }
+  if (details.stage?.skeleton) {
+    classNames.push("pgv-graph-node--skeleton");
+  }
+  if (details.node.id < 0) {
+    classNames.push("pgv-graph-node--skeleton");
+  }
+
+  return (
+    <div className={classNames.join(" ")} style={style} key={details.key}>
+      <Total ms={parseInt(details.text, 10)} />
+    </div>
   );
 }
 

@@ -134,6 +134,7 @@ export function layoutGraph(
   positionNodes(allNodeColumns, layout);
 
   const bigLabels = createBigLabels(allNodeColumns, collapsed);
+  const timings = createTimings(allNodeColumns, collapsed);
   const smallLabels = createSmallLabels(allNodeColumns, collapsed);
   const branchLabels = createBranchLabels(allNodeColumns, collapsed);
   const connections = createConnections(allNodeColumns);
@@ -146,9 +147,7 @@ export function layoutGraph(
     for (const row of column.rows) {
       for (const node of row) {
         measuredWidth = Math.max(measuredWidth, node.x + nodeSpacingH / 2);
-        measuredHeight = collapsed
-          ? 60
-          : Math.max(measuredHeight, node.y + ypStart);
+        measuredHeight = Math.max(measuredHeight, node.y + ypStart);
       }
     }
   }
@@ -157,6 +156,7 @@ export function layoutGraph(
     nodeColumns: allNodeColumns,
     connections,
     bigLabels,
+    timings,
     smallLabels,
     branchLabels,
     measuredWidth,
@@ -340,12 +340,16 @@ function createBigLabels(
 ): Array<NodeLabelInfo> {
   const labels: Array<NodeLabelInfo> = [];
 
-  if (collapsed) {
-    return [];
-  }
+  // if (collapsed) {
+  //   return [];
+  // }
 
   for (const column of columns) {
     const node = column.rows[0][0];
+
+    if (node.isPlaceholder && node.type === "counter") {
+      continue;
+    }
     const stage = column.topStage;
     const text = stage ? stage.name : node.name;
     const key = "l_b_" + node.key;
@@ -359,6 +363,48 @@ function createBigLabels(
     labels.push({
       x,
       y: node.y,
+      node,
+      stage,
+      text,
+      key,
+    });
+  }
+
+  return labels;
+}
+
+/**
+ * Generate label descriptions for big labels at the top of each column
+ */
+function createTimings(
+  columns: Array<NodeColumn>,
+  collapsed: boolean,
+): Array<NodeLabelInfo> {
+  const labels: Array<NodeLabelInfo> = [];
+
+  // if (collapsed) {
+  //   return [];
+  // }
+
+  for (const column of columns) {
+    const node = column.rows[0][0];
+    if (node.isPlaceholder) {
+      continue;
+    }
+    const stage = column.topStage;
+
+    const text = stage?.totalDurationMillis + "";
+    if (!text) {
+      // shouldn't happen
+      continue;
+    }
+    const key = "l_t_" + node.key;
+
+    console.log(stage, node);
+
+    labels.push({
+      x: column.centerX,
+      y: node.y + 55,
       node,
       stage,
       text,

@@ -23,7 +23,6 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
 
   const layout: LayoutInfo = {
     ...defaultLayout,
-    nodeSpacingH: 45,
   };
 
   function Changes() {
@@ -44,9 +43,9 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
   }
 
   return (
-    <div className="pgv-single-run">
+    <div className="pgv-single-run" style={{ height: "100px" }}>
       <div>
-        <a href={currentJobPath + run.id} className="pgw-user-specified-text">
+        <a href={currentJobPath + run.id} className="pgv-user-specified-text">
           <StatusIcon status={run.result} />
           {run.displayName}
           <span>

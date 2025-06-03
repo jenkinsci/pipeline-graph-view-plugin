@@ -197,7 +197,7 @@ export function createNodeColumns(
     const stagesForColumn =
       !willRecurse && stageHasChildren(topStage)
         ? topStage.children
-        : [topStage];
+        : [{ ...topStage, children: [] }];
 
     const column: NodeColumn = {
       topStage,

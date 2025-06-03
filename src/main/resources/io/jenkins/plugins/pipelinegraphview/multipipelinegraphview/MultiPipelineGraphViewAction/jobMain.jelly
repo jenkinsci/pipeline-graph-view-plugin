@@ -1,23 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:dd="/lib/layout/dropdowns">
   <j:if test="${it.showGraphOnJobPage}">
-
-    <div id="pgv-settings-form" class="jenkins-hidden" data-title="${%Settings}" data-save="${%Save}">
-      <f:form action="settings" method="post">
-        <f:entry>
-          <f:checkbox id="stageNames" name="showNames" title="${%Show stage names}"/>
-        </f:entry>
-        <f:entry>
-          <f:checkbox id="stageDuration" name="showDuration" title="${%Show stage duration}"/>
-        </f:entry>
-      </f:form>
-    </div>
-
     <j:set var="controls">
-      <button id="pgv-settings" class="jenkins-button jenkins-card__reveal">
-        <l:icon src="symbol-settings" tooltip="${%Settings}"/>
-      </button>
+        <div id="pgv-settings"/>
     </j:set>
     <!-- workaround floatingBox elements overlapping until page is reworked -->
     <div class="clearfix" />
@@ -28,7 +14,6 @@
     </l:card>
     <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/multi-pipeline-graph-view-bundle.js" type="module"/>
     <script src="${rootURL}/plugin/pipeline-graph-view/js/build.js" type="module"/>
-    <script src="${rootURL}/plugin/pipeline-graph-view/js/stage-view-settings.js" type="module"/>
   </j:if>
 
 </j:jelly>

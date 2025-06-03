@@ -8,15 +8,17 @@ import Tooltip from "./tooltip.tsx";
  */
 export default function Dropdown({
   items,
+  tooltip = "More actions",
   disabled,
   className,
+  icon,
 }: DropdownProps) {
   const [visible, setVisible] = useState(false);
   const show = () => setVisible(true);
   const hide = () => setVisible(false);
 
   return (
-    <Tooltip content={"More actions"}>
+    <Tooltip content={tooltip}>
       <Tippy
         visible={visible}
         onClickOutside={hide}
@@ -66,11 +68,15 @@ export default function Dropdown({
           disabled={disabled}
           onClick={visible ? hide : show}
         >
-          <div className="jenkins-overflow-button__ellipsis">
-            <span />
-            <span />
-            <span />
-          </div>
+          {icon ? (
+            icon
+          ) : (
+            <div className="jenkins-overflow-button__ellipsis">
+              <span />
+              <span />
+              <span />
+            </div>
+          )}
         </button>
       </Tippy>
     </Tooltip>
@@ -90,8 +96,10 @@ export const DefaultDropdownProps: TippyProps = {
 
 interface DropdownProps {
   items: (DropdownItem | ReactElement | "separator")[];
+  tooltip?: string;
   disabled?: boolean;
   className?: string;
+  icon?: ReactNode;
 }
 
 interface DropdownItem {

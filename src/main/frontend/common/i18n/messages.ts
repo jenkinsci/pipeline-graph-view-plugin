@@ -81,6 +81,9 @@ export enum LocalizedMessageKey {
   start = "node.start",
   end = "node.end",
   changesSummary = "changes.summary",
+  settings = "settings",
+  showNames = "settings.showStageName",
+  showDuration = "settings.showStageDuration",
 }
 
 const DEFAULT_MESSAGES: ResourceBundle = {
@@ -96,6 +99,9 @@ const DEFAULT_MESSAGES: ResourceBundle = {
   [LocalizedMessageKey.start]: "Start",
   [LocalizedMessageKey.end]: "End",
   [LocalizedMessageKey.changesSummary]: "{0} {0,choice,1#change|1<changes}",
+  [LocalizedMessageKey.settings]: "Settings",
+  [LocalizedMessageKey.showNames]: "Show stage names",
+  [LocalizedMessageKey.showDuration]: "Show stage duration",
 };
 
 export function defaultMessages(locale: string): Messages {

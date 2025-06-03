@@ -4,6 +4,7 @@ import Dropdown from "../../../common/components/dropdown.tsx";
 import StatusIcon, {
   resultToColor,
 } from "../../../common/components/status-icon.tsx";
+import { DOCUMENT } from "../../../common/components/symbols.tsx";
 import Tooltip from "../../../common/components/tooltip.tsx";
 import {
   exact,
@@ -13,7 +14,6 @@ import {
 } from "../../../common/utils/timings.tsx";
 import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import StageNodeLink from "./StageNodeLink.tsx";
-import { DOCUMENT } from "../../../common/components/symbols.tsx";
 
 export default function StageDetails({ stage }: StageDetailsProps) {
   if (!stage) {

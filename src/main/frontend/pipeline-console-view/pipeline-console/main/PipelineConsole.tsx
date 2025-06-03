@@ -6,6 +6,11 @@ import { useEffect, useState } from "react";
 
 import Dropdown from "../../../common/components/dropdown.tsx";
 import DropdownPortal from "../../../common/components/dropdown-portal.tsx";
+import {
+  CONSOLE,
+  DOCUMENT,
+  SETTINGS,
+} from "../../../common/components/symbols.tsx";
 import Skeleton from "./components/skeleton.tsx";
 import Stages from "./components/stages.tsx";
 import StagesCustomization from "./components/stages-customization.tsx";
@@ -16,11 +21,6 @@ import { useLayoutPreferences } from "./providers/user-preference-provider.tsx";
 import ScrollToTopBottom from "./scroll-to-top-bottom.tsx";
 import SplitView from "./split-view.tsx";
 import StageView from "./StageView.tsx";
-import {
-  CONSOLE,
-  DOCUMENT,
-  SETTINGS,
-} from "../../../common/components/symbols.tsx";
 
 export default function PipelineConsole() {
   const rootElement = document.getElementById("console-pipeline-root");

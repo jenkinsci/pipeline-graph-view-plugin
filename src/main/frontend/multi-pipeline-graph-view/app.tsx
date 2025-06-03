@@ -8,9 +8,9 @@ import {
   LocaleProvider,
   ResourceBundleName,
 } from "../common/i18n/index.ts";
-import { MultiPipelineGraph } from "./multi-pipeline-graph/main/MultiPipelineGraph.tsx";
 import { UserPreferencesProvider } from "../common/user/user-preferences-provider.tsx";
-import SettingsButton from "./multi-pipeline-graph/main/SettingsButton.tsx";
+import { MultiPipelineGraph } from "./multi-pipeline-graph/main/MultiPipelineGraph.tsx";
+import SettingsButton from "./multi-pipeline-graph/main/settings-button.tsx";
 
 const App: FunctionComponent = () => {
   const locale = document.getElementById("multiple-pipeline-root")!.dataset

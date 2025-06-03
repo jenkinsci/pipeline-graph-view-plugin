@@ -68,9 +68,8 @@ export default function Dropdown({
           disabled={disabled}
           onClick={visible ? hide : show}
         >
-          {icon ? (
-            icon
-          ) : (
+          <span className={"jenkins-visually-hidden"}>{tooltip}</span>
+          {icon || (
             <div className="jenkins-overflow-button__ellipsis">
               <span />
               <span />

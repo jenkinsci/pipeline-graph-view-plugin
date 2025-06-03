@@ -13,7 +13,7 @@ import {
 } from "../../../common/utils/timings.tsx";
 import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import StageNodeLink from "./StageNodeLink.tsx";
-import { DOCUMENT } from "./symbols.tsx";
+import { DOCUMENT } from "../../../common/components/symbols.tsx";
 
 export default function StageDetails({ stage }: StageDetailsProps) {
   if (!stage) {

@@ -20,8 +20,10 @@ const App: FunctionComponent = () => {
       <LocaleProvider locale={locale}>
         <I18NProvider bundles={[ResourceBundleName.messages]}>
           <UserPreferencesProvider>
-            <SettingsButton buttonPortal={document.getElementById("pgv-settings")}/>
-            <MultiPipelineGraph/>
+            <SettingsButton
+              buttonPortal={document.getElementById("pgv-settings")}
+            />
+            <MultiPipelineGraph />
           </UserPreferencesProvider>
         </I18NProvider>
       </LocaleProvider>

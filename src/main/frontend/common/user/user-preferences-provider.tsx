@@ -22,8 +22,7 @@ const UserPreferencesContext = createContext<
   PipelineGraphViewPreferences | undefined
 >(undefined);
 
-const makeKey = ( setting: string) =>
-  `pgv-graph-view.${setting}`;
+const makeKey = (setting: string) => `pgv-graph-view.${setting}`;
 
 const loadFromLocalStorage = <T,>(key: string, fallback: T): T => {
   if (typeof window === "undefined") {

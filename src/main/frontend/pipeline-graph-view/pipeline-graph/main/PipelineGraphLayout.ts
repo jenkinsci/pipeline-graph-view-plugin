@@ -400,8 +400,6 @@ function createTimings(
     }
     const key = "l_t_" + node.key;
 
-    console.log(stage, node);
-
     labels.push({
       x: column.centerX,
       y: node.y + 55,

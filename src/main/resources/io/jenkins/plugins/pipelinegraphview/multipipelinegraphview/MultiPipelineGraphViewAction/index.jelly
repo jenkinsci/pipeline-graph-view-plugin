@@ -7,7 +7,7 @@
       <l:app-bar title="${%Stages}">
         <j:if test="${it.buildable}">
           <l:hasPermission permission="${it.permission}">
-            <j:set var="proxyId" value="${h.generateId()}" />
+            <j:set var="proxyId" value="${h.generateId()}"/>
             <st:bind value="${it}" var="rebuildAction${proxyId}"/>
             <button id="pgv-rebuild" data-success-message="${%Build scheduled}"
                     data-proxy-name="rebuildAction${proxyId}"
@@ -23,11 +23,10 @@
           </a>
         </l:hasPermission>
       </l:app-bar>
-      <l:card title="${%Stages}">
-        <div id="multiple-pipeline-root"
-             data-current-job-path="${rootURL + '/' + it.jobUrl}"
-             data-user-locale="${request2.getLocale().toLanguageTag()}" />
-      </l:card>
+
+      <div id="multiple-pipeline-root"
+           data-current-job-path="${rootURL + '/' + it.jobUrl}"
+           data-user-locale="${request2.getLocale().toLanguageTag()}"/>
       <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/multi-pipeline-graph-view-bundle.js" type="module"/>
       <script src="${rootURL}/plugin/pipeline-graph-view/js/build.js" type="module"/>
     </l:main-panel>

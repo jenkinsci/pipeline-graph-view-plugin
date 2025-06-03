@@ -103,4 +103,18 @@ class PipelineGraphViewTest {
                 .stageIsVisibleInTree("Runs1")
                 .stageIsSelected("Caught1");
     }
+
+    @Issue("GH#815")
+    @Test
+    @ConfiguredWithCode("configure-appearance.yml")
+    void nestedStage(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
+        String name = "Nested Stage";
+        WorkflowRun run = TestUtils.createAndRunJob(j, name, "gh815_nestedStage.jenkinsfile", Result.SUCCESS);
+
+        new PipelineJobPage(p, run.getParent())
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .hasStages(2, "Parent", "Child");
+    }
 }

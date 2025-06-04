@@ -4,7 +4,6 @@ import static io.jenkins.plugins.pipelinegraphview.consoleview.PipelineConsoleVi
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import hudson.Functions;
 import hudson.Plugin;
 import hudson.model.Action;
 import hudson.model.BallColor;
@@ -15,7 +14,6 @@ import hudson.model.Result;
 import hudson.security.Permission;
 import hudson.util.HttpResponses;
 import io.jenkins.plugins.pipelinegraphview.Messages;
-import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -54,7 +52,7 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
     }
 
     public Permission getPermission() {
-        return run.getParent().BUILD;
+        return Item.BUILD;
     }
 
     public Permission getCancelPermission() {
@@ -63,14 +61,6 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
 
     public Permission getConfigurePermission() {
         return Item.CONFIGURE;
-    }
-
-    @JavaScriptMethod
-    public boolean hasConfigurePermission() throws IOException, ServletException {
-        if (run != null) {
-            return Functions.hasPermission(run.getParent(), Item.CONFIGURE);
-        }
-        return false;
     }
 
     public String getBuildDisplayName() {

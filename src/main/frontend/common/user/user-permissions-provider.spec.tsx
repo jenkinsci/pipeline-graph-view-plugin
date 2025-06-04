@@ -1,9 +1,10 @@
 import { render, screen } from "@testing-library/react";
+import { describe } from "vitest";
+
 import {
   UserPermissionsProvider,
   useUserPermissions,
 } from "./user-permission-provider";
-import { describe } from "vitest";
 
 describe("UserPermissionsProvider", () => {
   const PermissionsDisplay = () => {
@@ -11,15 +12,19 @@ describe("UserPermissionsProvider", () => {
     return (
       <>
         {Object.entries(permissions).map(([key, value]) => {
-          return <div data-testid={key} key={key}>{String(value)}</div>;
+          return (
+            <div data-testid={key} key={key}>
+              {String(value)}
+            </div>
+          );
         })}
       </>
     );
   };
 
-  const setupTemplate = (dataset?: Record<string, string> = {}) => {
+  const setupTemplate = (dataset: Record<string, string> = {}) => {
     const template = document.createElement("template");
-    dataset.module = "permissions"
+    dataset.module = "permissions";
     Object.entries(dataset).forEach(([key, value]) => {
       template.dataset[key] = value;
     });
@@ -30,7 +35,7 @@ describe("UserPermissionsProvider", () => {
     document.body.innerHTML = "";
   });
 
-  describe('permissions', () => {
+  describe("permissions", () => {
     it("should provide default permissions when no data exists", () => {
       render(
         <UserPermissionsProvider>
@@ -76,9 +81,9 @@ describe("UserPermissionsProvider", () => {
 
       expect(screen.getByTestId("canConfigure")).toHaveTextContent("false");
     });
-  })
+  });
 
-  describe('rendering', () => {
+  describe("rendering", () => {
     it("should render children", () => {
       render(
         <UserPermissionsProvider>
@@ -88,5 +93,5 @@ describe("UserPermissionsProvider", () => {
 
       expect(screen.getByTestId("child")).toHaveTextContent("Child content");
     });
-  })
+  });
 });

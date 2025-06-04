@@ -1,57 +1,29 @@
-import {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, ReactNode, useContext } from "react";
 
 interface UserPermissions {
   canConfigure: boolean;
 }
 
-type UserPermissionsProviderProps = {
-  children: ReactNode;
-  proxy?: ProxyProps;
-};
-
-type ProxyProps = {
-  configureProxy?: string;
-};
-
 const UserPermissionsContext = createContext<UserPermissions>({
   canConfigure: false,
 });
 
-type StaplerResponse = {
-  responseJSON?: boolean;
-};
-
 export const UserPermissionsProvider = ({
   children,
-  proxy,
-}: UserPermissionsProviderProps) => {
-  const [canConfigure, setCanConfigure] = useState(false);
+}: {
+  children: ReactNode;
+}) => {
+  const element = document.querySelector(
+    "[data-module='permissions']",
+  ) as HTMLTemplateElement;
+  const data = element?.dataset ?? {};
 
-  proxy = proxy ?? {};
-
-  if (proxy.configureProxy) {
-    // The compiler complains if we don't capture to a local variable,
-    // it cannot guarantee that `proxy.configureProxy` won't change to undefined
-    const { configureProxy } = proxy;
-    useEffect(() => {
-      (window as any)[configureProxy]?.hasConfigurePermission(
-        (response: StaplerResponse) => {
-          setCanConfigure(response?.responseJSON || false);
-        },
-      );
-    }, []);
-  }
+  const perms: UserPermissions = {
+    canConfigure: data.permissionConfigure === "true",
+  };
 
   return (
-    <UserPermissionsContext value={{ canConfigure }}>
-      {children}
-    </UserPermissionsContext>
+    <UserPermissionsContext value={perms}>{children}</UserPermissionsContext>
   );
 };
 

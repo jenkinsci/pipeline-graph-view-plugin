@@ -78,9 +78,7 @@
                         </div>
                     </l:hasPermission>
                 </j:if>
-                <j:set var="proxyId" value="${h.generateId()}" />
-                <st:bind value="${it}" var="configureAction${proxyId}"/>
-                <div id="console-pipeline-overflow-root" data-proxy-name="configureAction${proxyId}"/>
+                <div id="console-pipeline-overflow-root"/>
             </j:set>
 
             <t:buildCaption controls="${controls}">
@@ -102,6 +100,11 @@
                     <st:include page="description.jelly" it="${card}" />
                 </j:forEach>
             </div>
+
+            <j:set var="configPermission" value="${h.hasPermission(it, it.configurePermission)}" />
+            <template data-module="permissions"
+                      data-permission-configure="${configPermission}"
+            />
 
             <div id="console-pipeline-root" data-current-run-path="${rootURL + '/' + it.buildUrl}"
                            data-previous-run-path="${it.previousBuildUrl != null ? rootURL + '/' + it.previousBuildUrl : null}"

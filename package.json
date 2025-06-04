@@ -34,7 +34,6 @@
     "@tippyjs/react": "^4.2.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-virtuoso": "^4.12.6",
     "react-zoom-pan-pinch": "3.7.0"
   },
   "devDependencies": {

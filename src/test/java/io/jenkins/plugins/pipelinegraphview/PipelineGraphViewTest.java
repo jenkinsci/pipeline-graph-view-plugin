@@ -113,4 +113,23 @@ class PipelineGraphViewTest {
 
         new PipelineJobPage(p, run.getParent()).goTo().hasBuilds(1).nthBuild(0).hasStages(2, "Parent", "Child");
     }
+
+    @Issue("GH#817")
+    @Test
+    @ConfiguredWithCode("configure-appearance.yml")
+    void unicodePlainTextLogs(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
+        String name = "Stage with Emoji";
+        WorkflowRun run = TestUtils.createAndRunJob(j, name, "gh817_unicodePlainTextLogs.jenkinsfile", Result.SUCCESS);
+
+        new PipelineJobPage(p, run.getParent())
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .goToBuild()
+                .goToPipelineOverview()
+                .hasStagesInGraph(1, "echo")
+                .selectStageInGraph("echo")
+                .stageHasSteps("\uD83D\uDE00")
+                .stepContainsText("\uD83D\uDE00", "\uD83D\uDE00");
+    }
 }

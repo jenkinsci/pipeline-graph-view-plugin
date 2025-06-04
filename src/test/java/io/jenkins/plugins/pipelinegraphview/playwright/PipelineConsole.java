@@ -69,6 +69,11 @@ class PipelineConsole {
         }
         Locator stepLogs = stepContainer.getByRole(AriaRole.LOG);
         assertThat(stepLogs).containsText(textToFind);
+
+        try (Page plainText = page.waitForPopup(stepContainer.locator("a[href*='log?nodeId=']")::click)) {
+            plainText.waitForLoadState();
+            assertThat(plainText.locator("body")).containsText(textToFind);
+        }
     }
 
     public void stageHasSteps(String step, String... additional) {

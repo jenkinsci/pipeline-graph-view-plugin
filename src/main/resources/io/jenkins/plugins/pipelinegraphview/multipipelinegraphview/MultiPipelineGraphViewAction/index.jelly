@@ -17,12 +17,13 @@
             </button>
           </l:hasPermission>
         </j:if>
-        <l:hasPermission permission="${it.configurePermission}">
-          <a href="../configure" class="jenkins-button">
-            ${%Configure}
-          </a>
-        </l:hasPermission>
+        <div id="multiple-pipeline-overflow-root" />
       </l:app-bar>
+
+      <j:set var="configPermission" value="${h.hasPermission(it, it.configurePermission)}" />
+      <template data-module="permissions"
+                data-permission-configure="${configPermission}"
+      />
 
       <div id="multiple-pipeline-root"
            data-current-job-path="${rootURL + '/' + it.jobUrl}"

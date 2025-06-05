@@ -47,7 +47,9 @@ export default function PipelineConsole() {
 
   return (
     <>
-      <DropdownPortal>
+      <DropdownPortal
+        container={document.getElementById("console-pipeline-overflow-root")}
+      >
         <Dropdown
           items={[
             showSplitView ? (

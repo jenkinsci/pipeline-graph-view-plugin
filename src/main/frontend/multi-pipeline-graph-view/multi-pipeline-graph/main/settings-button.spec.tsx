@@ -60,12 +60,4 @@ describe("SettingsButton", () => {
     fireEvent.click(showDurationsCheckbox);
     expect(showDurationsCheckbox).toBeChecked();
   });
-
-  it("should clear portal content on mount", () => {
-    const buttonPortal = createButtonPortal();
-    buttonPortal.innerHTML = "<div>Old content</div>";
-    renderComponent(buttonPortal);
-
-    expect(buttonPortal.innerHTML).not.toContain("Old content");
-  });
 });

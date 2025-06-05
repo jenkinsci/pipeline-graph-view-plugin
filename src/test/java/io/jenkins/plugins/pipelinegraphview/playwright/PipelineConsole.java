@@ -99,4 +99,11 @@ class PipelineConsole {
         Locator stateSVG = selectedStage().locator("..").getByRole(AriaRole.IMG);
         assertThat(stateSVG).hasAccessibleName(state.toString());
     }
+
+    public void scrollToText(String text) {
+        log.info("Scrolling to log line containing the text {}", text);
+        Locator logLine = logs.getByText(text);
+        logLine.scrollIntoViewIfNeeded();
+        assertThat(logLine).isInViewport();
+    }
 }

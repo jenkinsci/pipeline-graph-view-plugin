@@ -21,7 +21,4 @@ src/main/webapp/js/bundles
 .project
 .factorypath
 
-# VS Code project files
-.vscode
-
 *.dylib

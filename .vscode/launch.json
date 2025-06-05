@@ -1,0 +1,29 @@
+{
+  "version": "2.0.0",
+  "configurations": [
+    {
+      "name": "Debug Frontend",
+      "type": "chrome",
+      "request": "launch",
+      "preLaunchTask": "Run Jenkins",
+      "url": "http://localhost:8080/jenkins",
+      "pathMapping": {
+        "/jenkins/plugin/pipeline-graph-view": "${workspaceFolder}/src/main/webapp"
+      }
+    },
+    {
+      "name": "Debug Java",
+      "type": "java",
+      "request": "attach",
+      "preLaunchTask": "Run Jenkins",
+      "hostName": "localhost",
+      "port": 8000
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug All",
+      "configurations": ["Debug Java", "Debug Frontend"]
+    }
+  ]
+}

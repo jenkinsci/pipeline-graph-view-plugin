@@ -45,3 +45,7 @@ export const I18NProvider: FunctionComponent<I18NProviderProps> = ({
     <I18NContext.Provider value={messages}>{children}</I18NContext.Provider>
   );
 };
+
+export function useMessages() {
+  return useContext(I18NContext);
+}

@@ -54,17 +54,17 @@ See [IDE configuration](https://jenkins.io/doc/developer/development-environment
 
 This repository comes preconfigured for debugging in [Visual Studio Code](https://code.visualstudio.com/). Beyond Java and Maven, you will need:
 
-- The [recommended extensions](./.vscode/extensions.json)
+- The [recommended extensions](./.vscode/extensions.json) for Visual Studio Code
 - Node.js and NPM installed and in `PATH` (check recommended versions in [`pom.xml`](./pom.xml) > `properties`)
 - Frontend dependencies installed with `npm install`
 
 Then, in the [_Debug_ view](https://code.visualstudio.com/docs/debugtest/debugging), you can select between:
 
-- `Debug Frontend` to debug the frontend code in a browser
-- `Debug Java` to debug the Java code
-- `Debug All` to debug both at the same time
+- _Debug Frontend_ to debug the frontend code in a browser
+- _Debug Java_ to debug the Java code
+- _Debug All_ to debug both at the same time
 
-When launching one of these, Visual Studio Code will automatically start the required processes, such as `npm run build:dev` and `mvn hpi:run`.
+When launching one of these, Visual Studio Code will automatically start the required tasks, such as `npm run build:dev` and `mvn hpi:run -Dskip.npm -P quick-build`.
 
 https://github.com/user-attachments/assets/709e29b4-ac1c-47da-bcc4-30eda7dcc266
 

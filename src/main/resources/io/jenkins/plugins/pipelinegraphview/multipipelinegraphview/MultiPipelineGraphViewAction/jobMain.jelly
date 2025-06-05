@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:dd="/lib/layout/dropdowns">
   <j:if test="${it.showGraphOnJobPage}">
+    <j:set var="controls">
+        <div id="pgv-settings"/>
+    </j:set>
     <!-- workaround floatingBox elements overlapping until page is reworked -->
     <div class="clearfix" />
-    <l:card title="${%Stages}" expandable="multi-pipeline-graph">
+    <l:card title="${%Stages}" expandable="multi-pipeline-graph" controls="${controls}">
       <div id="multiple-pipeline-root"
            data-current-job-path="${rootURL + '/' + it.jobUrl}"
            data-user-locale="${request2.getLocale().toLanguageTag()}" />

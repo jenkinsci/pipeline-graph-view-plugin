@@ -121,6 +121,7 @@ export interface PositionedGraph {
   nodeColumns: Array<NodeColumn>;
   connections: Array<CompositeConnection>;
   bigLabels: Array<NodeLabelInfo>;
+  timings: Array<NodeLabelInfo>;
   smallLabels: Array<NodeLabelInfo>;
   branchLabels: Array<NodeLabelInfo>;
   measuredWidth: number;

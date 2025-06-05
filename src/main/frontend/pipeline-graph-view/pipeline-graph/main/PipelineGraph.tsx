@@ -15,6 +15,7 @@ import {
   BigLabel,
   SequentialContainerLabel,
   SmallLabel,
+  TimingsLabel,
 } from "./support/labels.tsx";
 import { Node, SelectionHighlight } from "./support/nodes.tsx";
 
@@ -24,6 +25,7 @@ export function PipelineGraph(props: Props) {
   const [nodeColumns, setNodeColumns] = useState<NodeColumn[]>([]);
   const [connections, setConnections] = useState<CompositeConnection[]>([]);
   const [bigLabels, setBigLabels] = useState<NodeLabelInfo[]>([]);
+  const [timings, setTimings] = useState<NodeLabelInfo[]>([]);
   const [smallLabels, setSmallLabels] = useState<NodeLabelInfo[]>([]);
   const [branchLabels, setBranchLabels] = useState<NodeLabelInfo[]>([]);
   const [measuredWidth, setMeasuredWidth] = useState<number>(0);
@@ -76,6 +78,7 @@ export function PipelineGraph(props: Props) {
     setConnections(newLayout.connections);
     setBigLabels(newLayout.bigLabels);
     setSmallLabels(newLayout.smallLabels);
+    setTimings(newLayout.timings);
     setBranchLabels(newLayout.branchLabels);
     setMeasuredWidth(newLayout.measuredWidth);
     setMeasuredHeight(newLayout.measuredHeight);
@@ -124,6 +127,16 @@ export function PipelineGraph(props: Props) {
 
         {bigLabels.map((label) => (
           <BigLabel
+            key={label.key}
+            details={label}
+            layout={layoutState}
+            measuredHeight={measuredHeight}
+            isSelected={selectedStage?.id === label.stage?.id}
+          />
+        ))}
+
+        {timings.map((label) => (
+          <TimingsLabel
             key={label.key}
             details={label}
             layout={layoutState}

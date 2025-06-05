@@ -69,6 +69,11 @@ class PipelineConsole {
         }
         Locator stepLogs = stepContainer.getByRole(AriaRole.LOG);
         assertThat(stepLogs).containsText(textToFind);
+
+        try (Page plainText = page.waitForPopup(stepContainer.locator("a[href*='log?nodeId=']")::click)) {
+            plainText.waitForLoadState();
+            assertThat(plainText.locator("body")).containsText(textToFind);
+        }
     }
 
     public void stageHasSteps(String step, String... additional) {
@@ -93,5 +98,12 @@ class PipelineConsole {
         log.info("Checking if stage {} has state {} in the logs", stage, state);
         Locator stateSVG = selectedStage().locator("..").getByRole(AriaRole.IMG);
         assertThat(stateSVG).hasAccessibleName(state.toString());
+    }
+
+    public void scrollToText(String text) {
+        log.info("Scrolling to log line containing the text {}", text);
+        Locator logLine = logs.getByText(text);
+        logLine.scrollIntoViewIfNeeded();
+        assertThat(logLine).isInViewport();
     }
 }

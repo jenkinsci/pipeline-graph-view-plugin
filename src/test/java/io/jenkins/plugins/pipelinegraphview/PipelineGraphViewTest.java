@@ -103,4 +103,56 @@ class PipelineGraphViewTest {
                 .stageIsVisibleInTree("Runs1")
                 .stageIsSelected("Caught1");
     }
+
+    @Issue("GH#815")
+    @Test
+    @ConfiguredWithCode("configure-appearance.yml")
+    void nestedStage(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
+        String name = "Nested Stage";
+        WorkflowRun run = TestUtils.createAndRunJob(j, name, "gh815_nestedStage.jenkinsfile", Result.SUCCESS);
+
+        new PipelineJobPage(p, run.getParent()).goTo().hasBuilds(1).nthBuild(0).hasStages(2, "Parent", "Child");
+    }
+
+    @Issue("GH#817")
+    @Test
+    @ConfiguredWithCode("configure-appearance.yml")
+    void unicodePlainTextLogs(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
+        String name = "Stage with Emoji";
+        WorkflowRun run = TestUtils.createAndRunJob(j, name, "gh817_unicodePlainTextLogs.jenkinsfile", Result.SUCCESS);
+
+        new PipelineJobPage(p, run.getParent())
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .goToBuild()
+                .goToPipelineOverview()
+                .hasStagesInGraph(1, "echo")
+                .selectStageInGraph("echo")
+                .stageHasSteps("\uD83D\uDE00")
+                .stepContainsText("\uD83D\uDE00", "\uD83D\uDE00");
+    }
+
+    @Issue("GH#744")
+    @Test
+    @ConfiguredWithCode("configure-appearance.yml")
+    void searchOffScreen(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
+        String name = "gh744";
+        WorkflowRun run = TestUtils.createAndRunJob(j, name, "gh744_searchOffScreen.jenkinsfile", Result.SUCCESS);
+
+        new PipelineJobPage(p, run.getParent())
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .goToBuild()
+                .goToPipelineOverview()
+                .hasStagesInGraph(1, "Stage")
+                .selectStageInGraph("Stage")
+                .stageHasSteps("Print Message")
+                .stepContainsText("Print Message", "Hello, world 1!")
+                .stepContainsText("Print Message", "Hello, world 1000!")
+                .scrollToText("Hello, world 1!")
+                .scrollToText("Hello, world 1000!")
+                .scrollToText("Hello, world 1!");
+    }
 }

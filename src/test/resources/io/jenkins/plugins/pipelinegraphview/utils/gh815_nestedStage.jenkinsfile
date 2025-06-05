@@ -1,0 +1,5 @@
+stage("Parent") {
+    stage("Child") {
+        echo("step")
+    }
+}

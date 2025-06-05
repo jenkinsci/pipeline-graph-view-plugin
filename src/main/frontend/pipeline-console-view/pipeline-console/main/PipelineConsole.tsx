@@ -2,8 +2,6 @@ import "./pipeline-console.scss";
 import "../../../pipeline-graph-view/app.scss";
 import "../../../pipeline-graph-view/pipeline-graph/styles/main.scss";
 
-import { useEffect, useState } from "react";
-
 import Dropdown from "../../../common/components/dropdown.tsx";
 import DropdownPortal from "../../../common/components/dropdown-portal.tsx";
 import {
@@ -11,6 +9,7 @@ import {
   DOCUMENT,
   SETTINGS,
 } from "../../../common/components/symbols.tsx";
+import { useUserPermissions } from "../../../common/user/user-permission-provider.tsx";
 import Skeleton from "./components/skeleton.tsx";
 import Stages from "./components/stages.tsx";
 import StagesCustomization from "./components/stages-customization.tsx";
@@ -26,21 +25,6 @@ export default function PipelineConsole() {
   const rootElement = document.getElementById("console-pipeline-root");
   const currentRunPath = rootElement?.dataset.currentRunPath!;
   const previousRunPath = rootElement?.dataset.previousRunPath;
-
-  const [configurePermission, setConfigurePermission] = useState(false);
-
-  useEffect(() => {
-    const configureDataProxyName = document.getElementById(
-      "console-pipeline-overflow-root",
-    )?.dataset.proxyName;
-    if (configureDataProxyName) {
-      (window as any)[configureDataProxyName]?.hasConfigurePermission(function (
-        enabled: any,
-      ) {
-        setConfigurePermission(enabled?.responseJSON);
-      });
-    }
-  }, [configurePermission]);
 
   const { stageViewPosition, mainViewVisibility } = useLayoutPreferences();
   const {
@@ -58,6 +42,8 @@ export default function PipelineConsole() {
   const showSplitView = loading || (!loading && stages.length > 0);
 
   const isOnlyPlaceholderNode = stages.length === 1 && stages[0].placeholder;
+
+  const { canConfigure } = useUserPermissions();
 
   return (
     <>
@@ -79,7 +65,7 @@ export default function PipelineConsole() {
               icon: CONSOLE,
               href: `../console`,
             },
-            configurePermission ? (
+            canConfigure ? (
               {
                 text: "Configure",
                 icon: SETTINGS,

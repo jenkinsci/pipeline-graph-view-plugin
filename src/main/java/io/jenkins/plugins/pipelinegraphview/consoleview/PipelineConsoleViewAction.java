@@ -129,7 +129,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     public void getConsoleText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         String nodeId = req.getParameter("nodeId");
 
-        rsp.setContentType("text/plain");
+        rsp.setContentType("text/plain;charset=UTF-8");
 
         if (nodeId == null) {
             logger.error("'consoleText' was not passed 'nodeId'.");

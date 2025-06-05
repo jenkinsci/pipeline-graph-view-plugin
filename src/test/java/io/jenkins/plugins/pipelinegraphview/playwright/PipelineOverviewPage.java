@@ -186,4 +186,9 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
                 .click();
         return this;
     }
+
+    public PipelineOverviewPage scrollToText(String text) {
+        logs.scrollToText(text);
+        return this;
+    }
 }

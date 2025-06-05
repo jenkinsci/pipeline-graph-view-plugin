@@ -70,8 +70,9 @@ class PipelineConsole {
         Locator stepLogs = stepContainer.getByRole(AriaRole.LOG);
         assertThat(stepLogs).containsText(textToFind);
 
-        try (Page plainText = page.waitForPopup(stepContainer.locator("a[href*='log?nodeId=']")::click)) {
-            plainText.waitForLoadState();
+        Locator plainTextLogsLink = stepContainer.getByRole(
+                AriaRole.LINK, new Locator.GetByRoleOptions().setName("View step as plain text"));
+        try (Page plainText = page.context().waitForPage(plainTextLogsLink::click)) {
             assertThat(plainText.locator("body")).containsText(textToFind);
         }
     }

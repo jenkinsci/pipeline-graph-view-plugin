@@ -66,6 +66,8 @@ Then, in the [_Debug_ view](https://code.visualstudio.com/docs/debugtest/debuggi
 
 When launching one of these, Visual Studio Code will automatically start the required processes, such as `npm run build:dev` and `mvn hpi:run`.
 
+https://github.com/user-attachments/assets/709e29b4-ac1c-47da-bcc4-30eda7dcc266
+
 ### CLI
 
 ```console

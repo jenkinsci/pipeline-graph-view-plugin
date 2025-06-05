@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 
 import { makeReactChildren, tokenizeANSIString } from "./Ansi.tsx";
 
@@ -17,7 +17,7 @@ declare global {
 }
 
 // Console output line
-export const ConsoleLine = (props: ConsoleLineProps) => {
+export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const height = ref.current ? ref.current.getBoundingClientRect().height : 0;
@@ -66,4 +66,4 @@ export const ConsoleLine = (props: ConsoleLineProps) => {
       </div>
     </pre>
   );
-};
+});

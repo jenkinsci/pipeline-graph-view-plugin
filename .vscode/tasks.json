@@ -4,10 +4,10 @@
     {
       "label": "Run Jenkins",
       "type": "shell",
-      "command": "mvn",
-      "args": ["hpi:run", "-Dskip.npm", "-P", "quick-build"],
+      "command": "mvn hpi:run -Dskip.npm -P quick-build",
       "options": {
         "env": {
+          // Do not wait for debugger to connect (suspend=n), unlike mvnDebug
           "MAVEN_OPTS": "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000"
         }
       },
@@ -22,7 +22,7 @@
         {
           "pattern": [
             {
-              "regexp": ".",
+              "regexp": "\\b\\B",
               "file": 1,
               "location": 2,
               "message": 3
@@ -39,8 +39,7 @@
     {
       "label": "Build Frontend",
       "type": "shell",
-      "command": "npm",
-      "args": ["run", "build:dev"],
+      "command": "npm run build:dev",
       "group": "build",
       "presentation": {
         "focus": true,
@@ -48,16 +47,15 @@
         "clear": true
       },
       "isBackground": true,
+      // https://github.com/vitejs/vite/discussions/20164
       "problemMatcher": [
         {
           "pattern": [
             {
-              "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+              "regexp": ".",
               "file": 1,
-              "line": 2,
-              "column": 3,
-              "severity": 4,
-              "message": 5
+              "location": 2,
+              "message": 3
             }
           ],
           "background": {

@@ -68,6 +68,8 @@ When launching one of these, Visual Studio Code will automatically start the req
 
 https://github.com/user-attachments/assets/709e29b4-ac1c-47da-bcc4-30eda7dcc266
 
+Both frontend and Java tests can also be ran and debugged through the [Test view](https://code.visualstudio.com/docs/debugtest/testing).
+
 ### CLI
 
 ```console

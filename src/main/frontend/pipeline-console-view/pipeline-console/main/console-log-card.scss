@@ -130,19 +130,33 @@ a.console-line-number {
   display: inline-block;
   flex-shrink: 0;
   user-select: none;
-}
+  outline: none;
 
-div.console-output-line-anchor {
-  position: relative;
-  // This is the width of the '.jenkins-breadcrumbs' div + a little extra.
-  top: -50px;
-  visibility: hidden;
+  &:target {
+    text-decoration: none;
+    scroll-margin-top: calc(var(--pgv-header-height) + 3.4375rem);
+  }
 }
 
 div.console-output-line {
   position: relative;
   display: flex;
   padding-block: 2px;
+  z-index: 0;
+
+  &:has(:target) {
+    &::before {
+      background-color: color-mix(
+        in srgb,
+        var(--blue) 15%,
+        transparent
+      ) !important;
+      // TODO - var fallback can removed after baseline is moved >= 2.496
+      border: var(--jenkins-border-width, 2px) solid
+        color-mix(in srgb, var(--blue) 10%, transparent);
+      opacity: 1;
+    }
+  }
 
   &::before {
     content: "";
@@ -160,6 +174,7 @@ div.console-output-line {
     opacity: 0;
     transition: opacity var(--standard-transition);
     pointer-events: none;
+    z-index: -1;
   }
 
   &:hover {

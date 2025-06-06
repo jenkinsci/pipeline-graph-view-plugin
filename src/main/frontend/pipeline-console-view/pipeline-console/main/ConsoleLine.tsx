@@ -36,17 +36,13 @@ export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
       key={`console-line-pre${props.lineNumber}`}
     >
       <div
-        className="console-output-line-anchor"
-        id={`log-${props.lineNumber}`}
-        key={`${props.lineNumber}-anchor`}
-      />
-      <div
         className="console-output-line"
         key={`${props.lineNumber}-body`}
         ref={ref}
       >
         <a
           className="console-line-number"
+          id={`log-${props.lineNumber}`}
           href={`?start-byte=${props.startByte}&selected-node=${props.stepId}#log-${props.lineNumber}`}
           style={{
             width: Math.max(9 * String(props.lineNumber).length, 30) + "px",

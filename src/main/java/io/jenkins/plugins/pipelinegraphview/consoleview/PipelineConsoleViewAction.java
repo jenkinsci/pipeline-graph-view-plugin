@@ -8,6 +8,7 @@ import io.jenkins.plugins.pipelinegraphview.PipelineGraphViewConfiguration;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsCard;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.ArtifactRunDetailsItem;
+import io.jenkins.plugins.pipelinegraphview.cards.items.ChangesRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.SCMRunDetailsItems;
 import io.jenkins.plugins.pipelinegraphview.cards.items.TestResultRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.TimingRunDetailsItems;
@@ -36,7 +37,7 @@ import org.slf4j.LoggerFactory;
 
 public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     public static final long LOG_THRESHOLD = 150 * 1024; // 150KB
-    public static final String URL_NAME = "pipeline-console";
+    public static final String URL_NAME = "pipeline-overview";
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineConsoleViewAction.class);
     private final WorkflowRun target;
@@ -52,7 +53,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
 
     @Override
     public String getDisplayName() {
-        return "Pipeline Console";
+        return "Pipeline Overview";
     }
 
     @Override
@@ -62,7 +63,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
 
     @Override
     public String getIconClassName() {
-        return "symbol-terminal-outline plugin-ionicons-api";
+        return "symbol-git-network-outline plugin-ionicons-api";
     }
 
     public String getDurationString() {
@@ -127,6 +128,9 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
                     "Doesn't seem to matter in practice, docs aren't clear on how to handle and most places ignore it")
     public void getConsoleText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         String nodeId = req.getParameter("nodeId");
+
+        rsp.setContentType("text/plain;charset=UTF-8");
+
         if (nodeId == null) {
             logger.error("'consoleText' was not passed 'nodeId'.");
             rsp.getWriter().write("Error getting console text\n");
@@ -153,6 +157,17 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         if (!foundLogs) {
             rsp.getWriter().write("No logs found\n");
         }
+    }
+
+    @GET
+    @WebMethod(name = "consoleBuildOutput")
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @SuppressFBWarnings(
+            value = "RV_RETURN_VALUE_IGNORED",
+            justification =
+                    "Doesn't seem to matter in practice, docs aren't clear on how to handle and most places ignore it")
+    public void getBuildConsole(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+        run.getLogText().writeHtmlTo(0L, rsp.getWriter());
     }
 
     /*
@@ -279,7 +294,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         List<RunDetailsItem> runDetailsItems = new ArrayList<>(SCMRunDetailsItems.get(run));
 
         if (!runDetailsItems.isEmpty()) {
-            runDetailsItems.add(new RunDetailsItem.Builder().separator().build());
+            runDetailsItems.add(RunDetailsItem.SEPARATOR);
         }
 
         UpstreamCauseRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
@@ -287,6 +302,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
 
         runDetailsItems.addAll(TimingRunDetailsItems.get(run));
 
+        ChangesRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
         TestResultRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
         ArtifactRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
 

@@ -5,6 +5,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.Action;
 import hudson.model.Result;
+import io.jenkins.plugins.pipelinegraphview.Messages;
+import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunResult;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunState;
@@ -22,7 +24,6 @@ import org.jenkinsci.plugins.workflow.graph.BlockStartNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.graph.FlowStartNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException;
 import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
 
@@ -129,14 +130,11 @@ public class FlowNodeWrapper {
     }
 
     public @NonNull String getDisplayName() {
-        // Make 'PARALLEL_BLOCK' types have the display name as SytheticNodes used to.
-        if (type == NodeType.PARALLEL_BLOCK) {
-            return "Parallel";
-        }
-        if (type == NodeType.PIPELINE_START) {
-            return "Unhandled Exception";
-        }
-        return displayName;
+        return switch (type) {
+            case PARALLEL_BLOCK -> Messages.FlowNodeWrapper_parallel();
+            case PIPELINE_START -> Messages.FlowNodeWrapper_noStage();
+            default -> displayName;
+        };
     }
 
     public @CheckForNull String getLabelDisplayName() {
@@ -375,7 +373,7 @@ public class FlowNodeWrapper {
     }
 
     public boolean isSynthetic() {
-        return PipelineNodeUtil.isSyntheticStage(node);
+        return PipelineNodeUtil.isSyntheticStage(node) || getNodeType(node) == NodeType.PIPELINE_START;
     }
 
     public boolean isUnhandledException() {

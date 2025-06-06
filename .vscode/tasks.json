@@ -1,0 +1,70 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run Jenkins",
+      "type": "shell",
+      "command": "mvn hpi:run -Dskip.npm -P quick-build",
+      "options": {
+        "env": {
+          // Do not wait for debugger to connect (suspend=n), unlike mvnDebug
+          "MAVEN_OPTS": "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000"
+        }
+      },
+      "dependsOn": ["Build Frontend"],
+      "presentation": {
+        "focus": true,
+        "panel": "dedicated",
+        "clear": true
+      },
+      "isBackground": true,
+      "problemMatcher": [
+        {
+          "pattern": [
+            {
+              "regexp": "\\b\\B",
+              "file": 1,
+              "location": 2,
+              "message": 3
+            }
+          ],
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": ".*INFO.*Started initialization.*",
+            "endsPattern": ".*INFO.*Jenkins is fully up and running.*"
+          }
+        }
+      ]
+    },
+    {
+      "label": "Build Frontend",
+      "type": "shell",
+      "command": "npm run build:dev",
+      "group": "build",
+      "presentation": {
+        "focus": true,
+        "panel": "dedicated",
+        "clear": true
+      },
+      "isBackground": true,
+      // https://github.com/vitejs/vite/discussions/20164
+      "problemMatcher": [
+        {
+          "pattern": [
+            {
+              "regexp": ".",
+              "file": 1,
+              "location": 2,
+              "message": 3
+            }
+          ],
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": ".*build started*",
+            "endsPattern": ".*built in.*"
+          }
+        }
+      ]
+    }
+  ]
+}

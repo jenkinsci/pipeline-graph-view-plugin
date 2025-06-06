@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
 
 import { ConsoleLine } from "./ConsoleLine.tsx";
 import {
@@ -10,7 +9,6 @@ import {
 
 export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   const appendInterval = useRef<NodeJS.Timeout | null>(null);
-  const virtuosoRef = useRef<VirtuosoHandle>(null);
   const [stickToBottom, setStickToBottom] = useState(false);
   const [maxConsoleLineHeight, setMaxConsoleLineHeight] = useState(1);
 
@@ -25,7 +23,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   useEffect(() => {
     if (stickToBottom && props.logBuffer.lines.length > 0) {
       // Scroll to bottom of the log stream
-      if (virtuosoRef.current && props.logBuffer.lines) {
+      if (props.logBuffer.lines) {
         requestAnimationFrame(() => {
           const scrollTarget = document.documentElement.scrollHeight;
           window.scrollTo({ top: scrollTarget });
@@ -73,21 +71,33 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
     return props.step.state === Result.running || props.logBuffer.startByte < 0;
   };
 
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash.startsWith("#log-")) {
+      return;
+    }
+    const lineNumber = parseInt(hash.substring(5));
+    if (!isNaN(lineNumber)) {
+      const element = document.getElementById(`log-${lineNumber}`);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  }, []);
+
   return (
-    <Virtuoso
-      useWindowScroll
-      ref={virtuosoRef}
-      data={props.logBuffer.lines}
-      itemContent={(index: number, content: string) => (
+    <div role="log">
+      {props.logBuffer.lines.map((content, index) => (
         <ConsoleLine
+          key={index}
           lineNumber={String(index)}
           content={content}
           stepId={props.step.id}
           startByte={props.logBuffer.startByte}
           heightCallback={consoleLineHeightCallback}
         />
-      )}
-    />
+      ))}
+    </div>
   );
 }
 

@@ -9,6 +9,7 @@ import {
 
 import StatusIcon from "../../../common/components/status-icon.tsx";
 import Tooltip from "../../../common/components/tooltip.tsx";
+import { LocalizedMessageKey, useMessages } from "../../../common/i18n";
 import { classNames } from "../../../common/utils/classnames.ts";
 import { Total } from "../../../common/utils/timings.tsx";
 import {
@@ -72,6 +73,8 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
     return `${(size / gib).toFixed(2)}GiB`;
   };
 
+  const messages = useMessages();
+
   return (
     <div className={"pgv-step-detail-group"} key={`step-card-${props.step.id}`}>
       <div
@@ -124,12 +127,13 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
           </div>
         </a>
 
-        <Tooltip content={"View step as plain text"}>
+        <Tooltip content={messages.format(LocalizedMessageKey.consoleNewTab)}>
           <a
             href={`log?nodeId=${props.step.id}`}
             className={"jenkins-button jenkins-button--tertiary"}
             target="_blank"
             rel="noreferrer"
+            aria-label={messages.format(LocalizedMessageKey.consoleNewTab)}
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
               <path

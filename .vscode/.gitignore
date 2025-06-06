@@ -1,0 +1,9 @@
+# Based on https://github.com/github/gitignore/blob/f752d0799fb7e690bfb888d5cd4d453d2858a865/Global/VisualStudioCode.gitignore
+
+*
+!.gitignore
+!settings.json
+!tasks.json
+!launch.json
+!extensions.json
+!*.code-snippets

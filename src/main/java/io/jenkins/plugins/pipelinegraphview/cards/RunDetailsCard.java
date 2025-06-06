@@ -4,7 +4,7 @@ import java.util.List;
 
 public class RunDetailsCard extends Card {
 
-    private List<RunDetailsItem> items;
+    private final List<RunDetailsItem> items;
 
     public RunDetailsCard(List<RunDetailsItem> items) {
         this.items = items;

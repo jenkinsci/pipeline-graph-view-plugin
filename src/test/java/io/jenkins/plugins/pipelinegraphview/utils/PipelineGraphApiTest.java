@@ -7,6 +7,7 @@ import hudson.model.Result;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.slaves.DumbSlave;
+import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.treescanner.NodeRelationshipFinder;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeTreeScanner;
@@ -20,6 +21,7 @@ import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.test.steps.SemaphoreStep;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -98,6 +100,19 @@ class PipelineGraphApiTest {
         assertThat(stagesString, equalTo("A,Parallel[B[BA,BB],C[CA,CB]],D[E[EA,EB],F[FA,FB]],G"));
     }
 
+    @Test
+    @DisplayName("When no stage synthetic stage is used")
+    void noStage() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(j, "noStage", "noStage.jenkinsfile", Result.SUCCESS);
+        PipelineGraphApi api = new PipelineGraphApi(run);
+        PipelineGraph graph = api.createTree();
+
+        List<PipelineStage> stages = graph.getStages();
+
+        String stagesString = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
+        assertThat(stagesString, equalTo(Messages.FlowNodeWrapper_noStage()));
+    }
+
     @Issue("GH#85")
     @Test
     void createTree_syntheticStages() throws Exception {
@@ -137,7 +152,7 @@ class PipelineGraphApiTest {
     @Test
     void createTree_nestedSciptedParallel() throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
-                j, "nestedSciptedParallel", "nestedSciptedParallel.jenkinsfile", Result.SUCCESS);
+                j, "nestedSciptedParallel", "nestedScriptedParallel.jenkinsfile", Result.SUCCESS);
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createTree();
 
@@ -364,7 +379,7 @@ class PipelineGraphApiTest {
         List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
         String stagesString = TestUtils.collectStagesAsString(stages, TestUtils::nodeNameAndStatus);
 
-        assertThat(stagesString, equalTo("Unhandled Exception{failure}"));
+        assertThat(stagesString, equalTo("%s{failure}".formatted(Messages.FlowNodeWrapper_noStage())));
     }
 
     @Test
@@ -498,5 +513,27 @@ class PipelineGraphApiTest {
                         "{success-stage,success-stage,STAGE,success},",
                         "{failure-stage,failure-stage,STAGE,failure},",
                         "{unstable-stage,unstable-stage,STAGE,unstable}")));
+    }
+
+    @Issue("GH#764")
+    @Test
+    void createTree_branchResult() throws Exception {
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "branchResult", "gh764_branchResult.jenkinsfile", Result.UNSTABLE, false);
+        PipelineGraphApi api = new PipelineGraphApi(run);
+        PipelineGraph graph = api.createTree();
+
+        List<PipelineStage> stages = graph.getStages();
+
+        String stagesString = TestUtils.collectStagesAsString(stages, TestUtils::nodeNameAndStatus);
+        assertThat(
+                stagesString,
+                equalTo(String.join(
+                        "",
+                        "Parallel{unstable}[",
+                        "success-branch{success},",
+                        "failure-branch{failure},",
+                        "unstable-branch{unstable}",
+                        "]")));
     }
 }

@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Function;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
@@ -20,9 +18,11 @@ import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.support.visualization.table.FlowGraphTable;
 import org.jenkinsci.plugins.workflow.support.visualization.table.FlowGraphTable.Row;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestUtils {
-    private static final Logger LOGGER = Logger.getLogger(TestUtils.class.getName());
+    private static final Logger log = LoggerFactory.getLogger(TestUtils.class);
 
     public static WorkflowRun createAndRunJob(
             JenkinsRule jenkins, String jobName, String jenkinsFileName, Result expectedResult) throws Exception {
@@ -32,8 +32,11 @@ public class TestUtils {
     public static WorkflowRun createAndRunJob(
             JenkinsRule jenkins, String jobName, String jenkinsFileName, Result expectedResult, boolean sandbox)
             throws Exception {
+        log.info("Creating and running job ({})", jobName);
         WorkflowJob job = TestUtils.createJob(jenkins, jobName, jenkinsFileName, sandbox);
+        log.info("Created job ({})", jobName);
         jenkins.assertBuildStatus(expectedResult, job.scheduleBuild2(0));
+        log.info("Job ({}) finished running with expected result {} ", jobName, expectedResult);
         return job.getLastBuild();
     }
 
@@ -70,7 +73,7 @@ public class TestUtils {
         for (Row row : graphTable.getRows()) {
             if (row.getDisplayName().contains(" (" + displayName + ")")) {
                 FlowNode node = row.getNode();
-                LOGGER.log(Level.INFO, "Found matching node: '" + displayName + "' with ID " + node.getId());
+                log.info("Found matching node: '{}' with ID {}", displayName, node.getId());
                 matchingNodes.add(node);
             }
         }

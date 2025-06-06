@@ -102,7 +102,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
         <li>
           <Dropdown
             className={"jenkins-button--tertiary"}
-            disabled={stage.synthetic}
+            disabled={stage.synthetic && !stage.placeholder}
             items={[
               {
                 text: "View stage as plain text",

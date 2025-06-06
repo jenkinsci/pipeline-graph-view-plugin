@@ -1,15 +1,16 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import io.jenkins.plugins.pipelinegraphview.Messages;
+import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import java.util.Collections;
 import java.util.List;
-import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 
 class PipelineStageInternal {
 
     private String name;
     private List<String> parents;
     private PipelineState state;
-    private String type; // TODO enum
+    private FlowNodeWrapper.NodeType type;
     private String title;
     private String id;
     private String seqContainerName;
@@ -24,7 +25,7 @@ class PipelineStageInternal {
             String name,
             List<String> parents,
             PipelineState state,
-            String type,
+            FlowNodeWrapper.NodeType type,
             String title,
             boolean synthetic,
             TimingInfo times,
@@ -54,10 +55,6 @@ class PipelineStageInternal {
 
     public void setState(PipelineState state) {
         this.state = state;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     public void setTitle(String title) {
@@ -96,10 +93,6 @@ class PipelineStageInternal {
         return state;
     }
 
-    public String getType() {
-        return type;
-    }
-
     public String getTitle() {
         return title;
     }
@@ -126,12 +119,13 @@ class PipelineStageInternal {
                 name,
                 children,
                 state,
-                type,
+                type.name(),
                 title,
                 seqContainerName,
                 nextSibling != null ? nextSibling.toPipelineStage(Collections.emptyList(), runUrl) : null,
                 sequential,
                 synthetic,
+                synthetic && name.equals(Messages.FlowNodeWrapper_noStage()),
                 timingInfo,
                 agent,
                 runUrl);

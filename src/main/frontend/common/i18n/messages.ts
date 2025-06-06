@@ -80,6 +80,8 @@ export enum LocalizedMessageKey {
   noBuilds = "noBuilds",
   start = "node.start",
   end = "node.end",
+  changesSummary = "changes.summary",
+  consoleNewTab = "console.newTab",
 }
 
 const DEFAULT_MESSAGES: ResourceBundle = {
@@ -94,6 +96,8 @@ const DEFAULT_MESSAGES: ResourceBundle = {
   [LocalizedMessageKey.noBuilds]: "No builds",
   [LocalizedMessageKey.start]: "Start",
   [LocalizedMessageKey.end]: "End",
+  [LocalizedMessageKey.changesSummary]: "{0} {0,choice,1#change|1<changes}",
+  [LocalizedMessageKey.consoleNewTab]: "View step as plain text",
 };
 
 export function defaultMessages(locale: string): Messages {

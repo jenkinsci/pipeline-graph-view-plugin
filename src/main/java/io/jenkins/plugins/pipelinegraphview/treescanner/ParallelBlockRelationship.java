@@ -2,6 +2,9 @@ package io.jenkins.plugins.pipelinegraphview.treescanner;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import io.jenkins.plugins.pipelinegraphview.analysis.GenericStatus;
+import io.jenkins.plugins.pipelinegraphview.analysis.StatusAndTiming;
+import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import java.util.ArrayDeque;
@@ -9,12 +12,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.jenkinsci.plugins.workflow.actions.ThreadNameAction;
+import org.jenkinsci.plugins.workflow.actions.WarningAction;
 import org.jenkinsci.plugins.workflow.graph.BlockStartNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.GenericStatus;
-import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.StatusAndTiming;
-import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 import org.jenkinsci.plugins.workflow.support.actions.PauseAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -162,6 +163,12 @@ public class ParallelBlockRelationship extends NodeRelationship {
                     this.branchStatuses.get(getBranchName(branchStartNode)));
         }
         boolean skippedStage = PipelineNodeUtil.isSkippedStage(branchStartNode);
+
+        WarningAction warningAction = branchStartNode.getPersistentAction(WarningAction.class);
+        if (warningAction != null) {
+            return new NodeRunStatus(GenericStatus.fromResult(warningAction.getResult()), skippedStage);
+        }
+
         return new NodeRunStatus(this.branchStatuses.get(getBranchName(branchStartNode)), skippedStage);
     }
 

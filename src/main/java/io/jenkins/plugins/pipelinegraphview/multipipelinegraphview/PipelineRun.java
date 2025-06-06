@@ -1,5 +1,7 @@
 package io.jenkins.plugins.pipelinegraphview.multipipelinegraphview;
 
+import static io.jenkins.plugins.pipelinegraphview.utils.ChangesUtil.getChanges;
+
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
@@ -9,6 +11,7 @@ public class PipelineRun {
     private final String displayName;
     private final long timestamp;
     private final long duration;
+    private final int changesCount;
     private final PipelineState result;
 
     public PipelineRun(WorkflowRun run) {
@@ -16,6 +19,7 @@ public class PipelineRun {
         this.displayName = run.getDisplayName();
         this.timestamp = run.getTimeInMillis();
         this.duration = run.getDuration();
+        this.changesCount = getChanges(run).size();
         this.result = PipelineState.of(run);
     }
 
@@ -33,6 +37,10 @@ public class PipelineRun {
 
     public long getDuration() {
         return duration;
+    }
+
+    public int getChangesCount() {
+        return changesCount;
     }
 
     public PipelineState getResult() {

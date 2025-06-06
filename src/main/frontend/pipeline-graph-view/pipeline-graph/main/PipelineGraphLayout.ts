@@ -22,7 +22,7 @@ const maxColumnsWhenCollapsed = 13;
  *  2. Position the nodes in columns for each top stage, and in rows within each column based on execution order
  *  3. Create all the connections between nodes that need to be rendered
  *  4. Create a bigLabel per column, and a smallLabel for any child nodes
- *  5. Measure the extents of the graph
+ *  5. Measure the extent of the graph
  */
 export function layoutGraph(
   newStages: Array<StageInfo>,
@@ -30,7 +30,7 @@ export function layoutGraph(
   collapsed: boolean,
   messages: Messages,
 ): PositionedGraph {
-  const stageNodeColumns = createNodeColumns(newStages, collapsed);
+  const stageNodeColumns = createNodeColumns(newStages);
   const { nodeSpacingH, ypStart } = layout;
 
   const startNode: NodeInfo = {
@@ -64,6 +64,28 @@ export function layoutGraph(
     stages: [],
   };
 
+  function flattenStageInfo(e: StageInfo): StageInfo[] {
+    if (e.children.length) {
+      const flattened: StageInfo[] =
+        e.type !== "PARALLEL_BLOCK" ? [{ ...e, children: [] }] : [];
+      return flattened.concat(
+        e.children.flatMap((child) => flattenStageInfo(child)),
+      );
+    }
+    return [e];
+  }
+
+  function flattenColumns(middleNodes: NodeColumn[]) {
+    return middleNodes.flatMap((node) =>
+      node.rows.flatMap((row) =>
+        row.flatMap((e) => {
+          const value = e as StageNodeInfo;
+          return flattenStageInfo(value.stage);
+        }),
+      ),
+    );
+  }
+
   function filterWhenCollapsed(nodes: NodeColumn[]) {
     if (!collapsed) {
       return nodes;
@@ -80,13 +102,9 @@ export function layoutGraph(
 
     const middleNodes = nodes.filter((node) => node !== start && node !== end);
 
-    const middleStages = middleNodes.flatMap((node) =>
-      node.rows.flatMap((row) =>
-        row.flatMap((e) => (e as StageNodeInfo).stage),
-      ),
-    );
+    const middleStages = flattenColumns(middleNodes);
 
-    const newMiddleNodes = createNodeColumns(middleStages, collapsed);
+    const newMiddleNodes = createNodeColumns(middleStages);
 
     const visibleNodes = newMiddleNodes.slice(0, maxColumnsWhenCollapsed);
     const hiddenNodes = newMiddleNodes.slice(maxColumnsWhenCollapsed);
@@ -155,7 +173,6 @@ export interface CounterNodeInfo extends PlaceholderNodeInfo {
  */
 export function createNodeColumns(
   topLevelStages: Array<StageInfo> = [],
-  collapsed: boolean,
 ): Array<NodeColumn> {
   const nodeColumns: Array<NodeColumn> = [];
 
@@ -180,7 +197,7 @@ export function createNodeColumns(
     const stagesForColumn =
       !willRecurse && stageHasChildren(topStage)
         ? topStage.children
-        : [topStage];
+        : [{ ...topStage, children: [] }];
 
     const column: NodeColumn = {
       topStage,
@@ -238,10 +255,6 @@ function forEachChildStage(
     return;
   }
   for (const stage of topStage.children) {
-    // This can be in the graph if there is an unhandled exception.
-    if (stage.type === "PIPELINE_START") {
-      continue;
-    }
     const needToRecurse =
       stageHasChildren(stage) && stage.children[0].type !== "PARALLEL";
     callback(topStage, stage, needToRecurse);
@@ -371,7 +384,7 @@ function createSmallLabels(
     for (const row of column.rows) {
       for (const node of row) {
         // We add small labels to parallel nodes only so skip others
-        if (node.isPlaceholder || node.stage === column.topStage) {
+        if (node.isPlaceholder || node.stage.id === column.topStage?.id) {
           continue;
         }
         const label: NodeLabelInfo = {

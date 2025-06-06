@@ -2,6 +2,7 @@ package io.jenkins.plugins.pipelinegraphview.treescanner;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
 import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
@@ -20,7 +21,6 @@ import org.jenkinsci.plugins.workflow.graph.BlockStartNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.graphanalysis.DepthFirstScanner;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -207,9 +207,16 @@ public class PipelineNodeTreeScanner {
             }
             Map<String, FlowNodeWrapper> stageMap = this.wrappedNodeMap.entrySet().stream()
                     .filter(e -> shouldBeInStageMap(e.getValue()))
-                    .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
-            List<FlowNodeWrapper> nodeList = new ArrayList<FlowNodeWrapper>(stageMap.values());
-            Collections.sort(nodeList, new FlowNodeWrapper.NodeComparator());
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+            if (stageMap.isEmpty()) {
+                // Force at least one stage so that the log can be viewed
+                stageMap = this.wrappedNodeMap.entrySet().stream()
+                        .filter(e -> isStartNode(e.getValue()))
+                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            }
+            List<FlowNodeWrapper> nodeList = new ArrayList<>(stageMap.values());
+            nodeList.sort(new FlowNodeWrapper.NodeComparator());
             for (FlowNodeWrapper stage : nodeList) {
                 FlowNodeWrapper firstParent = stage.getFirstParent();
                 // Remap parentage of stages that aren't children of stages (e.g. allocate node
@@ -233,17 +240,14 @@ public class PipelineNodeTreeScanner {
             // We also want to drop steps blocks - as the front-end doesn't expect them.
             // For the future: Adding Step Blocks as stages might be a good way to handle them in the
             // future.
-            return !shouldBeInStepMap(n) && !isSuperfluousStartNode(n) && !n.isStepsBlock();
+            return !shouldBeInStepMap(n) && !isStartNode(n) && !n.isStepsBlock();
         }
 
         /*
-         * Returns true if this is a start node that we can safely drop.
-         * We only want to keep start nodes that we to represent unhandled exceptions in
-         * the stages map.
-         * Put another way, we only want to need the 'PIPELINE_START' stage if it houses an unhandled exception.
+         * Returns true if this is a start node that we will drop, unless it's the only node.
          */
-        private boolean isSuperfluousStartNode(FlowNodeWrapper n) {
-            return n.getType() == FlowNodeWrapper.NodeType.PIPELINE_START && !n.isUnhandledException();
+        private boolean isStartNode(FlowNodeWrapper n) {
+            return n.getType() == FlowNodeWrapper.NodeType.PIPELINE_START;
         }
 
         /*

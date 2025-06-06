@@ -47,4 +47,12 @@ export default [
       ],
     },
   },
+  {
+    languageOptions: {
+      globals: {
+        dialog: "readonly",
+        notificationBar: "readonly",
+      },
+    },
+  },
 ];

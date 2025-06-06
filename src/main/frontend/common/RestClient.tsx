@@ -43,7 +43,7 @@ export async function getRunStatusFromPath(
   url: string,
 ): Promise<RunStatus | null> {
   try {
-    const response = await fetch(url + "pipeline-console/tree");
+    const response = await fetch(url + "pipeline-overview/tree");
     if (!response.ok) {
       throw response.statusText;
     }
@@ -78,6 +78,17 @@ export async function getConsoleTextOffset(
     if (!response.ok) throw response.statusText;
     const json = await response.json();
     return json.data;
+  } catch (e) {
+    console.error(`Caught error when fetching console: '${e}'`);
+    return null;
+  }
+}
+
+export async function getConsoleBuildOutput(): Promise<string | null> {
+  try {
+    const response = await fetch(`consoleBuildOutput`);
+    if (!response.ok) throw response.statusText;
+    return await response.text();
   } catch (e) {
     console.error(`Caught error when fetching console: '${e}'`);
     return null;

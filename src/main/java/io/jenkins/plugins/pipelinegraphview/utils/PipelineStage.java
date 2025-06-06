@@ -1,7 +1,9 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import static io.jenkins.plugins.pipelinegraphview.consoleview.PipelineConsoleViewAction.URL_NAME;
+
+import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import java.util.List;
-import org.jenkinsci.plugins.workflow.pipelinegraphanalysis.TimingInfo;
 
 public class PipelineStage extends AbstractPipelineNode {
 
@@ -10,6 +12,7 @@ public class PipelineStage extends AbstractPipelineNode {
     private final PipelineStage nextSibling;
     private boolean sequential;
     private boolean synthetic;
+    private boolean placeholder;
     private String agent;
     private String url;
 
@@ -24,6 +27,7 @@ public class PipelineStage extends AbstractPipelineNode {
             PipelineStage nextSibling,
             boolean sequential,
             boolean synthetic,
+            boolean placeholder,
             TimingInfo timingInfo,
             String agent,
             String runUrl) {
@@ -33,8 +37,9 @@ public class PipelineStage extends AbstractPipelineNode {
         this.nextSibling = nextSibling;
         this.sequential = sequential;
         this.synthetic = synthetic;
+        this.placeholder = placeholder;
         this.agent = agent;
-        this.url = "/" + runUrl + "pipeline-console?selected-node=" + id;
+        this.url = "/" + runUrl + URL_NAME + "?selected-node=" + id;
     }
 
     public PipelineStage getNextSibling() {
@@ -57,6 +62,10 @@ public class PipelineStage extends AbstractPipelineNode {
 
     public boolean isSynthetic() {
         return synthetic;
+    }
+
+    public boolean isPlaceholder() {
+        return placeholder;
     }
 
     public String getAgent() {

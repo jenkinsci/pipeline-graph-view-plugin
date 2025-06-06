@@ -1,0 +1,22 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Parallel1') {
+            parallel {
+                stage('Caught1') {
+                    steps {
+                        catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                            error 'Oops'
+                        }
+                    }
+                }
+            }
+       }
+       stage('Runs1') {
+            steps {
+                semaphore 'wait'
+            }
+        }
+    }
+}

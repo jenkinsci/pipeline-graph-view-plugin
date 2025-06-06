@@ -61,7 +61,8 @@ class UpstreamCauseRunDetailsItemTest {
         RunDetailsItem.RunDetail userDetails = (RunDetailsItem.RunDetail) detailsItem.get();
 
         assertEquals(
-                new RunDetailsItem.ItemContent.LinkContent(baseUrl + run.getUrl(), Messages.cause_upstream("#1")),
+                new RunDetailsItem.ItemContent.LinkContent(
+                        baseUrl + run.getUrl() + "pipeline-overview", Messages.cause_upstream("#1")),
                 userDetails.content());
         assertEquals("symbol-play-circle-outline plugin-ionicons-api", userDetails.icon());
     }

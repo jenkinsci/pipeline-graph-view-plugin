@@ -1,5 +1,7 @@
 import { describe, expect } from "vitest";
 
+import { DEFAULT_LOCALE } from "../../../common/i18n/index.ts";
+import { defaultMessages } from "../../../common/i18n/messages.ts";
 import { createNodeColumns, layoutGraph } from "./PipelineGraphLayout.ts";
 import {
   LayoutInfo,
@@ -7,8 +9,6 @@ import {
   StageInfo,
   StageType,
 } from "./PipelineGraphModel.tsx";
-import { DEFAULT_LOCALE } from "../../../common/i18n/index.ts";
-import { defaultMessages } from "../../../common/i18n/messages.ts";
 
 describe("PipelineGraphLayout", () => {
   const baseStage: StageInfo = {

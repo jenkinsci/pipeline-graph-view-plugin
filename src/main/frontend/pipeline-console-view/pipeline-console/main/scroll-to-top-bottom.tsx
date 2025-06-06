@@ -23,15 +23,6 @@ export default function ScrollToTopBottom() {
       setIsAtTop(atTop);
       setIsAtBottom(atBottom);
       setIsScrollable(scrollable);
-
-      // Distance from bottom
-      const distanceFromBottom = docHeight - (scrollTop + windowHeight);
-
-      // Only trigger the offset if we're within 20px from the bottom
-      const offset = Math.max(0, Math.min(100, 100 - distanceFromBottom));
-
-      const root = document.documentElement;
-      root.style.setProperty("--pgv-offset-bottom", `${offset}px`);
     };
 
     updateScrollState();

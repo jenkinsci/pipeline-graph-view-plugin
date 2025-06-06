@@ -9,7 +9,7 @@
 
 .pgv-step-detail-header {
   position: sticky;
-  top: var(--pgv-header-height);
+  top: calc(var(--pgv-header-height) + var(--section-padding));
   z-index: 1;
   display: grid;
   grid-template-columns: 1fr auto;

@@ -1,6 +1,6 @@
 :root {
   // can be removed and `--header-height` used directly when jenkins baseline is 2.507
-  --pgv-header-height: var(--header-height, 4.125rem)
+  --pgv-header-height: var(--header-height, 45.5938px)
 }
 
 .ansi-fg-0 {
@@ -70,7 +70,7 @@
 
 .pgv-sticky-sidebar {
   position: sticky;
-  top: var(--pgv-header-height);
+  top: calc(var(--pgv-header-height) + var(--section-padding));
 }
 
 .pgv-skeleton-column {

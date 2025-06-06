@@ -14,7 +14,7 @@
   &--left {
     --additional-height: 0px;
     position: sticky;
-    top: var(--pgv-header-height);
+    top: calc(var(--pgv-header-height) + var(--section-padding));
     height: calc(
       (100vh + var(--additional-height)) -
         (var(--pgv-header-height) + 100px + var(--section-padding))

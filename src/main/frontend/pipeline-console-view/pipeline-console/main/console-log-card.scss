@@ -9,7 +9,7 @@
 
 .pgv-step-detail-header {
   position: sticky;
-  top: calc(var(--header-height) + 0.375rem);
+  top: var(--pgv-header-height);
   z-index: 1;
   display: grid;
   grid-template-columns: 1fr auto;
@@ -101,7 +101,7 @@
 
 .pgv-show-more-logs {
   position: sticky;
-  top: calc(var(--header-height) + 0.375rem + 0.375rem + 2.375rem);
+  top: calc(var(--pgv-header-height) + 0.375rem + 0.375rem + 2.375rem);
   background: var(--card-background);
   box-shadow: 0 0 0.375rem var(--card-background);
   z-index: 10;

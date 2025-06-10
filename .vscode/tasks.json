@@ -4,7 +4,7 @@
     {
       "label": "Run Jenkins",
       "type": "shell",
-      "command": "mvn hpi:run -Dskip.npm -P quick-build",
+      "command": "mvn hpi:run -Djava.awt.headless=true -Dskip.npm -P quick-build",
       "options": {
         "env": {
           // Do not wait for debugger to connect (suspend=n), unlike mvnDebug

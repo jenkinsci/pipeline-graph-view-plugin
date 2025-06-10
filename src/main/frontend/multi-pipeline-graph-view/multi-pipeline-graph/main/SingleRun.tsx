@@ -46,6 +46,8 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
 
     if (!showNames && !showDurations) {
       layout.nodeSpacingH = 45;
+    } else {
+      layout.nodeSpacingH = 90;
     }
 
     return layout;

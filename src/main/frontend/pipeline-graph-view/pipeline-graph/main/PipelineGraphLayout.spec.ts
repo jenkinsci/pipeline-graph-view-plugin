@@ -1,47 +1,54 @@
-import { describe } from "vitest";
+import { describe, expect } from "vitest";
 
-import { createNodeColumns } from "./PipelineGraphLayout.ts";
-import { Result, StageInfo, StageType } from "./PipelineGraphModel.tsx";
+import { DEFAULT_LOCALE } from "../../../common/i18n/index.ts";
+import { defaultMessages } from "../../../common/i18n/messages.ts";
+import { createNodeColumns, layoutGraph } from "./PipelineGraphLayout.ts";
+import {
+  LayoutInfo,
+  Result,
+  StageInfo,
+  StageType,
+} from "./PipelineGraphModel.tsx";
 
 describe("PipelineGraphLayout", () => {
+  const baseStage: StageInfo = {
+    name: "",
+    title: "",
+    state: Result.success,
+    completePercent: 50,
+    id: 0,
+    type: "STAGE",
+    children: [],
+    pauseDurationMillis: 0,
+    startTimeMillis: 0,
+    totalDurationMillis: 0,
+    agent: "built-in",
+    url: "?selected-node=0",
+  };
+
+  const makeStage = (
+    id: number,
+    name: string,
+    children: Array<StageInfo> = [],
+  ): StageInfo => {
+    return { ...baseStage, id, name, children };
+  };
+
+  const makeParallel = (
+    id: number,
+    name: string,
+    children: Array<StageInfo> = [],
+  ): StageInfo => {
+    return {
+      ...baseStage,
+      id,
+      name,
+      children,
+      type: "PARALLEL" as StageType,
+    };
+  };
+
   describe("createNodeColumns", () => {
-    const baseStage: StageInfo = {
-      name: "",
-      title: "",
-      state: Result.success,
-      completePercent: 50,
-      id: 0,
-      type: "STAGE",
-      children: [],
-      pauseDurationMillis: 0,
-      startTimeMillis: 0,
-      totalDurationMillis: 0,
-      agent: "built-in",
-      url: "?selected-node=0",
-    };
-
-    const makeStage = (
-      id: number,
-      name: string,
-      children: Array<StageInfo> = [],
-    ): StageInfo => {
-      return { ...baseStage, id, name, children };
-    };
-
-    const makeParallel = (
-      id: number,
-      name: string,
-      children: Array<StageInfo> = [],
-    ): StageInfo => {
-      return {
-        ...baseStage,
-        id,
-        name,
-        children,
-        type: "PARALLEL" as StageType,
-      };
-    };
-
     const makeNode = (
       id: number,
       name: string,
@@ -343,6 +350,66 @@ describe("PipelineGraphLayout", () => {
           topStage: { name: "Stage 7", id: 15 },
           rows: [[makeNode(15, "Stage 7")]],
         },
+      ]);
+    });
+  });
+
+  describe("layoutGraph", () => {
+    const layout: LayoutInfo = {
+      nodeSpacingH: 140,
+      parallelSpacingH: 140,
+      nodeSpacingV: 70,
+      nodeRadius: 12,
+      terminalRadius: 10,
+      curveRadius: 15,
+      connectorStrokeWidth: 2,
+      labelOffsetV: 22,
+      smallLabelOffsetV: 15,
+      ypStart: 55,
+    };
+
+    const makeSmallLabel = (stageName: string) => {
+      return {
+        text: stageName,
+      };
+    };
+
+    it("should not generate small labels for top stage columns with no children", () => {
+      const graph = layoutGraph(
+        [
+          makeStage(6, "Non-Parallel Stage"),
+          makeStage(11, "Parallel Stage", [
+            makeParallel(15, "Branch A - P1"),
+            makeParallel(16, "Branch B - P1"),
+            makeParallel(17, "Branch C - P1", [
+              makeStage(25, "Nested 1 - P1"),
+              makeStage(38, "Nested 2 - P1"),
+            ]),
+          ]),
+          makeStage(49, "Skipped stage"),
+          makeStage(53, "Parallel Stage 2", [
+            makeParallel(57, "Branch A - P2"),
+            makeParallel(58, "Branch B - P2"),
+            makeParallel(59, "Branch C - P2", [
+              makeStage(67, "Nested 1 - P2"),
+              makeStage(80, "Nested 2 - P2"),
+            ]),
+          ]),
+        ],
+        layout,
+        false,
+        defaultMessages(DEFAULT_LOCALE),
+      );
+
+      expect(graph.smallLabels).toMatchObject([
+        makeSmallLabel("Branch A - P1"),
+        makeSmallLabel("Branch B - P1"),
+        makeSmallLabel("Nested 1 - P1"),
+        makeSmallLabel("Nested 2 - P1"),
+        makeSmallLabel("Branch A - P2"),
+        makeSmallLabel("Branch B - P2"),
+        makeSmallLabel("Nested 1 - P2"),
+        makeSmallLabel("Nested 2 - P2"),
       ]);
     });
   });

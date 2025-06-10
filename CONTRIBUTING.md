@@ -36,20 +36,39 @@ Prerequisites: _Java_ and _Maven_.
 
   ```console
   $ java -version
-  openjdk 17.0.13 2024-10-15
-  OpenJDK Runtime Environment (build 17.0.13+11-Ubuntu-2ubuntu124.04)
-  OpenJDK 64-Bit Server VM (build 17.0.13+11-Ubuntu-2ubuntu124.04, mixed mode, sharing)
+  openjdk version "21.0.7" 2025-04-15 LTS
   ```
 
-- Ensure Maven >= 3.9.9 is installed and included in the PATH environment variable.
+- Ensure Maven >= 3.9.9 is installed and included in the `PATH` environment variable.
 
   ```console
-  mvn --version
+  $ mvn -version
+  Apache Maven 3.9.9 (8e8579a9e76f7d015ee5ec7bfcdc97d260186937)
   ```
 
 ### IDE configuration
 
-See [IDE configuration](https://jenkins.io/doc/developer/development-environment/ide-configuration/)
+See [IDE configuration](https://jenkins.io/doc/developer/development-environment/ide-configuration/).
+
+### Debugging in Visual Studio Code
+
+This repository comes preconfigured for debugging in [Visual Studio Code](https://code.visualstudio.com/). Beyond Java and Maven, you will need:
+
+- The [recommended extensions](./.vscode/extensions.json) for Visual Studio Code
+- Node.js and NPM installed and in `PATH` (check recommended versions in [`pom.xml`](./pom.xml) > `properties`)
+- Frontend dependencies installed with `npm install`
+
+Then, in the [_Debug_ view](https://code.visualstudio.com/docs/debugtest/debugging), you can select between:
+
+- _Debug Frontend_ to debug the frontend code in a browser
+- _Debug Java_ to debug the Java code
+- _Debug All_ to debug both at the same time
+
+When launching one of these, Visual Studio Code will automatically start the required tasks, such as `npm run build:dev` and `mvn hpi:run -Dskip.npm -P quick-build`.
+
+https://github.com/user-attachments/assets/709e29b4-ac1c-47da-bcc4-30eda7dcc266
+
+Both frontend and Java tests can also be ran and debugged through the [Test view](https://code.visualstudio.com/docs/debugtest/testing).
 
 ### CLI
 

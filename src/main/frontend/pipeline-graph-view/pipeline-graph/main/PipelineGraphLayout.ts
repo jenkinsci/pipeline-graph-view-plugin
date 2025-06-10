@@ -428,7 +428,7 @@ function createSmallLabels(
     for (const row of column.rows) {
       for (const node of row) {
         // We add small labels to parallel nodes only so skip others
-        if (node.isPlaceholder || node.stage === column.topStage) {
+        if (node.isPlaceholder || node.stage.id === column.topStage?.id) {
           continue;
         }
         const label: NodeLabelInfo = {

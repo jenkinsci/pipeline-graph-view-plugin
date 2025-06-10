@@ -81,6 +81,9 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
       const element = document.getElementById(`log-${lineNumber}`);
       if (element) {
         element.scrollIntoView({ behavior: "smooth", block: "center" });
+        const hash = location.hash;
+        location.hash = "";
+        location.hash = hash;
       }
     }
   }, []);

@@ -84,6 +84,7 @@ export enum LocalizedMessageKey {
   settings = "settings",
   showNames = "settings.showStageName",
   showDuration = "settings.showStageDuration",
+  consoleNewTab = "console.newTab",
 }
 
 const DEFAULT_MESSAGES: ResourceBundle = {
@@ -102,6 +103,7 @@ const DEFAULT_MESSAGES: ResourceBundle = {
   [LocalizedMessageKey.settings]: "Settings",
   [LocalizedMessageKey.showNames]: "Show stage names",
   [LocalizedMessageKey.showDuration]: "Show stage duration",
+  [LocalizedMessageKey.consoleNewTab]: "View step as plain text",
 };
 
 export function defaultMessages(locale: string): Messages {

@@ -382,7 +382,7 @@ function createBigLabels(
 function createTimings(
   columns: Array<NodeColumn>,
   collapsed: boolean,
-  showDurations: boolean
+  showDurations: boolean,
 ): Array<NodeLabelInfo> {
   const labels: Array<NodeLabelInfo> = [];
 

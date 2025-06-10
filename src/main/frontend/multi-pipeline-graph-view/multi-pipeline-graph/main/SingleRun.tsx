@@ -22,10 +22,6 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
     currentRunPath: currentJobPath + run.id + "/",
   });
 
-  const layout: LayoutInfo = {
-    ...defaultLayout,
-  };
-
   function Changes() {
     if (run.changesCount === 0) {
       return;
@@ -49,6 +45,16 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
     return `${60 + (showNames ? 20 : 0) + (showDurations ? 20 : 0)}px`;
   }
 
+  function getLayout() {
+    const layout: LayoutInfo = { ...defaultLayout };
+
+    if (!showNames && !showDurations) {
+      layout.nodeSpacingH = 45;
+    }
+
+    return layout;
+  }
+
   return (
     <div className="pgv-single-run" style={{ height: getHeight() }}>
       <div>
@@ -61,7 +67,11 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
           </span>
         </a>
       </div>
-      <PipelineGraph stages={runInfo?.stages || []} layout={layout} collapsed />
+      <PipelineGraph
+        stages={runInfo?.stages || []}
+        layout={getLayout()}
+        collapsed
+      />
     </div>
   );
 }

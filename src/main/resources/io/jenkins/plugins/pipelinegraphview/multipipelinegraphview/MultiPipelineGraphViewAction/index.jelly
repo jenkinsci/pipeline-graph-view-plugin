@@ -7,7 +7,7 @@
       <l:app-bar title="${%Stages}">
         <j:if test="${it.buildable}">
           <l:hasPermission permission="${it.permission}">
-            <j:set var="proxyId" value="${h.generateId()}"/>
+            <j:set var="proxyId" value="${h.generateId()}" />
             <st:bind value="${it}" var="rebuildAction${proxyId}"/>
             <button id="pgv-rebuild" data-success-message="${%Build scheduled}"
                     data-proxy-name="rebuildAction${proxyId}"

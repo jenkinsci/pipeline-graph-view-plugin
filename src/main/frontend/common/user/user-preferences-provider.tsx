@@ -83,7 +83,7 @@ export const useUserPreferences = (): PipelineGraphViewPreferences => {
   const context = useContext(UserPreferencesContext);
   if (!context) {
     throw new Error(
-      "useMonitorPreferences must be used within a MonitorPreferencesProvider",
+      "useMonitorPreferences must be used within a UserPreferencesProvider",
     );
   }
   return context;

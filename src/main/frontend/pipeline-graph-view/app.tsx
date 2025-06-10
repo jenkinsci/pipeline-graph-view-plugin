@@ -4,6 +4,7 @@ import "./pipeline-graph/styles/main.scss";
 import useRunPoller from "../common/tree-api.ts";
 import Stages from "../pipeline-console-view/pipeline-console/main/components/stages.tsx";
 import { StageViewPosition } from "../pipeline-console-view/pipeline-console/main/providers/user-preference-provider.tsx";
+import { UserPreferencesProvider } from "../common/user/user-preferences-provider.tsx";
 
 export default function App() {
   const rootElement = document.getElementById("graph");
@@ -16,10 +17,12 @@ export default function App() {
 
   return (
     <div>
-      <Stages
-        stages={run?.stages || []}
-        stageViewPosition={StageViewPosition.TOP}
-      />
+      <UserPreferencesProvider>
+        <Stages
+          stages={run?.stages || []}
+          stageViewPosition={StageViewPosition.TOP}
+        />
+      </UserPreferencesProvider>
     </div>
   );
 }

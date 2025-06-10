@@ -111,7 +111,7 @@ export function TimingsLabel({
   if (isSelected) {
     classNames.push("PWGx-pipeline-big-label--selected");
   }
-  if (details.stage && details.stage.synthetic) {
+  if (details.stage?.synthetic) {
     classNames.push("pgv-graph-node--synthetic");
   }
   if (details.stage?.skeleton) {

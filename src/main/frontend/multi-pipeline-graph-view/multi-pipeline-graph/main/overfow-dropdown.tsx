@@ -1,10 +1,10 @@
-import DropdownPortal from "../../../common/components/dropdown-portal.tsx";
-import { useUserPermissions } from "../../../common/user/user-permission-provider.tsx";
-import { LocalizedMessageKey, useMessages } from "../../../common/i18n";
-import { useUserPreferences } from "../../../common/user/user-preferences-provider.tsx";
-import Dropdown from "../../../common/components/dropdown.tsx";
-import { SETTINGS } from "../../../common/components/symbols.tsx";
 import Checkbox from "../../../common/components/checkbox.tsx";
+import Dropdown from "../../../common/components/dropdown.tsx";
+import DropdownPortal from "../../../common/components/dropdown-portal.tsx";
+import { SETTINGS } from "../../../common/components/symbols.tsx";
+import { LocalizedMessageKey, useMessages } from "../../../common/i18n";
+import { useUserPermissions } from "../../../common/user/user-permission-provider.tsx";
+import { useUserPreferences } from "../../../common/user/user-preferences-provider.tsx";
 
 interface OverflowDropdownProps {
   buttonPortal: HTMLElement;
@@ -13,7 +13,6 @@ interface OverflowDropdownProps {
 export default function OverflowDropdown({
   buttonPortal,
 }: OverflowDropdownProps) {
-
   const { showNames, setShowNames, showDurations, setShowDurations } =
     useUserPreferences();
   const { canConfigure } = useUserPermissions();
@@ -23,10 +22,7 @@ export default function OverflowDropdown({
       <Dropdown
         className={"jenkins-card__reveal"}
         items={[
-          <div
-            className={"pgv-dropdown-checkboxes"}
-            key={"settings-options"}
-          >
+          <div className={"pgv-dropdown-checkboxes"} key={"settings-options"}>
             <Checkbox
               label={messages.format(LocalizedMessageKey.showNames)}
               value={showNames}

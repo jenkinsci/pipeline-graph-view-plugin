@@ -2,13 +2,13 @@ import "./settings-button.scss";
 
 import Checkbox from "../../../common/components/checkbox.tsx";
 import Dropdown from "../../../common/components/dropdown.tsx";
+import DropdownPortal from "../../../common/components/dropdown-portal.tsx";
 import { SETTINGS } from "../../../common/components/symbols.tsx";
 import {
   LocalizedMessageKey,
   useMessages,
 } from "../../../common/i18n/index.ts";
 import { useUserPreferences } from "../../../common/user/user-preferences-provider.tsx";
-import DropdownPortal from "../../../common/components/dropdown-portal.tsx";
 
 type SettingsButtonProps = {
   buttonPortal: HTMLElement | null;
@@ -34,10 +34,7 @@ export default function SettingsButton({ buttonPortal }: SettingsButtonProps) {
           icon={SETTINGS}
           className={"jenkins-card__reveal"}
           items={[
-            <div
-              className={"pgv-dropdown-checkboxes"}
-              key={"settings-options"}
-            >
+            <div className={"pgv-dropdown-checkboxes"} key={"settings-options"}>
               <Checkbox
                 label={messages.format(LocalizedMessageKey.showNames)}
                 value={showNames}

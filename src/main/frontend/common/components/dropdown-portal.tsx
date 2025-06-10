@@ -6,7 +6,10 @@ interface DropdownPortalProps {
   container: HTMLElement | null;
 }
 
-export default function DropdownPortal({ children, container }: DropdownPortalProps) {
+export default function DropdownPortal({
+  children,
+  container,
+}: DropdownPortalProps) {
   if (!container) {
     console.error("DropdownPortal: Target container not found!");
     return null;

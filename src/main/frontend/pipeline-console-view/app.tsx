@@ -8,6 +8,7 @@ import {
 import { UserPermissionsProvider } from "../common/user/user-permission-provider.tsx";
 import { FilterProvider } from "./pipeline-console/main/providers/filter-provider.tsx";
 import { LayoutPreferencesProvider } from "./pipeline-console/main/providers/user-preference-provider.tsx";
+import { UserPreferencesProvider } from "../common/user/user-preferences-provider.tsx";
 
 const PipelineConsole = lazy(
   () => import("./pipeline-console/main/PipelineConsole.tsx"),
@@ -21,9 +22,11 @@ export default function App() {
       <LocaleProvider locale={locale}>
         <I18NProvider bundles={[ResourceBundleName.messages]}>
           <FilterProvider>
-            <LayoutPreferencesProvider>
-              <PipelineConsole />
-            </LayoutPreferencesProvider>
+            <UserPreferencesProvider>
+              <LayoutPreferencesProvider>
+                <PipelineConsole />
+              </LayoutPreferencesProvider>
+            </UserPreferencesProvider>
           </FilterProvider>
         </I18NProvider>
       </LocaleProvider>

@@ -31,10 +31,12 @@ export function PipelineGraph(props: Props) {
   const [branchLabels, setBranchLabels] = useState<NodeLabelInfo[]>([]);
   const [measuredWidth, setMeasuredWidth] = useState<number>(0);
   const [measuredHeight, setMeasuredHeight] = useState<number>(0);
-  const [layoutState, setLayoutState] = useState<LayoutInfo>({
-    ...defaultLayout,
-    ...layout,
-  });
+  function getLayout() {
+    return {
+      ...defaultLayout,
+      ...layout,
+    };
+  }
   const [currentSelectedStage, setCurrentSelectedStage] = useState<
     StageInfo | undefined
   >(selectedStage);
@@ -43,17 +45,10 @@ export function PipelineGraph(props: Props) {
 
   useEffect(() => {
     updateLayout(stages);
-  }, [stages, showNames, showDurations]);
+  }, [stages, layout, showNames, showDurations]);
 
   useEffect(() => {
     let needsLayout = false;
-    let newLayoutState = layoutState;
-
-    if (layout !== props.layout) {
-      newLayoutState = { ...defaultLayout, ...layout };
-      setLayoutState(newLayoutState);
-      needsLayout = true;
-    }
 
     if (selectedStage !== currentSelectedStage) {
       setCurrentSelectedStage(selectedStage);
@@ -73,7 +68,7 @@ export function PipelineGraph(props: Props) {
   const updateLayout = (newStages: StageInfo[] = []) => {
     const newLayout = layoutGraph(
       newStages,
-      layoutState,
+      getLayout(),
       collapsed ?? false,
       messages,
       showNames,
@@ -109,10 +104,10 @@ export function PipelineGraph(props: Props) {
     <div className="PWGx-PipelineGraph-container">
       <div style={outerDivStyle} className="PWGx-PipelineGraph">
         <svg width={measuredWidth} height={measuredHeight}>
-          <GraphConnections connections={connections} layout={layoutState} />
+          <GraphConnections connections={connections} layout={getLayout()} />
 
           <SelectionHighlight
-            layout={layoutState}
+            layout={getLayout()}
             nodeColumns={nodeColumns}
             isStageSelected={stageIsSelected}
           />
@@ -134,7 +129,7 @@ export function PipelineGraph(props: Props) {
           <BigLabel
             key={label.key}
             details={label}
-            layout={layoutState}
+            layout={getLayout()}
             measuredHeight={measuredHeight}
             isSelected={selectedStage?.id === label.stage?.id}
           />
@@ -144,7 +139,7 @@ export function PipelineGraph(props: Props) {
           <TimingsLabel
             key={label.key}
             details={label}
-            layout={layoutState}
+            layout={getLayout()}
             measuredHeight={measuredHeight}
             isSelected={selectedStage?.id === label.stage?.id}
           />
@@ -154,7 +149,7 @@ export function PipelineGraph(props: Props) {
           <SmallLabel
             key={label.key}
             details={label}
-            layout={layoutState}
+            layout={getLayout()}
             isSelected={selectedStage?.id === label.stage?.id}
           />
         ))}
@@ -163,7 +158,7 @@ export function PipelineGraph(props: Props) {
           <SequentialContainerLabel
             key={label.key}
             details={label}
-            layout={layoutState}
+            layout={getLayout()}
           />
         ))}
       </div>

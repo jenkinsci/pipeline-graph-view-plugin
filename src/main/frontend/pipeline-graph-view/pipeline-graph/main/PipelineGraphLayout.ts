@@ -29,6 +29,8 @@ export function layoutGraph(
   layout: LayoutInfo,
   collapsed: boolean,
   messages: Messages,
+  showNames: boolean,
+  showDurations: boolean,
 ): PositionedGraph {
   const stageNodeColumns = createNodeColumns(newStages);
   const { nodeSpacingH, ypStart } = layout;
@@ -133,8 +135,8 @@ export function layoutGraph(
 
   positionNodes(allNodeColumns, layout);
 
-  const bigLabels = createBigLabels(allNodeColumns, collapsed);
-  const timings = createTimings(allNodeColumns, collapsed);
+  const bigLabels = createBigLabels(allNodeColumns, collapsed, showNames);
+  const timings = createTimings(allNodeColumns, collapsed, showDurations);
   const smallLabels = createSmallLabels(allNodeColumns, collapsed);
   const branchLabels = createBranchLabels(allNodeColumns, collapsed);
   const connections = createConnections(allNodeColumns);
@@ -337,12 +339,13 @@ function positionNodes(
 function createBigLabels(
   columns: Array<NodeColumn>,
   collapsed: boolean,
+  showNames: boolean,
 ): Array<NodeLabelInfo> {
   const labels: Array<NodeLabelInfo> = [];
 
-  // if (collapsed) {
-  //   return [];
-  // }
+  if (collapsed && !showNames) {
+    return [];
+  }
 
   for (const column of columns) {
     const node = column.rows[0][0];
@@ -379,12 +382,13 @@ function createBigLabels(
 function createTimings(
   columns: Array<NodeColumn>,
   collapsed: boolean,
+  showDurations: boolean
 ): Array<NodeLabelInfo> {
   const labels: Array<NodeLabelInfo> = [];
 
-  // if (collapsed) {
-  //   return [];
-  // }
+  if (!collapsed || !showDurations) {
+    return [];
+  }
 
   for (const column of columns) {
     const node = column.rows[0][0];

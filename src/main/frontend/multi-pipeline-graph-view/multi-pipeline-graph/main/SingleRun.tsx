@@ -8,6 +8,7 @@ import {
   LocalizedMessageKey,
 } from "../../../common/i18n/index.ts";
 import useRunPoller from "../../../common/tree-api.ts";
+import { useUserPreferences } from "../../../common/user/user-preferences-provider.tsx";
 import { time, Total } from "../../../common/utils/timings.tsx";
 import { PipelineGraph } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraph.tsx";
 import {
@@ -42,8 +43,14 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
     );
   }
 
+  const { showNames, showDurations } = useUserPreferences();
+
+  function getHeight() {
+    return `${60 + (showNames ? 20 : 0) + (showDurations ? 20 : 0)}px`;
+  }
+
   return (
-    <div className="pgv-single-run" style={{ height: "100px" }}>
+    <div className="pgv-single-run" style={{ height: getHeight() }}>
       <div>
         <a href={currentJobPath + run.id} className="pgv-user-specified-text">
           <StatusIcon status={run.result} />

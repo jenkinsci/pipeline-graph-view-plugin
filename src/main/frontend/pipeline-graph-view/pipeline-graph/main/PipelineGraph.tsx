@@ -18,6 +18,7 @@ import {
   TimingsLabel,
 } from "./support/labels.tsx";
 import { Node, SelectionHighlight } from "./support/nodes.tsx";
+import { useUserPreferences } from "../../../common/user/user-preferences-provider.tsx";
 
 export function PipelineGraph(props: Props) {
   const { stages = [], layout, selectedStage, collapsed } = props;
@@ -67,12 +68,16 @@ export function PipelineGraph(props: Props) {
 
   const messages = useContext(I18NContext);
 
+  const { showNames, showDurations } = useUserPreferences();
+
   const updateLayout = (newStages: StageInfo[] = []) => {
     const newLayout = layoutGraph(
       newStages,
       layoutState,
       collapsed ?? false,
       messages,
+      showNames,
+      showDurations,
     );
     setNodeColumns(newLayout.nodeColumns);
     setConnections(newLayout.connections);

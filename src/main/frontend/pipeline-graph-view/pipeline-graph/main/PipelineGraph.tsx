@@ -1,6 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 
 import { I18NContext } from "../../../common/i18n/index.ts";
+import { useUserPreferences } from "../../../common/user/user-preferences-provider.tsx";
 import { layoutGraph } from "./PipelineGraphLayout";
 import {
   CompositeConnection,
@@ -18,7 +19,6 @@ import {
   TimingsLabel,
 } from "./support/labels.tsx";
 import { Node, SelectionHighlight } from "./support/nodes.tsx";
-import { useUserPreferences } from "../../../common/user/user-preferences-provider.tsx";
 
 export function PipelineGraph(props: Props) {
   const { stages = [], layout, selectedStage, collapsed } = props;

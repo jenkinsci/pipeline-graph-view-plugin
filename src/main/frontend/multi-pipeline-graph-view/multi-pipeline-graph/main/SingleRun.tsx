@@ -41,10 +41,6 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
 
   const { showNames, showDurations } = useUserPreferences();
 
-  function getHeight() {
-    return `${60 + (showNames ? 20 : 0) + (showDurations ? 20 : 0)}px`;
-  }
-
   function getLayout() {
     const layout: LayoutInfo = { ...defaultLayout };
 
@@ -55,8 +51,12 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
     return layout;
   }
 
+  function getCompactLayout() {
+    return !showNames && !showDurations ? "pgv-single-run--compact" : "";
+  }
+
   return (
-    <div className="pgv-single-run" style={{ height: getHeight() }}>
+    <div className={`pgv-single-run ${getCompactLayout()}`}>
       <div>
         <a href={currentJobPath + run.id} className="pgv-user-specified-text">
           <StatusIcon status={run.result} />

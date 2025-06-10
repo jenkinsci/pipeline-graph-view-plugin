@@ -149,7 +149,10 @@ export function layoutGraph(
     for (const row of column.rows) {
       for (const node of row) {
         measuredWidth = Math.max(measuredWidth, node.x + nodeSpacingH / 2);
-        measuredHeight = Math.max(measuredHeight, node.y + ypStart);
+        measuredHeight =
+          collapsed && !showNames && !showDurations
+            ? 60
+            : Math.max(measuredHeight, node.y + ypStart);
       }
     }
   }

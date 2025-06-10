@@ -39,9 +39,11 @@ export function PipelineGraph(props: Props) {
     StageInfo | undefined
   >(selectedStage);
 
+  const { showNames, showDurations } = useUserPreferences();
+
   useEffect(() => {
     updateLayout(stages);
-  }, [stages]);
+  }, [stages, showNames, showDurations]);
 
   useEffect(() => {
     let needsLayout = false;
@@ -64,11 +66,9 @@ export function PipelineGraph(props: Props) {
     if (needsLayout) {
       updateLayout(stages);
     }
-  }, [layout, selectedStage, stages]);
+  }, [layout, selectedStage, stages, showNames, showDurations]);
 
   const messages = useContext(I18NContext);
-
-  const { showNames, showDurations } = useUserPreferences();
 
   const updateLayout = (newStages: StageInfo[] = []) => {
     const newLayout = layoutGraph(

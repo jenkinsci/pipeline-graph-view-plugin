@@ -17,6 +17,7 @@ import {
   StageInfo,
 } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import { useFilter } from "./providers/filter-provider.tsx";
+import LiveTotal from "../../../common/utils/live-total.tsx";
 
 export default function DataTreeView({
   stages,
@@ -190,7 +191,7 @@ const TreeNode = memo(function TreeNode({
                 {stage.name}
               </div>
               <div className="pgv-tree-item__description">
-                <Total ms={stage.totalDurationMillis} />
+                <LiveTotal start={stage.startTimeMillis} total={stage.totalDurationMillis} />
               </div>
             </div>
           </div>

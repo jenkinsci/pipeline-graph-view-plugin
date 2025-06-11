@@ -51,7 +51,7 @@ export interface StageInfo {
   synthetic?: boolean;
   pauseDurationMillis: number;
   startTimeMillis: number;
-  totalDurationMillis: number;
+  totalDurationMillis?: number;
   agent: string;
   url: string;
 

@@ -137,7 +137,7 @@ export function Node({
     ),
   };
 
-  let tooltip: ReactElement | undefined;
+  let tooltip: ReactElement;
   if (collapsed) {
     tooltip = (
       <div className="pgv-node-tooltip">
@@ -145,6 +145,12 @@ export function Node({
         <div>
           <Total ms={node.stage.totalDurationMillis} />
         </div>
+      </div>
+    );
+  } else {
+    tooltip = (
+      <div className="pgv-node-tooltip">
+        <Total ms={node.stage.totalDurationMillis} />
       </div>
     );
   }

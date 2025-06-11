@@ -82,21 +82,23 @@ export const UserPreferencesProvider = ({
     ),
   );
 
-  useEffect(() => {
-    window.localStorage.setItem(stageNamesKey, String(showNames));
-  }, [showNames]);
+  const persistShowNames = (val: boolean) => {
+    window.localStorage.setItem(stageNamesKey, String(val));
+    setShowNames(val);
+  }
 
-  useEffect(() => {
-    window.localStorage.setItem(stageDurationsKey, String(showDurations));
-  }, [showDurations]);
+  const persistShowDurations = (val: boolean) => {
+    window.localStorage.setItem(stageDurationsKey, String(val));
+    setShowDurations(val);
+  }
 
   return (
     <UserPreferencesContext.Provider
       value={{
         showNames,
-        setShowNames,
+        setShowNames: persistShowNames,
         showDurations,
-        setShowDurations,
+        setShowDurations: persistShowDurations,
       }}
     >
       {children}

@@ -140,7 +140,7 @@ export function layoutGraph(
   const timings = createTimings(allNodeColumns, collapsed, showDurations);
   const smallLabels = createSmallLabels(allNodeColumns, collapsed);
   const branchLabels = createBranchLabels(allNodeColumns, collapsed);
-  const connections = createConnections(allNodeColumns);
+  const connections = createConnections(allNodeColumns, collapsed);
 
   // Calculate the size of the graph
   let measuredWidth = 0;
@@ -401,10 +401,6 @@ function createTimings(
     }
     const stage = column.topStage;
 
-    if (stage?.state === Result.skipped) {
-      continue;
-    }
-
     const text = stage?.totalDurationMillis + "";
     if (!text) {
       // shouldn't happen
@@ -501,6 +497,7 @@ function createBranchLabels(
  */
 function createConnections(
   columns: Array<NodeColumn>,
+  collapsed: boolean,
 ): Array<CompositeConnection> {
   const connections: Array<CompositeConnection> = [];
 
@@ -508,7 +505,7 @@ function createConnections(
   let skippedNodes: Array<NodeInfo> = [];
 
   for (const column of columns) {
-    if (column.topStage && column.topStage.state === "skipped") {
+    if (!collapsed && column.topStage?.state === Result.skipped) {
       skippedNodes.push(column.rows[0][0]);
       continue;
     }

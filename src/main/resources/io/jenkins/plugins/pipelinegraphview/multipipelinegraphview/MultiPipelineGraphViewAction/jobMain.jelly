@@ -7,7 +7,7 @@
     </j:set>
     <!-- workaround floatingBox elements overlapping until page is reworked -->
     <div class="clearfix" />
-    <tempalte data-module="user-preferences"
+    <template data-module="user-preferences"
               data-preference-show-stage-names="${it.showStageNamesOnJobPage}"
               data-preference-show-stage-durations="${it.showStageDurationsOnJobPage}"/>
 

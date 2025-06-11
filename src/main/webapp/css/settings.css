@@ -9,7 +9,8 @@
   content: "";
   position: absolute;
   top: calc(var(--section-padding) * -1);
-  left: 11px;
+  /* TODO - var fallback can removed after baseline is moved >= 2.496 */
+  left: calc(11px - (var(--jenkins-border-width, 2px) / 2));
   bottom: 0.375rem;
   /* TODO - var fallback can removed after baseline is moved >= 2.496 */
   background-color: var(

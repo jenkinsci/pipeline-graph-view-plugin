@@ -6,6 +6,7 @@ import hudson.model.Result;
 import io.jenkins.plugins.casc.misc.ConfiguredWithCode;
 import io.jenkins.plugins.casc.misc.JenkinsConfiguredWithCodeRule;
 import io.jenkins.plugins.casc.misc.junit.jupiter.WithJenkinsConfiguredWithCode;
+import io.jenkins.plugins.pipelinegraphview.playwright.ManageAppearancePage;
 import io.jenkins.plugins.pipelinegraphview.playwright.PipelineJobPage;
 import io.jenkins.plugins.pipelinegraphview.playwright.PlaywrightConfig;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
@@ -27,10 +28,18 @@ class PipelineGraphViewTest {
     // http://localhost:8080/jenkins
 
     @Test
-    @ConfiguredWithCode("configure-appearance.yml")
     void smokeTest(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
         String name = "Integration Tests";
         WorkflowRun run = TestUtils.createAndRunJob(j, name, "smokeTest.jenkinsfile", Result.FAILURE);
+
+        new ManageAppearancePage(p, j.jenkins.getRootUrl())
+                .goTo()
+                .displayPipelineOnBuildPage()
+                .displayPipelineOnJobPage()
+                .setPipelineGraphAsConsoleProvider()
+                .displayNamesOnStageViewByDefault()
+                .displayDurationsOnStageViewByDefault()
+                .save();
 
         new PipelineJobPage(p, run.getParent())
                 .goTo()

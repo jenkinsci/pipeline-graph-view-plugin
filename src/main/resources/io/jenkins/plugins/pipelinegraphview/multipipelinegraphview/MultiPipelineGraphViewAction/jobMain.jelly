@@ -8,8 +8,8 @@
     <!-- workaround floatingBox elements overlapping until page is reworked -->
     <div class="clearfix" />
     <template data-module="user-preferences"
-              data-preference-show-stage-names="${it.showStageNamesOnJobPage}"
-              data-preference-show-stage-durations="${it.showStageDurationsOnJobPage}"/>
+              data-preference-show-stage-names="${it.showStageNames}"
+              data-preference-show-stage-durations="${it.showStageDurations}"/>
 
     <l:card title="${%Stages}" expandable="multi-pipeline-graph" controls="${controls}">
       <div id="multiple-pipeline-root"

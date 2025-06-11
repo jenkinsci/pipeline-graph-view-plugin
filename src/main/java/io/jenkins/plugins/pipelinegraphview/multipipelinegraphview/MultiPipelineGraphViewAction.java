@@ -54,13 +54,13 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
     }
 
     @SuppressWarnings("unused")
-    public boolean isShowStageNamesOnJobPage() {
-        return PipelineGraphViewConfiguration.get().isShowStageNamesOnJobPage();
+    public boolean isShowStageNames() {
+        return PipelineGraphViewConfiguration.get().isShowStageNames();
     }
 
     @SuppressWarnings("unused")
-    public boolean isShowStageDurationsOnJobPage() {
-        return PipelineGraphViewConfiguration.get().isShowStageDurationsOnJobPage();
+    public boolean isShowStageDurations() {
+        return PipelineGraphViewConfiguration.get().isShowStageDurations();
     }
 
     @GET

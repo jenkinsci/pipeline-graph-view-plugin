@@ -3,16 +3,17 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
   <f:section title="${%Pipeline graph view}">
-    <f:optionalBlock field="showGraphOnJobPage" title="${%Show pipeline graph on job page}">
-      <f:entry>
-        <f:checkbox field="showStageNamesOnJobPage" title="${%showStageNames}" />
-      </f:entry>
-      <f:entry>
-        <f:checkbox field="showStageDurationsOnJobPage" title="${%showStageDurations}" />
-      </f:entry>
-    </f:optionalBlock>
+    <f:entry>
+      <f:checkbox field="showGraphOnJobPage" title="${%Show pipeline graph on job page}" />
+    </f:entry>
     <f:entry>
       <f:checkbox field="showGraphOnBuildPage" title="${%Show pipeline graph on build page}" />
+    </f:entry>
+    <f:entry>
+      <f:checkbox field="showStageNames" title="${%showStageNames}" />
+    </f:entry>
+    <f:entry>
+      <f:checkbox field="showStageDurations" title="${%showStageDurations}" />
     </f:entry>
   </f:section>
 </j:jelly>

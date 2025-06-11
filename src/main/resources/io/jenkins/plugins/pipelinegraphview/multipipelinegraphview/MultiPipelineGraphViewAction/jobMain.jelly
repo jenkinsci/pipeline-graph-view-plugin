@@ -7,6 +7,10 @@
     </j:set>
     <!-- workaround floatingBox elements overlapping until page is reworked -->
     <div class="clearfix" />
+    <tempalte data-module="user-preferences"
+              data-preference-show-stage-names="${it.showStageNamesOnJobPage}"
+              data-preference-show-stage-durations="${it.showStageDurationsOnJobPage}"/>
+
     <l:card title="${%Stages}" expandable="multi-pipeline-graph" controls="${controls}">
       <div id="multiple-pipeline-root"
            data-current-job-path="${rootURL + '/' + it.jobUrl}"

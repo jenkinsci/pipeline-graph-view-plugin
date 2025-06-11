@@ -14,6 +14,8 @@ import org.kohsuke.stapler.DataBoundSetter;
 public class PipelineGraphViewConfiguration extends GlobalConfiguration {
 
     private boolean showGraphOnJobPage;
+    private boolean showStageNamesOnJobPage;
+    private boolean showStageDurationsOnJobPage;
     private boolean showGraphOnBuildPage;
 
     public PipelineGraphViewConfiguration() {
@@ -27,6 +29,26 @@ public class PipelineGraphViewConfiguration extends GlobalConfiguration {
     @DataBoundSetter
     public void setShowGraphOnJobPage(boolean showGraphOnJobPage) {
         this.showGraphOnJobPage = showGraphOnJobPage;
+        save();
+    }
+
+    public boolean isShowStageNamesOnJobPage() {
+        return showStageNamesOnJobPage;
+    }
+
+    @DataBoundSetter
+    public void setShowStageNamesOnJobPage(boolean showStageNamesOnJobPage) {
+        this.showStageNamesOnJobPage = showStageNamesOnJobPage;
+        save();
+    }
+
+    public boolean isShowStageDurationsOnJobPage() {
+        return showStageDurationsOnJobPage;
+    }
+
+    @DataBoundSetter
+    public void setShowStageDurationsOnJobPage(boolean showStageDurationsOnJobPage) {
+        this.showStageDurationsOnJobPage = showStageDurationsOnJobPage;
         save();
     }
 

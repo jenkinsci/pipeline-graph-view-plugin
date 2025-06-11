@@ -1,0 +1,22 @@
+.pgv-nested-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding-left: 33px; /* checkbox button width is 22px and right margin is 11px */
+}
+
+.pgv-nested-checkbox-group::before {
+  content: "";
+  position: absolute;
+  top: calc(var(--section-padding) * -1);
+  left: 11px;
+  bottom: 0.375rem;
+  /* TODO - var fallback can removed after baseline is moved >= 2.496 */
+  background-color: var(
+    --jenkins-border-color,
+    color-mix(in srgb, var(--text-color-secondary) 25%, transparent)
+  );
+  /* TODO - var fallback can removed after baseline is moved >= 2.496 */
+  width: var(--jenkins-border-width, 2px);
+  border-radius: var(--form-input-border-radius);
+}

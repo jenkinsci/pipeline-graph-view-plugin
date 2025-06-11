@@ -1,10 +1,4 @@
-import {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, ReactNode, useContext, useState } from "react";
 
 interface PipelineGraphViewPreferences {
   showNames: boolean;
@@ -85,12 +79,12 @@ export const UserPreferencesProvider = ({
   const persistShowNames = (val: boolean) => {
     window.localStorage.setItem(stageNamesKey, String(val));
     setShowNames(val);
-  }
+  };
 
   const persistShowDurations = (val: boolean) => {
     window.localStorage.setItem(stageDurationsKey, String(val));
     setShowDurations(val);
-  }
+  };
 
   return (
     <UserPreferencesContext.Provider

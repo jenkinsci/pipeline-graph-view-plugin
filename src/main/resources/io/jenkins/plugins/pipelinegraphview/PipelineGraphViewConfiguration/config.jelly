@@ -3,24 +3,16 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
   <f:section title="${%Pipeline graph view}">
-    <link rel="stylesheet" href="${resURL}/plugin/pipeline-graph-view/css/settings.css" type="text/css" />
-
-    <f:entry>
-      <f:checkbox field="showGraphOnJobPage" title="${%Show pipeline graph on job page}" name="pgv.showGraphOnJobPage" />
-    </f:entry>
-    <div class= "pgv-nested-checkbox-group" data-module="collapsable" data-controlled-by="pgv.showGraphOnJobPage">
+    <f:optionalBlock field="showGraphOnJobPage" title="${%Show pipeline graph on job page}">
       <f:entry>
         <f:checkbox field="showStageNamesOnJobPage" title="${%showStageNames}" />
       </f:entry>
       <f:entry>
         <f:checkbox field="showStageDurationsOnJobPage" title="${%showStageDurations}" />
       </f:entry>
-    </div>
-
+    </f:optionalBlock>
     <f:entry>
       <f:checkbox field="showGraphOnBuildPage" title="${%Show pipeline graph on build page}" />
     </f:entry>
-
-    <script src="${resURL}/plugin/pipeline-graph-view/js/settings.js" type="module"/>
   </f:section>
 </j:jelly>

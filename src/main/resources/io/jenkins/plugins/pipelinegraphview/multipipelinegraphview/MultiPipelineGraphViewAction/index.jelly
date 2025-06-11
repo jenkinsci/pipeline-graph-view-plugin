@@ -24,7 +24,7 @@
       <template data-module="permissions"
                 data-permission-configure="${configPermission}"
       />
-      <tempalte data-module="user-preferences"
+      <template data-module="user-preferences"
                 data-preference-show-stage-names="${it.showStageNamesOnJobPage}"
                 data-preference-show-stage-durations="${it.showStageDurationsOnJobPage}"/>
 

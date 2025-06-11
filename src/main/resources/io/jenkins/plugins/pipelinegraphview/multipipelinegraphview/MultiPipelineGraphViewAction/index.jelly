@@ -24,6 +24,9 @@
       <template data-module="permissions"
                 data-permission-configure="${configPermission}"
       />
+      <template data-module="user-preferences"
+                data-preference-show-stage-names="${it.showStageNames}"
+                data-preference-show-stage-durations="${it.showStageDurations}"/>
 
       <div id="multiple-pipeline-root"
            data-current-job-path="${rootURL + '/' + it.jobUrl}"

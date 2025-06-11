@@ -7,6 +7,7 @@ import {
   NodeLabelInfo,
   PlaceholderNodeInfo,
   PositionedGraph,
+  Result,
   StageInfo,
   StageNodeInfo,
 } from "./PipelineGraphModel.tsx";
@@ -399,6 +400,10 @@ function createTimings(
       continue;
     }
     const stage = column.topStage;
+
+    if (stage?.state === Result.skipped) {
+      continue;
+    }
 
     const text = stage?.totalDurationMillis + "";
     if (!text) {

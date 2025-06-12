@@ -36,7 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
-    public static final long LOG_THRESHOLD = 150 * 1024; // 150KB
+    public static final long LOG_THRESHOLD = 5 * 1024 * 1024; // 10MB
     public static final String URL_NAME = "pipeline-overview";
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineConsoleViewAction.class);
@@ -195,7 +195,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         // This will be a step, so return it's log output.
         // startByte to start getting data from. If negative will startByte from end of string with
         // LOG_THRESHOLD.
-        Long startByte = parseIntWithDefault(req.getParameter("startByte"), -LOG_THRESHOLD);
+        Long startByte = parseIntWithDefault(req.getParameter("startByte"), - LOG_THRESHOLD);
         JSONObject data = getConsoleOutputJson(nodeId, startByte);
         if (data == null) {
             return HttpResponses.errorJSON("Something went wrong - check Jenkins logs.");

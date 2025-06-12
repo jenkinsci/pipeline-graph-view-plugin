@@ -36,7 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
-    public static final long LOG_THRESHOLD = 5 * 1024 * 1024; // 10MB
+    public static final long LOG_THRESHOLD = 5 * 1024 * 1024; // 5MB
     public static final String URL_NAME = "pipeline-overview";
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineConsoleViewAction.class);

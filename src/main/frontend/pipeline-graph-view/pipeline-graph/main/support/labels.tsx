@@ -95,7 +95,7 @@ export function TimingsLabel({
     maxHeight: labelHeight + "px",
     textAlign: "center",
     marginLeft: labelOffsetH,
-    color: "var(--text-color-secondary)"
+    color: "var(--text-color-secondary)",
   };
 
   const x = details.x;

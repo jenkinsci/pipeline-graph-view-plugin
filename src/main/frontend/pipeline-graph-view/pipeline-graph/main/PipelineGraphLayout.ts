@@ -401,20 +401,13 @@ function createTimings(
     }
     const stage = column.topStage;
 
-    const text = stage?.totalDurationMillis + "";
-    if (!text) {
-      // shouldn't happen
-      continue;
-    }
-    const key = "l_t_" + node.key;
-
     labels.push({
       x: column.centerX,
       y: node.y + 55,
       node,
       stage,
-      text,
-      key,
+      text: "", // we take the duration from the stage itself at render time
+      key: `l_t_${node.key}`,
     });
   }
 

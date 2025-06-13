@@ -27,8 +27,9 @@ export default class RunEstimator {
         if (previous === undefined) {
           return 0; // No previous run, so no estimate
         }
-        const previousTiming = previous.totalDurationMillis;
-        const currentTiming = stage.totalDurationMillis;
+        const previousTiming = previous.totalDurationMillis!;
+        const currentTiming =
+          stage.totalDurationMillis ?? Date.now() - stage.startTimeMillis;
         if (previousTiming <= currentTiming) {
           return 99; // Assume 99% complete if the previous run was longer than the current run
         }

@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import { Total } from "./timings.tsx";
 
 export default function LiveTotal({
-  total, start
+  total,
+  start,
 }: {
   total: number | undefined;
   start: number;
@@ -17,11 +18,9 @@ export default function LiveTotal({
       }, 500);
       return () => clearInterval(interval);
     } else {
-      setDuration(total)
+      setDuration(total);
     }
   }, [total]);
-  
-  return (
-    <Total ms={duration}/>
-  );
+
+  return <Total ms={duration} />;
 }

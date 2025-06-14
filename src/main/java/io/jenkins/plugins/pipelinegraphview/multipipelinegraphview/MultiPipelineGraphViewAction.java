@@ -3,6 +3,7 @@ package io.jenkins.plugins.pipelinegraphview.multipipelinegraphview;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.model.Action;
+import hudson.model.Item;
 import hudson.security.Permission;
 import hudson.util.HttpResponses;
 import hudson.util.RunList;
@@ -40,15 +41,26 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
     }
 
     public Permission getPermission() {
-        return target.BUILD;
+        return Item.BUILD;
     }
 
     public Permission getConfigurePermission() {
-        return target.CONFIGURE;
+        return Item.CONFIGURE;
     }
 
+    @SuppressWarnings("unused")
     public boolean isShowGraphOnJobPage() {
         return PipelineGraphViewConfiguration.get().isShowGraphOnJobPage();
+    }
+
+    @SuppressWarnings("unused")
+    public boolean isShowStageNames() {
+        return PipelineGraphViewConfiguration.get().isShowStageNames();
+    }
+
+    @SuppressWarnings("unused")
+    public boolean isShowStageDurations() {
+        return PipelineGraphViewConfiguration.get().isShowStageDurations();
     }
 
     @GET

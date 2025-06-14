@@ -46,6 +46,10 @@ export const I18NProvider: FunctionComponent<I18NProviderProps> = ({
   );
 };
 
-export function useMessages() {
-  return useContext(I18NContext);
+export function useMessages(): Messages {
+  const messages = useContext(I18NContext);
+  if (!messages) {
+    throw new Error("useI18N must be used within an I18NProvider");
+  }
+  return messages;
 }

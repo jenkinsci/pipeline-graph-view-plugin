@@ -4,6 +4,11 @@ import "../../../pipeline-graph-view/pipeline-graph/styles/main.scss";
 
 import Dropdown from "../../../common/components/dropdown.tsx";
 import DropdownPortal from "../../../common/components/dropdown-portal.tsx";
+import {
+  CONSOLE,
+  DOCUMENT,
+  SETTINGS,
+} from "../../../common/components/symbols.tsx";
 import { useUserPermissions } from "../../../common/user/user-permission-provider.tsx";
 import Skeleton from "./components/skeleton.tsx";
 import Stages from "./components/stages.tsx";
@@ -15,7 +20,6 @@ import { useLayoutPreferences } from "./providers/user-preference-provider.tsx";
 import ScrollToTopBottom from "./scroll-to-top-bottom.tsx";
 import SplitView from "./split-view.tsx";
 import StageView from "./StageView.tsx";
-import { CONSOLE, DOCUMENT, SETTINGS } from "./symbols.tsx";
 
 export default function PipelineConsole() {
   const rootElement = document.getElementById("console-pipeline-root");
@@ -43,7 +47,9 @@ export default function PipelineConsole() {
 
   return (
     <>
-      <DropdownPortal>
+      <DropdownPortal
+        container={document.getElementById("console-pipeline-overflow-root")}
+      >
         <Dropdown
           items={[
             showSplitView ? (

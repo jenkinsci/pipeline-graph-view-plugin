@@ -1,6 +1,7 @@
 .pgv-scroll-to-top-bottom {
   position: fixed;
   bottom: calc(var(--section-padding) * 1);
+  bottom: var(--section-padding);
   right: calc(var(--section-padding) * 2);
   display: flex;
   gap: 0.375rem;

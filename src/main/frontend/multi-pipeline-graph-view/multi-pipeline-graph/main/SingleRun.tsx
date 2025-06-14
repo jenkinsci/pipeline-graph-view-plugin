@@ -8,6 +8,7 @@ import {
   LocalizedMessageKey,
 } from "../../../common/i18n/index.ts";
 import useRunPoller from "../../../common/tree-api.ts";
+import { useUserPreferences } from "../../../common/user/user-preferences-provider.tsx";
 import { time, Total } from "../../../common/utils/timings.tsx";
 import { PipelineGraph } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraph.tsx";
 import {
@@ -20,11 +21,6 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
   const { run: runInfo } = useRunPoller({
     currentRunPath: currentJobPath + run.id + "/",
   });
-
-  const layout: LayoutInfo = {
-    ...defaultLayout,
-    nodeSpacingH: 45,
-  };
 
   function Changes() {
     if (run.changesCount === 0) {
@@ -43,10 +39,28 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
     );
   }
 
+  const { showNames, showDurations } = useUserPreferences();
+
+  function getLayout() {
+    const layout: LayoutInfo = { ...defaultLayout };
+
+    if (!showNames && !showDurations) {
+      layout.nodeSpacingH = 45;
+    } else {
+      layout.nodeSpacingH = 90;
+    }
+
+    return layout;
+  }
+
+  function getCompactLayout() {
+    return !showNames && !showDurations ? "pgv-single-run--compact" : "";
+  }
+
   return (
-    <div className="pgv-single-run">
+    <div className={`pgv-single-run ${getCompactLayout()}`}>
       <div>
-        <a href={currentJobPath + run.id} className="pgw-user-specified-text">
+        <a href={currentJobPath + run.id} className="pgv-user-specified-text">
           <StatusIcon status={run.result} />
           {run.displayName}
           <span>
@@ -55,7 +69,11 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
           </span>
         </a>
       </div>
-      <PipelineGraph stages={runInfo?.stages || []} layout={layout} collapsed />
+      <PipelineGraph
+        stages={runInfo?.stages || []}
+        layout={getLayout()}
+        collapsed
+      />
     </div>
   );
 }

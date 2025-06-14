@@ -3,20 +3,21 @@
   grid-template-columns: 220px 1fr;
   align-items: center;
 
-  // This is hacky - the pipeline graph is too tall and isn't centered
-  .PWGx-PipelineGraph-container {
-    height: 36px;
-
-    & > div {
-      margin-top: -36px;
-    }
-  }
-
   &:last-of-type {
     border-bottom: none;
   }
 
-  .pgw-user-specified-text {
+  &--compact {
+    .PWGx-PipelineGraph-container {
+      height: 36px;
+
+      & > div {
+        margin-top: -36px;
+      }
+    }
+  }
+
+  .pgv-user-specified-text {
     display: grid;
     grid-template-columns: auto 1fr;
     align-items: start;

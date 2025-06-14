@@ -81,6 +81,9 @@ export enum LocalizedMessageKey {
   start = "node.start",
   end = "node.end",
   changesSummary = "changes.summary",
+  settings = "settings",
+  showNames = "settings.showStageName",
+  showDuration = "settings.showStageDuration",
   consoleNewTab = "console.newTab",
 }
 
@@ -97,6 +100,9 @@ const DEFAULT_MESSAGES: ResourceBundle = {
   [LocalizedMessageKey.start]: "Start",
   [LocalizedMessageKey.end]: "End",
   [LocalizedMessageKey.changesSummary]: "{0} {0,choice,1#change|1<changes}",
+  [LocalizedMessageKey.settings]: "Settings",
+  [LocalizedMessageKey.showNames]: "Show stage names",
+  [LocalizedMessageKey.showDuration]: "Show stage duration",
   [LocalizedMessageKey.consoleNewTab]: "View step as plain text",
 };
 

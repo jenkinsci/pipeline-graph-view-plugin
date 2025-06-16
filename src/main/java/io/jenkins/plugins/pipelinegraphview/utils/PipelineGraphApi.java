@@ -2,10 +2,12 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 import static java.util.Collections.emptyList;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Cause;
 import hudson.model.CauseAction;
 import hudson.model.Item;
 import hudson.model.Queue;
+import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import java.io.IOException;
 import java.util.*;
@@ -23,6 +25,9 @@ import org.slf4j.LoggerFactory;
 
 public class PipelineGraphApi {
     private static final Logger logger = LoggerFactory.getLogger(PipelineGraphApi.class);
+    private static final BuildScheduleResult NOT_SCHEDULED =
+            new BuildScheduleResult.NotScheduled(Messages.scheduled_failure());
+
     private final transient WorkflowRun run;
 
     public PipelineGraphApi(WorkflowRun run) {
@@ -30,21 +35,47 @@ public class PipelineGraphApi {
     }
 
     public Integer replay() throws ExecutionException, InterruptedException, TimeoutException {
+        BuildScheduleResult result = scheduleBuild(run -> {
+            CauseAction causeAction = new CauseAction(new Cause.UserIdCause());
+            return Queue.getInstance()
+                    .schedule2(run.getParent(), 0, causeAction)
+                    .getItem();
+        });
+        // when java 21+ we can use switch expression
+        if (result instanceof BuildScheduleResult.Scheduled s) {
+            return s.buildNumber();
+        }
+        return null;
+    }
+
+    public @NonNull BuildScheduleResult scheduleBuild(Function<WorkflowRun, Queue.Item> scheduler) {
+        if (run == null) {
+            return NOT_SCHEDULED;
+        }
+
         run.checkPermission(Item.BUILD);
 
-        CauseAction causeAction = new CauseAction(new Cause.UserIdCause());
-
         if (!run.getParent().isBuildable()) {
-            return null;
+            return NOT_SCHEDULED;
         }
 
-        Queue.Item item =
-                Queue.getInstance().schedule2(run.getParent(), 0, causeAction).getItem();
+        Queue.Item item = scheduler.apply(run);
+
         if (item == null) {
-            return null;
+            return NOT_SCHEDULED;
         }
 
-        return run.getParent().getNextBuildNumber();
+        return new BuildScheduleResult.Scheduled(run.getParent().getNextBuildNumber());
+    }
+
+    public sealed interface BuildScheduleResult {
+        record NotScheduled(String message) implements BuildScheduleResult {}
+
+        record Scheduled(int buildNumber) implements BuildScheduleResult {
+            public String message() {
+                return Messages.scheduled_success(buildNumber);
+            }
+        }
     }
 
     private List<PipelineStageInternal> getPipelineNodes(PipelineGraphBuilderApi builder) {

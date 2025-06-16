@@ -1,10 +1,10 @@
 package io.jenkins.plugins.pipelinegraphview.consoleview;
 
+import static io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi.BuildScheduleResult;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.console.AnnotatedLargeText;
-import hudson.model.Item;
-import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.util.HttpResponses;
 import io.jenkins.plugins.pipelinegraphview.Messages;
@@ -90,19 +90,21 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
      */
     @RequirePOST
     @JavaScriptMethod
-    public boolean doRerun() {
-        if (run != null) {
-            run.checkAnyPermission(Item.BUILD);
+    public HttpResponse doRerun() {
+        BuildScheduleResult result = api.scheduleBuild(run -> {
             ReplayAction replayAction = run.getAction(ReplayAction.class);
-            Queue.Item item =
-                    replayAction.run2(replayAction.getOriginalScript(), replayAction.getOriginalLoadedScripts());
+            return replayAction.run2(replayAction.getOriginalScript(), replayAction.getOriginalLoadedScripts());
+        });
 
-            if (item == null) {
-                return false;
-            }
-            return true;
+        if (result instanceof BuildScheduleResult.NotScheduled nope) {
+            return HttpResponses.errorJSON(nope.message());
         }
-        return false;
+
+        JSONObject obj = new JSONObject();
+        BuildScheduleResult.Scheduled scheduled = (BuildScheduleResult.Scheduled) result;
+        obj.put("buildNumber", scheduled.buildNumber());
+        obj.put("message", scheduled.message());
+        return HttpResponses.okJSON(obj);
     }
 
     /**
@@ -111,19 +113,17 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     @RequirePOST
     @JavaScriptMethod
     public HttpResponse doCancel() {
-        if (run != null) {
-            run.checkPermission(getCancelPermission());
-            if (run.isBuilding()) {
-                run.doStop();
-                return HttpResponses.okJSON();
-            } else {
-                String message = Result.ABORTED.equals(run.getResult())
-                        ? Messages.run_alreadyCancelled()
-                        : Messages.run_isFinished();
-                return HttpResponses.errorJSON(message);
-            }
+        if (run == null) {
+            return HttpResponses.errorJSON("No run to cancel");
         }
-        return HttpResponses.errorJSON("No run to cancel");
+        run.checkPermission(getCancelPermission());
+        if (run.isBuilding()) {
+            run.doStop();
+            return HttpResponses.okJSON();
+        }
+        String message =
+                Result.ABORTED.equals(run.getResult()) ? Messages.run_alreadyCancelled() : Messages.run_isFinished();
+        return HttpResponses.errorJSON(message);
     }
 
     // Legacy - leave in case we want to update a sub section of steps (e.g. if a stage is still

@@ -9,12 +9,8 @@ import hudson.model.Action;
 import hudson.model.BallColor;
 import hudson.model.Item;
 import hudson.model.ParametersDefinitionProperty;
-import hudson.model.Queue;
-import hudson.model.Result;
 import hudson.security.Permission;
 import hudson.util.HttpResponses;
-import io.jenkins.plugins.pipelinegraphview.Messages;
-import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
@@ -23,13 +19,10 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.pipeline.modeldefinition.actions.RestartDeclarativePipelineAction;
-import org.jenkinsci.plugins.workflow.cps.replay.ReplayAction;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.WebMethod;
-import org.kohsuke.stapler.bind.JavaScriptMethod;
-import org.kohsuke.stapler.interceptor.RequirePOST;
 
 public abstract class AbstractPipelineViewAction implements Action, IconSpec {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
@@ -86,47 +79,6 @@ public abstract class AbstractPipelineViewAction implements Action, IconSpec {
             return action.isRestartEnabled();
         }
         return false;
-    }
-
-    /**
-     * Handles the rerun request using ReplayAction feature
-     */
-    @RequirePOST
-    @JavaScriptMethod
-    public boolean doRerun() throws IOException, ExecutionException {
-        if (run != null) {
-            run.checkAnyPermission(Item.BUILD);
-            ReplayAction replayAction = run.getAction(ReplayAction.class);
-            Queue.Item item =
-                    replayAction.run2(replayAction.getOriginalScript(), replayAction.getOriginalLoadedScripts());
-
-            if (item == null) {
-                return false;
-            }
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Handles the cancel request.
-     */
-    @RequirePOST
-    @JavaScriptMethod
-    public HttpResponse doCancel() throws IOException, ExecutionException {
-        if (run != null) {
-            run.checkPermission(getCancelPermission());
-            if (run.isBuilding()) {
-                run.doStop();
-                return HttpResponses.okJSON();
-            } else {
-                String message = Result.ABORTED.equals(run.getResult())
-                        ? Messages.run_alreadyCancelled()
-                        : Messages.run_isFinished();
-                return HttpResponses.errorJSON(message);
-            }
-        }
-        return HttpResponses.errorJSON("No run to cancel");
     }
 
     public String getFullBuildDisplayName() {

@@ -3,7 +3,11 @@ package io.jenkins.plugins.pipelinegraphview.consoleview;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.console.AnnotatedLargeText;
+import hudson.model.Item;
+import hudson.model.Queue;
+import hudson.model.Result;
 import hudson.util.HttpResponses;
+import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.PipelineGraphViewConfiguration;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsCard;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
@@ -24,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import net.sf.json.JSONObject;
+import org.jenkinsci.plugins.workflow.cps.replay.ReplayAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -31,6 +36,8 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebMethod;
+import org.kohsuke.stapler.bind.JavaScriptMethod;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.GET;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,6 +83,47 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
 
     public String getUrl() {
         return target.getUrl();
+    }
+
+    /**
+     * Handles the rerun request using ReplayAction feature
+     */
+    @RequirePOST
+    @JavaScriptMethod
+    public boolean doRerun() {
+        if (run != null) {
+            run.checkAnyPermission(Item.BUILD);
+            ReplayAction replayAction = run.getAction(ReplayAction.class);
+            Queue.Item item =
+                    replayAction.run2(replayAction.getOriginalScript(), replayAction.getOriginalLoadedScripts());
+
+            if (item == null) {
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Handles the cancel request.
+     */
+    @RequirePOST
+    @JavaScriptMethod
+    public HttpResponse doCancel() {
+        if (run != null) {
+            run.checkPermission(getCancelPermission());
+            if (run.isBuilding()) {
+                run.doStop();
+                return HttpResponses.okJSON();
+            } else {
+                String message = Result.ABORTED.equals(run.getResult())
+                        ? Messages.run_alreadyCancelled()
+                        : Messages.run_isFinished();
+                return HttpResponses.errorJSON(message);
+            }
+        }
+        return HttpResponses.errorJSON("No run to cancel");
     }
 
     // Legacy - leave in case we want to update a sub section of steps (e.g. if a stage is still

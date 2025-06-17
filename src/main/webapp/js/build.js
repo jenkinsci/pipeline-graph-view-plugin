@@ -6,24 +6,50 @@ if (rerunButton) {
   rerunButton.addEventListener("click", (event) => {
     event.preventDefault();
     const rerunAction = window[`${rerunButton.dataset.proxyName}`];
-    function updateNextBuildButton(buildNumber) {
+    function updateNextBuildButton() {
       const nextBuild = document.querySelector("[data-module='next-build']");
-      if (nextBuild) {
-        nextBuild.classList.remove("jenkins-hidden");
-        nextBuild.href = nextBuild.dataset.urlPattern.replace(
-          "NEXT_BUILD_NUMBER",
-          buildNumber,
-        );
-        nextBuild.removeAttribute("data-module");
-        nextBuild.removeAttribute("data-url-pattern");
+      if (!nextBuild) {
+        return;
       }
+
+      function poll() {
+        const interval = 1000;
+        fetch("nextBuild")
+          .then((response) => {
+            if (response.ok) {
+              return response.json();
+            } else {
+              throw new Error("Failed to fetch next build data");
+            }
+          })
+          .then(({ status, data }) => {
+            if (status === "ok" && data.hasNextBuild) {
+              nextBuild.href = nextBuild.dataset.urlPattern.replace(
+                "NEXT_BUILD_NUMBER",
+                data.nextBuildNumber,
+              );
+              nextBuild.classList.remove("jenkins-hidden");
+              nextBuild.removeAttribute("data-module");
+              nextBuild.removeAttribute("data-url-pattern");
+              notificationBar.show(data.message)
+            } else {
+              setTimeout(poll, interval);
+            }
+          })
+          .catch((error) => {
+            console.error("Error fetching next build data:", error);
+            setTimeout(poll, interval);
+          });
+      }
+
+      poll();
     }
 
     rerunAction.doRerun(function (success) {
       const result = success.responseJSON;
       if (result?.status === "ok") {
         notificationBar.show(result.data.message, notificationBar.SUCCESS);
-        updateNextBuildButton(result.data.buildNumber);
+        updateNextBuildButton();
       } else {
         const failMessage =
           result?.status === "error" && result.data.message

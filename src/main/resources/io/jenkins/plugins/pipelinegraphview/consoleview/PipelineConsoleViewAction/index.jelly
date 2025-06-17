@@ -26,7 +26,7 @@
                         <j:set var="proxyId" value="${h.generateId()}" />
                         <st:bind value="${it}" var="rerunAction${proxyId}"/>
                         <div class="jenkins-split-button">
-                            <button id="pgv-rerun" data-success-message="${%Build scheduled}"
+                            <button id="pgv-rerun"
                                     data-proxy-name="rerunAction${proxyId}"
                                     class="jenkins-button jenkins-!-build-color">
                                 <div class="jenkins-dropdown__item__icon">

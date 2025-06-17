@@ -73,7 +73,7 @@ public class PipelineGraphApi {
 
         record Scheduled(int buildNumber) implements BuildScheduleResult {
             public String message() {
-                return Messages.scheduled_success(buildNumber);
+                return Messages.scheduled_success();
             }
         }
     }

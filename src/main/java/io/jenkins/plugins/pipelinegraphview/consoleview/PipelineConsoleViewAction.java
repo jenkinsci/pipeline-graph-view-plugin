@@ -5,6 +5,7 @@ import static io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi.BuildS
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.console.AnnotatedLargeText;
+import hudson.model.Item;
 import hudson.model.Result;
 import hudson.util.HttpResponses;
 import io.jenkins.plugins.pipelinegraphview.Messages;
@@ -102,8 +103,25 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
 
         JSONObject obj = new JSONObject();
         BuildScheduleResult.Scheduled scheduled = (BuildScheduleResult.Scheduled) result;
-        obj.put("buildNumber", scheduled.buildNumber());
         obj.put("message", scheduled.message());
+        return HttpResponses.okJSON(obj);
+    }
+
+    @SuppressWarnings("unused")
+    @GET
+    @WebMethod(name = "nextBuild")
+    public HttpResponse hasNextBuild() {
+        if (run == null) {
+            return HttpResponses.errorJSON("No run to check for next build");
+        }
+        run.checkPermission(Item.READ);
+        WorkflowRun nextBuild = run.getNextBuild();
+        JSONObject obj = new JSONObject();
+        obj.put("hasNextBuild", nextBuild != null);
+        if (nextBuild != null) {
+            obj.put("nextBuildNumber", nextBuild.getNumber());
+            obj.put("message", Messages.scheduled_ready(nextBuild.getNumber()));
+        }
         return HttpResponses.okJSON(obj);
     }
 

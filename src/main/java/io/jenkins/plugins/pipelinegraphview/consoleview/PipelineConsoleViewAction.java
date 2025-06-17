@@ -35,7 +35,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkins.ui.icon.IconSpec;
@@ -65,19 +64,10 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     private final transient WorkflowRun run;
     private final PipelineStepApi stepApi;
 
-
     public PipelineConsoleViewAction(WorkflowRun target) {
         this.run = target;
         this.graphApi = new PipelineGraphApi(this.run);
         this.stepApi = new PipelineStepApi(this.run);
-    }
-
-    private static String appendTrailingSlashIfRequired(String string) {
-        if (string.endsWith("/")) {
-            return string;
-        }
-
-        return string + "/";
     }
 
     @Override
@@ -88,23 +78,6 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     @Override
     public String getUrlName() {
         return URL_NAME;
-    }
-
-    @Override
-    public String getIconClassName() {
-        return "symbol-git-network-outline plugin-ionicons-api";
-    }
-
-    public String getDurationString() {
-        return run.getDurationString();
-    }
-
-    public String getStartTimeString() {
-        return run.getTimestampString();
-    }
-
-    public String getUrl() {
-        return run.getUrl();
     }
 
     // Legacy - leave in case we want to update a sub section of steps (e.g. if a stage is still
@@ -139,8 +112,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
         return HttpResponses.okJSON(getAllSteps());
     }
 
-    // Private method for testing.
-    protected JSONObject getAllSteps() throws IOException {
+    private JSONObject getAllSteps() throws IOException {
         PipelineStepList steps = stepApi.getAllSteps();
         String stepsJson = MAPPER.writeValueAsString(steps);
         if (logger.isDebugEnabled()) {
@@ -233,7 +205,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     }
 
     protected JSONObject getConsoleOutputJson(String nodeId, Long requestStartByte) throws IOException {
-        Long startByte = 0L;
+        long startByte = 0L;
         long endByte = 0L;
         long textLength;
         String text = "";
@@ -428,10 +400,6 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
         return HttpResponses.errorJSON("No run to cancel");
     }
 
-    public String getFullBuildDisplayName() {
-        return run.getFullDisplayName();
-    }
-
     public String getFullProjectDisplayName() {
         return run.getParent().getFullDisplayName();
     }
@@ -460,51 +428,27 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
         return getBuildNumber(run.getNextBuild());
     }
 
+    @WebMethod(name = "tree")
+    public HttpResponse getTree() throws JsonProcessingException {
+        PipelineGraph tree = graphApi.createTree();
+        String graph = MAPPER.writeValueAsString(tree);
+        return HttpResponses.okJSON(JSONObject.fromObject(graph));
+    }
+
+    // Icon related methods these may appear as unused but are used by /lib/hudson/buildCaption.jelly
+    @SuppressWarnings("unused")
+    public String getUrl() {
+        return run.getUrl();
+    }
+
+    @SuppressWarnings("unused")
     public BallColor getIconColor() {
         return run.getIconColor();
     }
 
-    public String getBuildStatusIconClassName() {
-        return run.getBuildStatusIconClassName();
-    }
-
-    private JSONObject createJson(PipelineGraph pipelineGraph) throws JsonProcessingException {
-        String graph = MAPPER.writeValueAsString(pipelineGraph);
-        return JSONObject.fromObject(graph);
-    }
-
-    @WebMethod(name = "tree")
-    public HttpResponse getTree() throws JsonProcessingException {
-        JSONObject graph = createJson(graphApi.createTree());
-
-        return HttpResponses.okJSON(graph);
-    }
-
-    @WebMethod(name = "replay")
-    public HttpResponse replayRun(StaplerRequest2 req) {
-
-        JSONObject result = new JSONObject();
-
-        Integer estimatedNextBuildNumber;
-        try {
-            estimatedNextBuildNumber = graphApi.replay();
-        } catch (ExecutionException | InterruptedException | TimeoutException e) {
-            logger.error("Failed to queue item", e);
-            return HttpResponses.errorJSON("failed to queue item: " + e.getMessage());
-        }
-
-        if (estimatedNextBuildNumber == null) {
-            return HttpResponses.errorJSON("failed to get next build number");
-        }
-
-        result.put(
-                "url",
-                appendTrailingSlashIfRequired(req.getContextPath())
-                        + run.getUrl().replace("/" + run.getNumber() + "/", "/" + estimatedNextBuildNumber + "/")
-                        + URL_NAME);
-
-        result.put("success", true);
-        return HttpResponses.okJSON(result);
+    @Override
+    public String getIconClassName() {
+        return "symbol-git-network-outline plugin-ionicons-api";
     }
 
     @Override

@@ -34,7 +34,7 @@ public class AbstractPipelineNode {
     }
 
     public Long getTotalDurationMillis() {
-        return state == PipelineState.RUNNING ? null : totalDurationMillis;
+        return state.isInProgress() ? null : totalDurationMillis;
     }
 
     public String getId() {

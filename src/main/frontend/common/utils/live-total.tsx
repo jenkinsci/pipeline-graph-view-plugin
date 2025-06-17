@@ -15,7 +15,7 @@ export default function LiveTotal({
     if (total == null) {
       const interval = setInterval(() => {
         setDuration(sinceStart());
-      }, 500);
+      }, 3001); // to match step polling interval
       return () => clearInterval(interval);
     } else {
       setDuration(total);

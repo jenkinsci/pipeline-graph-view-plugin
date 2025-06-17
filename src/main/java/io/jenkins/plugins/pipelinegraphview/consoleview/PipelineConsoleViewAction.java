@@ -8,6 +8,7 @@ import hudson.model.Action;
 import hudson.model.BallColor;
 import hudson.model.Item;
 import hudson.model.ParametersDefinitionProperty;
+import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.security.Permission;
 import hudson.util.HttpResponses;
@@ -32,6 +33,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Function;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkins.ui.icon.IconSpec;
@@ -362,18 +364,24 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     @RequirePOST
     @JavaScriptMethod
     public HttpResponse doRerun() {
-        PipelineGraphApi.BuildScheduleResult result = graphApi.scheduleBuild(run -> {
-            ReplayAction replayAction = run.getAction(ReplayAction.class);
-            return replayAction.run2(replayAction.getOriginalScript(), replayAction.getOriginalLoadedScripts());
-        });
+        if (run == null) {
+            return HttpResponses.errorJSON(Messages.scheduled_failure());
+        }
+        run.checkPermission(Item.BUILD);
 
-        if (result instanceof PipelineGraphApi.BuildScheduleResult.NotScheduled nope) {
-            return HttpResponses.errorJSON(nope.message());
+        if (!run.getParent().isBuildable()) {
+            return HttpResponses.errorJSON(Messages.scheduled_failure());
+        }
+        ReplayAction replayAction = run.getAction(ReplayAction.class);
+        Queue.Item item = replayAction.run2(replayAction.getOriginalScript(), replayAction.getOriginalLoadedScripts());
+
+        if (item == null) {
+            return HttpResponses.errorJSON(Messages.scheduled_failure());
         }
 
         JSONObject obj = new JSONObject();
-        PipelineGraphApi.BuildScheduleResult.Scheduled scheduled = (PipelineGraphApi.BuildScheduleResult.Scheduled) result;
-        obj.put("message", scheduled.message());
+        obj.put("message", Messages.scheduled_success());
+        obj.put("queueId", item.getId());
         return HttpResponses.okJSON(obj);
     }
 

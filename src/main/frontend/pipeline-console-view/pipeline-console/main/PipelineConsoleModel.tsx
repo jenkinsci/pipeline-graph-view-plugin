@@ -6,5 +6,5 @@ export type {
 } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 export { Result } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 
-export const LOG_FETCH_SIZE = 150 * 1024;
+export const LOG_FETCH_SIZE = 5 * 1024 * 1024;
 export const POLL_INTERVAL = 1000;

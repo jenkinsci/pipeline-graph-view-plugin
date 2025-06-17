@@ -11,7 +11,7 @@ import {
 import Filter from "../../../common/components/filter.tsx";
 import StatusIcon from "../../../common/components/status-icon.tsx";
 import { classNames } from "../../../common/utils/classnames.ts";
-import { Total } from "../../../common/utils/timings.tsx";
+import LiveTotal from "../../../common/utils/live-total.tsx";
 import {
   Result,
   StageInfo,
@@ -190,7 +190,10 @@ const TreeNode = memo(function TreeNode({
                 {stage.name}
               </div>
               <div className="pgv-tree-item__description">
-                <Total ms={stage.totalDurationMillis} />
+                <LiveTotal
+                  start={stage.startTimeMillis}
+                  total={stage.totalDurationMillis}
+                />
               </div>
             </div>
           </div>

@@ -3,16 +3,17 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 import static java.util.Collections.emptyList;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
-import hudson.model.Cause;
-import hudson.model.CauseAction;
 import hudson.model.Item;
 import hudson.model.Queue;
 import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.actions.WorkspaceAction;
@@ -32,20 +33,6 @@ public class PipelineGraphApi {
 
     public PipelineGraphApi(WorkflowRun run) {
         this.run = run;
-    }
-
-    public Integer replay() throws ExecutionException, InterruptedException, TimeoutException {
-        BuildScheduleResult result = scheduleBuild(run -> {
-            CauseAction causeAction = new CauseAction(new Cause.UserIdCause());
-            return Queue.getInstance()
-                    .schedule2(run.getParent(), 0, causeAction)
-                    .getItem();
-        });
-        // when java 21+ we can use switch expression
-        if (result instanceof BuildScheduleResult.Scheduled s) {
-            return s.buildNumber();
-        }
-        return null;
     }
 
     public @NonNull BuildScheduleResult scheduleBuild(Function<WorkflowRun, Queue.Item> scheduler) {

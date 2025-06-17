@@ -11,7 +11,7 @@ import StatusIcon from "../../../common/components/status-icon.tsx";
 import Tooltip from "../../../common/components/tooltip.tsx";
 import { LocalizedMessageKey, useMessages } from "../../../common/i18n";
 import { classNames } from "../../../common/utils/classnames.ts";
-import { Total } from "../../../common/utils/timings.tsx";
+import LiveTotal from "../../../common/utils/live-total.tsx";
 import {
   LOG_FETCH_SIZE,
   StepInfo,
@@ -122,7 +122,10 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
                 fontWeight: "normal",
               }}
             >
-              <Total ms={props.step.totalDurationMillis} />
+              <LiveTotal
+                total={props.step.totalDurationMillis}
+                start={props.step.startTimeMillis}
+              />
             </span>
           </div>
         </a>

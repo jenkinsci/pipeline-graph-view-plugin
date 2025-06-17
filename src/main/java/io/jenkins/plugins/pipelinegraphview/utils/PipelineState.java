@@ -20,6 +20,10 @@ public enum PipelineState {
     UNKNOWN,
     ABORTED;
 
+    public boolean isInProgress() {
+        return this == RUNNING || this == QUEUED || this == PAUSED;
+    }
+
     public static PipelineState of(WorkflowRun run) {
         Result result = run.getResult();
         if (result == Result.SUCCESS) {

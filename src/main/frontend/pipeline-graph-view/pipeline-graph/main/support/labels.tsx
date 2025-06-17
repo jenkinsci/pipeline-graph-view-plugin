@@ -1,6 +1,6 @@
 import { CSSProperties } from "react";
 
-import { Total } from "../../../../common/utils/timings.tsx";
+import LiveTotal from "../../../../common/utils/live-total.tsx";
 import { sequentialStagesLabelOffset } from "../PipelineGraphLayout.ts";
 import { LayoutInfo, NodeLabelInfo } from "../PipelineGraphModel.tsx";
 import { TooltipLabel } from "./convertLabelToTooltip.tsx";
@@ -124,7 +124,10 @@ export function TimingsLabel({
 
   return (
     <div className={classNames.join(" ")} style={style} key={details.key}>
-      <Total ms={parseInt(details.text, 10)} />
+      <LiveTotal
+        total={details.stage?.totalDurationMillis}
+        start={details.stage?.startTimeMillis ?? Date.now()}
+      />
     </div>
   );
 }

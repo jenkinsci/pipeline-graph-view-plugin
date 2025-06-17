@@ -8,17 +8,13 @@ import hudson.security.Permission;
 import hudson.util.HttpResponses;
 import hudson.util.RunList;
 import io.jenkins.plugins.pipelinegraphview.PipelineGraphViewConfiguration;
-import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
-import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
 import java.util.ArrayList;
 import java.util.List;
 import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.kohsuke.stapler.HttpResponse;
-import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.verb.GET;
 
@@ -61,21 +57,6 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
     @SuppressWarnings("unused")
     public boolean isShowStageDurations() {
         return PipelineGraphViewConfiguration.get().isShowStageDurations();
-    }
-
-    @GET
-    @WebMethod(name = "tree")
-    public HttpResponse getTree(StaplerRequest2 req) throws JsonProcessingException {
-        String runId = req.getParameter("runId");
-        WorkflowRun run = target.getBuildByNumber(Integer.parseInt(runId));
-        PipelineGraphApi api = new PipelineGraphApi(run);
-        JSONObject graph = createGraphJson(api.createTree());
-        return HttpResponses.okJSON(graph);
-    }
-
-    protected JSONObject createGraphJson(PipelineGraph pipelineGraph) throws JsonProcessingException {
-        String graph = OBJECT_MAPPER.writeValueAsString(pipelineGraph);
-        return JSONObject.fromObject(graph);
     }
 
     @GET

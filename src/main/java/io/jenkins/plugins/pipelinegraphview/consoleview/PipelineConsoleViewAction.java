@@ -60,8 +60,8 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     private static final Logger logger = LoggerFactory.getLogger(PipelineConsoleViewAction.class);
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    private final transient PipelineGraphApi graphApi;
-    private final transient WorkflowRun run;
+    private final PipelineGraphApi graphApi;
+    private final WorkflowRun run;
     private final PipelineStepApi stepApi;
 
     public PipelineConsoleViewAction(WorkflowRun target) {
@@ -366,7 +366,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     @JavaScriptMethod
     public boolean doRerun() throws IOException, ExecutionException {
         if (run != null) {
-            run.checkAnyPermission(Item.BUILD);
+            run.checkPermission(Item.BUILD);
             ReplayAction replayAction = run.getAction(ReplayAction.class);
             Queue.Item item =
                     replayAction.run2(replayAction.getOriginalScript(), replayAction.getOriginalLoadedScripts());
@@ -431,6 +431,10 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     @GET
     @WebMethod(name = "tree")
     public HttpResponse getTree() throws JsonProcessingException {
+        if (run == null) {
+            return HttpResponses.errorJSON("No run to get tree for");
+        }
+        run.checkPermission(Item.READ);
         PipelineGraph tree = graphApi.createTree();
         String graph = MAPPER.writeValueAsString(tree);
         return HttpResponses.okJSON(JSONObject.fromObject(graph));

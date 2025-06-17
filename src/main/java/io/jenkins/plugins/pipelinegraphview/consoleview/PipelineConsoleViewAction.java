@@ -428,6 +428,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
         return getBuildNumber(run.getNextBuild());
     }
 
+    @GET
     @WebMethod(name = "tree")
     public HttpResponse getTree() throws JsonProcessingException {
         PipelineGraph tree = graphApi.createTree();

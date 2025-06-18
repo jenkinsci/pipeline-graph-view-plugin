@@ -442,7 +442,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
             return HttpResponses.okJSON();
         }
         String message =
-            Result.ABORTED.equals(run.getResult()) ? Messages.run_alreadyCancelled() : Messages.run_isFinished();
+                Result.ABORTED.equals(run.getResult()) ? Messages.run_alreadyCancelled() : Messages.run_isFinished();
         return HttpResponses.errorJSON(message);
     }
 

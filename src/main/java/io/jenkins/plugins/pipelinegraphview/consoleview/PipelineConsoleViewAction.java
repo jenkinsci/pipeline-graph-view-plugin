@@ -1,6 +1,8 @@
 package io.jenkins.plugins.pipelinegraphview.consoleview;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Plugin;
 import hudson.console.AnnotatedLargeText;
@@ -33,7 +35,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.function.Function;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkins.ui.icon.IconSpec;
@@ -388,19 +389,42 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     @SuppressWarnings("unused")
     @GET
     @WebMethod(name = "nextBuild")
-    public HttpResponse hasNextBuild() {
+    public HttpResponse hasNextBuild(StaplerRequest2 req) {
         if (run == null) {
             return HttpResponses.errorJSON("No run to check for next build");
         }
         run.checkPermission(Item.READ);
-        WorkflowRun nextBuild = run.getNextBuild();
-        JSONObject obj = new JSONObject();
-        obj.put("hasNextBuild", nextBuild != null);
-        if (nextBuild != null) {
-            obj.put("nextBuildNumber", nextBuild.getNumber());
-            obj.put("message", Messages.scheduled_ready(nextBuild.getNumber()));
+        String queueId = req.getParameter("queueId");
+        if (queueId == null || queueId.isBlank()) {
+            return HttpResponses.errorJSON("No queueId provided");
         }
+        long id = Long.parseLong(queueId);
+        logger.debug("Searching for build with queueId: {}", id);
+        WorkflowRun nextRun = findBuildByQueueId(id);
+        if (nextRun == null) {
+            return HttpResponses.okJSON();
+        }
+
+        // XX/pipeline-overview/nextBuild
+        int offset = ((int) Math.log10(run.getNumber()) + 1) + 1 + URL_NAME.length() + 1 + 9;
+        String original = req.getRequestURI();
+        String prefix = original.substring(0, original.length() - offset);
+        String url = prefix + nextRun.getNumber() + "/" + URL_NAME + "/";
+        JSONObject obj = new JSONObject();
+        obj.put("nextBuildUrl", url);
         return HttpResponses.okJSON(obj);
+    }
+
+    private @CheckForNull WorkflowRun findBuildByQueueId(long queueId) {
+        for (WorkflowRun build : run.getParent().getBuilds()) {
+            if (build.getNumber() <= this.run.getNumber()) {
+                break;
+            }
+            if (build.getQueueId() == queueId) {
+                return build;
+            }
+        }
+        return null;
     }
 
     /**

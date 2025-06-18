@@ -5,16 +5,10 @@ const rerunButton = document.getElementById("pgv-rerun");
 if (rerunButton) {
   rerunButton.addEventListener("click", (event) => {
     event.preventDefault();
-    const rerunAction = window[`${rerunButton.dataset.proxyName}`];
-    function updateNextBuildButton() {
-      const nextBuild = document.querySelector("[data-module='next-build']");
-      if (!nextBuild) {
-        return;
-      }
-
+    function redirectToNextBuild(queueId) {
       function poll() {
         const interval = 1000;
-        fetch("nextBuild")
+        fetch(`nextBuild?queueId=${queueId}`)
           .then((response) => {
             if (response.ok) {
               return response.json();
@@ -22,19 +16,16 @@ if (rerunButton) {
               throw new Error("Failed to fetch next build data");
             }
           })
-          .then(({ status, data }) => {
-            if (status === "ok" && data.hasNextBuild) {
-              nextBuild.href = nextBuild.dataset.urlPattern.replace(
-                "NEXT_BUILD_NUMBER",
-                data.nextBuildNumber,
-              );
-              nextBuild.classList.remove("jenkins-hidden");
-              nextBuild.removeAttribute("data-module");
-              nextBuild.removeAttribute("data-url-pattern");
-              notificationBar.show(data.message)
+          .then(({ status, data, message }) => {
+            if (status === "ok") {
+              if (data.nextBuildUrl) {
+                window.location = data.nextBuildUrl;
+                return;
+              }
             } else {
-              setTimeout(poll, interval);
+              console.warn("Error in next build response:", message);
             }
+            setTimeout(poll, interval);
           })
           .catch((error) => {
             console.error("Error fetching next build data:", error);
@@ -45,15 +36,16 @@ if (rerunButton) {
       poll();
     }
 
-    rerunAction.doRerun(function (success) {
-      const result = success.responseJSON;
-      if (result?.status === "ok") {
-        notificationBar.show(result.data.message, notificationBar.SUCCESS);
-        updateNextBuildButton();
+    const rerunAction = window[`${rerunButton.dataset.proxyName}`];
+    rerunAction.doRerun(function (response) {
+      const { status, data, message } = response.responseJSON;
+      if (status === "ok") {
+        notificationBar.show(data.message, notificationBar.SUCCESS);
+        redirectToNextBuild(data.queueId);
       } else {
         const failMessage =
-          result?.status === "error" && result.data.message
-            ? result.data.message
+          status === "error" && message
+            ? message
             : "Unknown error occurred while trying to rerun the build.";
         notificationBar.show(failMessage, notificationBar.WARNING);
       }

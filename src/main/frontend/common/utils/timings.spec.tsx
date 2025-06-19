@@ -63,10 +63,10 @@ describe("Timings", () => {
     }
 
     it("should prefix the time with Queued", () => {
-      expect(getPaused(1000).getByText("Queued 1 sec")).toBeInTheDocument();
-      expect(getPaused(100).getByText("Queued 0.1 sec")).toBeInTheDocument();
-      expect(getPaused(10).getByText("Queued 10 ms")).toBeInTheDocument();
-      expect(getPaused(1).getByText("Queued 1 ms")).toBeInTheDocument();
+      expect(getPaused(1000).getByText("Queued 1s")).toBeInTheDocument();
+      expect(getPaused(100).getByText("Queued 0.1s")).toBeInTheDocument();
+      expect(getPaused(10).getByText("Queued 10ms")).toBeInTheDocument();
+      expect(getPaused(1).getByText("Queued 1ms")).toBeInTheDocument();
     });
   });
 
@@ -91,16 +91,16 @@ describe("Timings", () => {
 
     it("should prefix the time with Started and end with ago", () => {
       expect(
-        getStarted(now - 1000).getByText("Started 1 sec ago"),
+        getStarted(now - 1000).getByText("Started 1s ago"),
       ).toBeInTheDocument();
       expect(
-        getStarted(now - 100).getByText("Started 0.1 sec ago"),
+        getStarted(now - 100).getByText("Started 0.1s ago"),
       ).toBeInTheDocument();
       expect(
-        getStarted(now - 10).getByText("Started 10 ms ago"),
+        getStarted(now - 10).getByText("Started 10ms ago"),
       ).toBeInTheDocument();
       expect(
-        getStarted(now - 1).getByText("Started 1 ms ago"),
+        getStarted(now - 1).getByText("Started 1ms ago"),
       ).toBeInTheDocument();
     });
   });

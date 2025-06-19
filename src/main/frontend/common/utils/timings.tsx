@@ -70,9 +70,11 @@ function humanise(duration: number, locale: string): string {
     durationParts["seconds"] = seconds;
   } else if (seconds >= 1) {
     durationParts["seconds"] = seconds;
-    durationParts["milliseconds"] = millis;
-    options.fractionalDigits = 1;
-    options.milliseconds = "numeric";
+    if (millis !== 0) {
+      durationParts["milliseconds"] = millis;
+      options.fractionalDigits = 1;
+      options.milliseconds = "numeric";
+    }
   } else if (millis >= 100) {
     durationParts["seconds"] = 0;
     durationParts["milliseconds"] = millis;

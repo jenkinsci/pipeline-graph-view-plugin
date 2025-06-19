@@ -7,7 +7,7 @@ import {
 } from "react";
 
 export const DEFAULT_LOCALE = "en";
-export const LocaleContext: Context<string> = createContext(DEFAULT_LOCALE);
+const LocaleContext: Context<string> = createContext(DEFAULT_LOCALE);
 
 interface LocaleProviderProps {
   children: ReactNode;

@@ -1,16 +1,52 @@
+/* global notificationBar */
+
 const rerunButton = document.getElementById("pgv-rerun");
 
 if (rerunButton) {
   rerunButton.addEventListener("click", (event) => {
     event.preventDefault();
+
+    async function redirectToNextBuild(queueId) {
+      while (true) {
+        try {
+          const response = await fetch(`nextBuild?queueId=${queueId}`);
+          if (!response.ok) {
+            throw new Error(
+              `Failed to fetch next build data: ${response.status} - ${response.statusText}`,
+            );
+          }
+          const { status, data, message } = await response.json();
+          if (status === "ok") {
+            if (data?.nextBuildUrl) {
+              let root = document.querySelector("head").dataset.rooturl;
+              if (!root.endsWith("/")) {
+                root += "/";
+              }
+              window.location = `${root}${data.nextBuildUrl}`;
+              break;
+            }
+          } else {
+            console.warn("Error in next build response:", message);
+          }
+        } catch (error) {
+          console.error("Error fetching next build data:", error);
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
+
     const rerunAction = window[`${rerunButton.dataset.proxyName}`];
-    rerunAction.doRerun(function (success) {
-      const result = success.responseJSON;
-      if (result) {
-        notificationBar.show(
-          rerunButton.dataset.successMessage,
-          notificationBar.SUCCESS,
-        );
+    rerunAction.doRerun(async function (response) {
+      const { status, data, message } = response.responseJSON;
+      if (status === "ok") {
+        notificationBar.show(data.message, notificationBar.SUCCESS);
+        await redirectToNextBuild(data.queueId);
+      } else {
+        const failMessage =
+          status === "error" && message
+            ? message
+            : "Unknown error occurred while trying to rerun the build.";
+        notificationBar.show(failMessage, notificationBar.WARNING);
       }
     });
   });

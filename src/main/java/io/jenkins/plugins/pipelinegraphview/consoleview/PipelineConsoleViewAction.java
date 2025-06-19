@@ -2,6 +2,7 @@ package io.jenkins.plugins.pipelinegraphview.consoleview;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Plugin;
 import hudson.console.AnnotatedLargeText;
@@ -34,7 +35,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.jenkins.ui.icon.IconSpec;
@@ -364,19 +364,62 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
      */
     @RequirePOST
     @JavaScriptMethod
-    public boolean doRerun() throws IOException, ExecutionException {
-        if (run != null) {
-            run.checkPermission(Item.BUILD);
-            ReplayAction replayAction = run.getAction(ReplayAction.class);
-            Queue.Item item =
-                    replayAction.run2(replayAction.getOriginalScript(), replayAction.getOriginalLoadedScripts());
-
-            if (item == null) {
-                return false;
-            }
-            return true;
+    public HttpResponse doRerun() {
+        if (run == null) {
+            return HttpResponses.errorJSON(Messages.scheduled_failure());
         }
-        return false;
+        run.checkPermission(Item.BUILD);
+
+        if (!run.getParent().isBuildable()) {
+            return HttpResponses.errorJSON(Messages.scheduled_failure());
+        }
+        ReplayAction replayAction = run.getAction(ReplayAction.class);
+        Queue.Item item = replayAction.run2(replayAction.getOriginalScript(), replayAction.getOriginalLoadedScripts());
+
+        if (item == null) {
+            return HttpResponses.errorJSON(Messages.scheduled_failure());
+        }
+
+        JSONObject obj = new JSONObject();
+        obj.put("message", Messages.scheduled_success());
+        obj.put("queueId", item.getId());
+        return HttpResponses.okJSON(obj);
+    }
+
+    @SuppressWarnings("unused")
+    @GET
+    @WebMethod(name = "nextBuild")
+    public HttpResponse hasNextBuild(StaplerRequest2 req) {
+        if (run == null) {
+            return HttpResponses.errorJSON("No run to check for next build");
+        }
+        run.checkPermission(Item.READ);
+        String queueId = req.getParameter("queueId");
+        if (queueId == null || queueId.isBlank()) {
+            return HttpResponses.errorJSON("No queueId provided");
+        }
+        long id = Long.parseLong(queueId);
+        logger.debug("Searching for build with queueId: {}", id);
+        WorkflowRun nextRun = findBuildByQueueId(id);
+        if (nextRun == null) {
+            return HttpResponses.okJSON();
+        }
+
+        JSONObject obj = new JSONObject();
+        obj.put("nextBuildUrl", nextRun.getUrl() + URL_NAME + "/");
+        return HttpResponses.okJSON(obj);
+    }
+
+    private @CheckForNull WorkflowRun findBuildByQueueId(long queueId) {
+        for (WorkflowRun build : run.getParent().getBuilds()) {
+            if (build.getNumber() <= this.run.getNumber()) {
+                break;
+            }
+            if (build.getQueueId() == queueId) {
+                return build;
+            }
+        }
+        return null;
     }
 
     /**
@@ -384,20 +427,18 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
      */
     @RequirePOST
     @JavaScriptMethod
-    public HttpResponse doCancel() throws IOException, ExecutionException {
-        if (run != null) {
-            run.checkPermission(getCancelPermission());
-            if (run.isBuilding()) {
-                run.doStop();
-                return HttpResponses.okJSON();
-            } else {
-                String message = Result.ABORTED.equals(run.getResult())
-                        ? Messages.run_alreadyCancelled()
-                        : Messages.run_isFinished();
-                return HttpResponses.errorJSON(message);
-            }
+    public HttpResponse doCancel() {
+        if (run == null) {
+            return HttpResponses.errorJSON("No run to cancel");
         }
-        return HttpResponses.errorJSON("No run to cancel");
+        run.checkPermission(getCancelPermission());
+        if (run.isBuilding()) {
+            run.doStop();
+            return HttpResponses.okJSON();
+        }
+        String message =
+                Result.ABORTED.equals(run.getResult()) ? Messages.run_alreadyCancelled() : Messages.run_isFinished();
+        return HttpResponses.errorJSON(message);
     }
 
     public String getFullProjectDisplayName() {

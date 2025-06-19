@@ -1,7 +1,9 @@
 package io.jenkins.plugins.pipelinegraphview;
 
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.microsoft.playwright.Page;
@@ -30,19 +32,21 @@ class PipelineGraphViewRebuildTest {
     void rerunButtonStartsNewBuild(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "hello_world", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
+        WorkflowJob job = run.getParent();
 
-        PipelineOverviewPage op = new PipelineJobPage(p, run.getParent())
+        PipelineOverviewPage op = new PipelineJobPage(p, job)
                 .goTo()
                 .hasBuilds(1)
                 .nthBuild(0)
                 .goToBuild()
                 .goToPipelineOverview();
 
-        String currentUrl = p.url();
+        String jobUrl = j.getURL() + job.getUrl();
+        assertThat(p).hasURL(jobUrl + "1/pipeline-overview/");
+
         op.rerun();
 
-        String newUrl = p.url();
-        assertEquals(currentUrl, newUrl);
+        assertThat(p).hasURL(jobUrl + "2/pipeline-overview/");
 
         waitUntilBuildIsComplete(j, run);
     }
@@ -110,7 +114,7 @@ class PipelineGraphViewRebuildTest {
     private static void waitUntilBuildIsComplete(JenkinsConfiguredWithCodeRule j, WorkflowRun run) {
         await().until(() -> j.jenkins.getQueue().isEmpty(), is(true));
         WorkflowJob parent = run.getParent();
-        await().until(() -> parent.getBuilds().size(), is(2));
+        await().until(parent::getBuilds, hasSize(2));
 
         WorkflowRun lastBuild = parent.getLastBuild();
         await().until(() -> lastBuild, RunMatchers.completed());

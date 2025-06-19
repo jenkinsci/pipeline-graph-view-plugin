@@ -1,6 +1,6 @@
 import { useContext } from "react";
 
-import { I18NContext, LocalizedMessageKey, Messages } from "../i18n/index.ts";
+import { I18NContext, LocalizedMessageKey, useLocale } from "../i18n/index.ts";
 
 const ONE_SECOND_MS: number = 1000;
 const ONE_MINUTE_MS: number = 60 * ONE_SECOND_MS;
@@ -8,32 +8,16 @@ const ONE_HOUR_MS: number = 60 * ONE_MINUTE_MS;
 const ONE_DAY_MS: number = 24 * ONE_HOUR_MS;
 const ONE_MONTH_MS: number = 30 * ONE_DAY_MS;
 const ONE_YEAR_MS: number = 365 * ONE_DAY_MS;
+type DurationUnit =
+  | "years"
+  | "months"
+  | "days"
+  | "hours"
+  | "minutes"
+  | "seconds"
+  | "milliseconds";
 
-/**
- * Create a string representation of a time duration.
- * If the quantity of the most significant unit is big (>=10), then we use only that most significant unit in the string representation.
- * If the quantity of the most significant unit is small (a single-digit value), then we also use a secondary, smaller unit for increased precision.
- * So 13 minutes and 43 seconds returns just "13 minutes", but 3 minutes and 43 seconds is "3 minutes 43 seconds"
- * @see https://github.com/jenkinsci/jenkins/blob/f9edeb0c0485fddfc03a7e1710ac5cf2b35ec497/core/src/main/java/hudson/Util.java#L781
- */
-function makeTimeSpanString(
-  bigUnit: number,
-  bigLabel: string,
-  smallUnit: number,
-  smallLabel: string,
-): string {
-  return bigUnit < 10 ? `${bigLabel} ${smallLabel}` : bigLabel;
-}
-
-/**
- * Returns a human-readable text of the time duration, for example "3 minutes 40 seconds".
- * This version should be used for representing a duration of some activity (like build)
- * @see https://github.com/jenkinsci/jenkins/blob/f9edeb0c0485fddfc03a7e1710ac5cf2b35ec497/core/src/main/java/hudson/Util.java#L734
- *
- * @param duration number of milliseconds.
- * @param messages the messages to get the labels from.
- */
-function getTimeSpanString(duration: number, messages: Messages): string {
+function humanise(duration: number, locale: string): string {
   const years = Math.floor(duration / ONE_YEAR_MS);
   duration %= ONE_YEAR_MS;
   const months = Math.floor(duration / ONE_MONTH_MS);
@@ -47,94 +31,98 @@ function getTimeSpanString(duration: number, messages: Messages): string {
   const seconds = Math.floor(duration / ONE_SECOND_MS);
 
   const millis = duration % ONE_SECOND_MS;
-  if (years > 0) {
-    return makeTimeSpanString(
-      years,
-      messages.format(LocalizedMessageKey.year, { "0": years }),
-      months,
-      messages.format(LocalizedMessageKey.month, { "0": months }),
-    );
-  } else if (months > 0) {
-    return makeTimeSpanString(
-      months,
-      messages.format(LocalizedMessageKey.month, { "0": months }),
-      days,
-      messages.format(LocalizedMessageKey.day, { "0": days }),
-    );
-  } else if (days > 0) {
-    return makeTimeSpanString(
-      days,
-      messages.format(LocalizedMessageKey.day, { "0": days }),
-      hours,
-      messages.format(LocalizedMessageKey.hour, { "0": hours }),
-    );
-  } else if (hours > 0) {
-    return makeTimeSpanString(
-      hours,
-      messages.format(LocalizedMessageKey.hour, { "0": hours }),
-      minutes,
-      messages.format(LocalizedMessageKey.minute, { "0": minutes }),
-    );
-  } else if (minutes > 0) {
-    return makeTimeSpanString(
-      minutes,
-      messages.format(LocalizedMessageKey.minute, { "0": minutes }),
-      seconds,
-      messages.format(LocalizedMessageKey.second, { "0": seconds }),
-    );
-  } else if (seconds >= 10) {
-    return messages.format(LocalizedMessageKey.second, { "0": seconds });
-  } else if (seconds >= 1) {
-    return messages.format(LocalizedMessageKey.second, {
-      "0": seconds + Math.floor(millis / 100) / 10,
-    });
-  } else if (millis >= 100) {
-    return messages.format(LocalizedMessageKey.second, {
-      "0": Math.floor(millis / 10) / 100,
-    });
-  } else {
-    return messages.format(LocalizedMessageKey.millisecond, { "0": millis });
+
+  const durationParts: any = {};
+
+  function applyDuration(
+    big: number,
+    bigKey: DurationUnit,
+    small: number,
+    smallKey: DurationUnit,
+  ): DurationUnit {
+    durationParts[bigKey] = big;
+    if (big < 10) {
+      durationParts[smallKey] = small;
+      return smallKey;
+    }
+    return bigKey;
   }
+
+  const options: any = {
+    style: "narrow",
+  };
+  if (years > 0) {
+    applyDuration(years, "years", months, "months");
+  } else if (months > 0) {
+    const unit = applyDuration(months, "months", days, "days");
+    // I've included this because the narrow version of months (in english) is "m"
+    // which could be confused with minutes.
+    if (unit === "months") {
+      options.style = "short";
+    }
+  } else if (days > 0) {
+    applyDuration(days, "days", hours, "hours");
+  } else if (hours > 0) {
+    applyDuration(hours, "hours", minutes, "minutes");
+  } else if (minutes > 0) {
+    applyDuration(minutes, "minutes", seconds, "seconds");
+  } else if (seconds >= 10) {
+    durationParts["seconds"] = seconds;
+  } else if (seconds >= 1) {
+    durationParts["seconds"] = seconds;
+    durationParts["milliseconds"] = millis;
+    options.fractionalDigits = 1;
+    options.milliseconds = "numeric";
+  } else if (millis >= 100) {
+    durationParts["seconds"] = 0;
+    durationParts["milliseconds"] = millis;
+    options.fractionalDigits = Math.floor(millis / 10) % 10 === 0 ? 1 : 2;
+    options.milliseconds = "numeric";
+  } else {
+    durationParts["milliseconds"] = millis;
+  }
+
+  // @ts-ignore
+  // https://github.com/microsoft/TypeScript/issues/60608
+  return new Intl.DurationFormat(locale, options).format(durationParts);
 }
 
 export function Total({ ms }: { ms: number }) {
-  const messages = useContext(I18NContext);
-  return <>{getTimeSpanString(ms, messages)}</>;
+  return <>{humanise(ms, useLocale())}</>;
 }
 
 export function Paused({ since }: { since: number }) {
-  const messages = useContext(I18NContext);
-  return <>{`Queued ${getTimeSpanString(since, messages)}`}</>;
+  return <>{`Queued ${humanise(since, useLocale())}`}</>;
 }
 
 export function Started({ since }: { since: number }) {
-  const messages = useContext(I18NContext);
   if (since === 0) {
     return <></>;
   }
 
+  const messages = useContext(I18NContext);
   return (
     <>
       {messages.format(LocalizedMessageKey.startedAgo, {
-        "0": getTimeSpanString(Math.abs(since - Date.now()), messages),
+        "0": humanise(Math.abs(since - Date.now()), useLocale()),
       })}
     </>
   );
 }
 
-export function time(since: number): string {
+export function time(since: number, locale: string = "en-GB"): string {
   return since === 0
     ? ""
-    : new Date(since).toLocaleTimeString("en-GB", {
+    : new Date(since).toLocaleTimeString(locale, {
         hour: "2-digit",
         minute: "2-digit",
       });
 }
 
-export function exact(since: number): string {
+export function exact(since: number, locale: string = "en-GB"): string {
   if (since === 0) return "";
 
-  const formatter = new Intl.DateTimeFormat("en-GB", {
+  const formatter = new Intl.DateTimeFormat(locale, {
     year: "numeric",
     month: "short",
     day: "2-digit",

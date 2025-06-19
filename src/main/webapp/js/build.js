@@ -10,7 +10,6 @@ if (rerunButton) {
       while (true) {
         try {
           const response = await fetch(`nextBuild?queueId=${queueId}`);
-          console.log(response);
           if (!response.ok) {
             throw new Error(
               `Failed to fetch next build data: ${response.status} - ${response.statusText}`,
@@ -19,7 +18,11 @@ if (rerunButton) {
           const { status, data, message } = await response.json();
           if (status === "ok") {
             if (data?.nextBuildUrl) {
-              window.location = data.nextBuildUrl;
+              let root = document.querySelector("head").dataset.rooturl;
+              if (!root.endsWith("/")) {
+                root += "/";
+              }
+              window.location = `${root}${data.nextBuildUrl}`;
               break;
             }
           } else {

@@ -405,13 +405,8 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
             return HttpResponses.okJSON();
         }
 
-        // XX/pipeline-overview/nextBuild
-        int offset = ((int) Math.log10(run.getNumber()) + 1) + 1 + URL_NAME.length() + 1 + 9;
-        String original = req.getRequestURI();
-        String prefix = original.substring(0, original.length() - offset);
-        String url = prefix + nextRun.getNumber() + "/" + URL_NAME + "/";
         JSONObject obj = new JSONObject();
-        obj.put("nextBuildUrl", url);
+        obj.put("nextBuildUrl", nextRun.getUrl() + URL_NAME + "/");
         return HttpResponses.okJSON(obj);
     }
 

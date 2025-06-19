@@ -1,6 +1,4 @@
-import { useContext } from "react";
-
-import { I18NContext, LocalizedMessageKey, useLocale } from "../i18n/index.ts";
+import { LocalizedMessageKey, useLocale, useMessages } from "../i18n/index.ts";
 
 const ONE_SECOND_MS: number = 1000;
 const ONE_MINUTE_MS: number = 60 * ONE_SECOND_MS;
@@ -94,7 +92,14 @@ export function Total({ ms }: { ms: number }) {
 }
 
 export function Paused({ since }: { since: number }) {
-  return <>{`Queued ${humanise(since, useLocale())}`}</>;
+  const messages = useMessages();
+  return (
+    <>
+      {messages.format(LocalizedMessageKey.queued, {
+        0: humanise(since, useLocale()),
+      })}
+    </>
+  );
 }
 
 export function Started({ since }: { since: number }) {
@@ -102,7 +107,7 @@ export function Started({ since }: { since: number }) {
     return <></>;
   }
 
-  const messages = useContext(I18NContext);
+  const messages = useMessages();
   return (
     <>
       {messages.format(LocalizedMessageKey.startedAgo, {

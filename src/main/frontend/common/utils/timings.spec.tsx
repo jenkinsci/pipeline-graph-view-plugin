@@ -3,23 +3,9 @@
 import { render } from "@testing-library/react";
 import { vi } from "vitest";
 
-import { I18NContext, LocalizedMessageKey, Messages } from "../i18n/index.ts";
 import { Paused, Started, Total } from "./timings.tsx";
 
 describe("Timings", () => {
-  const translations = new Messages(
-    {
-      [LocalizedMessageKey.startedAgo]: "Started {0} ago",
-    },
-    "en",
-  );
-
-  function process(child: any) {
-    return render(
-      <I18NContext.Provider value={translations}>{child}</I18NContext.Provider>,
-    );
-  }
-
   describe("Total", () => {
     function getTotal(ms: number) {
       return render(<Total ms={ms} />);
@@ -59,7 +45,7 @@ describe("Timings", () => {
 
   describe("paused", () => {
     function getPaused(since: number) {
-      return process(<Paused since={since} />);
+      return render(<Paused since={since} />);
     }
 
     it("should prefix the time with Queued", () => {
@@ -82,7 +68,7 @@ describe("Timings", () => {
     });
 
     function getStarted(since: number) {
-      return process(<Started since={since} />);
+      return render(<Started since={since} />);
     }
 
     it("should return empty element if since is 0", () => {

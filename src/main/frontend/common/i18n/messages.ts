@@ -70,6 +70,7 @@ export type MessageKeyType = LocalizedMessageKey | string;
 
 export enum LocalizedMessageKey {
   startedAgo = "startedAgo",
+  queued = "queued",
   noBuilds = "noBuilds",
   start = "node.start",
   end = "node.end",
@@ -82,6 +83,7 @@ export enum LocalizedMessageKey {
 
 const DEFAULT_MESSAGES: ResourceBundle = {
   [LocalizedMessageKey.startedAgo]: "Started {0} ago",
+  [LocalizedMessageKey.queued]: "Queued {0}",
   [LocalizedMessageKey.noBuilds]: "No builds",
   [LocalizedMessageKey.start]: "Start",
   [LocalizedMessageKey.end]: "End",

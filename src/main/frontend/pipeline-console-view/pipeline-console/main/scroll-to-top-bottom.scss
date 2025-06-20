@@ -1,5 +1,6 @@
 .pgv-scroll-to-top-bottom {
   position: fixed;
+  bottom: calc(var(--section-padding) * 1);
   bottom: var(--section-padding);
   right: calc(var(--section-padding) * 2);
   display: flex;
@@ -16,6 +17,15 @@
     scale var(--elastic-transition);
   pointer-events: none;
   z-index: 1;
+  animation: animate-scroll-to-bottom-offset linear forwards;
+  animation-timeline: scroll();
+  animation-range-start: calc(100% - 100px);
+
+  @keyframes animate-scroll-to-bottom-offset {
+    to {
+      translate: 0 -100px;
+    }
+  }
 
   &--visible {
     opacity: 1;

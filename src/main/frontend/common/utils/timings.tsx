@@ -1,3 +1,5 @@
+import "@formatjs/intl-durationformat/polyfill";
+
 import { LocalizedMessageKey, useLocale, useMessages } from "../i18n/index.ts";
 
 const ONE_SECOND_MS: number = 1000;
@@ -82,8 +84,7 @@ function humanise(duration: number, locale: string): string {
     durationParts["milliseconds"] = millis;
   }
 
-  // @ts-ignore
-  // https://github.com/microsoft/TypeScript/issues/60608
+  // @ts-ignore https://github.com/microsoft/TypeScript/issues/60608
   return new Intl.DurationFormat(locale, options).format(durationParts);
 }
 

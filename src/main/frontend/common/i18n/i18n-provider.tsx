@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 
-import { DEFAULT_LOCALE, LocaleContext } from "./locale-provider.tsx";
+import { DEFAULT_LOCALE, useLocale } from "./locale-provider.tsx";
 import {
   defaultMessages,
   getMessages,
@@ -29,7 +29,7 @@ export const I18NProvider: FunctionComponent<I18NProviderProps> = ({
   children,
   bundles,
 }) => {
-  const locale = useContext(LocaleContext);
+  const locale = useLocale();
 
   const [messages, setMessages] = useState<Messages>(defaultMessages(locale));
 

@@ -33,6 +33,8 @@
   "dependencies": {
     "@formatjs/intl-durationformat": "^0.7.4",
     "@tippyjs/react": "^4.2.6",
+    "linkify-html": "^4.3.1",
+    "linkifyjs": "^4.3.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-zoom-pan-pinch": "3.7.0"

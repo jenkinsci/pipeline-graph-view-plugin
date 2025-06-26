@@ -1,5 +1,6 @@
 import "./console-log-card.scss";
 
+import Linkify from "linkify-react";
 import {
   lazy,
   MouseEvent as ReactMouseEvent,
@@ -93,9 +94,17 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
               percentage={props.step.completePercent}
             />
 
-            {props.step.title !== "" && <span>{props.step.title}</span>}
+            {props.step.title !== "" && (
+              <span>
+                <Linkify>{props.step.title}</Linkify>
+              </span>
+            )}
 
-            {props.step.name !== "" && <span>{props.step.name}</span>}
+            {props.step.name !== "" && (
+              <span>
+                <Linkify>{props.step.name}</Linkify>
+              </span>
+            )}
 
             <svg
               xmlns="http://www.w3.org/2000/svg"

@@ -1,7 +1,7 @@
+import linkifyHtml from "linkify-html";
 import { memo, useEffect, useRef } from "react";
 
 import { makeReactChildren, tokenizeANSIString } from "./Ansi.tsx";
-import linkifyHtml from "linkify-html";
 
 export interface ConsoleLineProps {
   lineNumber: string;

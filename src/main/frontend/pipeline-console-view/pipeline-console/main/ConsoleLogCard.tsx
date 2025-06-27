@@ -149,12 +149,27 @@ function ConsoleLogBody(props: ConsoleLogCardProps) {
     }
 
     return (
-      <div style={{ paddingTop: "0.5rem" }}>
-        {inputStep.message}
-
-        <button>{inputStep.ok}</button>
-        <button>{inputStep.cancel}</button>
-      </div>
+      <>
+        <div style={{ paddingTop: "0.5rem" }}>
+          <div className={"console-output-line"}>
+            <a style={{ width: "30px" }} className={"console-line-number"} />
+            <p style={{ fontWeight: "var(--font-bold-weight)" }}>
+              {inputStep.message}
+            </p>
+          </div>
+        </div>
+        <div className={"console-output-line"}>
+          <a style={{ width: "30px" }} className={"console-line-number"} />
+          <div
+            className={"jenkins-buttons-row jenkins-buttons-row--equal-width"}
+          >
+            <button className={"jenkins-button jenkins-button--primary"}>
+              {inputStep.ok}
+            </button>
+            <button className={"jenkins-button"}>{inputStep.cancel}</button>
+          </div>
+        </div>
+      </>
     );
   }
 

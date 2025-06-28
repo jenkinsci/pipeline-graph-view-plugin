@@ -143,10 +143,34 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
 
 function ConsoleLogBody(props: ConsoleLogCardProps) {
   const inputStep = props.step.inputStep;
-  if (inputStep) {
-    if (inputStep.parameters) {
-      return <div>Has parameters</div>;
-    }
+  if (inputStep && !inputStep.parameters) {
+    const ok = () => {
+      fetch(`../input/${inputStep.id}/proceedEmpty`, {
+        method: "POST",
+        headers: (window as any).crumb.wrap({}),
+      })
+        .then((res) => {
+          console.log(res);
+          return true;
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    };
+
+    const abort = () => {
+      fetch(`../input/${inputStep.id}/abort`, {
+        method: "POST",
+        headers: (window as any).crumb.wrap({}),
+      })
+        .then((res) => {
+          console.log(res);
+          return true;
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    };
 
     return (
       <>
@@ -163,10 +187,15 @@ function ConsoleLogBody(props: ConsoleLogCardProps) {
           <div
             className={"jenkins-buttons-row jenkins-buttons-row--equal-width"}
           >
-            <button className={"jenkins-button jenkins-button--primary"}>
+            <button
+              onClick={ok}
+              className={"jenkins-button jenkins-button--primary"}
+            >
               {inputStep.ok}
             </button>
-            <button className={"jenkins-button"}>{inputStep.cancel}</button>
+            <button onClick={abort} className={"jenkins-button"}>
+              {inputStep.cancel}
+            </button>
           </div>
         </div>
       </>

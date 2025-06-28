@@ -5,7 +5,6 @@
     <l:layout title="${it.buildDisplayName} - ${it.fullProjectDisplayName}">
         <l:main-panel>
             <link rel="stylesheet" href="${resURL}/plugin/pipeline-graph-view/js/style.css" type="text/css" />
-            <j:out value="${h.generateConsoleAnnotationScriptAndStylesheet()}"/>
 
             <j:set var="controls">
                 <j:if test="${it.buildInProgress}">

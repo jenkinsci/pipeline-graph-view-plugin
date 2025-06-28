@@ -23,11 +23,6 @@ export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
   useEffect(() => {
     const height = ref.current ? ref.current.getBoundingClientRect().height : 0;
     props.heightCallback(height);
-
-    // apply any behaviour selectors to the new content, e.g. for input step
-    window.Behaviour.applySubtree(
-      document.getElementById(`${props.stepId}-${props.lineNumber}`),
-    );
   }, []);
 
   return (

@@ -144,8 +144,8 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
 function ConsoleLogBody(props: ConsoleLogCardProps) {
   const inputStep = props.step.inputStep;
   if (inputStep && !inputStep.parameters) {
-    const ok = () => {
-      fetch(`../input/${inputStep.id}/proceedEmpty`, {
+    function handler(id: string, action: string) {
+      fetch(`../input/${id}/${action}`, {
         method: "POST",
         headers: (window as any).crumb.wrap({}),
       })
@@ -156,20 +156,14 @@ function ConsoleLogBody(props: ConsoleLogCardProps) {
         .catch((err) => {
           console.error(err);
         });
+    }
+
+    const ok = () => {
+      return handler(inputStep.id, "proceedEmpty");
     };
 
     const abort = () => {
-      fetch(`../input/${inputStep.id}/abort`, {
-        method: "POST",
-        headers: (window as any).crumb.wrap({}),
-      })
-        .then((res) => {
-          console.log(res);
-          return true;
-        })
-        .catch((err) => {
-          console.error(err);
-        });
+      return handler(inputStep.id, "abort");
     };
 
     return (

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,9 +59,22 @@ public class PipelineStepApi {
                             flowNodeWrapper.getType().name(),
                             title,
                             stageId,
+                            mapInputStep(flowNodeWrapper.getInputStep()),
                             flowNodeWrapper.getTiming());
                 })
                 .collect(Collectors.toList());
+    }
+
+    private PipelineInputStep mapInputStep(InputStep inputStep) {
+        if (inputStep == null) {
+            return null;
+        }
+        return new PipelineInputStep(
+                inputStep.getMessage(),
+                inputStep.getCancel(),
+                inputStep.getId(),
+                inputStep.getOk(),
+                !inputStep.getParameters().isEmpty());
     }
 
     static String cleanTextContent(String text) {

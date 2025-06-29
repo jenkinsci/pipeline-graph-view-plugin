@@ -41,39 +41,6 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
     props.onStepToggle(props.step.id);
   };
 
-  const showMoreLogs = () => {
-    let startByte = props.stepBuffer.startByte - LOG_FETCH_SIZE;
-    if (startByte < 0) startByte = 0;
-    props.onMoreConsoleClick(props.step.id, startByte);
-  };
-
-  const getTruncatedLogWarning = () => {
-    if (props.stepBuffer.lines && props.stepBuffer.startByte > 0) {
-      return (
-        <button
-          onClick={showMoreLogs}
-          className={
-            "pgv-show-more-logs jenkins-button jenkins-!-warning-color"
-          }
-        >
-          There’s more to see - {prettySizeString(props.stepBuffer.startByte)}{" "}
-          of logs hidden
-        </button>
-      );
-    }
-    return undefined;
-  };
-
-  const prettySizeString = (size: number) => {
-    const kib = 1024;
-    const mib = 1024 * 1024;
-    const gib = 1024 * 1024 * 1024;
-    if (size < kib) return `${size}B`;
-    if (size < mib) return `${(size / kib).toFixed(2)}KiB`;
-    if (size < gib) return `${(size / mib).toFixed(2)}MiB`;
-    return `${(size / gib).toFixed(2)}GiB`;
-  };
-
   const messages = useMessages();
 
   return (
@@ -162,18 +129,117 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
       </div>
 
       {props.isExpanded && (
-        <div style={{ paddingTop: "0.5rem" }}>
-          {getTruncatedLogWarning()}
-          <Suspense>
-            <ConsoleLogStream
-              logBuffer={props.stepBuffer}
-              onMoreConsoleClick={props.onMoreConsoleClick}
-              step={props.step}
-              maxHeightScale={0.65}
-            />
-          </Suspense>
-        </div>
+        <ConsoleLogBody
+          step={props.step}
+          stepBuffer={props.stepBuffer}
+          onMoreConsoleClick={props.onMoreConsoleClick}
+          isExpanded={false}
+          onStepToggle={props.onStepToggle}
+        />
       )}
+    </div>
+  );
+}
+
+function ConsoleLogBody(props: ConsoleLogCardProps) {
+  const inputStep = props.step.inputStep;
+  if (inputStep && !inputStep.parameters) {
+    function handler(id: string, action: string) {
+      fetch(`../input/${id}/${action}`, {
+        method: "POST",
+        headers: (window as any).crumb.wrap({}),
+      })
+        .then((res) => {
+          console.log(res);
+          return true;
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    }
+
+    const ok = () => {
+      return handler(inputStep.id, "proceedEmpty");
+    };
+
+    const abort = () => {
+      return handler(inputStep.id, "abort");
+    };
+
+    return (
+      <>
+        <div style={{ paddingTop: "0.5rem" }}>
+          <div className={"console-output-line"}>
+            <a style={{ width: "30px" }} className={"console-line-number"} />
+            <p style={{ fontWeight: "var(--font-bold-weight)" }}>
+              {inputStep.message}
+            </p>
+          </div>
+        </div>
+        <div className={"console-output-line"}>
+          <a style={{ width: "30px" }} className={"console-line-number"} />
+          <div
+            className={"jenkins-buttons-row jenkins-buttons-row--equal-width"}
+          >
+            <button
+              onClick={ok}
+              className={"jenkins-button jenkins-button--primary"}
+            >
+              {inputStep.ok}
+            </button>
+            <button onClick={abort} className={"jenkins-button"}>
+              {inputStep.cancel}
+            </button>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  const prettySizeString = (size: number) => {
+    const kib = 1024;
+    const mib = 1024 * 1024;
+    const gib = 1024 * 1024 * 1024;
+    if (size < kib) return `${size}B`;
+    if (size < mib) return `${(size / kib).toFixed(2)}KiB`;
+    if (size < gib) return `${(size / mib).toFixed(2)}MiB`;
+    return `${(size / gib).toFixed(2)}GiB`;
+  };
+
+  const showMoreLogs = () => {
+    let startByte = props.stepBuffer.startByte - LOG_FETCH_SIZE;
+    if (startByte < 0) startByte = 0;
+    props.onMoreConsoleClick(props.step.id, startByte);
+  };
+
+  const getTruncatedLogWarning = () => {
+    if (props.stepBuffer.lines && props.stepBuffer.startByte > 0) {
+      return (
+        <button
+          onClick={showMoreLogs}
+          className={
+            "pgv-show-more-logs jenkins-button jenkins-!-warning-color"
+          }
+        >
+          There’s more to see - {prettySizeString(props.stepBuffer.startByte)}{" "}
+          of logs hidden
+        </button>
+      );
+    }
+    return undefined;
+  };
+
+  return (
+    <div style={{ paddingTop: "0.5rem" }}>
+      {getTruncatedLogWarning()}
+      <Suspense>
+        <ConsoleLogStream
+          logBuffer={props.stepBuffer}
+          onMoreConsoleClick={props.onMoreConsoleClick}
+          step={props.step}
+          maxHeightScale={0.65}
+        />
+      </Suspense>
     </div>
   );
 }

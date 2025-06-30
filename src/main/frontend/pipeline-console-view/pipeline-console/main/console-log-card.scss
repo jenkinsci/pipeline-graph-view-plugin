@@ -145,6 +145,7 @@ a.console-line-number {
   margin-bottom: -0.375rem;
   margin-left: -0.375rem;
   margin-right: -0.375rem;
+  // TODO - var fallback can removed after baseline is moved >= 2.496
   border-top: var(
     --jenkins-border,
     2px solid color-mix(in srgb, var(--text-color-secondary) 10%, transparent)

@@ -150,7 +150,9 @@ function ConsoleLogBody(props: ConsoleLogCardProps) {
         headers: (window as any).crumb.wrap({}),
       })
         .then((res) => {
-          console.log(res);
+          if (!res.ok) {
+            console.error(res);
+          }
           return true;
         })
         .catch((err) => {

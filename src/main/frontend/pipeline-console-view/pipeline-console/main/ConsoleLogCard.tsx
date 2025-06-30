@@ -141,13 +141,23 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
   );
 }
 
+declare global {
+  interface Window {
+    crumb: Crumb;
+  }
+
+  interface Crumb {
+    wrap: (headers: Record<string, string>) => Record<string, string>;
+  }
+}
+
 function ConsoleLogBody(props: ConsoleLogCardProps) {
   const inputStep = props.step.inputStep;
   if (inputStep && !inputStep.parameters) {
     function handler(id: string, action: string) {
       fetch(`../input/${id}/${action}`, {
         method: "POST",
-        headers: (window as any).crumb.wrap({}),
+        headers: window.crumb.wrap({}),
       })
         .then((res) => {
           if (!res.ok) {

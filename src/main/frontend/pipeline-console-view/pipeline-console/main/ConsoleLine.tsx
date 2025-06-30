@@ -11,12 +11,6 @@ export interface ConsoleLineProps {
   heightCallback: (height: number) => void;
 }
 
-declare global {
-  interface Window {
-    Behaviour: any;
-  }
-}
-
 // Console output line
 export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
   const ref = useRef<HTMLDivElement>(null);

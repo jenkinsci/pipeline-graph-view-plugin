@@ -12,16 +12,6 @@ import {
   StepLogBufferInfo,
 } from "./PipelineConsoleModel.tsx";
 
-beforeAll(() => {
-  window.Behaviour = {
-    applySubtree: vi.fn(),
-  };
-});
-
-afterAll(() => {
-  delete window.Behaviour;
-});
-
 const TestComponent = (props: ConsoleLogStreamProps) => {
   return (
     <div id="test-parent">

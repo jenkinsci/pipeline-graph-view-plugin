@@ -6,21 +6,28 @@ import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
 import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import org.jenkinsci.plugins.pipeline.modeldefinition.actions.ExecutionModelAction;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
+import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
+import org.jenkinsci.plugins.workflow.graph.AtomNode;
 import org.jenkinsci.plugins.workflow.graph.BlockEndNode;
 import org.jenkinsci.plugins.workflow.graph.BlockStartNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.graphanalysis.DepthFirstScanner;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.jenkinsci.plugins.workflow.support.steps.input.InputAction;
+import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
+import org.jenkinsci.plugins.workflow.support.steps.input.InputStepExecution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -167,6 +174,7 @@ public class PipelineNodeTreeScanner {
         // FlowNodeWrapper rootStage = null;
 
         private final Logger logger = LoggerFactory.getLogger(GraphBuilder.class);
+        private final InputAction inputAction;
         private boolean isDebugEnabled = logger.isDebugEnabled();
 
         /*
@@ -181,6 +189,7 @@ public class PipelineNodeTreeScanner {
             this.nodeMap = nodeMap;
             this.relationships = relationships;
             this.run = run;
+            this.inputAction = run.getAction(InputAction.class);
             this.execution = execution;
             buildGraph();
         }
@@ -491,7 +500,24 @@ public class PipelineNodeTreeScanner {
                 timing = relationship.getTimingInfo(this.run);
                 status = relationship.getStatus(this.run);
             }
-            return new FlowNodeWrapper(node, status, timing, this.run);
+
+            InputStep inputStep = null;
+            if (node instanceof AtomNode atomNode
+                    && PipelineNodeUtil.isPausedForInputStep((StepAtomNode) atomNode, inputAction)) {
+                try {
+                    for (InputStepExecution execution : inputAction.getExecutions()) {
+                        FlowNode theNode = execution.getContext().get(FlowNode.class);
+                        if (theNode != null && theNode.equals(atomNode)) {
+                            inputStep = execution.getInput();
+                            break;
+                        }
+                    }
+                } catch (IOException | InterruptedException | TimeoutException e) {
+                    logger.error("Error getting FlowNode from execution context: {}", e.getMessage(), e);
+                }
+            }
+
+            return new FlowNodeWrapper(node, status, timing, inputStep, this.run);
         }
     }
 }

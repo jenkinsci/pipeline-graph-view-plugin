@@ -11,23 +11,12 @@ export interface ConsoleLineProps {
   heightCallback: (height: number) => void;
 }
 
-declare global {
-  interface Window {
-    Behaviour: any;
-  }
-}
-
 // Console output line
 export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const height = ref.current ? ref.current.getBoundingClientRect().height : 0;
     props.heightCallback(height);
-
-    // apply any behaviour selectors to the new content, e.g. for input step
-    window.Behaviour.applySubtree(
-      document.getElementById(`${props.stepId}-${props.lineNumber}`),
-    );
   }, []);
 
   return (

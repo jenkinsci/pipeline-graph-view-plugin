@@ -9,6 +9,14 @@ export interface RunStatus {
   complete: boolean;
 }
 
+export interface InputStep {
+  message: string;
+  cancel: string;
+  id: string;
+  ok: string;
+  parameters: boolean;
+}
+
 /**
  * StageInfo is the input, in the form of an Array<StageInfo> of the top-level stages of a pipeline
  */
@@ -17,6 +25,7 @@ export interface StepInfo {
   title: string;
   state: Result;
   completePercent: number;
+  inputStep?: InputStep;
   id: string;
   type: string;
   stageId: string;

@@ -12,6 +12,7 @@ import StatusIcon from "../../../common/components/status-icon.tsx";
 import Tooltip from "../../../common/components/tooltip.tsx";
 import { LocalizedMessageKey, useMessages } from "../../../common/i18n";
 import { classNames } from "../../../common/utils/classnames.ts";
+import { linkifyJsOptions } from "../../../common/utils/linkify-js.ts";
 import LiveTotal from "../../../common/utils/live-total.tsx";
 import {
   LOG_FETCH_SIZE,
@@ -69,13 +70,13 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
 
             {props.step.title !== "" && (
               <span>
-                <Linkify>{props.step.title}</Linkify>
+                <Linkify options={linkifyJsOptions}>{props.step.title}</Linkify>
               </span>
             )}
 
             {props.step.name !== "" && (
               <span>
-                <Linkify>{props.step.name}</Linkify>
+                <Linkify options={linkifyJsOptions}>{props.step.name}</Linkify>
               </span>
             )}
 

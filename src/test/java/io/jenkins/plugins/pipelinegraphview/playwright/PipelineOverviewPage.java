@@ -154,9 +154,11 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
     }
 
     public PipelineOverviewPage cancel() {
-        page.click("#pgv-cancel");
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Yes"))
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Cancel"))
                 .click();
+        Locator dialog = page.getByRole(AriaRole.DIALOG);
+        dialog.getByText("Yes").click();
+        assertThat(dialog).isHidden();
         return this;
     }
 

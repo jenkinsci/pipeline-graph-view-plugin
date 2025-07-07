@@ -35,7 +35,7 @@
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
     <jenkins.baseline>2.479</jenkins.baseline>
     <jenkins.version>${jenkins.baseline}.3</jenkins.version>
-    <node.version>22.15.0</node.version>
+    <node.version>24.2.0</node.version>
     <npm.version>11.3.0</npm.version>
     <spotless.check.skip>false</spotless.check.skip>
   </properties>
@@ -46,7 +46,7 @@
         <!-- Pick up common dependencies for the selected LTS line: https://github.com/jenkinsci/bom#usage -->
         <groupId>io.jenkins.tools.bom</groupId>
         <artifactId>bom-${jenkins.baseline}.x</artifactId>
-        <version>4136.vca_c3202a_7fd1</version>
+        <version>4948.vcf1d17350668</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

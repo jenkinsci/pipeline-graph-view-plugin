@@ -2,6 +2,8 @@
 !/src/main/
 /src/main/*
 !/src/main/frontend/
+!/src/main/webapp/
+/src/main/webapp/js/bundles/
 
 /.mvn/*
 /Jenkinsfile

@@ -7,7 +7,7 @@ import StatusIcon, {
 } from "../../../../common/components/status-icon.tsx";
 import Tooltip from "../../../../common/components/tooltip.tsx";
 import { classNames } from "../../../../common/utils/classnames.ts";
-import { Total } from "../../../../common/utils/timings.tsx";
+import LiveTotal from "../../../../common/utils/live-total.tsx";
 import { CounterNodeInfo } from "../PipelineGraphLayout.ts";
 import {
   LayoutInfo,
@@ -58,7 +58,10 @@ export function Node({
                 />
                 {stage.name}
                 <span style={{ color: "var(--text-color-secondary)" }}>
-                  <Total ms={stage.totalDurationMillis} />
+                  <LiveTotal
+                    total={stage.totalDurationMillis}
+                    start={stage.startTimeMillis}
+                  />
                 </span>
               </a>
             </li>
@@ -137,14 +140,26 @@ export function Node({
     ),
   };
 
-  let tooltip: ReactElement | undefined;
+  let tooltip: ReactElement;
   if (collapsed) {
     tooltip = (
       <div className="pgv-node-tooltip">
         <div>{title}</div>
         <div>
-          <Total ms={node.stage.totalDurationMillis} />
+          <LiveTotal
+            total={node.stage.totalDurationMillis}
+            start={node.stage.startTimeMillis}
+          />
         </div>
+      </div>
+    );
+  } else {
+    tooltip = (
+      <div className="pgv-node-tooltip">
+        <LiveTotal
+          total={node.stage.totalDurationMillis}
+          start={node.stage.startTimeMillis}
+        />
       </div>
     );
   }

@@ -399,6 +399,8 @@ describe("PipelineGraphLayout", () => {
         layout,
         false,
         defaultMessages(DEFAULT_LOCALE),
+        false,
+        false,
       );
 
       expect(graph.smallLabels).toMatchObject([

@@ -69,34 +69,28 @@ export async function getMessages(
 export type MessageKeyType = LocalizedMessageKey | string;
 
 export enum LocalizedMessageKey {
-  millisecond = "timings.millisecond",
-  second = "timings.second",
-  minute = "timings.minute",
-  hour = "timings.hour",
-  day = "timings.day",
-  month = "timings.month",
-  year = "timings.year",
   startedAgo = "startedAgo",
+  queued = "queued",
   noBuilds = "noBuilds",
   start = "node.start",
   end = "node.end",
   changesSummary = "changes.summary",
+  settings = "settings",
+  showNames = "settings.showStageName",
+  showDuration = "settings.showStageDuration",
   consoleNewTab = "console.newTab",
 }
 
 const DEFAULT_MESSAGES: ResourceBundle = {
-  [LocalizedMessageKey.millisecond]: "{0} ms",
-  [LocalizedMessageKey.second]: "{0} sec",
-  [LocalizedMessageKey.minute]: "{0} min",
-  [LocalizedMessageKey.hour]: "{0} hr",
-  [LocalizedMessageKey.day]: "{0} {0,choice,0#days|1#day|1<days}",
-  [LocalizedMessageKey.month]: "{0} mo",
-  [LocalizedMessageKey.year]: "{0} yr",
   [LocalizedMessageKey.startedAgo]: "Started {0} ago",
+  [LocalizedMessageKey.queued]: "Queued {0}",
   [LocalizedMessageKey.noBuilds]: "No builds",
   [LocalizedMessageKey.start]: "Start",
   [LocalizedMessageKey.end]: "End",
   [LocalizedMessageKey.changesSummary]: "{0} {0,choice,1#change|1<changes}",
+  [LocalizedMessageKey.settings]: "Settings",
+  [LocalizedMessageKey.showNames]: "Show stage names",
+  [LocalizedMessageKey.showDuration]: "Show stage duration",
   [LocalizedMessageKey.consoleNewTab]: "View step as plain text",
 };
 

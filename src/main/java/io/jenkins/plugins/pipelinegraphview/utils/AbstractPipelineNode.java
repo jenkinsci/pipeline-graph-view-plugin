@@ -33,8 +33,8 @@ public class AbstractPipelineNode {
         return timingInfo.getStartTimeMillis();
     }
 
-    public long getTotalDurationMillis() {
-        return totalDurationMillis;
+    public Long getTotalDurationMillis() {
+        return state.isInProgress() ? null : totalDurationMillis;
     }
 
     public String getId() {

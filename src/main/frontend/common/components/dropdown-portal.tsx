@@ -3,11 +3,13 @@ import { createPortal } from "react-dom";
 
 interface DropdownPortalProps {
   children: ReactNode;
+  container: HTMLElement | null;
 }
 
-export default function DropdownPortal({ children }: DropdownPortalProps) {
-  const container = document.getElementById("console-pipeline-overflow-root");
-
+export default function DropdownPortal({
+  children,
+  container,
+}: DropdownPortalProps) {
   if (!container) {
     console.error("DropdownPortal: Target container not found!");
     return null;

@@ -7,11 +7,9 @@ import io.jenkins.plugins.casc.misc.ConfiguredWithCode;
 import io.jenkins.plugins.casc.misc.JenkinsConfiguredWithCodeRule;
 import io.jenkins.plugins.casc.misc.junit.jupiter.WithJenkinsConfiguredWithCode;
 import io.jenkins.plugins.pipelinegraphview.playwright.PipelineJobPage;
-import io.jenkins.plugins.pipelinegraphview.playwright.PipelineOverviewPage;
 import io.jenkins.plugins.pipelinegraphview.playwright.PlaywrightConfig;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 @WithJenkinsConfiguredWithCode
@@ -38,8 +36,6 @@ class PipelineConsoleViewInputTest {
 
     @Test
     @ConfiguredWithCode("../configure-appearance.yml")
-    // Times out on slower systems as it doesn't click the input quick enough
-    @Disabled("https://github.com/jenkinsci/pipeline-graph-view-plugin/issues/568")
     void inputSucceeds(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
         WorkflowRun run =
                 TestUtils.createAndRunJobNoWait(j, "input", "input.jenkinsfile").waitForStart();
@@ -52,27 +48,6 @@ class PipelineConsoleViewInputTest {
                 .goToPipelineOverview()
                 .clickProceed();
 
-        j.assertBuildStatus(Result.SUCCESS, j.waitForCompletion(run));
-    }
-
-    @Test
-    @ConfiguredWithCode("../configure-appearance.yml")
-    @Disabled("https://github.com/jenkinsci/pipeline-graph-view-plugin/issues/568")
-    void inputSucceedsWithDelay(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
-        WorkflowRun run =
-                TestUtils.createAndRunJobNoWait(j, "input", "input.jenkinsfile").waitForStart();
-
-        PipelineOverviewPage pipelineOverviewPage = new PipelineJobPage(p, run.getParent())
-                .goTo()
-                .hasBuilds(1)
-                .nthBuild(0)
-                .goToBuild()
-                .goToPipelineOverview();
-
-        // Fails if you don't click proceed immediately currently
-        p.waitForTimeout(1000D);
-
-        pipelineOverviewPage.clickProceed();
         j.assertBuildStatus(Result.SUCCESS, j.waitForCompletion(run));
     }
 }

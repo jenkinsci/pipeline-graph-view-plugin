@@ -1,5 +1,6 @@
 import "./console-log-card.scss";
 
+import Linkify from "linkify-react";
 import {
   lazy,
   MouseEvent as ReactMouseEvent,
@@ -11,12 +12,14 @@ import StatusIcon from "../../../common/components/status-icon.tsx";
 import Tooltip from "../../../common/components/tooltip.tsx";
 import { LocalizedMessageKey, useMessages } from "../../../common/i18n";
 import { classNames } from "../../../common/utils/classnames.ts";
-import { Total } from "../../../common/utils/timings.tsx";
+import { linkifyJsOptions } from "../../../common/utils/linkify-js.ts";
+import LiveTotal from "../../../common/utils/live-total.tsx";
 import {
   LOG_FETCH_SIZE,
   StepInfo,
   StepLogBufferInfo,
 } from "./PipelineConsoleModel.tsx";
+import InputStep from "./steps/InputStep.tsx";
 
 const ConsoleLogStream = lazy(() => import("./ConsoleLogStream.tsx"));
 
@@ -40,40 +43,12 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
     props.onStepToggle(props.step.id);
   };
 
-  const showMoreLogs = () => {
-    let startByte = props.stepBuffer.startByte - LOG_FETCH_SIZE;
-    if (startByte < 0) startByte = 0;
-    props.onMoreConsoleClick(props.step.id, startByte);
-  };
-
-  const getTruncatedLogWarning = () => {
-    if (props.stepBuffer.lines && props.stepBuffer.startByte > 0) {
-      return (
-        <button
-          onClick={showMoreLogs}
-          className={
-            "pgv-show-more-logs jenkins-button jenkins-!-warning-color"
-          }
-        >
-          There’s more to see - {prettySizeString(props.stepBuffer.startByte)}{" "}
-          of logs hidden
-        </button>
-      );
-    }
-    return undefined;
-  };
-
-  const prettySizeString = (size: number) => {
-    const kib = 1024;
-    const mib = 1024 * 1024;
-    const gib = 1024 * 1024 * 1024;
-    if (size < kib) return `${size}B`;
-    if (size < mib) return `${(size / kib).toFixed(2)}KiB`;
-    if (size < gib) return `${(size / mib).toFixed(2)}MiB`;
-    return `${(size / gib).toFixed(2)}GiB`;
-  };
-
   const messages = useMessages();
+
+  const inputStep = props.step.inputStep;
+  if (inputStep && !inputStep.parameters) {
+    return <InputStep {...props} />;
+  }
 
   return (
     <div className={"pgv-step-detail-group"} key={`step-card-${props.step.id}`}>
@@ -93,9 +68,17 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
               percentage={props.step.completePercent}
             />
 
-            {props.step.title !== "" && <span>{props.step.title}</span>}
+            {props.step.title !== "" && (
+              <span>
+                <Linkify options={linkifyJsOptions}>{props.step.title}</Linkify>
+              </span>
+            )}
 
-            {props.step.name !== "" && <span>{props.step.name}</span>}
+            {props.step.name !== "" && (
+              <span>
+                <Linkify options={linkifyJsOptions}>{props.step.name}</Linkify>
+              </span>
+            )}
 
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -122,7 +105,10 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
                 fontWeight: "normal",
               }}
             >
-              <Total ms={props.step.totalDurationMillis} />
+              <LiveTotal
+                total={props.step.totalDurationMillis}
+                start={props.step.startTimeMillis}
+              />
             </span>
           </div>
         </a>
@@ -150,18 +136,63 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
       </div>
 
       {props.isExpanded && (
-        <div style={{ paddingTop: "0.5rem" }}>
-          {getTruncatedLogWarning()}
-          <Suspense>
-            <ConsoleLogStream
-              logBuffer={props.stepBuffer}
-              onMoreConsoleClick={props.onMoreConsoleClick}
-              step={props.step}
-              maxHeightScale={0.65}
-            />
-          </Suspense>
-        </div>
+        <ConsoleLogBody
+          step={props.step}
+          stepBuffer={props.stepBuffer}
+          onMoreConsoleClick={props.onMoreConsoleClick}
+          isExpanded={false}
+          onStepToggle={props.onStepToggle}
+        />
       )}
+    </div>
+  );
+}
+
+function ConsoleLogBody(props: ConsoleLogCardProps) {
+  const prettySizeString = (size: number) => {
+    const kib = 1024;
+    const mib = 1024 * 1024;
+    const gib = 1024 * 1024 * 1024;
+    if (size < kib) return `${size}B`;
+    if (size < mib) return `${(size / kib).toFixed(2)}KiB`;
+    if (size < gib) return `${(size / mib).toFixed(2)}MiB`;
+    return `${(size / gib).toFixed(2)}GiB`;
+  };
+
+  const showMoreLogs = () => {
+    let startByte = props.stepBuffer.startByte - LOG_FETCH_SIZE;
+    if (startByte < 0) startByte = 0;
+    props.onMoreConsoleClick(props.step.id, startByte);
+  };
+
+  const getTruncatedLogWarning = () => {
+    if (props.stepBuffer.lines && props.stepBuffer.startByte > 0) {
+      return (
+        <button
+          onClick={showMoreLogs}
+          className={
+            "pgv-show-more-logs jenkins-button jenkins-!-warning-color"
+          }
+        >
+          There’s more to see - {prettySizeString(props.stepBuffer.startByte)}{" "}
+          of logs hidden
+        </button>
+      );
+    }
+    return undefined;
+  };
+
+  return (
+    <div style={{ paddingTop: "0.5rem" }}>
+      {getTruncatedLogWarning()}
+      <Suspense>
+        <ConsoleLogStream
+          logBuffer={props.stepBuffer}
+          onMoreConsoleClick={props.onMoreConsoleClick}
+          step={props.step}
+          maxHeightScale={0.65}
+        />
+      </Suspense>
     </div>
   );
 }

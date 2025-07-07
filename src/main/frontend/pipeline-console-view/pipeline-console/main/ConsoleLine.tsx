@@ -1,5 +1,7 @@
+import linkifyHtml from "linkify-html";
 import { memo, useEffect, useRef } from "react";
 
+import { linkifyJsOptions } from "../../../common/utils/linkify-js.ts";
 import { makeReactChildren, tokenizeANSIString } from "./Ansi.tsx";
 
 export interface ConsoleLineProps {
@@ -10,23 +12,12 @@ export interface ConsoleLineProps {
   heightCallback: (height: number) => void;
 }
 
-declare global {
-  interface Window {
-    Behaviour: any;
-  }
-}
-
 // Console output line
 export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const height = ref.current ? ref.current.getBoundingClientRect().height : 0;
     props.heightCallback(height);
-
-    // apply any behaviour selectors to the new content, e.g. for input step
-    window.Behaviour.applySubtree(
-      document.getElementById(`${props.stepId}-${props.lineNumber}`),
-    );
   }, []);
 
   return (
@@ -55,7 +46,7 @@ export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
           className="console-text"
         >
           {makeReactChildren(
-            tokenizeANSIString(props.content),
+            tokenizeANSIString(linkifyHtml(props.content, linkifyJsOptions)),
             `${props.stepId}-${props.lineNumber}`,
           )}
         </div>

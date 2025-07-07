@@ -7,6 +7,7 @@ import {
   NodeLabelInfo,
   PlaceholderNodeInfo,
   PositionedGraph,
+  Result,
   StageInfo,
   StageNodeInfo,
 } from "./PipelineGraphModel.tsx";
@@ -29,6 +30,8 @@ export function layoutGraph(
   layout: LayoutInfo,
   collapsed: boolean,
   messages: Messages,
+  showNames: boolean,
+  showDurations: boolean,
 ): PositionedGraph {
   const stageNodeColumns = createNodeColumns(newStages);
   const { nodeSpacingH, ypStart } = layout;
@@ -133,10 +136,11 @@ export function layoutGraph(
 
   positionNodes(allNodeColumns, layout);
 
-  const bigLabels = createBigLabels(allNodeColumns, collapsed);
+  const bigLabels = createBigLabels(allNodeColumns, collapsed, showNames);
+  const timings = createTimings(allNodeColumns, collapsed, showDurations);
   const smallLabels = createSmallLabels(allNodeColumns, collapsed);
   const branchLabels = createBranchLabels(allNodeColumns, collapsed);
-  const connections = createConnections(allNodeColumns);
+  const connections = createConnections(allNodeColumns, collapsed);
 
   // Calculate the size of the graph
   let measuredWidth = 0;
@@ -146,9 +150,10 @@ export function layoutGraph(
     for (const row of column.rows) {
       for (const node of row) {
         measuredWidth = Math.max(measuredWidth, node.x + nodeSpacingH / 2);
-        measuredHeight = collapsed
-          ? 60
-          : Math.max(measuredHeight, node.y + ypStart);
+        measuredHeight =
+          collapsed && !showNames && !showDurations
+            ? 60
+            : Math.max(measuredHeight, node.y + ypStart);
       }
     }
   }
@@ -157,6 +162,7 @@ export function layoutGraph(
     nodeColumns: allNodeColumns,
     connections,
     bigLabels,
+    timings,
     smallLabels,
     branchLabels,
     measuredWidth,
@@ -337,15 +343,20 @@ function positionNodes(
 function createBigLabels(
   columns: Array<NodeColumn>,
   collapsed: boolean,
+  showNames: boolean,
 ): Array<NodeLabelInfo> {
   const labels: Array<NodeLabelInfo> = [];
 
-  if (collapsed) {
+  if (collapsed && !showNames) {
     return [];
   }
 
   for (const column of columns) {
     const node = column.rows[0][0];
+
+    if (node.isPlaceholder && node.type === "counter") {
+      continue;
+    }
     const stage = column.topStage;
     const text = stage ? stage.name : node.name;
     const key = "l_b_" + node.key;
@@ -363,6 +374,40 @@ function createBigLabels(
       stage,
       text,
       key,
+    });
+  }
+
+  return labels;
+}
+
+/**
+ * Generate label descriptions for big labels at the top of each column
+ */
+function createTimings(
+  columns: Array<NodeColumn>,
+  collapsed: boolean,
+  showDurations: boolean,
+): Array<NodeLabelInfo> {
+  const labels: Array<NodeLabelInfo> = [];
+
+  if (!collapsed || !showDurations) {
+    return [];
+  }
+
+  for (const column of columns) {
+    const node = column.rows[0][0];
+    if (node.isPlaceholder) {
+      continue;
+    }
+    const stage = column.topStage;
+
+    labels.push({
+      x: column.centerX,
+      y: node.y + 55,
+      node,
+      stage,
+      text: "", // we take the duration from the stage itself at render time
+      key: `l_t_${node.key}`,
     });
   }
 
@@ -445,6 +490,7 @@ function createBranchLabels(
  */
 function createConnections(
   columns: Array<NodeColumn>,
+  collapsed: boolean,
 ): Array<CompositeConnection> {
   const connections: Array<CompositeConnection> = [];
 
@@ -452,7 +498,7 @@ function createConnections(
   let skippedNodes: Array<NodeInfo> = [];
 
   for (const column of columns) {
-    if (column.topStage && column.topStage.state === "skipped") {
+    if (!collapsed && column.topStage?.state === Result.skipped) {
       skippedNodes.push(column.rows[0][0]);
       continue;
     }

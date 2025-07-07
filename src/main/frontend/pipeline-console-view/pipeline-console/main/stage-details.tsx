@@ -4,16 +4,12 @@ import Dropdown from "../../../common/components/dropdown.tsx";
 import StatusIcon, {
   resultToColor,
 } from "../../../common/components/status-icon.tsx";
+import { DOCUMENT } from "../../../common/components/symbols.tsx";
 import Tooltip from "../../../common/components/tooltip.tsx";
-import {
-  exact,
-  Paused,
-  Started,
-  Total,
-} from "../../../common/utils/timings.tsx";
+import LiveTotal from "../../../common/utils/live-total.tsx";
+import { exact, Paused, Started } from "../../../common/utils/timings.tsx";
 import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import StageNodeLink from "./StageNodeLink.tsx";
-import { DOCUMENT } from "./symbols.tsx";
 
 export default function StageDetails({ stage }: StageDetailsProps) {
   if (!stage) {
@@ -39,7 +35,11 @@ export default function StageDetails({ stage }: StageDetailsProps) {
       </div>
       <ul>
         <li>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 512 512"
+            aria-label={"Total duration"}
+          >
             <path
               d="M112.91 128A191.85 191.85 0 0064 254c-1.18 106.35 85.65 193.8 192 194 106.2.2 192-85.83 192-192 0-104.54-83.55-189.61-187.5-192a4.36 4.36 0 00-4.5 4.37V152"
               fill="none"
@@ -53,7 +53,10 @@ export default function StageDetails({ stage }: StageDetailsProps) {
               fill="currentColor"
             />
           </svg>
-          <Total ms={stage.totalDurationMillis} />
+          <LiveTotal
+            total={stage.totalDurationMillis}
+            start={stage.startTimeMillis}
+          />
         </li>
         <li>
           <Tooltip content={exact(stage.startTimeMillis)}>

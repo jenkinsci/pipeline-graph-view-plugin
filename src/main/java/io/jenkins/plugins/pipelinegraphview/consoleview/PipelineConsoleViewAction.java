@@ -1,9 +1,20 @@
 package io.jenkins.plugins.pipelinegraphview.consoleview;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.Plugin;
 import hudson.console.AnnotatedLargeText;
+import hudson.model.Action;
+import hudson.model.BallColor;
+import hudson.model.Item;
+import hudson.model.ParametersDefinitionProperty;
+import hudson.model.Queue;
+import hudson.model.Result;
+import hudson.security.Permission;
 import hudson.util.HttpResponses;
+import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.PipelineGraphViewConfiguration;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsCard;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
@@ -14,7 +25,8 @@ import io.jenkins.plugins.pipelinegraphview.cards.items.TestResultRunDetailsItem
 import io.jenkins.plugins.pipelinegraphview.cards.items.TimingRunDetailsItems;
 import io.jenkins.plugins.pipelinegraphview.cards.items.UpstreamCauseRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.UserIdCauseRunDetailsItem;
-import io.jenkins.plugins.pipelinegraphview.utils.AbstractPipelineViewAction;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStep;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
@@ -23,7 +35,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import org.jenkins.ui.icon.IconSpec;
+import org.jenkinsci.plugins.pipeline.modeldefinition.actions.RestartDeclarativePipelineAction;
+import org.jenkinsci.plugins.workflow.cps.replay.ReplayAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -31,24 +47,27 @@ import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebMethod;
+import org.kohsuke.stapler.bind.JavaScriptMethod;
+import org.kohsuke.stapler.interceptor.RequirePOST;
 import org.kohsuke.stapler.verb.GET;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
+public class PipelineConsoleViewAction implements Action, IconSpec {
     public static final long LOG_THRESHOLD = 150 * 1024; // 150KB
     public static final String URL_NAME = "pipeline-overview";
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineConsoleViewAction.class);
-    private final WorkflowRun target;
-    private final PipelineStepApi stepApi;
-
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
+    private final PipelineGraphApi graphApi;
+    private final WorkflowRun run;
+    private final PipelineStepApi stepApi;
+
     public PipelineConsoleViewAction(WorkflowRun target) {
-        super(target);
-        this.target = target;
-        this.stepApi = new PipelineStepApi(target);
+        this.run = target;
+        this.graphApi = new PipelineGraphApi(this.run);
+        this.stepApi = new PipelineStepApi(this.run);
     }
 
     @Override
@@ -59,23 +78,6 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     @Override
     public String getUrlName() {
         return URL_NAME;
-    }
-
-    @Override
-    public String getIconClassName() {
-        return "symbol-git-network-outline plugin-ionicons-api";
-    }
-
-    public String getDurationString() {
-        return run.getDurationString();
-    }
-
-    public String getStartTimeString() {
-        return run.getTimestampString();
-    }
-
-    public String getUrl() {
-        return target.getUrl();
     }
 
     // Legacy - leave in case we want to update a sub section of steps (e.g. if a stage is still
@@ -110,8 +112,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
         return HttpResponses.okJSON(getAllSteps());
     }
 
-    // Private method for testing.
-    protected JSONObject getAllSteps() throws IOException {
+    private JSONObject getAllSteps() throws IOException {
         PipelineStepList steps = stepApi.getAllSteps();
         String stepsJson = MAPPER.writeValueAsString(steps);
         if (logger.isDebugEnabled()) {
@@ -204,7 +205,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     }
 
     protected JSONObject getConsoleOutputJson(String nodeId, Long requestStartByte) throws IOException {
-        Long startByte = 0L;
+        long startByte = 0L;
         long endByte = 0L;
         long textLength;
         String text = "";
@@ -253,7 +254,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     }
 
     private AnnotatedLargeText<? extends FlowNode> getLogForNode(String nodeId) throws IOException {
-        FlowExecution execution = target.getExecution();
+        FlowExecution execution = run.getExecution();
         if (execution != null) {
             logger.debug("getLogForNode found execution.");
             return PipelineNodeUtil.getLogText(execution.getNode(nodeId));
@@ -262,7 +263,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     }
 
     private String getNodeExceptionText(String nodeId) throws IOException {
-        FlowExecution execution = target.getExecution();
+        FlowExecution execution = run.getExecution();
         if (execution != null) {
             logger.debug("getNodeException found execution.");
             return PipelineNodeUtil.getExceptionText(execution.getNode(nodeId));
@@ -271,7 +272,7 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
     }
 
     private boolean isUnhandledException(String nodeId) throws IOException {
-        FlowExecution execution = target.getExecution();
+        FlowExecution execution = run.getExecution();
         if (execution != null) {
             return PipelineNodeUtil.isUnhandledException(execution.getNode(nodeId));
         }
@@ -311,5 +312,193 @@ public class PipelineConsoleViewAction extends AbstractPipelineViewAction {
 
     public boolean isShowGraphOnBuildPage() {
         return PipelineGraphViewConfiguration.get().isShowGraphOnBuildPage();
+    }
+
+    public boolean isBuildable() {
+        return run.getParent().isBuildable();
+    }
+
+    public boolean isBuildInProgress() {
+        return run.isBuilding();
+    }
+
+    public Permission getPermission() {
+        return Item.BUILD;
+    }
+
+    public Permission getCancelPermission() {
+        return Item.CANCEL;
+    }
+
+    public Permission getConfigurePermission() {
+        return Item.CONFIGURE;
+    }
+
+    public String getBuildDisplayName() {
+        return run.getDisplayName();
+    }
+
+    public String getBuildFullDisplayName() {
+        return run.getFullDisplayName();
+    }
+
+    public boolean isRebuildAvailable() {
+        Plugin rebuildPlugin = Jenkins.get().getPlugin("rebuild");
+        if (rebuildPlugin != null && rebuildPlugin.getWrapper().isEnabled()) {
+            // limit rebuild to parameterized jobs otherwise it duplicates rerun's behaviour
+            return run.getParent().getProperty(ParametersDefinitionProperty.class) != null;
+        }
+        return false;
+    }
+
+    public boolean isRestartFromStageAvailable() {
+        RestartDeclarativePipelineAction action = run.getAction(RestartDeclarativePipelineAction.class);
+        if (action != null) {
+            return action.isRestartEnabled();
+        }
+        return false;
+    }
+
+    /**
+     * Handles the rerun request using ReplayAction feature
+     */
+    @RequirePOST
+    @JavaScriptMethod
+    public HttpResponse doRerun() {
+        if (run == null) {
+            return HttpResponses.errorJSON(Messages.scheduled_failure());
+        }
+        run.checkPermission(Item.BUILD);
+
+        if (!run.getParent().isBuildable()) {
+            return HttpResponses.errorJSON(Messages.scheduled_failure());
+        }
+        ReplayAction replayAction = run.getAction(ReplayAction.class);
+        Queue.Item item = replayAction.run2(replayAction.getOriginalScript(), replayAction.getOriginalLoadedScripts());
+
+        if (item == null) {
+            return HttpResponses.errorJSON(Messages.scheduled_failure());
+        }
+
+        JSONObject obj = new JSONObject();
+        obj.put("message", Messages.scheduled_success());
+        obj.put("queueId", item.getId());
+        return HttpResponses.okJSON(obj);
+    }
+
+    @SuppressWarnings("unused")
+    @GET
+    @WebMethod(name = "nextBuild")
+    public HttpResponse hasNextBuild(StaplerRequest2 req) {
+        if (run == null) {
+            return HttpResponses.errorJSON("No run to check for next build");
+        }
+        run.checkPermission(Item.READ);
+        String queueId = req.getParameter("queueId");
+        if (queueId == null || queueId.isBlank()) {
+            return HttpResponses.errorJSON("No queueId provided");
+        }
+        long id = Long.parseLong(queueId);
+        logger.debug("Searching for build with queueId: {}", id);
+        WorkflowRun nextRun = findBuildByQueueId(id);
+        if (nextRun == null) {
+            return HttpResponses.okJSON();
+        }
+
+        JSONObject obj = new JSONObject();
+        obj.put("nextBuildUrl", nextRun.getUrl() + URL_NAME + "/");
+        return HttpResponses.okJSON(obj);
+    }
+
+    private @CheckForNull WorkflowRun findBuildByQueueId(long queueId) {
+        for (WorkflowRun build : run.getParent().getBuilds()) {
+            if (build.getNumber() <= this.run.getNumber()) {
+                break;
+            }
+            if (build.getQueueId() == queueId) {
+                return build;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Handles the cancel request.
+     */
+    @RequirePOST
+    @JavaScriptMethod
+    public HttpResponse doCancel() {
+        if (run == null) {
+            return HttpResponses.errorJSON("No run to cancel");
+        }
+        run.checkPermission(getCancelPermission());
+        if (run.isBuilding()) {
+            run.doStop();
+            return HttpResponses.okJSON();
+        }
+        String message =
+                Result.ABORTED.equals(run.getResult()) ? Messages.run_alreadyCancelled() : Messages.run_isFinished();
+        return HttpResponses.errorJSON(message);
+    }
+
+    public String getFullProjectDisplayName() {
+        return run.getParent().getFullDisplayName();
+    }
+
+    private String getBuildNumber(WorkflowRun run) {
+        if (run != null) {
+            return String.valueOf(run.getNumber());
+        }
+        return null;
+    }
+
+    public String getBuildUrl() {
+        return run.getUrl();
+    }
+
+    public String getPreviousBuildNumber() {
+        return getBuildNumber(run.getPreviousBuild());
+    }
+
+    public String getPreviousBuildUrl() {
+        WorkflowRun previousBuild = run.getPreviousBuild();
+        return previousBuild == null ? null : previousBuild.getUrl();
+    }
+
+    public String getNextBuildNumber() {
+        return getBuildNumber(run.getNextBuild());
+    }
+
+    @GET
+    @WebMethod(name = "tree")
+    public HttpResponse getTree() throws JsonProcessingException {
+        if (run == null) {
+            return HttpResponses.errorJSON("No run to get tree for");
+        }
+        run.checkPermission(Item.READ);
+        PipelineGraph tree = graphApi.createTree();
+        String graph = MAPPER.writeValueAsString(tree);
+        return HttpResponses.okJSON(JSONObject.fromObject(graph));
+    }
+
+    // Icon related methods these may appear as unused but are used by /lib/hudson/buildCaption.jelly
+    @SuppressWarnings("unused")
+    public String getUrl() {
+        return run.getUrl();
+    }
+
+    @SuppressWarnings("unused")
+    public BallColor getIconColor() {
+        return run.getIconColor();
+    }
+
+    @Override
+    public String getIconClassName() {
+        return "symbol-git-network-outline plugin-ionicons-api";
+    }
+
+    @Override
+    public String getIconFileName() {
+        return null;
     }
 }

@@ -1,5 +1,6 @@
 package io.jenkins.plugins.pipelinegraphview;
 
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.microsoft.playwright.Locator;
@@ -37,17 +38,15 @@ class PipelineGraphViewCancelTest {
                 .goToBuild()
                 .goToPipelineOverview();
 
-        assertTrue(p.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Cancel"))
-                .isVisible());
+        Locator cancelLocator = p.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Cancel"));
+        assertThat(cancelLocator).isVisible();
 
         op.cancel();
 
         SemaphoreStep.success("wait/1", null);
         j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(run));
 
-        Locator cancelLocator = p.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Cancel"));
-        cancelLocator.waitFor(new WaitForOptions().setState(WaitForSelectorState.HIDDEN));
-        assertTrue(cancelLocator.isHidden());
+        assertThat(cancelLocator).isHidden();
     }
 
     @Test
@@ -63,14 +62,12 @@ class PipelineGraphViewCancelTest {
                 .goToBuild()
                 .goToPipelineOverview();
 
-        assertTrue(p.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Cancel"))
-                .isVisible());
+        Locator cancelLocator = p.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Cancel"));
+        assertThat(cancelLocator).isVisible();
 
         SemaphoreStep.success("wait/1", null);
         j.assertBuildStatus(Result.SUCCESS, j.waitForCompletion(run));
 
-        Locator cancelLocator = p.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Cancel"));
-        cancelLocator.waitFor(new WaitForOptions().setState(WaitForSelectorState.HIDDEN));
-        assertTrue(cancelLocator.isHidden());
+        assertThat(cancelLocator).isHidden();
     }
 }

@@ -8,7 +8,7 @@ import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,9 +72,9 @@ public class PipelineNodeTreeScanner {
             logger.debug("Building graph");
         }
         if (execution != null) {
-            Map<String, FlowNode> nodes = getAllNodes();
+            Collection<FlowNode> nodes = getAllNodes();
             NodeRelationshipFinder finder = new NodeRelationshipFinder();
-            Map<String, NodeRelationship> relationships = finder.getNodeRelationships(nodes.values());
+            Map<String, NodeRelationship> relationships = finder.getNodeRelationships(nodes);
             GraphBuilder builder = new GraphBuilder(nodes, relationships, this.run, this.execution);
             if (isDebugEnabled) {
                 logger.debug("Original nodes:");
@@ -100,16 +100,15 @@ public class PipelineNodeTreeScanner {
     /**
      * Gets all the nodes that are reachable in the graph.
      */
-    private Map<String, FlowNode> getAllNodes() {
+    private List<FlowNode> getAllNodes() {
         heads = execution.getCurrentHeads();
         final DepthFirstScanner scanner = new DepthFirstScanner();
         scanner.setup(heads);
 
         // nodes that we've visited
-        final Map<String, FlowNode> nodeMap = new HashMap<>();
-
+        final List<FlowNode> nodeMap = new ArrayList<>();
         for (FlowNode n : scanner) {
-            nodeMap.put(n.getId(), n);
+            nodeMap.add(n);
         }
         return nodeMap;
     }
@@ -157,7 +156,7 @@ public class PipelineNodeTreeScanner {
     }
 
     private static class GraphBuilder {
-        private final Map<String, FlowNode> nodeMap;
+        private final Collection<FlowNode> nodes;
         private final Map<String, NodeRelationship> relationships;
         private final WorkflowRun run;
 
@@ -182,11 +181,11 @@ public class PipelineNodeTreeScanner {
          * in the same graph.
          */
         public GraphBuilder(
-                @NonNull Map<String, FlowNode> nodeMap,
+                Collection<FlowNode> nodes,
                 @NonNull Map<String, NodeRelationship> relationships,
                 @NonNull WorkflowRun run,
                 @NonNull FlowExecution execution) {
-            this.nodeMap = nodeMap;
+            this.nodes = nodes;
             this.relationships = relationships;
             this.run = run;
             this.inputAction = run.getAction(InputAction.class);
@@ -339,8 +338,7 @@ public class PipelineNodeTreeScanner {
          * Builds a graph from the list of nodes and relationships given to the class.
          */
         private void buildGraph() {
-            List<FlowNode> nodeList = new ArrayList<>(nodeMap.values());
-            nodeList.sort(new FlowNodeWrapper.FlowNodeComparator());
+            List<FlowNode> nodeList = nodes.stream().sorted(new FlowNodeWrapper.FlowNodeComparator()).toList();
             // If the Pipeline ended with an unhandled exception, then we want to catch the
             // node which threw it.
             BlockEndNode<?> nodeThatThrewException = null;
@@ -402,7 +400,7 @@ public class PipelineNodeTreeScanner {
                  * to the graph, we use the end node that we were given to act as the step
                  * - this might need additional logic when getting the log for the exception.
                  */
-                if (node instanceof BlockEndNode<?> && nodeMap.size() <= 2) {
+                if (node instanceof BlockEndNode<?> && nodes.size() <= 2) {
                     if (isDebugEnabled) {
                         logger.debug("getUnhandledException => Returning node: {}", node.getId());
                     }

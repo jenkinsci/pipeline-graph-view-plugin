@@ -126,9 +126,8 @@ public class NodeRelationshipFinder {
 
     @CheckForNull
     private BlockStartNode getFirstEnclosingNode(FlowNode node) {
-        return node.getEnclosingBlocks().isEmpty()
-                ? null
-                : node.getEnclosingBlocks().get(0);
+        List<? extends BlockStartNode> enclosingBlocks = node.getEnclosingBlocks();
+        return enclosingBlocks.isEmpty() ? null : enclosingBlocks.get(0);
     }
 
     private ArrayDeque<FlowNode> getProcessedChildren(@CheckForNull FlowNode node) {

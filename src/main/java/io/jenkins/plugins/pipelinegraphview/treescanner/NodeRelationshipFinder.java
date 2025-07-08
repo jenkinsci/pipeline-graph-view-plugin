@@ -96,18 +96,19 @@ public class NodeRelationshipFinder {
     }
 
     private void addSeenNodes(FlowNode node) {
-        if (!seenChildNodes.containsKey(node.getEnclosingId())) {
-            seenChildNodes.put(node.getEnclosingId(), new ArrayDeque<>());
+        String enclosingId = node.getEnclosingId();
+        if (!seenChildNodes.containsKey(enclosingId)) {
+            seenChildNodes.put(enclosingId, new ArrayDeque<>());
         }
         if (isDebugEnabled) {
-            logger.debug("Adding {} to seenChildNodes {}", node.getId(), node.getEnclosingId());
+            logger.debug("Adding {} to seenChildNodes {}", node.getId(), enclosingId);
         }
-        seenChildNodes.get(node.getEnclosingId()).push(node);
+        seenChildNodes.get(enclosingId).push(node);
     }
 
     @CheckForNull
     private FlowNode getAfterNode(FlowNode node) {
-        FlowNode after = null;
+        FlowNode after;
         // The after node is the last child of the enclosing node, except for the last node in
         // a block, then it's the last node in the enclosing nodes list (likely, this blocks end node).
         FlowNode parentStartNode = getFirstEnclosingNode(node);

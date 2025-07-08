@@ -74,7 +74,7 @@ public class PipelineNodeTreeScanner {
         if (execution != null) {
             LinkedHashMap<String, FlowNode> nodes = getAllNodes();
             NodeRelationshipFinder finder = new NodeRelationshipFinder();
-            LinkedHashMap<String, NodeRelationship> relationships = finder.getNodeRelationships(nodes);
+            Map<String, NodeRelationship> relationships = finder.getNodeRelationships(nodes.values());
             GraphBuilder builder = new GraphBuilder(nodes, relationships, this.run, this.execution);
             if (isDebugEnabled) {
                 logger.debug("Original nodes:");

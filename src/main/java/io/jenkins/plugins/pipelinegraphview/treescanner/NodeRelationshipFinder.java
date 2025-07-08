@@ -5,11 +5,11 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
 import org.jenkinsci.plugins.workflow.graph.BlockEndNode;
 import org.jenkinsci.plugins.workflow.graph.BlockStartNode;
@@ -48,26 +48,30 @@ public class NodeRelationshipFinder {
      * Determines the relationship between FlowNodes {@link FlowNode#getParents()}.
      */
     @NonNull
-    public LinkedHashMap<String, NodeRelationship> getNodeRelationships(
-            @NonNull LinkedHashMap<String, FlowNode> nodeMap) {
+    public Map<String, NodeRelationship> getNodeRelationships(@NonNull Collection<FlowNode> nodes) {
         if (isDebugEnabled) {
-            logger.debug("Original Ids: {}", String.join(", ", nodeMap.keySet()));
+            logger.atDebug()
+                .addArgument(() -> nodes.stream().map(FlowNode::getId).collect(Collectors.joining(", ")))
+                .log("Original Ids: {}");
         }
-        // This is important, determining the the relationships depends on the order of
+        // This is important, determining the relationships depends on the order of
         // iteration.
         // If there was a method to tell if a node was a parallel block this might be
         // less of an issue.
-        List<String> sortedIds = new ArrayList<>(nodeMap.keySet());
-        Collections.sort(sortedIds, new FlowNodeWrapper.NodeIdComparator().reversed());
+        List<FlowNode> sorted = nodes.stream()
+            .sorted(new FlowNodeWrapper.FlowNodeComparator().reversed())
+            .toList();
         if (isDebugEnabled) {
-            logger.debug("Sorted Ids: {}", String.join(", ", sortedIds));
+            logger.atDebug()
+                .addArgument(() -> sorted.stream().map(FlowNode::getId).collect(Collectors.joining(", ")))
+                .log("Sorted Ids: {}");
         }
-        for (String id : sortedIds) {
-            getRelationshipForNode(nodeMap.get(id));
+        sorted.forEach(node -> {
+            getRelationshipForNode(node);
             // Add this node to the parents's stack as the last of it's child nodes that
             //  we have seen.
-            addSeenNodes(nodeMap.get(id));
-        }
+            addSeenNodes(node);
+        });
         return relationships;
     }
 

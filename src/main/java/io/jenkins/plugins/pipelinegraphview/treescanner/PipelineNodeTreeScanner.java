@@ -106,11 +106,11 @@ public class PipelineNodeTreeScanner {
         scanner.setup(heads);
 
         // nodes that we've visited
-        final List<FlowNode> nodeMap = new ArrayList<>();
+        final List<FlowNode> nodes = new ArrayList<>();
         for (FlowNode n : scanner) {
-            nodeMap.add(n);
+            nodes.add(n);
         }
-        return nodeMap;
+        return nodes;
     }
 
     @NonNull
@@ -338,7 +338,9 @@ public class PipelineNodeTreeScanner {
          * Builds a graph from the list of nodes and relationships given to the class.
          */
         private void buildGraph() {
-            List<FlowNode> nodeList = nodes.stream().sorted(new FlowNodeWrapper.FlowNodeComparator()).toList();
+            List<FlowNode> nodeList = nodes.stream()
+                    .sorted(new FlowNodeWrapper.FlowNodeComparator())
+                    .toList();
             // If the Pipeline ended with an unhandled exception, then we want to catch the
             // node which threw it.
             BlockEndNode<?> nodeThatThrewException = null;

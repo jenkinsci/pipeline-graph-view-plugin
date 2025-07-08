@@ -51,20 +51,20 @@ public class NodeRelationshipFinder {
     public Map<String, NodeRelationship> getNodeRelationships(@NonNull Collection<FlowNode> nodes) {
         if (isDebugEnabled) {
             logger.atDebug()
-                .addArgument(() -> nodes.stream().map(FlowNode::getId).collect(Collectors.joining(", ")))
-                .log("Original Ids: {}");
+                    .addArgument(() -> nodes.stream().map(FlowNode::getId).collect(Collectors.joining(", ")))
+                    .log("Original Ids: {}");
         }
         // This is important, determining the relationships depends on the order of
         // iteration.
         // If there was a method to tell if a node was a parallel block this might be
         // less of an issue.
         List<FlowNode> sorted = nodes.stream()
-            .sorted(new FlowNodeWrapper.FlowNodeComparator().reversed())
-            .toList();
+                .sorted(new FlowNodeWrapper.FlowNodeComparator().reversed())
+                .toList();
         if (isDebugEnabled) {
             logger.atDebug()
-                .addArgument(() -> sorted.stream().map(FlowNode::getId).collect(Collectors.joining(", ")))
-                .log("Sorted Ids: {}");
+                    .addArgument(() -> sorted.stream().map(FlowNode::getId).collect(Collectors.joining(", ")))
+                    .log("Sorted Ids: {}");
         }
         sorted.forEach(node -> {
             getRelationshipForNode(node);

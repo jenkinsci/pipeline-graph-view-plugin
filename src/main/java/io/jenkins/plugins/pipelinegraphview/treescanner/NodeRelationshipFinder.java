@@ -77,10 +77,10 @@ public class NodeRelationshipFinder {
 
     private void getRelationshipForNode(@NonNull FlowNode node) {
         // Assign start node to end node.
-        if (node instanceof StepAtomNode) {
-            addStepRelationship((StepAtomNode) node);
-        } else if (node instanceof BlockEndNode<?>) {
-            handleBlockEnd((BlockEndNode<?>) node);
+        if (node instanceof StepAtomNode atomNode) {
+            addStepRelationship(atomNode);
+        } else if (node instanceof BlockEndNode<?> endNode) {
+            handleBlockEnd(endNode);
         } else {
             handleBlockStart(node);
         }
@@ -96,8 +96,8 @@ public class NodeRelationshipFinder {
     }
 
     private void addSeenNodes(FlowNode node) {
-        if (!seenChildNodes.keySet().contains(node.getEnclosingId())) {
-            seenChildNodes.put(node.getEnclosingId(), new ArrayDeque<FlowNode>());
+        if (!seenChildNodes.containsKey(node.getEnclosingId())) {
+            seenChildNodes.put(node.getEnclosingId(), new ArrayDeque<>());
         }
         if (isDebugEnabled) {
             logger.debug("Adding {} to seenChildNodes {}", node.getId(), node.getEnclosingId());
@@ -135,10 +135,10 @@ public class NodeRelationshipFinder {
     }
 
     private ArrayDeque<FlowNode> getProcessedChildren(@CheckForNull FlowNode node) {
-        if (node != null && seenChildNodes.keySet().contains(node.getId())) {
+        if (node != null && seenChildNodes.containsKey(node.getId())) {
             return seenChildNodes.get(node.getId());
         }
-        return new ArrayDeque<FlowNode>();
+        return new ArrayDeque<>();
     }
 
     private void addStepRelationship(@NonNull StepAtomNode step) {

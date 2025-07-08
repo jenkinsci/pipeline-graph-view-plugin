@@ -72,7 +72,7 @@ public class PipelineNodeTreeScanner {
             logger.debug("Building graph");
         }
         if (execution != null) {
-            LinkedHashMap<String, FlowNode> nodes = getAllNodes();
+            Map<String, FlowNode> nodes = getAllNodes();
             NodeRelationshipFinder finder = new NodeRelationshipFinder();
             Map<String, NodeRelationship> relationships = finder.getNodeRelationships(nodes.values());
             GraphBuilder builder = new GraphBuilder(nodes, relationships, this.run, this.execution);
@@ -100,13 +100,13 @@ public class PipelineNodeTreeScanner {
     /**
      * Gets all the nodes that are reachable in the graph.
      */
-    private LinkedHashMap<String, FlowNode> getAllNodes() {
+    private Map<String, FlowNode> getAllNodes() {
         heads = execution.getCurrentHeads();
         final DepthFirstScanner scanner = new DepthFirstScanner();
         scanner.setup(heads);
 
         // nodes that we've visited
-        final LinkedHashMap<String, FlowNode> nodeMap = new LinkedHashMap<>();
+        final Map<String, FlowNode> nodeMap = new HashMap<>();
 
         for (FlowNode n : scanner) {
             nodeMap.put(n.getId(), n);

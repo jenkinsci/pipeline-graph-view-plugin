@@ -5,11 +5,11 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
 import org.jenkinsci.plugins.workflow.graph.BlockEndNode;
 import org.jenkinsci.plugins.workflow.graph.BlockStartNode;
@@ -48,35 +48,39 @@ public class NodeRelationshipFinder {
      * Determines the relationship between FlowNodes {@link FlowNode#getParents()}.
      */
     @NonNull
-    public LinkedHashMap<String, NodeRelationship> getNodeRelationships(
-            @NonNull LinkedHashMap<String, FlowNode> nodeMap) {
+    public Map<String, NodeRelationship> getNodeRelationships(@NonNull Collection<FlowNode> nodes) {
         if (isDebugEnabled) {
-            logger.debug("Original Ids: {}", String.join(", ", nodeMap.keySet()));
+            logger.atDebug()
+                    .addArgument(() -> nodes.stream().map(FlowNode::getId).collect(Collectors.joining(", ")))
+                    .log("Original Ids: {}");
         }
-        // This is important, determining the the relationships depends on the order of
+        // This is important, determining the relationships depends on the order of
         // iteration.
         // If there was a method to tell if a node was a parallel block this might be
         // less of an issue.
-        List<String> sortedIds = new ArrayList<>(nodeMap.keySet());
-        Collections.sort(sortedIds, new FlowNodeWrapper.NodeIdComparator().reversed());
+        List<FlowNode> sorted = nodes.stream()
+                .sorted(new FlowNodeWrapper.FlowNodeComparator().reversed())
+                .toList();
         if (isDebugEnabled) {
-            logger.debug("Sorted Ids: {}", String.join(", ", sortedIds));
+            logger.atDebug()
+                    .addArgument(() -> sorted.stream().map(FlowNode::getId).collect(Collectors.joining(", ")))
+                    .log("Sorted Ids: {}");
         }
-        for (String id : sortedIds) {
-            getRelationshipForNode(nodeMap.get(id));
+        sorted.forEach(node -> {
+            getRelationshipForNode(node);
             // Add this node to the parents's stack as the last of it's child nodes that
             //  we have seen.
-            addSeenNodes(nodeMap.get(id));
-        }
+            addSeenNodes(node);
+        });
         return relationships;
     }
 
     private void getRelationshipForNode(@NonNull FlowNode node) {
         // Assign start node to end node.
-        if (node instanceof StepAtomNode) {
-            addStepRelationship((StepAtomNode) node);
-        } else if (node instanceof BlockEndNode<?>) {
-            handleBlockEnd((BlockEndNode<?>) node);
+        if (node instanceof StepAtomNode atomNode) {
+            addStepRelationship(atomNode);
+        } else if (node instanceof BlockEndNode<?> endNode) {
+            handleBlockEnd(endNode);
         } else {
             handleBlockStart(node);
         }
@@ -92,8 +96,8 @@ public class NodeRelationshipFinder {
     }
 
     private void addSeenNodes(FlowNode node) {
-        if (!seenChildNodes.keySet().contains(node.getEnclosingId())) {
-            seenChildNodes.put(node.getEnclosingId(), new ArrayDeque<FlowNode>());
+        if (!seenChildNodes.containsKey(node.getEnclosingId())) {
+            seenChildNodes.put(node.getEnclosingId(), new ArrayDeque<>());
         }
         if (isDebugEnabled) {
             logger.debug("Adding {} to seenChildNodes {}", node.getId(), node.getEnclosingId());
@@ -126,16 +130,15 @@ public class NodeRelationshipFinder {
 
     @CheckForNull
     private BlockStartNode getFirstEnclosingNode(FlowNode node) {
-        return node.getEnclosingBlocks().isEmpty()
-                ? null
-                : node.getEnclosingBlocks().get(0);
+        List<? extends BlockStartNode> enclosingBlocks = node.getEnclosingBlocks();
+        return enclosingBlocks.isEmpty() ? null : enclosingBlocks.get(0);
     }
 
     private ArrayDeque<FlowNode> getProcessedChildren(@CheckForNull FlowNode node) {
-        if (node != null && seenChildNodes.keySet().contains(node.getId())) {
+        if (node != null && seenChildNodes.containsKey(node.getId())) {
             return seenChildNodes.get(node.getId());
         }
-        return new ArrayDeque<FlowNode>();
+        return new ArrayDeque<>();
     }
 
     private void addStepRelationship(@NonNull StepAtomNode step) {

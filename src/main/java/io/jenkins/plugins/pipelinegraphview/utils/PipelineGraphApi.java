@@ -24,20 +24,20 @@ public class PipelineGraphApi {
 
     private List<PipelineStageInternal> getPipelineNodes(PipelineGraphBuilderApi builder) {
         return builder.getPipelineNodes().stream()
-            .map(flowNodeWrapper -> new PipelineStageInternal(
-                flowNodeWrapper.getId(), // TODO no need to parse it BO returns a string even though the
-                // datatype is number on the frontend
-                flowNodeWrapper.getDisplayName(),
-                flowNodeWrapper.getParents().stream()
-                    .map(FlowNodeWrapper::getId)
-                    .collect(Collectors.toList()),
-                PipelineState.of(flowNodeWrapper.getStatus()),
-                flowNodeWrapper.getType(),
-                flowNodeWrapper.getDisplayName(), // TODO blue ocean uses timing information: "Passed in 0s"
-                flowNodeWrapper.isSynthetic(),
-                flowNodeWrapper.getTiming(),
-                getStageNode(flowNodeWrapper)))
-            .collect(Collectors.toList());
+                .map(flowNodeWrapper -> new PipelineStageInternal(
+                        flowNodeWrapper.getId(), // TODO no need to parse it BO returns a string even though the
+                        // datatype is number on the frontend
+                        flowNodeWrapper.getDisplayName(),
+                        flowNodeWrapper.getParents().stream()
+                                .map(FlowNodeWrapper::getId)
+                                .collect(Collectors.toList()),
+                        PipelineState.of(flowNodeWrapper.getStatus()),
+                        flowNodeWrapper.getType(),
+                        flowNodeWrapper.getDisplayName(), // TODO blue ocean uses timing information: "Passed in 0s"
+                        flowNodeWrapper.isSynthetic(),
+                        flowNodeWrapper.getTiming(),
+                        getStageNode(flowNodeWrapper)))
+                .collect(Collectors.toList());
     }
 
     private Function<String, PipelineStage> mapper(

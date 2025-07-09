@@ -24,21 +24,24 @@ public class PipelineGraphApi {
     }
 
     private List<PipelineStageInternal> getPipelineNodes(PipelineGraphBuilderApi builder) {
-        return builder.getPipelineNodes().stream()
-                .map(flowNodeWrapper -> new PipelineStageInternal(
-                        flowNodeWrapper.getId(), // TODO no need to parse it BO returns a string even though the
-                        // datatype is number on the frontend
-                        flowNodeWrapper.getDisplayName(),
-                        flowNodeWrapper.getParents().stream()
-                                .map(FlowNodeWrapper::getId)
-                                .collect(Collectors.toList()),
-                        PipelineState.of(flowNodeWrapper.getStatus()),
-                        flowNodeWrapper.getType(),
-                        flowNodeWrapper.getDisplayName(), // TODO blue ocean uses timing information: "Passed in 0s"
-                        flowNodeWrapper.isSynthetic(),
-                        flowNodeWrapper.getTiming(),
-                        getStageNode(flowNodeWrapper)))
-                .collect(Collectors.toList());
+        List<PipelineStageInternal> list = new ArrayList<>();
+        for (FlowNodeWrapper flowNodeWrapper : builder.getPipelineNodes()) {
+            PipelineStageInternal pipelineStageInternal = new PipelineStageInternal(
+                flowNodeWrapper.getId(), // TODO no need to parse it BO returns a string even though the
+                // datatype is number on the frontend
+                flowNodeWrapper.getDisplayName(),
+                flowNodeWrapper.getParents().stream()
+                    .map(FlowNodeWrapper::getId)
+                    .collect(Collectors.toList()),
+                PipelineState.of(flowNodeWrapper.getStatus()),
+                flowNodeWrapper.getType(),
+                flowNodeWrapper.getDisplayName(), // TODO blue ocean uses timing information: "Passed in 0s"
+                flowNodeWrapper.isSynthetic(),
+                flowNodeWrapper.getTiming(),
+                getStageNode(flowNodeWrapper));
+            list.add(pipelineStageInternal);
+        }
+        return list;
     }
 
     private Function<String, PipelineStage> mapper(
@@ -143,6 +146,6 @@ public class PipelineGraphApi {
     }
 
     public PipelineGraph createTree() {
-        return createTree(new PipelineNodeGraphAdapter(run));
+        return createTree(CachedPipelineNodeGraphAdaptor.instance.getFor(run));
     }
 }

@@ -1,6 +1,6 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
-import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeTreeScanner;
+import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
@@ -8,19 +8,19 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
-public class CachedPipelineNodeTreeScanner {
+public class CachedPipelineNodeGraphAdaptor {
 
-    public static final CachedPipelineNodeTreeScanner instance = new CachedPipelineNodeTreeScanner();
+    public static final CachedPipelineNodeGraphAdaptor instance = new CachedPipelineNodeGraphAdaptor();
 
-    private final Map<TaskKey, CompletableFuture<PipelineNodeTreeScanner>> tasks = new ConcurrentHashMap<>();
+    private final Map<TaskKey, CompletableFuture<PipelineNodeGraphAdapter>> tasks = new ConcurrentHashMap<>();
 
-    private CachedPipelineNodeTreeScanner() {}
+    private CachedPipelineNodeGraphAdaptor() {}
 
-    public PipelineNodeTreeScanner getFor(WorkflowRun run) {
+    public PipelineNodeGraphAdapter getFor(WorkflowRun run) {
         TaskKey key = new TaskKey(run);
 
-        CompletableFuture<PipelineNodeTreeScanner> task = tasks.computeIfAbsent(
-                key, (ignored) -> CompletableFuture.supplyAsync(() -> new PipelineNodeTreeScanner(run)));
+        CompletableFuture<PipelineNodeGraphAdapter> task = tasks.computeIfAbsent(
+                key, (ignored) -> CompletableFuture.supplyAsync(() -> new PipelineNodeGraphAdapter(run)));
 
         try {
             return task.join();

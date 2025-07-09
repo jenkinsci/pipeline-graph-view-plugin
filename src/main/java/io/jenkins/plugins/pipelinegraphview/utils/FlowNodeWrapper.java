@@ -125,6 +125,22 @@ public class FlowNodeWrapper {
         this.run = run;
     }
 
+    public FlowNodeWrapper(FlowNodeWrapper other) {
+        this.node = other.node;
+        this.status = other.status;
+        this.timingInfo = other.timingInfo;
+        this.type = other.type;
+        this.displayName = other.displayName;
+        this.inputStep = other.inputStep;
+        this.run = other.run;
+        this.causeOfFailure = other.causeOfFailure;
+        this.blockErrorAction = other.blockErrorAction;
+        this.pipelineActions = other.pipelineActions;
+
+        other.edges.forEach(parent -> this.edges.add(new FlowNodeWrapper(parent)));
+        other.parents.forEach(parent -> this.parents.add(new FlowNodeWrapper(parent)));
+    }
+
     public WorkflowRun getRun() {
         return run;
     }

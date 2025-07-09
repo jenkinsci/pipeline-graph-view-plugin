@@ -1,6 +1,5 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
-import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;

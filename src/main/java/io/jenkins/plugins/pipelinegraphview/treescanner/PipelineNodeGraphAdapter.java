@@ -31,13 +31,12 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
     private volatile Map<String, String> nodesToRemap;
 
     public PipelineNodeGraphAdapter(WorkflowRun run) {
-        treeScanner = new PipelineNodeTreeScanner(this.run);
+        treeScanner = new PipelineNodeTreeScanner(run);
     }
 
     private final Object pipelineLock = new Object();
     private final Object stepLock = new Object();
     private final Object remapLock = new Object();
-
 
     private Map<String, String> getNodesToRemap(List<FlowNodeWrapper> pipelineNodesList) {
         if (this.nodesToRemap != null) {
@@ -61,16 +60,16 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
                     // parent stage
                     // id.
                     if (node.getType() == FlowNodeWrapper.NodeType.PARALLEL_BLOCK
-                        && parent.getType() == FlowNodeWrapper.NodeType.STAGE) {
+                            && parent.getType() == FlowNodeWrapper.NodeType.STAGE) {
                         if (isDebugEnabled) {
                             logger.debug(
-                                "getNodesToRemap => Found Parallel block {id: {}, name: {}, type: {}} that has a Stage {id: {}, name: {}, type: {}} as a parent. Adding to remap list.",
-                                node.getId(),
-                                node.getDisplayName(),
-                                node.getType(),
-                                parent.getId(),
-                                parent.getDisplayName(),
-                                parent.getType());
+                                    "getNodesToRemap => Found Parallel block {id: {}, name: {}, type: {}} that has a Stage {id: {}, name: {}, type: {}} as a parent. Adding to remap list.",
+                                    node.getId(),
+                                    node.getDisplayName(),
+                                    node.getType(),
+                                    parent.getId(),
+                                    parent.getDisplayName(),
+                                    parent.getType());
                         }
                         nodesToRemap.put(node.getId(), parent.getId());
                         // Skip other checks.
@@ -81,16 +80,16 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
                     // then remap child nodes to that parent. This removes some superfluous stages
                     // in parallel branches.
                     if (parent.getType() == FlowNodeWrapper.NodeType.PARALLEL
-                        && node.getDisplayName().equals(parent.getDisplayName())) {
+                            && node.getDisplayName().equals(parent.getDisplayName())) {
                         if (isDebugEnabled) {
                             logger.debug(
-                                "getNodesToRemap => Found Stage {id: {}, name: {}, type: {}} that is an only child and has a parent with the same name {id: {}, name: {}, type: {}}. Adding to remap list.",
-                                node.getId(),
-                                node.getDisplayName(),
-                                node.getType(),
-                                parent.getId(),
-                                parent.getDisplayName(),
-                                parent.getType());
+                                    "getNodesToRemap => Found Stage {id: {}, name: {}, type: {}} that is an only child and has a parent with the same name {id: {}, name: {}, type: {}}. Adding to remap list.",
+                                    node.getId(),
+                                    node.getDisplayName(),
+                                    node.getType(),
+                                    parent.getId(),
+                                    parent.getDisplayName(),
+                                    parent.getType());
                         }
                         nodesToRemap.put(node.getId(), parent.getId());
                     }
@@ -159,7 +158,8 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
         // to the designated parent.
         for (int i = pipelineNodes.size() - 1; i >= 0; i--) {
             FlowNodeWrapper node = pipelineNodes.get(i);
-            List<String> parentIds = node.getParents().stream().map(FlowNodeWrapper::getId).toList();
+            List<String> parentIds =
+                    node.getParents().stream().map(FlowNodeWrapper::getId).toList();
             for (String parentId : parentIds) {
                 if (nodesToRemap.containsKey(parentId)) {
                     FlowNodeWrapper parent = pipelineNodeMap.get(parentId);

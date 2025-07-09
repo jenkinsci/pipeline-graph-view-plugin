@@ -2,7 +2,6 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 import static java.util.Collections.emptyList;
 
-import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
@@ -24,9 +23,8 @@ public class PipelineGraphApi {
     }
 
     private List<PipelineStageInternal> getPipelineNodes(PipelineGraphBuilderApi builder) {
-        List<PipelineStageInternal> list = new ArrayList<>();
-        for (FlowNodeWrapper flowNodeWrapper : builder.getPipelineNodes()) {
-            PipelineStageInternal pipelineStageInternal = new PipelineStageInternal(
+        return builder.getPipelineNodes().stream()
+            .map(flowNodeWrapper -> new PipelineStageInternal(
                 flowNodeWrapper.getId(), // TODO no need to parse it BO returns a string even though the
                 // datatype is number on the frontend
                 flowNodeWrapper.getDisplayName(),
@@ -38,10 +36,8 @@ public class PipelineGraphApi {
                 flowNodeWrapper.getDisplayName(), // TODO blue ocean uses timing information: "Passed in 0s"
                 flowNodeWrapper.isSynthetic(),
                 flowNodeWrapper.getTiming(),
-                getStageNode(flowNodeWrapper));
-            list.add(pipelineStageInternal);
-        }
-        return list;
+                getStageNode(flowNodeWrapper)))
+            .collect(Collectors.toList());
     }
 
     private Function<String, PipelineStage> mapper(

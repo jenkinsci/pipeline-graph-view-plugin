@@ -40,11 +40,6 @@ public class PipelineNodeTreeScanner {
     private final WorkflowRun run;
     private final FlowExecution execution;
 
-    /**
-     * Point in time snapshot of all the active heads.
-     */
-    private List<FlowNode> heads;
-
     // Maps a node ID to a given node wrapper. Stores Stages and parallel blocks -
     // not steps.
     private Map<String, FlowNodeWrapper> stageNodeMap = new LinkedHashMap<>();
@@ -55,7 +50,7 @@ public class PipelineNodeTreeScanner {
     private final boolean declarative;
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineNodeTreeScanner.class);
-    private boolean isDebugEnabled = logger.isDebugEnabled();
+    private final boolean isDebugEnabled = logger.isDebugEnabled();
 
     public PipelineNodeTreeScanner(@NonNull WorkflowRun run) {
         this.run = run;
@@ -101,7 +96,7 @@ public class PipelineNodeTreeScanner {
      * Gets all the nodes that are reachable in the graph.
      */
     private List<FlowNode> getAllNodes() {
-        heads = execution.getCurrentHeads();
+        List<FlowNode> heads = execution.getCurrentHeads();
         final DepthFirstScanner scanner = new DepthFirstScanner();
         scanner.setup(heads);
 
@@ -115,14 +110,11 @@ public class PipelineNodeTreeScanner {
 
     @NonNull
     public List<FlowNodeWrapper> getStageSteps(String startNodeId) {
-        List<FlowNodeWrapper> stageSteps = new ArrayList<>();
         FlowNodeWrapper wrappedStage = stageNodeMap.get(startNodeId);
-        for (FlowNodeWrapper wrappedStep : stepNodeMap.values()) {
-            if (wrappedStep.getParents().contains(wrappedStage)) {
-                stageSteps.add(wrappedStep);
-            }
-        }
-        stageSteps.sort(new FlowNodeWrapper.NodeComparator());
+        List<FlowNodeWrapper> stageSteps = stepNodeMap.values().stream()
+                .filter(wrappedStep -> wrappedStep.getParents().contains(wrappedStage))
+                .sorted(new FlowNodeWrapper.NodeComparator())
+                .collect(Collectors.toCollection(ArrayList::new));
         if (isDebugEnabled) {
             logger.debug("Returning {} steps for node '{}'", stageSteps.size(), startNodeId);
         }
@@ -150,7 +142,6 @@ public class PipelineNodeTreeScanner {
         return this.stageNodeMap;
     }
 
-    @NonNull
     public boolean isDeclarative() {
         return this.declarative;
     }
@@ -163,7 +154,7 @@ public class PipelineNodeTreeScanner {
         @NonNull
         private final FlowExecution execution;
 
-        private Map<String, FlowNodeWrapper> wrappedNodeMap = new LinkedHashMap<>();
+        private final Map<String, FlowNodeWrapper> wrappedNodeMap = new LinkedHashMap<>();
         // These two are populated when required using by filtering unwanted nodes from
         // 'wrappedNodeMap' into a new map.
         private Map<String, FlowNodeWrapper> wrappedStepMap;
@@ -174,7 +165,7 @@ public class PipelineNodeTreeScanner {
 
         private final Logger logger = LoggerFactory.getLogger(GraphBuilder.class);
         private final InputAction inputAction;
-        private boolean isDebugEnabled = logger.isDebugEnabled();
+        private final boolean isDebugEnabled = logger.isDebugEnabled();
 
         /*
          * Builds a graph representing this Execution. Stages an steps aer represented
@@ -490,8 +481,8 @@ public class PipelineNodeTreeScanner {
         private @NonNull FlowNodeWrapper wrapNode(@NonNull FlowNode node, @NonNull NodeRelationship relationship) {
             TimingInfo timing = null;
             NodeRunStatus status = null;
-            if (relationship instanceof ParallelBlockRelationship && PipelineNodeUtil.isParallelBranch(node)) {
-                ParallelBlockRelationship parallelRelationship = (ParallelBlockRelationship) relationship;
+            if (relationship instanceof ParallelBlockRelationship parallelRelationship
+                    && PipelineNodeUtil.isParallelBranch(node)) {
                 timing = parallelRelationship.getBranchTimingInfo(this.run, (BlockStartNode) node);
                 status = parallelRelationship.getBranchStatus(this.run, (BlockStartNode) node);
             } else {

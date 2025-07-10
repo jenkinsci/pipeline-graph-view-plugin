@@ -2,7 +2,6 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 import static java.util.Collections.emptyList;
 
-import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
@@ -143,6 +142,6 @@ public class PipelineGraphApi {
     }
 
     public PipelineGraph createTree() {
-        return createTree(new PipelineNodeGraphAdapter(run));
+        return createTree(CachedPipelineNodeGraphAdaptor.instance.getFor(run));
     }
 }

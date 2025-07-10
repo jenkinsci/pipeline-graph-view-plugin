@@ -1,6 +1,5 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
-import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -102,11 +101,11 @@ public class PipelineStepApi {
     }
 
     public PipelineStepList getSteps(String stageId) {
-        return getSteps(stageId, new PipelineNodeGraphAdapter(run));
+        return getSteps(stageId, CachedPipelineNodeGraphAdaptor.instance.getFor(run));
     }
 
     /* Returns a PipelineStepList, sorted by stageId and Id. */
     public PipelineStepList getAllSteps() {
-        return getAllSteps(new PipelineNodeGraphAdapter(run));
+        return getAllSteps(CachedPipelineNodeGraphAdaptor.instance.getFor(run));
     }
 }

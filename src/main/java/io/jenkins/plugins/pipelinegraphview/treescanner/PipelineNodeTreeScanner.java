@@ -139,10 +139,7 @@ public class PipelineNodeTreeScanner {
 
     @NonNull
     public Map<String, FlowNodeWrapper> getPipelineNodeMap() {
-        // FlowNodeWrapper is mutable so create a copy to ensure that parallel processing doesn't hurt things
-        Map<String, FlowNodeWrapper> copy = new LinkedHashMap<>();
-        this.stageNodeMap.forEach((id, node) -> copy.put(id, new FlowNodeWrapper(node)));
-        return copy;
+        return this.stageNodeMap;
     }
 
     public boolean isDeclarative() {

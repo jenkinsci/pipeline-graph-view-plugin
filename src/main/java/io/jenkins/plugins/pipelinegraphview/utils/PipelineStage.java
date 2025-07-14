@@ -4,6 +4,8 @@ import static io.jenkins.plugins.pipelinegraphview.consoleview.PipelineConsoleVi
 
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import java.util.List;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 
 public class PipelineStage extends AbstractPipelineNode {
 
@@ -74,5 +76,29 @@ public class PipelineStage extends AbstractPipelineNode {
 
     public String getUrl() {
         return url;
+    }
+
+    public static class PipelineStageJsonProcessor extends AbstractPipelineNodeJsonProcessor {
+        public static void configure(JsonConfig config) {
+            config.registerJsonBeanProcessor(PipelineStage.class, new PipelineStageJsonProcessor());
+            AbstractPipelineNodeJsonProcessor.configure(config);
+        }
+
+        @Override
+        public JSONObject processBean(Object bean, JsonConfig config) {
+            if (!(bean instanceof PipelineStage stage)) {
+                return null;
+            }
+            JSONObject json = create(stage, config);
+            json.element("children", stage.getChildren(), config);
+            json.element("seqContainerName", stage.getSeqContainerName());
+            json.element("nextSibling", stage.getNextSibling(), config);
+            json.element("isSequential", stage.getIsSequential());
+            json.element("synthetic", stage.isSynthetic());
+            json.element("placeholder", stage.isPlaceholder());
+            json.element("agent", stage.getAgent());
+            json.element("url", stage.getUrl());
+            return json;
+        }
     }
 }

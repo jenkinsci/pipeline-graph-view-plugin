@@ -2,9 +2,9 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.stream.Stream;
+import net.sf.json.JSONArray;
+import net.sf.json.JsonConfig;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -51,7 +51,10 @@ class PipelineStateTest {
                 Arguments.arguments(BlueRun.BlueRunState.NOT_BUILT, PipelineState.NOT_BUILT));
     }
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final JsonConfig MAPPER = new JsonConfig();
+    static {
+        PipelineState.PipelineStateJsonProcessor.configure(MAPPER);
+    }
 
     @ParameterizedTest
     @CsvSource({
@@ -67,11 +70,11 @@ class PipelineStateTest {
         "UNKNOWN, unknown",
         "ABORTED, aborted"
     })
-    void serialization(String input, String expected) throws JsonProcessingException {
+    void serialization(String input, String expected) {
         PipelineState status = PipelineState.valueOf(input);
 
-        String serialized = MAPPER.writeValueAsString(status);
+        String serialized = JSONArray.fromObject(status, MAPPER).toString();
 
-        assertEquals("\"%s\"".formatted(expected), serialized);
+        assertEquals("[\"%s\"]".formatted(expected), serialized);
     }
 }

@@ -1,6 +1,9 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+import net.sf.json.processors.JsonBeanProcessor;
 
 public class AbstractPipelineNode {
     private String name;
@@ -59,5 +62,25 @@ public class AbstractPipelineNode {
 
     protected TimingInfo getTimingInfo() {
         return this.timingInfo;
+    }
+
+    static abstract class AbstractPipelineNodeJsonProcessor implements JsonBeanProcessor {
+
+        protected static void configure(JsonConfig config) {
+            config.registerJsonValueProcessor(PipelineState.class, new PipelineState.PipelineStateJsonProcessor());
+        }
+
+        protected JSONObject create(AbstractPipelineNode node, JsonConfig config) {
+            JSONObject json = new JSONObject();
+            json.element("id", node.getId());
+            json.element("name", node.getName());
+            json.element("state", node.getState(), config);
+            json.element("type", node.getType());
+            json.element("title", node.getTitle());
+            json.element("pauseDurationMillis", node.getPauseDurationMillis());
+            json.element("startTimeMillis", node.getStartTimeMillis());
+            json.element("totalDurationMillis", node.getTotalDurationMillis());
+            return json;
+        }
     }
 }

@@ -1,16 +1,14 @@
 package io.jenkins.plugins.pipelinegraphview.multipipelinegraphview;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.model.Action;
 import hudson.model.Item;
 import hudson.security.Permission;
 import hudson.util.HttpResponses;
 import hudson.util.RunList;
 import io.jenkins.plugins.pipelinegraphview.PipelineGraphViewConfiguration;
-import java.util.ArrayList;
 import java.util.List;
 import net.sf.json.JSONArray;
+import net.sf.json.JsonConfig;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -19,7 +17,6 @@ import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.verb.GET;
 
 public class MultiPipelineGraphViewAction implements Action, IconSpec {
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final int MaxNumberOfElements = 10;
 
     private final WorkflowJob target;
@@ -59,22 +56,21 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
         return PipelineGraphViewConfiguration.get().isShowStageDurations();
     }
 
-    @GET
-    @WebMethod(name = "runs")
-    public HttpResponse getRuns() throws JsonProcessingException {
-        RunList<WorkflowRun> runs = target.getBuilds();
-        List<PipelineRun> pipelineRuns = new ArrayList<>();
-        for (WorkflowRun run : runs) {
-            pipelineRuns.add(new PipelineRun(run));
-            if (pipelineRuns.size() >= MaxNumberOfElements) break;
-        }
-        JSONArray graph = createJson(pipelineRuns);
-        return HttpResponses.okJSON(graph);
+    private static final JsonConfig jsonConfig = new JsonConfig();
+    static {
+        PipelineRun.PipelineRunJsonProcessor.configure(jsonConfig);
     }
 
-    protected JSONArray createJson(List<PipelineRun> pipelineRuns) throws JsonProcessingException {
-        String graph = OBJECT_MAPPER.writeValueAsString(pipelineRuns);
-        return JSONArray.fromObject(graph);
+    @GET
+    @WebMethod(name = "runs")
+    public HttpResponse getRuns() {
+        RunList<WorkflowRun> runs = target.getBuilds();
+        List<PipelineRun> pipelineRuns = runs.stream()
+            .limit(MaxNumberOfElements)
+            .map(PipelineRun::new)
+            .toList();
+        JSONArray graph = JSONArray.fromObject(pipelineRuns, jsonConfig);
+        return HttpResponses.okJSON(graph);
     }
 
     public String getJobUrl() {

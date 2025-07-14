@@ -1,6 +1,10 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
 import java.util.List;
+import java.util.function.Consumer;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+import net.sf.json.processors.JsonBeanProcessor;
 
 public class PipelineGraph {
 
@@ -18,5 +22,23 @@ public class PipelineGraph {
 
     public List<PipelineStage> getStages() {
         return stages;
+    }
+
+    public static class PipelineGraphJsonProcessor implements JsonBeanProcessor {
+        public static void configure(JsonConfig config) {
+            config.registerJsonBeanProcessor(PipelineGraph.class, new PipelineGraphJsonProcessor());
+            PipelineStage.PipelineStageJsonProcessor.configure(config);
+        }
+
+        @Override
+        public JSONObject processBean(Object bean, JsonConfig jsonConfig) {
+            if (!(bean instanceof PipelineGraph graph)) {
+                return null;
+            }
+            JSONObject json = new JSONObject();
+            json.element("complete", graph.isComplete());
+            json.element("stages", graph.getStages(), jsonConfig);
+            return json;
+        }
     }
 }

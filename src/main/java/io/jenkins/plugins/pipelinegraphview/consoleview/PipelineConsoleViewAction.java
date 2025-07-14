@@ -1,7 +1,5 @@
 package io.jenkins.plugins.pipelinegraphview.consoleview;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Plugin;
@@ -37,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.pipeline.modeldefinition.actions.RestartDeclarativePipelineAction;
 import org.jenkinsci.plugins.workflow.cps.replay.ReplayAction;
@@ -58,7 +57,12 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     public static final String URL_NAME = "pipeline-overview";
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineConsoleViewAction.class);
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final JsonConfig jsonConfig = new JsonConfig();
+    static {
+        PipelineStepList.PipelineStepListJsonProcessor.configure(jsonConfig);
+        PipelineGraph.PipelineGraphJsonProcessor.configure(jsonConfig);
+    }
+
 
     private final PipelineGraphApi graphApi;
     private final WorkflowRun run;
@@ -96,11 +100,9 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     private JSONObject getSteps(String nodeId) throws IOException {
         logger.debug("getSteps was passed nodeId '{}'.", nodeId);
         PipelineStepList steps = stepApi.getSteps(nodeId);
-        String stepsJson = MAPPER.writeValueAsString(steps);
-        if (logger.isDebugEnabled()) {
-            logger.debug("Steps for {}: '{}'.", nodeId, stepsJson);
-        }
-        return JSONObject.fromObject(stepsJson);
+        JSONObject json = JSONObject.fromObject(steps, jsonConfig);
+        logger.debug("Steps for {}: '{}'.", nodeId, json);
+        return json;
     }
 
     // Return all steps to:
@@ -112,13 +114,11 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
         return HttpResponses.okJSON(getAllSteps());
     }
 
-    private JSONObject getAllSteps() throws IOException {
+    private JSONObject getAllSteps() {
         PipelineStepList steps = stepApi.getAllSteps();
-        String stepsJson = MAPPER.writeValueAsString(steps);
-        if (logger.isDebugEnabled()) {
-            logger.debug("Steps: '{}'.", stepsJson);
-        }
-        return JSONObject.fromObject(stepsJson);
+        JSONObject json = JSONObject.fromObject(steps, jsonConfig);
+        logger.debug("Steps: '{}'.", json);
+        return json;
     }
 
     @WebMethod(name = "log")
@@ -471,14 +471,13 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
 
     @GET
     @WebMethod(name = "tree")
-    public HttpResponse getTree() throws JsonProcessingException {
+    public HttpResponse getTree() {
         if (run == null) {
             return HttpResponses.errorJSON("No run to get tree for");
         }
         run.checkPermission(Item.READ);
         PipelineGraph tree = graphApi.createTree();
-        String graph = MAPPER.writeValueAsString(tree);
-        return HttpResponses.okJSON(JSONObject.fromObject(graph));
+        return HttpResponses.okJSON(JSONObject.fromObject(tree, jsonConfig));
     }
 
     // Icon related methods these may appear as unused but are used by /lib/hudson/buildCaption.jelly

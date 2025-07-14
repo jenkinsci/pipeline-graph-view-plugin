@@ -1,6 +1,8 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 
 public class PipelineStep extends AbstractPipelineNode {
     private final String stageId;
@@ -26,5 +28,27 @@ public class PipelineStep extends AbstractPipelineNode {
 
     public PipelineInputStep getInputStep() {
         return inputStep;
+    }
+
+    public static class PipelineStepJsonProcessor extends AbstractPipelineNodeJsonProcessor {
+
+        public static void configure(JsonConfig config) {
+            config.registerJsonBeanProcessor(PipelineStep.class, new PipelineStepJsonProcessor());
+            AbstractPipelineNodeJsonProcessor.configure(config);
+        }
+
+        @Override
+        public JSONObject processBean(Object bean, JsonConfig jsonConfig) {
+            if (!(bean instanceof PipelineStep step)) {
+                return null;
+            }
+            JSONObject json = create(step, jsonConfig);
+
+            json.element("stageId", step.getStageId());
+            if (step.getInputStep() != null) {
+                json.element("inputStep", step.getInputStep(), jsonConfig);
+            }
+            return json;
+        }
     }
 }

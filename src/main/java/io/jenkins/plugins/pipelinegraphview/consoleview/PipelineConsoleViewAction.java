@@ -88,7 +88,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     // running).
     @GET
     @WebMethod(name = "steps")
-    public HttpResponse getSteps(StaplerRequest2 req) throws IOException {
+    public HttpResponse getSteps(StaplerRequest2 req) {
         String nodeId = req.getParameter("nodeId");
         if (nodeId != null) {
             return HttpResponses.okJSON(getSteps(nodeId));
@@ -97,7 +97,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
         }
     }
 
-    private JSONObject getSteps(String nodeId) throws IOException {
+    private JSONObject getSteps(String nodeId) {
         logger.debug("getSteps was passed nodeId '{}'.", nodeId);
         PipelineStepList steps = stepApi.getSteps(nodeId);
         JSONObject json = JSONObject.fromObject(steps, jsonConfig);
@@ -110,7 +110,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     // - remove dependency of getting list of stages in frontend.
     @GET
     @WebMethod(name = "allSteps")
-    public HttpResponse getAllSteps(StaplerRequest2 req) throws IOException {
+    public HttpResponse getAllSteps(StaplerRequest2 req) {
         return HttpResponses.okJSON(getAllSteps());
     }
 

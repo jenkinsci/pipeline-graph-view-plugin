@@ -35,6 +35,7 @@ public class PipelineStep extends AbstractPipelineNode {
         public static void configure(JsonConfig config) {
             config.registerJsonBeanProcessor(PipelineStep.class, new PipelineStepJsonProcessor());
             AbstractPipelineNodeJsonProcessor.configure(config);
+            PipelineInputStep.PipelineInputStepJsonProcessor.configure(config);
         }
 
         @Override

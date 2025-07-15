@@ -4,7 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.stream.Stream;
 import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -51,9 +53,9 @@ class PipelineStateTest {
                 Arguments.arguments(BlueRun.BlueRunState.NOT_BUILT, PipelineState.NOT_BUILT));
     }
 
-    private static final JsonConfig MAPPER = new JsonConfig();
+    private static final JsonConfig CONFIG = new JsonConfig();
     static {
-        PipelineState.PipelineStateJsonProcessor.configure(MAPPER);
+        PipelineState.PipelineStateJsonProcessor.configure(CONFIG);
     }
 
     @ParameterizedTest
@@ -70,11 +72,32 @@ class PipelineStateTest {
         "UNKNOWN, unknown",
         "ABORTED, aborted"
     })
-    void serialization(String input, String expected) {
+    void objectSerialization(String input, String expected) {
         PipelineState status = PipelineState.valueOf(input);
 
-        String serialized = JSONArray.fromObject(status, MAPPER).toString();
+        String serialized = JSONObject.fromObject(new TestBean(status), CONFIG).toString();
 
-        assertEquals("[\"%s\"]".formatted(expected), serialized);
+        assertEquals("{\"state\":\"%s\"}".formatted(expected), serialized);
+    }
+
+    @Test
+    void arrayValueSerialization() {
+        PipelineState[] states = {PipelineState.RUNNING, PipelineState.SUCCESS};
+
+        String serialized = JSONArray.fromObject(states, CONFIG).toString();
+
+        assertEquals("[\"running\",\"success\"]", serialized);
+    }
+
+    public static class TestBean {
+        private final PipelineState state;
+
+        public TestBean(PipelineState state) {
+            this.state = state;
+        }
+
+        public PipelineState getState() {
+            return state;
+        }
     }
 }

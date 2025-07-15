@@ -65,30 +65,28 @@ public enum PipelineState {
         };
     }
 
-    public static class PipelineStateJsonProcessor implements JsonValueProcessor {
+    @Override
+    public String toString() {
+        return name().toLowerCase(Locale.ROOT);
+    }
 
+    public static class PipelineStateJsonProcessor implements JsonValueProcessor {
         public static void configure(JsonConfig config) {
             config.registerJsonValueProcessor(PipelineState.class, new PipelineStateJsonProcessor());
         }
 
         @Override
         public Object processArrayValue(Object value, JsonConfig jsonConfig) {
-            if (!(value instanceof PipelineState state)) {
-                return null;
-            }
-            return json(state);
+            return json(value);
         }
 
         @Override
         public Object processObjectValue(String key, Object value, JsonConfig jsonConfig) {
-            if (!(value instanceof PipelineState state)) {
-                return null;
-            }
-            return json(state);
+            return json(value);
         }
 
-        private static String json(PipelineState state) {
-            return state.name().toLowerCase(Locale.ROOT);
+        private static String json(Object value) {
+            return !(value instanceof PipelineState state) ? null : state.toString();
         }
     }
 }

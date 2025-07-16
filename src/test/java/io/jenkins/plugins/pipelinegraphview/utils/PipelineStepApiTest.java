@@ -16,7 +16,6 @@ import io.jenkins.plugins.pipelinegraphview.treescanner.NodeRelationshipFinder;
 import io.jenkins.plugins.pipelinegraphview.treescanner.ParallelBlockRelationship;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeTreeScanner;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -500,11 +499,11 @@ class PipelineStepApiTest {
 
         List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().steps;
 
-        Map<String, List<Long>> checks = new LinkedHashMap<>();
+        Map<String, TestUtils.TimeRange> checks = new LinkedHashMap<>();
         // Give large ranges - we are testing that the values are feasible, not that they are precise.
-        checks.put("In grandchild A", Arrays.asList(1000L, 0L, 0L, 5000L, 500L, 500L));
-        checks.put("In grandchild B", Arrays.asList(1000L, 0L, 0L, 5000L, 500L, 500L));
-        checks.put("1", Arrays.asList(1000L, 0L, 1000L, 5000L, 500L, 3000L));
+        checks.put("In grandchild A", new TestUtils.TimeRange(1000L, 0L, 0L, 5000L, 500L, 500L));
+        checks.put("In grandchild B", new TestUtils.TimeRange(1000L, 0L, 0L, 5000L, 500L, 500L));
+        checks.put("1", new TestUtils.TimeRange(1000L, 0L, 1000L, 5000L, 500L, 3000L));
         for (AbstractPipelineNode n : steps) {
             assertThat(checks, hasEntry(is(n.name), notNullValue()));
             TestUtils.assertTimesInRange(n, checks.get(n.name));
@@ -563,11 +562,11 @@ class PipelineStepApiTest {
         assertThat(stepsString, equalTo("Hello World{success},1{running}"));
         assertThat(stepsStringFinished, equalTo("Hello World{success},1{success},Goodbye World{success}"));
 
-        Map<String, List<Long>> checks = new LinkedHashMap<>();
+        Map<String, TestUtils.TimeRange> checks = new LinkedHashMap<>();
         // Give large ranges - we are testing that the values are feasible, not that they are precise.
-        checks.put("Hello World", Arrays.asList(100L, 0L, 0L, 10000L, 1000L, 1000L));
-        checks.put("1", Arrays.asList(100L, 0L, 10L, 10000L, 3000L, 3000L));
-        checks.put("Goodbye World", Arrays.asList(0L, 0L, 0L, 10000L, 1000L, 1000L));
+        checks.put("Hello World", new TestUtils.TimeRange(100L, 0L, 0L, 10000L, 1000L, 1000L));
+        checks.put("1", new TestUtils.TimeRange(100L, 0L, 10L, 10000L, 3000L, 3000L));
+        checks.put("Goodbye World", new TestUtils.TimeRange(0L, 0L, 0L, 10000L, 1000L, 1000L));
         for (AbstractPipelineNode n : finishedSteps) {
             assertThat(checks, hasEntry(is(n.name), notNullValue()));
             TestUtils.assertTimesInRange(n, checks.get(n.name));

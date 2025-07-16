@@ -26,9 +26,11 @@ import io.jenkins.plugins.pipelinegraphview.cards.items.UserIdCauseRunDetailsIte
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStep;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,6 +57,7 @@ import org.slf4j.LoggerFactory;
 public class PipelineConsoleViewAction implements Action, IconSpec {
     public static final long LOG_THRESHOLD = 150 * 1024; // 150KB
     public static final String URL_NAME = "pipeline-overview";
+    public static final int CACHE_AGE = 86400;
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineConsoleViewAction.class);
     private static final JsonConfig jsonConfig = new JsonConfig();
@@ -110,8 +113,16 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     // - remove dependency of getting list of stages in frontend.
     @GET
     @WebMethod(name = "allSteps")
-    public HttpResponse getAllSteps(StaplerRequest2 req) {
-        return HttpResponses.okJSON(getAllSteps());
+    public void getAllSteps(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+        logger.info("'getAllSteps' called for run '{}'.", run.getFullDisplayName());
+        run.checkPermission(Item.READ);
+        HttpResponse json = HttpResponses.okJSON(getAllSteps());
+
+        if (!PipelineState.of(run).isInProgress()) {
+            rsp.setHeader("Cache-Control", "private, immutable, max-age=" + CACHE_AGE);
+        }
+        rsp.setStatus(200);
+        json.generateResponse(req, rsp, null);
     }
 
     private JSONObject getAllSteps() {

@@ -38,7 +38,7 @@ public class AbstractPipelineNode {
 
     abstract static class AbstractPipelineNodeJsonProcessor implements JsonBeanProcessor {
 
-        protected static void configure(JsonConfig config) {
+        protected static void baseConfigure(JsonConfig config) {
             config.registerJsonValueProcessor(PipelineState.class, new PipelineState.PipelineStateJsonProcessor());
         }
 

@@ -46,8 +46,8 @@ public class PipelineStage extends AbstractPipelineNode {
 
     public static class PipelineStageJsonProcessor extends AbstractPipelineNodeJsonProcessor {
         public static void configure(JsonConfig config) {
+            baseConfigure(config);
             config.registerJsonBeanProcessor(PipelineStage.class, new PipelineStageJsonProcessor());
-            AbstractPipelineNodeJsonProcessor.configure(config);
         }
 
         @Override

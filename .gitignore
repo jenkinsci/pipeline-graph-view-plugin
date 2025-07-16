@@ -22,3 +22,6 @@ src/main/webapp/js/bundles
 .factorypath
 
 *.dylib
+
+# macOS
+.DS_Store

@@ -3,6 +3,9 @@ package io.jenkins.plugins.pipelinegraphview.multipipelinegraphview;
 import static io.jenkins.plugins.pipelinegraphview.utils.ChangesUtil.getChanges;
 
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+import net.sf.json.processors.JsonBeanProcessor;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 public class PipelineRun {
@@ -45,5 +48,28 @@ public class PipelineRun {
 
     public PipelineState getResult() {
         return result;
+    }
+
+    public static class PipelineRunJsonProcessor implements JsonBeanProcessor {
+
+        public static void configure(JsonConfig config) {
+            config.registerJsonBeanProcessor(PipelineRun.class, new PipelineRunJsonProcessor());
+            PipelineState.PipelineStateJsonProcessor.configure(config);
+        }
+
+        @Override
+        public JSONObject processBean(Object bean, JsonConfig jsonConfig) {
+            if (!(bean instanceof PipelineRun run)) {
+                return null;
+            }
+            JSONObject json = new JSONObject();
+            json.element("id", run.getId());
+            json.element("displayName", run.getDisplayName());
+            json.element("timestamp", run.getTimestamp());
+            json.element("duration", run.getDuration());
+            json.element("changesCount", run.getChangesCount());
+            json.element("result", run.getResult(), jsonConfig);
+            return json;
+        }
     }
 }

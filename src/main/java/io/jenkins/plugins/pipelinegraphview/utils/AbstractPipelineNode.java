@@ -1,16 +1,19 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+import net.sf.json.processors.JsonBeanProcessor;
 
 public class AbstractPipelineNode {
-    private String name;
-    private PipelineState state;
-    private String type; // TODO enum
-    private String title;
-    private String id;
-    private long pauseDurationMillis;
-    private long totalDurationMillis;
-    private TimingInfo timingInfo;
+    final String name;
+    final PipelineState state;
+    final String type; // TODO enum
+    final String title;
+    public final String id;
+    private final long pauseDurationMillis;
+    private final long totalDurationMillis;
+    final TimingInfo timingInfo;
 
     public AbstractPipelineNode(
             String id, String name, PipelineState state, String type, String title, TimingInfo timingInfo) {
@@ -25,10 +28,6 @@ public class AbstractPipelineNode {
         this.totalDurationMillis = timingInfo.getTotalDurationMillis();
     }
 
-    public long getPauseDurationMillis() {
-        return pauseDurationMillis;
-    }
-
     public long getStartTimeMillis() {
         return timingInfo.getStartTimeMillis();
     }
@@ -37,27 +36,23 @@ public class AbstractPipelineNode {
         return state.isInProgress() ? null : totalDurationMillis;
     }
 
-    public String getId() {
-        return id;
-    }
+    abstract static class AbstractPipelineNodeJsonProcessor implements JsonBeanProcessor {
 
-    public String getName() {
-        return name;
-    }
+        protected static void baseConfigure(JsonConfig config) {
+            config.registerJsonValueProcessor(PipelineState.class, new PipelineState.PipelineStateJsonProcessor());
+        }
 
-    public PipelineState getState() {
-        return state;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    protected TimingInfo getTimingInfo() {
-        return this.timingInfo;
+        protected JSONObject create(AbstractPipelineNode node, JsonConfig config) {
+            JSONObject json = new JSONObject();
+            json.element("id", node.id);
+            json.element("name", node.name);
+            json.element("state", node.state, config);
+            json.element("type", node.type);
+            json.element("title", node.title);
+            json.element("pauseDurationMillis", node.pauseDurationMillis);
+            json.element("startTimeMillis", node.getStartTimeMillis());
+            json.element("totalDurationMillis", node.getTotalDurationMillis());
+            return json;
+        }
     }
 }

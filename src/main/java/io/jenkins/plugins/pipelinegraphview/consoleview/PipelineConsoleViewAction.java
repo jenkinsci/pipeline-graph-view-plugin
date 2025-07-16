@@ -1,7 +1,5 @@
 package io.jenkins.plugins.pipelinegraphview.consoleview;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Plugin;
@@ -37,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.pipeline.modeldefinition.actions.RestartDeclarativePipelineAction;
 import org.jenkinsci.plugins.workflow.cps.replay.ReplayAction;
@@ -58,7 +57,12 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     public static final String URL_NAME = "pipeline-overview";
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineConsoleViewAction.class);
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final JsonConfig jsonConfig = new JsonConfig();
+
+    static {
+        PipelineStepList.PipelineStepListJsonProcessor.configure(jsonConfig);
+        PipelineGraph.PipelineGraphJsonProcessor.configure(jsonConfig);
+    }
 
     private final PipelineGraphApi graphApi;
     private final WorkflowRun run;
@@ -84,7 +88,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     // running).
     @GET
     @WebMethod(name = "steps")
-    public HttpResponse getSteps(StaplerRequest2 req) throws IOException {
+    public HttpResponse getSteps(StaplerRequest2 req) {
         String nodeId = req.getParameter("nodeId");
         if (nodeId != null) {
             return HttpResponses.okJSON(getSteps(nodeId));
@@ -93,14 +97,12 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
         }
     }
 
-    private JSONObject getSteps(String nodeId) throws IOException {
+    private JSONObject getSteps(String nodeId) {
         logger.debug("getSteps was passed nodeId '{}'.", nodeId);
         PipelineStepList steps = stepApi.getSteps(nodeId);
-        String stepsJson = MAPPER.writeValueAsString(steps);
-        if (logger.isDebugEnabled()) {
-            logger.debug("Steps for {}: '{}'.", nodeId, stepsJson);
-        }
-        return JSONObject.fromObject(stepsJson);
+        JSONObject json = JSONObject.fromObject(steps, jsonConfig);
+        logger.debug("Steps for {}: '{}'.", nodeId, json);
+        return json;
     }
 
     // Return all steps to:
@@ -108,17 +110,15 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     // - remove dependency of getting list of stages in frontend.
     @GET
     @WebMethod(name = "allSteps")
-    public HttpResponse getAllSteps(StaplerRequest2 req) throws IOException {
+    public HttpResponse getAllSteps(StaplerRequest2 req) {
         return HttpResponses.okJSON(getAllSteps());
     }
 
-    private JSONObject getAllSteps() throws IOException {
+    private JSONObject getAllSteps() {
         PipelineStepList steps = stepApi.getAllSteps();
-        String stepsJson = MAPPER.writeValueAsString(steps);
-        if (logger.isDebugEnabled()) {
-            logger.debug("Steps: '{}'.", stepsJson);
-        }
-        return JSONObject.fromObject(stepsJson);
+        JSONObject json = JSONObject.fromObject(steps, jsonConfig);
+        logger.debug("Steps: '{}'.", json);
+        return json;
     }
 
     @WebMethod(name = "log")
@@ -148,8 +148,8 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
         // Potentially a stage, so get the log text for the stage.
         boolean foundLogs = false;
         PipelineStepList steps = stepApi.getSteps(nodeId);
-        for (PipelineStep step : steps.getSteps()) {
-            logText = getLogForNode(step.getId());
+        for (PipelineStep step : steps.steps) {
+            logText = getLogForNode(step.id);
             if (logText != null) {
                 foundLogs = true;
                 logText.writeLogTo(0L, rsp.getOutputStream());
@@ -471,14 +471,13 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
 
     @GET
     @WebMethod(name = "tree")
-    public HttpResponse getTree() throws JsonProcessingException {
+    public HttpResponse getTree() {
         if (run == null) {
             return HttpResponses.errorJSON("No run to get tree for");
         }
         run.checkPermission(Item.READ);
         PipelineGraph tree = graphApi.createTree();
-        String graph = MAPPER.writeValueAsString(tree);
-        return HttpResponses.okJSON(JSONObject.fromObject(graph));
+        return HttpResponses.okJSON(JSONObject.fromObject(tree, jsonConfig));
     }
 
     // Icon related methods these may appear as unused but are used by /lib/hudson/buildCaption.jelly

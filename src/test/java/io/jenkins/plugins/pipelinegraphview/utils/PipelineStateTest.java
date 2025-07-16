@@ -54,6 +54,7 @@ class PipelineStateTest {
     }
 
     private static final JsonConfig CONFIG = new JsonConfig();
+
     static {
         PipelineState.PipelineStateJsonProcessor.configure(CONFIG);
     }

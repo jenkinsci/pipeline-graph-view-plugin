@@ -57,6 +57,7 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
     }
 
     private static final JsonConfig jsonConfig = new JsonConfig();
+
     static {
         PipelineRun.PipelineRunJsonProcessor.configure(jsonConfig);
     }
@@ -65,10 +66,8 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
     @WebMethod(name = "runs")
     public HttpResponse getRuns() {
         RunList<WorkflowRun> runs = target.getBuilds();
-        List<PipelineRun> pipelineRuns = runs.stream()
-            .limit(MaxNumberOfElements)
-            .map(PipelineRun::new)
-            .toList();
+        List<PipelineRun> pipelineRuns =
+                runs.stream().limit(MaxNumberOfElements).map(PipelineRun::new).toList();
         JSONArray graph = JSONArray.fromObject(pipelineRuns, jsonConfig);
         return HttpResponses.okJSON(graph);
     }

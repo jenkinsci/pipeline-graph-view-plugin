@@ -93,7 +93,7 @@ public class PipelineGraphApi {
 
                     return pipelineStageInternal.toPipelineStage(children, runUrl);
                 })
-                .filter(stage -> !childNodes.contains(stage.getId()))
+                .filter(stage -> !childNodes.contains(stage.id))
                 .collect(Collectors.toList());
         return new PipelineGraph(stageResults, execution.isComplete());
     }

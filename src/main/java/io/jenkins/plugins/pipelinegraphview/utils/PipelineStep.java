@@ -5,7 +5,7 @@ import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
 
 public class PipelineStep extends AbstractPipelineNode {
-    private final String stageId;
+    final String stageId;
     private final PipelineInputStep inputStep;
 
     public PipelineStep(
@@ -20,14 +20,6 @@ public class PipelineStep extends AbstractPipelineNode {
         super(id, name, state, type, title, timingInfo);
         this.stageId = stageId;
         this.inputStep = inputStep;
-    }
-
-    public String getStageId() {
-        return stageId;
-    }
-
-    public PipelineInputStep getInputStep() {
-        return inputStep;
     }
 
     public static class PipelineStepJsonProcessor extends AbstractPipelineNodeJsonProcessor {
@@ -45,9 +37,9 @@ public class PipelineStep extends AbstractPipelineNode {
             }
             JSONObject json = create(step, jsonConfig);
 
-            json.element("stageId", step.getStageId());
-            if (step.getInputStep() != null) {
-                json.element("inputStep", step.getInputStep(), jsonConfig);
+            json.element("stageId", step.stageId);
+            if (step.inputStep != null) {
+                json.element("inputStep", step.inputStep, jsonConfig);
             }
             return json;
         }

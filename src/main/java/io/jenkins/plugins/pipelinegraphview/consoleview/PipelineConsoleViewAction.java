@@ -58,11 +58,11 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineConsoleViewAction.class);
     private static final JsonConfig jsonConfig = new JsonConfig();
+
     static {
         PipelineStepList.PipelineStepListJsonProcessor.configure(jsonConfig);
         PipelineGraph.PipelineGraphJsonProcessor.configure(jsonConfig);
     }
-
 
     private final PipelineGraphApi graphApi;
     private final WorkflowRun run;
@@ -148,8 +148,8 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
         // Potentially a stage, so get the log text for the stage.
         boolean foundLogs = false;
         PipelineStepList steps = stepApi.getSteps(nodeId);
-        for (PipelineStep step : steps.getSteps()) {
-            logText = getLogForNode(step.getId());
+        for (PipelineStep step : steps.steps) {
+            logText = getLogForNode(step.id);
             if (logText != null) {
                 foundLogs = true;
                 logText.writeLogTo(0L, rsp.getOutputStream());

@@ -8,7 +8,7 @@ import net.sf.json.processors.JsonBeanProcessor;
 
 public class PipelineStepList {
 
-    private List<PipelineStep> steps;
+    public final List<PipelineStep> steps;
 
     public PipelineStepList() {
         this.steps = new ArrayList<>();
@@ -18,18 +18,13 @@ public class PipelineStepList {
         this.steps = steps;
     }
 
-    public List<PipelineStep> getSteps() {
-        return steps;
-    }
-
     /* Sorts the list of PipelineSteps by stageId and Id. */
     public void sort() {
         this.steps.sort((lhs, rhs) -> {
-            if (!lhs.getStageId().equals(rhs.getStageId())) {
-                return FlowNodeWrapper.compareIds(lhs.getStageId(), rhs.getStageId());
-            } else {
-                return FlowNodeWrapper.compareIds(lhs.getId(), rhs.getId());
+            if (!lhs.stageId.equals(rhs.stageId)) {
+                return FlowNodeWrapper.compareIds(lhs.stageId, rhs.stageId);
             }
+            return FlowNodeWrapper.compareIds(lhs.id, rhs.id);
         });
     }
 
@@ -50,7 +45,7 @@ public class PipelineStepList {
                 return null;
             }
             JSONObject json = new JSONObject();
-            json.element("steps", stepList.getSteps(), jsonConfig);
+            json.element("steps", stepList.steps, jsonConfig);
             return json;
         }
     }

@@ -6,14 +6,14 @@ import net.sf.json.JsonConfig;
 import net.sf.json.processors.JsonBeanProcessor;
 
 public class AbstractPipelineNode {
-    private String name;
-    private PipelineState state;
-    private String type; // TODO enum
-    private String title;
-    private String id;
-    private long pauseDurationMillis;
-    private long totalDurationMillis;
-    private TimingInfo timingInfo;
+    final String name;
+    final PipelineState state;
+    final String type; // TODO enum
+    final String title;
+    public final String id;
+    private final long pauseDurationMillis;
+    private final long totalDurationMillis;
+    final TimingInfo timingInfo;
 
     public AbstractPipelineNode(
             String id, String name, PipelineState state, String type, String title, TimingInfo timingInfo) {
@@ -28,10 +28,6 @@ public class AbstractPipelineNode {
         this.totalDurationMillis = timingInfo.getTotalDurationMillis();
     }
 
-    public long getPauseDurationMillis() {
-        return pauseDurationMillis;
-    }
-
     public long getStartTimeMillis() {
         return timingInfo.getStartTimeMillis();
     }
@@ -40,31 +36,7 @@ public class AbstractPipelineNode {
         return state.isInProgress() ? null : totalDurationMillis;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public PipelineState getState() {
-        return state;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    protected TimingInfo getTimingInfo() {
-        return this.timingInfo;
-    }
-
-    static abstract class AbstractPipelineNodeJsonProcessor implements JsonBeanProcessor {
+    abstract static class AbstractPipelineNodeJsonProcessor implements JsonBeanProcessor {
 
         protected static void configure(JsonConfig config) {
             config.registerJsonValueProcessor(PipelineState.class, new PipelineState.PipelineStateJsonProcessor());
@@ -72,12 +44,12 @@ public class AbstractPipelineNode {
 
         protected JSONObject create(AbstractPipelineNode node, JsonConfig config) {
             JSONObject json = new JSONObject();
-            json.element("id", node.getId());
-            json.element("name", node.getName());
-            json.element("state", node.getState(), config);
-            json.element("type", node.getType());
-            json.element("title", node.getTitle());
-            json.element("pauseDurationMillis", node.getPauseDurationMillis());
+            json.element("id", node.id);
+            json.element("name", node.name);
+            json.element("state", node.state, config);
+            json.element("type", node.type);
+            json.element("title", node.title);
+            json.element("pauseDurationMillis", node.pauseDurationMillis);
             json.element("startTimeMillis", node.getStartTimeMillis());
             json.element("totalDurationMillis", node.getTotalDurationMillis());
             return json;

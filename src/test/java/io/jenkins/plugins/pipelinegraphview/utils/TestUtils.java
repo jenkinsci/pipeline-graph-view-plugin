@@ -83,11 +83,9 @@ public class TestUtils {
     public static String collectStagesAsString(List<PipelineStage> stages, Function<PipelineStage, String> converter) {
 
         return stages.stream()
-                .map((PipelineStage stage) -> stage.getChildren().isEmpty()
-                        ? converter.apply(stage)
-                        : String.format(
-                                "%s[%s]",
-                                converter.apply(stage), collectStagesAsString(stage.getChildren(), converter)))
+                .map(s -> s.children.isEmpty()
+                        ? converter.apply(s)
+                        : String.format("%s[%s]", converter.apply(s), collectStagesAsString(s.children, converter)))
                 .collect(Collectors.joining(","));
     }
 
@@ -96,7 +94,7 @@ public class TestUtils {
     }
 
     public static String nodeNameAndStatus(AbstractPipelineNode node) {
-        return String.format("%s{%s}", node.getName(), node.getState());
+        return String.format("%s{%s}", node.name, node.state);
     }
 
     /* Check if the TimingInfo of the given node is in the expected ranges.
@@ -112,9 +110,9 @@ public class TestUtils {
             throw new AssertionError(String.format("Expected 6 times, but got %s", times.size()));
         }
         List<String> errors = new ArrayList<>();
-        Long start = new Date().getTime() - node.getTimingInfo().getStartTimeMillis();
-        Long pause = node.getTimingInfo().getPauseDurationMillis();
-        Long total = node.getTimingInfo().getTotalDurationMillis();
+        Long start = new Date().getTime() - node.timingInfo.getStartTimeMillis();
+        Long pause = node.timingInfo.getPauseDurationMillis();
+        Long total = node.timingInfo.getTotalDurationMillis();
         Long startMin = times.get(0);
         Long pauseMin = times.get(1);
         Long totalMin = times.get(2);
@@ -141,7 +139,7 @@ public class TestUtils {
         }
         if (!errors.isEmpty()) {
             throw new AssertionError(String.format(
-                    "Got errors when checking times for %s:%s", node.getName(), String.join("\\n\\t", errors)));
+                    "Got errors when checking times for %s:%s", node.name, String.join("\\n\\t", errors)));
         }
     }
 }

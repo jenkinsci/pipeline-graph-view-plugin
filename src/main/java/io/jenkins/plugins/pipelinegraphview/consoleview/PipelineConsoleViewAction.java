@@ -32,6 +32,8 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,7 +59,7 @@ import org.slf4j.LoggerFactory;
 public class PipelineConsoleViewAction implements Action, IconSpec {
     public static final long LOG_THRESHOLD = 150 * 1024; // 150KB
     public static final String URL_NAME = "pipeline-overview";
-    public static final int CACHE_AGE = 86400; // 24 hours in seconds
+    public static final Duration CACHE_AGE = Duration.of(1, ChronoUnit.DAYS);
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineConsoleViewAction.class);
     private static final JsonConfig jsonConfig = new JsonConfig();
@@ -129,7 +131,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
 
     private void setCache(StaplerResponse2 rsp) {
         if (!PipelineState.of(run).isInProgress()) {
-            rsp.setHeader("Cache-Control", "private, immutable, max-age=" + CACHE_AGE);
+            rsp.setHeader("Cache-Control", "private, immutable, max-age=" + CACHE_AGE.toSeconds());
         } else {
             rsp.setHeader("Cache-Control", "private, no-store");
         }

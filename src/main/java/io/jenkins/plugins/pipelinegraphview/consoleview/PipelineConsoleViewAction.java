@@ -26,13 +26,16 @@ import io.jenkins.plugins.pipelinegraphview.cards.items.UserIdCauseRunDetailsIte
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStep;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
+import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
@@ -55,6 +58,7 @@ import org.slf4j.LoggerFactory;
 public class PipelineConsoleViewAction implements Action, IconSpec {
     public static final long LOG_THRESHOLD = 150 * 1024; // 150KB
     public static final String URL_NAME = "pipeline-overview";
+    public static final int CACHE_AGE = (int) TimeUnit.DAYS.toSeconds(1);
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineConsoleViewAction.class);
     private static final JsonConfig jsonConfig = new JsonConfig();
@@ -110,15 +114,26 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     // - remove dependency of getting list of stages in frontend.
     @GET
     @WebMethod(name = "allSteps")
-    public HttpResponse getAllSteps(StaplerRequest2 req) {
-        return HttpResponses.okJSON(getAllSteps());
-    }
+    public void getAllSteps(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+        run.checkPermission(Item.READ);
 
-    private JSONObject getAllSteps() {
         PipelineStepList steps = stepApi.getAllSteps();
         JSONObject json = JSONObject.fromObject(steps, jsonConfig);
         logger.debug("Steps: '{}'.", json);
-        return json;
+        HttpResponse response = HttpResponses.okJSON(json);
+
+        setCache(rsp);
+
+        rsp.setStatus(200);
+        response.generateResponse(req, rsp, null);
+    }
+
+    private void setCache(StaplerResponse2 rsp) {
+        if (!PipelineState.of(run).isInProgress()) {
+            rsp.setHeader("Cache-Control", "private, immutable, max-age=" + CACHE_AGE);
+        } else {
+            rsp.setHeader("Cache-Control", "private, no-store");
+        }
     }
 
     @WebMethod(name = "log")
@@ -471,13 +486,21 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
 
     @GET
     @WebMethod(name = "tree")
-    public HttpResponse getTree() {
+    public void getTree(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         if (run == null) {
-            return HttpResponses.errorJSON("No run to get tree for");
+            HttpResponse response = HttpResponses.errorJSON("No run to get tree for");
+            rsp.setStatus(200);
+            response.generateResponse(req, rsp, null);
+            return;
         }
         run.checkPermission(Item.READ);
+
         PipelineGraph tree = graphApi.createTree();
-        return HttpResponses.okJSON(JSONObject.fromObject(tree, jsonConfig));
+        HttpResponse response = HttpResponses.okJSON(JSONObject.fromObject(tree, jsonConfig));
+
+        rsp.setStatus(200);
+        setCache(rsp);
+        response.generateResponse(req, rsp, null);
     }
 
     // Icon related methods these may appear as unused but are used by /lib/hudson/buildCaption.jelly

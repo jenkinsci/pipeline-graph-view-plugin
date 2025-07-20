@@ -11,36 +11,49 @@ describe("Timings", () => {
       return render(<Total ms={ms} />);
     }
 
-    it("should format milliseconds to hours, minutes, and seconds", () => {
-      // First check 359 days.
-      expect(getTotal(31_017_600_000).getByText("11 mths")).toBeInTheDocument();
-      // And 362 days.
-      expect(getTotal(31_276_800_000).getByText("12 mths")).toBeInTheDocument();
-      // 11.25 years - Check that if the first unit has 2 or more digits, a second unit isn't used.
-      expect(getTotal(354_780_000_000).getByText("11y")).toBeInTheDocument();
-      // 9.25 years - Check that if the first unit has only 1 digit, a second unit is used.
-      expect(getTotal(291_708_000_000).getByText("9y 3m")).toBeInTheDocument();
-      // 3 months 14 days
-      expect(getTotal(8_985_600_000).getByText("3m 14d")).toBeInTheDocument();
-      // 2 day 4 hours
-      expect(getTotal(187_200_000).getByText("2d 4h")).toBeInTheDocument();
-      // 8 hours 46 minutes
-      expect(getTotal(31_560_000).getByText("8h 46m")).toBeInTheDocument();
-      // 67 seconds -> 1 minute 7 seconds
-      expect(getTotal(67_000).getByText("1m 7s")).toBeInTheDocument();
-      // 17 seconds - Check that times less than a minute only use seconds.
-      expect(getTotal(17_000).getByText("17s")).toBeInTheDocument();
-      // 1712ms -> 1.7sec
-      expect(getTotal(1_712).getByText("1.7s")).toBeInTheDocument();
-      // 171ms -> 0.17sec
-      expect(getTotal(171).getByText("0.17s")).toBeInTheDocument();
-      // 101ms -> 0.1sec
-      expect(getTotal(101).getByText("0.1s")).toBeInTheDocument();
-      // 17ms
-      expect(getTotal(17).getByText("17ms")).toBeInTheDocument();
-      // 1ms
-      expect(getTotal(1).getByText("1ms")).toBeInTheDocument();
-    });
+    it(
+      "should format milliseconds to hours, minutes, and seconds",
+      () => {
+        // First check 359 days.
+        expect(
+          getTotal(31_017_600_000).getByText("11 mths"),
+        ).toBeInTheDocument();
+        // And 362 days.
+        expect(
+          getTotal(31_276_800_000).getByText("12 mths"),
+        ).toBeInTheDocument();
+        // 11.25 years - Check that if the first unit has 2 or more digits, a second unit isn't used.
+        expect(getTotal(354_780_000_000).getByText("11y")).toBeInTheDocument();
+        // 9.25 years - Check that if the first unit has only 1 digit, a second unit is used.
+        expect(
+          getTotal(291_708_000_000).getByText("9y 3m"),
+        ).toBeInTheDocument();
+        // 3 months 14 days
+        expect(getTotal(8_985_600_000).getByText("3m 14d")).toBeInTheDocument();
+        // 2 day 4 hours
+        expect(getTotal(187_200_000).getByText("2d 4h")).toBeInTheDocument();
+        // 8 hours 46 minutes
+        expect(getTotal(31_560_000).getByText("8h 46m")).toBeInTheDocument();
+        // 67 seconds -> 1 minute 7 seconds
+        expect(getTotal(67_000).getByText("1m 7s")).toBeInTheDocument();
+        // 17 seconds - Check that times less than a minute only use seconds.
+        expect(getTotal(17_000).getByText("17s")).toBeInTheDocument();
+        // 1712ms -> 1.7sec
+        expect(getTotal(1_712).getByText("1.7s")).toBeInTheDocument();
+        // 171ms -> 0.17sec
+        expect(getTotal(171).getByText("0.17s")).toBeInTheDocument();
+        // 101ms -> 0.1sec
+        expect(getTotal(101).getByText("0.1s")).toBeInTheDocument();
+        // 17ms
+        expect(getTotal(17).getByText("17ms")).toBeInTheDocument();
+        // 1ms
+        expect(getTotal(1).getByText("1ms")).toBeInTheDocument();
+      },
+      {
+        // each case takes O(320ms) to render -> 14*320ms=4.5s -> double the timeout.
+        timeout: 10_000,
+      },
+    );
   });
 
   describe("paused", () => {

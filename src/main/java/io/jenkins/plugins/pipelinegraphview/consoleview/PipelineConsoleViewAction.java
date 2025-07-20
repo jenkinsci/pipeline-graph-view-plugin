@@ -117,8 +117,12 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     public void getAllSteps(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         run.checkPermission(Item.READ);
 
+        // Look up completed state before computing steps.
+        boolean runIsComplete = !PipelineState.of(run).isInProgress();
+
         PipelineStepList steps = stepApi.getAllSteps();
         JSONObject json = JSONObject.fromObject(steps, jsonConfig);
+        json.element("runIsComplete", runIsComplete, jsonConfig);
         logger.debug("Steps: '{}'.", json);
         HttpResponse response = HttpResponses.okJSON(json);
 

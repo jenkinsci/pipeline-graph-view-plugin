@@ -39,6 +39,11 @@ export interface StepLogBufferInfo {
   lines: string[];
   startByte: number;
   endByte: number;
+  pending?: {
+    startByte: number;
+    promise: Promise<ConsoleLogData | null>;
+  };
+  fullyFetched?: boolean;
 }
 
 // Returned from API, gets converted to 'StepLogBufferInfo'.
@@ -46,6 +51,7 @@ export interface ConsoleLogData {
   text: string;
   startByte: number;
   endByte: number;
+  nodeIsActive: boolean;
 }
 
 export async function getRunStatusFromPath(

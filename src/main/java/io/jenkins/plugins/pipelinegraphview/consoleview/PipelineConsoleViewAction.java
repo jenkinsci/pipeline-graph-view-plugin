@@ -224,7 +224,20 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
         long endByte = 0L;
         long textLength;
         String text = "";
-        AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
+        AnnotatedLargeText<? extends FlowNode> logText = null;
+        boolean nodeIsActive = false;
+        {
+            FlowExecution execution = run.getExecution();
+            if (execution != null) {
+                logger.debug("getConsoleOutputJson found execution.");
+                FlowNode node = execution.getNode(nodeId);
+                if (node != null) {
+                    // Look up active state before getting the logText.
+                    nodeIsActive = node.isActive();
+                    logText = PipelineNodeUtil.getLogText(node);
+                }
+            }
+        }
 
         if (logText != null) {
             textLength = logText.length();
@@ -265,6 +278,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
         response.put("text", text);
         response.put("startByte", startByte);
         response.put("endByte", endByte);
+        response.put("nodeIsActive", nodeIsActive);
         return JSONObject.fromObject(response);
     }
 

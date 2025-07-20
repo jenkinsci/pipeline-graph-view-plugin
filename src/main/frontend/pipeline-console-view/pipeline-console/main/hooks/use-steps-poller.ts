@@ -25,6 +25,7 @@ export function useStepsPoller(props: RunPollerProps) {
     new Map<string, StepLogBufferInfo>(),
   );
   const [userManuallySetNode, setUserManuallySetNode] = useState(false);
+  const [collapsedSteps] = useState<Set<string>>(new Set());
 
   const stepsRef = useRef<StepInfo[]>([]);
 
@@ -63,6 +64,7 @@ export function useStepsPoller(props: RunPollerProps) {
       if (!selected) {
         return false;
       }
+      if (collapsedSteps.has(selected)) return true;
 
       setUserManuallySetNode(true);
 
@@ -200,14 +202,12 @@ export function useStepsPoller(props: RunPollerProps) {
 
       const stepsForStage = steps.filter((step) => step.stageId === nodeId);
       const lastStep = stepsForStage[stepsForStage.length - 1];
-      const newlyExpandedSteps = lastStep ? [lastStep.id] : [];
 
       history.replaceState({}, "", `?selected-node=` + nodeId);
 
       setOpenStage(nodeId);
-      setExpandedSteps((prev) => [...prev, ...newlyExpandedSteps]);
-
-      if (lastStep) {
+      if (lastStep && !collapsedSteps.has(lastStep.id)) {
+        setExpandedSteps((prev) => [...prev, lastStep.id]);
         updateStepConsoleOffset(lastStep.id, false, 0 - LOG_FETCH_SIZE);
       }
     },
@@ -217,9 +217,11 @@ export function useStepsPoller(props: RunPollerProps) {
   const onStepToggle = (nodeId: string) => {
     setUserManuallySetNode(true);
     if (!expandedSteps.includes(nodeId)) {
+      collapsedSteps.delete(nodeId);
       setExpandedSteps((prev) => [...prev, nodeId]);
       updateStepConsoleOffset(nodeId, false, 0 - LOG_FETCH_SIZE);
     } else {
+      collapsedSteps.add(nodeId);
       setExpandedSteps((prev) => prev.filter((id) => id !== nodeId));
     }
   };

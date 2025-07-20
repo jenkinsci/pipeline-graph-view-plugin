@@ -3,6 +3,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { Mock, vi } from "vitest";
 
+import * as treeApi from "../../../../common/tree-api.ts";
 import * as model from "../PipelineConsoleModel.tsx";
 import { useStepsPoller } from "./use-steps-poller.ts";
 
@@ -77,6 +78,50 @@ it("selects the step from URL on initial load", async () => {
 
   expect(openStage?.id).toBe("stage-1");
   expect(expandedSteps).toContain("step-1");
+
+  unmount();
+});
+
+it("selected steps can be collapsed and remain collapsed", async () => {
+  window.history.pushState({}, "", "/?selected-node=step-1&start-byte=0");
+
+  (treeApi.default as Mock).mockReturnValue({
+    run: {
+      stages: mockStages,
+      complete: true, // avoid "steps" poller
+    },
+  });
+  let currentSteps = [
+    { id: "step-1", title: "Step 1", stageId: "stage-1", state: "running" },
+    { id: "step-2", title: "Step 2", stageId: "stage-1", state: "queued" },
+  ];
+  (model.getRunSteps as Mock).mockResolvedValue(currentSteps);
+
+  const props = { currentRunPath: "/run/1" };
+  const { result, unmount, rerender } = renderHook(() => useStepsPoller(props));
+  await waitFor(() => expect(result.current.expandedSteps).toContain("step-1"));
+
+  expect(result.current.expandedSteps).toContain("step-1");
+  act(() => result.current.onStepToggle("step-1"));
+  expect(result.current.expandedSteps).not.toContain("step-1");
+
+  // Simulate step-1 finishing and step-2 becoming active
+  currentSteps = [
+    { id: "step-1", title: "Step 1", stageId: "stage-1", state: "success" },
+    { id: "step-2", title: "Step 2", stageId: "stage-1", state: "running" },
+  ];
+  (model.getRunSteps as Mock).mockResolvedValue(currentSteps);
+
+  // trigger rerun of ?selected-node logic
+  (treeApi.default as Mock).mockReturnValue({
+    run: { stages: mockStages.slice(0), complete: true },
+  });
+  rerender(props); // happens implicitly from polling.
+
+  await waitFor(() =>
+    expect(result.current.openStageSteps).to.deep.equal(currentSteps),
+  );
+  expect(result.current.expandedSteps).not.toContain("step-1");
 
   unmount();
 });

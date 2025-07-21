@@ -2,9 +2,12 @@ import "./scroll-to-top-bottom.scss";
 
 import { useEffect, useRef, useState } from "react";
 
+import TailLogsButton, {
+  TailLogsButtonProps,
+} from "../../../common/components/tail-logs-button.tsx";
 import { classNames } from "../../../common/utils/classnames.ts";
 
-export default function ScrollToTopBottom() {
+export default function ScrollToTopBottom(props: TailLogsButtonProps) {
   const [isAtTop, setIsAtTop] = useState(true);
   const [isAtBottom, setIsAtBottom] = useState(false);
   const scrolledToBottomRef = useRef<HTMLDivElement>(null);
@@ -52,7 +55,7 @@ export default function ScrollToTopBottom() {
     scrolledToBottomRef.current?.scrollIntoView({ block: "end" });
   };
 
-  const isScrollable = !isAtTop || !isAtBottom;
+  const isScrollable = !isAtTop || !isAtBottom || !props.complete;
   return (
     <>
       <div
@@ -61,6 +64,7 @@ export default function ScrollToTopBottom() {
         })}
         aria-hidden={!isScrollable}
       >
+        <TailLogsButton {...props} showText={false} />
         <button
           onClick={scrollToTop}
           className="jenkins-button"

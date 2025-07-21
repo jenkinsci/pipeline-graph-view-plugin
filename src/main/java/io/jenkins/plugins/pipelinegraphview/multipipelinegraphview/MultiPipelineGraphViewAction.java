@@ -80,7 +80,9 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
             PipelineRun r = new PipelineRun(run);
             etagBuilder.add(r);
             pipelineRuns.add(r);
-            if (pipelineRuns.size() >= MaxNumberOfElements) break;
+            if (pipelineRuns.size() >= MaxNumberOfElements) {
+                break;
+            }
         }
 
         String etag = etagBuilder.getEtag();

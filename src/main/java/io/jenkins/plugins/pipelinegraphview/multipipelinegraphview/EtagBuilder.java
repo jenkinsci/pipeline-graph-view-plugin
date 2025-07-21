@@ -30,7 +30,9 @@ public class EtagBuilder {
     }
 
     private void checkAlreadyComputed() {
-        if (computed) throw new IllegalStateException("getEtag() already called");
+        if (computed) {
+            throw new IllegalStateException("getEtag() already called");
+        }
     }
 
     private sealed interface EtagProducer {

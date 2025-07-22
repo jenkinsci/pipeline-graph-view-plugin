@@ -40,21 +40,19 @@ export function useStepsPoller(props: RunPollerProps) {
         stepBuffers.set(stepId, stepBuffer);
       }
       while (stepBuffer.pending) {
-        const pending = stepBuffer.pending;
-        const response = await pending.promise;
-        if (startByte === pending.startByte && response) {
+        const { promise, startByte: otherStartByte } = stepBuffer.pending;
+        const response = await promise;
+        if (startByte === otherStartByte && response) {
           return; // deduplicated fetch operation
         }
       }
       if (stepBuffer.fullyFetched) return; // Already fetched in full.
       if (stepBuffer.startByte > 0 && !forceUpdate) return;
-      stepBuffer.pending = {
-        startByte,
-        promise: getConsoleTextOffset(stepId, startByte),
-      };
+      const promise = getConsoleTextOffset(stepId, startByte);
+      stepBuffer.pending = { promise, startByte };
       let response;
       try {
-        response = await stepBuffer.pending.promise;
+        response = await promise;
       } finally {
         delete stepBuffer.pending;
       }

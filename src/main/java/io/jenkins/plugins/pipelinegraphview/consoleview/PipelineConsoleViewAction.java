@@ -26,7 +26,6 @@ import io.jenkins.plugins.pipelinegraphview.cards.items.UserIdCauseRunDetailsIte
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
-import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStep;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
@@ -122,14 +121,13 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
         logger.debug("Steps: '{}'.", json);
         HttpResponse response = HttpResponses.okJSON(json);
 
-        setCache(rsp);
-
         rsp.setStatus(200);
+        setCache(rsp, steps.runIsComplete);
         response.generateResponse(req, rsp, null);
     }
 
-    private void setCache(StaplerResponse2 rsp) {
-        if (!PipelineState.of(run).isInProgress()) {
+    private void setCache(StaplerResponse2 rsp, boolean complete) {
+        if (complete) {
             rsp.setHeader("Cache-Control", "private, immutable, max-age=" + CACHE_AGE);
         } else {
             rsp.setHeader("Cache-Control", "private, no-store");
@@ -513,7 +511,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
         HttpResponse response = HttpResponses.okJSON(JSONObject.fromObject(tree, jsonConfig));
 
         rsp.setStatus(200);
-        setCache(rsp);
+        setCache(rsp, tree.complete);
         response.generateResponse(req, rsp, null);
     }
 

@@ -9,13 +9,16 @@ import net.sf.json.processors.JsonBeanProcessor;
 public class PipelineStepList {
 
     public final List<PipelineStep> steps;
+    public final boolean runIsComplete;
 
-    public PipelineStepList() {
+    public PipelineStepList(boolean runIsComplete) {
         this.steps = new ArrayList<>();
+        this.runIsComplete = runIsComplete;
     }
 
-    public PipelineStepList(List<PipelineStep> steps) {
+    public PipelineStepList(List<PipelineStep> steps, boolean runIsComplete) {
         this.steps = steps;
+        this.runIsComplete = runIsComplete;
     }
 
     /* Sorts the list of PipelineSteps by stageId and Id. */
@@ -46,6 +49,7 @@ public class PipelineStepList {
             }
             JSONObject json = new JSONObject();
             json.element("steps", stepList.steps, jsonConfig);
+            json.element("runIsComplete", stepList.runIsComplete, jsonConfig);
             return json;
         }
     }

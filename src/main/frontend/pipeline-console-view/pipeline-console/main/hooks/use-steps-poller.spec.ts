@@ -43,7 +43,7 @@ vi.mock("../PipelineConsoleModel.tsx", async () => ({
 }));
 
 beforeEach(() => {
-  (model.getRunSteps as Mock).mockResolvedValue(mockSteps);
+  (model.getRunSteps as Mock).mockResolvedValue({ steps: mockSteps });
   window.history.pushState({}, "", "/");
 });
 
@@ -89,7 +89,7 @@ it("switches to next stage when current one finishes", async () => {
   ];
 
   (model.getRunSteps as Mock).mockImplementation(() =>
-    Promise.resolve(currentSteps),
+    Promise.resolve({ steps: currentSteps }),
   );
 
   const { result, unmount } = renderHook(() =>
@@ -97,17 +97,17 @@ it("switches to next stage when current one finishes", async () => {
   );
 
   await waitFor(() => expect(result.current.openStage?.id).toBe("stage-1"));
+  expect(result.current.expandedSteps).toContain("s1");
 
   // Simulate stage-1 finishing and stage-2 becoming active
   currentSteps = [
     { id: "s1", title: "Step 1", stageId: "stage-1", state: "success" },
     { id: "s2", title: "Step 2", stageId: "stage-2", state: "running" },
   ];
-  (model.getRunSteps as Mock).mockResolvedValue(currentSteps);
+  (model.getRunSteps as Mock).mockResolvedValue({ steps: currentSteps });
 
-  await waitFor(() => expect(result.current.openStage?.id).toBe("stage-1"));
-
-  expect(result.current.expandedSteps).toContain("s1");
+  await waitFor(() => expect(result.current.openStage?.id).toBe("stage-2"));
+  expect(result.current.expandedSteps).toContain("s2");
 
   unmount();
 });

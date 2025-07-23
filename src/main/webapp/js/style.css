@@ -25,18 +25,23 @@ h1 {
 .pgv-details {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem 1.5rem;
   margin-left: 0.25rem;
   margin-bottom: 0.875rem;
   margin-top: -0.25rem;
+  flex-wrap: wrap;
+
+  @media (width <= 800px) {
+    margin-block: 0.75rem 1rem;
+  }
 
   & > div {
     display: flex;
     align-items: center;
     gap: 1ch;
-    font-size: 14px;
+    font-size: var(--font-size-sm);
     color: var(--text-color-secondary);
-    font-weight: 450;
+    font-weight: var(--font-bold-weight);
     text-box: trim-both;
 
     a {

@@ -32,7 +32,6 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
@@ -270,12 +269,12 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
             }
             endByte += text.length();
         }
-        HashMap<String, Object> response = new HashMap<>();
-        response.put("text", text);
-        response.put("startByte", startByte);
-        response.put("endByte", endByte);
-        response.put("nodeIsActive", nodeIsActive);
-        return JSONObject.fromObject(response);
+        JSONObject json = new JSONObject();
+        json.element("text", text);
+        json.element("startByte", startByte);
+        json.element("endByte", endByte);
+        json.element("nodeIsActive", nodeIsActive);
+        return json;
     }
 
     private AnnotatedLargeText<? extends FlowNode> getLogForNode(String nodeId) throws IOException {

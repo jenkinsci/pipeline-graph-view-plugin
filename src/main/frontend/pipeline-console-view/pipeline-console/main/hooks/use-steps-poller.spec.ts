@@ -3,7 +3,6 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { Mock, vi } from "vitest";
 
-import * as treeApi from "../../../../common/tree-api.ts";
 import * as model from "../PipelineConsoleModel.tsx";
 import { useStepsPoller } from "./use-steps-poller.ts";
 
@@ -40,6 +39,7 @@ vi.mock("../PipelineConsoleModel.tsx", async () => ({
     startByte: 0,
     endByte: 100,
   }),
+  POLL_INTERVAL: 50,
 }));
 
 beforeEach(() => {
@@ -131,12 +131,6 @@ it("expands and collapses step when toggled", async () => {
 it("expanded steps remain expanded", async () => {
   window.history.pushState({}, "", "/?selected-node=step-1&start-byte=0");
 
-  (treeApi.default as Mock).mockReturnValue({
-    run: {
-      stages: mockStages,
-      complete: true, // avoid "steps" poller
-    },
-  });
   let currentSteps = [
     { id: "step-1", title: "Step 1", stageId: "stage-1", state: "running" },
     { id: "step-2", title: "Step 2", stageId: "stage-1", state: "queued" },
@@ -144,7 +138,7 @@ it("expanded steps remain expanded", async () => {
   (model.getRunSteps as Mock).mockResolvedValue({ steps: currentSteps });
 
   const props = { currentRunPath: "/run/1" };
-  const { result, unmount, rerender } = renderHook(() => useStepsPoller(props));
+  const { result, unmount } = renderHook(() => useStepsPoller(props));
   await waitFor(() => expect(result.current.expandedSteps).toContain("step-1"));
 
   expect(result.current.expandedSteps).toContain("step-1");
@@ -158,12 +152,6 @@ it("expanded steps remain expanded", async () => {
     { id: "step-2", title: "Step 2", stageId: "stage-1", state: "running" },
   ];
   (model.getRunSteps as Mock).mockResolvedValue({ steps: currentSteps });
-
-  // trigger rerun of ?selected-node logic
-  (treeApi.default as Mock).mockReturnValue({
-    run: { stages: mockStages.slice(0), complete: true },
-  });
-  rerender(props); // happens implicitly from polling.
 
   await waitFor(() =>
     expect(result.current.openStageSteps).to.deep.equal(currentSteps),

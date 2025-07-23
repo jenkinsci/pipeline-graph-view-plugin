@@ -95,7 +95,7 @@ it("selected steps can be collapsed and remain collapsed", async () => {
     { id: "step-1", title: "Step 1", stageId: "stage-1", state: "running" },
     { id: "step-2", title: "Step 2", stageId: "stage-1", state: "queued" },
   ];
-  (model.getRunSteps as Mock).mockResolvedValue(currentSteps);
+  (model.getRunSteps as Mock).mockResolvedValue({ steps: currentSteps });
 
   const props = { currentRunPath: "/run/1" };
   const { result, unmount, rerender } = renderHook(() => useStepsPoller(props));
@@ -110,7 +110,7 @@ it("selected steps can be collapsed and remain collapsed", async () => {
     { id: "step-1", title: "Step 1", stageId: "stage-1", state: "success" },
     { id: "step-2", title: "Step 2", stageId: "stage-1", state: "running" },
   ];
-  (model.getRunSteps as Mock).mockResolvedValue(currentSteps);
+  (model.getRunSteps as Mock).mockResolvedValue({ steps: currentSteps });
 
   // trigger rerun of ?selected-node logic
   (treeApi.default as Mock).mockReturnValue({

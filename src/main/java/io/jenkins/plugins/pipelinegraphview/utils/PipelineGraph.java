@@ -8,7 +8,7 @@ import net.sf.json.processors.JsonBeanProcessor;
 public class PipelineGraph {
 
     final List<PipelineStage> stages;
-    private final boolean complete;
+    public final boolean complete;
 
     public PipelineGraph(List<PipelineStage> stages, boolean complete) {
         this.stages = stages;

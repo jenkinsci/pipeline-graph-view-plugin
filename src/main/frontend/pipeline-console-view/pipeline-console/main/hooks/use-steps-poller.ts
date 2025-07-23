@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import useRunPoller from "../../../../common/tree-api.ts";
 import {
@@ -26,8 +26,6 @@ export function useStepsPoller(props: RunPollerProps) {
   );
   const [userManuallySetNode, setUserManuallySetNode] = useState(false);
   const [collapsedSteps] = useState<Set<string>>(new Set());
-
-  const stepsRef = useRef<StepInfo[]>([]);
 
   const updateStepConsoleOffset = useCallback(
     async (stepId: string, forceUpdate: boolean, startByte: number) => {
@@ -132,66 +130,43 @@ export function useStepsPoller(props: RunPollerProps) {
   };
 
   useEffect(() => {
-    getRunSteps()
-      .then((steps) => {
-        steps = steps || [];
-        setSteps(steps);
+    let previousStepsSerialized = "";
+    function updateStepsIfChanged(steps: StepInfo[]) {
+      const nextStepsSerialized = JSON.stringify(steps);
+      if (previousStepsSerialized === nextStepsSerialized) return; // no change
+      previousStepsSerialized = nextStepsSerialized;
 
-        const usedUrl = parseUrlParams(steps);
-        if (!usedUrl) {
-          const defaultStep = getDefaultSelectedStep(steps);
-          if (defaultStep) {
-            setOpenStage(defaultStep.stageId);
+      setSteps(steps);
 
-            if (defaultStep.stageId) {
-              setExpandedSteps((prev) => [...prev, defaultStep.id]);
-              updateStepConsoleOffset(
-                defaultStep.id,
-                false,
-                0 - LOG_FETCH_SIZE,
-              );
-            }
+      const usedUrl = parseUrlParams(steps);
+      if (!usedUrl) {
+        const defaultStep = getDefaultSelectedStep(steps);
+        if (defaultStep) {
+          setOpenStage(defaultStep.stageId);
+
+          if (defaultStep.stageId) {
+            setExpandedSteps((prev) => [...prev, defaultStep.id]);
+            updateStepConsoleOffset(defaultStep.id, false, 0 - LOG_FETCH_SIZE);
           }
         }
+      }
+    }
 
-        if (!run?.complete) {
-          startPollingPipeline({
-            getStateUpdateFn: getRunSteps,
-            onData: (data) => {
-              const hasNewSteps =
-                JSON.stringify(stepsRef.current) !== JSON.stringify(data);
-
-              if (userManuallySetNode) {
-                const defaultStep = getDefaultSelectedStep(steps);
-                if (defaultStep) {
-                  setOpenStage(defaultStep.stageId);
-
-                  if (defaultStep.stageId) {
-                    setExpandedSteps((prev) => [...prev, defaultStep.id]);
-                    updateStepConsoleOffset(
-                      defaultStep.id,
-                      false,
-                      0 - LOG_FETCH_SIZE,
-                    );
-                  }
-                }
-              }
-
-              if (hasNewSteps) {
-                setSteps(data);
-                stepsRef.current = data;
-              }
-            },
-            checkComplete: () => !run?.complete,
-            interval: POLL_INTERVAL,
-          });
-        }
-        return null;
-      })
-      .catch((error) => {
-        console.error("Error in getRunSteps:", error);
-      });
-  }, [run?.stages]);
+    let polling = true;
+    const poll = async () => {
+      while (polling) {
+        const data = await getRunSteps();
+        if (data?.steps) updateStepsIfChanged(data.steps);
+        if (data?.runIsComplete) polling = false;
+        if (!polling) break;
+        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
+      }
+    };
+    poll();
+    return () => {
+      polling = false;
+    };
+  }, []);
 
   const handleStageSelect = useCallback(
     (nodeId: string) => {
@@ -270,43 +245,6 @@ export function useStepsPoller(props: RunPollerProps) {
     loading,
   };
 }
-
-/**
- * Starts polling a function until a complete condition is met.
- */
-const startPollingPipeline = ({
-  getStateUpdateFn,
-  onData,
-  checkComplete,
-  interval = 1000,
-}: {
-  getStateUpdateFn: () => Promise<StepInfo[] | null>;
-  onData: (data: StepInfo[]) => void;
-  checkComplete: (data: StepInfo[]) => boolean;
-  interval?: number;
-}): (() => void) => {
-  let polling = true;
-
-  const poll = async () => {
-    while (polling) {
-      const data = (await getStateUpdateFn()) || [];
-      onData(data);
-
-      if (checkComplete(data)) {
-        polling = false;
-        break;
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, interval));
-    }
-  };
-
-  setTimeout(poll, interval);
-
-  return () => {
-    polling = false;
-  };
-};
 
 interface RunPollerProps {
   currentRunPath: string;

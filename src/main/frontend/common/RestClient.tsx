@@ -17,6 +17,11 @@ export interface InputStep {
   parameters: boolean;
 }
 
+export interface AllStepsData {
+  steps: StepInfo[];
+  runIsComplete: boolean;
+}
+
 /**
  * StageInfo is the input, in the form of an Array<StageInfo> of the top-level stages of a pipeline
  */
@@ -64,12 +69,12 @@ export async function getRunStatusFromPath(
   }
 }
 
-export async function getRunSteps(): Promise<StepInfo[] | null> {
+export async function getRunSteps(): Promise<AllStepsData | null> {
   try {
     const response = await fetch("allSteps");
     if (!response.ok) throw response.statusText;
     const json = await response.json();
-    return json.data.steps;
+    return json.data;
   } catch (e) {
     console.warn(`Caught error getting steps: '${e}'`);
     return null;

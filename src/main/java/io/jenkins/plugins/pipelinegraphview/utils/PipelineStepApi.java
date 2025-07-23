@@ -82,17 +82,17 @@ public class PipelineStepApi {
         return text.trim();
     }
 
-    private PipelineStepList getSteps(String stageId, PipelineStepBuilderApi builder) {
+    private PipelineStepList getSteps(String stageId, PipelineStepBuilderApi builder, boolean runIsComplete) {
         List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
-        PipelineStepList steps = new PipelineStepList(parseSteps(stepNodes, stageId));
+        PipelineStepList steps = new PipelineStepList(parseSteps(stepNodes, stageId), runIsComplete);
         steps.sort();
         return steps;
     }
 
     /* Returns a PipelineStepList, sorted by stageId and Id. */
-    private PipelineStepList getAllSteps(PipelineStepBuilderApi builder) {
+    private PipelineStepList getAllSteps(PipelineStepBuilderApi builder, boolean runIsComplete) {
         Map<String, List<FlowNodeWrapper>> stepNodes = builder.getAllSteps();
-        PipelineStepList allSteps = new PipelineStepList();
+        PipelineStepList allSteps = new PipelineStepList(runIsComplete);
         for (Map.Entry<String, List<FlowNodeWrapper>> entry : stepNodes.entrySet()) {
             allSteps.addAll(parseSteps(entry.getValue(), entry.getKey()));
         }
@@ -101,11 +101,15 @@ public class PipelineStepApi {
     }
 
     public PipelineStepList getSteps(String stageId) {
-        return getSteps(stageId, CachedPipelineNodeGraphAdaptor.instance.getFor(run));
+        // Look up completed state before computing steps.
+        boolean runIsComplete = !PipelineState.of(run).isInProgress();
+        return getSteps(stageId, CachedPipelineNodeGraphAdaptor.instance.getFor(run), runIsComplete);
     }
 
     /* Returns a PipelineStepList, sorted by stageId and Id. */
     public PipelineStepList getAllSteps() {
-        return getAllSteps(CachedPipelineNodeGraphAdaptor.instance.getFor(run));
+        // Look up completed state before computing steps.
+        boolean runIsComplete = !PipelineState.of(run).isInProgress();
+        return getAllSteps(CachedPipelineNodeGraphAdaptor.instance.getFor(run), runIsComplete);
     }
 }

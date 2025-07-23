@@ -114,8 +114,6 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     @GET
     @WebMethod(name = "allSteps")
     public void getAllSteps(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
-        run.checkPermission(Item.READ);
-
         PipelineStepList steps = stepApi.getAllSteps();
         JSONObject json = JSONObject.fromObject(steps, jsonConfig);
         logger.debug("Steps: '{}'.", json);

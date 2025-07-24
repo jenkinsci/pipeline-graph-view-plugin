@@ -82,6 +82,38 @@ it("selects the step from URL on initial load", async () => {
   unmount();
 });
 
+it("selected steps can be collapsed and remain collapsed", async () => {
+  window.history.pushState({}, "", "/?selected-node=step-1&start-byte=0");
+
+  let currentSteps = [
+    { id: "step-1", title: "Step 1", stageId: "stage-1", state: "running" },
+    { id: "step-2", title: "Step 2", stageId: "stage-1", state: "queued" },
+  ];
+  (model.getRunSteps as Mock).mockResolvedValue({ steps: currentSteps });
+
+  const props = { currentRunPath: "/run/1" };
+  const { result, unmount } = renderHook(() => useStepsPoller(props));
+  await waitFor(() => expect(result.current.expandedSteps).toContain("step-1"));
+
+  expect(result.current.expandedSteps).toContain("step-1");
+  act(() => result.current.onStepToggle("step-1"));
+  expect(result.current.expandedSteps).not.toContain("step-1");
+
+  // Simulate step-1 finishing and step-2 becoming active
+  currentSteps = [
+    { id: "step-1", title: "Step 1", stageId: "stage-1", state: "success" },
+    { id: "step-2", title: "Step 2", stageId: "stage-1", state: "running" },
+  ];
+  (model.getRunSteps as Mock).mockResolvedValue({ steps: currentSteps });
+
+  await waitFor(() =>
+    expect(result.current.openStageSteps).to.deep.equal(currentSteps),
+  );
+  expect(result.current.expandedSteps).not.toContain("step-1");
+
+  unmount();
+});
+
 it("switches to next stage when current one finishes", async () => {
   let currentSteps = [
     { id: "s1", title: "Step 1", stageId: "stage-1", state: "running" },

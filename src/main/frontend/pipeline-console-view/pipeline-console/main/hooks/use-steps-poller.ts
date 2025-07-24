@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import useRunPoller from "../../../../common/tree-api.ts";
 import {
@@ -25,6 +25,7 @@ export function useStepsPoller(props: RunPollerProps) {
     new Map<string, StepLogBufferInfo>(),
   );
   const [userManuallySetNode, setUserManuallySetNode] = useState(false);
+  const collapsedSteps = useRef(new Set<string>());
 
   const updateStepConsoleOffset = useCallback(
     async (stepId: string, forceUpdate: boolean, startByte: number) => {
@@ -61,6 +62,7 @@ export function useStepsPoller(props: RunPollerProps) {
       if (!selected) {
         return false;
       }
+      if (collapsedSteps.current.has(selected)) return true;
 
       setUserManuallySetNode(true);
 
@@ -82,7 +84,7 @@ export function useStepsPoller(props: RunPollerProps) {
       setOpenStage(selected);
       return true;
     },
-    [updateStepConsoleOffset],
+    [updateStepConsoleOffset, collapsedSteps],
   );
 
   const getDefaultSelectedStep = (steps: StepInfo[]) => {
@@ -175,26 +177,26 @@ export function useStepsPoller(props: RunPollerProps) {
 
       const stepsForStage = steps.filter((step) => step.stageId === nodeId);
       const lastStep = stepsForStage[stepsForStage.length - 1];
-      const newlyExpandedSteps = lastStep ? [lastStep.id] : [];
 
       history.replaceState({}, "", `?selected-node=` + nodeId);
 
       setOpenStage(nodeId);
-      setExpandedSteps((prev) => [...prev, ...newlyExpandedSteps]);
-
-      if (lastStep) {
+      if (lastStep && !collapsedSteps.current.has(lastStep.id)) {
+        setExpandedSteps((prev) => [...prev, lastStep.id]);
         updateStepConsoleOffset(lastStep.id, false, 0 - LOG_FETCH_SIZE);
       }
     },
-    [openStage, steps, updateStepConsoleOffset],
+    [openStage, steps, updateStepConsoleOffset, collapsedSteps],
   );
 
   const onStepToggle = (nodeId: string) => {
     setUserManuallySetNode(true);
     if (!expandedSteps.includes(nodeId)) {
+      collapsedSteps.current.delete(nodeId);
       setExpandedSteps((prev) => [...prev, nodeId]);
       updateStepConsoleOffset(nodeId, false, 0 - LOG_FETCH_SIZE);
     } else {
+      collapsedSteps.current.add(nodeId);
       setExpandedSteps((prev) => prev.filter((id) => id !== nodeId));
     }
   };

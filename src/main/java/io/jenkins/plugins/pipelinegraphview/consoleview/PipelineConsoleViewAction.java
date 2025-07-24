@@ -32,7 +32,6 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
@@ -220,7 +219,20 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
         long endByte = 0L;
         long textLength;
         String text = "";
-        AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
+        AnnotatedLargeText<? extends FlowNode> logText = null;
+        boolean nodeIsActive = false;
+        {
+            FlowExecution execution = run.getExecution();
+            if (execution != null) {
+                logger.debug("getConsoleOutputJson found execution.");
+                FlowNode node = execution.getNode(nodeId);
+                if (node != null) {
+                    // Look up active state before getting the logText.
+                    nodeIsActive = node.isActive();
+                    logText = PipelineNodeUtil.getLogText(node);
+                }
+            }
+        }
 
         if (logText != null) {
             textLength = logText.length();
@@ -257,11 +269,12 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
             }
             endByte += text.length();
         }
-        HashMap<String, Object> response = new HashMap<>();
-        response.put("text", text);
-        response.put("startByte", startByte);
-        response.put("endByte", endByte);
-        return JSONObject.fromObject(response);
+        JSONObject json = new JSONObject();
+        json.element("text", text);
+        json.element("startByte", startByte);
+        json.element("endByte", endByte);
+        json.element("nodeIsActive", nodeIsActive);
+        return json;
     }
 
     private AnnotatedLargeText<? extends FlowNode> getLogForNode(String nodeId) throws IOException {

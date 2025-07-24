@@ -29,14 +29,32 @@ export function useStepsPoller(props: RunPollerProps) {
 
   const updateStepConsoleOffset = useCallback(
     async (stepId: string, forceUpdate: boolean, startByte: number) => {
-      const stepBuffer = stepBuffers.get(stepId) ?? {
-        lines: [],
-        startByte: 0 - LOG_FETCH_SIZE,
-        endByte: -1,
-        stepId,
-      };
+      let stepBuffer = stepBuffers.get(stepId);
+      if (!stepBuffer) {
+        stepBuffer = {
+          lines: [],
+          startByte: 0 - LOG_FETCH_SIZE,
+          endByte: -1,
+        };
+        stepBuffers.set(stepId, stepBuffer);
+      }
+      while (stepBuffer.pending) {
+        const { promise, startByte: otherStartByte } = stepBuffer.pending;
+        const response = await promise;
+        if (startByte === otherStartByte && response) {
+          return; // deduplicated fetch operation
+        }
+      }
+      if (stepBuffer.fullyFetched) return; // Already fetched in full.
       if (stepBuffer.startByte > 0 && !forceUpdate) return;
-      const response = await getConsoleTextOffset(stepId, startByte);
+      const promise = getConsoleTextOffset(stepId, startByte);
+      stepBuffer.pending = { promise, startByte };
+      let response;
+      try {
+        response = await promise;
+      } finally {
+        delete stepBuffer.pending;
+      }
       if (!response) return;
 
       const newLogLines = response.text.trim().split("\n") || [];
@@ -49,6 +67,9 @@ export function useStepsPoller(props: RunPollerProps) {
       }
 
       stepBuffer.endByte = response.endByte;
+      if (response.startByte === 0 && !response.nodeIsActive) {
+        stepBuffer.fullyFetched = true;
+      }
 
       setStepBuffers((prev) => new Map(prev).set(stepId, stepBuffer));
     },

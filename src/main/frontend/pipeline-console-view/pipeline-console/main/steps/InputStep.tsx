@@ -13,9 +13,15 @@ declare global {
 
 export default function InputStep(props: ConsoleLogCardProps) {
   const inputStep = props.step.inputStep!;
+
   function handler(id: string, action: string) {
+    const formData = new FormData();
+    formData.append("proceed", "Proceed");
+    formData.append("json", `{"proceed":"Proceed","abort":"Abort"}`);
+
     fetch(`../input/${id}/${action}`, {
       method: "POST",
+      body: new URLSearchParams(formData as any),
       headers: window.crumb.wrap({}),
     })
       .then((res) => {
@@ -30,7 +36,7 @@ export default function InputStep(props: ConsoleLogCardProps) {
   }
 
   const ok = () => {
-    return handler(inputStep.id, "proceedEmpty");
+    return handler(inputStep.id, "proceed");
   };
 
   const abort = () => {

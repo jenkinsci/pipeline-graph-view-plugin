@@ -67,11 +67,12 @@ export function useStepsPoller(props: RunPollerProps) {
       setUserManuallySetNode(true);
 
       const step = steps.find((s) => s.id === selected);
-      const expanded: string[] = [];
-
       if (step) {
         selected = step.stageId;
-        expanded.push(step.id);
+        setExpandedSteps((prev) => {
+          if (prev.includes(step.id)) return prev;
+          return [...prev, step.id];
+        });
 
         updateStepConsoleOffset(
           step.id,
@@ -81,7 +82,6 @@ export function useStepsPoller(props: RunPollerProps) {
       }
 
       setOpenStage(selected);
-      setExpandedSteps(expanded);
       return true;
     },
     [updateStepConsoleOffset, collapsedSteps],

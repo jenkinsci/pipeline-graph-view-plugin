@@ -14,7 +14,7 @@ public class EtagBuilder {
 
     public EtagBuilder add(PipelineRun run) {
         checkAlreadyComputed();
-        if (run.result.isInProgress()) {
+        if (run.isBuilding()) {
             producer = NOOP; // If we have an in-progress run, we cannot produce a valid ETag
         } else {
             producer.consume(run);

@@ -101,15 +101,15 @@ public class PipelineStepApi {
     }
 
     public PipelineStepList getSteps(String stageId) {
-        // Look up completed state before computing steps.
-        boolean runIsComplete = !PipelineState.of(run).isInProgress();
+        // Look up the completed state before computing steps.
+        boolean runIsComplete = !run.isBuilding();
         return getSteps(stageId, CachedPipelineNodeGraphAdaptor.instance.getFor(run), runIsComplete);
     }
 
     /* Returns a PipelineStepList, sorted by stageId and Id. */
     public PipelineStepList getAllSteps() {
-        // Look up completed state before computing steps.
-        boolean runIsComplete = !PipelineState.of(run).isInProgress();
+        // Look up the completed state before computing steps.
+        boolean runIsComplete = !run.isBuilding();
         return getAllSteps(CachedPipelineNodeGraphAdaptor.instance.getFor(run), runIsComplete);
     }
 }

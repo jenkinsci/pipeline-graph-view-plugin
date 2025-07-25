@@ -12,11 +12,11 @@ public class PipelineRunFactory {
     }
 
     public PipelineRun succeeded(String id) {
-        return new PipelineRun(id, "Build " + id, currentTimeMillis(), 5_000, 3, PipelineState.SUCCESS);
+        return new PipelineRun(id, "Build " + id, currentTimeMillis(), 5_000, 3, PipelineState.SUCCESS, false);
     }
 
     public PipelineRun inProgress(String id) {
-        return new PipelineRun(id, "Build " + id, currentTimeMillis(), 0, 0, PipelineState.RUNNING);
+        return new PipelineRun(id, "Build " + id, currentTimeMillis(), 0, 0, PipelineState.RUNNING, true);
     }
 
     private long currentTimeMillis() {

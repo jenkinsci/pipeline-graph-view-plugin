@@ -20,6 +20,7 @@ public class PipelineRun {
     private final long timestamp;
     private final long duration;
     private final int changesCount;
+    private final boolean building;
 
     @NonNull
     final PipelineState result;
@@ -31,7 +32,8 @@ public class PipelineRun {
                 run.getTimeInMillis(),
                 run.getDuration(),
                 getChanges(run).size(),
-                PipelineState.of(run));
+                PipelineState.of(run),
+                run.isBuilding());
     }
 
     PipelineRun(
@@ -40,13 +42,19 @@ public class PipelineRun {
             long timestamp,
             long duration,
             int changesCount,
-            @NonNull PipelineState result) {
+            @NonNull PipelineState result,
+            boolean building) {
         this.id = id;
         this.displayName = displayName;
         this.timestamp = timestamp;
         this.duration = duration;
         this.changesCount = changesCount;
         this.result = result;
+        this.building = building;
+    }
+
+    public boolean isBuilding() {
+        return building;
     }
 
     public String etag() {

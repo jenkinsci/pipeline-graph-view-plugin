@@ -37,7 +37,7 @@ public enum PipelineState {
             return NOT_BUILT;
         } else if (result == Result.ABORTED) {
             return ABORTED;
-        } else if (run.isInProgress()) {
+        } else if (run.isBuilding()) {
             return RUNNING;
         } else {
             return UNKNOWN;

@@ -100,6 +100,15 @@
                 </j:forEach>
             </div>
 
+            <j:if test="${!empty(it.run.description)}">
+                <div class="pgv-description">
+                    <l:icon src="symbol-information-circle-outline plugin-ionicons-api" />
+                    <div>
+                        <j:out value="${app.markupFormatter.translate(it.run.description)}"/>
+                    </div>
+                </div>
+            </j:if>
+
             <j:set var="configPermission" value="${h.hasPermission(it, it.configurePermission)}" />
             <template data-module="permissions"
                       data-permission-configure="${configPermission}"

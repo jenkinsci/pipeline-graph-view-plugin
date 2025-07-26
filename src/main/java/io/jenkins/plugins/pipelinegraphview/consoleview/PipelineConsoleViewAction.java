@@ -358,6 +358,10 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
         return Item.CONFIGURE;
     }
 
+    public WorkflowRun getRun() {
+        return run;
+    }
+
     public String getBuildDisplayName() {
         return run.getDisplayName();
     }

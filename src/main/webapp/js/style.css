@@ -56,6 +56,25 @@ h1 {
   }
 }
 
+.pgv-description {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1ch;
+  align-items: start;
+  margin: 0 0 1rem 0.25rem;
+
+  & > svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  & > div {
+    text-box: trim-both;
+    line-height: 1.66;
+    margin-top: 0.0625rem;
+  }
+}
+
 .pgv-dropdown-item {
   display: grid;
   grid-template-columns: auto 1fr;

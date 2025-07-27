@@ -12,12 +12,10 @@
   height: 100%;
 
   &--left {
-    --additional-height: 0px;
     position: sticky;
     top: calc(var(--pgv-header-height) + var(--section-padding));
     height: calc(
-      (100vh + var(--additional-height)) -
-        (var(--pgv-header-height) + 100px + var(--section-padding))
+      100vh - (var(--pgv-header-height) + 100px + var(--section-padding))
     );
     max-height: calc(
       100vh -

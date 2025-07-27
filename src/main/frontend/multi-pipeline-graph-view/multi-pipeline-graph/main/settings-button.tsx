@@ -11,17 +11,10 @@ import {
 import { useUserPreferences } from "../../../common/user/user-preferences-provider.tsx";
 
 type SettingsButtonProps = {
-  buttonPortal: HTMLElement | null;
+  buttonPortal: HTMLElement;
 };
 
 export default function SettingsButton({ buttonPortal }: SettingsButtonProps) {
-  if (!buttonPortal) {
-    console.warn(
-      "Could not find settings button element to generate a portal.",
-    );
-    return <></>;
-  }
-
   const messages = useMessages();
   const { showNames, setShowNames, showDurations, setShowDurations } =
     useUserPreferences();

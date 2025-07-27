@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ConsoleLine } from "./ConsoleLine.tsx";
 import {
@@ -10,7 +10,6 @@ import {
 export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   const appendInterval = useRef<NodeJS.Timeout | null>(null);
   const [stickToBottom, setStickToBottom] = useState(false);
-  const [maxConsoleLineHeight, setMaxConsoleLineHeight] = useState(1);
 
   useEffect(() => {
     return () => {
@@ -58,15 +57,6 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
     }
   }, [stickToBottom, props.step, props.logBuffer]);
 
-  const consoleLineHeightCallback = useCallback(
-    (height: number) => {
-      if (height > maxConsoleLineHeight || maxConsoleLineHeight === 1) {
-        setMaxConsoleLineHeight(height);
-      }
-    },
-    [maxConsoleLineHeight],
-  );
-
   const shouldRequestMoreLogs = () => {
     return props.step.state === Result.running || props.logBuffer.startByte < 0;
   };
@@ -97,7 +87,6 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
           content={content}
           stepId={props.step.id}
           startByte={props.logBuffer.startByte}
-          heightCallback={consoleLineHeightCallback}
         />
       ))}
     </div>

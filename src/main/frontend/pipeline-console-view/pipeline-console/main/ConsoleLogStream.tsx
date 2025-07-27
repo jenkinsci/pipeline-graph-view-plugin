@@ -8,7 +8,7 @@ import {
 } from "./PipelineConsoleModel.tsx";
 
 export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
-  const appendInterval = useRef<NodeJS.Timeout | null>(null);
+  const appendInterval = useRef<number | null>(null);
   const [stickToBottom, setStickToBottom] = useState(false);
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   useEffect(() => {
     if (stickToBottom && shouldRequestMoreLogs()) {
       if (!appendInterval.current) {
-        appendInterval.current = setInterval(() => {
+        appendInterval.current = window.setInterval(() => {
           props.onMoreConsoleClick(props.step.id, props.logBuffer.startByte);
         }, 1000);
       }

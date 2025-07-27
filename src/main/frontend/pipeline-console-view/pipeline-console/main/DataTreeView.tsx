@@ -105,6 +105,13 @@ export default function DataTreeView({
   );
 }
 
+function hasSelectedDescendant(stage: StageInfo, selected: string): boolean {
+  return stage.children?.some(
+    (child) =>
+      String(child.id) === selected || hasSelectedDescendant(child, selected),
+  );
+}
+
 const TreeNode = memo(function TreeNode({
   stage,
   selected,
@@ -114,14 +121,8 @@ const TreeNode = memo(function TreeNode({
   const hasChildren = stage.children && stage.children.length > 0;
   const isSelected = String(stage.id) === selected;
   const [isExpanded, setIsExpanded] = useState<boolean>(
-    hasSelectedDescendant(stage),
+    hasSelectedDescendant(stage, selected),
   );
-
-  function hasSelectedDescendant(stage: StageInfo): boolean {
-    return stage.children?.some(
-      (child) => String(child.id) === selected || hasSelectedDescendant(child),
-    );
-  }
 
   const handleToggleClick = (e: ReactMouseEvent) => {
     e.stopPropagation();
@@ -129,10 +130,10 @@ const TreeNode = memo(function TreeNode({
   };
 
   useEffect(() => {
-    if (hasSelectedDescendant(stage)) {
+    if (hasSelectedDescendant(stage, selected)) {
       setIsExpanded(true);
     }
-  }, [selected]);
+  }, [stage, selected]);
 
   useEffect(() => {
     if (search.length || !allVisible) {
@@ -140,7 +141,7 @@ const TreeNode = memo(function TreeNode({
         setIsExpanded(true);
       }
     }
-  }, [search, visibleStatuses, allVisible]);
+  }, [search, visibleStatuses, allVisible, stage]);
 
   return (
     <li

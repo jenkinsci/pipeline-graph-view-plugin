@@ -23,12 +23,18 @@ import InputStep from "./steps/InputStep.tsx";
 
 const ConsoleLogStream = lazy(() => import("./ConsoleLogStream.tsx"));
 
-export default function ConsoleLogCard(props: ConsoleLogCardProps) {
+export default function ConsoleLogCard({
+  step,
+  stepBuffer,
+  isExpanded,
+  onMoreConsoleClick,
+  onStepToggle,
+}: ConsoleLogCardProps) {
   useEffect(() => {
-    if (props.isExpanded) {
-      props.onMoreConsoleClick(props.step.id, props.stepBuffer.startByte);
+    if (isExpanded) {
+      onMoreConsoleClick(step.id, stepBuffer.startByte);
     }
-  }, [props.isExpanded]);
+  }, [isExpanded, onMoreConsoleClick, step.id, stepBuffer]);
 
   const handleToggle = (e: ReactMouseEvent<HTMLElement>) => {
     // Only prevent left clicks
@@ -38,45 +44,50 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
 
     e.preventDefault();
 
-    history.replaceState({}, "", `?selected-node=` + props.step.id);
+    history.replaceState({}, "", `?selected-node=` + step.id);
 
-    props.onStepToggle(props.step.id);
+    onStepToggle(step.id);
   };
 
   const messages = useMessages();
 
-  const inputStep = props.step.inputStep;
+  const inputStep = step.inputStep;
   if (inputStep && !inputStep.parameters) {
-    return <InputStep {...props} />;
+    return (
+      <InputStep
+        step={step}
+        stepBuffer={stepBuffer}
+        isExpanded={isExpanded}
+        onStepToggle={onStepToggle}
+        onMoreConsoleClick={onMoreConsoleClick}
+      />
+    );
   }
 
   return (
-    <div className={"pgv-step-detail-group"} key={`step-card-${props.step.id}`}>
+    <div className={"pgv-step-detail-group"} key={`step-card-${step.id}`}>
       <div
         className={classNames("pgv-step-detail-header", "jenkins-button", {
-          "jenkins-button--tertiary": !props.isExpanded,
+          "jenkins-button--tertiary": !isExpanded,
         })}
       >
         <a
-          href={`?selected-node=` + props.step.id}
+          href={`?selected-node=` + step.id}
           onClick={handleToggle}
-          key={`step-action-area-${props.step.id}`}
+          key={`step-action-area-${step.id}`}
         >
           <div className="pgv-step-detail-header__content">
-            <StatusIcon
-              status={props.step.state}
-              percentage={props.step.completePercent}
-            />
+            <StatusIcon status={step.state} percentage={step.completePercent} />
 
-            {props.step.title !== "" && (
+            {step.title !== "" && (
               <span>
-                <Linkify options={linkifyJsOptions}>{props.step.title}</Linkify>
+                <Linkify options={linkifyJsOptions}>{step.title}</Linkify>
               </span>
             )}
 
-            {props.step.name !== "" && (
+            {step.name !== "" && (
               <span>
-                <Linkify options={linkifyJsOptions}>{props.step.name}</Linkify>
+                <Linkify options={linkifyJsOptions}>{step.name}</Linkify>
               </span>
             )}
 
@@ -84,7 +95,7 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 512 512"
               className={"pgv-step-detail-header__chevron"}
-              style={{ rotate: props.isExpanded ? "90deg" : "0deg" }}
+              style={{ rotate: isExpanded ? "90deg" : "0deg" }}
             >
               <path
                 fill="none"
@@ -106,8 +117,8 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
               }}
             >
               <LiveTotal
-                total={props.step.totalDurationMillis}
-                start={props.step.startTimeMillis}
+                total={step.totalDurationMillis}
+                start={step.startTimeMillis}
               />
             </span>
           </div>
@@ -115,7 +126,7 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
 
         <Tooltip content={messages.format(LocalizedMessageKey.consoleNewTab)}>
           <a
-            href={`log?nodeId=${props.step.id}`}
+            href={`log?nodeId=${step.id}`}
             className={"jenkins-button jenkins-button--tertiary"}
             target="_blank"
             rel="noreferrer"
@@ -135,20 +146,24 @@ export default function ConsoleLogCard(props: ConsoleLogCardProps) {
         </Tooltip>
       </div>
 
-      {props.isExpanded && (
+      {isExpanded && (
         <ConsoleLogBody
-          step={props.step}
-          stepBuffer={props.stepBuffer}
-          onMoreConsoleClick={props.onMoreConsoleClick}
+          step={step}
+          stepBuffer={stepBuffer}
+          onMoreConsoleClick={onMoreConsoleClick}
           isExpanded={false}
-          onStepToggle={props.onStepToggle}
+          onStepToggle={onStepToggle}
         />
       )}
     </div>
   );
 }
 
-function ConsoleLogBody(props: ConsoleLogCardProps) {
+function ConsoleLogBody({
+  step,
+  stepBuffer,
+  onMoreConsoleClick,
+}: ConsoleLogCardProps) {
   const prettySizeString = (size: number) => {
     const kib = 1024;
     const mib = 1024 * 1024;
@@ -160,13 +175,13 @@ function ConsoleLogBody(props: ConsoleLogCardProps) {
   };
 
   const showMoreLogs = () => {
-    let startByte = props.stepBuffer.startByte - LOG_FETCH_SIZE;
+    let startByte = stepBuffer.startByte - LOG_FETCH_SIZE;
     if (startByte < 0) startByte = 0;
-    props.onMoreConsoleClick(props.step.id, startByte);
+    onMoreConsoleClick(step.id, startByte);
   };
 
   const getTruncatedLogWarning = () => {
-    if (props.stepBuffer.lines && props.stepBuffer.startByte > 0) {
+    if (stepBuffer.lines && stepBuffer.startByte > 0) {
       return (
         <button
           onClick={showMoreLogs}
@@ -174,8 +189,8 @@ function ConsoleLogBody(props: ConsoleLogCardProps) {
             "pgv-show-more-logs jenkins-button jenkins-!-warning-color"
           }
         >
-          There’s more to see - {prettySizeString(props.stepBuffer.startByte)}{" "}
-          of logs hidden
+          There’s more to see - {prettySizeString(stepBuffer.startByte)} of logs
+          hidden
         </button>
       );
     }
@@ -187,9 +202,9 @@ function ConsoleLogBody(props: ConsoleLogCardProps) {
       {getTruncatedLogWarning()}
       <Suspense>
         <ConsoleLogStream
-          logBuffer={props.stepBuffer}
-          onMoreConsoleClick={props.onMoreConsoleClick}
-          step={props.step}
+          logBuffer={stepBuffer}
+          onMoreConsoleClick={onMoreConsoleClick}
+          step={step}
           maxHeightScale={0.65}
         />
       </Suspense>

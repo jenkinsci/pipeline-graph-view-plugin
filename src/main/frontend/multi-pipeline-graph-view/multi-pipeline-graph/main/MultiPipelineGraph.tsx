@@ -23,7 +23,7 @@ export const MultiPipelineGraph = () => {
         console.log(err);
       });
     }
-  }, [runs, poll]);
+  }, [currentJobPath, runs, poll]);
 
   const locale = useLocale();
 

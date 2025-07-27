@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 import { I18NContext } from "../../../common/i18n/index.ts";
 import { useUserPreferences } from "../../../common/user/user-preferences-provider.tsx";
@@ -20,9 +20,13 @@ import {
 } from "./support/labels.tsx";
 import { Node, SelectionHighlight } from "./support/nodes.tsx";
 
-export function PipelineGraph(props: Props) {
-  const { stages = [], layout, selectedStage, collapsed } = props;
-
+export function PipelineGraph({
+  stages = [],
+  layout,
+  selectedStage,
+  collapsed,
+  onStageSelect,
+}: Props) {
   const [nodeColumns, setNodeColumns] = useState<NodeColumn[]>([]);
   const [connections, setConnections] = useState<CompositeConnection[]>([]);
   const [bigLabels, setBigLabels] = useState<NodeLabelInfo[]>([]);
@@ -31,44 +35,20 @@ export function PipelineGraph(props: Props) {
   const [branchLabels, setBranchLabels] = useState<NodeLabelInfo[]>([]);
   const [measuredWidth, setMeasuredWidth] = useState<number>(0);
   const [measuredHeight, setMeasuredHeight] = useState<number>(0);
-  function getLayout() {
+  const fullLayout = useMemo(() => {
     return {
       ...defaultLayout,
       ...layout,
     };
-  }
-  const [currentSelectedStage, setCurrentSelectedStage] = useState<
-    StageInfo | undefined
-  >(selectedStage);
-
+  }, [layout]);
   const { showNames, showDurations } = useUserPreferences();
-
-  useEffect(() => {
-    updateLayout(stages);
-  }, [stages, layout, showNames, showDurations]);
-
-  useEffect(() => {
-    let needsLayout = false;
-
-    if (selectedStage !== currentSelectedStage) {
-      setCurrentSelectedStage(selectedStage);
-    }
-
-    if (stages !== props.stages) {
-      needsLayout = true;
-    }
-
-    if (needsLayout) {
-      updateLayout(stages);
-    }
-  }, [layout, selectedStage, stages, showNames, showDurations]);
 
   const messages = useContext(I18NContext);
 
-  const updateLayout = (newStages: StageInfo[] = []) => {
+  useEffect(() => {
     const newLayout = layoutGraph(
-      newStages,
-      getLayout(),
+      stages,
+      fullLayout,
       collapsed ?? false,
       messages,
       showNames,
@@ -82,14 +62,14 @@ export function PipelineGraph(props: Props) {
     setBranchLabels(newLayout.branchLabels);
     setMeasuredWidth(newLayout.measuredWidth);
     setMeasuredHeight(newLayout.measuredHeight);
-  };
+  }, [stages, fullLayout, collapsed, messages, showNames, showDurations]);
 
-  const stageIsSelected = (stage?: StageInfo): boolean => {
-    return (
-      (currentSelectedStage && stage && currentSelectedStage.id === stage.id) ||
-      false
-    );
-  };
+  const stageIsSelected = useCallback(
+    (stage?: StageInfo): boolean => {
+      return (selectedStage && stage && selectedStage.id === stage.id) || false;
+    },
+    [selectedStage],
+  );
 
   const nodes = nodeColumns.flatMap((column) => {
     return column.rows.flatMap((row) => row);
@@ -104,10 +84,10 @@ export function PipelineGraph(props: Props) {
     <div className="PWGx-PipelineGraph-container">
       <div style={outerDivStyle} className="PWGx-PipelineGraph">
         <svg width={measuredWidth} height={measuredHeight}>
-          <GraphConnections connections={connections} layout={getLayout()} />
+          <GraphConnections connections={connections} layout={fullLayout} />
 
           <SelectionHighlight
-            layout={getLayout()}
+            layout={fullLayout}
             nodeColumns={nodeColumns}
             isStageSelected={stageIsSelected}
           />
@@ -121,7 +101,7 @@ export function PipelineGraph(props: Props) {
             isSelected={
               node.isPlaceholder ? false : selectedStage?.id === node.stage.id
             }
-            onStageSelect={props.onStageSelect}
+            onStageSelect={onStageSelect}
           />
         ))}
 
@@ -129,7 +109,7 @@ export function PipelineGraph(props: Props) {
           <BigLabel
             key={label.key}
             details={label}
-            layout={getLayout()}
+            layout={fullLayout}
             measuredHeight={measuredHeight}
             isSelected={selectedStage?.id === label.stage?.id}
           />
@@ -139,7 +119,7 @@ export function PipelineGraph(props: Props) {
           <TimingsLabel
             key={label.key}
             details={label}
-            layout={getLayout()}
+            layout={fullLayout}
             measuredHeight={measuredHeight}
             isSelected={selectedStage?.id === label.stage?.id}
           />
@@ -149,7 +129,7 @@ export function PipelineGraph(props: Props) {
           <SmallLabel
             key={label.key}
             details={label}
-            layout={getLayout()}
+            layout={fullLayout}
             isSelected={selectedStage?.id === label.stage?.id}
           />
         ))}
@@ -158,7 +138,7 @@ export function PipelineGraph(props: Props) {
           <SequentialContainerLabel
             key={label.key}
             details={label}
-            layout={getLayout()}
+            layout={fullLayout}
           />
         ))}
       </div>

@@ -9,18 +9,17 @@ export default function LiveTotal({
   total: number | undefined;
   start: number;
 }) {
-  const sinceStart = () => Date.now() - start;
-  const [duration, setDuration] = useState<number>(total ?? sinceStart());
+  const [duration, setDuration] = useState<number>(total ?? Date.now() - start);
   useEffect(() => {
     if (total == null) {
       const interval = setInterval(() => {
-        setDuration(sinceStart());
+        setDuration(Date.now() - start);
       }, 3001); // to match step polling interval
       return () => clearInterval(interval);
     } else {
       setDuration(total);
     }
-  }, [total]);
+  }, [start, total]);
 
   return <Total ms={duration} />;
 }

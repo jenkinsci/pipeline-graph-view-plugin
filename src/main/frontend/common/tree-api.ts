@@ -54,7 +54,7 @@ export default function useRunPoller({
       () => setLoading(false),
       currentRunPath,
     );
-  }, []);
+  }, [currentRunPath, previousRunPath]);
 
   return {
     run,

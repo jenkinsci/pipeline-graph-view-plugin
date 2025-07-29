@@ -39,7 +39,7 @@ export const I18NProvider: FunctionComponent<I18NProviderProps> = ({
       setMessages(found);
     };
     fetchMessages();
-  }, []);
+  }, [locale, bundles]);
 
   return (
     <I18NContext.Provider value={messages}>{children}</I18NContext.Provider>

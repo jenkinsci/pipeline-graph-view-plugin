@@ -104,15 +104,16 @@ export function Paused({ since }: { since: number }) {
 }
 
 export function Started({ since }: { since: number }) {
+  const messages = useMessages();
+  const locale = useLocale();
+
   if (since === 0) {
     return <></>;
   }
-
-  const messages = useMessages();
   return (
     <>
       {messages.format(LocalizedMessageKey.startedAgo, {
-        "0": humanise(Math.abs(since - Date.now()), useLocale()),
+        "0": humanise(Math.abs(since - Date.now()), locale),
       })}
     </>
   );

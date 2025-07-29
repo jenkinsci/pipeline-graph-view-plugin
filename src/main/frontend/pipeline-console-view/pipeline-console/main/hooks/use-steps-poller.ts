@@ -20,15 +20,16 @@ export function useStepsPoller(props: RunPollerProps) {
 
   const [openStage, setOpenStage] = useState("");
   const [expandedSteps, setExpandedSteps] = useState<string[]>([]);
+  const collapsedSteps = useRef(new Set<string>());
   const [steps, setSteps] = useState<StepInfo[]>([]);
   const [stepBuffers, setStepBuffers] = useState(
     new Map<string, StepLogBufferInfo>(),
   );
-  const [userManuallySetNode, setUserManuallySetNode] = useState(false);
-  const collapsedSteps = useRef(new Set<string>());
-
+  // Avoid invalidating updateStepConsoleOffset on every stepBuffer change.
+  const stepBuffersRef = useRef(stepBuffers);
   const updateStepConsoleOffset = useCallback(
     async (stepId: string, forceUpdate: boolean, startByte: number) => {
+      const stepBuffers = stepBuffersRef.current;
       let stepBuffer = stepBuffers.get(stepId);
       if (!stepBuffer) {
         stepBuffer = {
@@ -71,7 +72,8 @@ export function useStepsPoller(props: RunPollerProps) {
         stepBuffer.fullyFetched = true;
       }
 
-      setStepBuffers((prev) => new Map(prev).set(stepId, stepBuffer));
+      stepBuffersRef.current = new Map(stepBuffers).set(stepId, stepBuffer);
+      setStepBuffers(stepBuffersRef.current);
     },
     [],
   );
@@ -84,8 +86,6 @@ export function useStepsPoller(props: RunPollerProps) {
         return false;
       }
       if (collapsedSteps.current.has(selected)) return true;
-
-      setUserManuallySetNode(true);
 
       const step = steps.find((s) => s.id === selected);
       if (step) {
@@ -105,50 +105,49 @@ export function useStepsPoller(props: RunPollerProps) {
       setOpenStage(selected);
       return true;
     },
-    [updateStepConsoleOffset, collapsedSteps],
+    [updateStepConsoleOffset],
   );
 
-  const getDefaultSelectedStep = (steps: StepInfo[]) => {
-    if (userManuallySetNode) {
-      return;
-    }
-
-    let selectedStep = steps.find((step) => step !== undefined);
-    if (!steps || steps.length === 0 || !selectedStep) {
-      return null;
-    }
-    for (const step of steps) {
-      const stepResult = step.state.toLowerCase() as Result;
-      const selectedStepResult = selectedStep?.state.toLowerCase() as Result;
-      switch (stepResult) {
-        case Result.running:
-        case Result.queued:
-        case Result.paused:
-          // Return first running/queued/paused step.
-          return step;
-        case Result.unstable:
-        case Result.failure:
-        case Result.aborted:
-          if (
-            run?.complete &&
-            selectedStepResult &&
-            stepResult < selectedStepResult
-          ) {
-            // If the run is complete return first unstable/failed/aborted step which has a state worse
-            // than the selectedStep.
-            // E.g. if the first step state is failure we want to return that over a later unstable step.
-            return step;
-          }
-          continue;
-        default:
-          // Otherwise select the step with the worst result with the largest id - e.g. (last step if all successful).
-          if (selectedStepResult && stepResult <= selectedStepResult) {
-            selectedStep = step;
-          }
+  const getDefaultSelectedStep = useCallback(
+    (steps: StepInfo[]) => {
+      let selectedStep = steps.find((step) => step !== undefined);
+      if (!steps || steps.length === 0 || !selectedStep) {
+        return null;
       }
-    }
-    return selectedStep;
-  };
+      for (const step of steps) {
+        const stepResult = step.state.toLowerCase() as Result;
+        const selectedStepResult = selectedStep?.state.toLowerCase() as Result;
+        switch (stepResult) {
+          case Result.running:
+          case Result.queued:
+          case Result.paused:
+            // Return first running/queued/paused step.
+            return step;
+          case Result.unstable:
+          case Result.failure:
+          case Result.aborted:
+            if (
+              run?.complete &&
+              selectedStepResult &&
+              stepResult < selectedStepResult
+            ) {
+              // If the run is complete return first unstable/failed/aborted step which has a state worse
+              // than the selectedStep.
+              // E.g. if the first step state is failure we want to return that over a later unstable step.
+              return step;
+            }
+            continue;
+          default:
+            // Otherwise select the step with the worst result with the largest id - e.g. (last step if all successful).
+            if (selectedStepResult && stepResult <= selectedStepResult) {
+              selectedStep = step;
+            }
+        }
+      }
+      return selectedStep;
+    },
+    [run?.complete],
+  );
 
   useEffect(() => {
     let previousStepsSerialized = "";
@@ -187,12 +186,10 @@ export function useStepsPoller(props: RunPollerProps) {
     return () => {
       polling = false;
     };
-  }, []);
+  }, [getDefaultSelectedStep, parseUrlParams, updateStepConsoleOffset]);
 
   const handleStageSelect = useCallback(
     (nodeId: string) => {
-      setUserManuallySetNode(true);
-
       if (!nodeId) return;
       if (nodeId === openStage) return; // skip if already selected
 
@@ -207,11 +204,10 @@ export function useStepsPoller(props: RunPollerProps) {
         updateStepConsoleOffset(lastStep.id, false, 0 - LOG_FETCH_SIZE);
       }
     },
-    [openStage, steps, updateStepConsoleOffset, collapsedSteps],
+    [openStage, steps, updateStepConsoleOffset],
   );
 
   const onStepToggle = (nodeId: string) => {
-    setUserManuallySetNode(true);
     if (!expandedSteps.includes(nodeId)) {
       collapsedSteps.current.delete(nodeId);
       setExpandedSteps((prev) => [...prev, nodeId]);
@@ -222,9 +218,12 @@ export function useStepsPoller(props: RunPollerProps) {
     }
   };
 
-  const onMoreConsoleClick = (nodeId: string, startByte: number) => {
-    updateStepConsoleOffset(nodeId, true, startByte);
-  };
+  const onMoreConsoleClick = useCallback(
+    (nodeId: string, startByte: number) => {
+      updateStepConsoleOffset(nodeId, true, startByte);
+    },
+    [updateStepConsoleOffset],
+  );
 
   const getStageSteps = (stageId: string) => {
     return steps.filter((step) => step.stageId === stageId);

@@ -12,20 +12,13 @@ describe("SettingsButton", () => {
     return div;
   };
 
-  const renderComponent = (
-    buttonPortal: HTMLElement | null = createButtonPortal(),
-  ) => {
+  const renderComponent = (buttonPortal: HTMLElement) => {
     return render(
       <UserPreferencesProvider>
         <SettingsButton buttonPortal={buttonPortal} />
       </UserPreferencesProvider>,
     );
   };
-
-  it("should not render when buttonPortal is null", () => {
-    renderComponent(null);
-    expect(screen.queryByText("Settings")).toBeNull();
-  });
 
   it("should render settings button in portal", () => {
     const buttonPortal = createButtonPortal();

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ConsoleLine } from "./ConsoleLine.tsx";
 import {
@@ -7,10 +7,13 @@ import {
   StepLogBufferInfo,
 } from "./PipelineConsoleModel.tsx";
 
-export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
-  const appendInterval = useRef<NodeJS.Timeout | null>(null);
+export default function ConsoleLogStream({
+  step,
+  logBuffer,
+  onMoreConsoleClick,
+}: ConsoleLogStreamProps) {
+  const appendInterval = useRef<number | null>(null);
   const [stickToBottom, setStickToBottom] = useState(false);
-  const [maxConsoleLineHeight, setMaxConsoleLineHeight] = useState(1);
 
   useEffect(() => {
     return () => {
@@ -21,16 +24,16 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   }, []);
 
   useEffect(() => {
-    if (stickToBottom && props.logBuffer.lines.length > 0) {
+    if (stickToBottom && logBuffer.lines.length > 0) {
       // Scroll to bottom of the log stream
-      if (props.logBuffer.lines) {
+      if (logBuffer.lines) {
         requestAnimationFrame(() => {
           const scrollTarget = document.documentElement.scrollHeight;
           window.scrollTo({ top: scrollTarget });
         });
       }
     }
-  }, [props.logBuffer.lines]);
+  }, [stickToBottom, logBuffer.lines]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -46,30 +49,20 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
   }, []);
 
   useEffect(() => {
-    if (stickToBottom && shouldRequestMoreLogs()) {
+    const shouldRequestMoreLogs =
+      step.state === Result.running || logBuffer.startByte < 0;
+
+    if (stickToBottom && shouldRequestMoreLogs) {
       if (!appendInterval.current) {
-        appendInterval.current = setInterval(() => {
-          props.onMoreConsoleClick(props.step.id, props.logBuffer.startByte);
+        appendInterval.current = window.setInterval(() => {
+          onMoreConsoleClick(step.id, logBuffer.startByte);
         }, 1000);
       }
     } else if (appendInterval.current) {
       clearInterval(appendInterval.current);
       appendInterval.current = null;
     }
-  }, [stickToBottom, props.step, props.logBuffer]);
-
-  const consoleLineHeightCallback = useCallback(
-    (height: number) => {
-      if (height > maxConsoleLineHeight || maxConsoleLineHeight === 1) {
-        setMaxConsoleLineHeight(height);
-      }
-    },
-    [maxConsoleLineHeight],
-  );
-
-  const shouldRequestMoreLogs = () => {
-    return props.step.state === Result.running || props.logBuffer.startByte < 0;
-  };
+  }, [stickToBottom, step, logBuffer, onMoreConsoleClick]);
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -90,14 +83,13 @@ export default function ConsoleLogStream(props: ConsoleLogStreamProps) {
 
   return (
     <div role="log">
-      {props.logBuffer.lines.map((content, index) => (
+      {logBuffer.lines.map((content, index) => (
         <ConsoleLine
           key={index}
           lineNumber={String(index)}
           content={content}
-          stepId={props.step.id}
-          startByte={props.logBuffer.startByte}
-          heightCallback={consoleLineHeightCallback}
+          stepId={step.id}
+          startByte={logBuffer.startByte}
         />
       ))}
     </div>

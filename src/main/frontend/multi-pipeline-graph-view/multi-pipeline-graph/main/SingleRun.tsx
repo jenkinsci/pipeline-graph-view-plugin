@@ -23,12 +23,11 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
   });
 
   function Changes() {
+    const messages = useContext(I18NContext);
+
     if (run.changesCount === 0) {
       return;
     }
-
-    const messages = useContext(I18NContext);
-
     return (
       <>
         {" - "}

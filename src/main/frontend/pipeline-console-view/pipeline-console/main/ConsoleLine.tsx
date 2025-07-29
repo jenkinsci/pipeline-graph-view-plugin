@@ -1,5 +1,5 @@
 import linkifyHtml from "linkify-html";
-import { memo, useEffect, useRef } from "react";
+import { memo } from "react";
 
 import { linkifyJsOptions } from "../../../common/utils/linkify-js.ts";
 import { makeReactChildren, tokenizeANSIString } from "./Ansi.tsx";
@@ -9,28 +9,17 @@ export interface ConsoleLineProps {
   content: string;
   stepId: string;
   startByte: number;
-  heightCallback: (height: number) => void;
 }
 
 // Console output line
 export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const height = ref.current ? ref.current.getBoundingClientRect().height : 0;
-    props.heightCallback(height);
-  }, []);
-
   return (
     <pre
       style={{ background: "none", border: "none" }}
       className="console-output-line"
       key={`console-line-pre${props.lineNumber}`}
     >
-      <div
-        className="console-output-line"
-        key={`${props.lineNumber}-body`}
-        ref={ref}
-      >
+      <div className="console-output-line" key={`${props.lineNumber}-body`}>
         <a
           className="console-line-number"
           id={`log-${props.lineNumber}`}

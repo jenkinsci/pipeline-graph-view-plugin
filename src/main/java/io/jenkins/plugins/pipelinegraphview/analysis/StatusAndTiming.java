@@ -45,7 +45,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.NotExecutedNodeAction;
 import org.jenkinsci.plugins.workflow.actions.QueueItemAction;
@@ -656,8 +655,7 @@ public class StatusAndTiming {
             formatted.append('[').append(node.getId()).append(']');
             formatted
                     .append('{')
-                    .append(StringUtils.join(
-                            node.getParents().stream().map(flowNodeToId).collect(Collectors.toList()), ','))
+                    .append(node.getParents().stream().map(flowNodeToId).collect(Collectors.joining(",")))
                     .append('}');
             if (showTiming) {
                 formatted.append('(');

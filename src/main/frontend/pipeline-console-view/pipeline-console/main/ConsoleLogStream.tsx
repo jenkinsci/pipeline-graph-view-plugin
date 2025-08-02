@@ -64,22 +64,36 @@ export default function ConsoleLogStream({
     }
   }, [stickToBottom, step, logBuffer, onMoreConsoleClick]);
 
+  const [scrollToLogLine, setScrollToLogLine] = useState<boolean>(
+    window.location.hash.startsWith("#log-"),
+  );
   useEffect(() => {
-    const hash = window.location.hash;
-    if (!hash.startsWith("#log-")) {
+    if (!scrollToLogLine) return;
+    let hash = window.location.hash;
+    if (!hash.startsWith("#log-")) return;
+    let [stepIdPart, lineNumberPart] = hash.slice(5).split("-");
+    if (lineNumberPart && stepIdPart !== step.id) {
+      // The log line belongs to another step.
+      setScrollToLogLine(false);
       return;
     }
-    const lineNumber = parseInt(hash.substring(5));
-    if (!isNaN(lineNumber)) {
-      const element = document.getElementById(`log-${lineNumber}`);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth", block: "center" });
-        const hash = location.hash;
-        location.hash = "";
-        location.hash = hash;
-      }
+    if (!lineNumberPart) {
+      // Backwards compatibility for links without a stepId in the hash.
+      lineNumberPart = stepIdPart;
+      stepIdPart = step.id;
+      hash = `#log-${stepIdPart}-${lineNumberPart}`;
+      location.hash = hash;
     }
-  }, []);
+    const element = document.getElementById(hash.slice(1));
+    if (!element) return; // Try again the next time the log lines change.
+    element.scrollIntoView({ behavior: "smooth", block: "center" });
+
+    // Toggle hash to refresh the :target css matcher of the active line.
+    location.hash = "";
+    location.hash = hash;
+
+    setScrollToLogLine(false);
+  }, [scrollToLogLine, step.id, logBuffer.lines]);
 
   return (
     <div role="log">

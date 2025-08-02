@@ -7,6 +7,11 @@ import {
   StepLogBufferInfo,
 } from "./PipelineConsoleModel.tsx";
 
+function canStickToBottom() {
+  // Avoid scrolling to the bottom when a log line is focussed.
+  return !window.location.hash.startsWith("#log-");
+}
+
 export default function ConsoleLogStream({
   step,
   logBuffer,
@@ -24,10 +29,11 @@ export default function ConsoleLogStream({
   }, []);
 
   useEffect(() => {
-    if (stickToBottom && logBuffer.lines.length > 0) {
+    if (stickToBottom && logBuffer.lines.length > 0 && canStickToBottom()) {
       // Scroll to bottom of the log stream
       if (logBuffer.lines) {
         requestAnimationFrame(() => {
+          if (!canStickToBottom()) return;
           const scrollTarget = document.documentElement.scrollHeight;
           window.scrollTo({ top: scrollTarget });
         });
@@ -36,7 +42,13 @@ export default function ConsoleLogStream({
   }, [stickToBottom, logBuffer.lines]);
 
   useEffect(() => {
+    if (!canStickToBottom()) return;
     const handleScroll = () => {
+      if (!canStickToBottom()) {
+        window.removeEventListener("scroll", handleScroll);
+        setStickToBottom(false);
+        return;
+      }
       const scrollPosition = window.scrollY + window.innerHeight;
       const pageHeight = document.body.scrollHeight;
       const isAtBottom = pageHeight - scrollPosition < 300;

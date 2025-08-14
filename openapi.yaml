@@ -18,13 +18,13 @@ info:
     url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: '{build_url}/pipeline-overview'
+  - url: "{build_url}/pipeline-overview"
     description: Pipeline Overview API - Individual pipeline run
     variables:
       build_url:
         default: http://localhost:8080/jenkins/job/my-pipeline/1
         description: Complete build URL including Jenkins server, job path, and build number
-  - url: '{job_url}/multi-pipeline-graph'
+  - url: "{job_url}/multi-pipeline-graph"
     description: Multi-Pipeline Graph API - Multiple pipeline runs
     variables:
       job_url:
@@ -52,7 +52,7 @@ paths:
         their states, timing information, and hierarchy.
       operationId: getPipelineTree
       responses:
-        '200':
+        "200":
           description: Pipeline tree structure
           headers:
             Cache-Control:
@@ -64,13 +64,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PipelineTreeResponse'
-        '500':
+                $ref: "#/components/schemas/PipelineTreeResponse"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 
   /allSteps:
     get:
@@ -82,7 +82,7 @@ paths:
         the number of API calls needed by providing all step information at once.
       operationId: getAllSteps
       responses:
-        '200':
+        "200":
           description: All pipeline steps
           headers:
             Cache-Control:
@@ -92,13 +92,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StepListResponse'
-        '500':
+                $ref: "#/components/schemas/StepListResponse"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 
   /steps:
     get:
@@ -117,18 +117,18 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Steps for the specified node
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StepListResponse'
-        '400':
+                $ref: "#/components/schemas/StepListResponse"
+        "400":
           description: Missing or invalid nodeId parameter
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 
   /consoleOutput:
     get:
@@ -158,18 +158,18 @@ paths:
             format: int64
             default: -153600
       responses:
-        '200':
+        "200":
           description: Console output data
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConsoleOutputResponse'
-        '400':
+                $ref: "#/components/schemas/ConsoleOutputResponse"
+        "400":
           description: Missing or invalid parameters
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 
   /log:
     get:
@@ -189,13 +189,13 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Raw console text
           content:
             text/plain:
               schema:
                 type: string
-        '400':
+        "400":
           description: Missing nodeId parameter
 
   /consoleBuildOutput:
@@ -208,7 +208,7 @@ paths:
         Returns the complete console output for the entire build in HTML format.
       operationId: getBuildConsoleOutput
       responses:
-        '200':
+        "200":
           description: Full build console output in HTML
           content:
             text/html:
@@ -233,18 +233,18 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Next build information (empty if not found)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/NextBuildResponse'
-        '400':
+                $ref: "#/components/schemas/NextBuildResponse"
+        "400":
           description: Missing or invalid queueId
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 
   /doRerun:
     post:
@@ -257,22 +257,22 @@ paths:
         script and parameters.
       operationId: rerunPipeline
       security:
-        - jenkins_auth: ['BUILD']
+        - jenkins_auth: ["BUILD"]
       responses:
-        '200':
+        "200":
           description: Rerun scheduled successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RerunResponse'
-        '403':
+                $ref: "#/components/schemas/RerunResponse"
+        "403":
           description: Insufficient permissions
-        '400':
+        "400":
           description: Build cannot be rerun (not buildable)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 
   /doCancel:
     post:
@@ -284,22 +284,22 @@ paths:
         Cancels the currently running pipeline build.
       operationId: cancelPipeline
       security:
-        - jenkins_auth: ['CANCEL']
+        - jenkins_auth: ["CANCEL"]
       responses:
-        '200':
+        "200":
           description: Pipeline cancelled successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SuccessResponse'
-        '403':
+                $ref: "#/components/schemas/SuccessResponse"
+        "403":
           description: Insufficient permissions
-        '400':
+        "400":
           description: Pipeline cannot be cancelled (not running)
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: "#/components/schemas/ErrorResponse"
 
   /runs:
     get:
@@ -318,7 +318,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: List of recent pipeline runs
           headers:
             ETag:
@@ -334,8 +334,8 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PipelineRunsResponse'
-        '304':
+                $ref: "#/components/schemas/PipelineRunsResponse"
+        "304":
           description: Not modified (ETag match)
 
 components:
@@ -353,7 +353,7 @@ components:
           type: string
           enum: [ok]
         data:
-          $ref: '#/components/schemas/PipelineGraph'
+          $ref: "#/components/schemas/PipelineGraph"
 
     PipelineGraph:
       type: object
@@ -364,7 +364,7 @@ components:
         stages:
           type: array
           items:
-            $ref: '#/components/schemas/PipelineStage'
+            $ref: "#/components/schemas/PipelineStage"
 
     PipelineStage:
       type: object
@@ -376,7 +376,7 @@ components:
           type: string
           description: Display name of the stage
         state:
-          $ref: '#/components/schemas/PipelineState'
+          $ref: "#/components/schemas/PipelineState"
         type:
           type: string
           description: Type of the stage (e.g., "STAGE", "PARALLEL")
@@ -400,7 +400,7 @@ components:
         children:
           type: array
           items:
-            $ref: '#/components/schemas/PipelineStage'
+            $ref: "#/components/schemas/PipelineStage"
           description: Child stages (for parallel or nested stages)
         seqContainerName:
           types:
@@ -411,7 +411,7 @@ components:
           types:
             - object
             - null
-          $ref: '#/components/schemas/PipelineStage'
+          $ref: "#/components/schemas/PipelineStage"
         isSequential:
           type: boolean
           description: Whether this stage is sequential
@@ -452,7 +452,7 @@ components:
           type: string
           enum: [ok]
         data:
-          $ref: '#/components/schemas/StepList'
+          $ref: "#/components/schemas/StepList"
 
     StepList:
       type: object
@@ -460,7 +460,7 @@ components:
         steps:
           type: array
           items:
-            $ref: '#/components/schemas/PipelineStep'
+            $ref: "#/components/schemas/PipelineStep"
         runIsComplete:
           type: boolean
           description: Whether the pipeline run is complete
@@ -475,7 +475,7 @@ components:
           type: string
           description: Display name of the step
         state:
-          $ref: '#/components/schemas/PipelineState'
+          $ref: "#/components/schemas/PipelineState"
         type:
           type: string
           description: Type of the step
@@ -503,7 +503,7 @@ components:
           types:
             - object
             - null
-          $ref: '#/components/schemas/InputStep'
+          $ref: "#/components/schemas/InputStep"
 
     InputStep:
       type: object
@@ -531,7 +531,7 @@ components:
           type: string
           enum: [ok]
         data:
-          $ref: '#/components/schemas/ConsoleOutput'
+          $ref: "#/components/schemas/ConsoleOutput"
 
     ConsoleOutput:
       type: object
@@ -590,7 +590,7 @@ components:
         data:
           type: array
           items:
-            $ref: '#/components/schemas/PipelineRun'
+            $ref: "#/components/schemas/PipelineRun"
 
     PipelineRun:
       type: object
@@ -613,7 +613,7 @@ components:
           type: integer
           description: Number of changes in this run
         result:
-          $ref: '#/components/schemas/PipelineState'
+          $ref: "#/components/schemas/PipelineState"
 
     SuccessResponse:
       type: object

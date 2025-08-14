@@ -1,0 +1,691 @@
+openapi: 3.1.0
+
+info:
+  title: Jenkins Pipeline Graph View Plugin API
+  description: |
+    REST API for the Jenkins Pipeline Graph View Plugin. This plugin provides enhanced visualization 
+    and interaction capabilities for Jenkins pipeline builds.
+
+    The plugin exposes two main sets of endpoints:
+    - Pipeline Overview APIs: For individual pipeline run details, console output, and build control
+    - Multi-Pipeline Graph APIs: For viewing multiple pipeline runs in aggregate
+  version: 1.0.0
+  contact:
+    name: Jenkins Pipeline Graph View Plugin
+    url: https://github.com/jenkinsci/pipeline-graph-view-plugin
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: '{build_url}/pipeline-overview'
+    description: Pipeline Overview API - Individual pipeline run
+    variables:
+      build_url:
+        default: http://localhost:8080/jenkins/job/my-pipeline/1
+        description: Complete build URL including Jenkins server, job path, and build number
+  - url: '{job_url}/multi-pipeline-graph'
+    description: Multi-Pipeline Graph API - Multiple pipeline runs
+    variables:
+      job_url:
+        default: http://localhost:8080/jenkins/job/my-pipeline
+        description: Complete job URL including Jenkins server and job path
+
+tags:
+  - name: Pipeline Overview
+    description: APIs for individual pipeline run visualization and control
+  - name: Console Output
+    description: APIs for accessing pipeline console logs
+  - name: Build Control
+    description: APIs for controlling pipeline builds
+  - name: Multi-Pipeline Graph
+    description: APIs for viewing multiple pipeline runs
+
+paths:
+  /tree:
+    get:
+      tags:
+        - Pipeline Overview
+      summary: Get pipeline stage tree
+      description: |
+        Returns the complete stage tree structure for the pipeline run, including all stages,
+        their states, timing information, and hierarchy.
+      operationId: getPipelineTree
+      responses:
+        '200':
+          description: Pipeline tree structure
+          headers:
+            Cache-Control:
+              description: Cache control header - immutable if complete, no-store if running
+              schema:
+                type: string
+                examples:
+                  - "private, immutable, max-age=86400"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PipelineTreeResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /allSteps:
+    get:
+      tags:
+        - Pipeline Overview
+      summary: Get all pipeline steps
+      description: |
+        Returns all steps across all stages in the pipeline run. This endpoint reduces
+        the number of API calls needed by providing all step information at once.
+      operationId: getAllSteps
+      responses:
+        '200':
+          description: All pipeline steps
+          headers:
+            Cache-Control:
+              description: Cache control header - immutable if complete, no-store if running
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StepListResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /steps:
+    get:
+      tags:
+        - Pipeline Overview
+      summary: Get steps for a specific node
+      description: |
+        Returns steps for a specific stage or node. This is a legacy endpoint
+        maintained for compatibility.
+      operationId: getStepsByNode
+      parameters:
+        - name: nodeId
+          in: query
+          required: true
+          description: The ID of the stage/node to get steps for
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Steps for the specified node
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StepListResponse'
+        '400':
+          description: Missing or invalid nodeId parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /consoleOutput:
+    get:
+      tags:
+        - Console Output
+        - Pipeline Overview
+      summary: Get console output for a step
+      description: |
+        Returns console output for a specific step or stage. Supports pagination
+        through startByte parameter.
+      operationId: getConsoleOutput
+      parameters:
+        - name: nodeId
+          in: query
+          required: true
+          description: The ID of the step/stage to get console output for
+          schema:
+            type: string
+        - name: startByte
+          in: query
+          required: false
+          description: |
+            Starting byte position. If negative, starts from end minus the absolute value.
+            If larger than output length, returns error. Default is -153600 (150KB from end).
+          schema:
+            type: integer
+            format: int64
+            default: -153600
+      responses:
+        '200':
+          description: Console output data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsoleOutputResponse'
+        '400':
+          description: Missing or invalid parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /log:
+    get:
+      tags:
+        - Console Output
+        - Pipeline Overview
+      summary: Get raw console text
+      description: |
+        Returns raw console text for a step or stage. For stages, returns concatenated
+        logs from all steps within the stage.
+      operationId: getConsoleText
+      parameters:
+        - name: nodeId
+          in: query
+          required: true
+          description: The ID of the step/stage to get console text for
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Raw console text
+          content:
+            text/plain:
+              schema:
+                type: string
+        '400':
+          description: Missing nodeId parameter
+
+  /consoleBuildOutput:
+    get:
+      tags:
+        - Console Output
+        - Pipeline Overview
+      summary: Get full build console output
+      description: |
+        Returns the complete console output for the entire build in HTML format.
+      operationId: getBuildConsoleOutput
+      responses:
+        '200':
+          description: Full build console output in HTML
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /nextBuild:
+    get:
+      tags:
+        - Build Control
+        - Pipeline Overview
+      summary: Check for next build
+      description: |
+        Checks if a build with the specified queue ID has started and returns
+        its URL if available.
+      operationId: hasNextBuild
+      parameters:
+        - name: queueId
+          in: query
+          required: true
+          description: Queue ID to check for started build
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Next build information (empty if not found)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NextBuildResponse'
+        '400':
+          description: Missing or invalid queueId
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /doRerun:
+    post:
+      tags:
+        - Build Control
+        - Pipeline Overview
+      summary: Rerun the pipeline
+      description: |
+        Reruns the pipeline using the Jenkins Replay Action feature with the same
+        script and parameters.
+      operationId: rerunPipeline
+      security:
+        - jenkins_auth: ['BUILD']
+      responses:
+        '200':
+          description: Rerun scheduled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RerunResponse'
+        '403':
+          description: Insufficient permissions
+        '400':
+          description: Build cannot be rerun (not buildable)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /doCancel:
+    post:
+      tags:
+        - Build Control
+        - Pipeline Overview
+      summary: Cancel the running pipeline
+      description: |
+        Cancels the currently running pipeline build.
+      operationId: cancelPipeline
+      security:
+        - jenkins_auth: ['CANCEL']
+      responses:
+        '200':
+          description: Pipeline cancelled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '403':
+          description: Insufficient permissions
+        '400':
+          description: Pipeline cannot be cancelled (not running)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /runs:
+    get:
+      tags:
+        - Multi-Pipeline Graph
+      summary: Get recent pipeline runs
+      description: |
+        Returns information about recent pipeline runs for the job. Supports
+        ETags for efficient caching.
+      operationId: getPipelineRuns
+      parameters:
+        - name: If-None-Match
+          in: header
+          required: false
+          description: ETag value for conditional requests
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of recent pipeline runs
+          headers:
+            ETag:
+              description: ETag for caching
+              schema:
+                type: string
+            Cache-Control:
+              description: Cache control header
+              schema:
+                type: string
+                examples:
+                  - "no-cache"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PipelineRunsResponse'
+        '304':
+          description: Not modified (ETag match)
+
+components:
+  securitySchemes:
+    jenkins_auth:
+      type: http
+      scheme: basic
+      description: Jenkins basic authentication
+
+  schemas:
+    PipelineTreeResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        data:
+          $ref: '#/components/schemas/PipelineGraph'
+
+    PipelineGraph:
+      type: object
+      properties:
+        complete:
+          type: boolean
+          description: Whether the pipeline run is complete
+        stages:
+          type: array
+          items:
+            $ref: '#/components/schemas/PipelineStage'
+
+    PipelineStage:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the stage
+        name:
+          type: string
+          description: Display name of the stage
+        state:
+          $ref: '#/components/schemas/PipelineState'
+        type:
+          type: string
+          description: Type of the stage (e.g., "STAGE", "PARALLEL")
+        title:
+          type: string
+          description: Full title/description of the stage
+        pauseDurationMillis:
+          type: integer
+          format: int64
+          description: Duration in milliseconds the stage was paused
+        startTimeMillis:
+          type: integer
+          format: int64
+          description: Stage start time in milliseconds since epoch
+        totalDurationMillis:
+          types:
+            - integer
+            - null
+          format: int64
+          description: Total duration in milliseconds (null if still running)
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/PipelineStage'
+          description: Child stages (for parallel or nested stages)
+        seqContainerName:
+          types:
+            - string
+            - null
+          description: Name of sequential container if applicable
+        nextSibling:
+          types:
+            - object
+            - null
+          $ref: '#/components/schemas/PipelineStage'
+        isSequential:
+          type: boolean
+          description: Whether this stage is sequential
+        synthetic:
+          type: boolean
+          description: Whether this is a synthetic stage
+        placeholder:
+          type: boolean
+          description: Whether this is a placeholder stage
+        agent:
+          types:
+            - string
+            - null
+          description: Agent information for the stage
+        url:
+          type: string
+          description: URL to view this stage in the UI
+
+    PipelineState:
+      type: string
+      enum:
+        - queued
+        - running
+        - paused
+        - skipped
+        - not_built
+        - finished
+        - success
+        - unstable
+        - failure
+        - unknown
+        - aborted
+
+    StepListResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        data:
+          $ref: '#/components/schemas/StepList'
+
+    StepList:
+      type: object
+      properties:
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/PipelineStep'
+        runIsComplete:
+          type: boolean
+          description: Whether the pipeline run is complete
+
+    PipelineStep:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the step
+        name:
+          type: string
+          description: Display name of the step
+        state:
+          $ref: '#/components/schemas/PipelineState'
+        type:
+          type: string
+          description: Type of the step
+        title:
+          type: string
+          description: Full title/description of the step
+        pauseDurationMillis:
+          type: integer
+          format: int64
+          description: Duration in milliseconds the step was paused
+        startTimeMillis:
+          type: integer
+          format: int64
+          description: Step start time in milliseconds since epoch
+        totalDurationMillis:
+          types:
+            - integer
+            - null
+          format: int64
+          description: Total duration in milliseconds (null if still running)
+        stageId:
+          type: string
+          description: ID of the parent stage
+        inputStep:
+          types:
+            - object
+            - null
+          $ref: '#/components/schemas/InputStep'
+
+    InputStep:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Input message displayed to user
+        cancel:
+          type: string
+          description: Cancel button text
+        id:
+          type: string
+          description: Input step ID
+        ok:
+          type: string
+          description: OK button text
+        parameters:
+          type: boolean
+          description: Whether the input step has parameters
+
+    ConsoleOutputResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        data:
+          $ref: '#/components/schemas/ConsoleOutput'
+
+    ConsoleOutput:
+      type: object
+      properties:
+        text:
+          type: string
+          description: Console text content
+        startByte:
+          type: integer
+          format: int64
+          description: Starting byte position of this text chunk
+        endByte:
+          type: integer
+          format: int64
+          description: Ending byte position of this text chunk
+        nodeIsActive:
+          type: boolean
+          description: Whether the node is currently active/running
+
+    NextBuildResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        data:
+          type: object
+          properties:
+            nextBuildUrl:
+              type: string
+              description: URL of the next build (empty object if not found)
+
+    RerunResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        data:
+          type: object
+          properties:
+            message:
+              type: string
+              description: Success message
+            queueId:
+              type: integer
+              format: int64
+              description: Queue ID of the scheduled rerun
+
+    PipelineRunsResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/PipelineRun'
+
+    PipelineRun:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique run identifier
+        displayName:
+          type: string
+          description: Display name of the run
+        timestamp:
+          type: integer
+          format: int64
+          description: Run start timestamp in milliseconds since epoch
+        duration:
+          type: integer
+          format: int64
+          description: Run duration in milliseconds
+        changesCount:
+          type: integer
+          description: Number of changes in this run
+        result:
+          $ref: '#/components/schemas/PipelineState'
+
+    SuccessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        data:
+          type: object
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [error]
+        data:
+          type: object
+          properties:
+            error:
+              type: string
+              description: Error message
+
+  examples:
+    PipelineTreeExample:
+      summary: Example pipeline tree
+      value:
+        status: ok
+        data:
+          complete: true
+          stages:
+            - id: "6"
+              name: "Build"
+              state: "success"
+              type: "STAGE"
+              title: "Build"
+              pauseDurationMillis: 0
+              startTimeMillis: 1692024000000
+              totalDurationMillis: 30000
+              children: []
+              seqContainerName: null
+              nextSibling: null
+              isSequential: false
+              synthetic: false
+              placeholder: false
+              agent: "linux"
+              url: "/job/my-pipeline/1/pipeline-overview?selected-node=6"
+
+    StepListExample:
+      summary: Example step list
+      value:
+        status: ok
+        data:
+          steps:
+            - id: "7"
+              name: "Shell Script"
+              state: "success"
+              type: "STEP"
+              title: "sh"
+              pauseDurationMillis: 0
+              startTimeMillis: 1692024010000
+              totalDurationMillis: 5000
+              stageId: "6"
+              inputStep: null
+          runIsComplete: true
+
+    ConsoleOutputExample:
+      summary: Example console output
+      value:
+        status: ok
+        data:
+          text: "+ echo 'Hello World'\nHello World\n"
+          startByte: 0
+          endByte: 27
+          nodeIsActive: false

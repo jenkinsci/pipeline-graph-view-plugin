@@ -22,9 +22,9 @@ This plugin adds a visual representation of Jenkins pipelines, showing each stag
 
 ## Getting started
 
-1. Install the [pipeline-graph-view](https://plugins.jenkins.io/pipeline-graph-view/) plugin
-2. Go to a pipeline run (not a job page)
-3. Click 'Pipeline Console'
+1. Install the [Pipeline Graph View](https://plugins.jenkins.io/pipeline-graph-view/) plugin
+2. Go to some pipeline build page (not the job page)
+3. Click _Pipeline Overview_
 
 ## Screenshots
 
@@ -41,6 +41,10 @@ Semi-complex pipeline:
 See a live demonstration from a Jenkins Contributor Summit:
 
 [![Demo of Pipeline Graph View plugin](https://img.youtube.com/vi/MBI3MBY2eJ8/0.jpg)](https://www.youtube.com/watch?v=MBI3MBY2eJ8&t=3295 "Pipeline Graph View plugin")
+
+## REST API
+
+The REST API documentation can be found [here](https://editor-next.swagger.io/?url=https://raw.githubusercontent.com/jenkinsci/pipeline-graph-view-plugin/refs/heads/main/openapi.yaml).
 
 ## Contributing
 

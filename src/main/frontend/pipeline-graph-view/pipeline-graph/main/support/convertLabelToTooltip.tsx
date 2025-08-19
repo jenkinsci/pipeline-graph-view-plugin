@@ -8,10 +8,11 @@ type MatrixValue = {
 };
 
 export function convertLabelToTooltip(content: string): string | MatrixValue[] {
+  console.log(content)
   if (content.startsWith("Matrix -")) {
     return content
       .replace("Matrix - ", "")
-      .split(",")
+      .split("',")
       .map((element) => {
         const result = element.split("=");
         return {

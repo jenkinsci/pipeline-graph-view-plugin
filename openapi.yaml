@@ -34,10 +34,6 @@ servers:
 tags:
   - name: Pipeline Overview
     description: APIs for individual pipeline run visualization and control
-  - name: Console Output
-    description: APIs for accessing pipeline console logs
-  - name: Build Control
-    description: APIs for controlling pipeline builds
   - name: Multi-Pipeline Graph
     description: APIs for viewing multiple pipeline runs
 
@@ -133,7 +129,6 @@ paths:
   /consoleOutput:
     get:
       tags:
-        - Console Output
         - Pipeline Overview
       summary: Get console output for a step
       description: |
@@ -174,7 +169,6 @@ paths:
   /log:
     get:
       tags:
-        - Console Output
         - Pipeline Overview
       summary: Get raw console text
       description: |
@@ -201,7 +195,6 @@ paths:
   /consoleBuildOutput:
     get:
       tags:
-        - Console Output
         - Pipeline Overview
       summary: Get full build console output
       description: |
@@ -218,7 +211,6 @@ paths:
   /nextBuild:
     get:
       tags:
-        - Build Control
         - Pipeline Overview
       summary: Check for next build
       description: |
@@ -249,7 +241,6 @@ paths:
   /doRerun:
     post:
       tags:
-        - Build Control
         - Pipeline Overview
       summary: Rerun the pipeline
       description: |
@@ -277,7 +268,6 @@ paths:
   /doCancel:
     post:
       tags:
-        - Build Control
         - Pipeline Overview
       summary: Cancel the running pipeline
       description: |

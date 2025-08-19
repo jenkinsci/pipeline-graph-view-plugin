@@ -11,7 +11,7 @@ export function convertLabelToTooltip(content: string): string | MatrixValue[] {
   if (content.startsWith("Matrix -")) {
     return content
       .replace("Matrix - ", "")
-      .split(",")
+      .split("',")
       .map((element) => {
         const result = element.split("=");
         return {

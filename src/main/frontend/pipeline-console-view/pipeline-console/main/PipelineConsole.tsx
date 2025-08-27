@@ -36,6 +36,7 @@ export default function PipelineConsole() {
     handleStageSelect,
     onStepToggle,
     onMoreConsoleClick,
+    fetchExceptionText,
     loading,
   } = useStepsPoller({ currentRunPath, previousRunPath });
 
@@ -137,6 +138,7 @@ export default function PipelineConsole() {
                   expandedSteps={expandedSteps}
                   onStepToggle={onStepToggle}
                   onMoreConsoleClick={onMoreConsoleClick}
+                  fetchExceptionText={fetchExceptionText}
                 />
               )}
             </div>

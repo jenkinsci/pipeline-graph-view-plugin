@@ -16,6 +16,7 @@ export default function ConsoleLogStream({
   step,
   logBuffer,
   onMoreConsoleClick,
+  fetchExceptionText,
 }: ConsoleLogStreamProps) {
   const appendInterval = useRef<number | null>(null);
   const [stickToBottom, setStickToBottom] = useState(false);
@@ -27,6 +28,12 @@ export default function ConsoleLogStream({
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (step.state === Result.failure) {
+      fetchExceptionText(step.id);
+    }
+  }, [step.id, step.state, fetchExceptionText]);
 
   useEffect(() => {
     if (stickToBottom && logBuffer.lines.length > 0 && canStickToBottom()) {
@@ -125,6 +132,7 @@ export default function ConsoleLogStream({
 export interface ConsoleLogStreamProps {
   logBuffer: StepLogBufferInfo;
   onMoreConsoleClick: (nodeId: string, startByte: number) => void;
+  fetchExceptionText: (nodeId: string) => void;
   step: StepInfo;
   maxHeightScale: number;
 }

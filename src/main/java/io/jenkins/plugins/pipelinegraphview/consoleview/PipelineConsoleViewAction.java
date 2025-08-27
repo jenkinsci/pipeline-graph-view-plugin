@@ -181,6 +181,14 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
         run.getLogText().writeHtmlTo(0L, rsp.getWriter());
     }
 
+    @GET
+    @WebMethod(name = "exceptionText")
+    public HttpResponse getExceptionText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+        String nodeId = req.getParameter("nodeId");
+        if (nodeId == null) return HttpResponses.error(400, "missing ?nodeId");
+        return HttpResponses.text(getNodeExceptionText(nodeId));
+    }
+
     /*
      * The default behavior of this functions differs from 'getConsoleOutput' in that it will use LOG_THRESHOLD from the end of the string.
      * Note: if 'startByte' is negative and falls outside of the console text then we will start from byte 0.
@@ -259,16 +267,6 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
             text = PipelineNodeUtil.convertLogToString(logText, startByte);
             endByte = textLength;
         }
-        // If has an exception, return the exception text (inc. stacktrace).
-        if (isUnhandledException(nodeId)) {
-            // Set logText to exception text. This is a little hacky - maybe it would be better update the
-            // frontend to handle steps and exceptions differently?
-            String nodeExceptionText = getNodeExceptionText(nodeId);
-            if (nodeExceptionText != null) {
-                text += nodeExceptionText;
-            }
-            endByte += text.length();
-        }
         JSONObject json = new JSONObject();
         json.element("text", text);
         json.element("startByte", startByte);
@@ -286,7 +284,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
         return null;
     }
 
-    private String getNodeExceptionText(String nodeId) throws IOException {
+    protected String getNodeExceptionText(String nodeId) throws IOException {
         FlowExecution execution = run.getExecution();
         if (execution != null) {
             logger.debug("getNodeException found execution.");

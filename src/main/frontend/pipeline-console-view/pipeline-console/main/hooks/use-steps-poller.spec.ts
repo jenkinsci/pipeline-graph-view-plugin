@@ -39,6 +39,7 @@ vi.mock("../PipelineConsoleModel.tsx", async () => ({
     startByte: 0,
     endByte: 100,
   }),
+  getExceptionText: vi.fn().mockResolvedValue("Error message"),
   POLL_INTERVAL: 50,
 }));
 
@@ -104,6 +105,55 @@ it("handles empty console log lines before and after text", async () => {
     expect(
       result.current.openStageStepBuffers.get("step-2")?.lines,
     ).to.deep.equal(["", "Hello", ""]),
+  );
+
+  unmount();
+});
+
+it("appends the exception message", async () => {
+  const { result, unmount } = renderHook(() =>
+    useStepsPoller({ currentRunPath: "/run/1", previousRunPath: undefined }),
+  );
+
+  await waitFor(() => expect(result.current.expandedSteps).toContain("step-2"));
+  await waitFor(() =>
+    expect(
+      result.current.openStageStepBuffers.get("step-2")?.lines,
+    ).to.deep.equal(["log line"]),
+  );
+  await act(() => result.current.fetchExceptionText("step-2"));
+
+  await waitFor(() =>
+    expect(
+      result.current.openStageStepBuffers.get("step-2")?.lines,
+    ).to.deep.equal(["log line", "Error message"]),
+  );
+
+  unmount();
+});
+
+it("handles empty console log and exception message", async () => {
+  (model.getConsoleTextOffset as Mock).mockResolvedValue({
+    text: "",
+    startByte: 0,
+    endByte: 0,
+  });
+  const { result, unmount } = renderHook(() =>
+    useStepsPoller({ currentRunPath: "/run/1", previousRunPath: undefined }),
+  );
+
+  await waitFor(() => expect(result.current.expandedSteps).toContain("step-2"));
+  await waitFor(() =>
+    expect(
+      result.current.openStageStepBuffers.get("step-2")?.lines,
+    ).to.deep.equal([]),
+  );
+  await act(() => result.current.fetchExceptionText("step-2"));
+
+  await waitFor(() =>
+    expect(
+      result.current.openStageStepBuffers.get("step-2")?.lines,
+    ).to.deep.equal(["Error message"]),
   );
 
   unmount();

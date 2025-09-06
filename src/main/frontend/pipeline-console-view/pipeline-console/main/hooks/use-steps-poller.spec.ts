@@ -35,7 +35,7 @@ vi.mock("../PipelineConsoleModel.tsx", async () => ({
   ...(await vi.importActual("../PipelineConsoleModel.tsx")),
   getRunSteps: vi.fn(),
   getConsoleTextOffset: vi.fn().mockResolvedValue({
-    text: "log line",
+    text: "log line\n",
     startByte: 0,
     endByte: 100,
   }),
@@ -62,6 +62,49 @@ it("selects default step if URL param is missing", async () => {
 
   expect(openStage?.id).toBe("stage-2");
   expect(expandedSteps).toContain("step-2");
+
+  unmount();
+});
+
+it("handles empty console log", async () => {
+  (model.getConsoleTextOffset as Mock).mockResolvedValue({
+    text: "",
+    startByte: 0,
+    endByte: 0,
+  });
+  const { result, unmount } = renderHook(() =>
+    useStepsPoller({ currentRunPath: "/run/1", previousRunPath: undefined }),
+  );
+
+  await waitFor(() => expect(result.current.expandedSteps).toContain("step-2"));
+  await waitFor(() =>
+    expect(result.current.openStageStepBuffers.get("step-2")).to.deep.equal({
+      startByte: 0,
+      endByte: 0,
+      lines: [],
+      fullyFetched: true,
+    }),
+  );
+
+  unmount();
+});
+
+it("handles empty console log lines before and after text", async () => {
+  (model.getConsoleTextOffset as Mock).mockResolvedValue({
+    text: "\nHello\n\n",
+    startByte: 0,
+    endByte: 0,
+  });
+  const { result, unmount } = renderHook(() =>
+    useStepsPoller({ currentRunPath: "/run/1", previousRunPath: undefined }),
+  );
+
+  await waitFor(() => expect(result.current.expandedSteps).toContain("step-2"));
+  await waitFor(() =>
+    expect(
+      result.current.openStageStepBuffers.get("step-2")?.lines,
+    ).to.deep.equal(["", "Hello", ""]),
+  );
 
   unmount();
 });

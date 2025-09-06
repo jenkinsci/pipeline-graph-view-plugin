@@ -58,7 +58,9 @@ export function useStepsPoller(props: RunPollerProps) {
       }
       if (!response) return;
 
-      const newLogLines = response.text.trim().split("\n") || [];
+      const newLogLines = response.text.split("\n");
+      // Remove trailing empty new line caused by a) splitting an empty string or b) a trailing new line character in the response.
+      if (newLogLines[newLogLines.length - 1] === "") newLogLines.pop();
 
       if (stepBuffer.endByte > 0 && stepBuffer.endByte <= startByte) {
         stepBuffer.lines = [...stepBuffer.lines, ...newLogLines];

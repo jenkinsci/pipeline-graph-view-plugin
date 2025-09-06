@@ -34,17 +34,18 @@ vi.mock("../../../../common/tree-api.ts", () => ({
 vi.mock("../PipelineConsoleModel.tsx", async () => ({
   ...(await vi.importActual("../PipelineConsoleModel.tsx")),
   getRunSteps: vi.fn(),
-  getConsoleTextOffset: vi.fn().mockResolvedValue({
-    text: "log line\n",
-    startByte: 0,
-    endByte: 100,
-  }),
-  getExceptionText: vi.fn().mockResolvedValue("Error message"),
+  getConsoleTextOffset: vi.fn(),
+  getExceptionText: vi.fn().mockResolvedValue(["Error message"]),
   POLL_INTERVAL: 50,
 }));
 
 beforeEach(() => {
   (model.getRunSteps as Mock).mockResolvedValue({ steps: mockSteps });
+  (model.getConsoleTextOffset as Mock).mockResolvedValue({
+    text: "log line\n",
+    startByte: 0,
+    endByte: 100,
+  });
   window.history.pushState({}, "", "/");
 });
 

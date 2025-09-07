@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from "react";
 
 import { ConsoleLine } from "./ConsoleLine.tsx";
 import {
+  POLL_INTERVAL,
   Result,
   StepInfo,
   StepLogBufferInfo,
+  TAIL_CONSOLE_LOG,
 } from "./PipelineConsoleModel.tsx";
 
 function canStickToBottom() {
@@ -69,13 +71,13 @@ export default function ConsoleLogStream({
 
   useEffect(() => {
     const shouldRequestMoreLogs =
-      step.state === Result.running || logBuffer.startByte < 0;
+      step.state === Result.running || logBuffer.endByte < 0;
 
     if (stickToBottom && shouldRequestMoreLogs) {
       if (!appendInterval.current) {
         appendInterval.current = window.setInterval(() => {
-          onMoreConsoleClick(step.id, logBuffer.startByte);
-        }, 1000);
+          onMoreConsoleClick(step.id, TAIL_CONSOLE_LOG);
+        }, POLL_INTERVAL);
       }
     } else if (appendInterval.current) {
       clearInterval(appendInterval.current);

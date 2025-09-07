@@ -11,6 +11,7 @@ import {
   StageInfo,
   StepInfo,
   StepLogBufferInfo,
+  TAIL_CONSOLE_LOG,
 } from "../PipelineConsoleModel.tsx";
 
 export function useStepsPoller(props: RunPollerProps) {
@@ -30,27 +31,43 @@ export function useStepsPoller(props: RunPollerProps) {
   const stepBuffersRef = useRef(stepBuffers);
   const updateStepConsoleOffset = useCallback(
     async (stepId: string, forceUpdate: boolean, startByte: number) => {
+      const isTailing = startByte === TAIL_CONSOLE_LOG;
       const stepBuffers = stepBuffersRef.current;
       let stepBuffer = stepBuffers.get(stepId);
       if (!stepBuffer) {
-        stepBuffer = {
-          lines: [],
-          startByte: 0 - LOG_FETCH_SIZE,
-          endByte: -1,
-        };
+        stepBuffer = { lines: [], startByte: 0, endByte: TAIL_CONSOLE_LOG };
         stepBuffers.set(stepId, stepBuffer);
       }
-      while (stepBuffer.pending) {
-        const { promise, startByte: otherStartByte } = stepBuffer.pending;
-        const response = await promise;
-        if (startByte === otherStartByte && response) {
-          return; // deduplicated fetch operation
+      while (stepBuffer.pending) await stepBuffer.pending;
+      if (stepBuffer.startByte > 0 && !forceUpdate) return;
+      if (isTailing && stepBuffer.stopTailing) return;
+      if (
+        !isTailing &&
+        stepBuffer.startByte <= startByte &&
+        startByte <= stepBuffer.endByte
+      ) {
+        // Duplicate click on "There's more to see - XMiB of logs hidden".
+        return;
+      }
+      let consoleAnnotator = "";
+      if (isTailing) {
+        startByte = stepBuffer.endByte;
+        consoleAnnotator = stepBuffer.consoleAnnotator || "";
+        if (stepBuffer.lastFetched) {
+          // Slow down incremental fetch to POLL_INTERVAL.
+          const msSinceLastFetch = performance.now() - stepBuffer.lastFetched;
+          const backOff = POLL_INTERVAL - msSinceLastFetch;
+          const sleep = new Promise<null>((resolve) =>
+            setTimeout(resolve, backOff),
+          );
+          stepBuffer.pending = sleep;
+          await sleep;
+          delete stepBuffer.pending;
         }
       }
-      if (stepBuffer.fullyFetched) return; // Already fetched in full.
-      if (stepBuffer.startByte > 0 && !forceUpdate) return;
-      const promise = getConsoleTextOffset(stepId, startByte);
-      stepBuffer.pending = { promise, startByte };
+      stepBuffer.lastFetched = performance.now();
+      const promise = getConsoleTextOffset(stepId, startByte, consoleAnnotator);
+      stepBuffer.pending = promise;
       let response;
       try {
         response = await promise;
@@ -64,7 +81,7 @@ export function useStepsPoller(props: RunPollerProps) {
       if (newLogLines[newLogLines.length - 1] === "") newLogLines.pop();
 
       const exceptionText = stepBuffer.exceptionText || [];
-      if (stepBuffer.endByte > 0 && stepBuffer.endByte <= startByte) {
+      if (stepBuffer.endByte > 0 && stepBuffer.endByte === startByte) {
         stepBuffer.lines.length -= exceptionText.length;
         stepBuffer.lines = [
           ...stepBuffer.lines,
@@ -77,9 +94,8 @@ export function useStepsPoller(props: RunPollerProps) {
       }
 
       stepBuffer.endByte = response.endByte;
-      if (response.startByte === 0 && !response.nodeIsActive) {
-        stepBuffer.fullyFetched = true;
-      }
+      stepBuffer.consoleAnnotator = response.consoleAnnotator;
+      if (!response.nodeIsActive) stepBuffer.stopTailing = true;
 
       stepBuffersRef.current = new Map(stepBuffers).set(stepId, stepBuffer);
       setStepBuffers(stepBuffersRef.current);
@@ -91,7 +107,7 @@ export function useStepsPoller(props: RunPollerProps) {
     const stepBuffers = stepBuffersRef.current;
     let stepBuffer = stepBuffers.get(stepId);
     if (!stepBuffer) {
-      stepBuffer = { lines: [], startByte: 0 - LOG_FETCH_SIZE, endByte: -1 };
+      stepBuffer = { lines: [], startByte: 0, endByte: TAIL_CONSOLE_LOG };
       stepBuffers.set(stepId, stepBuffer);
     }
     while (stepBuffer.pendingExceptionText) {
@@ -132,7 +148,7 @@ export function useStepsPoller(props: RunPollerProps) {
         updateStepConsoleOffset(
           step.id,
           false,
-          parseInt(params.get("start-byte") || `${0 - LOG_FETCH_SIZE}`),
+          parseInt(params.get("start-byte") || `${TAIL_CONSOLE_LOG}`),
         );
       }
 
@@ -200,7 +216,7 @@ export function useStepsPoller(props: RunPollerProps) {
 
           if (defaultStep.stageId) {
             setExpandedSteps((prev) => [...prev, defaultStep.id]);
-            updateStepConsoleOffset(defaultStep.id, false, 0 - LOG_FETCH_SIZE);
+            updateStepConsoleOffset(defaultStep.id, false, TAIL_CONSOLE_LOG);
           }
         }
       }
@@ -235,7 +251,7 @@ export function useStepsPoller(props: RunPollerProps) {
       setOpenStage(nodeId);
       if (lastStep && !collapsedSteps.current.has(lastStep.id)) {
         setExpandedSteps((prev) => [...prev, lastStep.id]);
-        updateStepConsoleOffset(lastStep.id, false, 0 - LOG_FETCH_SIZE);
+        updateStepConsoleOffset(lastStep.id, false, TAIL_CONSOLE_LOG);
       }
     },
     [openStage, steps, updateStepConsoleOffset],
@@ -245,7 +261,7 @@ export function useStepsPoller(props: RunPollerProps) {
     if (!expandedSteps.includes(nodeId)) {
       collapsedSteps.current.delete(nodeId);
       setExpandedSteps((prev) => [...prev, nodeId]);
-      updateStepConsoleOffset(nodeId, false, 0 - LOG_FETCH_SIZE);
+      updateStepConsoleOffset(nodeId, false, TAIL_CONSOLE_LOG);
     } else {
       collapsedSteps.current.add(nodeId);
       setExpandedSteps((prev) => prev.filter((id) => id !== nodeId));

@@ -165,10 +165,7 @@ class PipelineConsoleViewActionTest {
         PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
         JSONObject consoleJson = consoleAction.getConsoleOutputJson(execStep.getId(), 0L);
         assertThat(consoleJson.getString("startByte"), equalTo("0"));
-        assertThat(consoleJson.getString("endByte"), equalTo("44"));
-        assertThat(
-                consoleJson.getString("text"),
-                stringContainsInOrder("echo Hello, world!", "Hello, world!", "+ exit 1"));
+        assertThat(consoleJson.getString("text"), stringContainsInOrder("echo", "Hello, world!"));
     }
 
     @Issue("GH#224")

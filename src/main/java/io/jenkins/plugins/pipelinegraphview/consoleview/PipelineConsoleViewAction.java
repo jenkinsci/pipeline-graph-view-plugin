@@ -91,6 +91,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     @GET
     @WebMethod(name = "steps")
     public HttpResponse getSteps(StaplerRequest2 req) {
+        run.checkPermission(Item.READ);
         String nodeId = req.getParameter("nodeId");
         if (nodeId != null) {
             return HttpResponses.okJSON(getSteps(nodeId));
@@ -113,6 +114,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     @GET
     @WebMethod(name = "allSteps")
     public void getAllSteps(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+        run.checkPermission(Item.READ);
         PipelineStepList steps = stepApi.getAllSteps();
         JSONObject json = JSONObject.fromObject(steps, jsonConfig);
         logger.debug("Steps: '{}'.", json);
@@ -138,6 +140,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
             justification =
                     "Doesn't seem to matter in practice, docs aren't clear on how to handle and most places ignore it")
     public void getConsoleText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+        run.checkPermission(Item.READ);
         String nodeId = req.getParameter("nodeId");
 
         rsp.setContentType("text/plain;charset=UTF-8");
@@ -178,12 +181,14 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
             justification =
                     "Doesn't seem to matter in practice, docs aren't clear on how to handle and most places ignore it")
     public void getBuildConsole(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+        run.checkPermission(Item.READ);
         run.getLogText().writeHtmlTo(0L, rsp.getWriter());
     }
 
     @GET
     @WebMethod(name = "exceptionText")
     public HttpResponse getExceptionText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+        run.checkPermission(Item.READ);
         String nodeId = req.getParameter("nodeId");
         if (nodeId == null) return HttpResponses.error(400, "missing ?nodeId");
         return HttpResponses.text(getNodeExceptionText(nodeId));
@@ -205,6 +210,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     @GET
     @WebMethod(name = "consoleOutput")
     public HttpResponse getConsoleOutput(StaplerRequest2 req) throws IOException {
+        run.checkPermission(Item.READ);
         String nodeId = req.getParameter("nodeId");
         if (nodeId == null) {
             logger.error("'consoleJson' was not passed 'nodeId'.");
@@ -391,9 +397,6 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     @RequirePOST
     @JavaScriptMethod
     public HttpResponse doRerun() {
-        if (run == null) {
-            return HttpResponses.errorJSON(Messages.scheduled_failure());
-        }
         run.checkPermission(Item.BUILD);
 
         if (!run.getParent().isBuildable()) {
@@ -416,9 +419,6 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     @GET
     @WebMethod(name = "nextBuild")
     public HttpResponse hasNextBuild(StaplerRequest2 req) {
-        if (run == null) {
-            return HttpResponses.errorJSON("No run to check for next build");
-        }
         run.checkPermission(Item.READ);
         String queueId = req.getParameter("queueId");
         if (queueId == null || queueId.isBlank()) {
@@ -454,9 +454,6 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     @RequirePOST
     @JavaScriptMethod
     public HttpResponse doCancel() {
-        if (run == null) {
-            return HttpResponses.errorJSON("No run to cancel");
-        }
         run.checkPermission(getCancelPermission());
         if (run.isBuilding()) {
             run.doStop();
@@ -498,12 +495,6 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     @GET
     @WebMethod(name = "tree")
     public void getTree(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
-        if (run == null) {
-            HttpResponse response = HttpResponses.errorJSON("No run to get tree for");
-            rsp.setStatus(200);
-            response.generateResponse(req, rsp, null);
-            return;
-        }
         run.checkPermission(Item.READ);
 
         PipelineGraph tree = graphApi.createTree();

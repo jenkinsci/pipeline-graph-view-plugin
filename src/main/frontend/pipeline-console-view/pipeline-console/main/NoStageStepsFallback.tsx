@@ -52,6 +52,7 @@ export function NoStageStepsFallback() {
           onMoreConsoleClick={() => {}}
           step={step}
           maxHeightScale={0.65}
+          fetchExceptionText={() => {}}
         />
       </div>
     </div>

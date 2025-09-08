@@ -11,6 +11,7 @@ export default function StageSteps({
   onStepToggle,
   expandedSteps,
   onMoreConsoleClick,
+  fetchExceptionText,
 }: StageStepsProps) {
   if (steps.length === 0) {
     return null;
@@ -36,6 +37,7 @@ export default function StageSteps({
             onStepToggle={onStepToggle}
             isExpanded={expandedSteps.includes(stepItemData.id)}
             onMoreConsoleClick={onMoreConsoleClick}
+            fetchExceptionText={fetchExceptionText}
             key={`step-console-card-${stepItemData.id}`}
           />
         );
@@ -51,4 +53,5 @@ interface StageStepsProps {
   expandedSteps: string[];
   onStepToggle: (nodeId: string) => void;
   onMoreConsoleClick: (nodeId: string, startByte: number) => void;
+  fetchExceptionText: (nodeId: string) => void;
 }

@@ -29,6 +29,7 @@ export default function ConsoleLogCard({
   isExpanded,
   onMoreConsoleClick,
   onStepToggle,
+  fetchExceptionText,
 }: ConsoleLogCardProps) {
   useEffect(() => {
     if (isExpanded) {
@@ -53,15 +54,7 @@ export default function ConsoleLogCard({
 
   const inputStep = step.inputStep;
   if (inputStep && !inputStep.parameters) {
-    return (
-      <InputStep
-        step={step}
-        stepBuffer={stepBuffer}
-        isExpanded={isExpanded}
-        onStepToggle={onStepToggle}
-        onMoreConsoleClick={onMoreConsoleClick}
-      />
-    );
+    return <InputStep step={step} />;
   }
 
   return (
@@ -151,6 +144,7 @@ export default function ConsoleLogCard({
           step={step}
           stepBuffer={stepBuffer}
           onMoreConsoleClick={onMoreConsoleClick}
+          fetchExceptionText={fetchExceptionText}
           isExpanded={false}
           onStepToggle={onStepToggle}
         />
@@ -163,6 +157,7 @@ function ConsoleLogBody({
   step,
   stepBuffer,
   onMoreConsoleClick,
+  fetchExceptionText,
 }: ConsoleLogCardProps) {
   const prettySizeString = (size: number) => {
     const kib = 1024;
@@ -204,6 +199,7 @@ function ConsoleLogBody({
         <ConsoleLogStream
           logBuffer={stepBuffer}
           onMoreConsoleClick={onMoreConsoleClick}
+          fetchExceptionText={fetchExceptionText}
           step={step}
           maxHeightScale={0.65}
         />
@@ -218,4 +214,5 @@ export type ConsoleLogCardProps = {
   isExpanded: boolean;
   onStepToggle: (nodeId: string) => void;
   onMoreConsoleClick: (nodeId: string, startByte: number) => void;
+  fetchExceptionText: (nodeId: string) => void;
 };

@@ -49,6 +49,8 @@ export interface StepLogBufferInfo {
     promise: Promise<ConsoleLogData | null>;
   };
   fullyFetched?: boolean;
+  exceptionText?: string[];
+  pendingExceptionText?: Promise<string[]>;
 }
 
 // Returned from API, gets converted to 'StepLogBufferInfo'.
@@ -101,6 +103,18 @@ export async function getConsoleTextOffset(
   } catch (e) {
     console.error(`Caught error when fetching console: '${e}'`);
     return null;
+  }
+}
+
+export async function getExceptionText(stepId: string): Promise<string[]> {
+  try {
+    const response = await fetch(`exceptionText?nodeId=${stepId}`);
+    if (!response.ok) throw response.statusText;
+    const text = await response.text();
+    return text.split("\n");
+  } catch (e) {
+    console.error(`Caught error when fetching console: '${e}'`);
+    return [];
   }
 }
 

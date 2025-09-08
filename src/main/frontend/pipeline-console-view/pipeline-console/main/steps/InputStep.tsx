@@ -1,5 +1,5 @@
 import StatusIcon from "../../../../common/components/status-icon.tsx";
-import { ConsoleLogCardProps } from "../ConsoleLogCard.tsx";
+import { StepInfo } from "../../../../common/RestClient.tsx";
 
 declare global {
   interface Window {
@@ -11,8 +11,8 @@ declare global {
   }
 }
 
-export default function InputStep(props: ConsoleLogCardProps) {
-  const inputStep = props.step.inputStep!;
+export default function InputStep({ step }: { step: StepInfo }) {
+  const inputStep = step.inputStep!;
   function handler(id: string, action: string) {
     fetch(`../input/${id}/${action}`, {
       method: "POST",
@@ -40,10 +40,7 @@ export default function InputStep(props: ConsoleLogCardProps) {
   return (
     <div className="pgv-input-step">
       <div className="pgv-step-detail-header__content">
-        <StatusIcon
-          status={props.step.state}
-          percentage={props.step.completePercent}
-        />
+        <StatusIcon status={step.state} percentage={step.completePercent} />
         <span>{inputStep.message}</span>
       </div>
       <div

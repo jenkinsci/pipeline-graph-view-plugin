@@ -71,6 +71,7 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
     @GET
     @WebMethod(name = "runs")
     public void getRuns(StaplerRequest2 req, StaplerResponse2 rsp) throws ServletException, IOException {
+        target.checkPermission(Item.READ);
         RunList<WorkflowRun> runs = target.getBuilds();
         List<PipelineRun> pipelineRuns = new ArrayList<>();
 

@@ -52,6 +52,7 @@ describe("ConsoleLogCard", () => {
     onMoreConsoleClick: () => {
       console.log("onMoreConsoleClick triggered");
     },
+    fetchExceptionText: () => {},
   } as ConsoleLogCardProps;
 
   it("renders step header only when not expanded", async () => {

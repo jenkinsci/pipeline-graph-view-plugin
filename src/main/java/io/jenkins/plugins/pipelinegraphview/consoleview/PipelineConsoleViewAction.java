@@ -35,9 +35,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
+import jenkins.run.RunTab;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
-import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.pipeline.modeldefinition.actions.RestartDeclarativePipelineAction;
 import org.jenkinsci.plugins.workflow.cps.replay.ReplayAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
@@ -53,7 +53,7 @@ import org.kohsuke.stapler.verb.GET;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PipelineConsoleViewAction implements Action, IconSpec {
+public class PipelineConsoleViewAction extends RunTab {
     public static final long LOG_THRESHOLD = 150 * 1024; // 150KB
     public static final String URL_NAME = "pipeline-overview";
     public static final int CACHE_AGE = (int) TimeUnit.DAYS.toSeconds(1);
@@ -71,6 +71,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     private final PipelineStepApi stepApi;
 
     public PipelineConsoleViewAction(WorkflowRun target) {
+        super(target);
         this.run = target;
         this.graphApi = new PipelineGraphApi(this.run);
         this.stepApi = new PipelineStepApi(this.run);
@@ -78,7 +79,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
 
     @Override
     public String getDisplayName() {
-        return "Pipeline Overview";
+        return "Stages";
     }
 
     @Override
@@ -517,12 +518,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     }
 
     @Override
-    public String getIconClassName() {
-        return "symbol-git-network-outline plugin-ionicons-api";
-    }
-
-    @Override
     public String getIconFileName() {
-        return null;
+        return "symbol-git-network-outline plugin-ionicons-api";
     }
 }

@@ -8,7 +8,7 @@ import java.util.Collections;
 import jenkins.model.TransientActionFactory;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
-@Extension
+@Extension(ordinal = Integer.MAX_VALUE - 1)
 public class PipelineConsoleViewActionFactory extends TransientActionFactory<WorkflowRun> {
 
     @Override

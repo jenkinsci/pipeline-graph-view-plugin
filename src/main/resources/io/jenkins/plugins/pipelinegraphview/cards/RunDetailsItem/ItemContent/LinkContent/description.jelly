@@ -1,4 +1,5 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
-    <a href="${it.href()}">${it.text()}</a>
+<!--    <a href="${it.href()}"></a>-->
+    ${it.text()}
 </j:jelly>

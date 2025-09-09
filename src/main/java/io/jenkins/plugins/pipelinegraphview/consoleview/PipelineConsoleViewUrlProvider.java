@@ -21,10 +21,6 @@ public class PipelineConsoleViewUrlProvider implements ConsoleUrlProvider {
         return null;
     }
 
-    public PipelineConsoleViewAction getAction(Run<?, ?> run) {
-        return run.getAction(PipelineConsoleViewAction.class);
-    }
-
     @Extension
     @Symbol("pipelineGraphView")
     public static class DescriptorImpl extends Descriptor<ConsoleUrlProvider> {

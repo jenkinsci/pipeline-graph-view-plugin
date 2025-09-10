@@ -166,6 +166,35 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /exceptionText:
+    get:
+      tags:
+        - Pipeline Overview
+      summary: Get exception text of a failed step
+      description: |
+        Returns exception text of a specific failed step or stage.
+      operationId: getExceptionText
+      parameters:
+        - name: nodeId
+          in: query
+          required: true
+          description: The ID of the step/stage to get the exception text from
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Exception text
+          content:
+            text/plain:
+              schema:
+                type: string
+        "400":
+          description: Missing or invalid parameters
+          content:
+            text/plain:
+              schema:
+                type: string
+
   /log:
     get:
       tags:

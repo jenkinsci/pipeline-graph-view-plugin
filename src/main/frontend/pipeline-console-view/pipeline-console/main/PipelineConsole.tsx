@@ -9,7 +9,6 @@ import {
   DOCUMENT,
   SETTINGS,
 } from "../../../common/components/symbols.tsx";
-import { useUserPermissions } from "../../../common/user/user-permission-provider.tsx";
 import Skeleton from "./components/skeleton.tsx";
 import Stages from "./components/stages.tsx";
 import StagesCustomization from "./components/stages-customization.tsx";
@@ -44,14 +43,14 @@ export default function PipelineConsole() {
 
   const isOnlyPlaceholderNode = stages.length === 1 && stages[0].placeholder;
 
-  const { canConfigure } = useUserPermissions();
-
   return (
     <>
       <DropdownPortal
         container={document.getElementById("console-pipeline-overflow-root")}
       >
         <Dropdown
+          className="jenkins-button--detail"
+          icon={SETTINGS}
           items={[
             showSplitView ? (
               <StagesCustomization key="visibility-select" />
@@ -68,15 +67,6 @@ export default function PipelineConsole() {
               icon: CONSOLE,
               href: `../console`,
             },
-            canConfigure ? (
-              {
-                text: "Configure",
-                icon: SETTINGS,
-                href: `../../configure`,
-              }
-            ) : (
-              <></>
-            ),
           ]}
         />
       </DropdownPortal>

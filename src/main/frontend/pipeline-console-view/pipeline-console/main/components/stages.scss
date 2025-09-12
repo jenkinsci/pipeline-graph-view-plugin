@@ -1,7 +1,7 @@
 .pgv-stages-graph {
   position: relative;
   background: var(--card-background);
-  border: var(--jenkins-border);
+  border: var(--card-border-width) solid var(--card-border-color);
   border-radius: var(--form-input-border-radius);
   overflow: hidden;
   height: 100%;

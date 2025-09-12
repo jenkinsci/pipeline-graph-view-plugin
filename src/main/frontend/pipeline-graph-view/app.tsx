@@ -18,6 +18,7 @@ export default function App() {
   return (
     <UserPreferencesProvider>
       <Stages
+        title={'Stages'}
         stages={run?.stages || []}
         stageViewPosition={StageViewPosition.TOP}
       />

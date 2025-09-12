@@ -9,14 +9,16 @@ import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.Icon.Ionicon;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.ItemContent;
 import java.util.List;
 import java.util.Optional;
+import jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 public class ChangesRunDetailsItem {
 
     public static Optional<RunDetailsItem> get(WorkflowRun run) {
         List<ChangeLogSet.Entry> changeEntries = getChanges(run);
+        boolean isExperimentalUiEnabled = new NewBuildPageUserExperimentalFlag().getFlagValue();
 
-        if (changeEntries.isEmpty()) {
+        if (changeEntries.isEmpty() || isExperimentalUiEnabled) {
             return Optional.empty();
         }
 

@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
     <l:run-host>
         <link rel="stylesheet" href="${resURL}/plugin/pipeline-graph-view/js/style.css" type="text/css" />
 
         <l:app-bar title="Stages">
-            <div class="pgv-details">
-                <j:forEach var="card" items="${it.runDetailsCard.items}">
-                    <st:include page="description.jelly" it="${card}" />
-                </j:forEach>
-            </div>
+            <l:details-bar it="${it.run}" />
+            <div id="console-pipeline-overflow-root"/>
         </l:app-bar>
 
         <j:set var="configPermission" value="${h.hasPermission(it, it.configurePermission)}" />

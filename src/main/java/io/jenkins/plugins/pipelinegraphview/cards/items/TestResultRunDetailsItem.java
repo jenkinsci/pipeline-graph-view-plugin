@@ -7,13 +7,16 @@ import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.Icon.Ionicon;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem.ItemContent;
 import java.util.Optional;
 import jenkins.model.Jenkins;
+import jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 public class TestResultRunDetailsItem {
 
     public static Optional<RunDetailsItem> get(WorkflowRun run) {
         boolean junitInstalled = Jenkins.get().getPlugin("junit") != null;
-        if (!junitInstalled) {
+        boolean isExperimentalUiEnabled = new NewBuildPageUserExperimentalFlag().getFlagValue();
+
+        if (!junitInstalled || isExperimentalUiEnabled) {
             return Optional.empty();
         }
 

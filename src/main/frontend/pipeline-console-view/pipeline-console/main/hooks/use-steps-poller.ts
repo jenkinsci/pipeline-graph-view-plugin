@@ -5,7 +5,6 @@ import {
   getConsoleTextOffset,
   getExceptionText,
   getRunSteps,
-  LOG_FETCH_SIZE,
   POLL_INTERVAL,
   Result,
   StageInfo,

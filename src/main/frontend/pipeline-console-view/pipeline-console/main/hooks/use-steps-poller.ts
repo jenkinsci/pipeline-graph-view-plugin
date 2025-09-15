@@ -37,9 +37,18 @@ export function useStepsPoller(props: RunPollerProps) {
         stepBuffer = { lines: [], startByte: 0, endByte: TAIL_CONSOLE_LOG };
         stepBuffers.set(stepId, stepBuffer);
       }
-      while (stepBuffer.pending) await stepBuffer.pending;
-      if (stepBuffer.startByte > 0 && !forceUpdate) return;
-      if (isTailing && stepBuffer.stopTailing) return;
+      while (stepBuffer.pending) {
+        // Cheap FIFO queue to avoid duplicate fetches below.
+        await stepBuffer.pending;
+      }
+      if (stepBuffer.startByte > 0 && !forceUpdate) {
+        // This is a large log. Only update the log when requested by the UI.
+        return;
+      }
+      if (isTailing && stepBuffer.stopTailing) {
+        // We've already reached the end of the log.
+        return;
+      }
       if (
         !isTailing &&
         stepBuffer.startByte <= startByte &&
@@ -73,11 +82,16 @@ export function useStepsPoller(props: RunPollerProps) {
       } finally {
         delete stepBuffer.pending;
       }
-      if (!response) return;
+      if (!response) {
+        // Request failed.
+        return;
+      }
 
       const newLogLines = response.text.split("\n");
-      // Remove trailing empty new line caused by a) splitting an empty string or b) a trailing new line character in the response.
-      if (newLogLines[newLogLines.length - 1] === "") newLogLines.pop();
+      if (newLogLines[newLogLines.length - 1] === "") {
+        // Remove trailing empty new line caused by a) splitting an empty string or b) a trailing new line character in the response.
+        newLogLines.pop();
+      }
 
       const exceptionText = stepBuffer.exceptionText || [];
       if (stepBuffer.endByte > 0 && stepBuffer.endByte === startByte) {
@@ -94,7 +108,10 @@ export function useStepsPoller(props: RunPollerProps) {
 
       stepBuffer.endByte = response.endByte;
       stepBuffer.consoleAnnotator = response.consoleAnnotator;
-      if (!response.nodeIsActive) stepBuffer.stopTailing = true;
+      if (!response.nodeIsActive) {
+        // We've reached the end of the log now.
+        stepBuffer.stopTailing = true;
+      }
 
       stepBuffersRef.current = new Map(stepBuffers).set(stepId, stepBuffer);
       setStepBuffers(stepBuffersRef.current);

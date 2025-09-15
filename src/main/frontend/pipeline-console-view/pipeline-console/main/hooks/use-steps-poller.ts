@@ -20,10 +20,6 @@ async function updateStepBuffer(
   startByte: number,
 ): Promise<void> {
   const isTailing = startByte === TAIL_CONSOLE_LOG;
-  while (stepBuffer.pending) {
-    // Cheap FIFO queue to avoid duplicate fetches below.
-    await stepBuffer.pending;
-  }
   if (stepBuffer.startByte > 0 && !forceUpdate) {
     // This is a large log. Only update the log when requested by the UI.
     return;
@@ -48,23 +44,15 @@ async function updateStepBuffer(
       // Slow down incremental fetch to POLL_INTERVAL.
       const msSinceLastFetch = performance.now() - stepBuffer.lastFetched;
       const backOff = POLL_INTERVAL - msSinceLastFetch;
-      const sleep = new Promise<null>((resolve) =>
-        setTimeout(resolve, backOff),
-      );
-      stepBuffer.pending = sleep;
-      await sleep;
-      delete stepBuffer.pending;
+      await new Promise((resolve) => setTimeout(resolve, backOff));
     }
   }
   stepBuffer.lastFetched = performance.now();
-  const promise = getConsoleTextOffset(stepId, startByte, consoleAnnotator);
-  stepBuffer.pending = promise;
-  let response;
-  try {
-    response = await promise;
-  } finally {
-    delete stepBuffer.pending;
-  }
+  const response = await getConsoleTextOffset(
+    stepId,
+    startByte,
+    consoleAnnotator,
+  );
   if (!response) {
     // Request failed.
     return;
@@ -116,7 +104,20 @@ export function useStepsPoller(props: RunPollerProps) {
         stepBuffer = { lines: [], startByte: 0, endByte: TAIL_CONSOLE_LOG };
         stepBuffers.set(stepId, stepBuffer);
       }
-      await updateStepBuffer(stepBuffer, stepId, forceUpdate, startByte);
+
+      // Cheap FIFO queue to avoid duplicate fetches.
+      const promise = (stepBuffer.pending || Promise.resolve()).finally(() =>
+        updateStepBuffer(stepBuffer, stepId, forceUpdate, startByte),
+      );
+      stepBuffer.pending = promise;
+      try {
+        await promise;
+      } finally {
+        if (stepBuffer.pending === promise) {
+          delete stepBuffer.pending;
+        }
+      }
+
       stepBuffersRef.current = new Map(stepBuffers).set(stepId, stepBuffer);
       setStepBuffers(stepBuffersRef.current);
     },

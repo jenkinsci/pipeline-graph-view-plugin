@@ -44,7 +44,7 @@ export interface StepLogBufferInfo {
   lines: string[];
   startByte: number;
   endByte: number;
-  pending?: Promise<ConsoleLogData | null>;
+  pending?: Promise<void>;
   consoleAnnotator?: string;
   lastFetched?: number;
   stopTailing?: boolean;

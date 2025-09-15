@@ -13,6 +13,86 @@ import {
   TAIL_CONSOLE_LOG,
 } from "../PipelineConsoleModel.tsx";
 
+async function updateStepBuffer(
+  stepBuffer: StepLogBufferInfo,
+  stepId: string,
+  forceUpdate: boolean,
+  startByte: number,
+): Promise<void> {
+  const isTailing = startByte === TAIL_CONSOLE_LOG;
+  while (stepBuffer.pending) {
+    // Cheap FIFO queue to avoid duplicate fetches below.
+    await stepBuffer.pending;
+  }
+  if (stepBuffer.startByte > 0 && !forceUpdate) {
+    // This is a large log. Only update the log when requested by the UI.
+    return;
+  }
+  if (isTailing && stepBuffer.stopTailing) {
+    // We've already reached the end of the log.
+    return;
+  }
+  if (
+    !isTailing &&
+    stepBuffer.startByte <= startByte &&
+    startByte <= stepBuffer.endByte
+  ) {
+    // Duplicate click on "There's more to see - XMiB of logs hidden".
+    return;
+  }
+  let consoleAnnotator = "";
+  if (isTailing) {
+    startByte = stepBuffer.endByte;
+    consoleAnnotator = stepBuffer.consoleAnnotator || "";
+    if (stepBuffer.lastFetched) {
+      // Slow down incremental fetch to POLL_INTERVAL.
+      const msSinceLastFetch = performance.now() - stepBuffer.lastFetched;
+      const backOff = POLL_INTERVAL - msSinceLastFetch;
+      const sleep = new Promise<null>((resolve) =>
+        setTimeout(resolve, backOff),
+      );
+      stepBuffer.pending = sleep;
+      await sleep;
+      delete stepBuffer.pending;
+    }
+  }
+  stepBuffer.lastFetched = performance.now();
+  const promise = getConsoleTextOffset(stepId, startByte, consoleAnnotator);
+  stepBuffer.pending = promise;
+  let response;
+  try {
+    response = await promise;
+  } finally {
+    delete stepBuffer.pending;
+  }
+  if (!response) {
+    // Request failed.
+    return;
+  }
+
+  const newLogLines = response.text.split("\n");
+  if (newLogLines[newLogLines.length - 1] === "") {
+    // Remove trailing empty new line caused by a) splitting an empty string or b) a trailing new line character in the response.
+    newLogLines.pop();
+  }
+
+  const exceptionText = stepBuffer.exceptionText || [];
+  if (stepBuffer.endByte > 0 && stepBuffer.endByte === startByte) {
+    stepBuffer.lines.length -= exceptionText.length;
+    stepBuffer.lines = [...stepBuffer.lines, ...newLogLines, ...exceptionText];
+  } else {
+    stepBuffer.lines = newLogLines.concat(exceptionText);
+    stepBuffer.startByte = response.startByte;
+  }
+
+  stepBuffer.endByte = response.endByte;
+  stepBuffer.consoleAnnotator = response.consoleAnnotator;
+  if (!response.nodeIsActive) {
+    // We've reached the end of the log now.
+    stepBuffer.stopTailing = true;
+  }
+}
+
 export function useStepsPoller(props: RunPollerProps) {
   const { run, loading } = useRunPoller({
     currentRunPath: props.currentRunPath,
@@ -30,89 +110,13 @@ export function useStepsPoller(props: RunPollerProps) {
   const stepBuffersRef = useRef(stepBuffers);
   const updateStepConsoleOffset = useCallback(
     async (stepId: string, forceUpdate: boolean, startByte: number) => {
-      const isTailing = startByte === TAIL_CONSOLE_LOG;
       const stepBuffers = stepBuffersRef.current;
       let stepBuffer = stepBuffers.get(stepId);
       if (!stepBuffer) {
         stepBuffer = { lines: [], startByte: 0, endByte: TAIL_CONSOLE_LOG };
         stepBuffers.set(stepId, stepBuffer);
       }
-      while (stepBuffer.pending) {
-        // Cheap FIFO queue to avoid duplicate fetches below.
-        await stepBuffer.pending;
-      }
-      if (stepBuffer.startByte > 0 && !forceUpdate) {
-        // This is a large log. Only update the log when requested by the UI.
-        return;
-      }
-      if (isTailing && stepBuffer.stopTailing) {
-        // We've already reached the end of the log.
-        return;
-      }
-      if (
-        !isTailing &&
-        stepBuffer.startByte <= startByte &&
-        startByte <= stepBuffer.endByte
-      ) {
-        // Duplicate click on "There's more to see - XMiB of logs hidden".
-        return;
-      }
-      let consoleAnnotator = "";
-      if (isTailing) {
-        startByte = stepBuffer.endByte;
-        consoleAnnotator = stepBuffer.consoleAnnotator || "";
-        if (stepBuffer.lastFetched) {
-          // Slow down incremental fetch to POLL_INTERVAL.
-          const msSinceLastFetch = performance.now() - stepBuffer.lastFetched;
-          const backOff = POLL_INTERVAL - msSinceLastFetch;
-          const sleep = new Promise<null>((resolve) =>
-            setTimeout(resolve, backOff),
-          );
-          stepBuffer.pending = sleep;
-          await sleep;
-          delete stepBuffer.pending;
-        }
-      }
-      stepBuffer.lastFetched = performance.now();
-      const promise = getConsoleTextOffset(stepId, startByte, consoleAnnotator);
-      stepBuffer.pending = promise;
-      let response;
-      try {
-        response = await promise;
-      } finally {
-        delete stepBuffer.pending;
-      }
-      if (!response) {
-        // Request failed.
-        return;
-      }
-
-      const newLogLines = response.text.split("\n");
-      if (newLogLines[newLogLines.length - 1] === "") {
-        // Remove trailing empty new line caused by a) splitting an empty string or b) a trailing new line character in the response.
-        newLogLines.pop();
-      }
-
-      const exceptionText = stepBuffer.exceptionText || [];
-      if (stepBuffer.endByte > 0 && stepBuffer.endByte === startByte) {
-        stepBuffer.lines.length -= exceptionText.length;
-        stepBuffer.lines = [
-          ...stepBuffer.lines,
-          ...newLogLines,
-          ...exceptionText,
-        ];
-      } else {
-        stepBuffer.lines = newLogLines.concat(exceptionText);
-        stepBuffer.startByte = response.startByte;
-      }
-
-      stepBuffer.endByte = response.endByte;
-      stepBuffer.consoleAnnotator = response.consoleAnnotator;
-      if (!response.nodeIsActive) {
-        // We've reached the end of the log now.
-        stepBuffer.stopTailing = true;
-      }
-
+      await updateStepBuffer(stepBuffer, stepId, forceUpdate, startByte);
       stepBuffersRef.current = new Map(stepBuffers).set(stepId, stepBuffer);
       setStepBuffers(stepBuffersRef.current);
     },

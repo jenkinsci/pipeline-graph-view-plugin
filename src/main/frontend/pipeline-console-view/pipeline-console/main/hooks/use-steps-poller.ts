@@ -5,13 +5,81 @@ import {
   getConsoleTextOffset,
   getExceptionText,
   getRunSteps,
-  LOG_FETCH_SIZE,
   POLL_INTERVAL,
   Result,
   StageInfo,
   StepInfo,
   StepLogBufferInfo,
+  TAIL_CONSOLE_LOG,
 } from "../PipelineConsoleModel.tsx";
+
+async function updateStepBuffer(
+  stepBuffer: StepLogBufferInfo,
+  stepId: string,
+  forceUpdate: boolean,
+  startByte: number,
+): Promise<void> {
+  const isTailing = startByte === TAIL_CONSOLE_LOG;
+  if (stepBuffer.startByte > 0 && !forceUpdate) {
+    // This is a large log. Only update the log when requested by the UI.
+    return;
+  }
+  if (isTailing && stepBuffer.stopTailing) {
+    // We've already reached the end of the log.
+    return;
+  }
+  if (
+    !isTailing &&
+    stepBuffer.startByte <= startByte &&
+    startByte <= stepBuffer.endByte
+  ) {
+    // Duplicate click on "There's more to see - XMiB of logs hidden".
+    return;
+  }
+  let consoleAnnotator = "";
+  if (isTailing) {
+    startByte = stepBuffer.endByte;
+    consoleAnnotator = stepBuffer.consoleAnnotator || "";
+    if (stepBuffer.lastFetched) {
+      // Slow down incremental fetch to POLL_INTERVAL.
+      const msSinceLastFetch = performance.now() - stepBuffer.lastFetched;
+      const backOff = POLL_INTERVAL - msSinceLastFetch;
+      await new Promise((resolve) => setTimeout(resolve, backOff));
+    }
+  }
+  stepBuffer.lastFetched = performance.now();
+  const response = await getConsoleTextOffset(
+    stepId,
+    startByte,
+    consoleAnnotator,
+  );
+  if (!response) {
+    // Request failed.
+    return;
+  }
+
+  const newLogLines = response.text.split("\n");
+  if (newLogLines[newLogLines.length - 1] === "") {
+    // Remove trailing empty new line caused by a) splitting an empty string or b) a trailing new line character in the response.
+    newLogLines.pop();
+  }
+
+  const exceptionText = stepBuffer.exceptionText || [];
+  if (stepBuffer.endByte > 0 && stepBuffer.endByte === startByte) {
+    stepBuffer.lines.length -= exceptionText.length;
+    stepBuffer.lines = [...stepBuffer.lines, ...newLogLines, ...exceptionText];
+  } else {
+    stepBuffer.lines = newLogLines.concat(exceptionText);
+    stepBuffer.startByte = response.startByte;
+  }
+
+  stepBuffer.endByte = response.endByte;
+  stepBuffer.consoleAnnotator = response.consoleAnnotator;
+  if (!response.nodeIsActive) {
+    // We've reached the end of the log now.
+    stepBuffer.stopTailing = true;
+  }
+}
 
 export function useStepsPoller(props: RunPollerProps) {
   const { run, loading } = useRunPoller({
@@ -33,52 +101,21 @@ export function useStepsPoller(props: RunPollerProps) {
       const stepBuffers = stepBuffersRef.current;
       let stepBuffer = stepBuffers.get(stepId);
       if (!stepBuffer) {
-        stepBuffer = {
-          lines: [],
-          startByte: 0 - LOG_FETCH_SIZE,
-          endByte: -1,
-        };
+        stepBuffer = { lines: [], startByte: 0, endByte: TAIL_CONSOLE_LOG };
         stepBuffers.set(stepId, stepBuffer);
       }
-      while (stepBuffer.pending) {
-        const { promise, startByte: otherStartByte } = stepBuffer.pending;
-        const response = await promise;
-        if (startByte === otherStartByte && response) {
-          return; // deduplicated fetch operation
-        }
-      }
-      if (stepBuffer.fullyFetched) return; // Already fetched in full.
-      if (stepBuffer.startByte > 0 && !forceUpdate) return;
-      const promise = getConsoleTextOffset(stepId, startByte);
-      stepBuffer.pending = { promise, startByte };
-      let response;
+
+      // Cheap FIFO queue to avoid duplicate fetches.
+      const promise = (stepBuffer.pending || Promise.resolve()).finally(() =>
+        updateStepBuffer(stepBuffer, stepId, forceUpdate, startByte),
+      );
+      stepBuffer.pending = promise;
       try {
-        response = await promise;
+        await promise;
       } finally {
-        delete stepBuffer.pending;
-      }
-      if (!response) return;
-
-      const newLogLines = response.text.split("\n");
-      // Remove trailing empty new line caused by a) splitting an empty string or b) a trailing new line character in the response.
-      if (newLogLines[newLogLines.length - 1] === "") newLogLines.pop();
-
-      const exceptionText = stepBuffer.exceptionText || [];
-      if (stepBuffer.endByte > 0 && stepBuffer.endByte <= startByte) {
-        stepBuffer.lines.length -= exceptionText.length;
-        stepBuffer.lines = [
-          ...stepBuffer.lines,
-          ...newLogLines,
-          ...exceptionText,
-        ];
-      } else {
-        stepBuffer.lines = newLogLines.concat(exceptionText);
-        stepBuffer.startByte = response.startByte;
-      }
-
-      stepBuffer.endByte = response.endByte;
-      if (response.startByte === 0 && !response.nodeIsActive) {
-        stepBuffer.fullyFetched = true;
+        if (stepBuffer.pending === promise) {
+          delete stepBuffer.pending;
+        }
       }
 
       stepBuffersRef.current = new Map(stepBuffers).set(stepId, stepBuffer);
@@ -91,7 +128,7 @@ export function useStepsPoller(props: RunPollerProps) {
     const stepBuffers = stepBuffersRef.current;
     let stepBuffer = stepBuffers.get(stepId);
     if (!stepBuffer) {
-      stepBuffer = { lines: [], startByte: 0 - LOG_FETCH_SIZE, endByte: -1 };
+      stepBuffer = { lines: [], startByte: 0, endByte: TAIL_CONSOLE_LOG };
       stepBuffers.set(stepId, stepBuffer);
     }
     while (stepBuffer.pendingExceptionText) {
@@ -132,7 +169,7 @@ export function useStepsPoller(props: RunPollerProps) {
         updateStepConsoleOffset(
           step.id,
           false,
-          parseInt(params.get("start-byte") || `${0 - LOG_FETCH_SIZE}`),
+          parseInt(params.get("start-byte") || `${TAIL_CONSOLE_LOG}`),
         );
       }
 
@@ -200,7 +237,7 @@ export function useStepsPoller(props: RunPollerProps) {
 
           if (defaultStep.stageId) {
             setExpandedSteps((prev) => [...prev, defaultStep.id]);
-            updateStepConsoleOffset(defaultStep.id, false, 0 - LOG_FETCH_SIZE);
+            updateStepConsoleOffset(defaultStep.id, false, TAIL_CONSOLE_LOG);
           }
         }
       }
@@ -235,7 +272,7 @@ export function useStepsPoller(props: RunPollerProps) {
       setOpenStage(nodeId);
       if (lastStep && !collapsedSteps.current.has(lastStep.id)) {
         setExpandedSteps((prev) => [...prev, lastStep.id]);
-        updateStepConsoleOffset(lastStep.id, false, 0 - LOG_FETCH_SIZE);
+        updateStepConsoleOffset(lastStep.id, false, TAIL_CONSOLE_LOG);
       }
     },
     [openStage, steps, updateStepConsoleOffset],
@@ -245,7 +282,7 @@ export function useStepsPoller(props: RunPollerProps) {
     if (!expandedSteps.includes(nodeId)) {
       collapsedSteps.current.delete(nodeId);
       setExpandedSteps((prev) => [...prev, nodeId]);
-      updateStepConsoleOffset(nodeId, false, 0 - LOG_FETCH_SIZE);
+      updateStepConsoleOffset(nodeId, false, TAIL_CONSOLE_LOG);
     } else {
       collapsedSteps.current.add(nodeId);
       setExpandedSteps((prev) => prev.filter((id) => id !== nodeId));

@@ -44,11 +44,10 @@ export interface StepLogBufferInfo {
   lines: string[];
   startByte: number;
   endByte: number;
-  pending?: {
-    startByte: number;
-    promise: Promise<ConsoleLogData | null>;
-  };
-  fullyFetched?: boolean;
+  pending?: Promise<void>;
+  consoleAnnotator?: string;
+  lastFetched?: number;
+  stopTailing?: boolean;
   exceptionText?: string[];
   pendingExceptionText?: Promise<string[]>;
 }
@@ -59,6 +58,7 @@ export interface ConsoleLogData {
   startByte: number;
   endByte: number;
   nodeIsActive: boolean;
+  consoleAnnotator: string;
 }
 
 export async function getRunStatusFromPath(
@@ -92,14 +92,21 @@ export async function getRunSteps(): Promise<AllStepsData | null> {
 export async function getConsoleTextOffset(
   stepId: string,
   startByte: number,
+  consoleAnnotator: string,
 ): Promise<ConsoleLogData | null> {
+  const headers = new Headers();
+  if (consoleAnnotator) headers.set("X-ConsoleAnnotator", consoleAnnotator);
   try {
     const response = await fetch(
       `consoleOutput?nodeId=${stepId}&startByte=${startByte}`,
+      { headers },
     );
     if (!response.ok) throw response.statusText;
     const json = await response.json();
-    return json.data;
+    return {
+      ...json.data,
+      consoleAnnotator: response.headers.get("X-ConsoleAnnotator") || "",
+    };
   } catch (e) {
     console.error(`Caught error when fetching console: '${e}'`);
     return null;

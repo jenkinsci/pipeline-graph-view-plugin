@@ -18,6 +18,7 @@ import {
   LOG_FETCH_SIZE,
   StepInfo,
   StepLogBufferInfo,
+  TAIL_CONSOLE_LOG,
 } from "./PipelineConsoleModel.tsx";
 import InputStep from "./steps/InputStep.tsx";
 
@@ -33,7 +34,7 @@ export default function ConsoleLogCard({
 }: ConsoleLogCardProps) {
   useEffect(() => {
     if (isExpanded) {
-      onMoreConsoleClick(step.id, stepBuffer.startByte);
+      onMoreConsoleClick(step.id, TAIL_CONSOLE_LOG);
     }
   }, [isExpanded, onMoreConsoleClick, step.id, stepBuffer]);
 

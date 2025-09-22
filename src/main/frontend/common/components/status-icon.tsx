@@ -30,7 +30,8 @@ export default function StatusIcon({
         cx={viewBoxSize / 2}
         cy={viewBoxSize / 2}
         r={radius}
-        fill="oklch(from var(--color) l c h / 0.15)"
+        fill="var(--color)"
+        opacity={"var(--status-background-opacity)"}
         style={{
           transition: "var(--standard-transition)",
         }}
@@ -42,7 +43,7 @@ export default function StatusIcon({
         fill="none"
         stroke="var(--color)"
         strokeWidth={20}
-        strokeOpacity={0.15}
+        strokeOpacity={"var(--status-border-opacity)"}
       />
       <circle
         cx={viewBoxSize / 2}

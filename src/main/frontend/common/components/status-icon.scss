@@ -1,7 +1,7 @@
 // TODO - can be removed when changes are in Jenkins core
 :root {
   --status-background-opacity: 0.125;
-  --status-border-opacity: 0.2;
+  --status-border-opacity: 0.25;
 
   @media (prefers-contrast: more) {
     --status-background-opacity: 0;

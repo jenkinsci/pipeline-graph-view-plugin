@@ -3,14 +3,83 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import useRunPoller from "../../../../common/tree-api.ts";
 import {
   getConsoleTextOffset,
+  getExceptionText,
   getRunSteps,
-  LOG_FETCH_SIZE,
   POLL_INTERVAL,
   Result,
   StageInfo,
   StepInfo,
   StepLogBufferInfo,
+  TAIL_CONSOLE_LOG,
 } from "../PipelineConsoleModel.tsx";
+
+async function updateStepBuffer(
+  stepBuffer: StepLogBufferInfo,
+  stepId: string,
+  forceUpdate: boolean,
+  startByte: number,
+): Promise<void> {
+  const isTailing = startByte === TAIL_CONSOLE_LOG;
+  if (stepBuffer.startByte > 0 && !forceUpdate) {
+    // This is a large log. Only update the log when requested by the UI.
+    return;
+  }
+  if (isTailing && stepBuffer.stopTailing) {
+    // We've already reached the end of the log.
+    return;
+  }
+  if (
+    !isTailing &&
+    stepBuffer.startByte <= startByte &&
+    startByte <= stepBuffer.endByte
+  ) {
+    // Duplicate click on "There's more to see - XMiB of logs hidden".
+    return;
+  }
+  let consoleAnnotator = "";
+  if (isTailing) {
+    startByte = stepBuffer.endByte;
+    consoleAnnotator = stepBuffer.consoleAnnotator || "";
+    if (stepBuffer.lastFetched) {
+      // Slow down incremental fetch to POLL_INTERVAL.
+      const msSinceLastFetch = performance.now() - stepBuffer.lastFetched;
+      const backOff = POLL_INTERVAL - msSinceLastFetch;
+      await new Promise((resolve) => setTimeout(resolve, backOff));
+    }
+  }
+  stepBuffer.lastFetched = performance.now();
+  const response = await getConsoleTextOffset(
+    stepId,
+    startByte,
+    consoleAnnotator,
+  );
+  if (!response) {
+    // Request failed.
+    return;
+  }
+
+  const newLogLines = response.text.split("\n");
+  if (newLogLines[newLogLines.length - 1] === "") {
+    // Remove trailing empty new line caused by a) splitting an empty string or b) a trailing new line character in the response.
+    newLogLines.pop();
+  }
+
+  const exceptionText = stepBuffer.exceptionText || [];
+  if (stepBuffer.endByte > 0 && stepBuffer.endByte === startByte) {
+    stepBuffer.lines.length -= exceptionText.length;
+    stepBuffer.lines = [...stepBuffer.lines, ...newLogLines, ...exceptionText];
+  } else {
+    stepBuffer.lines = newLogLines.concat(exceptionText);
+    stepBuffer.startByte = response.startByte;
+  }
+
+  stepBuffer.endByte = response.endByte;
+  stepBuffer.consoleAnnotator = response.consoleAnnotator;
+  if (!response.nodeIsActive) {
+    // We've reached the end of the log now.
+    stepBuffer.stopTailing = true;
+  }
+}
 
 export function useStepsPoller(props: RunPollerProps) {
   const { run, loading } = useRunPoller({
@@ -20,41 +89,65 @@ export function useStepsPoller(props: RunPollerProps) {
 
   const [openStage, setOpenStage] = useState("");
   const [expandedSteps, setExpandedSteps] = useState<string[]>([]);
+  const collapsedSteps = useRef(new Set<string>());
   const [steps, setSteps] = useState<StepInfo[]>([]);
   const [stepBuffers, setStepBuffers] = useState(
     new Map<string, StepLogBufferInfo>(),
   );
-  const [userManuallySetNode, setUserManuallySetNode] = useState(false);
-
-  const stepsRef = useRef<StepInfo[]>([]);
-
+  // Avoid invalidating updateStepConsoleOffset on every stepBuffer change.
+  const stepBuffersRef = useRef(stepBuffers);
   const updateStepConsoleOffset = useCallback(
     async (stepId: string, forceUpdate: boolean, startByte: number) => {
-      const stepBuffer = stepBuffers.get(stepId) ?? {
-        lines: [],
-        startByte: 0 - LOG_FETCH_SIZE,
-        endByte: -1,
-        stepId,
-      };
-      if (stepBuffer.startByte > 0 && !forceUpdate) return;
-      const response = await getConsoleTextOffset(stepId, startByte);
-      if (!response) return;
-
-      const newLogLines = response.text.trim().split("\n") || [];
-
-      if (stepBuffer.endByte > 0 && stepBuffer.endByte <= startByte) {
-        stepBuffer.lines = [...stepBuffer.lines, ...newLogLines];
-      } else {
-        stepBuffer.lines = newLogLines;
-        stepBuffer.startByte = response.startByte;
+      const stepBuffers = stepBuffersRef.current;
+      let stepBuffer = stepBuffers.get(stepId);
+      if (!stepBuffer) {
+        stepBuffer = { lines: [], startByte: 0, endByte: TAIL_CONSOLE_LOG };
+        stepBuffers.set(stepId, stepBuffer);
       }
 
-      stepBuffer.endByte = response.endByte;
+      // Cheap FIFO queue to avoid duplicate fetches.
+      const promise = (stepBuffer.pending || Promise.resolve()).finally(() =>
+        updateStepBuffer(stepBuffer, stepId, forceUpdate, startByte),
+      );
+      stepBuffer.pending = promise;
+      try {
+        await promise;
+      } finally {
+        if (stepBuffer.pending === promise) {
+          delete stepBuffer.pending;
+        }
+      }
 
-      setStepBuffers((prev) => new Map(prev).set(stepId, stepBuffer));
+      stepBuffersRef.current = new Map(stepBuffers).set(stepId, stepBuffer);
+      setStepBuffers(stepBuffersRef.current);
     },
     [],
   );
+
+  const fetchExceptionText = useCallback(async (stepId: string) => {
+    const stepBuffers = stepBuffersRef.current;
+    let stepBuffer = stepBuffers.get(stepId);
+    if (!stepBuffer) {
+      stepBuffer = { lines: [], startByte: 0, endByte: TAIL_CONSOLE_LOG };
+      stepBuffers.set(stepId, stepBuffer);
+    }
+    while (stepBuffer.pendingExceptionText) {
+      await stepBuffer.pendingExceptionText;
+    }
+    if (stepBuffer.exceptionText?.length) return; // Already fetched
+    const promise = getExceptionText(stepId);
+    stepBuffer.pendingExceptionText = promise;
+    try {
+      stepBuffer.exceptionText = await promise;
+    } finally {
+      delete stepBuffer.pending;
+    }
+
+    stepBuffer.lines = stepBuffer.lines.concat(stepBuffer.exceptionText);
+
+    stepBuffersRef.current = new Map(stepBuffers).set(stepId, stepBuffer);
+    setStepBuffers(stepBuffersRef.current);
+  }, []);
 
   const parseUrlParams = useCallback(
     (steps: StepInfo[]): boolean => {
@@ -63,170 +156,145 @@ export function useStepsPoller(props: RunPollerProps) {
       if (!selected) {
         return false;
       }
-
-      setUserManuallySetNode(true);
+      if (collapsedSteps.current.has(selected)) return true;
 
       const step = steps.find((s) => s.id === selected);
-      const expanded: string[] = [];
-
       if (step) {
         selected = step.stageId;
-        expanded.push(step.id);
+        setExpandedSteps((prev) => {
+          if (prev.includes(step.id)) return prev;
+          return [...prev, step.id];
+        });
 
         updateStepConsoleOffset(
           step.id,
           false,
-          parseInt(params.get("start-byte") || `${0 - LOG_FETCH_SIZE}`),
+          parseInt(params.get("start-byte") || `${TAIL_CONSOLE_LOG}`),
         );
       }
 
       setOpenStage(selected);
-      setExpandedSteps(expanded);
       return true;
     },
     [updateStepConsoleOffset],
   );
 
-  const getDefaultSelectedStep = (steps: StepInfo[]) => {
-    if (userManuallySetNode) {
-      return;
-    }
-
-    let selectedStep = steps.find((step) => step !== undefined);
-    if (!steps || steps.length === 0 || !selectedStep) {
-      return null;
-    }
-    for (const step of steps) {
-      const stepResult = step.state.toLowerCase() as Result;
-      const selectedStepResult = selectedStep?.state.toLowerCase() as Result;
-      switch (stepResult) {
-        case Result.running:
-        case Result.queued:
-        case Result.paused:
-          // Return first running/queued/paused step.
-          return step;
-        case Result.unstable:
-        case Result.failure:
-        case Result.aborted:
-          if (
-            run?.complete &&
-            selectedStepResult &&
-            stepResult < selectedStepResult
-          ) {
-            // If the run is complete return first unstable/failed/aborted step which has a state worse
-            // than the selectedStep.
-            // E.g. if the first step state is failure we want to return that over a later unstable step.
-            return step;
-          }
-          continue;
-        default:
-          // Otherwise select the step with the worst result with the largest id - e.g. (last step if all successful).
-          if (selectedStepResult && stepResult <= selectedStepResult) {
-            selectedStep = step;
-          }
+  const getDefaultSelectedStep = useCallback(
+    (steps: StepInfo[]) => {
+      let selectedStep = steps.find((step) => step !== undefined);
+      if (!steps || steps.length === 0 || !selectedStep) {
+        return null;
       }
-    }
-    return selectedStep;
-  };
+      for (const step of steps) {
+        const stepResult = step.state.toLowerCase() as Result;
+        const selectedStepResult = selectedStep?.state.toLowerCase() as Result;
+        switch (stepResult) {
+          case Result.running:
+          case Result.queued:
+          case Result.paused:
+            // Return first running/queued/paused step.
+            return step;
+          case Result.unstable:
+          case Result.failure:
+          case Result.aborted:
+            if (
+              run?.complete &&
+              selectedStepResult &&
+              stepResult < selectedStepResult
+            ) {
+              // If the run is complete return first unstable/failed/aborted step which has a state worse
+              // than the selectedStep.
+              // E.g. if the first step state is failure we want to return that over a later unstable step.
+              return step;
+            }
+            continue;
+          default:
+            // Otherwise select the step with the worst result with the largest id - e.g. (last step if all successful).
+            if (selectedStepResult && stepResult <= selectedStepResult) {
+              selectedStep = step;
+            }
+        }
+      }
+      return selectedStep;
+    },
+    [run?.complete],
+  );
 
   useEffect(() => {
-    getRunSteps()
-      .then((steps) => {
-        steps = steps || [];
-        setSteps(steps);
+    let previousStepsSerialized = "";
+    function updateStepsIfChanged(steps: StepInfo[]) {
+      const nextStepsSerialized = JSON.stringify(steps);
+      if (previousStepsSerialized === nextStepsSerialized) return; // no change
+      previousStepsSerialized = nextStepsSerialized;
 
-        const usedUrl = parseUrlParams(steps);
-        if (!usedUrl) {
-          const defaultStep = getDefaultSelectedStep(steps);
-          if (defaultStep) {
-            setOpenStage(defaultStep.stageId);
+      setSteps(steps);
 
-            if (defaultStep.stageId) {
-              setExpandedSteps((prev) => [...prev, defaultStep.id]);
-              updateStepConsoleOffset(
-                defaultStep.id,
-                false,
-                0 - LOG_FETCH_SIZE,
-              );
-            }
+      const usedUrl = parseUrlParams(steps);
+      if (!usedUrl) {
+        const defaultStep = getDefaultSelectedStep(steps);
+        if (defaultStep) {
+          setOpenStage(defaultStep.stageId);
+
+          if (defaultStep.stageId) {
+            setExpandedSteps((prev) => [...prev, defaultStep.id]);
+            updateStepConsoleOffset(defaultStep.id, false, TAIL_CONSOLE_LOG);
           }
         }
+      }
+    }
 
-        if (!run?.complete) {
-          startPollingPipeline({
-            getStateUpdateFn: getRunSteps,
-            onData: (data) => {
-              const hasNewSteps =
-                JSON.stringify(stepsRef.current) !== JSON.stringify(data);
-
-              if (userManuallySetNode) {
-                const defaultStep = getDefaultSelectedStep(steps);
-                if (defaultStep) {
-                  setOpenStage(defaultStep.stageId);
-
-                  if (defaultStep.stageId) {
-                    setExpandedSteps((prev) => [...prev, defaultStep.id]);
-                    updateStepConsoleOffset(
-                      defaultStep.id,
-                      false,
-                      0 - LOG_FETCH_SIZE,
-                    );
-                  }
-                }
-              }
-
-              if (hasNewSteps) {
-                setSteps(data);
-                stepsRef.current = data;
-              }
-            },
-            checkComplete: () => !run?.complete,
-            interval: POLL_INTERVAL,
-          });
-        }
-        return null;
-      })
-      .catch((error) => {
-        console.error("Error in getRunSteps:", error);
-      });
-  }, [run?.stages]);
+    let polling = true;
+    const poll = async () => {
+      while (polling) {
+        const data = await getRunSteps();
+        if (data?.steps) updateStepsIfChanged(data.steps);
+        if (data?.runIsComplete) polling = false;
+        if (!polling) break;
+        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
+      }
+    };
+    poll();
+    return () => {
+      polling = false;
+    };
+  }, [getDefaultSelectedStep, parseUrlParams, updateStepConsoleOffset]);
 
   const handleStageSelect = useCallback(
     (nodeId: string) => {
-      setUserManuallySetNode(true);
-
       if (!nodeId) return;
       if (nodeId === openStage) return; // skip if already selected
 
       const stepsForStage = steps.filter((step) => step.stageId === nodeId);
       const lastStep = stepsForStage[stepsForStage.length - 1];
-      const newlyExpandedSteps = lastStep ? [lastStep.id] : [];
 
       history.replaceState({}, "", `?selected-node=` + nodeId);
 
       setOpenStage(nodeId);
-      setExpandedSteps((prev) => [...prev, ...newlyExpandedSteps]);
-
-      if (lastStep) {
-        updateStepConsoleOffset(lastStep.id, false, 0 - LOG_FETCH_SIZE);
+      if (lastStep && !collapsedSteps.current.has(lastStep.id)) {
+        setExpandedSteps((prev) => [...prev, lastStep.id]);
+        updateStepConsoleOffset(lastStep.id, false, TAIL_CONSOLE_LOG);
       }
     },
     [openStage, steps, updateStepConsoleOffset],
   );
 
   const onStepToggle = (nodeId: string) => {
-    setUserManuallySetNode(true);
     if (!expandedSteps.includes(nodeId)) {
+      collapsedSteps.current.delete(nodeId);
       setExpandedSteps((prev) => [...prev, nodeId]);
-      updateStepConsoleOffset(nodeId, false, 0 - LOG_FETCH_SIZE);
+      updateStepConsoleOffset(nodeId, false, TAIL_CONSOLE_LOG);
     } else {
+      collapsedSteps.current.add(nodeId);
       setExpandedSteps((prev) => prev.filter((id) => id !== nodeId));
     }
   };
 
-  const onMoreConsoleClick = (nodeId: string, startByte: number) => {
-    updateStepConsoleOffset(nodeId, true, startByte);
-  };
+  const onMoreConsoleClick = useCallback(
+    (nodeId: string, startByte: number) => {
+      updateStepConsoleOffset(nodeId, true, startByte);
+    },
+    [updateStepConsoleOffset],
+  );
 
   const getStageSteps = (stageId: string) => {
     return steps.filter((step) => step.stageId === stageId);
@@ -265,46 +333,10 @@ export function useStepsPoller(props: RunPollerProps) {
     handleStageSelect,
     onStepToggle,
     onMoreConsoleClick,
+    fetchExceptionText,
     loading,
   };
 }
-
-/**
- * Starts polling a function until a complete condition is met.
- */
-const startPollingPipeline = ({
-  getStateUpdateFn,
-  onData,
-  checkComplete,
-  interval = 1000,
-}: {
-  getStateUpdateFn: () => Promise<StepInfo[] | null>;
-  onData: (data: StepInfo[]) => void;
-  checkComplete: (data: StepInfo[]) => boolean;
-  interval?: number;
-}): (() => void) => {
-  let polling = true;
-
-  const poll = async () => {
-    while (polling) {
-      const data = (await getStateUpdateFn()) || [];
-      onData(data);
-
-      if (checkComplete(data)) {
-        polling = false;
-        break;
-      }
-
-      await new Promise((resolve) => setTimeout(resolve, interval));
-    }
-  };
-
-  setTimeout(poll, interval);
-
-  return () => {
-    polling = false;
-  };
-};
 
 interface RunPollerProps {
   currentRunPath: string;

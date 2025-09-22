@@ -11,7 +11,6 @@ import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.treescanner.NodeRelationshipFinder;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeTreeScanner;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,12 +51,12 @@ class PipelineGraphApiTest {
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createTree();
 
-        List<PipelineStage> stages = graph.getStages();
+        List<PipelineStage> stages = graph.stages;
 
         String stagesString = TestUtils.collectStagesAsString(
                 stages,
-                (PipelineStage stage) -> String.format(
-                        "{%s,%s,%s,%s}", stage.getName(), stage.getTitle(), stage.getType(), stage.getState()));
+                (PipelineStage stage) ->
+                        String.format("{%s,%s,%s,%s}", stage.name, stage.title, stage.type, stage.state));
         assertThat(
                 stagesString,
                 equalTo(String.join(
@@ -74,9 +73,9 @@ class PipelineGraphApiTest {
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createTree();
 
-        List<PipelineStage> stages = graph.getStages();
+        List<PipelineStage> stages = graph.stages;
 
-        String stagesString = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
+        String stagesString = TestUtils.collectStagesAsString(stages, pipelineStage -> pipelineStage.name);
         assertThat(
                 stagesString,
                 equalTo(String.join(
@@ -94,9 +93,9 @@ class PipelineGraphApiTest {
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createTree();
 
-        List<PipelineStage> stages = graph.getStages();
+        List<PipelineStage> stages = graph.stages;
 
-        String stagesString = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
+        String stagesString = TestUtils.collectStagesAsString(stages, pipelineStage -> pipelineStage.name);
         assertThat(stagesString, equalTo("A,Parallel[B[BA,BB],C[CA,CB]],D[E[EA,EB],F[FA,FB]],G"));
     }
 
@@ -107,9 +106,9 @@ class PipelineGraphApiTest {
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createTree();
 
-        List<PipelineStage> stages = graph.getStages();
+        List<PipelineStage> stages = graph.stages;
 
-        String stagesString = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
+        String stagesString = TestUtils.collectStagesAsString(stages, pipelineStage -> pipelineStage.name);
         assertThat(stagesString, equalTo(Messages.FlowNodeWrapper_noStage()));
     }
 
@@ -121,12 +120,11 @@ class PipelineGraphApiTest {
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createTree();
 
-        List<PipelineStage> stages = graph.getStages();
+        List<PipelineStage> stages = graph.stages;
 
         String stagesString = TestUtils.collectStagesAsString(
                 stages,
-                (PipelineStage stage) ->
-                        String.format("{%s,%s}", stage.getName(), stage.isSynthetic() ? "true" : "false"));
+                (PipelineStage stage) -> String.format("{%s,%s}", stage.name, stage.synthetic ? "true" : "false"));
         assertThat(
                 stagesString,
                 equalTo(String.join(
@@ -141,10 +139,10 @@ class PipelineGraphApiTest {
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createTree();
 
-        List<PipelineStage> stages = graph.getStages();
+        List<PipelineStage> stages = graph.stages;
 
         String stagesString = TestUtils.collectStagesAsString(
-                stages, (PipelineStage stage) -> String.format("{%s,%s}", stage.getName(), stage.getState()));
+                stages, (PipelineStage stage) -> String.format("{%s,%s}", stage.name, stage.state));
         assertThat(stagesString, equalTo("{Stage 1,success},{Parallel stage,skipped},{Stage 2,success}"));
     }
 
@@ -156,9 +154,9 @@ class PipelineGraphApiTest {
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createTree();
 
-        List<PipelineStage> stages = graph.getStages();
+        List<PipelineStage> stages = graph.stages;
 
-        String stagesString = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
+        String stagesString = TestUtils.collectStagesAsString(stages, pipelineStage -> pipelineStage.name);
         assertThat(stagesString, equalTo("Parallel[A[Build,Test[A1,A2]],B[Build,Parallel[B1,B2]]]"));
     }
 
@@ -170,9 +168,9 @@ class PipelineGraphApiTest {
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createTree();
 
-        List<PipelineStage> stages = graph.getStages();
+        List<PipelineStage> stages = graph.stages;
 
-        String stagesString = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
+        String stagesString = TestUtils.collectStagesAsString(stages, pipelineStage -> pipelineStage.name);
         assertThat(stagesString, equalTo("A[Build,Test[A1,A2]],B[Build,Test[B1,B2]]"));
     }
 
@@ -184,17 +182,17 @@ class PipelineGraphApiTest {
         WorkflowRun run = futureRun.waitForStart();
 
         SemaphoreStep.waitForStart("wait/1", run);
-        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
 
-        String stagesStringRunning = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
+        String stagesStringRunning = TestUtils.collectStagesAsString(stages, pipelineStage1 -> pipelineStage1.name);
 
         SemaphoreStep.success("wait/1", null);
         // Wait for Pipeline to end (terminating it means end nodes might not be
         // created).
         j.waitForCompletion(run);
 
-        stages = new PipelineGraphApi(run).createTree().getStages();
-        String stagesStringFinished = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
+        stages = new PipelineGraphApi(run).createTree().stages;
+        String stagesStringFinished = TestUtils.collectStagesAsString(stages, pipelineStage -> pipelineStage.name);
         assertThat(stagesStringRunning, equalTo(stagesStringFinished));
     }
 
@@ -207,17 +205,17 @@ class PipelineGraphApiTest {
         WorkflowRun run = futureRun.waitForStart();
 
         SemaphoreStep.waitForStart("wait/1", run);
-        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
-        String stagesStringRunning = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
+        String stagesStringRunning = TestUtils.collectStagesAsString(stages, pipelineStage1 -> pipelineStage1.name);
         LOGGER.log(Level.INFO, stagesStringRunning);
         SemaphoreStep.success("wait/1", null);
         // Wait for Pipeline to end (terminating it means end nodes might not be
         // created).
         j.waitForCompletion(run);
 
-        List<PipelineStage> finishedStages =
-                new PipelineGraphApi(run).createTree().getStages();
-        String stagesStringFinished = TestUtils.collectStagesAsString(finishedStages, PipelineStage::getName);
+        List<PipelineStage> finishedStages = new PipelineGraphApi(run).createTree().stages;
+        String stagesStringFinished =
+                TestUtils.collectStagesAsString(finishedStages, pipelineStage -> pipelineStage.name);
         LOGGER.log(Level.INFO, stagesStringFinished);
 
         assertThat(stagesStringRunning, equalTo("Hello[A]"));
@@ -233,8 +231,8 @@ class PipelineGraphApiTest {
         WorkflowRun run = futureRun.waitForStart();
 
         SemaphoreStep.waitForStart("wait/1", run);
-        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
-        String stagesStringRunning = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
+        String stagesStringRunning = TestUtils.collectStagesAsString(stages, pipelineStage1 -> pipelineStage1.name);
 
         SemaphoreStep.success("wait/1", null);
         LOGGER.log(Level.INFO, stagesStringRunning);
@@ -242,9 +240,9 @@ class PipelineGraphApiTest {
         // created).
         j.waitForCompletion(run);
 
-        List<PipelineStage> finishedStages =
-                new PipelineGraphApi(run).createTree().getStages();
-        String stagesStringFinished = TestUtils.collectStagesAsString(finishedStages, PipelineStage::getName);
+        List<PipelineStage> finishedStages = new PipelineGraphApi(run).createTree().stages;
+        String stagesStringFinished =
+                TestUtils.collectStagesAsString(finishedStages, pipelineStage -> pipelineStage.name);
         LOGGER.log(Level.INFO, stagesStringFinished);
 
         assertThat(stagesStringRunning, equalTo("Hello[A[Parallel[A1]]]"));
@@ -264,7 +262,7 @@ class PipelineGraphApiTest {
         j.waitForMessage("Testing A1", run);
         j.waitForMessage("Finished A1", run);
         SemaphoreStep.waitForStart("wait/1", run);
-        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
         String stagesStringRunning = TestUtils.collectStagesAsString(stages, TestUtils::nodeNameAndStatus);
 
         LOGGER.log(Level.INFO, stagesStringRunning);
@@ -273,8 +271,7 @@ class PipelineGraphApiTest {
         // created).
         j.waitForCompletion(run);
 
-        List<PipelineStage> finishedStages =
-                new PipelineGraphApi(run).createTree().getStages();
+        List<PipelineStage> finishedStages = new PipelineGraphApi(run).createTree().stages;
         String stagesStringFinished = TestUtils.collectStagesAsString(finishedStages, TestUtils::nodeNameAndStatus);
         LOGGER.log(Level.INFO, stagesStringFinished);
 
@@ -306,8 +303,8 @@ class PipelineGraphApiTest {
         WorkflowRun run = futureRun.waitForStart();
         SemaphoreStep.waitForStart("a/1", run);
         SemaphoreStep.waitForStart("b/1", run);
-        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
-        String stagesStringRunning = TestUtils.collectStagesAsString(stages, PipelineStage::getName);
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
+        String stagesStringRunning = TestUtils.collectStagesAsString(stages, pipelineStage1 -> pipelineStage1.name);
 
         LOGGER.log(Level.INFO, stagesStringRunning);
         SemaphoreStep.success("a/1", null);
@@ -316,9 +313,9 @@ class PipelineGraphApiTest {
         // created).
         j.waitForCompletion(run);
 
-        List<PipelineStage> finishedStages =
-                new PipelineGraphApi(run).createTree().getStages();
-        String stagesStringFinished = TestUtils.collectStagesAsString(finishedStages, PipelineStage::getName);
+        List<PipelineStage> finishedStages = new PipelineGraphApi(run).createTree().stages;
+        String stagesStringFinished =
+                TestUtils.collectStagesAsString(finishedStages, pipelineStage -> pipelineStage.name);
         LOGGER.log(Level.INFO, stagesStringFinished);
 
         assertThat(stagesStringRunning, equalTo("Hello[A,B]"));
@@ -337,7 +334,7 @@ class PipelineGraphApiTest {
 
         SemaphoreStep.waitForStart("a1/1", run);
         SemaphoreStep.waitForStart("a2/1", run);
-        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
         String stagesStringRunning = TestUtils.collectStagesAsString(stages, TestUtils::nodeNameAndStatus);
         LOGGER.log(Level.INFO, stagesStringRunning);
 
@@ -347,8 +344,7 @@ class PipelineGraphApiTest {
         // created).
         j.waitForCompletion(run);
 
-        List<PipelineStage> finishedStages =
-                new PipelineGraphApi(run).createTree().getStages();
+        List<PipelineStage> finishedStages = new PipelineGraphApi(run).createTree().stages;
         String stagesStringFinished = TestUtils.collectStagesAsString(finishedStages, TestUtils::nodeNameAndStatus);
         LOGGER.log(Level.INFO, stagesStringFinished);
 
@@ -365,7 +361,7 @@ class PipelineGraphApiTest {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "gh222_statusPropagatesToParent", "gh222_statusPropagatesToParent.jenkinsfile", Result.FAILURE);
 
-        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
         String stagesString = TestUtils.collectStagesAsString(stages, TestUtils::nodeNameAndStatus);
 
         assertThat(stagesString, equalTo("ParentStage{failure}[SubStageA{failure},SubStageB{skipped}]"));
@@ -376,7 +372,7 @@ class PipelineGraphApiTest {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "pipelineWithSyntaxError", "pipelineWithSyntaxError.jenkinsfile", Result.FAILURE);
 
-        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
         String stagesString = TestUtils.collectStagesAsString(stages, TestUtils::nodeNameAndStatus);
 
         assertThat(stagesString, equalTo("%s{failure}".formatted(Messages.FlowNodeWrapper_noStage())));
@@ -387,18 +383,18 @@ class PipelineGraphApiTest {
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "nestedStageSleep", "nestedStageSleep.jenkinsfile", Result.SUCCESS);
 
-        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
 
-        Map<String, List<Long>> checks = new LinkedHashMap<>();
+        Map<String, TestUtils.TimeRange> checks = new LinkedHashMap<>();
         // Give large ranges - we are testing that the values are feasible, not that they are precise.
-        checks.put("Parent", Arrays.asList(1000L, 0L, 1000L, 5000L, 500L, 5000L));
-        checks.put("Child A", Arrays.asList(0L, 0L, 0L, 5000L, 500L, 500L));
-        checks.put("Grandchild A", Arrays.asList(0L, 0L, 0L, 5000L, 500L, 500L));
-        checks.put("Child B", Arrays.asList(1000L, 0L, 1000L, 5000L, 500L, 3000L));
-        checks.put("Grandchild B", Arrays.asList(1000L, 0L, 1000L, 5000L, 500L, 3000L));
+        checks.put("Parent", new TestUtils.TimeRange(1000L, 0L, 1000L, 5000L, 500L, 5000L));
+        checks.put("Child A", new TestUtils.TimeRange(0L, 0L, 0L, 5000L, 500L, 500L));
+        checks.put("Grandchild A", new TestUtils.TimeRange(0L, 0L, 0L, 5000L, 500L, 500L));
+        checks.put("Child B", new TestUtils.TimeRange(1000L, 0L, 1000L, 5000L, 500L, 3000L));
+        checks.put("Grandchild B", new TestUtils.TimeRange(1000L, 0L, 1000L, 5000L, 500L, 3000L));
         for (AbstractPipelineNode n : stages) {
-            assertThat(checks, hasEntry(is(n.getName()), notNullValue()));
-            TestUtils.assertTimesInRange(n, checks.get(n.getName()));
+            assertThat(checks, hasEntry(is(n.name), notNullValue()));
+            TestUtils.assertTimesInRange(n, checks.get(n.name));
         }
     }
 
@@ -411,7 +407,7 @@ class PipelineGraphApiTest {
                 "gh_358_parallelStagesMarkedAsSkipped.jenkinsfile",
                 Result.FAILURE);
 
-        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
         String stagesString = TestUtils.collectStagesAsString(stages, TestUtils::nodeNameAndStatus);
 
         assertThat(
@@ -425,10 +421,10 @@ class PipelineGraphApiTest {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "getAgentForSingleStagePipeline", "singleStagePipeline.jenkinsfile", Result.SUCCESS);
 
-        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
 
         assertThat(stages.size(), equalTo(1));
-        assertThat(stages.get(0).getAgent(), equalTo("built-in"));
+        assertThat(stages.get(0).agent, equalTo("built-in"));
     }
 
     @Test
@@ -443,10 +439,10 @@ class PipelineGraphApiTest {
                 "singleStagePipelineWithExternalAgent.jenkinsfile",
                 Result.SUCCESS);
 
-        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
 
         assertThat(stages.size(), equalTo(1));
-        assertThat(stages.get(0).getAgent(), equalTo(agent.getNodeName()));
+        assertThat(stages.get(0).agent, equalTo(agent.getNodeName()));
     }
 
     @Test
@@ -461,7 +457,7 @@ class PipelineGraphApiTest {
                 "parallelPipelineWithExternalAgent.jenkinsfile",
                 Result.SUCCESS);
 
-        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().getStages();
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
 
         // Parallel pipeline structure:
         // name: Parallel, type: STAGE
@@ -473,23 +469,23 @@ class PipelineGraphApiTest {
         // name: Allocate node : Start, type: STEPS_BLOCK
 
         assertThat(stages.size(), equalTo(1));
-        assertThat(stages.get(0).getType(), equalTo("STAGE"));
-        assertThat(stages.get(0).getName(), equalTo("Parallel"));
-        assertThat(stages.get(0).getAgent(), equalTo(null));
+        assertThat(stages.get(0).type, equalTo("STAGE"));
+        assertThat(stages.get(0).name, equalTo("Parallel"));
+        assertThat(stages.get(0).agent, equalTo(null));
 
-        List<PipelineStage> children = stages.get(0).getChildren();
+        List<PipelineStage> children = stages.get(0).children;
 
         assertThat(children.size(), equalTo(2));
 
         PipelineStage builtinStage = children.get(0);
-        assertThat(builtinStage.getType(), equalTo("PARALLEL"));
-        assertThat(builtinStage.getName(), equalTo("Builtin"));
-        assertThat(builtinStage.getAgent(), equalTo("built-in"));
+        assertThat(builtinStage.type, equalTo("PARALLEL"));
+        assertThat(builtinStage.name, equalTo("Builtin"));
+        assertThat(builtinStage.agent, equalTo("built-in"));
 
         PipelineStage externalStage = children.get(1);
-        assertThat(externalStage.getType(), equalTo("PARALLEL"));
-        assertThat(externalStage.getName(), equalTo("External"));
-        assertThat(externalStage.getAgent(), equalTo(agent.getNodeName()));
+        assertThat(externalStage.type, equalTo("PARALLEL"));
+        assertThat(externalStage.name, equalTo("External"));
+        assertThat(externalStage.agent, equalTo(agent.getNodeName()));
     }
 
     @Issue("GH#616")
@@ -500,12 +496,12 @@ class PipelineGraphApiTest {
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createTree();
 
-        List<PipelineStage> stages = graph.getStages();
+        List<PipelineStage> stages = graph.stages;
 
         String stagesString = TestUtils.collectStagesAsString(
                 stages,
-                (PipelineStage stage) -> String.format(
-                        "{%s,%s,%s,%s}", stage.getName(), stage.getTitle(), stage.getType(), stage.getState()));
+                (PipelineStage stage) ->
+                        String.format("{%s,%s,%s,%s}", stage.name, stage.title, stage.type, stage.state));
         assertThat(
                 stagesString,
                 equalTo(String.join(
@@ -523,7 +519,7 @@ class PipelineGraphApiTest {
         PipelineGraphApi api = new PipelineGraphApi(run);
         PipelineGraph graph = api.createTree();
 
-        List<PipelineStage> stages = graph.getStages();
+        List<PipelineStage> stages = graph.stages;
 
         String stagesString = TestUtils.collectStagesAsString(stages, TestUtils::nodeNameAndStatus);
         assertThat(

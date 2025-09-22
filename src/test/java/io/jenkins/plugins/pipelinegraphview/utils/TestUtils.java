@@ -83,11 +83,9 @@ public class TestUtils {
     public static String collectStagesAsString(List<PipelineStage> stages, Function<PipelineStage, String> converter) {
 
         return stages.stream()
-                .map((PipelineStage stage) -> stage.getChildren().isEmpty()
-                        ? converter.apply(stage)
-                        : String.format(
-                                "%s[%s]",
-                                converter.apply(stage), collectStagesAsString(stage.getChildren(), converter)))
+                .map(s -> s.children.isEmpty()
+                        ? converter.apply(s)
+                        : String.format("%s[%s]", converter.apply(s), collectStagesAsString(s.children, converter)))
                 .collect(Collectors.joining(","));
     }
 
@@ -96,7 +94,7 @@ public class TestUtils {
     }
 
     public static String nodeNameAndStatus(AbstractPipelineNode node) {
-        return String.format("%s{%s}", node.getName(), node.getState());
+        return String.format("%s{%s}", node.name, node.state);
     }
 
     /* Check if the TimingInfo of the given node is in the expected ranges.
@@ -107,41 +105,34 @@ public class TestUtils {
      * but this ended up taking more space - happy to add it if it's useful.
      * Throws AssertionError (with meaningful message) if issues are found.
      */
-    public static void assertTimesInRange(AbstractPipelineNode node, List<Long> times) {
-        if (times.size() != 6) {
-            throw new AssertionError(String.format("Expected 6 times, but got %s", times.size()));
-        }
+    public static void assertTimesInRange(AbstractPipelineNode node, TimeRange range) {
         List<String> errors = new ArrayList<>();
-        Long start = new Date().getTime() - node.getTimingInfo().getStartTimeMillis();
-        Long pause = node.getTimingInfo().getPauseDurationMillis();
-        Long total = node.getTimingInfo().getTotalDurationMillis();
-        Long startMin = times.get(0);
-        Long pauseMin = times.get(1);
-        Long totalMin = times.get(2);
-        Long startMax = times.get(3);
-        Long pauseMax = times.get(4);
-        Long totalMax = times.get(5);
-        if (start < startMin) {
-            errors.add(String.format("(Relative start time %s less than min value %s", start, startMin));
+        long start = new Date().getTime() - node.timingInfo.getStartTimeMillis();
+        long pause = node.timingInfo.getPauseDurationMillis();
+        long total = node.timingInfo.getTotalDurationMillis();
+        if (start < range.startMin) {
+            errors.add(String.format("(Relative start time %s less than min value %s", start, range.startMin));
         }
-        if (start > startMax) {
-            errors.add(String.format("Relative start time %s greater than max value %s", start, startMax));
+        if (start > range.startMax) {
+            errors.add(String.format("Relative start time %s greater than max value %s", start, range.startMax));
         }
-        if (pause < pauseMin) {
-            errors.add(String.format("Pause duration %s less than min value %s", pause, pauseMin));
+        if (pause < range.pauseMin) {
+            errors.add(String.format("Pause duration %s less than min value %s", pause, range.pauseMin));
         }
-        if (pause > pauseMax) {
-            errors.add(String.format("Pause duration %s greater than max value %s", pause, pauseMax));
+        if (pause > range.pauseMax) {
+            errors.add(String.format("Pause duration %s greater than max value %s", pause, range.pauseMax));
         }
-        if (total < totalMin) {
-            errors.add(String.format("Total duration %s less than min value %s", total, totalMin));
+        if (total < range.totalMin) {
+            errors.add(String.format("Total duration %s less than min value %s", total, range.totalMin));
         }
-        if (total > totalMax) {
-            errors.add(String.format("Total duration %s greater than max value %s", total, totalMax));
+        if (total > range.totalMax) {
+            errors.add(String.format("Total duration %s greater than max value %s", total, range.totalMax));
         }
         if (!errors.isEmpty()) {
             throw new AssertionError(String.format(
-                    "Got errors when checking times for %s:%s", node.getName(), String.join("\\n\\t", errors)));
+                    "Got errors when checking times for %s:%s", node.name, String.join("\\n\\t", errors)));
         }
     }
+
+    public record TimeRange(long startMin, long pauseMin, long totalMin, long startMax, long pauseMax, long totalMax) {}
 }

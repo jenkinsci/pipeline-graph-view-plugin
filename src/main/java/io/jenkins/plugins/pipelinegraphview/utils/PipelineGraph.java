@@ -1,22 +1,35 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
 import java.util.List;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+import net.sf.json.processors.JsonBeanProcessor;
 
 public class PipelineGraph {
 
-    private List<PipelineStage> stages;
-    private boolean complete = false;
+    final List<PipelineStage> stages;
+    public final boolean complete;
 
     public PipelineGraph(List<PipelineStage> stages, boolean complete) {
         this.stages = stages;
         this.complete = complete;
     }
 
-    public boolean isComplete() {
-        return complete;
-    }
+    public static class PipelineGraphJsonProcessor implements JsonBeanProcessor {
+        public static void configure(JsonConfig config) {
+            config.registerJsonBeanProcessor(PipelineGraph.class, new PipelineGraphJsonProcessor());
+            PipelineStage.PipelineStageJsonProcessor.configure(config);
+        }
 
-    public List<PipelineStage> getStages() {
-        return stages;
+        @Override
+        public JSONObject processBean(Object bean, JsonConfig jsonConfig) {
+            if (!(bean instanceof PipelineGraph graph)) {
+                return null;
+            }
+            JSONObject json = new JSONObject();
+            json.element("complete", graph.complete);
+            json.element("stages", graph.stages, jsonConfig);
+            return json;
+        }
     }
 }

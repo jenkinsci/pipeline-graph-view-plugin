@@ -12,16 +12,6 @@ import {
   StepLogBufferInfo,
 } from "./PipelineConsoleModel.tsx";
 
-beforeAll(() => {
-  window.Behaviour = {
-    applySubtree: vi.fn(),
-  };
-});
-
-afterAll(() => {
-  delete window.Behaviour;
-});
-
 const TestComponent = (props: ConsoleLogStreamProps) => {
   return (
     <div id="test-parent">
@@ -60,10 +50,26 @@ describe("ConsoleLogStream", () => {
     onMoreConsoleClick: () => {
       console.log("onMoreConsoleClick triggered");
     },
+    fetchExceptionText: vi.fn(),
   } as ConsoleLogStreamProps;
 
   it("renders step console", async () => {
     const { findByText } = render(TestComponent({ ...DefaultTestProps }));
     expect(findByText(/Hello, world!/));
+    expect(DefaultTestProps.fetchExceptionText).not.toBeCalled();
+  });
+
+  it("fetches exception text", async () => {
+    const { findByText } = render(
+      TestComponent({
+        ...DefaultTestProps,
+        step: {
+          ...baseStep,
+          state: Result.failure,
+        },
+      }),
+    );
+    expect(findByText(/Hello, world!/));
+    expect(DefaultTestProps.fetchExceptionText).toBeCalledWith(baseStep.id);
   });
 });

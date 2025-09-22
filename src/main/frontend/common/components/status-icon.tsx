@@ -120,7 +120,7 @@ export default function StatusIcon({
         <g transform="scale(0.8)">
           <path
             fill="none"
-            stroke="currentColor"
+            stroke="var(--color)"
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth="36"
@@ -129,7 +129,7 @@ export default function StatusIcon({
           />
           <path
             fill="none"
-            stroke="currentColor"
+            stroke="var(--color)"
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeWidth="36"

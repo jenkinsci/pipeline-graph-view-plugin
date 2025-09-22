@@ -1,13 +1,11 @@
 package io.jenkins.plugins.pipelinegraphview;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 import com.microsoft.playwright.Locator;
-import com.microsoft.playwright.Locator.WaitForOptions;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.junit.UsePlaywright;
 import com.microsoft.playwright.options.AriaRole;
-import com.microsoft.playwright.options.WaitForSelectorState;
 import hudson.model.Result;
 import io.jenkins.plugins.casc.misc.ConfiguredWithCode;
 import io.jenkins.plugins.casc.misc.JenkinsConfiguredWithCodeRule;
@@ -37,17 +35,15 @@ class PipelineGraphViewCancelTest {
                 .goToBuild()
                 .goToPipelineOverview();
 
-        assertTrue(p.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Cancel"))
-                .isVisible());
+        Locator cancelLocator = p.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Cancel"));
+        assertThat(cancelLocator).isVisible();
 
         op.cancel();
 
         SemaphoreStep.success("wait/1", null);
         j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(run));
 
-        Locator cancelLocator = p.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Cancel"));
-        cancelLocator.waitFor(new WaitForOptions().setState(WaitForSelectorState.HIDDEN));
-        assertTrue(cancelLocator.isHidden());
+        assertThat(cancelLocator).isHidden();
     }
 
     @Test
@@ -63,14 +59,12 @@ class PipelineGraphViewCancelTest {
                 .goToBuild()
                 .goToPipelineOverview();
 
-        assertTrue(p.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Cancel"))
-                .isVisible());
+        Locator cancelLocator = p.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Cancel"));
+        assertThat(cancelLocator).isVisible();
 
         SemaphoreStep.success("wait/1", null);
         j.assertBuildStatus(Result.SUCCESS, j.waitForCompletion(run));
 
-        Locator cancelLocator = p.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Cancel"));
-        cancelLocator.waitFor(new WaitForOptions().setState(WaitForSelectorState.HIDDEN));
-        assertTrue(cancelLocator.isHidden());
+        assertThat(cancelLocator).isHidden();
     }
 }

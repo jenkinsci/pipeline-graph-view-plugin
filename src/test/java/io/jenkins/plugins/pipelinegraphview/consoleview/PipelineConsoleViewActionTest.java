@@ -42,7 +42,7 @@ class PipelineConsoleViewActionTest {
 
     @Issue("GH#224")
     @Test
-    void getConsoleLogReturnsErrorText(JenkinsRule j) throws Exception {
+    void getConsoleLogReturnsNoErrorText(JenkinsRule j) throws Exception {
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "hello_world_scripted", "simpleError.jenkinsfile", Result.FAILURE);
 
@@ -53,9 +53,25 @@ class PipelineConsoleViewActionTest {
 
         PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
         JSONObject consoleJson = consoleAction.getConsoleOutputJson(errorStep.getId(), 0L);
-        assertThat(consoleJson.getString("endByte"), equalTo("16"));
+        assertThat(consoleJson.getString("endByte"), equalTo("0"));
         assertThat(consoleJson.getString("startByte"), equalTo("0"));
-        assertThat(consoleJson.getString("text"), equalTo("This is an error"));
+        assertThat(consoleJson.getString("text"), equalTo(""));
+    }
+
+    @Issue("GH#224")
+    @Test
+    void getNodeExceptionTextWithScriptError(JenkinsRule j) throws Exception {
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "hello_world_scripted", "simpleError.jenkinsfile", Result.FAILURE);
+
+        PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
+        String stageId = TestUtils.getNodesByDisplayName(run, "A").get(0).getId();
+        List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
+        FlowNodeWrapper errorStep = stepNodes.get(0);
+
+        PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
+        String message = consoleAction.getNodeExceptionText(errorStep.getId());
+        assertThat(message, equalTo("This is an error"));
     }
 
     @Issue("GH#224")
@@ -149,8 +165,23 @@ class PipelineConsoleViewActionTest {
         PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
         JSONObject consoleJson = consoleAction.getConsoleOutputJson(execStep.getId(), 0L);
         assertThat(consoleJson.getString("startByte"), equalTo("0"));
-        assertThat(
-                consoleJson.getString("text"),
-                stringContainsInOrder("echo", "Hello, world!", "script returned exit code 1"));
+        assertThat(consoleJson.getString("text"), stringContainsInOrder("echo", "Hello, world!"));
+    }
+
+    @Issue("GH#224")
+    @Test
+    void getNodeExceptionTextWithStepError(JenkinsRule j) throws Exception {
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "exec_returns_error", "execStepReturnsError.jenkinsfile", Result.FAILURE);
+        PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
+        String stageId =
+                TestUtils.getNodesByDisplayName(run, "Say Hello").get(0).getId();
+        List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
+        // There is an 'isUnix()' step before this.
+        FlowNodeWrapper execStep = stepNodes.get(1);
+
+        PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
+        String message = consoleAction.getNodeExceptionText(execStep.getId());
+        assertThat(message, equalTo("script returned exit code 1"));
     }
 }

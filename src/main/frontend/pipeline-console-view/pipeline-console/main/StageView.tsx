@@ -17,6 +17,7 @@ export default function StageView(props: StageViewProps) {
         expandedSteps={props.expandedSteps}
         onStepToggle={props.onStepToggle}
         onMoreConsoleClick={props.onMoreConsoleClick}
+        fetchExceptionText={props.fetchExceptionText}
       />
     </>
   );
@@ -29,4 +30,5 @@ export interface StageViewProps {
   expandedSteps: string[];
   onStepToggle: (nodeId: string) => void;
   onMoreConsoleClick: (nodeId: string, startByte: number) => void;
+  fetchExceptionText: (nodeId: string) => void;
 }

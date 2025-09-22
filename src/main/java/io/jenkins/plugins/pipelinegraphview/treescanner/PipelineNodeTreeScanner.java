@@ -6,21 +6,28 @@ import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
 import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 import org.jenkinsci.plugins.pipeline.modeldefinition.actions.ExecutionModelAction;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
+import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
+import org.jenkinsci.plugins.workflow.graph.AtomNode;
 import org.jenkinsci.plugins.workflow.graph.BlockEndNode;
 import org.jenkinsci.plugins.workflow.graph.BlockStartNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.graphanalysis.DepthFirstScanner;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.jenkinsci.plugins.workflow.support.steps.input.InputAction;
+import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
+import org.jenkinsci.plugins.workflow.support.steps.input.InputStepExecution;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,11 +40,6 @@ public class PipelineNodeTreeScanner {
     private final WorkflowRun run;
     private final FlowExecution execution;
 
-    /**
-     * Point in time snapshot of all the active heads.
-     */
-    private List<FlowNode> heads;
-
     // Maps a node ID to a given node wrapper. Stores Stages and parallel blocks -
     // not steps.
     private Map<String, FlowNodeWrapper> stageNodeMap = new LinkedHashMap<>();
@@ -48,7 +50,7 @@ public class PipelineNodeTreeScanner {
     private final boolean declarative;
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineNodeTreeScanner.class);
-    private boolean isDebugEnabled = logger.isDebugEnabled();
+    private final boolean isDebugEnabled = logger.isDebugEnabled();
 
     public PipelineNodeTreeScanner(@NonNull WorkflowRun run) {
         this.run = run;
@@ -65,9 +67,9 @@ public class PipelineNodeTreeScanner {
             logger.debug("Building graph");
         }
         if (execution != null) {
-            LinkedHashMap<String, FlowNode> nodes = getAllNodes();
+            Collection<FlowNode> nodes = getAllNodes();
             NodeRelationshipFinder finder = new NodeRelationshipFinder();
-            LinkedHashMap<String, NodeRelationship> relationships = finder.getNodeRelationships(nodes);
+            Map<String, NodeRelationship> relationships = finder.getNodeRelationships(nodes);
             GraphBuilder builder = new GraphBuilder(nodes, relationships, this.run, this.execution);
             if (isDebugEnabled) {
                 logger.debug("Original nodes:");
@@ -93,30 +95,26 @@ public class PipelineNodeTreeScanner {
     /**
      * Gets all the nodes that are reachable in the graph.
      */
-    private LinkedHashMap<String, FlowNode> getAllNodes() {
-        heads = execution.getCurrentHeads();
+    private List<FlowNode> getAllNodes() {
+        List<FlowNode> heads = execution.getCurrentHeads();
         final DepthFirstScanner scanner = new DepthFirstScanner();
         scanner.setup(heads);
 
         // nodes that we've visited
-        final LinkedHashMap<String, FlowNode> nodeMap = new LinkedHashMap<>();
-
+        final List<FlowNode> nodes = new ArrayList<>();
         for (FlowNode n : scanner) {
-            nodeMap.put(n.getId(), n);
+            nodes.add(n);
         }
-        return nodeMap;
+        return nodes;
     }
 
     @NonNull
     public List<FlowNodeWrapper> getStageSteps(String startNodeId) {
-        List<FlowNodeWrapper> stageSteps = new ArrayList<>();
         FlowNodeWrapper wrappedStage = stageNodeMap.get(startNodeId);
-        for (FlowNodeWrapper wrappedStep : stepNodeMap.values()) {
-            if (wrappedStep.getParents().contains(wrappedStage)) {
-                stageSteps.add(wrappedStep);
-            }
-        }
-        Collections.sort(stageSteps, new FlowNodeWrapper.NodeComparator());
+        List<FlowNodeWrapper> stageSteps = stepNodeMap.values().stream()
+                .filter(wrappedStep -> wrappedStep.getParents().contains(wrappedStage))
+                .sorted(new FlowNodeWrapper.NodeComparator())
+                .collect(Collectors.toCollection(ArrayList::new));
         if (isDebugEnabled) {
             logger.debug("Returning {} steps for node '{}'", stageSteps.size(), startNodeId);
         }
@@ -135,7 +133,7 @@ public class PipelineNodeTreeScanner {
     @NonNull
     public List<FlowNodeWrapper> getPipelineNodes() {
         List<FlowNodeWrapper> stageNodes = new ArrayList<>(this.stageNodeMap.values());
-        Collections.sort(stageNodes, new FlowNodeWrapper.NodeComparator());
+        stageNodes.sort(new FlowNodeWrapper.NodeComparator());
         return stageNodes;
     }
 
@@ -144,20 +142,19 @@ public class PipelineNodeTreeScanner {
         return this.stageNodeMap;
     }
 
-    @NonNull
     public boolean isDeclarative() {
         return this.declarative;
     }
 
     private static class GraphBuilder {
-        private final Map<String, FlowNode> nodeMap;
+        private final Collection<FlowNode> nodes;
         private final Map<String, NodeRelationship> relationships;
         private final WorkflowRun run;
 
         @NonNull
         private final FlowExecution execution;
 
-        private Map<String, FlowNodeWrapper> wrappedNodeMap = new LinkedHashMap<>();
+        private final Map<String, FlowNodeWrapper> wrappedNodeMap = new LinkedHashMap<>();
         // These two are populated when required using by filtering unwanted nodes from
         // 'wrappedNodeMap' into a new map.
         private Map<String, FlowNodeWrapper> wrappedStepMap;
@@ -167,28 +164,28 @@ public class PipelineNodeTreeScanner {
         // FlowNodeWrapper rootStage = null;
 
         private final Logger logger = LoggerFactory.getLogger(GraphBuilder.class);
-        private boolean isDebugEnabled = logger.isDebugEnabled();
+        private final InputAction inputAction;
+        private final boolean isDebugEnabled = logger.isDebugEnabled();
 
         /*
          * Builds a graph representing this Execution. Stages an steps aer represented
          * in the same graph.
          */
         public GraphBuilder(
-                @NonNull Map<String, FlowNode> nodeMap,
+                Collection<FlowNode> nodes,
                 @NonNull Map<String, NodeRelationship> relationships,
                 @NonNull WorkflowRun run,
                 @NonNull FlowExecution execution) {
-            this.nodeMap = nodeMap;
+            this.nodes = nodes;
             this.relationships = relationships;
             this.run = run;
+            this.inputAction = run.getAction(InputAction.class);
             this.execution = execution;
             buildGraph();
         }
 
         protected List<FlowNodeWrapper> getNodes() {
-            return wrappedNodeMap.entrySet().stream()
-                    .map(entrySet -> entrySet.getValue())
-                    .collect(Collectors.toList());
+            return new ArrayList<>(wrappedNodeMap.values());
         }
 
         /*
@@ -298,11 +295,11 @@ public class PipelineNodeTreeScanner {
             }
             Map<String, FlowNodeWrapper> stepMap = this.wrappedNodeMap.entrySet().stream()
                     .filter(e -> shouldBeInStepMap(e.getValue()))
-                    .collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
             Map<String, FlowNodeWrapper> stageMap = this.getStageMapping();
-            List<FlowNodeWrapper> nodeList = new ArrayList<FlowNodeWrapper>(stepMap.values());
-            Collections.sort(nodeList, new FlowNodeWrapper.NodeComparator());
+            List<FlowNodeWrapper> nodeList = new ArrayList<>(stepMap.values());
+            nodeList.sort(new FlowNodeWrapper.NodeComparator());
             for (FlowNodeWrapper step : nodeList) {
                 FlowNodeWrapper firstParent = step.getFirstParent();
                 // Remap parentage of steps that aren't children of stages (e.g. are in Step
@@ -332,8 +329,9 @@ public class PipelineNodeTreeScanner {
          * Builds a graph from the list of nodes and relationships given to the class.
          */
         private void buildGraph() {
-            List<FlowNode> nodeList = new ArrayList<FlowNode>(nodeMap.values());
-            Collections.sort(nodeList, new FlowNodeWrapper.FlowNodeComparator());
+            List<FlowNode> nodeList = nodes.stream()
+                    .sorted(new FlowNodeWrapper.FlowNodeComparator())
+                    .toList();
             // If the Pipeline ended with an unhandled exception, then we want to catch the
             // node which threw it.
             BlockEndNode<?> nodeThatThrewException = null;
@@ -395,7 +393,7 @@ public class PipelineNodeTreeScanner {
                  * to the graph, we use the end node that we were given to act as the step
                  * - this might need additional logic when getting the log for the exception.
                  */
-                if (node instanceof BlockEndNode<?> && nodeMap.values().size() <= 2) {
+                if (node instanceof BlockEndNode<?> && nodes.size() <= 2) {
                     if (isDebugEnabled) {
                         logger.debug("getUnhandledException => Returning node: {}", node.getId());
                     }
@@ -483,15 +481,32 @@ public class PipelineNodeTreeScanner {
         private @NonNull FlowNodeWrapper wrapNode(@NonNull FlowNode node, @NonNull NodeRelationship relationship) {
             TimingInfo timing = null;
             NodeRunStatus status = null;
-            if (relationship instanceof ParallelBlockRelationship && PipelineNodeUtil.isParallelBranch(node)) {
-                ParallelBlockRelationship parallelRelationship = (ParallelBlockRelationship) relationship;
+            if (relationship instanceof ParallelBlockRelationship parallelRelationship
+                    && PipelineNodeUtil.isParallelBranch(node)) {
                 timing = parallelRelationship.getBranchTimingInfo(this.run, (BlockStartNode) node);
                 status = parallelRelationship.getBranchStatus(this.run, (BlockStartNode) node);
             } else {
                 timing = relationship.getTimingInfo(this.run);
                 status = relationship.getStatus(this.run);
             }
-            return new FlowNodeWrapper(node, status, timing, this.run);
+
+            InputStep inputStep = null;
+            if (node instanceof AtomNode atomNode
+                    && PipelineNodeUtil.isPausedForInputStep((StepAtomNode) atomNode, inputAction)) {
+                try {
+                    for (InputStepExecution execution : inputAction.getExecutions()) {
+                        FlowNode theNode = execution.getContext().get(FlowNode.class);
+                        if (theNode != null && theNode.equals(atomNode)) {
+                            inputStep = execution.getInput();
+                            break;
+                        }
+                    }
+                } catch (IOException | InterruptedException | TimeoutException e) {
+                    logger.error("Error getting FlowNode from execution context: {}", e.getMessage(), e);
+                }
+            }
+
+            return new FlowNodeWrapper(node, status, timing, inputStep, this.run);
         }
     }
 }

@@ -2,15 +2,8 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 import static java.util.Collections.emptyList;
 
-import hudson.model.Cause;
-import hudson.model.CauseAction;
-import hudson.model.Item;
-import hudson.model.Queue;
-import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.actions.WorkspaceAction;
@@ -27,24 +20,6 @@ public class PipelineGraphApi {
 
     public PipelineGraphApi(WorkflowRun run) {
         this.run = run;
-    }
-
-    public Integer replay() throws ExecutionException, InterruptedException, TimeoutException {
-        run.checkPermission(Item.BUILD);
-
-        CauseAction causeAction = new CauseAction(new Cause.UserIdCause());
-
-        if (!run.getParent().isBuildable()) {
-            return null;
-        }
-
-        Queue.Item item =
-                Queue.getInstance().schedule2(run.getParent(), 0, causeAction).getItem();
-        if (item == null) {
-            return null;
-        }
-
-        return run.getParent().getNextBuildNumber();
     }
 
     private List<PipelineStageInternal> getPipelineNodes(PipelineGraphBuilderApi builder) {
@@ -77,6 +52,16 @@ public class PipelineGraphApi {
     }
 
     private PipelineGraph createTree(PipelineGraphBuilderApi builder) {
+        FlowExecution execution = run.getExecution();
+        if (execution == null) {
+            // If we don't have an execution - e.g. if the Pipeline has a syntax error -
+            // then return an
+            // empty graph.
+            return new PipelineGraph(new ArrayList<>(), false);
+        }
+        // Look up completed state before computing tree.
+        boolean complete = execution.isComplete();
+
         // We want to remap children here, so we don't update the parents of the
         // original objects - as
         // these are completely new representations.
@@ -90,13 +75,6 @@ public class PipelineGraphApi {
         Map<String, List<String>> stageToChildrenMap = new HashMap<>();
         List<String> childNodes = new ArrayList<>();
 
-        FlowExecution execution = run.getExecution();
-        if (execution == null) {
-            // If we don't have an execution - e.g. if the Pipeline has a syntax error -
-            // then return an
-            // empty graph.
-            return new PipelineGraph(new ArrayList<>(), false);
-        }
         stages.forEach(stage -> {
             if (stage.getParents().isEmpty()) {
                 stageToChildrenMap.put(stage.getId(), new ArrayList<>());
@@ -118,9 +96,9 @@ public class PipelineGraphApi {
 
                     return pipelineStageInternal.toPipelineStage(children, runUrl);
                 })
-                .filter(stage -> !childNodes.contains(stage.getId()))
+                .filter(stage -> !childNodes.contains(stage.id))
                 .collect(Collectors.toList());
-        return new PipelineGraph(stageResults, execution.isComplete());
+        return new PipelineGraph(stageResults, complete);
     }
 
     private static String getStageNode(FlowNodeWrapper flowNodeWrapper) {
@@ -167,6 +145,6 @@ public class PipelineGraphApi {
     }
 
     public PipelineGraph createTree() {
-        return createTree(new PipelineNodeGraphAdapter(run));
+        return createTree(CachedPipelineNodeGraphAdaptor.instance.getFor(run));
     }
 }

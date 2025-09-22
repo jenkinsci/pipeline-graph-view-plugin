@@ -9,6 +9,19 @@ export interface RunStatus {
   complete: boolean;
 }
 
+export interface InputStep {
+  message: string;
+  cancel: string;
+  id: string;
+  ok: string;
+  parameters: boolean;
+}
+
+export interface AllStepsData {
+  steps: StepInfo[];
+  runIsComplete: boolean;
+}
+
 /**
  * StageInfo is the input, in the form of an Array<StageInfo> of the top-level stages of a pipeline
  */
@@ -17,6 +30,7 @@ export interface StepInfo {
   title: string;
   state: Result;
   completePercent: number;
+  inputStep?: InputStep;
   id: string;
   type: string;
   stageId: string;
@@ -30,6 +44,12 @@ export interface StepLogBufferInfo {
   lines: string[];
   startByte: number;
   endByte: number;
+  pending?: Promise<void>;
+  consoleAnnotator?: string;
+  lastFetched?: number;
+  stopTailing?: boolean;
+  exceptionText?: string[];
+  pendingExceptionText?: Promise<string[]>;
 }
 
 // Returned from API, gets converted to 'StepLogBufferInfo'.
@@ -37,6 +57,8 @@ export interface ConsoleLogData {
   text: string;
   startByte: number;
   endByte: number;
+  nodeIsActive: boolean;
+  consoleAnnotator: string;
 }
 
 export async function getRunStatusFromPath(
@@ -55,12 +77,12 @@ export async function getRunStatusFromPath(
   }
 }
 
-export async function getRunSteps(): Promise<StepInfo[] | null> {
+export async function getRunSteps(): Promise<AllStepsData | null> {
   try {
     const response = await fetch("allSteps");
     if (!response.ok) throw response.statusText;
     const json = await response.json();
-    return json.data.steps;
+    return json.data;
   } catch (e) {
     console.warn(`Caught error getting steps: '${e}'`);
     return null;
@@ -70,17 +92,36 @@ export async function getRunSteps(): Promise<StepInfo[] | null> {
 export async function getConsoleTextOffset(
   stepId: string,
   startByte: number,
+  consoleAnnotator: string,
 ): Promise<ConsoleLogData | null> {
+  const headers = new Headers();
+  if (consoleAnnotator) headers.set("X-ConsoleAnnotator", consoleAnnotator);
   try {
     const response = await fetch(
       `consoleOutput?nodeId=${stepId}&startByte=${startByte}`,
+      { headers },
     );
     if (!response.ok) throw response.statusText;
     const json = await response.json();
-    return json.data;
+    return {
+      ...json.data,
+      consoleAnnotator: response.headers.get("X-ConsoleAnnotator") || "",
+    };
   } catch (e) {
     console.error(`Caught error when fetching console: '${e}'`);
     return null;
+  }
+}
+
+export async function getExceptionText(stepId: string): Promise<string[]> {
+  try {
+    const response = await fetch(`exceptionText?nodeId=${stepId}`);
+    if (!response.ok) throw response.statusText;
+    const text = await response.text();
+    return text.split("\n");
+  } catch (e) {
+    console.error(`Caught error when fetching console: '${e}'`);
+    return [];
   }
 }
 

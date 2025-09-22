@@ -1,8 +1,9 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
-import com.fasterxml.jackson.annotation.JsonValue;
 import hudson.model.Result;
 import java.util.Locale;
+import net.sf.json.JsonConfig;
+import net.sf.json.processors.JsonValueProcessor;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 public enum PipelineState {
@@ -20,6 +21,10 @@ public enum PipelineState {
     UNKNOWN,
     ABORTED;
 
+    public boolean isInProgress() {
+        return this == RUNNING || this == QUEUED || this == PAUSED;
+    }
+
     public static PipelineState of(WorkflowRun run) {
         Result result = run.getResult();
         if (result == Result.SUCCESS) {
@@ -32,7 +37,7 @@ public enum PipelineState {
             return NOT_BUILT;
         } else if (result == Result.ABORTED) {
             return ABORTED;
-        } else if (run.isInProgress()) {
+        } else if (run.isBuilding()) {
             return RUNNING;
         } else {
             return UNKNOWN;
@@ -60,9 +65,28 @@ public enum PipelineState {
         };
     }
 
-    @JsonValue
     @Override
     public String toString() {
         return name().toLowerCase(Locale.ROOT);
+    }
+
+    public static class PipelineStateJsonProcessor implements JsonValueProcessor {
+        public static void configure(JsonConfig config) {
+            config.registerJsonValueProcessor(PipelineState.class, new PipelineStateJsonProcessor());
+        }
+
+        @Override
+        public Object processArrayValue(Object value, JsonConfig jsonConfig) {
+            return json(value);
+        }
+
+        @Override
+        public Object processObjectValue(String key, Object value, JsonConfig jsonConfig) {
+            return json(value);
+        }
+
+        private static String json(Object value) {
+            return !(value instanceof PipelineState state) ? null : state.toString();
+        }
     }
 }

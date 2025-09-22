@@ -16,7 +16,6 @@ import io.jenkins.plugins.pipelinegraphview.treescanner.NodeRelationshipFinder;
 import io.jenkins.plugins.pipelinegraphview.treescanner.ParallelBlockRelationship;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeTreeScanner;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,33 +69,33 @@ class PipelineStepApiTest {
         String failureID =
                 TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
 
-        List<PipelineStep> steps = api.getSteps(unstableOneId).getSteps();
+        List<PipelineStep> steps = api.getSteps(unstableOneId).steps;
         assertThat(steps, hasSize(3));
-        assertThat(steps.get(0).getName(), is("foo"));
-        assertThat(steps.get(0).getTitle(), is(""));
-        assertThat(steps.get(1).getName(), is("oops-one"));
-        assertThat(steps.get(1).getTitle(), is("Set stage result to unstable"));
-        assertThat(steps.get(2).getName(), is("bar"));
-        assertThat(steps.get(2).getTitle(), is(""));
+        assertThat(steps.get(0).name, is("foo"));
+        assertThat(steps.get(0).title, is(""));
+        assertThat(steps.get(1).name, is("oops-one"));
+        assertThat(steps.get(1).title, is("Set stage result to unstable"));
+        assertThat(steps.get(2).name, is("bar"));
+        assertThat(steps.get(2).title, is(""));
 
-        steps = api.getSteps(successId).getSteps();
+        steps = api.getSteps(successId).steps;
         assertThat(steps, hasSize(1));
-        assertThat(steps.get(0).getName(), is("baz"));
-        assertThat(steps.get(0).getTitle(), is(""));
+        assertThat(steps.get(0).name, is("baz"));
+        assertThat(steps.get(0).title, is(""));
 
-        steps = api.getSteps(unstableTwoId).getSteps();
+        steps = api.getSteps(unstableTwoId).steps;
         assertThat(steps, hasSize(2));
-        assertThat(steps.get(0).getName(), is("will-be-caught"));
-        assertThat(steps.get(0).getTitle(), is("Error signal"));
-        assertThat(steps.get(1).getName(), is("oops-two"));
-        assertThat(steps.get(1).getTitle(), is("Set stage result to unstable"));
+        assertThat(steps.get(0).name, is("will-be-caught"));
+        assertThat(steps.get(0).title, is("Error signal"));
+        assertThat(steps.get(1).name, is("oops-two"));
+        assertThat(steps.get(1).title, is("Set stage result to unstable"));
 
-        steps = api.getSteps(failureID).getSteps();
+        steps = api.getSteps(failureID).steps;
         assertThat(steps, hasSize(2));
-        assertThat(steps.get(0).getName(), is("oops-masked"));
-        assertThat(steps.get(0).getTitle(), is("Set stage result to unstable"));
-        assertThat(steps.get(1).getName(), is("oops-failure"));
-        assertThat(steps.get(1).getTitle(), is("Error signal"));
+        assertThat(steps.get(0).name, is("oops-masked"));
+        assertThat(steps.get(0).title, is("Set stage result to unstable"));
+        assertThat(steps.get(1).name, is("oops-failure"));
+        assertThat(steps.get(1).title, is("Error signal"));
     }
 
     @Test
@@ -125,48 +124,48 @@ class PipelineStepApiTest {
 
         // Check 'Non-Parallel Stage'
         PipelineStepApi api = new PipelineStepApi(run);
-        List<PipelineStep> steps = api.getSteps(nonParallelId).getSteps();
+        List<PipelineStep> steps = api.getSteps(nonParallelId).steps;
         assertThat(steps, hasSize(2));
-        assertThat(steps.get(0).getName(), is("This stage will be executed first."));
-        assertThat(steps.get(0).getTitle(), is(""));
-        assertThat(steps.get(1).getName(), is("Print Message"));
-        assertThat(steps.get(1).getTitle(), is(""));
+        assertThat(steps.get(0).name, is("This stage will be executed first."));
+        assertThat(steps.get(0).title, is(""));
+        assertThat(steps.get(1).name, is("Print Message"));
+        assertThat(steps.get(1).title, is(""));
 
         // Check 'Branch A'
-        steps = api.getSteps(branchAId).getSteps();
+        steps = api.getSteps(branchAId).steps;
         assertThat(steps, hasSize(2));
-        assertThat(steps.get(0).getName(), is("On Branch A - 1"));
-        assertThat(steps.get(0).getTitle(), is(""));
-        assertThat(steps.get(1).getName(), is("On Branch A - 2"));
-        assertThat(steps.get(1).getTitle(), is(""));
+        assertThat(steps.get(0).name, is("On Branch A - 1"));
+        assertThat(steps.get(0).title, is(""));
+        assertThat(steps.get(1).name, is("On Branch A - 2"));
+        assertThat(steps.get(1).title, is(""));
 
         // Check 'Branch B'
-        steps = api.getSteps(branchBId).getSteps();
+        steps = api.getSteps(branchBId).steps;
         assertThat(steps, hasSize(2));
-        assertThat(steps.get(0).getName(), is("On Branch B - 1"));
-        assertThat(steps.get(0).getTitle(), is(""));
-        assertThat(steps.get(1).getName(), is("On Branch B - 2"));
-        assertThat(steps.get(1).getTitle(), is(""));
+        assertThat(steps.get(0).name, is("On Branch B - 1"));
+        assertThat(steps.get(0).title, is(""));
+        assertThat(steps.get(1).name, is("On Branch B - 2"));
+        assertThat(steps.get(1).title, is(""));
 
         // Check 'Branch C'
-        steps = api.getSteps(branchCId).getSteps();
+        steps = api.getSteps(branchCId).steps;
         assertThat(steps, hasSize(0));
 
         // Check 'Nested 1'
-        steps = api.getSteps(branchNested1Id).getSteps();
+        steps = api.getSteps(branchNested1Id).steps;
         assertThat(steps, hasSize(2));
-        assertThat(steps.get(0).getName(), is("In stage Nested 1 - 1 within Branch C"));
-        assertThat(steps.get(0).getTitle(), is(""));
-        assertThat(steps.get(1).getName(), is("In stage Nested 1 - 2 within Branch C"));
-        assertThat(steps.get(1).getTitle(), is(""));
+        assertThat(steps.get(0).name, is("In stage Nested 1 - 1 within Branch C"));
+        assertThat(steps.get(0).title, is(""));
+        assertThat(steps.get(1).name, is("In stage Nested 1 - 2 within Branch C"));
+        assertThat(steps.get(1).title, is(""));
 
         // Check 'Nested 2'
-        steps = api.getSteps(branchNested2Id).getSteps();
+        steps = api.getSteps(branchNested2Id).steps;
         assertThat(steps, hasSize(2));
-        assertThat(steps.get(0).getName(), is("In stage Nested 2 - 1 within Branch C"));
-        assertThat(steps.get(0).getTitle(), is(""));
-        assertThat(steps.get(1).getName(), is("In stage Nested 2 - 2 within Branch C"));
-        assertThat(steps.get(1).getTitle(), is(""));
+        assertThat(steps.get(0).name, is("In stage Nested 2 - 1 within Branch C"));
+        assertThat(steps.get(0).title, is(""));
+        assertThat(steps.get(1).name, is("In stage Nested 2 - 2 within Branch C"));
+        assertThat(steps.get(1).title, is(""));
     }
 
     @Test
@@ -190,34 +189,34 @@ class PipelineStepApiTest {
         PipelineStepApi api = new PipelineStepApi(run);
 
         // Check 'Child A'
-        List<PipelineStep> steps = api.getSteps(childAId).getSteps();
+        List<PipelineStep> steps = api.getSteps(childAId).steps;
         assertThat(steps, hasSize(1));
-        assertThat(steps.get(0).getName(), is("In child A"));
-        assertThat(steps.get(0).getTitle(), is(""));
+        assertThat(steps.get(0).name, is("In child A"));
+        assertThat(steps.get(0).title, is(""));
 
         // Check 'Child A'
-        steps = api.getSteps(childBId).getSteps();
+        steps = api.getSteps(childBId).steps;
         assertThat(steps, hasSize(0));
 
         // Check 'Grandchild B'
-        steps = api.getSteps(grandchildBId).getSteps();
+        steps = api.getSteps(grandchildBId).steps;
         assertThat(steps, hasSize(1));
-        assertThat(steps.get(0).getName(), is("In grandchild B"));
-        assertThat(steps.get(0).getTitle(), is(""));
+        assertThat(steps.get(0).name, is("In grandchild B"));
+        assertThat(steps.get(0).title, is(""));
 
         // Check 'Child C'
-        steps = api.getSteps(childCId).getSteps();
+        steps = api.getSteps(childCId).steps;
         assertThat(steps, hasSize(0));
 
         // Check 'Grandchild C'
-        steps = api.getSteps(grandchildCId).getSteps();
+        steps = api.getSteps(grandchildCId).steps;
         assertThat(steps, hasSize(0));
 
         // Check 'Great-Grandchild C'
-        steps = api.getSteps(greatGrandchildCId).getSteps();
+        steps = api.getSteps(greatGrandchildCId).steps;
         assertThat(steps, hasSize(1));
-        assertThat(steps.get(0).getName(), is("In great-grandchild C"));
-        assertThat(steps.get(0).getTitle(), is(""));
+        assertThat(steps.get(0).name, is("In great-grandchild C"));
+        assertThat(steps.get(0).title, is(""));
     }
 
     @Test
@@ -231,31 +230,31 @@ class PipelineStepApiTest {
         // Check 'Non-Parallel Stage'
         PipelineStepApi api = new PipelineStepApi(run);
 
-        List<PipelineStep> steps = api.getAllSteps().getSteps();
+        List<PipelineStep> steps = api.getAllSteps().steps;
         assertThat(steps, hasSize(11));
-        assertThat(steps.get(0).getName(), is("This stage will be executed first."));
-        assertThat(steps.get(0).getTitle(), is(""));
-        assertThat(steps.get(1).getName(), is("Print Message"));
-        assertThat(steps.get(1).getTitle(), is(""));
-        assertThat(steps.get(2).getName(), is("On Branch A - 1"));
-        assertThat(steps.get(2).getTitle(), is(""));
-        assertThat(steps.get(3).getName(), is("On Branch A - 2"));
-        assertThat(steps.get(3).getTitle(), is(""));
-        assertThat(steps.get(4).getName(), is("On Branch B - 1"));
-        assertThat(steps.get(4).getTitle(), is(""));
-        assertThat(steps.get(5).getName(), is("On Branch B - 2"));
-        assertThat(steps.get(5).getTitle(), is(""));
+        assertThat(steps.get(0).name, is("This stage will be executed first."));
+        assertThat(steps.get(0).title, is(""));
+        assertThat(steps.get(1).name, is("Print Message"));
+        assertThat(steps.get(1).title, is(""));
+        assertThat(steps.get(2).name, is("On Branch A - 1"));
+        assertThat(steps.get(2).title, is(""));
+        assertThat(steps.get(3).name, is("On Branch A - 2"));
+        assertThat(steps.get(3).title, is(""));
+        assertThat(steps.get(4).name, is("On Branch B - 1"));
+        assertThat(steps.get(4).title, is(""));
+        assertThat(steps.get(5).name, is("On Branch B - 2"));
+        assertThat(steps.get(5).title, is(""));
 
-        assertThat(steps.get(6).getName(), is("In stage Nested 1 - 1 within Branch C"));
-        assertThat(steps.get(6).getTitle(), is(""));
-        assertThat(steps.get(7).getName(), is("In stage Nested 1 - 2 within Branch C"));
-        assertThat(steps.get(7).getTitle(), is(""));
-        assertThat(steps.get(8).getName(), is("In stage Nested 2 - 1 within Branch C"));
-        assertThat(steps.get(8).getTitle(), is(""));
-        assertThat(steps.get(9).getName(), is("In stage Nested 2 - 2 within Branch C"));
-        assertThat(steps.get(9).getTitle(), is(""));
-        assertThat(steps.get(10).getName(), is("Get contextual object from internal APIs"));
-        assertThat(steps.get(10).getTitle(), is(""));
+        assertThat(steps.get(6).name, is("In stage Nested 1 - 1 within Branch C"));
+        assertThat(steps.get(6).title, is(""));
+        assertThat(steps.get(7).name, is("In stage Nested 1 - 2 within Branch C"));
+        assertThat(steps.get(7).title, is(""));
+        assertThat(steps.get(8).name, is("In stage Nested 2 - 1 within Branch C"));
+        assertThat(steps.get(8).title, is(""));
+        assertThat(steps.get(9).name, is("In stage Nested 2 - 2 within Branch C"));
+        assertThat(steps.get(9).title, is(""));
+        assertThat(steps.get(10).name, is("Get contextual object from internal APIs"));
+        assertThat(steps.get(10).title, is(""));
     }
 
     @Test
@@ -267,14 +266,14 @@ class PipelineStepApiTest {
 
         PipelineStepApi api = new PipelineStepApi(run);
 
-        List<PipelineStep> steps = api.getAllSteps().getSteps();
+        List<PipelineStep> steps = api.getAllSteps().steps;
         assertThat(steps, hasSize(3));
-        assertThat(steps.get(0).getName(), is("In child A"));
-        assertThat(steps.get(0).getTitle(), is(""));
-        assertThat(steps.get(1).getName(), is("In grandchild B"));
-        assertThat(steps.get(1).getTitle(), is(""));
-        assertThat(steps.get(2).getName(), is("In great-grandchild C"));
-        assertThat(steps.get(2).getTitle(), is(""));
+        assertThat(steps.get(0).name, is("In child A"));
+        assertThat(steps.get(0).title, is(""));
+        assertThat(steps.get(1).name, is("In grandchild B"));
+        assertThat(steps.get(1).title, is(""));
+        assertThat(steps.get(2).name, is("In great-grandchild C"));
+        assertThat(steps.get(2).title, is(""));
     }
 
     @Test
@@ -285,18 +284,18 @@ class PipelineStepApiTest {
         PipelineStepApi api = new PipelineStepApi(run);
 
         PipelineStepList allSteps = api.getAllSteps();
-        List<PipelineStep> steps = allSteps.getSteps();
+        List<PipelineStep> steps = allSteps.steps;
         assertThat(steps, hasSize(2));
 
         PipelineStep pipelineStep = steps.get(0);
-        assertThat(pipelineStep.getName(), is("Hi 1"));
-        assertThat(pipelineStep.getTitle(), is(""));
-        assertThat(pipelineStep.getStageId(), is("2"));
+        assertThat(pipelineStep.name, is("Hi 1"));
+        assertThat(pipelineStep.title, is(""));
+        assertThat(pipelineStep.stageId, is("2"));
 
         pipelineStep = steps.get(1);
-        assertThat(pipelineStep.getName(), is("Hi 2"));
-        assertThat(pipelineStep.getTitle(), is(""));
-        assertThat(pipelineStep.getStageId(), is("2"));
+        assertThat(pipelineStep.name, is("Hi 2"));
+        assertThat(pipelineStep.title, is(""));
+        assertThat(pipelineStep.stageId, is("2"));
     }
 
     @Issue("GH#92")
@@ -331,40 +330,40 @@ class PipelineStepApiTest {
         String deployStageId =
                 TestUtils.getNodesByDisplayName(run, "Deploy").get(0).getId();
 
-        List<PipelineStep> steps = api.getSteps(linux8CheckoutId).getSteps();
+        List<PipelineStep> steps = api.getSteps(linux8CheckoutId).steps;
         assertThat(steps, hasSize(1));
-        assertThat(steps.get(0).getName(), is("Checking out linux-8"));
-        assertThat(steps.get(0).getTitle(), is(""));
+        assertThat(steps.get(0).name, is("Checking out linux-8"));
+        assertThat(steps.get(0).title, is(""));
 
-        steps = api.getSteps(linux8BuildId).getSteps();
+        steps = api.getSteps(linux8BuildId).steps;
         assertThat(steps, hasSize(1));
-        assertThat(steps.get(0).getName(), is("Building linux-8"));
-        assertThat(steps.get(0).getTitle(), is(""));
+        assertThat(steps.get(0).name, is("Building linux-8"));
+        assertThat(steps.get(0).title, is(""));
 
-        steps = api.getSteps(linux8ArchiveId).getSteps();
+        steps = api.getSteps(linux8ArchiveId).steps;
         assertThat(steps, hasSize(1));
-        assertThat(steps.get(0).getName(), is("Archiving linux-8"));
-        assertThat(steps.get(0).getTitle(), is(""));
+        assertThat(steps.get(0).name, is("Archiving linux-8"));
+        assertThat(steps.get(0).title, is(""));
 
-        steps = api.getSteps(linux11CheckoutId).getSteps();
+        steps = api.getSteps(linux11CheckoutId).steps;
         assertThat(steps, hasSize(1));
-        assertThat(steps.get(0).getName(), is("Checking out linux-11"));
-        assertThat(steps.get(0).getTitle(), is(""));
+        assertThat(steps.get(0).name, is("Checking out linux-11"));
+        assertThat(steps.get(0).title, is(""));
 
-        steps = api.getSteps(linux11BuildId).getSteps();
+        steps = api.getSteps(linux11BuildId).steps;
         assertThat(steps, hasSize(1));
-        assertThat(steps.get(0).getName(), is("Building linux-11"));
-        assertThat(steps.get(0).getTitle(), is(""));
+        assertThat(steps.get(0).name, is("Building linux-11"));
+        assertThat(steps.get(0).title, is(""));
 
-        steps = api.getSteps(linux11ArchiveId).getSteps();
+        steps = api.getSteps(linux11ArchiveId).steps;
         assertThat(steps, hasSize(1));
-        assertThat(steps.get(0).getName(), is("Archiving linux-11"));
-        assertThat(steps.get(0).getTitle(), is(""));
+        assertThat(steps.get(0).name, is("Archiving linux-11"));
+        assertThat(steps.get(0).title, is(""));
 
-        steps = api.getSteps(deployStageId).getSteps();
+        steps = api.getSteps(deployStageId).steps;
         assertThat(steps, hasSize(1));
-        assertThat(steps.get(0).getName(), is("Deploying..."));
-        assertThat(steps.get(0).getTitle(), is(""));
+        assertThat(steps.get(0).name, is("Deploying..."));
+        assertThat(steps.get(0).title, is(""));
     }
 
     @Issue("GH#213")
@@ -380,12 +379,12 @@ class PipelineStepApiTest {
         String failureStage =
                 TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
 
-        List<PipelineStep> steps = api.getSteps(failureStage).getSteps();
+        List<PipelineStep> steps = api.getSteps(failureStage).steps;
         assertThat(steps, hasSize(2));
         PipelineStep errorStep = steps.get(1);
-        assertThat(errorStep.getName(), is("oops-failure"));
-        assertThat(errorStep.getTitle(), is("Error signal"));
-        FlowNode node = run.getExecution().getNode(String.valueOf(errorStep.getId()));
+        assertThat(errorStep.name, is("oops-failure"));
+        assertThat(errorStep.title, is("Error signal"));
+        FlowNode node = run.getExecution().getNode(String.valueOf(errorStep.id));
         String errorText = PipelineNodeUtil.getExceptionText(node);
         assertThat(errorText, equalTo("oops-failure"));
     }
@@ -404,12 +403,12 @@ class PipelineStepApiTest {
         String failureStage =
                 TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
 
-        List<PipelineStep> steps = api.getSteps(failureStage).getSteps();
+        List<PipelineStep> steps = api.getSteps(failureStage).steps;
         assertThat(steps, hasSize(2));
         PipelineStep errorStep = steps.get(1);
-        assertThat(errorStep.getName(), is("oops-failure"));
-        assertThat(errorStep.getTitle(), is("Error signal"));
-        FlowNode node = run.getExecution().getNode(String.valueOf(errorStep.getId()));
+        assertThat(errorStep.name, is("oops-failure"));
+        assertThat(errorStep.title, is("Error signal"));
+        FlowNode node = run.getExecution().getNode(String.valueOf(errorStep.id));
         String errorText = PipelineNodeUtil.getExceptionText(node);
         assertThat(errorText, equalTo("oops-failure"));
     }
@@ -425,10 +424,10 @@ class PipelineStepApiTest {
 
         PipelineStepApi api = new PipelineStepApi(run);
 
-        List<PipelineStep> steps = api.getAllSteps().getSteps();
+        List<PipelineStep> steps = api.getAllSteps().steps;
         assertThat(steps, hasSize(2));
         PipelineStep errorStep = steps.get(1);
-        assertThat(errorStep.getName(), equalTo("Pipeline error"));
+        assertThat(errorStep.name, equalTo("Pipeline error"));
     }
 
     @Issue("GH#274")
@@ -444,10 +443,10 @@ class PipelineStepApiTest {
         String failureStage =
                 TestUtils.getNodesByDisplayName(run, "failure").get(0).getId();
 
-        List<PipelineStep> steps = api.getSteps(failureStage).getSteps();
+        List<PipelineStep> steps = api.getSteps(failureStage).steps;
         assertThat(steps, hasSize(2));
         PipelineStep errorStep = steps.get(0);
-        FlowNode node = run.getExecution().getNode(String.valueOf(errorStep.getId()));
+        FlowNode node = run.getExecution().getNode(String.valueOf(errorStep.id));
         String errorText = PipelineNodeUtil.getExceptionText(node);
         assertThat(
                 errorText,
@@ -463,9 +462,9 @@ class PipelineStepApiTest {
         WorkflowRun run = futureRun.waitForStart();
 
         SemaphoreStep.waitForStart("wait/1", run);
-        List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
+        List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().steps;
 
-        Function<PipelineStep, String> converter = s -> s.getStageId() + "->" + s.getName();
+        Function<PipelineStep, String> converter = s -> s.stageId + "->" + s.name;
         String stepsStringRunning = TestUtils.collectStepsAsString(steps, converter);
 
         SemaphoreStep.success("wait/1", null);
@@ -473,7 +472,7 @@ class PipelineStepApiTest {
         // created).
         j.waitForCompletion(run);
 
-        steps = new PipelineStepApi(run).getAllSteps().getSteps();
+        steps = new PipelineStepApi(run).getAllSteps().steps;
         String stepsStringFinished = TestUtils.collectStepsAsString(steps, converter);
         String[] expected = stepsStringRunning.split(",");
         String[] actual = stepsStringFinished.split(",");
@@ -487,7 +486,7 @@ class PipelineStepApiTest {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "pipelineWithSyntaxError", "pipelineWithSyntaxError.jenkinsfile", Result.FAILURE);
 
-        List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
+        List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().steps;
         String stepsString = TestUtils.collectStepsAsString(steps, TestUtils::nodeNameAndStatus);
 
         assertThat(stepsString, equalTo("Pipeline error{failure}"));
@@ -498,16 +497,16 @@ class PipelineStepApiTest {
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "nestedStageSleep", "nestedStageSleep.jenkinsfile", Result.SUCCESS);
 
-        List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
+        List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().steps;
 
-        Map<String, List<Long>> checks = new LinkedHashMap<>();
+        Map<String, TestUtils.TimeRange> checks = new LinkedHashMap<>();
         // Give large ranges - we are testing that the values are feasible, not that they are precise.
-        checks.put("In grandchild A", Arrays.asList(1000L, 0L, 0L, 5000L, 500L, 500L));
-        checks.put("In grandchild B", Arrays.asList(1000L, 0L, 0L, 5000L, 500L, 500L));
-        checks.put("1", Arrays.asList(1000L, 0L, 1000L, 5000L, 500L, 3000L));
+        checks.put("In grandchild A", new TestUtils.TimeRange(1000L, 0L, 0L, 5000L, 500L, 500L));
+        checks.put("In grandchild B", new TestUtils.TimeRange(1000L, 0L, 0L, 5000L, 500L, 500L));
+        checks.put("1", new TestUtils.TimeRange(1000L, 0L, 1000L, 5000L, 500L, 3000L));
         for (AbstractPipelineNode n : steps) {
-            assertThat(checks, hasEntry(is(n.getName()), notNullValue()));
-            TestUtils.assertTimesInRange(n, checks.get(n.getName()));
+            assertThat(checks, hasEntry(is(n.name), notNullValue()));
+            TestUtils.assertTimesInRange(n, checks.get(n.name));
         }
     }
 
@@ -522,7 +521,7 @@ class PipelineStepApiTest {
         SemaphoreStep.waitForStart("a/1", run);
         SemaphoreStep.waitForStart("b/1", run);
         // Sleep to allow Pipeline to reach sleep.
-        List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
+        List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().steps;
         String stepsString = TestUtils.collectStepsAsString(steps, TestUtils::nodeNameAndStatus);
 
         SemaphoreStep.success("a/1", null);
@@ -531,8 +530,7 @@ class PipelineStepApiTest {
         // Wait for Pipeline to end (terminating it means end nodes might not be
         // created).
         j.waitForCompletion(run);
-        List<PipelineStep> finishedSteps =
-                new PipelineStepApi(run).getAllSteps().getSteps();
+        List<PipelineStep> finishedSteps = new PipelineStepApi(run).getAllSteps().steps;
         String stepsStringFinished = TestUtils.collectStepsAsString(finishedSteps, TestUtils::nodeNameAndStatus);
         LOGGER.log(Level.INFO, stepsStringFinished);
 
@@ -548,7 +546,7 @@ class PipelineStepApiTest {
         QueueTaskFuture<WorkflowRun> futureRun = job.scheduleBuild2(0);
         WorkflowRun run = futureRun.waitForStart();
         SemaphoreStep.waitForStart("1/1", run);
-        List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().getSteps();
+        List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().steps;
         String stepsString = TestUtils.collectStepsAsString(steps, TestUtils::nodeNameAndStatus);
 
         SemaphoreStep.success("1/1", null);
@@ -557,22 +555,21 @@ class PipelineStepApiTest {
         // created).
         j.waitForCompletion(run);
 
-        List<PipelineStep> finishedSteps =
-                new PipelineStepApi(run).getAllSteps().getSteps();
+        List<PipelineStep> finishedSteps = new PipelineStepApi(run).getAllSteps().steps;
         String stepsStringFinished = TestUtils.collectStepsAsString(finishedSteps, TestUtils::nodeNameAndStatus);
         LOGGER.log(Level.INFO, stepsStringFinished);
 
         assertThat(stepsString, equalTo("Hello World{success},1{running}"));
         assertThat(stepsStringFinished, equalTo("Hello World{success},1{success},Goodbye World{success}"));
 
-        Map<String, List<Long>> checks = new LinkedHashMap<>();
+        Map<String, TestUtils.TimeRange> checks = new LinkedHashMap<>();
         // Give large ranges - we are testing that the values are feasible, not that they are precise.
-        checks.put("Hello World", Arrays.asList(100L, 0L, 0L, 10000L, 1000L, 1000L));
-        checks.put("1", Arrays.asList(100L, 0L, 10L, 10000L, 3000L, 3000L));
-        checks.put("Goodbye World", Arrays.asList(0L, 0L, 0L, 10000L, 1000L, 1000L));
+        checks.put("Hello World", new TestUtils.TimeRange(100L, 0L, 0L, 10000L, 1000L, 1000L));
+        checks.put("1", new TestUtils.TimeRange(100L, 0L, 10L, 10000L, 3000L, 3000L));
+        checks.put("Goodbye World", new TestUtils.TimeRange(0L, 0L, 0L, 10000L, 1000L, 1000L));
         for (AbstractPipelineNode n : finishedSteps) {
-            assertThat(checks, hasEntry(is(n.getName()), notNullValue()));
-            TestUtils.assertTimesInRange(n, checks.get(n.getName()));
+            assertThat(checks, hasEntry(is(n.name), notNullValue()));
+            TestUtils.assertTimesInRange(n, checks.get(n.name));
         }
     }
 

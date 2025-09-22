@@ -51,6 +51,7 @@ describe("StageView", () => {
           expandedSteps={["step-1"]}
           onStepToggle={vi.fn()}
           onMoreConsoleClick={vi.fn()}
+          fetchExceptionText={vi.fn()}
         />,
       );
     });

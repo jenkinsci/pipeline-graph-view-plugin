@@ -1,29 +1,28 @@
 package io.jenkins.plugins.pipelinegraphview.multipipelinegraphview;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import hudson.model.Action;
 import hudson.model.Item;
 import hudson.security.Permission;
 import hudson.util.HttpResponses;
 import hudson.util.RunList;
 import io.jenkins.plugins.pipelinegraphview.PipelineGraphViewConfiguration;
-import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
-import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest2;
+import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.verb.GET;
 
 public class MultiPipelineGraphViewAction implements Action, IconSpec {
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final int MaxNumberOfElements = 10;
 
     private final WorkflowJob target;
@@ -63,37 +62,44 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
         return PipelineGraphViewConfiguration.get().isShowStageDurations();
     }
 
-    @GET
-    @WebMethod(name = "tree")
-    public HttpResponse getTree(StaplerRequest2 req) throws JsonProcessingException {
-        String runId = req.getParameter("runId");
-        WorkflowRun run = target.getBuildByNumber(Integer.parseInt(runId));
-        PipelineGraphApi api = new PipelineGraphApi(run);
-        JSONObject graph = createGraphJson(api.createTree());
-        return HttpResponses.okJSON(graph);
-    }
+    private static final JsonConfig jsonConfig = new JsonConfig();
 
-    protected JSONObject createGraphJson(PipelineGraph pipelineGraph) throws JsonProcessingException {
-        String graph = OBJECT_MAPPER.writeValueAsString(pipelineGraph);
-        return JSONObject.fromObject(graph);
+    static {
+        PipelineRun.PipelineRunJsonProcessor.configure(jsonConfig);
     }
 
     @GET
     @WebMethod(name = "runs")
-    public HttpResponse getRuns() throws JsonProcessingException {
+    public void getRuns(StaplerRequest2 req, StaplerResponse2 rsp) throws ServletException, IOException {
+        target.checkPermission(Item.READ);
         RunList<WorkflowRun> runs = target.getBuilds();
         List<PipelineRun> pipelineRuns = new ArrayList<>();
-        for (WorkflowRun run : runs) {
-            pipelineRuns.add(new PipelineRun(run));
-            if (pipelineRuns.size() >= MaxNumberOfElements) break;
-        }
-        JSONArray graph = createJson(pipelineRuns);
-        return HttpResponses.okJSON(graph);
-    }
 
-    protected JSONArray createJson(List<PipelineRun> pipelineRuns) throws JsonProcessingException {
-        String graph = OBJECT_MAPPER.writeValueAsString(pipelineRuns);
-        return JSONArray.fromObject(graph);
+        EtagBuilder etagBuilder = new EtagBuilder();
+        for (WorkflowRun run : runs) {
+            PipelineRun r = new PipelineRun(run);
+            etagBuilder.add(r);
+            pipelineRuns.add(r);
+            if (pipelineRuns.size() >= MaxNumberOfElements) {
+                break;
+            }
+        }
+
+        String etag = etagBuilder.getEtag();
+        String header = req.getHeader("If-None-Match");
+        if (etag != null && etag.equals(header)) {
+            rsp.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+            return;
+        }
+
+        HttpResponse response = HttpResponses.okJSON(JSONArray.fromObject(pipelineRuns, jsonConfig));
+
+        if (etag != null) {
+            rsp.setHeader("ETag", etag);
+        }
+        rsp.setHeader("Cache-Control", "no-cache");
+        rsp.setStatus(200);
+        response.generateResponse(req, rsp, null);
     }
 
     public String getJobUrl() {

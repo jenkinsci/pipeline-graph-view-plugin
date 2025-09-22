@@ -29,7 +29,7 @@ public class TestResultRunDetailsItem {
         String skipped = Messages.testResults_skipped(action.getSkipCount());
         String total = Messages.testResults_total(action.getTotalCount());
         RunDetailsItem testResult = new RunDetailsItem.RunDetail(
-                new Ionicon("clipboard-outline"),
+                new Ionicon("flask-outline"),
                 ItemContent.of("../" + action.getUrlName(), Messages.testResults()),
                 passed + "\n" + failed + "\n" + skipped + "\n" + total);
         return Optional.of(testResult);

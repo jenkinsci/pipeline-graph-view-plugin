@@ -2,48 +2,95 @@ package io.jenkins.plugins.pipelinegraphview.multipipelinegraphview;
 
 import static io.jenkins.plugins.pipelinegraphview.utils.ChangesUtil.getChanges;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
+import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+import net.sf.json.processors.JsonBeanProcessor;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 public class PipelineRun {
 
+    @NonNull
     private final String id;
+
+    @NonNull
     private final String displayName;
+
     private final long timestamp;
     private final long duration;
     private final int changesCount;
-    private final PipelineState result;
+    private final boolean building;
+
+    @NonNull
+    final PipelineState result;
 
     public PipelineRun(WorkflowRun run) {
-        this.id = run.getId();
-        this.displayName = run.getDisplayName();
-        this.timestamp = run.getTimeInMillis();
-        this.duration = run.getDuration();
-        this.changesCount = getChanges(run).size();
-        this.result = PipelineState.of(run);
+        this(
+                run.getId(),
+                run.getDisplayName(),
+                run.getTimeInMillis(),
+                run.getDuration(),
+                getChanges(run).size(),
+                PipelineState.of(run),
+                run.isBuilding());
     }
 
-    public String getId() {
-        return id;
+    PipelineRun(
+            @NonNull String id,
+            @NonNull String displayName,
+            long timestamp,
+            long duration,
+            int changesCount,
+            @NonNull PipelineState result,
+            boolean building) {
+        this.id = id;
+        this.displayName = displayName;
+        this.timestamp = timestamp;
+        this.duration = duration;
+        this.changesCount = changesCount;
+        this.result = result;
+        this.building = building;
     }
 
-    public String getDisplayName() {
-        return displayName;
+    public boolean isBuilding() {
+        return building;
     }
 
-    public long getTimestamp() {
-        return timestamp;
+    public String etag() {
+        return this.id
+                + '|'
+                + this.displayName
+                + '|'
+                + this.timestamp
+                + '|'
+                + this.duration
+                + '|'
+                + this.changesCount
+                + '|'
+                + this.result.name();
     }
 
-    public long getDuration() {
-        return duration;
-    }
+    public static class PipelineRunJsonProcessor implements JsonBeanProcessor {
 
-    public int getChangesCount() {
-        return changesCount;
-    }
+        public static void configure(JsonConfig config) {
+            config.registerJsonBeanProcessor(PipelineRun.class, new PipelineRunJsonProcessor());
+            PipelineState.PipelineStateJsonProcessor.configure(config);
+        }
 
-    public PipelineState getResult() {
-        return result;
+        @Override
+        public JSONObject processBean(Object bean, JsonConfig jsonConfig) {
+            if (!(bean instanceof PipelineRun run)) {
+                return null;
+            }
+            JSONObject json = new JSONObject();
+            json.element("id", run.id);
+            json.element("displayName", run.displayName);
+            json.element("timestamp", run.timestamp);
+            json.element("duration", run.duration);
+            json.element("changesCount", run.changesCount);
+            json.element("result", run.result, jsonConfig);
+            return json;
+        }
     }
 }

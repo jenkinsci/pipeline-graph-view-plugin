@@ -1,7 +1,13 @@
-import { Context, createContext, FunctionComponent, ReactNode } from "react";
+import {
+  Context,
+  createContext,
+  FunctionComponent,
+  ReactNode,
+  useContext,
+} from "react";
 
 export const DEFAULT_LOCALE = "en";
-export const LocaleContext: Context<string> = createContext(DEFAULT_LOCALE);
+const LocaleContext: Context<string> = createContext(DEFAULT_LOCALE);
 
 interface LocaleProviderProps {
   children: ReactNode;
@@ -17,4 +23,8 @@ export const LocaleProvider: FunctionComponent<LocaleProviderProps> = ({
       {children}
     </LocaleContext.Provider>
   );
+};
+
+export const useLocale = (): string => {
+  return useContext(LocaleContext);
 };

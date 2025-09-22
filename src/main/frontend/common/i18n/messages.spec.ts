@@ -58,15 +58,9 @@ describe("Messages", () => {
 
       const messages = await getMessages("en", [ResourceBundleName.messages]);
 
-      expect(messages.format(LocalizedMessageKey.second, { 0: 5 })).toEqual(
-        "5 sec",
-      );
-      expect(messages.format(LocalizedMessageKey.day, { 0: 1 })).toEqual(
-        "1 day",
-      );
-      expect(messages.format(LocalizedMessageKey.day, { 0: 2 })).toEqual(
-        "2 days",
-      );
+      expect(
+        messages.format(LocalizedMessageKey.startedAgo, { 0: "5s" }),
+      ).toEqual("Started 5s ago");
       expect(messages.format("A.property")).toEqual("");
     });
   });

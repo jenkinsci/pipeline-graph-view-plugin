@@ -36,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import hudson.AbortException;
+import hudson.Functions;
 import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
@@ -48,7 +49,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
-import org.apache.commons.lang.SystemUtils;
 import org.jenkinsci.plugins.workflow.actions.LabelAction;
 import org.jenkinsci.plugins.workflow.actions.QueueItemAction;
 import org.jenkinsci.plugins.workflow.actions.ThreadNameAction;
@@ -775,7 +775,7 @@ class StatusAndTimingTest {
     void busyStepTest() throws Exception {
         WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "InputJob");
         String sleep = "sh 'sleep 10000'\n";
-        if (SystemUtils.IS_OS_WINDOWS) {
+        if (Functions.isWindows()) {
             sleep = "bat 'timeout /t 30'\n";
         }
         job.setDefinition(new CpsFlowDefinition(

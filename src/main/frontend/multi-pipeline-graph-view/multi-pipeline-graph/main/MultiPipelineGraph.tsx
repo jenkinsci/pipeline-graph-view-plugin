@@ -2,8 +2,8 @@ import { useContext, useEffect, useState } from "react";
 
 import {
   I18NContext,
-  LocaleContext,
   LocalizedMessageKey,
+  useLocale,
 } from "../../../common/i18n/index.ts";
 import { RunInfo } from "./MultiPipelineGraphModel.ts";
 import SingleRun from "./SingleRun.tsx";
@@ -23,9 +23,9 @@ export const MultiPipelineGraph = () => {
         console.log(err);
       });
     }
-  }, [runs, poll]);
+  }, [currentJobPath, runs, poll]);
 
-  const locale = useContext(LocaleContext);
+  const locale = useLocale();
 
   const groupedRuns: Record<string, RunInfo[]> = runs.reduce(
     (acc: Record<string, RunInfo[]>, run) => {

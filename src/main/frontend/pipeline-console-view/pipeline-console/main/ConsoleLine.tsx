@@ -1,5 +1,7 @@
-import { memo, useEffect, useRef } from "react";
+import linkifyHtml from "linkify-html";
+import { memo } from "react";
 
+import { linkifyJsOptions } from "../../../common/utils/linkify-js.ts";
 import { makeReactChildren, tokenizeANSIString } from "./Ansi.tsx";
 
 export interface ConsoleLineProps {
@@ -7,56 +9,41 @@ export interface ConsoleLineProps {
   content: string;
   stepId: string;
   startByte: number;
-  heightCallback: (height: number) => void;
-}
-
-declare global {
-  interface Window {
-    Behaviour: any;
-  }
 }
 
 // Console output line
 export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
-  const ref = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const height = ref.current ? ref.current.getBoundingClientRect().height : 0;
-    props.heightCallback(height);
-
-    // apply any behaviour selectors to the new content, e.g. for input step
-    window.Behaviour.applySubtree(
-      document.getElementById(`${props.stepId}-${props.lineNumber}`),
-    );
-  }, []);
-
+  const baseURL = `?start-byte=${props.startByte}&selected-node=${props.stepId}`;
+  const id = `log-${props.stepId}-${props.lineNumber}`;
   return (
     <pre
       style={{ background: "none", border: "none" }}
       className="console-output-line"
-      key={`console-line-pre${props.lineNumber}`}
     >
-      <div
-        className="console-output-line"
-        key={`${props.lineNumber}-body`}
-        ref={ref}
-      >
+      <div className="console-output-line">
         <a
           className="console-line-number"
-          id={`log-${props.lineNumber}`}
-          href={`?start-byte=${props.startByte}&selected-node=${props.stepId}#log-${props.lineNumber}`}
+          id={id}
+          href={`${baseURL}#${id}`}
+          onClick={() => {
+            // Avoid an actual page navigation by swapping the current URL for
+            // the baseURL (query without hash) before the default "click"
+            // behavior (the browsers page navigation logic) runs. The
+            // effective navigation is a swap of the hash, which merely updates
+            // the style and scroll position. The page state (opened/collapsed
+            // steps and fetched logs) is retained.
+            history.replaceState({}, "", baseURL);
+          }}
           style={{
             width: Math.max(9 * String(props.lineNumber).length, 30) + "px",
           }}
         >
           {props.lineNumber}
         </a>
-        <div
-          id={`${props.stepId}-${props.lineNumber}`}
-          className="console-text"
-        >
+        <div className="console-text">
           {makeReactChildren(
-            tokenizeANSIString(props.content),
-            `${props.stepId}-${props.lineNumber}`,
+            tokenizeANSIString(linkifyHtml(props.content, linkifyJsOptions)),
+            id,
           )}
         </div>
       </div>

@@ -25,28 +25,53 @@ h1 {
 .pgv-details {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  margin-left: 0.65rem;
-  margin-bottom: 1.25rem;
+  gap: 1rem 1.5rem;
+  margin-left: 0.25rem;
+  margin-bottom: 0.875rem;
   margin-top: -0.25rem;
+  flex-wrap: wrap;
+
+  @media (width <= 800px) {
+    margin-block: 0.75rem 1rem;
+  }
 
   & > div {
     display: flex;
     align-items: center;
     gap: 1ch;
-    font-size: 14px;
+    font-size: var(--font-size-sm);
     color: var(--text-color-secondary);
-    font-weight: 450;
+    font-weight: var(--font-bold-weight);
     text-box: trim-both;
 
     a {
       color: inherit;
     }
 
-    svg, img {
+    svg,
+    img {
       width: 1.125rem;
       height: 1.125rem;
     }
+  }
+}
+
+.pgv-description {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1ch;
+  align-items: start;
+  margin: 0 0 1rem 0.25rem;
+
+  & > svg {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  & > div {
+    text-box: trim-both;
+    line-height: 1.66;
+    margin-top: 0.0625rem;
   }
 }
 

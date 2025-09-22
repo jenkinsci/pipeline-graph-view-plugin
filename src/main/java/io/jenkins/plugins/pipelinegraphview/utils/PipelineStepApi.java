@@ -1,10 +1,10 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
-import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,9 +58,22 @@ public class PipelineStepApi {
                             flowNodeWrapper.getType().name(),
                             title,
                             stageId,
+                            mapInputStep(flowNodeWrapper.getInputStep()),
                             flowNodeWrapper.getTiming());
                 })
                 .collect(Collectors.toList());
+    }
+
+    private PipelineInputStep mapInputStep(InputStep inputStep) {
+        if (inputStep == null) {
+            return null;
+        }
+        return new PipelineInputStep(
+                inputStep.getMessage(),
+                inputStep.getCancel(),
+                inputStep.getId(),
+                inputStep.getOk(),
+                !inputStep.getParameters().isEmpty());
     }
 
     static String cleanTextContent(String text) {
@@ -69,17 +82,17 @@ public class PipelineStepApi {
         return text.trim();
     }
 
-    private PipelineStepList getSteps(String stageId, PipelineStepBuilderApi builder) {
+    private PipelineStepList getSteps(String stageId, PipelineStepBuilderApi builder, boolean runIsComplete) {
         List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
-        PipelineStepList steps = new PipelineStepList(parseSteps(stepNodes, stageId));
+        PipelineStepList steps = new PipelineStepList(parseSteps(stepNodes, stageId), runIsComplete);
         steps.sort();
         return steps;
     }
 
     /* Returns a PipelineStepList, sorted by stageId and Id. */
-    private PipelineStepList getAllSteps(PipelineStepBuilderApi builder) {
+    private PipelineStepList getAllSteps(PipelineStepBuilderApi builder, boolean runIsComplete) {
         Map<String, List<FlowNodeWrapper>> stepNodes = builder.getAllSteps();
-        PipelineStepList allSteps = new PipelineStepList();
+        PipelineStepList allSteps = new PipelineStepList(runIsComplete);
         for (Map.Entry<String, List<FlowNodeWrapper>> entry : stepNodes.entrySet()) {
             allSteps.addAll(parseSteps(entry.getValue(), entry.getKey()));
         }
@@ -88,11 +101,15 @@ public class PipelineStepApi {
     }
 
     public PipelineStepList getSteps(String stageId) {
-        return getSteps(stageId, new PipelineNodeGraphAdapter(run));
+        // Look up the completed state before computing steps.
+        boolean runIsComplete = !run.isBuilding();
+        return getSteps(stageId, CachedPipelineNodeGraphAdaptor.instance.getFor(run), runIsComplete);
     }
 
     /* Returns a PipelineStepList, sorted by stageId and Id. */
     public PipelineStepList getAllSteps() {
-        return getAllSteps(new PipelineNodeGraphAdapter(run));
+        // Look up the completed state before computing steps.
+        boolean runIsComplete = !run.isBuilding();
+        return getAllSteps(CachedPipelineNodeGraphAdaptor.instance.getFor(run), runIsComplete);
     }
 }

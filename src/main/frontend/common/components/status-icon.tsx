@@ -29,6 +29,12 @@ export default function StatusIcon({
       <circle
         cx={viewBoxSize / 2}
         cy={viewBoxSize / 2}
+        r={radius - 20}
+        fill="var(--card-background)"
+      />
+      <circle
+        cx={viewBoxSize / 2}
+        cy={viewBoxSize / 2}
         r={radius}
         fill="var(--color)"
         opacity={"var(--status-background-opacity)"}

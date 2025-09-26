@@ -140,7 +140,7 @@ export function useStepsPoller(props: RunPollerProps) {
     try {
       stepBuffer.exceptionText = await promise;
     } finally {
-      delete stepBuffer.pending;
+      delete stepBuffer.pendingExceptionText;
     }
 
     stepBuffer.lines = stepBuffer.lines.concat(stepBuffer.exceptionText);

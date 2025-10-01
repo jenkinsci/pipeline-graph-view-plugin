@@ -6,8 +6,9 @@
         <link rel="stylesheet" href="${resURL}/plugin/pipeline-graph-view/js/style.css" type="text/css" />
 
         <l:app-bar title="Stages">
-            <l:details-bar it="${it.run}" />
-            <div id="console-pipeline-overflow-root"/>
+            <l:details-bar it="${it.run}">
+                <div id="console-pipeline-overflow-root"/>
+            </l:details-bar>
         </l:app-bar>
 
         <j:set var="configPermission" value="${h.hasPermission(it, it.configurePermission)}" />

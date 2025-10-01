@@ -13,15 +13,6 @@ import hudson.security.Permission;
 import hudson.util.HttpResponses;
 import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.PipelineGraphViewConfiguration;
-import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsCard;
-import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
-import io.jenkins.plugins.pipelinegraphview.cards.items.ArtifactRunDetailsItem;
-import io.jenkins.plugins.pipelinegraphview.cards.items.ChangesRunDetailsItem;
-import io.jenkins.plugins.pipelinegraphview.cards.items.SCMRunDetailsItems;
-import io.jenkins.plugins.pipelinegraphview.cards.items.TestResultRunDetailsItem;
-import io.jenkins.plugins.pipelinegraphview.cards.items.TimingRunDetailsItems;
-import io.jenkins.plugins.pipelinegraphview.cards.items.UpstreamCauseRunDetailsItem;
-import io.jenkins.plugins.pipelinegraphview.cards.items.UserIdCauseRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
@@ -30,11 +21,9 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
-import jenkins.run.Tab;
+import jenkins.model.Tab;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
 import org.jenkinsci.plugins.pipeline.modeldefinition.actions.RestartDeclarativePipelineAction;
@@ -315,27 +304,6 @@ public class PipelineConsoleViewAction extends Tab {
             logger.debug("Using default value of '{}'", defaultValue);
             return defaultValue;
         }
-    }
-
-    @SuppressWarnings("unused")
-    public RunDetailsCard getRunDetailsCard() {
-
-        List<RunDetailsItem> runDetailsItems = new ArrayList<>(SCMRunDetailsItems.get(run));
-
-        if (!runDetailsItems.isEmpty()) {
-            runDetailsItems.add(RunDetailsItem.SEPARATOR);
-        }
-
-        UpstreamCauseRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
-        UserIdCauseRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
-
-        runDetailsItems.addAll(TimingRunDetailsItems.get(run));
-
-        ChangesRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
-        TestResultRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
-        ArtifactRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
-
-        return new RunDetailsCard(runDetailsItems);
     }
 
     public boolean isShowGraphOnBuildPage() {

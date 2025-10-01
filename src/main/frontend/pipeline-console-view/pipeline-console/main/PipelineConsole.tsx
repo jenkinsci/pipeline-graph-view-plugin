@@ -49,7 +49,7 @@ export default function PipelineConsole() {
         container={document.getElementById("console-pipeline-overflow-root")}
       >
         <Dropdown
-          className="jenkins-button--detail"
+          className="jenkins-details__button"
           icon={SETTINGS}
           items={[
             showSplitView ? (

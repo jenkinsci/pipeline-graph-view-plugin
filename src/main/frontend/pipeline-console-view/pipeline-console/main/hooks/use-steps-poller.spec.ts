@@ -161,6 +161,10 @@ it("handles empty console log and exception message", async () => {
   );
   await act(() => result.current.fetchExceptionText("step-2"));
 
+  // Deduplicated fetch
+  await act(() => result.current.fetchExceptionText("step-2"));
+  expect(model.getExceptionText as Mock).toHaveBeenCalledOnce();
+
   await waitFor(() =>
     expect(
       result.current.openStageStepBuffers.get("step-2")?.lines,

@@ -11,6 +11,7 @@ $pgv-item-padding-inline: 0.7rem;
     content: "";
     position: absolute;
     inset: 0;
+    background: var(--input-color);
     border-radius: var(--form-input-border-radius);
     // TODO - var fallback can removed after baseline is moved >= 2.496
     border: var(

@@ -19,6 +19,7 @@ export default function Stages({
   selectedStage,
   stageViewPosition,
   onStageSelect,
+  title = 'Graph'
 }: StagesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -30,8 +31,28 @@ export default function Stages({
       })}
     >
       <div className={"pgv-stages-graph__controls pgv-stages-graph__heading"}>
-        Graph
+        {title}
       </div>
+      <TransformWrapper
+        minScale={0.75}
+        maxScale={3}
+        wheel={{ activationKeys: isExpanded ? [] : ["Control"] }}
+      >
+        <ZoomControls />
+
+        <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
+          <PipelineGraph
+            stages={stages}
+            selectedStage={selectedStage}
+            {...(onStageSelect && {
+              onStageSelect: (e) => {
+                onStageSelect(e);
+                setIsExpanded(false);
+              },
+            })}
+          />
+        </TransformComponent>
+      </TransformWrapper>
       <div className={"pgv-stages-graph__controls pgw-fullscreen-controls"}>
         <Tooltip content={isExpanded ? "Close" : "Expand"}>
           <button
@@ -69,26 +90,6 @@ export default function Stages({
           </button>
         </Tooltip>
       </div>
-      <TransformWrapper
-        minScale={0.75}
-        maxScale={3}
-        wheel={{ activationKeys: isExpanded ? [] : ["Control"] }}
-      >
-        <ZoomControls />
-
-        <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
-          <PipelineGraph
-            stages={stages}
-            selectedStage={selectedStage}
-            {...(onStageSelect && {
-              onStageSelect: (e) => {
-                onStageSelect(e);
-                setIsExpanded(false);
-              },
-            })}
-          />
-        </TransformComponent>
-      </TransformWrapper>
     </div>
   );
 }
@@ -98,6 +99,7 @@ interface StagesProps {
   selectedStage?: StageInfo;
   stageViewPosition: StageViewPosition;
   onStageSelect?: (nodeId: string) => void;
+  title?: string;
 }
 
 function ZoomControls() {

@@ -7,6 +7,7 @@ import { ResourceBundle } from "./i18n/index.ts";
 export interface RunStatus {
   stages: StageInfo[];
   complete: boolean;
+  raw?: string;
 }
 
 export interface InputStep {
@@ -66,7 +67,9 @@ export async function getRunStatusFromPath(url: string): Promise<RunStatus> {
   if (!response.ok) {
     throw response.statusText;
   }
-  const json = await response.json();
+  const text = await response.text();
+  const json = JSON.parse(text);
+  json.data.raw = text;
   return json.data;
 }
 

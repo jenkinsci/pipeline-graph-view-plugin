@@ -14,11 +14,15 @@ export default async function startPollingPipelineStatus(
   interval = 3000,
 ) {
   let isComplete = false;
+  let lastResult = "";
 
   async function fetchPipelineData() {
     try {
       const result = await getRunStatusFromPath(path)!;
-      onFetchSuccess(result);
+      if (result.raw !== lastResult) {
+        onFetchSuccess(result);
+        lastResult = result.raw ?? "";
+      }
       isComplete = result!.complete;
     } catch (err) {
       // TODO: implement exponential backoff of the timeout interval

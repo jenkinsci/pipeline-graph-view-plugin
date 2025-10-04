@@ -178,6 +178,34 @@ describe("useRunPoller", function () {
     });
     unmount();
   });
+
+  it("should not update when not changed", async () => {
+    (restClient.getRunStatusFromPath as Mock).mockImplementation(async () => {
+      return {
+        raw: "first raw",
+        stages: [stage("Build")],
+        complete: false,
+      };
+    });
+    const { result, unmount } = renderHook(() => {
+      return useRunPoller({
+        currentRunPath: "current",
+        interval: 10,
+      });
+    });
+    const getCallCount = () =>
+      (restClient.getRunStatusFromPath as Mock).mock.calls.length;
+    await waitFor(() => {
+      expect(result.current.run.stages).to.deep.equal([stage("Build")]);
+    });
+    const callCount = getCallCount();
+    const first = result.current.run.stages;
+    await waitFor(() => {
+      expect(getCallCount()).toBeGreaterThan(callCount + 2); // two poll cycles
+    });
+    expect(result.current.run.stages).to.equal(first);
+    unmount();
+  });
 });
 
 const stage = (

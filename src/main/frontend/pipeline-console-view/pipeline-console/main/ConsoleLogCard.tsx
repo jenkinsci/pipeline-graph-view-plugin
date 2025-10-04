@@ -202,7 +202,6 @@ function ConsoleLogBody({
           onMoreConsoleClick={onMoreConsoleClick}
           fetchExceptionText={fetchExceptionText}
           step={step}
-          maxHeightScale={0.65}
         />
       </Suspense>
     </div>

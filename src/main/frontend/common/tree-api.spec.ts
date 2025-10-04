@@ -44,7 +44,7 @@ describe("useRunPoller", function () {
       });
     });
     await waitFor(() =>
-      expect(result.current.run?.stages).to.deep.equal(merged),
+      expect(result.current.run.stages).to.deep.equal(merged),
     );
     expect(restClient.getRunStatusFromPath as Mock).toHaveBeenNthCalledWith(
       1,
@@ -89,7 +89,7 @@ describe("useRunPoller", function () {
       });
     });
     await waitFor(() =>
-      expect(result.current.run?.stages).to.deep.equal(current),
+      expect(result.current.run.stages).to.deep.equal(current),
     );
     unmount();
   });
@@ -116,7 +116,7 @@ describe("useRunPoller", function () {
       });
     });
     await waitFor(() =>
-      expect(result.current.run?.stages).to.deep.equal(current),
+      expect(result.current.run.stages).to.deep.equal(current),
     );
     unmount();
   });
@@ -140,7 +140,7 @@ describe("useRunPoller", function () {
       });
     });
     await waitFor(() => {
-      expect(result.current.run?.stages).to.deep.equal(current);
+      expect(result.current.run.stages).to.deep.equal(current);
       expect(restClient.getRunStatusFromPath as Mock).toHaveBeenCalledTimes(2);
     });
     unmount();
@@ -161,7 +161,7 @@ describe("useRunPoller", function () {
       });
     });
     await waitFor(() => {
-      expect(result.current.run?.stages).to.deep.equal([stage("Build")]);
+      expect(result.current.run.stages).to.deep.equal([stage("Build")]);
     });
     (restClient.getRunStatusFromPath as Mock).mockImplementation(async () => {
       return {
@@ -171,7 +171,7 @@ describe("useRunPoller", function () {
       };
     });
     await waitFor(() => {
-      expect(result.current.run?.stages).to.deep.equal([
+      expect(result.current.run.stages).to.deep.equal([
         stage("Build"),
         stage("Test"),
       ]);

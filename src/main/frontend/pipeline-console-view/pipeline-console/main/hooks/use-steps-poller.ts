@@ -198,7 +198,7 @@ export function useStepsPoller(props: RunPollerProps) {
           case Result.failure:
           case Result.aborted:
             if (
-              run?.complete &&
+              run.complete &&
               selectedStepResult &&
               stepResult < selectedStepResult
             ) {
@@ -217,7 +217,7 @@ export function useStepsPoller(props: RunPollerProps) {
       }
       return selectedStep;
     },
-    [run?.complete],
+    [run.complete],
   );
 
   useEffect(() => {
@@ -321,7 +321,7 @@ export function useStepsPoller(props: RunPollerProps) {
       }
       return null;
     };
-    return openStage ? findStage(run?.stages || []) : null;
+    return openStage ? findStage(run.stages) : null;
   };
 
   return {
@@ -329,7 +329,7 @@ export function useStepsPoller(props: RunPollerProps) {
     openStageSteps: getStageSteps(openStage),
     openStageStepBuffers: getStageStepBuffers(openStage),
     expandedSteps,
-    stages: run?.stages || [],
+    stages: run.stages,
     handleStageSelect,
     onStepToggle,
     onMoreConsoleClick,

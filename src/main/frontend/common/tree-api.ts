@@ -16,7 +16,7 @@ export default function useRunPoller({
   previousRunPath,
   interval = 3000,
 }: RunPollerProps) {
-  const [run, setRun] = useState<RunStatus>();
+  const [run, setRun] = useState<RunStatus>({ stages: [], complete: false });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

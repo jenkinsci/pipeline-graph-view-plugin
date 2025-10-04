@@ -36,35 +36,35 @@
 }
 
 .ansi-fg-8 {
-  color: #445;
+  color: var(--secondary-text, #445);
 }
 
 .ansi-fg-9 {
-  color: #f00;
+  color: var(--light-red, #f55);
 }
 
 .ansi-fg-10 {
-  color: #0e0;
+  color: var(--light-green, #0e0);
 }
 
 .ansi-fg-11 {
-  color: #fd0;
+  color: var(--yellow, #fd0);
 }
 
 .ansi-fg-12 {
-  color: #88f;
+  color: var(--light-indigo, #88f);
 }
 
 .ansi-fg-13 {
-  color: #f0d;
+  color: var(--purple, #f0d);
 }
 
 .ansi-fg-14 {
-  color: #0de;
+  color: var(--cyan, #0de);
 }
 
 .ansi-fg-15 {
-  color: #fff;
+  color: var(--white, #fff);
 }
 
 // Standard background colors
@@ -101,35 +101,35 @@
 }
 
 .ansi-bg-8 {
-  background: #445;
+  background: var(--secondary-text, #445);
 }
 
 .ansi-bg-9 {
-  background: #f00;
+  background: var(--light-red, #f55);
 }
 
 .ansi-bg-10 {
-  background: #0e0;
+  background: var(--light-green, #0e0);
 }
 
 .ansi-bg-11 {
-  background: #fd0;
+  background: var(--yellow, #fd0);
 }
 
 .ansi-bg-12 {
-  background: #88f;
+  background: var(--light-indigo, #88f);
 }
 
 .ansi-bg-13 {
-  background: #f0d;
+  background: var(--purple, #f0d);
 }
 
 .ansi-bg-14 {
-  background: #0de;
+  background: var(--cyan, #0de);
 }
 
 .ansi-bg-15 {
-  background: #fff;
+  background: var(--white, #fff);
 }
 
 .pgv-sticky-sidebar {

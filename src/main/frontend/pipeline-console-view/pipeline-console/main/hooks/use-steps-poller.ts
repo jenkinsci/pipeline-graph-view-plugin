@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import useRunPoller from "../../../../common/tree-api.ts";
 import {
+  AllStepsData,
   getConsoleTextOffset,
   getExceptionText,
   getRunSteps,
@@ -222,10 +223,10 @@ export function useStepsPoller(props: RunPollerProps) {
 
   useEffect(() => {
     let previousStepsSerialized = "";
-    function updateStepsIfChanged(steps: StepInfo[]) {
-      const nextStepsSerialized = JSON.stringify(steps);
-      if (previousStepsSerialized === nextStepsSerialized) return; // no change
-      previousStepsSerialized = nextStepsSerialized;
+    function updateStepsIfChanged(data: AllStepsData) {
+      if (previousStepsSerialized === data.raw) return; // no change
+      previousStepsSerialized = data.raw ?? "";
+      const steps = data.steps;
 
       setSteps(steps);
 
@@ -247,7 +248,7 @@ export function useStepsPoller(props: RunPollerProps) {
     const poll = async () => {
       while (polling) {
         const data = await getRunSteps();
-        if (data?.steps) updateStepsIfChanged(data.steps);
+        if (data?.steps) updateStepsIfChanged(data);
         if (data?.runIsComplete) polling = false;
         if (!polling) break;
         await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));

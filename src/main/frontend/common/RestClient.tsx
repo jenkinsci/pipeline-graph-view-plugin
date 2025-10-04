@@ -21,6 +21,7 @@ export interface InputStep {
 export interface AllStepsData {
   steps: StepInfo[];
   runIsComplete: boolean;
+  raw?: string;
 }
 
 /**
@@ -77,7 +78,9 @@ export async function getRunSteps(): Promise<AllStepsData | null> {
   try {
     const response = await fetch("allSteps");
     if (!response.ok) throw response.statusText;
-    const json = await response.json();
+    const text = await response.text();
+    const json = JSON.parse(text);
+    json.data.raw = text;
     return json.data;
   } catch (e) {
     console.warn(`Caught error getting steps: '${e}'`);

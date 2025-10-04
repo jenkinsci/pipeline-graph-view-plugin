@@ -35,6 +35,38 @@
   color: var(--white, #fff);
 }
 
+.ansi-fg-8 {
+  color: #445;
+}
+
+.ansi-fg-9 {
+  color: #f00;
+}
+
+.ansi-fg-10 {
+  color: #0e0;
+}
+
+.ansi-fg-11 {
+  color: #fd0;
+}
+
+.ansi-fg-12 {
+  color: #88f;
+}
+
+.ansi-fg-13 {
+  color: #f0d;
+}
+
+.ansi-fg-14 {
+  color: #0de;
+}
+
+.ansi-fg-15 {
+  color: #fff;
+}
+
 // Standard background colors
 .ansi-bg-0 {
   background: var(--black, #333);
@@ -66,6 +98,38 @@
 
 .ansi-bg-7 {
   background: var(--white, #fff);
+}
+
+.ansi-bg-8 {
+  background: #445;
+}
+
+.ansi-bg-9 {
+  background: #f00;
+}
+
+.ansi-bg-10 {
+  background: #0e0;
+}
+
+.ansi-bg-11 {
+  background: #fd0;
+}
+
+.ansi-bg-12 {
+  background: #88f;
+}
+
+.ansi-bg-13 {
+  background: #f0d;
+}
+
+.ansi-bg-14 {
+  background: #0de;
+}
+
+.ansi-bg-15 {
+  background: #fff;
 }
 
 .pgv-sticky-sidebar {

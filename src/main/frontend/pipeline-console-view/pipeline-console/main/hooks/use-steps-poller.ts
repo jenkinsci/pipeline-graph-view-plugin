@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import useRunPoller from "../../../../common/tree-api.ts";
+import { usePolling } from "../../../../common/utils/use-polling.ts";
 import {
   AllStepsData,
   getConsoleTextOffset,
@@ -87,11 +88,16 @@ export function useStepsPoller(props: RunPollerProps) {
     currentRunPath: props.currentRunPath,
     previousRunPath: props.previousRunPath,
   });
+  const {
+    data: { steps },
+  } = usePolling<AllStepsData>(getRunSteps, POLL_INTERVAL, "runIsComplete", {
+    steps: [],
+    runIsComplete: false,
+  });
 
   const [openStage, setOpenStage] = useState("");
   const [expandedSteps, setExpandedSteps] = useState<string[]>([]);
   const collapsedSteps = useRef(new Set<string>());
-  const [steps, setSteps] = useState<StepInfo[]>([]);
   const [stepBuffers, setStepBuffers] = useState(
     new Map<string, StepLogBufferInfo>(),
   );
@@ -222,43 +228,19 @@ export function useStepsPoller(props: RunPollerProps) {
   );
 
   useEffect(() => {
-    let previousStepsSerialized = "";
-    function updateStepsIfChanged(data: AllStepsData) {
-      if (previousStepsSerialized === data.raw) return; // no change
-      previousStepsSerialized = data.raw ?? "";
-      const steps = data.steps;
+    const usedUrl = parseUrlParams(steps);
+    if (!usedUrl) {
+      const defaultStep = getDefaultSelectedStep(steps);
+      if (defaultStep) {
+        setOpenStage(defaultStep.stageId);
 
-      setSteps(steps);
-
-      const usedUrl = parseUrlParams(steps);
-      if (!usedUrl) {
-        const defaultStep = getDefaultSelectedStep(steps);
-        if (defaultStep) {
-          setOpenStage(defaultStep.stageId);
-
-          if (defaultStep.stageId) {
-            setExpandedSteps((prev) => [...prev, defaultStep.id]);
-            updateStepConsoleOffset(defaultStep.id, false, TAIL_CONSOLE_LOG);
-          }
+        if (defaultStep.stageId) {
+          setExpandedSteps((prev) => [...prev, defaultStep.id]);
+          updateStepConsoleOffset(defaultStep.id, false, TAIL_CONSOLE_LOG);
         }
       }
     }
-
-    let polling = true;
-    const poll = async () => {
-      while (polling) {
-        const data = await getRunSteps();
-        if (data?.steps) updateStepsIfChanged(data);
-        if (data?.runIsComplete) polling = false;
-        if (!polling) break;
-        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
-      }
-    };
-    poll();
-    return () => {
-      polling = false;
-    };
-  }, [getDefaultSelectedStep, parseUrlParams, updateStepConsoleOffset]);
+  }, [getDefaultSelectedStep, parseUrlParams, steps, updateStepConsoleOffset]);
 
   const handleStageSelect = useCallback(
     (nodeId: string) => {

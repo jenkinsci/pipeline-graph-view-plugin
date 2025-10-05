@@ -74,18 +74,13 @@ export async function getRunStatusFromPath(url: string): Promise<RunStatus> {
   return json.data;
 }
 
-export async function getRunSteps(): Promise<AllStepsData | null> {
-  try {
-    const response = await fetch("allSteps");
-    if (!response.ok) throw response.statusText;
-    const text = await response.text();
-    const json = JSON.parse(text);
-    json.data.raw = text;
-    return json.data;
-  } catch (e) {
-    console.warn(`Caught error getting steps: '${e}'`);
-    return null;
-  }
+export async function getRunSteps(): Promise<AllStepsData> {
+  const response = await fetch("allSteps");
+  if (!response.ok) throw response.statusText;
+  const text = await response.text();
+  const json = JSON.parse(text);
+  json.data.raw = text;
+  return json.data;
 }
 
 export async function getConsoleTextOffset(

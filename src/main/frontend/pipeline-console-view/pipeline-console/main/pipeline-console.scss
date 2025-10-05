@@ -1,135 +1,151 @@
 :root {
   // can be removed and `--header-height` used directly when jenkins baseline is 2.507
   --pgv-header-height: var(--header-height, 45.5938px);
+  --ansi-0: var(--black, #333);
+  --ansi-1: var(--danger, #cc0003);
+  --ansi-2: var(--success, #138347);
+  --ansi-3: var(--warning, #ea6b19);
+  --ansi-4: var(--primary, #0b6aa2);
+  --ansi-5: var(--unknown-color, #bd0fe1);
+  --ansi-6: var(--paused-color, #24b0d5);
+  --ansi-7: var(--white, #fff);
+  --ansi-8: var(--secondary-text, #445);
+  --ansi-9: oklch(from var(--ansi-1) calc(l * 1.125) calc(c * 1.25) h);
+  --ansi-10: oklch(from var(--ansi-2) calc(l * 1.125) calc(c * 1.25) h);
+  --ansi-11: oklch(from var(--ansi-3) calc(l * 1.125) calc(c * 1.25) h);
+  --ansi-12: oklch(from var(--ansi-4) calc(l * 1.125) calc(c * 1.25) h);
+  --ansi-13: oklch(from var(--ansi-5) calc(l * 1.125) calc(c * 1.25) h);
+  --ansi-14: oklch(from var(--ansi-6) calc(l * 1.125) calc(c * 1.25) h);
+  --ansi-15: oklch(from var(--ansi-7) calc(l * 1.25) c h);
 }
 
 .ansi-fg-0 {
-  color: var(--black, #333);
+  color: var(--ansi-0);
 }
 
 .ansi-fg-1 {
-  color: var(--danger, #cc0003);
+  color: var(--ansi-1);
 }
 
 .ansi-fg-2 {
-  color: var(--success, #138347);
+  color: var(--ansi-2);
 }
 
 .ansi-fg-3 {
-  color: var(--warning, #ea6b19);
+  color: var(--ansi-3);
 }
 
 .ansi-fg-4 {
-  color: var(--primary, #0b6aa2);
+  color: var(--ansi-4);
 }
 
 .ansi-fg-5 {
-  color: var(--unknown-color, #bd0fe1);
+  color: var(--ansi-5);
 }
 
 .ansi-fg-6 {
-  color: var(--paused-color, #24b0d5);
+  color: var(--ansi-6);
 }
 
 .ansi-fg-7 {
-  color: var(--white, #fff);
+  color: var(--ansi-7);
 }
 
 .ansi-fg-8 {
-  color: var(--secondary-text, #445);
+  color: var(--ansi-8);
 }
 
 .ansi-fg-9 {
-  color: var(--light-red, #f55);
+  color: var(--ansi-9);
 }
 
 .ansi-fg-10 {
-  color: var(--light-green, #0e0);
+  color: var(--ansi-10);
 }
 
 .ansi-fg-11 {
-  color: var(--yellow, #fd0);
+  color: var(--ansi-11);
 }
 
 .ansi-fg-12 {
-  color: var(--light-indigo, #88f);
+  color: var(--ansi-12);
 }
 
 .ansi-fg-13 {
-  color: var(--purple, #f0d);
+  color: var(--ansi-13);
 }
 
 .ansi-fg-14 {
-  color: var(--cyan, #0de);
+  color: var(--ansi-14);
 }
 
 .ansi-fg-15 {
-  color: var(--white, #fff);
+  color: var(--ansi-15);
 }
 
 // Standard background colors
 .ansi-bg-0 {
-  background: var(--black, #333);
+  background: var(--ansi-0);
 }
 
 .ansi-bg-1 {
-  background: var(--danger, #cc0003);
+  background: var(--ansi-1);
 }
 
 .ansi-bg-2 {
-  background: var(--success, #138347);
+  background: var(--ansi-2);
 }
 
 .ansi-bg-3 {
-  background: var(--warning, #ea6b19);
+  background: var(--ansi-3);
 }
 
 .ansi-bg-4 {
-  background: var(--primary, #0b6aa2);
+  background: var(--ansi-4);
 }
 
 .ansi-bg-5 {
-  background: var(--unknown-color, #bd0fe1);
+  background: var(--ansi-5);
 }
 
 .ansi-bg-6 {
-  background: var(--paused-color, #24b0d5);
+  background: var(--ansi-6);
 }
 
 .ansi-bg-7 {
-  background: var(--white, #fff);
+  background: var(--ansi-7);
 }
 
 .ansi-bg-8 {
-  background: var(--secondary-text, #445);
+  background: var(--ansi-8);
 }
 
 .ansi-bg-9 {
-  background: var(--light-red, #f55);
+  background: var(--ansi-9);
 }
 
 .ansi-bg-10 {
-  background: var(--light-green, #0e0);
+  background: var(--ansi-10);
 }
 
 .ansi-bg-11 {
-  background: var(--yellow, #fd0);
+  background: var(--ansi-11);
 }
 
 .ansi-bg-12 {
-  background: var(--light-indigo, #88f);
+  background: var(--ansi-12);
 }
 
 .ansi-bg-13 {
-  background: var(--purple, #f0d);
+  background: var(--ansi-13);
 }
 
 .ansi-bg-14 {
-  background: var(--cyan, #0de);
+  background: var(--ansi-14);
 }
 
 .ansi-bg-15 {
-  background: var(--white, #fff);
+  background: var(--ansi-15);
 }
 
 .pgv-sticky-sidebar {

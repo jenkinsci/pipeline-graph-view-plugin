@@ -18,7 +18,7 @@ export default async function startPollingPipelineStatus(
   async function fetchPipelineData() {
     try {
       const result = await getRunStatusFromPath(path)!;
-      onFetchSuccess({ stages: result!.stages, complete: result!.complete });
+      onFetchSuccess(result);
       isComplete = result!.complete;
     } catch (err) {
       // TODO: implement exponential backoff of the timeout interval

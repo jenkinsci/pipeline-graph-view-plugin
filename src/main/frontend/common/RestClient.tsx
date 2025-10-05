@@ -61,20 +61,13 @@ export interface ConsoleLogData {
   consoleAnnotator: string;
 }
 
-export async function getRunStatusFromPath(
-  url: string,
-): Promise<RunStatus | null> {
-  try {
-    const response = await fetch(url + "pipeline-overview/tree");
-    if (!response.ok) {
-      throw response.statusText;
-    }
-    const json = await response.json();
-    return json.data;
-  } catch (e) {
-    console.error(`Caught error getting tree: '${e}'`);
-    return null;
+export async function getRunStatusFromPath(url: string): Promise<RunStatus> {
+  const response = await fetch(url + "pipeline-overview/tree");
+  if (!response.ok) {
+    throw response.statusText;
   }
+  const json = await response.json();
+  return json.data;
 }
 
 export async function getRunSteps(): Promise<AllStepsData | null> {

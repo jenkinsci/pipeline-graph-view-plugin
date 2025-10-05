@@ -103,7 +103,7 @@ describe("useRunPoller", function () {
       async (path) => {
         switch (path) {
           case "previous":
-            return null;
+            throw new Error("foo");
           case "current":
             return { stages: current, complete: false };
         }

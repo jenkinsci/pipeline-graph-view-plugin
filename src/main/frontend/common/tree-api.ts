@@ -30,7 +30,11 @@ export default function useRunPoller({
         } else {
           if (previousRun == null) {
             // only set the previous run if it is not yet set
-            previousRun = await getRunStatusFromPath(previousRunPath);
+            try {
+              previousRun = await getRunStatusFromPath(previousRunPath);
+            } catch (err) {
+              console.error("Fetch previous run", err);
+            }
           }
           // error getting previous run
           if (previousRun == null) {

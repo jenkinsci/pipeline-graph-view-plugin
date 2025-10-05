@@ -14,6 +14,7 @@ const onPollingError = (err: Error) =>
 export default function useRunPoller({
   currentRunPath,
   previousRunPath,
+  interval = 3000,
 }: RunPollerProps) {
   const [run, setRun] = useState<RunStatus>();
   const [loading, setLoading] = useState(true);
@@ -53,8 +54,9 @@ export default function useRunPoller({
       onPollingError,
       () => setLoading(false),
       currentRunPath,
+      interval,
     );
-  }, [currentRunPath, previousRunPath]);
+  }, [currentRunPath, previousRunPath, interval]);
 
   return {
     run,
@@ -65,4 +67,5 @@ export default function useRunPoller({
 interface RunPollerProps {
   currentRunPath: string;
   previousRunPath?: string;
+  interval?: number;
 }

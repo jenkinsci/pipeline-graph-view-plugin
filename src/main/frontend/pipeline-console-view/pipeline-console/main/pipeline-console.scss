@@ -2,12 +2,12 @@
   // can be removed and `--header-height` used directly when jenkins baseline is 2.507
   --pgv-header-height: var(--header-height, 45.5938px);
   --ansi-0: var(--black, #333);
-  --ansi-1: var(--danger, #cc0003);
-  --ansi-2: var(--success, #138347);
-  --ansi-3: var(--warning, #ea6b19);
-  --ansi-4: var(--primary, #0b6aa2);
-  --ansi-5: var(--unknown-color, #bd0fe1);
-  --ansi-6: var(--paused-color, #24b0d5);
+  --ansi-1: var(--red, oklch(70% 0.15 27));
+  --ansi-2: var(--green, oklch(70% 0.15 145));
+  --ansi-3: var(--orange, oklch(70% 0.15 75));
+  --ansi-4: var(--blue, oklch(70% 0.15 270));
+  --ansi-5: var(--purple, oklch(70% 0.15 335));
+  --ansi-6: var(--cyan, oklch(70% 0.15 210));
   --ansi-7: var(--white, #fff);
   --ansi-8: var(--secondary-text, #445);
   --ansi-9: oklch(from var(--ansi-1) calc(l * 1.125) calc(c * 1.25) h);

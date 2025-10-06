@@ -7,7 +7,7 @@
 
         <l:app-bar title="Stages">
             <l:details-bar it="${it.run}">
-                <div id="console-pipeline-overflow-root"/>
+                <div id="console-pipeline-overflow-root" />
             </l:details-bar>
         </l:app-bar>
 

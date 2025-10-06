@@ -5,6 +5,11 @@ export interface Result {
   setBG?: number | false; // 0-7 if a background color is specified
   resetFG?: boolean; // true if contains a reset back to default foreground
   resetBG?: boolean; // true if contains a reset back to default background
+  setBold?: boolean; // true if contains a bold font style
+  setFaint?: boolean; // true if contains a faint font style
+  setItalic?: boolean; // true if contains an italic font style
+  setUnderline?: boolean; // true if contains an underline font style
+  setStrikeThrough?: boolean; // true if contains a strike-through font style
 }
 
 /**
@@ -20,6 +25,11 @@ export interface Result {
  *     setBG: integer | false, // 0-7 if a background color is specified
  *     resetFG: bool, // true if contains a reset back to default foreground
  *     resetBG: bool // true if contains a reset back to default background
+ *     setBold: boolean, // true if contains a bold font style
+ *     setFaint: boolean; // true if contains a faint font style
+ *     setItalic: boolean; // true if contains an italic font style
+ *     setUnderline: boolean, // true if contains an underline font style
+ *     setStrikeThrough: boolean, // true if contains a strike-through font style
  * }
  *
  * // Unsupported or malformed code:
@@ -62,6 +72,25 @@ export function parseEscapeCode(escapeCode: string): Result {
         result.setFG = num - 90 + 8; // Bright FG set
       } else if (num >= 100 && num <= 107) {
         result.setBG = num - 100 + 8; // Bright BG set
+      } else if (num === 1) {
+        result.setBold = true;
+      } else if (num === 2) {
+        result.setFaint = true;
+      } else if (num === 22) {
+        result.setBold = false;
+        result.setFaint = false;
+      } else if (num === 3) {
+        result.setItalic = true;
+      } else if (num === 23) {
+        result.setItalic = false;
+      } else if (num === 4) {
+        result.setUnderline = true;
+      } else if (num === 24) {
+        result.setUnderline = false;
+      } else if (num === 9) {
+        result.setStrikeThrough = true;
+      } else if (num === 29) {
+        result.setStrikeThrough = false;
       } else {
         if (num === 39 || num === 0) {
           result.resetFG = true;
@@ -190,13 +219,26 @@ export function makeReactChildren(
   let currentState: Result = {
     setFG: false,
     setBG: false,
+    setBold: false,
+    setFaint: false,
+    setItalic: false,
+    setUnderline: false,
+    setStrikeThrough: false,
   };
 
   for (let i = 0; i < tokenizedInput.length; i++) {
     const codeOrString = tokenizedInput[i];
     if (typeof codeOrString === "string") {
       // Need to output a <span> or plain text if there's no interesting current state
-      if (!currentState.setFG && !currentState.setBG) {
+      if (
+        !currentState.setFG &&
+        !currentState.setBG &&
+        !currentState.setBold &&
+        !currentState.setFaint &&
+        !currentState.setItalic &&
+        !currentState.setUnderline &&
+        !currentState.setStrikeThrough
+      ) {
         result.push(
           <div
             dangerouslySetInnerHTML={{ __html: codeOrString }}
@@ -211,6 +253,21 @@ export function makeReactChildren(
         }
         if (typeof currentState.setBG === "number") {
           classNames.push(`ansi-bg-${currentState.setBG}`);
+        }
+        if (currentState.setBold) {
+          classNames.push("ansi-bold");
+        }
+        if (currentState.setFaint) {
+          classNames.push("ansi-faint");
+        }
+        if (currentState.setItalic) {
+          classNames.push("ansi-italic");
+        }
+        if (currentState.setUnderline) {
+          classNames.push("ansi-underline");
+        }
+        if (currentState.setStrikeThrough) {
+          classNames.push("ansi-strikethrough");
         }
 
         result.push(
@@ -233,6 +290,26 @@ export function makeReactChildren(
       }
       if (typeof codeOrString.setBG === "number") {
         nextState.setBG = codeOrString.setBG;
+      }
+
+      if (typeof codeOrString.setBold === "boolean") {
+        nextState.setBold = codeOrString.setBold;
+      }
+
+      if (typeof codeOrString.setFaint === "boolean") {
+        nextState.setFaint = codeOrString.setFaint;
+      }
+
+      if (typeof codeOrString.setItalic === "boolean") {
+        nextState.setItalic = codeOrString.setItalic;
+      }
+
+      if (typeof codeOrString.setUnderline === "boolean") {
+        nextState.setUnderline = codeOrString.setUnderline;
+      }
+
+      if (typeof codeOrString.setStrikeThrough === "boolean") {
+        nextState.setStrikeThrough = codeOrString.setStrikeThrough;
       }
 
       currentState = nextState;

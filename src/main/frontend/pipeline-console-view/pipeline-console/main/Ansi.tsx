@@ -58,13 +58,17 @@ export function parseEscapeCode(escapeCode: string): Result {
         result.setFG = num - 30; // Normal FG set
       } else if (num >= 40 && num <= 47) {
         result.setBG = num - 40; // Normal BG set
+      } else if (num >= 90 && num <= 97) {
+        result.setFG = num - 90 + 8; // Bright FG set
+      } else if (num >= 100 && num <= 107) {
+        result.setBG = num - 100 + 8; // Bright BG set
       } else {
-        if (num === 38 || num === 0) {
+        if (num === 39 || num === 0) {
           result.resetFG = true;
           result.setFG = false;
         }
 
-        if (num === 48 || num === 0) {
+        if (num === 49 || num === 0) {
           result.resetBG = true;
           result.setBG = false;
         }

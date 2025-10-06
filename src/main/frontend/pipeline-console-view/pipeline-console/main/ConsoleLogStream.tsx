@@ -136,5 +136,4 @@ export interface ConsoleLogStreamProps {
   onMoreConsoleClick: (nodeId: string, startByte: number) => void;
   fetchExceptionText: (nodeId: string) => void;
   step: StepInfo;
-  maxHeightScale: number;
 }

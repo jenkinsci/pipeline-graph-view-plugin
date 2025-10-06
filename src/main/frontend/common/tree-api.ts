@@ -1,11 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useRef } from "react";
 
-import startPollingPipelineStatus from "../pipeline-graph-view/pipeline-graph/main/support/startPollingPipelineStatus.ts";
 import { getRunStatusFromPath, RunStatus } from "./RestClient.tsx";
 import { mergeStageInfos } from "./utils/stage-merge.ts";
-
-const onPollingError = (err: Error) =>
-  console.log("There was an error when polling the pipeline status", err);
+import { usePolling } from "./utils/use-polling.ts";
 
 /**
  * Polls a run, stopping once the run has completed
@@ -14,47 +11,40 @@ const onPollingError = (err: Error) =>
 export default function useRunPoller({
   currentRunPath,
   previousRunPath,
+  interval = 3000,
 }: RunPollerProps) {
-  const [run, setRun] = useState<RunStatus>();
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let onPipelineDataReceived: (data: RunStatus) => void;
-    if (previousRunPath) {
-      let previousRun: RunStatus | null = null;
-      onPipelineDataReceived = async (current: RunStatus) => {
-        setLoading(false);
-        if (current.complete) {
-          setRun(current);
-        } else {
-          if (previousRun == null) {
-            // only set the previous run if it is not yet set
-            previousRun = await getRunStatusFromPath(previousRunPath);
-          }
-          // error getting previous run
-          if (previousRun == null) {
-            setRun(current);
-          } else {
-            setRun({
-              stages: mergeStageInfos(previousRun!.stages, current.stages),
-              complete: false,
-            });
-          }
+  const previousRun = useRef<RunStatus>(null);
+  const postProcess = useCallback(
+    async (nextRun: RunStatus) => {
+      if (!previousRunPath || nextRun.complete) {
+        return nextRun;
+      }
+      if (!previousRun.current) {
+        try {
+          previousRun.current = await getRunStatusFromPath(previousRunPath);
+        } catch (err) {
+          console.error("Fetch previous run", err);
+          return nextRun;
         }
+      }
+      return {
+        stages: mergeStageInfos(previousRun.current.stages, nextRun.stages),
+        complete: false,
       };
-    } else {
-      onPipelineDataReceived = (data: RunStatus) => {
-        setLoading(false);
-        setRun(data);
-      };
-    }
-    startPollingPipelineStatus(
-      onPipelineDataReceived,
-      onPollingError,
-      () => setLoading(false),
-      currentRunPath,
-    );
-  }, [currentRunPath, previousRunPath]);
+    },
+    [previousRunPath],
+  );
+  const fetchCurrentRun = useCallback(
+    () => getRunStatusFromPath(currentRunPath),
+    [currentRunPath],
+  );
+  const { data: run, loading } = usePolling<RunStatus>(
+    fetchCurrentRun,
+    interval,
+    "complete",
+    { stages: [], complete: false },
+    postProcess,
+  );
 
   return {
     run,
@@ -65,4 +55,5 @@ export default function useRunPoller({
 interface RunPollerProps {
   currentRunPath: string;
   previousRunPath?: string;
+  interval?: number;
 }

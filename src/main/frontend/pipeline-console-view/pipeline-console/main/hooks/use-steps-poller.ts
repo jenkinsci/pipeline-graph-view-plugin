@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import useRunPoller from "../../../../common/tree-api.ts";
+import { usePolling } from "../../../../common/utils/use-polling.ts";
 import {
+  AllStepsData,
   getConsoleTextOffset,
   getExceptionText,
   getRunSteps,
@@ -86,11 +88,16 @@ export function useStepsPoller(props: RunPollerProps) {
     currentRunPath: props.currentRunPath,
     previousRunPath: props.previousRunPath,
   });
+  const {
+    data: { steps },
+  } = usePolling<AllStepsData>(getRunSteps, POLL_INTERVAL, "runIsComplete", {
+    steps: [],
+    runIsComplete: false,
+  });
 
   const [openStage, setOpenStage] = useState("");
   const [expandedSteps, setExpandedSteps] = useState<string[]>([]);
   const collapsedSteps = useRef(new Set<string>());
-  const [steps, setSteps] = useState<StepInfo[]>([]);
   const [stepBuffers, setStepBuffers] = useState(
     new Map<string, StepLogBufferInfo>(),
   );
@@ -140,7 +147,7 @@ export function useStepsPoller(props: RunPollerProps) {
     try {
       stepBuffer.exceptionText = await promise;
     } finally {
-      delete stepBuffer.pending;
+      delete stepBuffer.pendingExceptionText;
     }
 
     stepBuffer.lines = stepBuffer.lines.concat(stepBuffer.exceptionText);
@@ -198,7 +205,7 @@ export function useStepsPoller(props: RunPollerProps) {
           case Result.failure:
           case Result.aborted:
             if (
-              run?.complete &&
+              run.complete &&
               selectedStepResult &&
               stepResult < selectedStepResult
             ) {
@@ -217,47 +224,23 @@ export function useStepsPoller(props: RunPollerProps) {
       }
       return selectedStep;
     },
-    [run?.complete],
+    [run.complete],
   );
 
   useEffect(() => {
-    let previousStepsSerialized = "";
-    function updateStepsIfChanged(steps: StepInfo[]) {
-      const nextStepsSerialized = JSON.stringify(steps);
-      if (previousStepsSerialized === nextStepsSerialized) return; // no change
-      previousStepsSerialized = nextStepsSerialized;
+    const usedUrl = parseUrlParams(steps);
+    if (!usedUrl) {
+      const defaultStep = getDefaultSelectedStep(steps);
+      if (defaultStep) {
+        setOpenStage(defaultStep.stageId);
 
-      setSteps(steps);
-
-      const usedUrl = parseUrlParams(steps);
-      if (!usedUrl) {
-        const defaultStep = getDefaultSelectedStep(steps);
-        if (defaultStep) {
-          setOpenStage(defaultStep.stageId);
-
-          if (defaultStep.stageId) {
-            setExpandedSteps((prev) => [...prev, defaultStep.id]);
-            updateStepConsoleOffset(defaultStep.id, false, TAIL_CONSOLE_LOG);
-          }
+        if (defaultStep.stageId) {
+          setExpandedSteps((prev) => [...prev, defaultStep.id]);
+          updateStepConsoleOffset(defaultStep.id, false, TAIL_CONSOLE_LOG);
         }
       }
     }
-
-    let polling = true;
-    const poll = async () => {
-      while (polling) {
-        const data = await getRunSteps();
-        if (data?.steps) updateStepsIfChanged(data.steps);
-        if (data?.runIsComplete) polling = false;
-        if (!polling) break;
-        await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL));
-      }
-    };
-    poll();
-    return () => {
-      polling = false;
-    };
-  }, [getDefaultSelectedStep, parseUrlParams, updateStepConsoleOffset]);
+  }, [getDefaultSelectedStep, parseUrlParams, steps, updateStepConsoleOffset]);
 
   const handleStageSelect = useCallback(
     (nodeId: string) => {
@@ -321,7 +304,7 @@ export function useStepsPoller(props: RunPollerProps) {
       }
       return null;
     };
-    return openStage ? findStage(run?.stages || []) : null;
+    return openStage ? findStage(run.stages) : null;
   };
 
   return {
@@ -329,7 +312,7 @@ export function useStepsPoller(props: RunPollerProps) {
     openStageSteps: getStageSteps(openStage),
     openStageStepBuffers: getStageStepBuffers(openStage),
     expandedSteps,
-    stages: run?.stages || [],
+    stages: run.stages,
     handleStageSelect,
     onStepToggle,
     onMoreConsoleClick,

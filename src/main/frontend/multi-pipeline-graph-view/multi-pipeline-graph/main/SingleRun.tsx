@@ -68,11 +68,7 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
           </span>
         </a>
       </div>
-      <PipelineGraph
-        stages={runInfo?.stages || []}
-        layout={getLayout()}
-        collapsed
-      />
+      <PipelineGraph stages={runInfo.stages} layout={getLayout()} collapsed />
     </div>
   );
 }

@@ -292,23 +292,23 @@ export function makeReactChildren(
         nextState.setBG = codeOrString.setBG;
       }
 
-      if (typeof codeOrString.setBold === "boolean") {
+      if (codeOrString.setBold !== undefined) {
         nextState.setBold = codeOrString.setBold;
       }
 
-      if (typeof codeOrString.setFaint === "boolean") {
+      if (codeOrString.setFaint !== undefined) {
         nextState.setFaint = codeOrString.setFaint;
       }
 
-      if (typeof codeOrString.setItalic === "boolean") {
+      if (codeOrString.setItalic !== undefined) {
         nextState.setItalic = codeOrString.setItalic;
       }
 
-      if (typeof codeOrString.setUnderline === "boolean") {
+      if (codeOrString.setUnderline !== undefined) {
         nextState.setUnderline = codeOrString.setUnderline;
       }
 
-      if (typeof codeOrString.setStrikeThrough === "boolean") {
+      if (codeOrString.setStrikeThrough !== undefined) {
         nextState.setStrikeThrough = codeOrString.setStrikeThrough;
       }
 

@@ -101,6 +101,15 @@ export function parseEscapeCode(escapeCode: string): Result {
           result.resetBG = true;
           result.setBG = false;
         }
+
+        // ANSI code 0 should reset all formatting attributes
+        if (num === 0) {
+          result.setBold = false;
+          result.setFaint = false;
+          result.setItalic = false;
+          result.setUnderline = false;
+          result.setStrikeThrough = false;
+        }
       }
     }
   }

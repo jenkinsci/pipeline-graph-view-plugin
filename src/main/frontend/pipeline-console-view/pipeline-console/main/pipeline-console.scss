@@ -148,6 +148,30 @@
   background: var(--ansi-15);
 }
 
+.ansi-bold {
+  font-weight: bold;
+}
+
+.ansi-faint {
+  opacity: 0.5;
+}
+
+.ansi-italic {
+  font-style: italic;
+}
+
+.ansi-underline {
+  text-decoration-line: underline;
+}
+
+.ansi-strikethrough {
+  text-decoration-line: line-through;
+}
+
+.ansi-underline.ansi-strikethrough {
+  text-decoration-line: underline line-through;
+}
+
 .pgv-sticky-sidebar {
   position: sticky;
   top: calc(var(--pgv-header-height) + var(--section-padding));

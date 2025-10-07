@@ -2,7 +2,7 @@
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-    <l:run-host>
+    <l:run-subpage>
         <link rel="stylesheet" href="${resURL}/plugin/pipeline-graph-view/js/style.css" type="text/css" />
 
         <l:app-bar title="Stages">
@@ -21,5 +21,5 @@
                        data-user-locale="${request2.getLocale().toLanguageTag()}"/>
         <script src="${rootURL}/plugin/pipeline-graph-view/js/build.js" type="module"/>
         <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/pipeline-console-view-bundle.js" type="module"/>
-    </l:run-host>
+    </l:run-subpage>
 </j:jelly>

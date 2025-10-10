@@ -16,7 +16,6 @@ export default function App() {
   });
 
   return (
-    <div>
       <UserPreferencesProvider>
         <Stages
           stages={run.stages}
@@ -24,6 +23,5 @@ export default function App() {
           onRunPage
         />
       </UserPreferencesProvider>
-    </div>
   );
 }

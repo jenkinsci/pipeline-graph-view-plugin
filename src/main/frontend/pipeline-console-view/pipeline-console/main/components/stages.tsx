@@ -19,6 +19,7 @@ export default function Stages({
   selectedStage,
   stageViewPosition,
   onStageSelect,
+  onRunPage,
 }: StagesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -29,9 +30,17 @@ export default function Stages({
         "pgv-stages-graph--dialog": isExpanded,
       })}
     >
-      <div className={"pgv-stages-graph__controls pgv-stages-graph__heading"}>
-        Graph
-      </div>
+      {!onRunPage && (
+        <div className={"pgv-stages-graph__controls pgv-stages-graph__heading"}>
+          Graph
+        </div>
+      )}
+      {onRunPage && (
+        <a className={"pgv-stages-graph__controls pgv-stages-graph__heading"} href="pipeline-overview">
+          Stages
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="48" d="M184 112l144 144-144 144"/></svg>
+        </a>
+      )}
       <div className={"pgv-stages-graph__controls pgw-fullscreen-controls"}>
         <Tooltip content={isExpanded ? "Close" : "Expand"}>
           <button
@@ -98,6 +107,7 @@ interface StagesProps {
   selectedStage?: StageInfo;
   stageViewPosition: StageViewPosition;
   onStageSelect?: (nodeId: string) => void;
+  onRunPage?: boolean;
 }
 
 function ZoomControls() {

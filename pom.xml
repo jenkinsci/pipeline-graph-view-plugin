@@ -88,6 +88,11 @@
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-api</artifactId>
+      <version>1395.v515f67ea_db_10</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-cps</artifactId>
     </dependency>
     <dependency>
@@ -134,11 +139,6 @@
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>pipeline-build-step</artifactId>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins.workflow</groupId>
-      <artifactId>workflow-api</artifactId>
-      <version>1395.v515f67ea_db_10</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>

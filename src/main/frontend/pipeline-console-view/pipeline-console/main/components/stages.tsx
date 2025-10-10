@@ -19,7 +19,7 @@ export default function Stages({
   selectedStage,
   stageViewPosition,
   onStageSelect,
-  title = 'Graph'
+  onRunPage,
 }: StagesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -30,29 +30,29 @@ export default function Stages({
         "pgv-stages-graph--dialog": isExpanded,
       })}
     >
-      <div className={"pgv-stages-graph__controls pgv-stages-graph__heading"}>
-        {title}
-      </div>
-      <TransformWrapper
-        minScale={0.75}
-        maxScale={3}
-        wheel={{ activationKeys: isExpanded ? [] : ["Control"] }}
-      >
-        <ZoomControls />
-
-        <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
-          <PipelineGraph
-            stages={stages}
-            selectedStage={selectedStage}
-            {...(onStageSelect && {
-              onStageSelect: (e) => {
-                onStageSelect(e);
-                setIsExpanded(false);
-              },
-            })}
-          />
-        </TransformComponent>
-      </TransformWrapper>
+      {!onRunPage && (
+        <div className={"pgv-stages-graph__controls pgv-stages-graph__heading"}>
+          Graph
+        </div>
+      )}
+      {onRunPage && (
+        <a
+          className={"pgv-stages-graph__controls pgv-stages-graph__heading"}
+          href="pipeline-overview"
+        >
+          Stages
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <path
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="48"
+              d="M184 112l144 144-144 144"
+            />
+          </svg>
+        </a>
+      )}
       <div className={"pgv-stages-graph__controls pgw-fullscreen-controls"}>
         <Tooltip content={isExpanded ? "Close" : "Expand"}>
           <button
@@ -90,6 +90,26 @@ export default function Stages({
           </button>
         </Tooltip>
       </div>
+      <TransformWrapper
+        minScale={0.75}
+        maxScale={3}
+        wheel={{ activationKeys: isExpanded ? [] : ["Control"] }}
+      >
+        <ZoomControls />
+
+        <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
+          <PipelineGraph
+            stages={stages}
+            selectedStage={selectedStage}
+            {...(onStageSelect && {
+              onStageSelect: (e) => {
+                onStageSelect(e);
+                setIsExpanded(false);
+              },
+            })}
+          />
+        </TransformComponent>
+      </TransformWrapper>
     </div>
   );
 }
@@ -99,7 +119,7 @@ interface StagesProps {
   selectedStage?: StageInfo;
   stageViewPosition: StageViewPosition;
   onStageSelect?: (nodeId: string) => void;
-  title?: string;
+  onRunPage?: boolean;
 }
 
 function ZoomControls() {

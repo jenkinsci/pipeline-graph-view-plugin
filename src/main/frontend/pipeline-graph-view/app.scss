@@ -26,15 +26,10 @@
     }
 
     &:not(:disabled) {
-      &:hover {
-        svg {
-          opacity: 0.75;
-        }
-      }
-
+      &:hover,
       &:active {
         svg {
-          opacity: 0.5;
+          color: var(--text-color);
         }
       }
     }

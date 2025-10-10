@@ -23,6 +23,7 @@
     svg {
       width: 1rem;
       height: 1rem;
+      transition: color var(--standard-transition);
     }
 
     &:not(:disabled) {

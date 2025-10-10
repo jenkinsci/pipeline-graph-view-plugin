@@ -18,7 +18,11 @@ export default function App() {
   return (
     <div>
       <UserPreferencesProvider>
-        <Stages stages={run.stages} stageViewPosition={StageViewPosition.TOP} />
+        <Stages
+          stages={run.stages}
+          stageViewPosition={StageViewPosition.TOP}
+          onRunPage
+        />
       </UserPreferencesProvider>
     </div>
   );

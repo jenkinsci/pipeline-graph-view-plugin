@@ -53,6 +53,25 @@
     line-height: 2rem;
     font-weight: var(--font-bold-weight);
     font-size: var(--font-size-sm);
+    gap: 0.375rem;
+    color: var(--text-color-secondary);
+    text-decoration: none !important;
+
+    &[href] {
+      color: var(--text-color) !important;
+    }
+
+    svg {
+      width: 0.875rem;
+      height: 0.875rem;
+      color: var(--text-color-secondary);
+      transition: color var(--standard-transition);
+      margin-right: -0.25rem;
+    }
+
+    &:hover svg {
+      color: var(--text-color);
+    }
   }
 }
 
@@ -68,11 +87,10 @@
 
 .pgv-stages-graph__controls {
   position: absolute;
-  inset: 0.1rem;
+  inset: 0.1875rem;
   display: flex;
   z-index: 1;
   backdrop-filter: blur(10px);
-  background: red;
   border-radius: 0.45rem;
   align-items: center;
   color: var(--text-color-secondary);

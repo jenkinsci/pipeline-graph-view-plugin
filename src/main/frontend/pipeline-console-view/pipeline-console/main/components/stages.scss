@@ -82,11 +82,10 @@
 
 .pgv-stages-graph__controls {
   position: absolute;
-  inset: 0.1rem;
+  inset: 0.1875rem;
   display: flex;
   z-index: 1;
   backdrop-filter: blur(10px);
-  background: red;
   border-radius: 0.45rem;
   align-items: center;
   color: var(--text-color-secondary);

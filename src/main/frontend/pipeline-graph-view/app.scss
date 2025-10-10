@@ -26,7 +26,8 @@
     }
 
     &:not(:disabled) {
-      &:hover, &:active {
+      &:hover,
+      &:active {
         svg {
           color: var(--text-color);
         }

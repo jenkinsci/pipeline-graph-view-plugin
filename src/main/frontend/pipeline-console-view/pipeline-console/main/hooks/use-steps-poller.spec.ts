@@ -330,6 +330,7 @@ describe("incremental log fetching", function () {
           lines: ["0"],
           endByte: 2,
           consoleAnnotator: "0",
+          hasTrailingNewLine: true,
         },
       },
       {
@@ -348,6 +349,7 @@ describe("incremental log fetching", function () {
           lines: ["0", "1"],
           endByte: 4,
           consoleAnnotator: "1",
+          hasTrailingNewLine: true,
         },
       },
       {
@@ -366,6 +368,7 @@ describe("incremental log fetching", function () {
           lines: ["0", "1", "2", "3"],
           endByte: 8,
           consoleAnnotator: "3",
+          hasTrailingNewLine: true,
         },
       },
       {
@@ -384,6 +387,7 @@ describe("incremental log fetching", function () {
           lines: ["0", "1", "2", "3"],
           endByte: 8,
           consoleAnnotator: "empty",
+          hasTrailingNewLine: true,
         },
       },
       {
@@ -402,6 +406,66 @@ describe("incremental log fetching", function () {
           lines: ["0", "1", "2", "3", "4"],
           endByte: 10,
           consoleAnnotator: "4",
+          hasTrailingNewLine: true,
+        },
+      },
+    ],
+    "when gluing lines together": [
+      {
+        clickMoreStartByte: TAIL_CONSOLE_LOG,
+        fetchStartByte: TAIL_CONSOLE_LOG,
+        fetchConsoleAnnotator: "",
+        logData: {
+          text: "0\n1",
+          startByte: 0,
+          endByte: 3,
+          nodeIsActive: true,
+          consoleAnnotator: "1",
+        },
+        result: {
+          startByte: 0,
+          lines: ["0", "1"],
+          endByte: 3,
+          consoleAnnotator: "1",
+          hasTrailingNewLine: false,
+        },
+      },
+      {
+        clickMoreStartByte: TAIL_CONSOLE_LOG,
+        fetchStartByte: 3,
+        fetchConsoleAnnotator: "1",
+        logData: {
+          text: "2\n3",
+          startByte: 3,
+          endByte: 6,
+          nodeIsActive: true,
+          consoleAnnotator: "3",
+        },
+        result: {
+          startByte: 0,
+          lines: ["0", "12", "3"],
+          endByte: 6,
+          consoleAnnotator: "3",
+          hasTrailingNewLine: false,
+        },
+      },
+      {
+        clickMoreStartByte: TAIL_CONSOLE_LOG,
+        fetchStartByte: 6,
+        fetchConsoleAnnotator: "3",
+        logData: {
+          text: "\n4\n",
+          startByte: 6,
+          endByte: 9,
+          nodeIsActive: true,
+          consoleAnnotator: "4",
+        },
+        result: {
+          startByte: 0,
+          lines: ["0", "12", "3", "4"],
+          endByte: 9,
+          consoleAnnotator: "4",
+          hasTrailingNewLine: true,
         },
       },
     ],
@@ -422,6 +486,7 @@ describe("incremental log fetching", function () {
           lines: ["0"],
           endByte: 1_000_002,
           consoleAnnotator: "0",
+          hasTrailingNewLine: true,
         },
       },
       {
@@ -440,6 +505,7 @@ describe("incremental log fetching", function () {
           lines: ["0", "1"],
           endByte: 1_000_004,
           consoleAnnotator: "1",
+          hasTrailingNewLine: true,
         },
       },
     ],
@@ -460,6 +526,7 @@ describe("incremental log fetching", function () {
           lines: ["0"],
           endByte: 1_000_002,
           consoleAnnotator: "0",
+          hasTrailingNewLine: true,
         },
       },
       {
@@ -478,6 +545,7 @@ describe("incremental log fetching", function () {
           lines: ["xxx", "0"],
           endByte: 1_000_002,
           consoleAnnotator: "x",
+          hasTrailingNewLine: true,
         },
       },
       {
@@ -496,6 +564,7 @@ describe("incremental log fetching", function () {
           lines: ["yyy", "xxx", "0"],
           endByte: 1_000_002,
           consoleAnnotator: "y",
+          hasTrailingNewLine: true,
         },
       },
     ],
@@ -516,6 +585,7 @@ describe("incremental log fetching", function () {
           lines: ["0"],
           endByte: 1_000_002,
           consoleAnnotator: "0",
+          hasTrailingNewLine: true,
         },
       },
       {
@@ -534,6 +604,7 @@ describe("incremental log fetching", function () {
           lines: ["xxx", "0"],
           endByte: 1_000_002,
           consoleAnnotator: "x",
+          hasTrailingNewLine: true,
         },
       },
       {
@@ -552,6 +623,7 @@ describe("incremental log fetching", function () {
           lines: ["xxx", "0", "1"],
           endByte: 1_000_004,
           consoleAnnotator: "1",
+          hasTrailingNewLine: true,
         },
       },
       {
@@ -571,6 +643,7 @@ describe("incremental log fetching", function () {
           endByte: 1_000_004,
           consoleAnnotator: "y",
           stopTailing: true,
+          hasTrailingNewLine: true,
         },
       },
     ],

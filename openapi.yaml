@@ -126,46 +126,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /consoleOutput:
-    get:
-      tags:
-        - Pipeline Overview
-      summary: Get console output for a step
-      description: |
-        Returns console output for a specific step or stage. Supports pagination
-        through startByte parameter.
-      operationId: getConsoleOutput
-      parameters:
-        - name: nodeId
-          in: query
-          required: true
-          description: The ID of the step/stage to get console output for
-          schema:
-            type: string
-        - name: startByte
-          in: query
-          required: false
-          description: |
-            Starting byte position. If negative, starts from end minus the absolute value.
-            If larger than output length, returns error. Default is -153600 (150KB from end).
-          schema:
-            type: integer
-            format: int64
-            default: -153600
-      responses:
-        "200":
-          description: Console output data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ConsoleOutputResponse"
-        "400":
-          description: Missing or invalid parameters
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
   /exceptionText:
     get:
       tags:
@@ -542,33 +502,6 @@ components:
         parameters:
           type: boolean
           description: Whether the input step has parameters
-
-    ConsoleOutputResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          enum: [ok]
-        data:
-          $ref: "#/components/schemas/ConsoleOutput"
-
-    ConsoleOutput:
-      type: object
-      properties:
-        text:
-          type: string
-          description: Console text content
-        startByte:
-          type: integer
-          format: int64
-          description: Starting byte position of this text chunk
-        endByte:
-          type: integer
-          format: int64
-          description: Ending byte position of this text chunk
-        nodeIsActive:
-          type: boolean
-          description: Whether the node is currently active/running
 
     NextBuildResponse:
       type: object

@@ -48,6 +48,7 @@ export interface StepLogBufferInfo {
   endByte: number;
   pending?: Promise<void>;
   consoleAnnotator?: string;
+  hasTrailingNewLine?: boolean;
   lastFetched?: number;
   stopTailing?: boolean;
   exceptionText?: string[];
@@ -88,18 +89,23 @@ export async function getConsoleTextOffset(
   startByte: number,
   consoleAnnotator: string,
 ): Promise<ConsoleLogData | null> {
-  const headers = new Headers();
+  const headers = new Headers({ Accept: "multipart/form-data" });
   if (consoleAnnotator) headers.set("X-ConsoleAnnotator", consoleAnnotator);
   try {
     const response = await fetch(
-      `consoleOutput?nodeId=${stepId}&startByte=${startByte}`,
+      `../execution/node/${stepId}/log/logText/progressiveHtml?start=${startByte.toString()}`,
       { headers },
     );
     if (!response.ok) throw response.statusText;
-    const json = await response.json();
+    const data = await response.formData();
+    const text = data.get("text") as string;
+    const meta = JSON.parse(data.get("meta") as string);
     return {
-      ...json.data,
-      consoleAnnotator: response.headers.get("X-ConsoleAnnotator") || "",
+      text,
+      startByte: meta.start,
+      endByte: meta.end,
+      nodeIsActive: !meta.completed,
+      consoleAnnotator: meta.consoleAnnotator,
     };
   } catch (e) {
     console.error(`Caught error when fetching console: '${e}'`);

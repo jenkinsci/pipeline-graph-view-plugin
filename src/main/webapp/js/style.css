@@ -33,43 +33,6 @@ h1 {
   }
 }
 
-.jp-pill {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.375rem;
-    border-radius: 100px;
-    padding: 0 0.75rem;
-    min-height: 1.875rem;
-    text-box: cap alphabetic;
-    /*background: color-mix(in srgb, var(--color, var(--text-color-secondary)) 10%, transparent);*/
-    /*border: var(--jenkins-border-width) solid color-mix(in srgb, var(--color, var(--text-color-secondary)) 10%, transparent);*/
-    color: var(--color, var(--text-color)) !important;
-    text-decoration: none !important;
-    transition: var(--standard-transition);
-
-    svg {
-        width: 1rem;
-        height: 1rem;
-    }
-}
-
-a.jp-pill, button.jp-pill {
-    cursor: pointer;
-
-    &:hover {
-        background: color-mix(in srgb, var(--color, var(--text-color-secondary)) 15%, transparent);
-    }
-
-    &:active, &:focus {
-        background: color-mix(in srgb, var(--color, var(--text-color-secondary)) 20%, transparent);
-    }
-}
-
-.jp-pill--tertiary {
-    color: var(--text-color-secondary) !important;
-}
-
 .pgv-description {
   display: grid;
   grid-template-columns: auto 1fr;

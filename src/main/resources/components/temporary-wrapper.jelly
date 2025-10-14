@@ -107,7 +107,9 @@
                         </j:if>
                     </t:buildCaption>
 
-                    <l:details-bar it="${it.run}" />
+                    <div class="pgv-details">
+                        <l:details-bar it="${it.run}" />
+                    </div>
 
                     <j:if test="${!empty(it.run.description)}">
                         <div class="pgv-description">

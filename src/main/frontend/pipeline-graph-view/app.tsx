@@ -16,12 +16,12 @@ export default function App() {
   });
 
   return (
-      <UserPreferencesProvider>
-        <Stages
-          stages={run.stages}
-          stageViewPosition={StageViewPosition.TOP}
-          onRunPage
-        />
-      </UserPreferencesProvider>
+    <UserPreferencesProvider>
+      <Stages
+        stages={run.stages}
+        stageViewPosition={StageViewPosition.TOP}
+        onRunPage
+      />
+    </UserPreferencesProvider>
   );
 }

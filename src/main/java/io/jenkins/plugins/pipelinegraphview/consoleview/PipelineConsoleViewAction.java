@@ -16,6 +16,7 @@ import io.jenkins.plugins.pipelinegraphview.PipelineGraphViewConfiguration;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.ArtifactRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.ChangesRunDetailsItem;
+import io.jenkins.plugins.pipelinegraphview.cards.items.SCMRunDetailsItems;
 import io.jenkins.plugins.pipelinegraphview.cards.items.TestResultRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
@@ -314,12 +315,10 @@ public class PipelineConsoleViewAction extends Tab {
 
     @SuppressWarnings("unused")
     public List<RunDetailsItem> getRunDetailsItems() {
-        List<RunDetailsItem> runDetailsItems = new ArrayList<>();
-
+        List<RunDetailsItem> runDetailsItems = new ArrayList<>(SCMRunDetailsItems.get(run));
         ChangesRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
         TestResultRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
         ArtifactRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
-
         return runDetailsItems;
     }
 

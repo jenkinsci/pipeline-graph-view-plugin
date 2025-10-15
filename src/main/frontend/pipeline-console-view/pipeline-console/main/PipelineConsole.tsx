@@ -52,6 +52,12 @@ export default function PipelineConsole() {
         container={document.getElementById("console-pipeline-overflow-root")}
       >
         <Dropdown
+          className={
+            rootElement?.closest(".app-build-content")
+              ? "jenkins-details__button"
+              : ""
+          }
+          icon={SETTINGS}
           items={[
             showSplitView ? (
               <StagesCustomization key="visibility-select" />

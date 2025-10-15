@@ -13,6 +13,10 @@ import hudson.security.Permission;
 import hudson.util.HttpResponses;
 import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.PipelineGraphViewConfiguration;
+import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
+import io.jenkins.plugins.pipelinegraphview.cards.items.ArtifactRunDetailsItem;
+import io.jenkins.plugins.pipelinegraphview.cards.items.ChangesRunDetailsItem;
+import io.jenkins.plugins.pipelinegraphview.cards.items.TestResultRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
@@ -21,6 +25,8 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
 import jenkins.model.Tab;
@@ -304,6 +310,17 @@ public class PipelineConsoleViewAction extends Tab {
             logger.debug("Using default value of '{}'", defaultValue);
             return defaultValue;
         }
+    }
+
+    @SuppressWarnings("unused")
+    public List<RunDetailsItem> getRunDetailsItems() {
+        List<RunDetailsItem> runDetailsItems = new ArrayList<>();
+
+        ChangesRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
+        TestResultRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
+        ArtifactRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
+
+        return runDetailsItems;
     }
 
     public boolean isShowGraphOnBuildPage() {

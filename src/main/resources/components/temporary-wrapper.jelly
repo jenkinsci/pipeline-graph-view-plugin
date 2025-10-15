@@ -107,8 +107,22 @@
                         </j:if>
                     </t:buildCaption>
 
+                    <j:set var="action" value="${it}" />
+
                     <div class="pgv-details">
-                        <l:details-bar it="${it.run}" />
+                        <l:details-bar it="${it.run}">
+                            <j:forEach var="detail" items="${action.runDetailsItems}" indexVar="index">
+                                <j:if test="${index == 0}">
+                                    <div class="jenkins-details__separator">•</div>
+                                </j:if>
+                                <a class="jenkins-details__item" href="${detail.content().href()}" tooltip="${detail.tooltip()}">
+                                    <div class="jenkins-details__item__icon">
+                                        <l:icon src="${detail.icon()}" />
+                                    </div>
+                                    ${detail.content().text()}
+                                </a>
+                            </j:forEach>
+                        </l:details-bar>
                     </div>
 
                     <j:if test="${!empty(it.run.description)}">

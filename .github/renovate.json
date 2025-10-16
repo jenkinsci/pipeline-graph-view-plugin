@@ -3,11 +3,11 @@
   "extends": [
     "config:recommended",
     ":semanticCommitsDisabled",
+    ":disableRateLimiting",
     "schedule:earlyMondays"
   ],
   "automerge": true,
   "automergeType": "pr",
-  "prHourlyLimit": 0,
   "packageRules": [
     {
       "matchDatasources": ["npm"],

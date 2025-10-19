@@ -71,7 +71,7 @@ export default function ConsoleLogCard({
           key={`step-action-area-${step.id}`}
         >
           <div className="pgv-step-detail-header__content">
-            <StatusIcon status={step.state} percentage={step.completePercent} />
+            <StatusIcon status={step.state} />
 
             {step.title !== "" && (
               <span>

@@ -1,8 +1,9 @@
 import "./stage-details.scss";
 
 import Dropdown from "../../../common/components/dropdown.tsx";
-import StatusIcon, {
+import {
   resultToColor,
+  StageStatusIcon,
 } from "../../../common/components/status-icon.tsx";
 import { DOCUMENT } from "../../../common/components/symbols.tsx";
 import Tooltip from "../../../common/components/tooltip.tsx";
@@ -26,11 +27,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
         <div className={"pgv-stage-details__running"} />
       )}
       <div>
-        <StatusIcon
-          status={stage.state}
-          skeleton={stage.skeleton}
-          percentage={stage.completePercent}
-        />
+        <StageStatusIcon stage={stage} />
         <h2>{stage.name}</h2>
       </div>
       <ul>

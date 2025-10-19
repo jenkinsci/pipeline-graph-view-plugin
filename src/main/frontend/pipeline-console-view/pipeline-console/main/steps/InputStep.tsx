@@ -40,7 +40,7 @@ export default function InputStep({ step }: { step: StepInfo }) {
   return (
     <div className="pgv-input-step">
       <div className="pgv-step-detail-header__content">
-        <StatusIcon status={step.state} percentage={step.completePercent} />
+        <StatusIcon status={step.state} />
         <span>{inputStep.message}</span>
       </div>
       <div

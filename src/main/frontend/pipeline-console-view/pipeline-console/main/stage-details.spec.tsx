@@ -55,7 +55,6 @@ const mockStage: StageInfo = {
   name: "Build",
   state: Result.success,
   skeleton: false,
-  completePercent: 100,
   id: 1,
   title: "Build",
   type: "STAGE",

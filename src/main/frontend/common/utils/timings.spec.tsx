@@ -1,6 +1,6 @@
 /** * @vitest-environment jsdom */
 
-import { render } from "@testing-library/react";
+import { act, render } from "@testing-library/react";
 import { vi } from "vitest";
 
 import { Paused, Started, Total } from "./timings.tsx";
@@ -68,11 +68,23 @@ describe("Timings", () => {
     });
 
     function getStarted(since: number) {
-      return render(<Started since={since} />);
+      return render(<Started live={false} since={since} />);
     }
 
     it("should return empty element if since is 0", () => {
       expect(getStarted(0).container.innerHTML).toBe("");
+    });
+
+    it("should start with 1s", () => {
+      expect(
+        getStarted(now - 42).getByText("Started 1s ago"),
+      ).toBeInTheDocument();
+    });
+
+    it("should round up", () => {
+      expect(
+        getStarted(now - 1500).getByText("Started 2s ago"),
+      ).toBeInTheDocument();
     });
 
     it("should prefix the time with Started and end with ago", () => {
@@ -80,14 +92,40 @@ describe("Timings", () => {
         getStarted(now - 1000).getByText("Started 1s ago"),
       ).toBeInTheDocument();
       expect(
-        getStarted(now - 100).getByText("Started 0.1s ago"),
+        getStarted(now - 60_000).getByText("Started 1m ago"),
       ).toBeInTheDocument();
       expect(
-        getStarted(now - 10).getByText("Started 10ms ago"),
+        getStarted(now - 3_600_000).getByText("Started 1h ago"),
       ).toBeInTheDocument();
       expect(
-        getStarted(now - 1).getByText("Started 1ms ago"),
+        getStarted(now - 86_400_000).getByText("Started 1d ago"),
       ).toBeInTheDocument();
+    });
+
+    it("should increment by 1s when live", async () => {
+      const res = render(<Started live since={now} />);
+      expect(res.getByText("Started 1s ago")).toBeInTheDocument();
+      await act(() => vi.advanceTimersByTime(1_000));
+      expect(res.getByText("Started 1s ago")).toBeInTheDocument();
+      await act(() => vi.advanceTimersByTime(1_000));
+      expect(res.getByText("Started 2s ago")).toBeInTheDocument();
+      await act(() => vi.advanceTimersByTime(1_000));
+      expect(res.getByText("Started 3s ago")).toBeInTheDocument();
+    });
+
+    it("should update by 1min when done", async () => {
+      const res = render(<Started live={false} since={now - 45_000} />);
+      expect(res.getByText("Started 45s ago")).toBeInTheDocument();
+      await act(() => vi.advanceTimersByTime(5_000));
+      expect(res.getByText("Started 45s ago")).toBeInTheDocument();
+      await act(() => vi.advanceTimersByTime(5_000));
+      expect(res.getByText("Started 45s ago")).toBeInTheDocument();
+      await act(() => vi.advanceTimersByTime(5_000));
+      expect(res.getByText("Started 1m ago")).toBeInTheDocument();
+      await act(() => vi.advanceTimersByTime(60_000));
+      expect(res.getByText("Started 2m ago")).toBeInTheDocument();
+      await act(() => vi.advanceTimersByTime(60_000));
+      expect(res.getByText("Started 3m ago")).toBeInTheDocument();
     });
   });
 });

@@ -9,7 +9,7 @@ import StageSteps from "./stage-steps.tsx";
 export default function StageView(props: StageViewProps) {
   return (
     <>
-      <StageDetails stage={props.stage} />
+      <StageDetails stage={props.stage} steps={props.steps} />
       <StageSteps
         stage={props.stage}
         steps={props.steps}

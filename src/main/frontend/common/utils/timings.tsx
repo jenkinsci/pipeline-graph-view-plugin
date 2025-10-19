@@ -1,6 +1,9 @@
 import "@formatjs/intl-durationformat/polyfill";
 
+import { useEffect, useState } from "react";
+
 import { LocalizedMessageKey, useLocale, useMessages } from "../i18n/index.ts";
+import { MessageKeyType } from "../i18n/messages.ts";
 
 const ONE_SECOND_MS: number = 1000;
 const ONE_MINUTE_MS: number = 60 * ONE_SECOND_MS;
@@ -103,20 +106,73 @@ export function Paused({ since }: { since: number }) {
   );
 }
 
-export function Started({ since }: { since: number }) {
+export function Started({ since, live }: { since: number; live: boolean }) {
+  return (
+    <Since
+      localeKey={LocalizedMessageKey.startedAgo}
+      since={since}
+      live={live}
+    />
+  );
+}
+
+export function Since({
+  localeKey,
+  since,
+  live,
+}: {
+  localeKey?: MessageKeyType;
+  since: number;
+  live: boolean;
+}) {
   const messages = useMessages();
   const locale = useLocale();
+
+  const [duration, setDuration] = useState(0);
+
+  // Initial set and when ever since changes, e.g. when steps/stages change.
+  useEffect(() => {
+    // Avoid displaying "0.42s ago" initially. Start with "1s ago".
+    const ms = Math.max(1_000, Date.now() - since);
+    // "9.99s ago" is not useful either. By the time you read it, it is already "10s ago".
+    // Round everything to the next second.
+    setDuration(1_000 * Math.round(ms / 1_000));
+  }, [since]);
+
+  useEffect(() => {
+    // Update every second while in progress. Update every minute when done.
+    const resolution = live ? 1_000 : 60_000;
+    const update = () => {
+      // Round with 1s/1min precision.
+      setDuration(resolution * Math.round((Date.now() - since) / resolution));
+    };
+    let interval = 0;
+    const delayIntervalSetup = setTimeout(
+      () => {
+        update();
+        interval = window.setInterval(update, resolution);
+      },
+      // Delay the setup of the interval until the next break point for the resolution.
+      // e.g. live and first duration = 0.7s; wait 0.3s; then update every 1s.
+      //      -> rendered as 1s -> 2s -> 3s
+      // e.g. done and first duration = 42.42s; wait 17.58s; then update every 1min.
+      //      -> rendered as 42s -> 1min -> 2min -> 3min
+      // Add 1ms to both delay and interval to avoid running just before the break point.
+      resolution - ((Date.now() - since) % resolution),
+    );
+    return () => {
+      clearTimeout(delayIntervalSetup);
+      clearInterval(interval);
+    };
+  }, [live, since]);
 
   if (since === 0) {
     return <></>;
   }
-  return (
-    <>
-      {messages.format(LocalizedMessageKey.startedAgo, {
-        "0": humanise(Math.abs(since - Date.now()), locale),
-      })}
-    </>
-  );
+  if (!localeKey) {
+    return <Total ms={duration} />;
+  }
+  return <>{messages.format(localeKey, { "0": humanise(duration, locale) })}</>;
 }
 
 export function time(since: number, locale: string = "en-GB"): string {

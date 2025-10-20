@@ -51,7 +51,7 @@
     "eslint-formatter-checkstyle": "^8.40.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-simple-import-sort": "^12.1.1",
-    "jsdom": "^26.1.0",
+    "jsdom": "^27.0.0",
     "neostandard": "^0.12.1",
     "prettier": "^3.5.3",
     "sass-embedded": "^1.87.0",

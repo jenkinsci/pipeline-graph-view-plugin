@@ -73,7 +73,7 @@ function humanise(duration: number, locale: string): string {
     durationParts["seconds"] = seconds;
   } else if (seconds >= 1) {
     durationParts["seconds"] = seconds;
-    if (millis !== 0) {
+    if (millis >= 100) {
       durationParts["milliseconds"] = millis;
       options.fractionalDigits = 1;
       options.milliseconds = "numeric";

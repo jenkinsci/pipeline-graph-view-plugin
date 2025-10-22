@@ -132,18 +132,15 @@ export function Since({
 
   // Initial set and when ever since changes, e.g. when steps/stages change.
   useEffect(() => {
-    // Avoid displaying "0.42s ago" initially. Start with "1s ago".
-    const ms = Math.max(1_000, Date.now() - since);
-    // "9.99s ago" is not useful either. By the time you read it, it is already "10s ago".
-    // Round everything to the next second.
-    setDuration(1_000 * Math.round(ms / 1_000));
+    // Avoid displaying fractions of a second in relative times.
+    setDuration(1_000 * Math.floor((Date.now() - since) / 1_000));
   }, [since]);
 
   useEffect(() => {
     // Update every second while in progress. Update every minute when done.
     const resolution = live ? 1_000 : 60_000;
     const update = () => {
-      // Round with 1s/1min precision.
+      // Round with 1s/1min precision. We will always be +- a few milliseconds away from a break point.
       setDuration(resolution * Math.round((Date.now() - since) / resolution));
     };
     let interval = 0;
@@ -169,10 +166,11 @@ export function Since({
   if (since === 0) {
     return <></>;
   }
+  const text = duration < 1_000 ? "<1s" : humanise(duration, locale);
   if (!localeKey) {
-    return <Total ms={duration} />;
+    return <>{text}</>;
   }
-  return <>{messages.format(localeKey, { "0": humanise(duration, locale) })}</>;
+  return <>{messages.format(localeKey, { "0": text })}</>;
 }
 
 export function time(since: number, locale: string = "en-GB"): string {

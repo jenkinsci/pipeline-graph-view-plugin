@@ -92,6 +92,7 @@ export default function StageDetails({ stage, steps }: StageDetailsProps) {
                 </svg>
                 <Started
                   live={
+                    stage.skeleton ||
                     stage.state === Result.paused ||
                     stage.state === Result.queued ||
                     stage.state === Result.running

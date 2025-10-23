@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core"
+         xmlns:l="/lib/layout"
+         xmlns:d="jelly:define"
+         xmlns:st="jelly:stapler"
+         xmlns:t="/lib/hudson"
+         xmlns:dd="/lib/layout/dropdowns">
+    <l:userExperimentalFlag var="newBuildPage" flagClassName="jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag" />
+
+    <j:choose>
+        <j:when test="${newBuildPage}">
+            <l:run-subpage>
+                <d:invokeBody />
+            </l:run-subpage>
+        </j:when>
+        <j:otherwise>
+            <l:layout title="${it.buildDisplayName} - ${it.fullProjectDisplayName}">
+                <l:main-panel>
+                    <link rel="stylesheet" href="${resURL}/plugin/pipeline-graph-view/js/style.css" type="text/css" />
+
+                    <j:set var="controls">
+                        <j:if test="${it.buildInProgress}">
+                            <l:hasPermission permission="${it.cancelPermission}">
+                                <j:set var="proxyId" value="${h.generateId()}" />
+                                <st:bind value="${it}" var="cancelAction${proxyId}"/>
+                                <button id="pgv-cancel" data-confirm="${%Confirm(it.buildFullDisplayName)}"
+                                        data-success-message="${%Build cancelled}"
+                                        data-proxy-name="cancelAction${proxyId}"
+                                        class="jenkins-button jenkins-!-error-color">
+                                    <l:icon src="symbol-stop-circle-outline plugin-ionicons-api"/>
+                                    ${%Cancel}
+                                </button>
+                            </l:hasPermission>
+                        </j:if>
+                        <j:if test="${it.buildable}">
+                            <l:hasPermission permission="${it.permission}">
+                                <j:set var="proxyId" value="${h.generateId()}" />
+                                <st:bind value="${it}" var="rerunAction${proxyId}"/>
+                                <div class="jenkins-split-button">
+                                    <button id="pgv-rerun"
+                                            data-proxy-name="rerunAction${proxyId}"
+                                            class="jenkins-button jenkins-!-build-color">
+                                        <div class="jenkins-dropdown__item__icon">
+                                            <l:icon src="symbol-refresh-outline plugin-ionicons-api"/>
+                                        </div>
+                                        ${%Rerun}
+                                    </button>
+                                    <l:overflowButton id="pgv-rerun-overflow" tooltip="${null}"
+                                                      icon="symbol-chevron-down"
+                                                      clazz="jenkins-button jenkins-!-build-color">
+                                        <dd:custom>
+                                            <a id="pgv-replay" href="../replay" class="jenkins-dropdown__item pgv-dropdown-item">
+                                                <div class="jenkins-dropdown__item__icon">
+                                                    <l:icon src="symbol-arrow-redo-outline plugin-ionicons-api"/>
+                                                </div>
+                                                <span>${%Replay}</span>
+                                                <div class="pgv-dropdown-item__description">
+                                                    ${%Edit Pipeline and replay}
+                                                </div>
+                                            </a>
+                                        </dd:custom>
+                                        <j:if test="${it.restartFromStageAvailable}">
+                                            <dd:custom>
+                                                <a id="pgv-restart" href="../restart" class="jenkins-dropdown__item pgv-dropdown-item">
+                                                    <div class="jenkins-dropdown__item__icon">
+                                                        <l:icon src="symbol-refresh-outline plugin-ionicons-api"/>
+                                                    </div>
+                                                    <span>${%Restart from Stage}</span>
+                                                    <div class="pgv-dropdown-item__description">
+                                                        ${%Restart Pipeline from a specific Stage}
+                                                    </div>
+                                                </a>
+                                            </dd:custom>
+                                        </j:if>
+                                        <j:if test="${it.rebuildAvailable}">
+                                            <dd:custom>
+                                                <a id="pgv-rebuild" href="../rebuild/parameterized" class="jenkins-dropdown__item pgv-dropdown-item">
+                                                    <div class="jenkins-dropdown__item__icon">
+                                                        <l:icon src="symbol-play-outline plugin-ionicons-api"/>
+                                                    </div>
+                                                    <span>${%Rebuild}</span>
+                                                    <div class="pgv-dropdown-item__description">
+                                                        ${%Edit parameters and rebuild}
+                                                    </div>
+                                                </a>
+                                            </dd:custom>
+                                        </j:if>
+                                    </l:overflowButton>
+                                </div>
+                            </l:hasPermission>
+                        </j:if>
+                        <div id="console-pipeline-overflow-root"/>
+                    </j:set>
+
+                    <t:buildCaption controls="${controls}">
+                        <j:if test="${it.previousBuildNumber!=null}">
+                            <a href="../../${it.previousBuildNumber}/pipeline-overview" class="jenkins-button jenkins-button--tertiary app-details__prev_next" tooltip="${%Previous Build}">
+                                <l:icon class="symbol-chevron-back-outline plugin-ionicons-api icon-md" />
+                            </a>
+                        </j:if>
+                        ${it.buildDisplayName}
+                        <j:if test="${it.nextBuildNumber!=null}">
+                            <a href="../../${it.nextBuildNumber}/pipeline-overview" class="jenkins-button jenkins-button--tertiary app-details__prev_next" tooltip="${%Next Build}">
+                                <l:icon class="symbol-chevron-forward-outline plugin-ionicons-api icon-md" />
+                            </a>
+                        </j:if>
+                    </t:buildCaption>
+
+                    <j:set var="action" value="${it}" />
+
+                    <div class="pgv-details">
+                        <l:details-bar it="${it.run}">
+                            <j:forEach var="detail" items="${action.runDetailsItems}" indexVar="index">
+                                <j:if test="${index == 0}">
+                                    <div class="jenkins-details__separator">•</div>
+                                </j:if>
+                                <a class="jenkins-details__item" href="${detail.content().href()}" tooltip="${detail.tooltip()}">
+                                    <div class="jenkins-details__item__icon">
+                                        <l:icon src="${detail.icon()}" />
+                                    </div>
+                                    ${detail.content().text()}
+                                </a>
+                            </j:forEach>
+                        </l:details-bar>
+                    </div>
+
+                    <j:if test="${!empty(it.run.description)}">
+                        <div class="pgv-description">
+                            <l:icon src="symbol-information-circle-outline plugin-ionicons-api" />
+                            <div>
+                                <j:out value="${app.markupFormatter.translate(it.run.description)}"/>
+                            </div>
+                        </div>
+                    </j:if>
+
+                    <j:set var="configPermission" value="${h.hasPermission(it, it.configurePermission)}" />
+                    <template data-module="permissions"
+                              data-permission-configure="${configPermission}"
+                    />
+
+                    <div id="console-pipeline-root" data-current-run-path="${rootURL + '/' + it.buildUrl}"
+                         data-previous-run-path="${it.previousBuildUrl != null ? rootURL + '/' + it.previousBuildUrl : null}"
+                         data-user-locale="${request2.getLocale().toLanguageTag()}"/>
+                    <script src="${rootURL}/plugin/pipeline-graph-view/js/build.js" type="module"/>
+                    <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/pipeline-console-view-bundle.js" type="module"/>
+                </l:main-panel>
+            </l:layout>
+        </j:otherwise>
+    </j:choose>
+</j:jelly>

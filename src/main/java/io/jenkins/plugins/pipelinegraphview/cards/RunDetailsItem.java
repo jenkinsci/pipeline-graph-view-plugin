@@ -7,10 +7,6 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 
 public sealed interface RunDetailsItem {
 
-    RunDetailsItem SEPARATOR = new Separator();
-
-    record Separator() implements RunDetailsItem {}
-
     final class RunDetail implements RunDetailsItem {
         private final @NonNull Icon icon;
         private final @NonNull ItemContent content;
@@ -44,12 +40,6 @@ public sealed interface RunDetailsItem {
 
     sealed interface Icon {
         String value();
-
-        record SimpleIcon(@NonNull String value) implements Icon {
-            public SimpleIcon {
-                requireNonNull(value);
-            }
-        }
 
         record Ionicon(@NonNull String value) implements Icon {
             public Ionicon(@NonNull String value) {

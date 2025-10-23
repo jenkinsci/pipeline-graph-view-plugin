@@ -4,7 +4,6 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Plugin;
 import hudson.console.AnnotatedLargeText;
-import hudson.model.Action;
 import hudson.model.BallColor;
 import hudson.model.Item;
 import hudson.model.ParametersDefinitionProperty;
@@ -14,15 +13,10 @@ import hudson.security.Permission;
 import hudson.util.HttpResponses;
 import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.PipelineGraphViewConfiguration;
-import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsCard;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.ArtifactRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.ChangesRunDetailsItem;
-import io.jenkins.plugins.pipelinegraphview.cards.items.SCMRunDetailsItems;
 import io.jenkins.plugins.pipelinegraphview.cards.items.TestResultRunDetailsItem;
-import io.jenkins.plugins.pipelinegraphview.cards.items.TimingRunDetailsItems;
-import io.jenkins.plugins.pipelinegraphview.cards.items.UpstreamCauseRunDetailsItem;
-import io.jenkins.plugins.pipelinegraphview.cards.items.UserIdCauseRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
@@ -35,9 +29,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
+import jenkins.model.Tab;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
-import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.pipeline.modeldefinition.actions.RestartDeclarativePipelineAction;
 import org.jenkinsci.plugins.workflow.cps.replay.ReplayAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
@@ -53,7 +47,7 @@ import org.kohsuke.stapler.verb.GET;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PipelineConsoleViewAction implements Action, IconSpec {
+public class PipelineConsoleViewAction extends Tab {
     public static final long LOG_THRESHOLD = 150 * 1024; // 150KB
     public static final String URL_NAME = "pipeline-overview";
     public static final int CACHE_AGE = (int) TimeUnit.DAYS.toSeconds(1);
@@ -71,6 +65,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     private final PipelineStepApi stepApi;
 
     public PipelineConsoleViewAction(WorkflowRun target) {
+        super(target);
         this.run = target;
         this.graphApi = new PipelineGraphApi(this.run);
         this.stepApi = new PipelineStepApi(this.run);
@@ -78,7 +73,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
 
     @Override
     public String getDisplayName() {
-        return "Pipeline Overview";
+        return "Stages";
     }
 
     @Override
@@ -231,24 +226,12 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     }
 
     @SuppressWarnings("unused")
-    public RunDetailsCard getRunDetailsCard() {
-
-        List<RunDetailsItem> runDetailsItems = new ArrayList<>(SCMRunDetailsItems.get(run));
-
-        if (!runDetailsItems.isEmpty()) {
-            runDetailsItems.add(RunDetailsItem.SEPARATOR);
-        }
-
-        UpstreamCauseRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
-        UserIdCauseRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
-
-        runDetailsItems.addAll(TimingRunDetailsItems.get(run));
-
+    public List<RunDetailsItem> getRunDetailsItems() {
+        List<RunDetailsItem> runDetailsItems = new ArrayList<>();
         ChangesRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
         TestResultRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
         ArtifactRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
-
-        return new RunDetailsCard(runDetailsItems);
+        return runDetailsItems;
     }
 
     public boolean isShowGraphOnBuildPage() {
@@ -430,12 +413,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     }
 
     @Override
-    public String getIconClassName() {
-        return "symbol-git-network-outline plugin-ionicons-api";
-    }
-
-    @Override
     public String getIconFileName() {
-        return null;
+        return "symbol-git-network-outline plugin-ionicons-api";
     }
 }

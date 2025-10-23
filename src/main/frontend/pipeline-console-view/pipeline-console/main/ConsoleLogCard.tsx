@@ -15,7 +15,6 @@ import { classNames } from "../../../common/utils/classnames.ts";
 import { linkifyJsOptions } from "../../../common/utils/linkify-js.ts";
 import LiveTotal from "../../../common/utils/live-total.tsx";
 import {
-  LOG_FETCH_SIZE,
   StepInfo,
   StepLogBufferInfo,
   TAIL_CONSOLE_LOG,
@@ -171,8 +170,9 @@ function ConsoleLogBody({
   };
 
   const showMoreLogs = () => {
-    let startByte = stepBuffer.startByte - LOG_FETCH_SIZE;
-    if (startByte < 0) startByte = 0;
+    // Double the amount of fetched logs with every click.
+    const alreadyFetched = stepBuffer.endByte - stepBuffer.startByte;
+    const startByte = Math.max(0, stepBuffer.startByte - alreadyFetched);
     onMoreConsoleClick(step.id, startByte);
   };
 

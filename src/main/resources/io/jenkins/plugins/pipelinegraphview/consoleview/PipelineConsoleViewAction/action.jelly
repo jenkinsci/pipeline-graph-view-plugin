@@ -5,6 +5,7 @@
     <l:userExperimentalFlag var="newBuildPage" flagClassName="jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag" />
 
     <j:if test="${!newBuildPage}">
-        <l:task icon="${action.iconFileName}" title="Pipeline Overview" href="${action.urlName}" />
+        <j:set var="url" value="${h.getNearestAncestorUrl(request2, it)}" />
+        <l:task icon="${action.iconFileName}" title="Pipeline Overview" href="${url}/${action.urlName}" />
     </j:if>
 </j:jelly>

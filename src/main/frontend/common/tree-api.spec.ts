@@ -21,9 +21,7 @@ describe("useRunPoller", function () {
 
   it("should merge stages when not complete", async () => {
     const previous = [stage("Build"), stage("Test")];
-    const current = [
-      stage("Build", { state: Result.running, completePercent: 50, id: 42 }),
-    ];
+    const current = [stage("Build", { state: Result.running, id: 42 })];
 
     const merged = mergeStageInfos(previous, current);
     (restClient.getRunStatusFromPath as Mock).mockImplementation(
@@ -95,9 +93,7 @@ describe("useRunPoller", function () {
   });
 
   it("should ignore fetch error for previous", async () => {
-    const current = [
-      stage("Build", { state: Result.running, completePercent: 50, id: 42 }),
-    ];
+    const current = [stage("Build", { state: Result.running, id: 42 })];
 
     (restClient.getRunStatusFromPath as Mock).mockImplementation(
       async (path) => {
@@ -217,7 +213,6 @@ const stage = (
   state: Result.success,
   type: "STAGE",
   children: [],
-  completePercent: 0,
   id: name.length, // simple unique-ish id
   pauseDurationMillis: 0,
   startTimeMillis: 0,

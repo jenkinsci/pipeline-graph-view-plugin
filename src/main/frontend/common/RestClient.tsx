@@ -31,7 +31,6 @@ export interface StepInfo {
   name: string;
   title: string;
   state: Result;
-  completePercent: number;
   inputStep?: InputStep;
   id: string;
   type: string;

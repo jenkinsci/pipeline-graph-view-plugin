@@ -7,9 +7,7 @@ import { mergeStageInfos } from "./stage-merge.ts";
 describe("mergeStageInfos", () => {
   it("merges matching items by name", () => {
     const skeletons = [stage("Build"), stage("Test")];
-    const incoming = [
-      stage("Build", { state: Result.running, completePercent: 50, id: 42 }),
-    ];
+    const incoming = [stage("Build", { state: Result.running, id: 42 })];
 
     const result = mergeStageInfos(skeletons, incoming);
     expect(result).toHaveLength(2);
@@ -26,16 +24,13 @@ describe("mergeStageInfos", () => {
   it("recursively merges children", () => {
     const skeletons = [
       stage("Parent", {
-        children: [stage("Child", { skeleton: true, completePercent: 100 })],
+        children: [stage("Child", { skeleton: true })],
       }),
     ];
     const incoming = [
       stage("Parent", {
         state: Result.running,
-        completePercent: 50,
-        children: [
-          stage("Child", { state: Result.running, completePercent: 20 }),
-        ],
+        children: [stage("Child", { state: Result.running })],
       }),
     ];
 
@@ -58,11 +53,11 @@ describe("mergeStageInfos", () => {
     ];
 
     const incoming = [
-      stage("Start", { completePercent: 100 }),
-      stage("Tool Install", { completePercent: 100 }),
-      stage("Build", { completePercent: 100 }),
-      stage("Test", { completePercent: 100 }),
-      stage("Different stage", { completePercent: 100 }),
+      stage("Start"),
+      stage("Tool Install"),
+      stage("Build"),
+      stage("Test"),
+      stage("Different stage"),
     ];
 
     const names = mergeStageInfos(skeletons, incoming).map((s) => s.name);
@@ -85,7 +80,6 @@ const stage = (
   state: Result.success,
   type: "STAGE",
   children: [],
-  completePercent: 0,
   id: name.length, // simple unique-ish id
   pauseDurationMillis: 0,
   startTimeMillis: 0,

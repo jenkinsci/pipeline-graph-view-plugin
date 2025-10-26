@@ -76,8 +76,10 @@ function humanise(duration: number, locale: string): string {
     durationParts["milliseconds"] = millis;
     options.fractionalDigits = Math.floor(millis / 10) % 10 === 0 ? 1 : 2;
     options.milliseconds = "numeric";
-  } else {
+  } else if (millis >= 1) {
     durationParts["milliseconds"] = millis;
+  } else {
+    return "<1ms";
   }
 
   // @ts-ignore https://github.com/microsoft/TypeScript/issues/60608

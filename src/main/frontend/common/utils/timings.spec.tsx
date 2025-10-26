@@ -42,6 +42,8 @@ describe("Timings", () => {
       expect(getTotal(17).getByText("17ms")).toBeInTheDocument();
       // 1ms
       expect(getTotal(1).getByText("1ms")).toBeInTheDocument();
+      // 0ms
+      expect(getTotal(0).getByText("<1ms")).toBeInTheDocument();
     });
   });
 

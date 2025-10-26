@@ -56,6 +56,7 @@ export interface StageInfo {
   url: string;
 
   skeleton?: boolean;
+  pauseLiveTotal?: boolean;
 }
 
 interface BaseNodeInfo {

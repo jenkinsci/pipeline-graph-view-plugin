@@ -190,6 +190,7 @@ const TreeNode = memo(function TreeNode({
                 <LiveTotal
                   start={stage.startTimeMillis}
                   total={stage.totalDurationMillis}
+                  paused={stage.pauseLiveTotal}
                 />
               </div>
             </div>

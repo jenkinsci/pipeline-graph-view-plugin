@@ -56,6 +56,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
           <LiveTotal
             total={stage.totalDurationMillis}
             start={stage.startTimeMillis}
+            paused={stage.pauseLiveTotal}
           />
         </li>
         <li>

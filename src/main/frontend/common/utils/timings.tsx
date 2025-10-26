@@ -115,53 +115,60 @@ export function Since({
   localeKey,
   since,
   live,
+  paused,
 }: {
   localeKey?: MessageKeyType;
   since: number;
   live: boolean;
+  paused?: boolean;
 }) {
   const messages = useMessages();
   const locale = useLocale();
 
   const [duration, setDuration] = useState(0);
-
-  // Initial set and when ever since changes, e.g. when steps/stages change.
   useEffect(() => {
-    // Avoid displaying fractions of a second in relative times.
-    setDuration(1_000 * Math.floor((Date.now() - since) / 1_000));
+    setDuration(Date.now() - since);
   }, [since]);
 
   useEffect(() => {
+    if (paused) {
+      // Best effort: Pause timer when a stage is expected to have finished to avoid having to decrement when done.
+      return;
+    }
     // Update every second while in progress. Update every minute when done.
     const resolution = live ? 1_000 : 60_000;
-    const update = () => {
-      // Round with 1s/1min precision. We will always be +- a few milliseconds away from a break point.
-      setDuration(resolution * Math.round((Date.now() - since) / resolution));
-    };
+    const update = () => setDuration(Date.now() - since);
     let interval = 0;
+
+    update();
     const delayIntervalSetup = setTimeout(
       () => {
         update();
         interval = window.setInterval(update, resolution);
       },
-      // Delay the setup of the interval until the next break point for the resolution.
-      // e.g. live and first duration = 0.7s; wait 0.3s; then update every 1s.
-      //      -> rendered as 1s -> 2s -> 3s
-      // e.g. done and first duration = 42.42s; wait 17.58s; then update every 1min.
-      //      -> rendered as 42s -> 1min -> 2min -> 3min
-      // Add 1ms to both delay and interval to avoid running just before the break point.
+      // Align interval with breakpoint of resolution.
+      // e.g. live and initial diff = 0.7s; wait 0.3s; then update every 1s.
+      // e.g. done and initial diff = 42.42s; wait 17.58s; then update every 1min.
       resolution - ((Date.now() - since) % resolution),
     );
     return () => {
       clearTimeout(delayIntervalSetup);
       clearInterval(interval);
     };
-  }, [live, since]);
+  }, [live, since, paused]);
 
   if (since === 0) {
     return <></>;
   }
-  const text = duration < 1_000 ? "<1s" : humanise(duration, locale);
+  // Best effort: Avoid having to decrement the duration when done:
+  // - polling request finds running stage
+  // - 1ms laster said stage finishes
+  // - 1s later, we poll steps again and find all stage steps done, pause the timer
+  // - 2s later, we poll stages again and confirm the stage as done
+  // When using the accurate duration, we would have likely incremented one too many times.
+  const visibleDuration = live ? duration - 1_000 : duration;
+  const text =
+    visibleDuration < 1_000 ? "<1s" : humanise(visibleDuration, locale);
   if (!localeKey) {
     return <>{text}</>;
   }

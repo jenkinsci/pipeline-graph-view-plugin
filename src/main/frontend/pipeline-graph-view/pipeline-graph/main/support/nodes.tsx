@@ -58,6 +58,7 @@ export function Node({
                   <LiveTotal
                     total={stage.totalDurationMillis}
                     start={stage.startTimeMillis}
+                    paused={stage.pauseLiveTotal}
                   />
                 </span>
               </a>
@@ -141,6 +142,7 @@ export function Node({
           <LiveTotal
             total={node.stage.totalDurationMillis}
             start={node.stage.startTimeMillis}
+            paused={node.stage.pauseLiveTotal}
           />
         </div>
       </div>
@@ -151,6 +153,7 @@ export function Node({
         <LiveTotal
           total={node.stage.totalDurationMillis}
           start={node.stage.startTimeMillis}
+          paused={node.stage.pauseLiveTotal}
         />
       </div>
     );

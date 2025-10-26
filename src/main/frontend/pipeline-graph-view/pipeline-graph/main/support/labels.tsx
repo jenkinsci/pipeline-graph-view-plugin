@@ -127,6 +127,7 @@ export function TimingsLabel({
       <LiveTotal
         total={details.stage?.totalDurationMillis}
         start={details.stage?.startTimeMillis ?? Date.now()}
+        paused={details.stage?.pauseLiveTotal}
       />
     </div>
   );

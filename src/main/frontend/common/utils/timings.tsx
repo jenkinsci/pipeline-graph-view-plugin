@@ -69,15 +69,8 @@ function humanise(duration: number, locale: string): string {
     applyDuration(hours, "hours", minutes, "minutes");
   } else if (minutes > 0) {
     applyDuration(minutes, "minutes", seconds, "seconds");
-  } else if (seconds >= 10) {
-    durationParts["seconds"] = seconds;
   } else if (seconds >= 1) {
     durationParts["seconds"] = seconds;
-    if (millis >= 100) {
-      durationParts["milliseconds"] = millis;
-      options.fractionalDigits = 1;
-      options.milliseconds = "numeric";
-    }
   } else if (millis >= 100) {
     durationParts["seconds"] = 0;
     durationParts["milliseconds"] = millis;

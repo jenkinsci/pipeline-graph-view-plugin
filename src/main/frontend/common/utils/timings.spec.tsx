@@ -30,14 +30,10 @@ describe("Timings", () => {
       expect(getTotal(67_000).getByText("1m 7s")).toBeInTheDocument();
       // 17 seconds - Check that times less than a minute only use seconds.
       expect(getTotal(17_000).getByText("17s")).toBeInTheDocument();
-      // 1712ms -> 1.7sec
-      expect(getTotal(1_712).getByText("1.7s")).toBeInTheDocument();
-      // 1100ms -> 1.1sec
-      expect(getTotal(1_100).getByText("1.1s")).toBeInTheDocument();
-      // 2001ms -> 2sec
+      // 2001ms -> 2sec floored
       expect(getTotal(2_001).getByText("2s")).toBeInTheDocument();
-      // 1099ms -> 1sec
-      expect(getTotal(1_099).getByText("1s")).toBeInTheDocument();
+      // 1712ms -> 1sec floored
+      expect(getTotal(1_712).getByText("1s")).toBeInTheDocument();
       // 171ms -> 0.17sec
       expect(getTotal(171).getByText("0.17s")).toBeInTheDocument();
       // 101ms -> 0.1sec

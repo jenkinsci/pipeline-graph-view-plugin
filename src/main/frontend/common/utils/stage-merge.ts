@@ -50,5 +50,6 @@ const markSkeleton = (stages: StageInfo[]): StageInfo[] =>
   stages.map((s) => ({
     ...s,
     skeleton: true,
+    startTimeMillis: 0, // Do not display start of steps in previous run.
     children: markSkeleton(s.children ?? []),
   }));

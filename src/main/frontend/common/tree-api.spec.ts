@@ -1,5 +1,7 @@
+/** * @vitest-environment jsdom */
+
 import { renderHook, waitFor } from "@testing-library/react";
-import { expect, Mock, vi } from "vitest";
+import { Mock, vi } from "vitest";
 
 import {
   Result,

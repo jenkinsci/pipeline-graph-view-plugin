@@ -33,8 +33,8 @@
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/pipeline-graph-view-plugin</gitHubRepo>
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
-    <jenkins.baseline>2.516</jenkins.baseline>
-    <jenkins.version>2.532</jenkins.version>
+    <jenkins.baseline>2.528</jenkins.baseline>
+    <jenkins.version>2.534</jenkins.version>
     <node.version>24.10.0</node.version>
     <npm.version>11.6.2</npm.version>
     <spotless.check.skip>false</spotless.check.skip>
@@ -88,6 +88,11 @@
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
+      <artifactId>workflow-api</artifactId>
+      <version>1398.v67030756d3fb_</version>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-cps</artifactId>
     </dependency>
     <dependency>
@@ -138,6 +143,7 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>
       <artifactId>workflow-api</artifactId>
+      <version>1398.v67030756d3fb_</version>
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>

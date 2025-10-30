@@ -27,7 +27,6 @@ describe("ConsoleLogCard", () => {
     name: "This is a step",
     title: "This is a title",
     state: Result.success,
-    completePercent: 50,
     id: "2",
     type: "STAGE",
     pauseDurationMillis: 0,

@@ -49,13 +49,30 @@ describe("StageDetails", () => {
 
     expect(screen.queryByRole("button")).toBeDisabled();
   });
+
+  it("displays total duration", () => {
+    render(<StageDetails stage={{ ...mockStage }} />);
+
+    expect(
+      screen.queryByLabelText("Total duration")?.nextSibling,
+    ).toHaveTextContent("2m");
+  });
+
+  it("displays start from stage", () => {
+    render(
+      <StageDetails
+        stage={{ ...mockStage, startTimeMillis: Date.now() - 60_000 }}
+      />,
+    );
+
+    expect(screen.queryByText("Started 1m ago")).toBeInTheDocument();
+  });
 });
 
 const mockStage: StageInfo = {
   name: "Build",
   state: Result.success,
   skeleton: false,
-  completePercent: 100,
   id: 1,
   title: "Build",
   type: "STAGE",

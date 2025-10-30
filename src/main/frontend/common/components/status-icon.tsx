@@ -1,8 +1,47 @@
 import "./status-icon.scss";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
-import { Result } from "../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
+import {
+  Result,
+  StageInfo,
+} from "../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
+
+export function useStageProgress(stage: StageInfo) {
+  const [percentage, setPercentage] = useState(0);
+  useEffect(() => {
+    if (stage.state !== Result.running) {
+      // percentage is only needed for the running icon.
+      setPercentage(0);
+      return;
+    }
+    const update = () => {
+      const currentTiming =
+        stage.totalDurationMillis ?? Date.now() - stage.startTimeMillis;
+      const previousTiming = stage.previousTotalDurationMillis ?? 10_000;
+      setPercentage(Math.min(99, (currentTiming / previousTiming) * 100));
+    };
+    update();
+    const inter = setInterval(update, 1_000);
+    return () => clearInterval(inter);
+  }, [
+    stage.state,
+    stage.startTimeMillis,
+    stage.totalDurationMillis,
+    stage.previousTotalDurationMillis,
+  ]);
+  return percentage;
+}
+
+export function StageStatusIcon({ stage }: { stage: StageInfo }) {
+  return (
+    <StatusIcon
+      status={stage.state}
+      percentage={useStageProgress(stage)}
+      skeleton={stage.skeleton}
+    />
+  );
+}
 
 /**
  * Visual representation of a job or build status

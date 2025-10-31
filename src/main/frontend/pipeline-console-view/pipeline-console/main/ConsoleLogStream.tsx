@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { ConsoleLine } from "./ConsoleLine.tsx";
 import {
@@ -30,7 +30,7 @@ export default function ConsoleLogStream({
     }
   }, [step.id, step.state, fetchExceptionText]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (stickToBottom && canStickToBottom()) {
       logRef.current?.scrollIntoView({ block: "end" });
     }

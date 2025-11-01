@@ -5,6 +5,9 @@ import ConsoleLogCard from "./ConsoleLogCard.tsx";
 import { StageInfo, TAIL_CONSOLE_LOG } from "./PipelineConsoleModel.tsx";
 
 export default function StageSteps({
+  tailLogs,
+  scrollToTail,
+  stopTailingLogs,
   stage,
   stepBuffers,
   steps,
@@ -25,6 +28,9 @@ export default function StageSteps({
       {steps.map((stepItemData) => {
         return (
           <ConsoleLogCard
+            tailLogs={tailLogs}
+            scrollToTail={scrollToTail}
+            stopTailingLogs={stopTailingLogs}
             step={stepItemData}
             stepBuffer={
               stepBuffers.get(stepItemData.id) ?? {
@@ -45,7 +51,7 @@ export default function StageSteps({
   );
 }
 
-interface StageStepsProps {
+export interface StageStepsProps {
   stage: StageInfo | null;
   steps: Array<StepInfo>;
   stepBuffers: Map<string, StepLogBufferInfo>;
@@ -53,4 +59,7 @@ interface StageStepsProps {
   onStepToggle: (nodeId: string) => void;
   fetchLogText: (nodeId: string, startByte: number) => void;
   fetchExceptionText: (nodeId: string) => void;
+  tailLogs: boolean;
+  scrollToTail: (stepId: string, element: HTMLDivElement) => void;
+  stopTailingLogs: () => void;
 }

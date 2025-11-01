@@ -43,6 +43,9 @@ describe("StageView", () => {
     await act(async () => {
       render(
         <StageView
+          tailLogs={false}
+          scrollToTail={() => {}}
+          stopTailingLogs={() => {}}
           stage={mockStage}
           steps={mockSteps}
           stepBuffers={new Map()}

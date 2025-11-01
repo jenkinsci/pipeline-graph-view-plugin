@@ -28,6 +28,9 @@ export default function PipelineConsole() {
 
   const { stageViewPosition, mainViewVisibility } = useLayoutPreferences();
   const {
+    tailLogs,
+    scrollToTail,
+    stopTailingLogs,
     openStage,
     openStageSteps,
     openStageStepBuffers,
@@ -138,6 +141,9 @@ export default function PipelineConsole() {
                 </div>
               ) : (
                 <StageView
+                  tailLogs={tailLogs}
+                  scrollToTail={scrollToTail}
+                  stopTailingLogs={stopTailingLogs}
                   stage={openStage}
                   steps={openStageSteps}
                   stepBuffers={openStageStepBuffers}
@@ -152,7 +158,9 @@ export default function PipelineConsole() {
         </SplitView>
       )}
 
-      {!loading && stages.length === 0 && <NoStageStepsFallback />}
+      {!loading && stages.length === 0 && (
+        <NoStageStepsFallback tailLogs={tailLogs} scrollToTail={scrollToTail} />
+      )}
 
       <ScrollToTopBottom />
     </>

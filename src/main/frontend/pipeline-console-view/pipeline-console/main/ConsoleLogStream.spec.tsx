@@ -1,7 +1,6 @@
 /** * @vitest-environment jsdom */
 
 import { render } from "@testing-library/react";
-import { vi } from "vitest";
 
 import ConsoleLogStream, {
   ConsoleLogStreamProps,
@@ -19,8 +18,6 @@ const TestComponent = (props: ConsoleLogStreamProps) => {
     </div>
   );
 };
-
-window.HTMLElement.prototype.scrollIntoView = vi.fn();
 
 describe("ConsoleLogStream", () => {
   const baseStep: StepInfo = {
@@ -49,6 +46,9 @@ describe("ConsoleLogStream", () => {
       console.log("fetchLogText triggered");
     },
     fetchExceptionText: vi.fn(),
+    tailLogs: false,
+    stopTailingLogs: () => {},
+    scrollToTail: () => {},
   } as ConsoleLogStreamProps;
 
   it("renders step console", async () => {

@@ -49,6 +49,9 @@ describe("ConsoleLogCard", () => {
     onStepToggle: vi.fn(),
     fetchLogText: vi.fn(),
     fetchExceptionText: () => {},
+    tailLogs: true,
+    scrollToTail: () => {},
+    stopTailingLogs: () => {},
   } as ConsoleLogCardProps;
   beforeEach(function () {
     (DefaultTestProps.fetchLogText as Mock).mockReset();

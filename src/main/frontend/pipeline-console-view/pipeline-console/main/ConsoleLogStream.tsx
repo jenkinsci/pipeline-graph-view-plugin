@@ -9,18 +9,15 @@ import {
   TAIL_CONSOLE_LOG,
 } from "./PipelineConsoleModel.tsx";
 
-function canStickToBottom() {
-  // Avoid scrolling to the bottom when a log line is focussed.
-  return !window.location.hash.startsWith("#log-");
-}
-
 export default function ConsoleLogStream({
+  tailLogs,
+  stopTailingLogs,
+  scrollToTail,
   step,
   logBuffer,
   fetchLogText,
   fetchExceptionText,
 }: ConsoleLogStreamProps) {
-  const [stickToBottom, setStickToBottom] = useState(false);
   const logRef = useRef<HTMLDivElement>(null);
   const [logVisible, setLogVisible] = useState(true);
 
@@ -31,32 +28,9 @@ export default function ConsoleLogStream({
   }, [step.id, step.state, fetchExceptionText]);
 
   useLayoutEffect(() => {
-    if (stickToBottom && canStickToBottom()) {
-      logRef.current?.scrollIntoView({ block: "end" });
-    }
-  }, [stickToBottom, logBuffer.lines]);
-
-  useEffect(() => {
-    if (!canStickToBottom()) return;
-    const update = () => {
-      const scrollPosition = window.scrollY + window.innerHeight;
-      const pageHeight = document.body.scrollHeight;
-      const isAtBottom = pageHeight - scrollPosition < 300;
-      setStickToBottom(isAtBottom);
-    };
-    update();
-    const handleScroll = () => {
-      if (!canStickToBottom()) {
-        window.removeEventListener("scroll", handleScroll);
-        setStickToBottom(false);
-        return;
-      }
-      update();
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    if (tailLogs && !logRef.current) return;
+    scrollToTail(step.id, logRef.current);
+  }, [tailLogs, logBuffer.lines, scrollToTail, step.id]);
 
   useEffect(() => {
     if (logBuffer.stopTailing) return;
@@ -112,7 +86,11 @@ export default function ConsoleLogStream({
   }, [scrollToLogLine, step.id, logBuffer.lines]);
 
   return (
-    <div role="log" ref={logRef} style={{ scrollMarginBlockEnd: "1rem" }}>
+    <div
+      role="log"
+      ref={logRef}
+      style={{ scrollMarginBlockEnd: "var(--section-padding)" }}
+    >
       {logBuffer.lines.map((content, index) => (
         <ConsoleLine
           key={index}
@@ -120,6 +98,7 @@ export default function ConsoleLogStream({
           content={content}
           stepId={step.id}
           startByte={logBuffer.startByte}
+          stopTailingLogs={stopTailingLogs}
         />
       ))}
     </div>
@@ -131,4 +110,7 @@ export interface ConsoleLogStreamProps {
   fetchLogText: (nodeId: string, startByte: number) => void;
   fetchExceptionText: (nodeId: string) => void;
   step: StepInfo;
+  tailLogs: boolean;
+  stopTailingLogs: () => void;
+  scrollToTail: (stepId: string, element: HTMLDivElement) => void;
 }

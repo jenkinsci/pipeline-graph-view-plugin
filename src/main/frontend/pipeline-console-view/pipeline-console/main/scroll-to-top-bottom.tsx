@@ -96,8 +96,10 @@ export default function ScrollToTopBottom() {
       </div>
       <div
         ref={scrolledToBottomRef}
-        // scrollMarginBlockEnd=1rem on ConsoleLogStream - padding - border.
-        style={{ scrollMarginBlockEnd: "calc(1rem - 0.375rem - 2px)" }}
+        style={{
+          // --section-padding - padding - border.
+          scrollMarginBlockEnd: "calc(var(--section-padding) - 0.375rem - 2px)",
+        }}
       />
     </>
   );

@@ -19,9 +19,14 @@ async function fetchData(): Promise<StepLogBufferInfo> {
   };
 }
 
-export function NoStageStepsFallback() {
+interface NoStageStepsFallbackProps {
+  tailLogs: boolean;
+  scrollToTail: (stepId: string, element: HTMLDivElement) => void;
+}
+
+export function NoStageStepsFallback(props: NoStageStepsFallbackProps) {
   const step: StepInfo = {
-    id: "step-1",
+    id: "",
     name: "Step 1",
     title: "Step 1 Title",
     state: Result.success,
@@ -47,8 +52,10 @@ export function NoStageStepsFallback() {
     <div className={"pgv-stage-steps"}>
       <div className={"pgv-step-detail-group"}>
         <ConsoleLogStream
+          {...props}
           logBuffer={logBuffer ?? { lines: [], startByte: 0, endByte: 0 }}
           fetchLogText={() => {}}
+          stopTailingLogs={() => {}}
           step={step}
           fetchExceptionText={() => {}}
         />

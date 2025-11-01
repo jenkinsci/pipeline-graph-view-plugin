@@ -16,6 +16,9 @@ export default function StageView(props: StageViewProps) {
         stepBuffers={props.stepBuffers}
         expandedSteps={props.expandedSteps}
         onStepToggle={props.onStepToggle}
+        tailLogs={props.tailLogs}
+        scrollToTail={props.scrollToTail}
+        stopTailingLogs={props.stopTailingLogs}
         fetchLogText={props.fetchLogText}
         fetchExceptionText={props.fetchExceptionText}
       />
@@ -31,4 +34,7 @@ export interface StageViewProps {
   onStepToggle: (nodeId: string) => void;
   fetchLogText: (nodeId: string, startByte: number) => void;
   fetchExceptionText: (nodeId: string) => void;
+  tailLogs: boolean;
+  scrollToTail: (stepId: string, element: HTMLDivElement) => void;
+  stopTailingLogs: () => void;
 }

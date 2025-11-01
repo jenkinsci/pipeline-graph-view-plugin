@@ -24,6 +24,9 @@ import InputStep from "./steps/InputStep.tsx";
 const ConsoleLogStream = lazy(() => import("./ConsoleLogStream.tsx"));
 
 export default function ConsoleLogCard({
+  tailLogs,
+  scrollToTail,
+  stopTailingLogs,
   step,
   stepBuffer,
   isExpanded,
@@ -33,9 +36,10 @@ export default function ConsoleLogCard({
 }: ConsoleLogCardProps) {
   useEffect(() => {
     if (isExpanded) {
+      // prefetch while lazy loading ConsoleLogStream
       fetchLogText(step.id, TAIL_CONSOLE_LOG);
     }
-  }, [isExpanded, fetchLogText, step.id, stepBuffer]);
+  }, [isExpanded, fetchLogText, step.id]);
 
   const handleToggle = (e: ReactMouseEvent<HTMLElement>) => {
     // Only prevent left clicks
@@ -141,6 +145,9 @@ export default function ConsoleLogCard({
 
       {isExpanded && (
         <ConsoleLogBody
+          tailLogs={tailLogs}
+          scrollToTail={scrollToTail}
+          stopTailingLogs={stopTailingLogs}
           step={step}
           stepBuffer={stepBuffer}
           fetchLogText={fetchLogText}
@@ -154,6 +161,9 @@ export default function ConsoleLogCard({
 }
 
 function ConsoleLogBody({
+  tailLogs,
+  scrollToTail,
+  stopTailingLogs,
   step,
   stepBuffer,
   fetchLogText,
@@ -198,6 +208,9 @@ function ConsoleLogBody({
       {getTruncatedLogWarning()}
       <Suspense>
         <ConsoleLogStream
+          tailLogs={tailLogs}
+          scrollToTail={scrollToTail}
+          stopTailingLogs={stopTailingLogs}
           logBuffer={stepBuffer}
           fetchLogText={fetchLogText}
           fetchExceptionText={fetchExceptionText}
@@ -215,4 +228,7 @@ export type ConsoleLogCardProps = {
   onStepToggle: (nodeId: string) => void;
   fetchLogText: (nodeId: string, startByte: number) => void;
   fetchExceptionText: (nodeId: string) => void;
+  tailLogs: boolean;
+  scrollToTail: (stepId: string, element: HTMLDivElement) => void;
+  stopTailingLogs: () => void;
 };

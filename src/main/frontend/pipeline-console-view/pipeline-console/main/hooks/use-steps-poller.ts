@@ -109,7 +109,7 @@ export function useStepsPoller(props: RunPollerProps) {
     previousRunPath: props.previousRunPath,
   });
   const {
-    data: { steps },
+    data: { steps, runIsComplete },
   } = usePolling<AllStepsData>(getRunSteps, POLL_INTERVAL, "runIsComplete", {
     steps: [],
     runIsComplete: false,
@@ -208,7 +208,7 @@ export function useStepsPoller(props: RunPollerProps) {
   );
 
   const getDefaultSelectedStep = useCallback(
-    (steps: StepInfo[]) => {
+    (steps: StepInfo[], runIsComplete: boolean) => {
       let selectedStep = steps.find((step) => step !== undefined);
       if (!steps || steps.length === 0 || !selectedStep) {
         return null;
@@ -226,7 +226,7 @@ export function useStepsPoller(props: RunPollerProps) {
           case Result.failure:
           case Result.aborted:
             if (
-              run.complete &&
+              runIsComplete &&
               selectedStepResult &&
               stepResult < selectedStepResult
             ) {
@@ -245,13 +245,13 @@ export function useStepsPoller(props: RunPollerProps) {
       }
       return selectedStep;
     },
-    [run.complete],
+    [],
   );
 
   useEffect(() => {
     const usedUrl = parseUrlParams(steps);
     if (!usedUrl) {
-      const defaultStep = getDefaultSelectedStep(steps);
+      const defaultStep = getDefaultSelectedStep(steps, runIsComplete);
       if (defaultStep) {
         setOpenStage(defaultStep.stageId);
 
@@ -261,7 +261,13 @@ export function useStepsPoller(props: RunPollerProps) {
         }
       }
     }
-  }, [getDefaultSelectedStep, parseUrlParams, steps, updateStepConsoleOffset]);
+  }, [
+    getDefaultSelectedStep,
+    parseUrlParams,
+    steps,
+    runIsComplete,
+    updateStepConsoleOffset,
+  ]);
 
   const handleStageSelect = useCallback(
     (nodeId: string) => {

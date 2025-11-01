@@ -103,6 +103,44 @@ async function updateStepBuffer(
   }
 }
 
+function getDefaultSelectedStep(steps: StepInfo[], runIsComplete: boolean) {
+  let selectedStep = steps.find((step) => step !== undefined);
+  if (!steps || steps.length === 0 || !selectedStep) {
+    return null;
+  }
+  for (const step of steps) {
+    const stepResult = step.state.toLowerCase() as Result;
+    const selectedStepResult = selectedStep?.state.toLowerCase() as Result;
+    switch (stepResult) {
+      case Result.running:
+      case Result.queued:
+      case Result.paused:
+        // Return first running/queued/paused step.
+        return step;
+      case Result.unstable:
+      case Result.failure:
+      case Result.aborted:
+        if (
+          runIsComplete &&
+          selectedStepResult &&
+          stepResult < selectedStepResult
+        ) {
+          // If the run is complete return first unstable/failed/aborted step which has a state worse
+          // than the selectedStep.
+          // E.g. if the first step state is failure we want to return that over a later unstable step.
+          return step;
+        }
+        continue;
+      default:
+        // Otherwise select the step with the worst result with the largest id - e.g. (last step if all successful).
+        if (selectedStepResult && stepResult <= selectedStepResult) {
+          selectedStep = step;
+        }
+    }
+  }
+  return selectedStep;
+}
+
 export function useStepsPoller(props: RunPollerProps) {
   const { run, loading } = useRunPoller({
     currentRunPath: props.currentRunPath,
@@ -207,47 +245,6 @@ export function useStepsPoller(props: RunPollerProps) {
     [updateStepConsoleOffset],
   );
 
-  const getDefaultSelectedStep = useCallback(
-    (steps: StepInfo[], runIsComplete: boolean) => {
-      let selectedStep = steps.find((step) => step !== undefined);
-      if (!steps || steps.length === 0 || !selectedStep) {
-        return null;
-      }
-      for (const step of steps) {
-        const stepResult = step.state.toLowerCase() as Result;
-        const selectedStepResult = selectedStep?.state.toLowerCase() as Result;
-        switch (stepResult) {
-          case Result.running:
-          case Result.queued:
-          case Result.paused:
-            // Return first running/queued/paused step.
-            return step;
-          case Result.unstable:
-          case Result.failure:
-          case Result.aborted:
-            if (
-              runIsComplete &&
-              selectedStepResult &&
-              stepResult < selectedStepResult
-            ) {
-              // If the run is complete return first unstable/failed/aborted step which has a state worse
-              // than the selectedStep.
-              // E.g. if the first step state is failure we want to return that over a later unstable step.
-              return step;
-            }
-            continue;
-          default:
-            // Otherwise select the step with the worst result with the largest id - e.g. (last step if all successful).
-            if (selectedStepResult && stepResult <= selectedStepResult) {
-              selectedStep = step;
-            }
-        }
-      }
-      return selectedStep;
-    },
-    [],
-  );
-
   useEffect(() => {
     const usedUrl = parseUrlParams(steps);
     if (!usedUrl) {
@@ -261,13 +258,7 @@ export function useStepsPoller(props: RunPollerProps) {
         }
       }
     }
-  }, [
-    getDefaultSelectedStep,
-    parseUrlParams,
-    steps,
-    runIsComplete,
-    updateStepConsoleOffset,
-  ]);
+  }, [parseUrlParams, steps, runIsComplete, updateStepConsoleOffset]);
 
   const handleStageSelect = useCallback(
     (nodeId: string) => {

@@ -31,31 +31,27 @@ export default function ConsoleLogStream({
   }, [step.id, step.state, fetchExceptionText]);
 
   useEffect(() => {
-    if (stickToBottom && logBuffer.lines.length > 0 && canStickToBottom()) {
-      // Scroll to bottom of the log stream
-      if (logBuffer.lines) {
-        requestAnimationFrame(() => {
-          if (!canStickToBottom()) return;
-          const scrollTarget = document.documentElement.scrollHeight;
-          window.scrollTo({ top: scrollTarget });
-        });
-      }
+    if (stickToBottom && canStickToBottom()) {
+      logRef.current?.scrollIntoView({ block: "end" });
     }
   }, [stickToBottom, logBuffer.lines]);
 
   useEffect(() => {
     if (!canStickToBottom()) return;
+    const update = () => {
+      const scrollPosition = window.scrollY + window.innerHeight;
+      const pageHeight = document.body.scrollHeight;
+      const isAtBottom = pageHeight - scrollPosition < 300;
+      setStickToBottom(isAtBottom);
+    };
+    update();
     const handleScroll = () => {
       if (!canStickToBottom()) {
         window.removeEventListener("scroll", handleScroll);
         setStickToBottom(false);
         return;
       }
-      const scrollPosition = window.scrollY + window.innerHeight;
-      const pageHeight = document.body.scrollHeight;
-      const isAtBottom = pageHeight - scrollPosition < 300;
-
-      setStickToBottom(isAtBottom);
+      update();
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -116,7 +112,7 @@ export default function ConsoleLogStream({
   }, [scrollToLogLine, step.id, logBuffer.lines]);
 
   return (
-    <div role="log" ref={logRef}>
+    <div role="log" ref={logRef} style={{ scrollMarginBlockEnd: "1rem" }}>
       {logBuffer.lines.map((content, index) => (
         <ConsoleLine
           key={index}

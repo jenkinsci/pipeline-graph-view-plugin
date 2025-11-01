@@ -20,7 +20,7 @@ const TestComponent = (props: ConsoleLogStreamProps) => {
   );
 };
 
-window.HTMLElement.prototype.scrollBy = vi.fn();
+window.HTMLElement.prototype.scrollIntoView = vi.fn();
 
 describe("ConsoleLogStream", () => {
   const baseStep: StepInfo = {

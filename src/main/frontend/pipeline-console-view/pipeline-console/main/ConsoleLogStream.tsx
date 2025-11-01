@@ -20,16 +20,9 @@ export default function ConsoleLogStream({
   onMoreConsoleClick,
   fetchExceptionText,
 }: ConsoleLogStreamProps) {
-  const appendInterval = useRef<number | null>(null);
   const [stickToBottom, setStickToBottom] = useState(false);
-
-  useEffect(() => {
-    return () => {
-      if (appendInterval.current) {
-        clearInterval(appendInterval.current);
-      }
-    };
-  }, []);
+  const logRef = useRef<HTMLDivElement>(null);
+  const [logVisible, setLogVisible] = useState(true);
 
   useEffect(() => {
     if (step.state === Result.failure) {
@@ -70,20 +63,26 @@ export default function ConsoleLogStream({
   }, []);
 
   useEffect(() => {
-    const shouldRequestMoreLogs =
-      step.state === Result.running || logBuffer.endByte < 0;
-
-    if (stickToBottom && shouldRequestMoreLogs) {
-      if (!appendInterval.current) {
-        appendInterval.current = window.setInterval(() => {
-          onMoreConsoleClick(step.id, TAIL_CONSOLE_LOG);
-        }, POLL_INTERVAL);
+    if (logBuffer.stopTailing) return;
+    if (!logRef.current) return;
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        setLogVisible(entry.isIntersecting);
       }
-    } else if (appendInterval.current) {
-      clearInterval(appendInterval.current);
-      appendInterval.current = null;
-    }
-  }, [stickToBottom, step, logBuffer, onMoreConsoleClick]);
+    });
+    observer.observe(logRef.current);
+    return () => observer.disconnect();
+  }, [logBuffer.stopTailing]);
+
+  const fetchMore = logVisible && !logBuffer.stopTailing;
+  useEffect(() => {
+    if (!fetchMore) return;
+    onMoreConsoleClick(step.id, TAIL_CONSOLE_LOG);
+    const interval = window.setInterval(() => {
+      onMoreConsoleClick(step.id, TAIL_CONSOLE_LOG);
+    }, POLL_INTERVAL);
+    return () => clearInterval(interval);
+  }, [fetchMore, onMoreConsoleClick, step.id]);
 
   const [scrollToLogLine, setScrollToLogLine] = useState<boolean>(
     window.location.hash.startsWith("#log-"),
@@ -117,7 +116,7 @@ export default function ConsoleLogStream({
   }, [scrollToLogLine, step.id, logBuffer.lines]);
 
   return (
-    <div role="log">
+    <div role="log" ref={logRef}>
       {logBuffer.lines.map((content, index) => (
         <ConsoleLine
           key={index}

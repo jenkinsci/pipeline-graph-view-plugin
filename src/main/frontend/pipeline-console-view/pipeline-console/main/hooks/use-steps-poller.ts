@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import useRunPoller from "../../../../common/tree-api.ts";
 import { refreshStagesFromSteps } from "../../../../common/utils/refresh-stages-from-steps.ts";
@@ -149,7 +149,7 @@ export function useStepsPoller(props: RunPollerProps) {
   });
   run.stages = refreshStagesFromSteps(run.stages, steps);
 
-  const [openStage, setOpenStage] = useState("");
+  const [openStageId, setOpenStageId] = useState("");
   const [expandedSteps, setExpandedSteps] = useState<string[]>([]);
   const collapsedSteps = useRef(new Set<string>());
   const currentDefaultStep = useRef("");
@@ -212,7 +212,7 @@ export function useStepsPoller(props: RunPollerProps) {
     timer = window.setTimeout(cleanup, 100);
     window.addEventListener("scroll", cleanup);
     return () => cleanup();
-  }, [tailLogs, openStage]);
+  }, [tailLogs, openStageId]);
 
   const scrollToStepOnce = useRef("");
   const scrollToTail = useCallback(
@@ -331,7 +331,7 @@ export function useStepsPoller(props: RunPollerProps) {
       expandLastStageStep(steps, selected);
     }
 
-    setOpenStage(selected);
+    setOpenStageId(selected);
   }, [steps, expandLastStageStep, stopTailingLogs]);
 
   useEffect(() => {
@@ -339,7 +339,7 @@ export function useStepsPoller(props: RunPollerProps) {
     if (!defaultStep) return;
     currentDefaultStep.current = defaultStep.id;
     if (!tailLogsRef.current) return;
-    setOpenStage(defaultStep.stageId);
+    setOpenStageId(defaultStep.stageId);
     if (collapsedSteps.current.has(defaultStep.id)) return;
     setExpandedSteps((prev) => {
       if (prev.includes(defaultStep.id)) return prev;
@@ -352,14 +352,14 @@ export function useStepsPoller(props: RunPollerProps) {
       stopTailingLogs();
 
       if (!nodeId) return;
-      if (nodeId === openStage) return; // skip if already selected
+      if (nodeId === openStageId) return; // skip if already selected
 
       history.replaceState({}, "", `?selected-node=` + nodeId);
 
-      setOpenStage(nodeId);
+      setOpenStageId(nodeId);
       expandLastStageStep(steps, nodeId);
     },
-    [openStage, steps, stopTailingLogs, expandLastStageStep],
+    [openStageId, steps, stopTailingLogs, expandLastStageStep],
   );
 
   const onStepToggle = useCallback(
@@ -378,24 +378,14 @@ export function useStepsPoller(props: RunPollerProps) {
     [stopTailingLogs],
   );
 
-  const getStageSteps = (stageId: string) => {
-    return steps.filter((step) => step.stageId === stageId);
-  };
+  const openStageSteps = useMemo(() => {
+    return steps.filter((step) => step.stageId === openStageId);
+  }, [steps, openStageId]);
 
-  const getStageStepBuffers = (stageId: string) => {
-    const buffers = new Map<string, StepLogBufferInfo>();
-    steps.forEach((step) => {
-      if (step.stageId === stageId && stepBuffers.has(step.id)) {
-        buffers.set(step.id, stepBuffers.get(step.id)!);
-      }
-    });
-    return buffers;
-  };
-
-  const getOpenStage = (): StageInfo | null => {
+  const openStage = useMemo(() => {
     const findStage = (stages: StageInfo[]): StageInfo | null => {
       for (const stage of stages) {
-        if (String(stage.id) === openStage) return stage;
+        if (String(stage.id) === openStageId) return stage;
         if (stage.children.length > 0) {
           const result = findStage(stage.children);
           if (result) return result;
@@ -403,13 +393,13 @@ export function useStepsPoller(props: RunPollerProps) {
       }
       return null;
     };
-    return openStage ? findStage(run.stages) : null;
-  };
+    return openStageId ? findStage(run.stages) : null;
+  }, [run.stages, openStageId]);
 
   return {
-    openStage: getOpenStage(),
-    openStageSteps: getStageSteps(openStage),
-    openStageStepBuffers: getStageStepBuffers(openStage),
+    openStage,
+    openStageSteps,
+    stepBuffers,
     expandedSteps,
     complete: runIsComplete,
     stages: run.stages,

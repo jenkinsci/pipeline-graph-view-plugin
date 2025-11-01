@@ -36,7 +36,7 @@ export default function PipelineConsole() {
     stopTailingLogs,
     openStage,
     openStageSteps,
-    openStageStepBuffers,
+    stepBuffers,
     expandedSteps,
     stages,
     handleStageSelect,
@@ -157,7 +157,7 @@ export default function PipelineConsole() {
                   stopTailingLogs={stopTailingLogs}
                   stage={openStage}
                   steps={openStageSteps}
-                  stepBuffers={openStageStepBuffers}
+                  stepBuffers={stepBuffers}
                   expandedSteps={expandedSteps}
                   onStepToggle={onStepToggle}
                   fetchLogText={fetchLogText}

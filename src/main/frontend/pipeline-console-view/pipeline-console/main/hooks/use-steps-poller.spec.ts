@@ -87,7 +87,7 @@ it("handles empty console log", async () => {
 
   await act(() => result.current.fetchLogText("step-2", TAIL_CONSOLE_LOG));
   await waitFor(() =>
-    expectSameStepBuffer(result.current.openStageStepBuffers.get("step-2"), {
+    expectSameStepBuffer(result.current.stepBuffers.get("step-2"), {
       startByte: 0,
       endByte: 0,
       lines: [],
@@ -112,9 +112,11 @@ it("handles empty console log lines before and after text", async () => {
 
   await act(() => result.current.fetchLogText("step-2", TAIL_CONSOLE_LOG));
   await waitFor(() =>
-    expect(
-      result.current.openStageStepBuffers.get("step-2")?.lines,
-    ).to.deep.equal(["", "Hello", ""]),
+    expect(result.current.stepBuffers.get("step-2")?.lines).to.deep.equal([
+      "",
+      "Hello",
+      "",
+    ]),
   );
 
   unmount();
@@ -127,16 +129,17 @@ it("appends the exception message", async () => {
 
   await act(() => result.current.fetchLogText("step-2", TAIL_CONSOLE_LOG));
   await waitFor(() =>
-    expect(
-      result.current.openStageStepBuffers.get("step-2")?.lines,
-    ).to.deep.equal(["log line"]),
+    expect(result.current.stepBuffers.get("step-2")?.lines).to.deep.equal([
+      "log line",
+    ]),
   );
   await act(() => result.current.fetchExceptionText("step-2"));
 
   await waitFor(() =>
-    expect(
-      result.current.openStageStepBuffers.get("step-2")?.lines,
-    ).to.deep.equal(["log line", "Error message"]),
+    expect(result.current.stepBuffers.get("step-2")?.lines).to.deep.equal([
+      "log line",
+      "Error message",
+    ]),
   );
 
   unmount();
@@ -155,9 +158,7 @@ it("handles empty console log and exception message", async () => {
 
   await act(() => result.current.fetchLogText("step-2", TAIL_CONSOLE_LOG));
   await waitFor(() =>
-    expect(
-      result.current.openStageStepBuffers.get("step-2")?.lines,
-    ).to.deep.equal([]),
+    expect(result.current.stepBuffers.get("step-2")?.lines).to.deep.equal([]),
   );
   await act(() => result.current.fetchExceptionText("step-2"));
 
@@ -166,9 +167,9 @@ it("handles empty console log and exception message", async () => {
   expect(model.getExceptionText as Mock).toHaveBeenCalledOnce();
 
   await waitFor(() =>
-    expect(
-      result.current.openStageStepBuffers.get("step-2")?.lines,
-    ).to.deep.equal(["Error message"]),
+    expect(result.current.stepBuffers.get("step-2")?.lines).to.deep.equal([
+      "Error message",
+    ]),
   );
 
   unmount();
@@ -198,11 +199,11 @@ it("skips logs from URL on initial load", async () => {
 
   await waitFor(() => expect(result.current.expandedSteps).toContain("step-1"));
 
-  const { openStage, expandedSteps, openStageStepBuffers } = result.current;
+  const { openStage, expandedSteps, stepBuffers } = result.current;
 
   expect(openStage?.id).toBe("stage-1");
   expect(expandedSteps).toContain("step-1");
-  expectSameStepBuffer(openStageStepBuffers.get("step-1"), {
+  expectSameStepBuffer(stepBuffers.get("step-1"), {
     endByte: 42,
     startByte: 42,
     lines: [],
@@ -690,7 +691,7 @@ describe("incremental log fetching", function () {
         );
         await waitFor(() => {
           expectSameStepBuffer(
-            result.current.openStageStepBuffers.get("step-2"),
+            result.current.stepBuffers.get("step-2"),
             evolution.result,
           );
         });

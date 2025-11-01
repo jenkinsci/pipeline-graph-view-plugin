@@ -42,19 +42,20 @@ describe("ConsoleLogCard", () => {
     endByte: 13,
   };
 
-  const DefaultTestProps = {
+  const DefaultTestProps: ConsoleLogCardProps = {
     step: baseStep,
-    stepBuffer: baseBuffer,
+    stepBuffers: new Map().set(baseStep.id, baseBuffer),
     isExpanded: false,
     onStepToggle: vi.fn(),
-    fetchLogText: vi.fn(),
-    fetchExceptionText: () => {},
+    fetchLogText: vi.fn().mockResolvedValue(baseBuffer),
+    fetchExceptionText: vi.fn().mockResolvedValue(baseBuffer),
     tailLogs: true,
     scrollToTail: () => {},
     stopTailingLogs: () => {},
   } as ConsoleLogCardProps;
   beforeEach(function () {
     (DefaultTestProps.fetchLogText as Mock).mockReset();
+    (DefaultTestProps.fetchLogText as Mock).mockResolvedValue(baseBuffer);
   });
 
   it("renders step header only when not expanded", async () => {

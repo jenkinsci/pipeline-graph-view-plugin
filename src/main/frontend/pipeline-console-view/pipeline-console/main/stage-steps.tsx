@@ -2,7 +2,7 @@ import "./stage-steps.scss";
 
 import { StepInfo, StepLogBufferInfo } from "../../../common/RestClient.tsx";
 import ConsoleLogCard from "./ConsoleLogCard.tsx";
-import { StageInfo, TAIL_CONSOLE_LOG } from "./PipelineConsoleModel.tsx";
+import { StageInfo } from "./PipelineConsoleModel.tsx";
 
 export default function StageSteps({
   tailLogs,
@@ -32,13 +32,7 @@ export default function StageSteps({
             scrollToTail={scrollToTail}
             stopTailingLogs={stopTailingLogs}
             step={stepItemData}
-            stepBuffer={
-              stepBuffers.get(stepItemData.id) ?? {
-                lines: [],
-                startByte: 0,
-                endByte: TAIL_CONSOLE_LOG,
-              }
-            }
+            stepBuffers={stepBuffers}
             onStepToggle={onStepToggle}
             isExpanded={expandedSteps.includes(stepItemData.id)}
             fetchLogText={fetchLogText}
@@ -57,8 +51,11 @@ export interface StageStepsProps {
   stepBuffers: Map<string, StepLogBufferInfo>;
   expandedSteps: string[];
   onStepToggle: (nodeId: string) => void;
-  fetchLogText: (nodeId: string, startByte: number) => void;
-  fetchExceptionText: (nodeId: string) => void;
+  fetchLogText: (
+    stepId: string,
+    startByte: number,
+  ) => Promise<StepLogBufferInfo>;
+  fetchExceptionText: (stepId: string) => Promise<StepLogBufferInfo>;
   tailLogs: boolean;
   scrollToTail: (stepId: string, element: HTMLDivElement) => void;
   stopTailingLogs: () => void;

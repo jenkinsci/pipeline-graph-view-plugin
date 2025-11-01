@@ -37,7 +37,11 @@ export function NoStageStepsFallback(props: NoStageStepsFallbackProps) {
     pauseDurationMillis: 0,
   };
 
-  const [logBuffer, setLogBuffer] = useState<StepLogBufferInfo>();
+  const [logBuffer, setLogBuffer] = useState<StepLogBufferInfo>({
+    lines: [],
+    startByte: 0,
+    endByte: 0,
+  });
 
   useEffect(() => {
     fetchData()
@@ -53,11 +57,12 @@ export function NoStageStepsFallback(props: NoStageStepsFallbackProps) {
       <div className={"pgv-step-detail-group"}>
         <ConsoleLogStream
           {...props}
-          logBuffer={logBuffer ?? { lines: [], startByte: 0, endByte: 0 }}
-          fetchLogText={() => {}}
+          logBuffer={logBuffer}
+          setLogBuffer={setLogBuffer}
+          fetchLogText={async () => logBuffer}
           stopTailingLogs={() => {}}
           step={step}
-          fetchExceptionText={() => {}}
+          fetchExceptionText={async () => logBuffer}
         />
       </div>
     </div>

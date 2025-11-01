@@ -32,8 +32,11 @@ export interface StageViewProps {
   stepBuffers: Map<string, StepLogBufferInfo>;
   expandedSteps: string[];
   onStepToggle: (nodeId: string) => void;
-  fetchLogText: (nodeId: string, startByte: number) => void;
-  fetchExceptionText: (nodeId: string) => void;
+  fetchLogText: (
+    stepId: string,
+    startByte: number,
+  ) => Promise<StepLogBufferInfo>;
+  fetchExceptionText: (stepId: string) => Promise<StepLogBufferInfo>;
   tailLogs: boolean;
   scrollToTail: (stepId: string, element: HTMLDivElement) => void;
   stopTailingLogs: () => void;

@@ -15,6 +15,7 @@ export default function ConsoleLogStream({
   scrollToTail,
   step,
   logBuffer,
+  setLogBuffer,
   fetchLogText,
   fetchExceptionText,
 }: ConsoleLogStreamProps) {
@@ -23,9 +24,11 @@ export default function ConsoleLogStream({
 
   useEffect(() => {
     if (step.state === Result.failure) {
-      fetchExceptionText(step.id);
+      fetchExceptionText(step.id)
+        .then((logBuffer) => setLogBuffer({ ...logBuffer }))
+        .catch(console.error);
     }
-  }, [step.id, step.state, fetchExceptionText]);
+  }, [step.id, step.state, fetchExceptionText, setLogBuffer]);
 
   useLayoutEffect(() => {
     if (!logRef.current) return;
@@ -47,12 +50,16 @@ export default function ConsoleLogStream({
   const fetchMore = logVisible && !logBuffer.stopTailing;
   useEffect(() => {
     if (!fetchMore) return;
-    fetchLogText(step.id, TAIL_CONSOLE_LOG);
+    fetchLogText(step.id, TAIL_CONSOLE_LOG)
+      .then((logBuffer) => setLogBuffer({ ...logBuffer }))
+      .catch(console.error);
     const interval = window.setInterval(() => {
-      fetchLogText(step.id, TAIL_CONSOLE_LOG);
+      fetchLogText(step.id, TAIL_CONSOLE_LOG)
+        .then((logBuffer) => setLogBuffer({ ...logBuffer }))
+        .catch(console.error);
     }, POLL_INTERVAL);
     return () => clearInterval(interval);
-  }, [fetchMore, fetchLogText, step.id]);
+  }, [fetchMore, fetchLogText, step.id, setLogBuffer]);
 
   const [scrollToLogLine, setScrollToLogLine] = useState<boolean>(
     window.location.hash.startsWith("#log-"),
@@ -107,8 +114,12 @@ export default function ConsoleLogStream({
 
 export interface ConsoleLogStreamProps {
   logBuffer: StepLogBufferInfo;
-  fetchLogText: (nodeId: string, startByte: number) => void;
-  fetchExceptionText: (nodeId: string) => void;
+  setLogBuffer: (logBuffer: StepLogBufferInfo) => void;
+  fetchLogText: (
+    stepId: string,
+    startByte: number,
+  ) => Promise<StepLogBufferInfo>;
+  fetchExceptionText: (stepId: string) => Promise<StepLogBufferInfo>;
   step: StepInfo;
   tailLogs: boolean;
   stopTailingLogs: () => void;

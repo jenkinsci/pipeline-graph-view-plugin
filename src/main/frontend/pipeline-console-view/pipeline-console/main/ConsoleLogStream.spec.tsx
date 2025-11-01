@@ -41,11 +41,10 @@ describe("ConsoleLogStream", () => {
   const DefaultTestProps = {
     step: baseStep,
     logBuffer: baseBuffer,
+    setLogBuffer: vi.fn(),
     isExpanded: false,
-    fetchLogText: () => {
-      console.log("fetchLogText triggered");
-    },
-    fetchExceptionText: vi.fn(),
+    fetchLogText: vi.fn().mockResolvedValue(baseBuffer),
+    fetchExceptionText: vi.fn().mockResolvedValue(baseBuffer),
     tailLogs: false,
     stopTailingLogs: () => {},
     scrollToTail: () => {},

@@ -6,6 +6,7 @@ import {
   MouseEvent as ReactMouseEvent,
   Suspense,
   useEffect,
+  useState,
 } from "react";
 
 import StatusIcon from "../../../common/components/status-icon.tsx";
@@ -28,16 +29,25 @@ export default function ConsoleLogCard({
   scrollToTail,
   stopTailingLogs,
   step,
-  stepBuffer,
+  stepBuffers,
   isExpanded,
   fetchLogText,
   onStepToggle,
   fetchExceptionText,
 }: ConsoleLogCardProps) {
+  const [stepBuffer, setStepBuffer] = useState<StepLogBufferInfo>(
+    stepBuffers.get(step.id) || {
+      lines: [],
+      startByte: 0,
+      endByte: TAIL_CONSOLE_LOG,
+    },
+  );
   useEffect(() => {
     if (isExpanded) {
       // prefetch while lazy loading ConsoleLogStream
-      fetchLogText(step.id, TAIL_CONSOLE_LOG);
+      fetchLogText(step.id, TAIL_CONSOLE_LOG)
+        .then((stepBuffer) => setStepBuffer({ ...stepBuffer }))
+        .catch(console.error);
     }
   }, [isExpanded, fetchLogText, step.id]);
 
@@ -150,6 +160,7 @@ export default function ConsoleLogCard({
           stopTailingLogs={stopTailingLogs}
           step={step}
           stepBuffer={stepBuffer}
+          setStepBuffer={setStepBuffer}
           fetchLogText={fetchLogText}
           fetchExceptionText={fetchExceptionText}
           isExpanded={false}
@@ -166,9 +177,10 @@ function ConsoleLogBody({
   stopTailingLogs,
   step,
   stepBuffer,
+  setStepBuffer,
   fetchLogText,
   fetchExceptionText,
-}: ConsoleLogCardProps) {
+}: ConsoleLogCardBodyProps) {
   const prettySizeString = (size: number) => {
     const kib = 1024;
     const mib = 1024 * 1024;
@@ -183,7 +195,9 @@ function ConsoleLogBody({
     // Double the amount of fetched logs with every click.
     const alreadyFetched = stepBuffer.endByte - stepBuffer.startByte;
     const startByte = Math.max(0, stepBuffer.startByte - alreadyFetched);
-    fetchLogText(step.id, startByte);
+    fetchLogText(step.id, startByte)
+      .then((stepBuffer) => setStepBuffer({ ...stepBuffer }))
+      .catch(console.error);
   };
 
   const getTruncatedLogWarning = () => {
@@ -212,6 +226,7 @@ function ConsoleLogBody({
           scrollToTail={scrollToTail}
           stopTailingLogs={stopTailingLogs}
           logBuffer={stepBuffer}
+          setLogBuffer={setStepBuffer}
           fetchLogText={fetchLogText}
           fetchExceptionText={fetchExceptionText}
           step={step}
@@ -223,11 +238,30 @@ function ConsoleLogBody({
 
 export type ConsoleLogCardProps = {
   step: StepInfo;
-  stepBuffer: StepLogBufferInfo;
+  stepBuffers: Map<string, StepLogBufferInfo>;
   isExpanded: boolean;
   onStepToggle: (nodeId: string) => void;
-  fetchLogText: (nodeId: string, startByte: number) => void;
-  fetchExceptionText: (nodeId: string) => void;
+  fetchLogText: (
+    nodeId: string,
+    startByte: number,
+  ) => Promise<StepLogBufferInfo>;
+  fetchExceptionText: (nodeId: string) => Promise<StepLogBufferInfo>;
+  tailLogs: boolean;
+  scrollToTail: (stepId: string, element: HTMLDivElement) => void;
+  stopTailingLogs: () => void;
+};
+
+export type ConsoleLogCardBodyProps = {
+  step: StepInfo;
+  stepBuffer: StepLogBufferInfo;
+  setStepBuffer: (step: StepLogBufferInfo) => void;
+  isExpanded: boolean;
+  onStepToggle: (nodeId: string) => void;
+  fetchLogText: (
+    nodeId: string,
+    startByte: number,
+  ) => Promise<StepLogBufferInfo>;
+  fetchExceptionText: (nodeId: string) => Promise<StepLogBufferInfo>;
   tailLogs: boolean;
   scrollToTail: (stepId: string, element: HTMLDivElement) => void;
   stopTailingLogs: () => void;

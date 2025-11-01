@@ -1,49 +1,46 @@
 import "./scroll-to-top-bottom.scss";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { classNames } from "../../../common/utils/classnames.ts";
 
 export default function ScrollToTopBottom() {
   const [isAtTop, setIsAtTop] = useState(true);
   const [isAtBottom, setIsAtBottom] = useState(false);
-  const [isScrollable, setIsScrollable] = useState(false);
+  const scrolledToBottomRef = useRef<HTMLDivElement>(null);
+  const [headerSize, setHeaderSize] = useState(0);
 
   useEffect(() => {
-    const updateScrollState = () => {
-      const scrollTop =
-        window.pageYOffset || document.documentElement.scrollTop;
-      const windowHeight = window.innerHeight;
-      const docHeight = document.documentElement.scrollHeight;
-
-      const atTop = scrollTop <= 10;
-      const atBottom = scrollTop + windowHeight >= docHeight - 10;
-      const scrollable = docHeight > windowHeight + 10;
-
-      setIsAtTop(atTop);
-      setIsAtBottom(atBottom);
-      setIsScrollable(scrollable);
+    const handleResize = () => {
+      const header = document.querySelector("header")!;
+      setHeaderSize(header.getBoundingClientRect().height);
     };
-
-    updateScrollState();
-
-    window.addEventListener("scroll", updateScrollState);
-    window.addEventListener("resize", updateScrollState);
-
-    const observer = new MutationObserver(updateScrollState);
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      characterData: true,
-    });
-
-    return () => {
-      window.removeEventListener("scroll", updateScrollState);
-      window.removeEventListener("resize", updateScrollState);
-      observer.disconnect();
-    };
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  useEffect(() => {
+    const appBar = document.querySelector(".jenkins-app-bar")!;
+    const observeTop = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.target === appBar) {
+            setIsAtTop(entry.isIntersecting);
+          } else {
+            setIsAtBottom(entry.isIntersecting);
+          }
+        }
+      },
+      {
+        threshold: 1, // Fully visible.
+        rootMargin: `-${headerSize}px 0px 0px 0px`,
+      },
+    );
+    observeTop.observe(appBar);
+    observeTop.observe(scrolledToBottomRef.current!);
+    return () => observeTop.disconnect();
+  }, [headerSize]);
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -52,50 +49,56 @@ export default function ScrollToTopBottom() {
   };
 
   const scrollToBottom = () => {
-    window.scrollTo({
-      top: document.documentElement.scrollHeight,
-    });
+    scrolledToBottomRef.current?.scrollIntoView({ block: "end" });
   };
 
+  const isScrollable = !isAtTop || !isAtBottom;
   return (
-    <div
-      className={classNames(`pgv-scroll-to-top-bottom`, {
-        "pgv-scroll-to-top-bottom--visible": isScrollable,
-      })}
-      aria-hidden={!isScrollable}
-    >
-      <button
-        onClick={scrollToTop}
-        className="jenkins-button"
-        disabled={isAtTop}
+    <>
+      <div
+        className={classNames(`pgv-scroll-to-top-bottom`, {
+          "pgv-scroll-to-top-bottom--visible": isScrollable,
+        })}
+        aria-hidden={!isScrollable}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-          <path
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="48"
-            d="M112 244l144-144 144 144M256 120v292"
-          />
-        </svg>
-      </button>
-      <button
-        onClick={scrollToBottom}
-        className="jenkins-button"
-        disabled={isAtBottom}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-          <path
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="48"
-            d="M112 268l144 144 144-144M256 392V100"
-          />
-        </svg>
-      </button>
-    </div>
+        <button
+          onClick={scrollToTop}
+          className="jenkins-button"
+          disabled={isAtTop}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <path
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="48"
+              d="M112 244l144-144 144 144M256 120v292"
+            />
+          </svg>
+        </button>
+        <button
+          onClick={scrollToBottom}
+          className="jenkins-button"
+          disabled={isAtBottom}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+            <path
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="48"
+              d="M112 268l144 144 144-144M256 392V100"
+            />
+          </svg>
+        </button>
+      </div>
+      <div
+        ref={scrolledToBottomRef}
+        // scrollMarginBlockEnd=1rem on ConsoleLogStream - padding - border.
+        style={{ scrollMarginBlockEnd: "calc(1rem - 0.375rem - 2px)" }}
+      />
+    </>
   );
 }

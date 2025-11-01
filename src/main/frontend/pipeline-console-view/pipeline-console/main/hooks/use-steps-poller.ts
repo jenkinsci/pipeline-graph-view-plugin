@@ -70,16 +70,22 @@ async function updateStepBuffer(
 
   const exceptionText = stepBuffer.exceptionText || [];
   if (stepBuffer.endByte > 0 && stepBuffer.endByte === startByte) {
-    stepBuffer.lines.length -= exceptionText.length;
-    if (
-      !stepBuffer.hasTrailingNewLine &&
-      stepBuffer.lines.length > 0 &&
-      newLogLines.length > 0
-    ) {
-      // Combine a previously broken up line back together.
-      stepBuffer.lines[stepBuffer.lines.length - 1] += newLogLines.shift();
+    if (newLogLines.length > 0) {
+      stepBuffer.lines.length -= exceptionText.length;
+      if (
+        !stepBuffer.hasTrailingNewLine &&
+        stepBuffer.lines.length > 0 &&
+        newLogLines.length > 0
+      ) {
+        // Combine a previously broken up line back together.
+        stepBuffer.lines[stepBuffer.lines.length - 1] += newLogLines.shift();
+      }
+      stepBuffer.lines = [
+        ...stepBuffer.lines,
+        ...newLogLines,
+        ...exceptionText,
+      ];
     }
-    stepBuffer.lines = [...stepBuffer.lines, ...newLogLines, ...exceptionText];
   } else {
     stepBuffer.lines = newLogLines.concat(exceptionText);
     stepBuffer.startByte = response.startByte;

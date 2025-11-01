@@ -16,7 +16,7 @@ export default function StageView(props: StageViewProps) {
         stepBuffers={props.stepBuffers}
         expandedSteps={props.expandedSteps}
         onStepToggle={props.onStepToggle}
-        onMoreConsoleClick={props.onMoreConsoleClick}
+        fetchLogText={props.fetchLogText}
         fetchExceptionText={props.fetchExceptionText}
       />
     </>
@@ -29,6 +29,6 @@ export interface StageViewProps {
   stepBuffers: Map<string, StepLogBufferInfo>;
   expandedSteps: string[];
   onStepToggle: (nodeId: string) => void;
-  onMoreConsoleClick: (nodeId: string, startByte: number) => void;
+  fetchLogText: (nodeId: string, startByte: number) => void;
   fetchExceptionText: (nodeId: string) => void;
 }

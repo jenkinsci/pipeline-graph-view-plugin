@@ -48,7 +48,7 @@ describe("StageView", () => {
           stepBuffers={new Map()}
           expandedSteps={["step-1"]}
           onStepToggle={vi.fn()}
-          onMoreConsoleClick={vi.fn()}
+          fetchLogText={vi.fn()}
           fetchExceptionText={vi.fn()}
         />,
       );

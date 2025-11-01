@@ -290,7 +290,7 @@ export function useStepsPoller(props: RunPollerProps) {
     }
   };
 
-  const onMoreConsoleClick = useCallback(
+  const fetchLogText = useCallback(
     (nodeId: string, startByte: number) => {
       updateStepConsoleOffset(nodeId, true, startByte);
     },
@@ -333,7 +333,7 @@ export function useStepsPoller(props: RunPollerProps) {
     stages: run.stages,
     handleStageSelect,
     onStepToggle,
-    onMoreConsoleClick,
+    fetchLogText,
     fetchExceptionText,
     loading,
   };

@@ -17,7 +17,7 @@ function canStickToBottom() {
 export default function ConsoleLogStream({
   step,
   logBuffer,
-  onMoreConsoleClick,
+  fetchLogText,
   fetchExceptionText,
 }: ConsoleLogStreamProps) {
   const [stickToBottom, setStickToBottom] = useState(false);
@@ -73,12 +73,12 @@ export default function ConsoleLogStream({
   const fetchMore = logVisible && !logBuffer.stopTailing;
   useEffect(() => {
     if (!fetchMore) return;
-    onMoreConsoleClick(step.id, TAIL_CONSOLE_LOG);
+    fetchLogText(step.id, TAIL_CONSOLE_LOG);
     const interval = window.setInterval(() => {
-      onMoreConsoleClick(step.id, TAIL_CONSOLE_LOG);
+      fetchLogText(step.id, TAIL_CONSOLE_LOG);
     }, POLL_INTERVAL);
     return () => clearInterval(interval);
-  }, [fetchMore, onMoreConsoleClick, step.id]);
+  }, [fetchMore, fetchLogText, step.id]);
 
   const [scrollToLogLine, setScrollToLogLine] = useState<boolean>(
     window.location.hash.startsWith("#log-"),
@@ -128,7 +128,7 @@ export default function ConsoleLogStream({
 
 export interface ConsoleLogStreamProps {
   logBuffer: StepLogBufferInfo;
-  onMoreConsoleClick: (nodeId: string, startByte: number) => void;
+  fetchLogText: (nodeId: string, startByte: number) => void;
   fetchExceptionText: (nodeId: string) => void;
   step: StepInfo;
 }

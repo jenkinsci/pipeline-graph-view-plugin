@@ -685,10 +685,7 @@ describe("incremental log fetching", function () {
             return Promise.resolve(evolution.logData);
           },
         );
-        result.current.onMoreConsoleClick(
-          "step-2",
-          evolution.clickMoreStartByte,
-        );
+        result.current.fetchLogText("step-2", evolution.clickMoreStartByte);
         await waitFor(() => {
           expectSameStepBuffer(
             result.current.openStageStepBuffers.get("step-2"),

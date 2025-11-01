@@ -10,7 +10,7 @@ export default function StageSteps({
   steps,
   onStepToggle,
   expandedSteps,
-  onMoreConsoleClick,
+  fetchLogText,
   fetchExceptionText,
 }: StageStepsProps) {
   if (steps.length === 0) {
@@ -35,7 +35,7 @@ export default function StageSteps({
             }
             onStepToggle={onStepToggle}
             isExpanded={expandedSteps.includes(stepItemData.id)}
-            onMoreConsoleClick={onMoreConsoleClick}
+            fetchLogText={fetchLogText}
             fetchExceptionText={fetchExceptionText}
             key={`step-console-card-${stepItemData.id}`}
           />
@@ -51,6 +51,6 @@ interface StageStepsProps {
   stepBuffers: Map<string, StepLogBufferInfo>;
   expandedSteps: string[];
   onStepToggle: (nodeId: string) => void;
-  onMoreConsoleClick: (nodeId: string, startByte: number) => void;
+  fetchLogText: (nodeId: string, startByte: number) => void;
   fetchExceptionText: (nodeId: string) => void;
 }

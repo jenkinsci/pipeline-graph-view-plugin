@@ -48,7 +48,7 @@ export function NoStageStepsFallback() {
       <div className={"pgv-step-detail-group"}>
         <ConsoleLogStream
           logBuffer={logBuffer ?? { lines: [], startByte: 0, endByte: 0 }}
-          onMoreConsoleClick={() => {}}
+          fetchLogText={() => {}}
           step={step}
           fetchExceptionText={() => {}}
         />

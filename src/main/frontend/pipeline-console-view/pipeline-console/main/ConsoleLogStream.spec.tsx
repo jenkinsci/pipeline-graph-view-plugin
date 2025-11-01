@@ -45,8 +45,8 @@ describe("ConsoleLogStream", () => {
     step: baseStep,
     logBuffer: baseBuffer,
     isExpanded: false,
-    onMoreConsoleClick: () => {
-      console.log("onMoreConsoleClick triggered");
+    fetchLogText: () => {
+      console.log("fetchLogText triggered");
     },
     fetchExceptionText: vi.fn(),
   } as ConsoleLogStreamProps;

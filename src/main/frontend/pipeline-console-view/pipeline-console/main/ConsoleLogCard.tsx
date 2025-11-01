@@ -27,15 +27,15 @@ export default function ConsoleLogCard({
   step,
   stepBuffer,
   isExpanded,
-  onMoreConsoleClick,
+  fetchLogText,
   onStepToggle,
   fetchExceptionText,
 }: ConsoleLogCardProps) {
   useEffect(() => {
     if (isExpanded) {
-      onMoreConsoleClick(step.id, TAIL_CONSOLE_LOG);
+      fetchLogText(step.id, TAIL_CONSOLE_LOG);
     }
-  }, [isExpanded, onMoreConsoleClick, step.id, stepBuffer]);
+  }, [isExpanded, fetchLogText, step.id, stepBuffer]);
 
   const handleToggle = (e: ReactMouseEvent<HTMLElement>) => {
     // Only prevent left clicks
@@ -143,7 +143,7 @@ export default function ConsoleLogCard({
         <ConsoleLogBody
           step={step}
           stepBuffer={stepBuffer}
-          onMoreConsoleClick={onMoreConsoleClick}
+          fetchLogText={fetchLogText}
           fetchExceptionText={fetchExceptionText}
           isExpanded={false}
           onStepToggle={onStepToggle}
@@ -156,7 +156,7 @@ export default function ConsoleLogCard({
 function ConsoleLogBody({
   step,
   stepBuffer,
-  onMoreConsoleClick,
+  fetchLogText,
   fetchExceptionText,
 }: ConsoleLogCardProps) {
   const prettySizeString = (size: number) => {
@@ -173,7 +173,7 @@ function ConsoleLogBody({
     // Double the amount of fetched logs with every click.
     const alreadyFetched = stepBuffer.endByte - stepBuffer.startByte;
     const startByte = Math.max(0, stepBuffer.startByte - alreadyFetched);
-    onMoreConsoleClick(step.id, startByte);
+    fetchLogText(step.id, startByte);
   };
 
   const getTruncatedLogWarning = () => {
@@ -199,7 +199,7 @@ function ConsoleLogBody({
       <Suspense>
         <ConsoleLogStream
           logBuffer={stepBuffer}
-          onMoreConsoleClick={onMoreConsoleClick}
+          fetchLogText={fetchLogText}
           fetchExceptionText={fetchExceptionText}
           step={step}
         />
@@ -213,6 +213,6 @@ export type ConsoleLogCardProps = {
   stepBuffer: StepLogBufferInfo;
   isExpanded: boolean;
   onStepToggle: (nodeId: string) => void;
-  onMoreConsoleClick: (nodeId: string, startByte: number) => void;
+  fetchLogText: (nodeId: string, startByte: number) => void;
   fetchExceptionText: (nodeId: string) => void;
 };

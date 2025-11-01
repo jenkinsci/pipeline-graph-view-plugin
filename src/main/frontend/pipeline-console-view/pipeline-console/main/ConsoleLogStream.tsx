@@ -28,7 +28,7 @@ export default function ConsoleLogStream({
   }, [step.id, step.state, fetchExceptionText]);
 
   useLayoutEffect(() => {
-    if (tailLogs && !logRef.current) return;
+    if (!logRef.current) return;
     scrollToTail(step.id, logRef.current);
   }, [tailLogs, logBuffer.lines, scrollToTail, step.id]);
 

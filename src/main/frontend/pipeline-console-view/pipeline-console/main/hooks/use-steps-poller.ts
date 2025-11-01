@@ -162,10 +162,12 @@ export function useStepsPoller(props: RunPollerProps) {
   const tailLogsRef = useRef(tailLogs);
   const startTailingLogs = useCallback(() => {
     history.replaceState({}, "", "?"); // Unset query parameters.
+    scrollToStepOnce.current = ""; // Unset from manually selected node.
     tailLogsRef.current = true;
     setTailLogs(true);
   }, []);
   const stopTailingLogs = useCallback(() => {
+    scrollToStepOnce.current = "";
     tailLogsRef.current = false;
     setTailLogs(false);
   }, []);
@@ -212,10 +214,20 @@ export function useStepsPoller(props: RunPollerProps) {
     return () => cleanup();
   }, [tailLogs, openStage]);
 
+  const scrollToStepOnce = useRef("");
   const scrollToTail = useCallback(
     (stepId: string, element: HTMLDivElement) => {
-      if (!tailLogsRef.current) return;
-      if (stepId !== currentDefaultStep.current) return; // Only scroll for the default step.
+      const scrollDefaultStep =
+        tailLogsRef.current && stepId === currentDefaultStep.current;
+      if (!scrollDefaultStep) {
+        if (stepId !== scrollToStepOnce.current) return;
+        const stepBuffer = stepBuffersRef.current.get(stepId);
+        if (!stepBuffer || stepBuffer.endByte === TAIL_CONSOLE_LOG) {
+          // The initial fetch is still pending, avoid jumping back and forth.
+          return;
+        }
+        scrollToStepOnce.current = "";
+      }
       programmaticScroll.current = true;
       element.scrollIntoView({ block: "end" });
     },
@@ -277,6 +289,20 @@ export function useStepsPoller(props: RunPollerProps) {
     setStepBuffers(stepBuffersRef.current);
   }, []);
 
+  const expandLastStageStep = useCallback(
+    (steps: StepInfo[], stageId: string) => {
+      const stepsForStage = steps.filter((step) => step.stageId === stageId);
+      if (stepsForStage.length === 0) return;
+
+      const lastStep = stepsForStage[stepsForStage.length - 1];
+      if (collapsedSteps.current.has(lastStep.id)) return;
+
+      scrollToStepOnce.current = lastStep.id;
+      setExpandedSteps([lastStep.id]);
+    },
+    [],
+  );
+
   const parsedURLParams = useRef(false);
   useEffect(() => {
     if (parsedURLParams.current || steps.length === 0) return;
@@ -284,10 +310,12 @@ export function useStepsPoller(props: RunPollerProps) {
     const params = new URLSearchParams(document.location.search.substring(1));
     let selected = params.get("selected-node");
     if (!selected) return;
+    stopTailingLogs();
 
     const step = steps.find((s) => s.id === selected);
     if (step) {
       selected = step.stageId;
+      scrollToStepOnce.current = step.id;
       setExpandedSteps([step.id]);
       const startByteParam = params.get("start-byte");
       if (startByteParam) {
@@ -299,11 +327,12 @@ export function useStepsPoller(props: RunPollerProps) {
         });
         setStepBuffers(stepBuffersRef.current);
       }
+    } else {
+      expandLastStageStep(steps, selected);
     }
 
-    stopTailingLogs();
     setOpenStage(selected);
-  }, [steps, stopTailingLogs]);
+  }, [steps, expandLastStageStep, stopTailingLogs]);
 
   useEffect(() => {
     const defaultStep = getDefaultSelectedStep(steps, runIsComplete);
@@ -325,17 +354,12 @@ export function useStepsPoller(props: RunPollerProps) {
       if (!nodeId) return;
       if (nodeId === openStage) return; // skip if already selected
 
-      const stepsForStage = steps.filter((step) => step.stageId === nodeId);
-      const lastStep = stepsForStage[stepsForStage.length - 1];
-
       history.replaceState({}, "", `?selected-node=` + nodeId);
 
       setOpenStage(nodeId);
-      if (lastStep && !collapsedSteps.current.has(lastStep.id)) {
-        setExpandedSteps((prev) => [...prev, lastStep.id]);
-      }
+      expandLastStageStep(steps, nodeId);
     },
-    [openStage, steps, stopTailingLogs],
+    [openStage, steps, stopTailingLogs, expandLastStageStep],
   );
 
   const onStepToggle = useCallback(

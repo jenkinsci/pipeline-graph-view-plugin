@@ -279,16 +279,21 @@ export function useStepsPoller(props: RunPollerProps) {
     [openStage, steps, updateStepConsoleOffset],
   );
 
-  const onStepToggle = (nodeId: string) => {
-    if (!expandedSteps.includes(nodeId)) {
-      collapsedSteps.current.delete(nodeId);
-      setExpandedSteps((prev) => [...prev, nodeId]);
-      updateStepConsoleOffset(nodeId, false, TAIL_CONSOLE_LOG);
-    } else {
-      collapsedSteps.current.add(nodeId);
-      setExpandedSteps((prev) => prev.filter((id) => id !== nodeId));
-    }
-  };
+  const onStepToggle = useCallback(
+    (nodeId: string) => {
+      setExpandedSteps((expandedSteps) => {
+        if (!expandedSteps.includes(nodeId)) {
+          collapsedSteps.current.delete(nodeId);
+          updateStepConsoleOffset(nodeId, false, TAIL_CONSOLE_LOG);
+          return [...expandedSteps, nodeId];
+        } else {
+          collapsedSteps.current.add(nodeId);
+          return expandedSteps.filter((id) => id !== nodeId);
+        }
+      });
+    },
+    [updateStepConsoleOffset],
+  );
 
   const fetchLogText = useCallback(
     (nodeId: string, startByte: number) => {

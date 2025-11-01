@@ -4,7 +4,6 @@ import { ConsoleLine } from "./ConsoleLine.tsx";
 import {
   POLL_INTERVAL,
   Result,
-  StepInfo,
   StepLogBufferInfo,
   TAIL_CONSOLE_LOG,
 } from "./PipelineConsoleModel.tsx";
@@ -13,9 +12,10 @@ export default function ConsoleLogStream({
   tailLogs,
   stopTailingLogs,
   scrollToTail,
-  step,
+  stepId,
+  stepState,
   logBuffer,
-  setLogBuffer,
+  updateLogBufferIfChanged,
   fetchLogText,
   fetchExceptionText,
 }: ConsoleLogStreamProps) {
@@ -23,17 +23,15 @@ export default function ConsoleLogStream({
   const [logVisible, setLogVisible] = useState(true);
 
   useEffect(() => {
-    if (step.state === Result.failure) {
-      fetchExceptionText(step.id)
-        .then((logBuffer) => setLogBuffer({ ...logBuffer }))
-        .catch(console.error);
+    if (stepState === Result.failure) {
+      updateLogBufferIfChanged(fetchExceptionText(stepId));
     }
-  }, [step.id, step.state, fetchExceptionText, setLogBuffer]);
+  }, [stepId, stepState, fetchExceptionText, updateLogBufferIfChanged]);
 
   useLayoutEffect(() => {
     if (!logRef.current) return;
-    scrollToTail(step.id, logRef.current);
-  }, [tailLogs, logBuffer.lines, scrollToTail, step.id]);
+    scrollToTail(stepId, logRef.current);
+  }, [tailLogs, logBuffer.lines, scrollToTail, stepId]);
 
   useEffect(() => {
     if (logBuffer.stopTailing) return;
@@ -50,16 +48,12 @@ export default function ConsoleLogStream({
   const fetchMore = logVisible && !logBuffer.stopTailing;
   useEffect(() => {
     if (!fetchMore) return;
-    fetchLogText(step.id, TAIL_CONSOLE_LOG)
-      .then((logBuffer) => setLogBuffer({ ...logBuffer }))
-      .catch(console.error);
+    updateLogBufferIfChanged(fetchLogText(stepId, TAIL_CONSOLE_LOG));
     const interval = window.setInterval(() => {
-      fetchLogText(step.id, TAIL_CONSOLE_LOG)
-        .then((logBuffer) => setLogBuffer({ ...logBuffer }))
-        .catch(console.error);
+      updateLogBufferIfChanged(fetchLogText(stepId, TAIL_CONSOLE_LOG));
     }, POLL_INTERVAL);
     return () => clearInterval(interval);
-  }, [fetchMore, fetchLogText, step.id, setLogBuffer]);
+  }, [fetchMore, fetchLogText, stepId, updateLogBufferIfChanged]);
 
   const [scrollToLogLine, setScrollToLogLine] = useState<boolean>(
     window.location.hash.startsWith("#log-"),
@@ -69,7 +63,7 @@ export default function ConsoleLogStream({
     let hash = window.location.hash;
     if (!hash.startsWith("#log-")) return;
     let [stepIdPart, lineNumberPart] = hash.slice(5).split("-");
-    if (lineNumberPart && stepIdPart !== step.id) {
+    if (lineNumberPart && stepIdPart !== stepId) {
       // The log line belongs to another step.
       setScrollToLogLine(false);
       return;
@@ -77,7 +71,7 @@ export default function ConsoleLogStream({
     if (!lineNumberPart) {
       // Backwards compatibility for links without a stepId in the hash.
       lineNumberPart = stepIdPart;
-      stepIdPart = step.id;
+      stepIdPart = stepId;
       hash = `#log-${stepIdPart}-${lineNumberPart}`;
       location.hash = hash;
     }
@@ -90,7 +84,7 @@ export default function ConsoleLogStream({
     location.hash = hash;
 
     setScrollToLogLine(false);
-  }, [scrollToLogLine, step.id, logBuffer.lines]);
+  }, [scrollToLogLine, stepId, logBuffer.lines]);
 
   return (
     <div
@@ -103,7 +97,7 @@ export default function ConsoleLogStream({
           key={index}
           lineNumber={String(index)}
           content={content}
-          stepId={step.id}
+          stepId={stepId}
           startByte={logBuffer.startByte}
           stopTailingLogs={stopTailingLogs}
         />
@@ -114,13 +108,14 @@ export default function ConsoleLogStream({
 
 export interface ConsoleLogStreamProps {
   logBuffer: StepLogBufferInfo;
-  setLogBuffer: (logBuffer: StepLogBufferInfo) => void;
+  updateLogBufferIfChanged: (p: Promise<StepLogBufferInfo>) => void;
   fetchLogText: (
     stepId: string,
     startByte: number,
   ) => Promise<StepLogBufferInfo>;
   fetchExceptionText: (stepId: string) => Promise<StepLogBufferInfo>;
-  step: StepInfo;
+  stepId: string;
+  stepState: Result;
   tailLogs: boolean;
   stopTailingLogs: () => void;
   scrollToTail: (stepId: string, element: HTMLDivElement) => void;

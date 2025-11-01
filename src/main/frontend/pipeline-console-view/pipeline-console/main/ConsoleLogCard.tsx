@@ -2,9 +2,13 @@ import "./console-log-card.scss";
 
 import Linkify from "linkify-react";
 import {
+  Dispatch,
   lazy,
+  memo,
   MouseEvent as ReactMouseEvent,
+  SetStateAction,
   Suspense,
+  useCallback,
   useEffect,
   useState,
 } from "react";
@@ -16,6 +20,7 @@ import { classNames } from "../../../common/utils/classnames.ts";
 import { linkifyJsOptions } from "../../../common/utils/linkify-js.ts";
 import LiveTotal from "../../../common/utils/live-total.tsx";
 import {
+  Result,
   StepInfo,
   StepLogBufferInfo,
   TAIL_CONSOLE_LOG,
@@ -35,22 +40,6 @@ export default function ConsoleLogCard({
   onStepToggle,
   fetchExceptionText,
 }: ConsoleLogCardProps) {
-  const [stepBuffer, setStepBuffer] = useState<StepLogBufferInfo>(
-    stepBuffers.get(step.id) || {
-      lines: [],
-      startByte: 0,
-      endByte: TAIL_CONSOLE_LOG,
-    },
-  );
-  useEffect(() => {
-    if (isExpanded) {
-      // prefetch while lazy loading ConsoleLogStream
-      fetchLogText(step.id, TAIL_CONSOLE_LOG)
-        .then((stepBuffer) => setStepBuffer({ ...stepBuffer }))
-        .catch(console.error);
-    }
-  }, [isExpanded, fetchLogText, step.id]);
-
   const handleToggle = (e: ReactMouseEvent<HTMLElement>) => {
     // Only prevent left clicks
     if (e.button !== 0 || e.metaKey || e.ctrlKey) {
@@ -158,12 +147,11 @@ export default function ConsoleLogCard({
           tailLogs={tailLogs}
           scrollToTail={scrollToTail}
           stopTailingLogs={stopTailingLogs}
-          step={step}
-          stepBuffer={stepBuffer}
-          setStepBuffer={setStepBuffer}
+          stepId={step.id}
+          stepState={step.state}
+          stepBuffers={stepBuffers}
           fetchLogText={fetchLogText}
           fetchExceptionText={fetchExceptionText}
-          isExpanded={false}
           onStepToggle={onStepToggle}
         />
       )}
@@ -171,16 +159,64 @@ export default function ConsoleLogCard({
   );
 }
 
-function ConsoleLogBody({
+function defaultStepBuffer(): StepLogBufferInfo {
+  return {
+    lines: [],
+    startByte: 0,
+    endByte: TAIL_CONSOLE_LOG,
+  };
+}
+
+function setStepBufferIfChanged(
+  setStepBuffer: Dispatch<SetStateAction<StepLogBufferInfo>>,
+  next: StepLogBufferInfo,
+) {
+  setStepBuffer((prev) => {
+    if (
+      prev.startByte === next.startByte &&
+      prev.endByte === next.endByte &&
+      prev.lines === next.lines &&
+      prev.stopTailing === next.stopTailing
+    ) {
+      return prev;
+    }
+    return { ...next };
+  });
+}
+
+const ConsoleLogBody = memo(function ConsoleLogBody({
   tailLogs,
   scrollToTail,
   stopTailingLogs,
-  step,
-  stepBuffer,
-  setStepBuffer,
+  stepId,
+  stepState,
+  stepBuffers,
   fetchLogText,
   fetchExceptionText,
 }: ConsoleLogCardBodyProps) {
+  const [stepBuffer, setStepBuffer] = useState<StepLogBufferInfo>({
+    ...(stepBuffers.get(stepId) || defaultStepBuffer()),
+  });
+
+  useEffect(() => {
+    const next = stepBuffers.get(stepId) || defaultStepBuffer();
+    setStepBufferIfChanged(setStepBuffer, next);
+  }, [stepBuffers, stepId]);
+
+  const updateStepBufferIfChanged = useCallback(
+    (promise: Promise<StepLogBufferInfo>) => {
+      promise
+        .then((next) => setStepBufferIfChanged(setStepBuffer, next))
+        .catch(console.error);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    // prefetch while lazy loading ConsoleLogStream
+    updateStepBufferIfChanged(fetchLogText(stepId, TAIL_CONSOLE_LOG));
+  }, [fetchLogText, stepId, updateStepBufferIfChanged]);
+
   const prettySizeString = (size: number) => {
     const kib = 1024;
     const mib = 1024 * 1024;
@@ -195,9 +231,7 @@ function ConsoleLogBody({
     // Double the amount of fetched logs with every click.
     const alreadyFetched = stepBuffer.endByte - stepBuffer.startByte;
     const startByte = Math.max(0, stepBuffer.startByte - alreadyFetched);
-    fetchLogText(step.id, startByte)
-      .then((stepBuffer) => setStepBuffer({ ...stepBuffer }))
-      .catch(console.error);
+    updateStepBufferIfChanged(fetchLogText(stepId, startByte));
   };
 
   const getTruncatedLogWarning = () => {
@@ -226,15 +260,16 @@ function ConsoleLogBody({
           scrollToTail={scrollToTail}
           stopTailingLogs={stopTailingLogs}
           logBuffer={stepBuffer}
-          setLogBuffer={setStepBuffer}
+          updateLogBufferIfChanged={updateStepBufferIfChanged}
           fetchLogText={fetchLogText}
           fetchExceptionText={fetchExceptionText}
-          step={step}
+          stepId={stepId}
+          stepState={stepState}
         />
       </Suspense>
     </div>
   );
-}
+});
 
 export type ConsoleLogCardProps = {
   step: StepInfo;
@@ -252,10 +287,9 @@ export type ConsoleLogCardProps = {
 };
 
 export type ConsoleLogCardBodyProps = {
-  step: StepInfo;
-  stepBuffer: StepLogBufferInfo;
-  setStepBuffer: (step: StepLogBufferInfo) => void;
-  isExpanded: boolean;
+  stepId: string;
+  stepState: Result;
+  stepBuffers: Map<string, StepLogBufferInfo>;
   onStepToggle: (nodeId: string) => void;
   fetchLogText: (
     nodeId: string,

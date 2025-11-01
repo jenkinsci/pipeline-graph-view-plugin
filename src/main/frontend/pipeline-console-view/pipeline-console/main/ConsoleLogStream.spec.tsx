@@ -39,9 +39,10 @@ describe("ConsoleLogStream", () => {
   };
 
   const DefaultTestProps = {
-    step: baseStep,
+    stepId: baseStep.id,
+    stepState: baseStep.state,
     logBuffer: baseBuffer,
-    setLogBuffer: vi.fn(),
+    updateLogBufferIfChanged: vi.fn(),
     isExpanded: false,
     fetchLogText: vi.fn().mockResolvedValue(baseBuffer),
     fetchExceptionText: vi.fn().mockResolvedValue(baseBuffer),
@@ -60,10 +61,7 @@ describe("ConsoleLogStream", () => {
     const { findByText } = render(
       TestComponent({
         ...DefaultTestProps,
-        step: {
-          ...baseStep,
-          state: Result.failure,
-        },
+        stepState: Result.failure,
       }),
     );
     expect(findByText(/Hello, world!/));

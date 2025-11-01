@@ -2,7 +2,6 @@ import { lazy, useEffect, useState } from "react";
 
 import {
   getConsoleBuildOutput,
-  StepInfo,
   StepLogBufferInfo,
 } from "../../../common/RestClient.tsx";
 import { Result } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
@@ -25,18 +24,6 @@ interface NoStageStepsFallbackProps {
 }
 
 export function NoStageStepsFallback(props: NoStageStepsFallbackProps) {
-  const step: StepInfo = {
-    id: "",
-    name: "Step 1",
-    title: "Step 1 Title",
-    state: Result.success,
-    type: "STEP",
-    startTimeMillis: 0,
-    totalDurationMillis: 0,
-    stageId: "",
-    pauseDurationMillis: 0,
-  };
-
   const [logBuffer, setLogBuffer] = useState<StepLogBufferInfo>({
     lines: [],
     startByte: 0,
@@ -58,10 +45,11 @@ export function NoStageStepsFallback(props: NoStageStepsFallbackProps) {
         <ConsoleLogStream
           {...props}
           logBuffer={logBuffer}
-          setLogBuffer={setLogBuffer}
+          updateLogBufferIfChanged={() => {}}
           fetchLogText={async () => logBuffer}
           stopTailingLogs={() => {}}
-          step={step}
+          stepId={""}
+          stepState={Result.success}
           fetchExceptionText={async () => logBuffer}
         />
       </div>

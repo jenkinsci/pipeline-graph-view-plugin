@@ -2,15 +2,18 @@ import "./stage-steps.scss";
 
 import { StepInfo, StepLogBufferInfo } from "../../../common/RestClient.tsx";
 import ConsoleLogCard from "./ConsoleLogCard.tsx";
-import { StageInfo, TAIL_CONSOLE_LOG } from "./PipelineConsoleModel.tsx";
+import { StageInfo } from "./PipelineConsoleModel.tsx";
 
 export default function StageSteps({
+  tailLogs,
+  scrollToTail,
+  stopTailingLogs,
   stage,
   stepBuffers,
   steps,
   onStepToggle,
   expandedSteps,
-  onMoreConsoleClick,
+  fetchLogText,
   fetchExceptionText,
 }: StageStepsProps) {
   if (steps.length === 0) {
@@ -25,17 +28,14 @@ export default function StageSteps({
       {steps.map((stepItemData) => {
         return (
           <ConsoleLogCard
+            tailLogs={tailLogs}
+            scrollToTail={scrollToTail}
+            stopTailingLogs={stopTailingLogs}
             step={stepItemData}
-            stepBuffer={
-              stepBuffers.get(stepItemData.id) ?? {
-                lines: [],
-                startByte: 0,
-                endByte: TAIL_CONSOLE_LOG,
-              }
-            }
+            stepBuffers={stepBuffers}
             onStepToggle={onStepToggle}
             isExpanded={expandedSteps.includes(stepItemData.id)}
-            onMoreConsoleClick={onMoreConsoleClick}
+            fetchLogText={fetchLogText}
             fetchExceptionText={fetchExceptionText}
             key={`step-console-card-${stepItemData.id}`}
           />
@@ -45,12 +45,18 @@ export default function StageSteps({
   );
 }
 
-interface StageStepsProps {
+export interface StageStepsProps {
   stage: StageInfo | null;
   steps: Array<StepInfo>;
   stepBuffers: Map<string, StepLogBufferInfo>;
   expandedSteps: string[];
   onStepToggle: (nodeId: string) => void;
-  onMoreConsoleClick: (nodeId: string, startByte: number) => void;
-  fetchExceptionText: (nodeId: string) => void;
+  fetchLogText: (
+    stepId: string,
+    startByte: number,
+  ) => Promise<StepLogBufferInfo>;
+  fetchExceptionText: (stepId: string) => Promise<StepLogBufferInfo>;
+  tailLogs: boolean;
+  scrollToTail: (stepId: string, element: HTMLDivElement) => void;
+  stopTailingLogs: () => void;
 }

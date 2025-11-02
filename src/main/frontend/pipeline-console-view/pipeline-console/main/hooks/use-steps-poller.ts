@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import useRunPoller from "../../../../common/tree-api.ts";
 import { refreshStagesFromSteps } from "../../../../common/utils/refresh-stages-from-steps.ts";
@@ -19,14 +19,9 @@ import {
 async function updateStepBuffer(
   stepBuffer: StepLogBufferInfo,
   stepId: string,
-  forceUpdate: boolean,
   startByte: number,
 ): Promise<void> {
   const isTailing = startByte === TAIL_CONSOLE_LOG;
-  if (stepBuffer.startByte > 0 && !forceUpdate) {
-    // This is a large log. Only update the log when requested by the UI.
-    return;
-  }
   if (isTailing && stepBuffer.stopTailing) {
     // We've already reached the end of the log.
     return;
@@ -70,16 +65,22 @@ async function updateStepBuffer(
 
   const exceptionText = stepBuffer.exceptionText || [];
   if (stepBuffer.endByte > 0 && stepBuffer.endByte === startByte) {
-    stepBuffer.lines.length -= exceptionText.length;
-    if (
-      !stepBuffer.hasTrailingNewLine &&
-      stepBuffer.lines.length > 0 &&
-      newLogLines.length > 0
-    ) {
-      // Combine a previously broken up line back together.
-      stepBuffer.lines[stepBuffer.lines.length - 1] += newLogLines.shift();
+    if (newLogLines.length > 0) {
+      stepBuffer.lines.length -= exceptionText.length;
+      if (
+        !stepBuffer.hasTrailingNewLine &&
+        stepBuffer.lines.length > 0 &&
+        newLogLines.length > 0
+      ) {
+        // Combine a previously broken up line back together.
+        stepBuffer.lines[stepBuffer.lines.length - 1] += newLogLines.shift();
+      }
+      stepBuffer.lines = [
+        ...stepBuffer.lines,
+        ...newLogLines,
+        ...exceptionText,
+      ];
     }
-    stepBuffer.lines = [...stepBuffer.lines, ...newLogLines, ...exceptionText];
   } else {
     stepBuffer.lines = newLogLines.concat(exceptionText);
     stepBuffer.startByte = response.startByte;
@@ -97,221 +98,284 @@ async function updateStepBuffer(
   }
 }
 
+function getDefaultSelectedStep(steps: StepInfo[], runIsComplete: boolean) {
+  let selectedStep = steps.find((step) => step !== undefined);
+  if (!steps || steps.length === 0 || !selectedStep) {
+    return null;
+  }
+  for (const step of steps) {
+    const stepResult = step.state.toLowerCase() as Result;
+    const selectedStepResult = selectedStep?.state.toLowerCase() as Result;
+    switch (stepResult) {
+      case Result.running:
+      case Result.queued:
+      case Result.paused:
+        // Return first running/queued/paused step.
+        return step;
+      case Result.unstable:
+      case Result.failure:
+      case Result.aborted:
+        if (
+          runIsComplete &&
+          selectedStepResult &&
+          stepResult < selectedStepResult
+        ) {
+          // If the run is complete return first unstable/failed/aborted step which has a state worse
+          // than the selectedStep.
+          // E.g. if the first step state is failure we want to return that over a later unstable step.
+          return step;
+        }
+        continue;
+      default:
+        // Otherwise select the step with the worst result with the largest id - e.g. (last step if all successful).
+        if (selectedStepResult && stepResult <= selectedStepResult) {
+          selectedStep = step;
+        }
+    }
+  }
+  return selectedStep;
+}
+
+async function fetchStepLogDetail(
+  stepBuffers: Map<string, StepLogBufferInfo>,
+  stepId: string,
+  queue: "pending" | "pendingExceptionText",
+  fn: (stepBuffer: StepLogBufferInfo) => Promise<void>,
+): Promise<StepLogBufferInfo> {
+  let stepBuffer = stepBuffers.get(stepId);
+  if (!stepBuffer) {
+    stepBuffer = { lines: [], startByte: 0, endByte: TAIL_CONSOLE_LOG };
+    stepBuffers.set(stepId, stepBuffer);
+  }
+  // Cheap FIFO queue to avoid duplicate fetches.
+  const promise = (stepBuffer[queue] || Promise.resolve()).finally(() =>
+    fn(stepBuffer),
+  );
+  stepBuffer[queue] = promise;
+  try {
+    await promise;
+  } finally {
+    if (stepBuffer[queue] === promise) {
+      delete stepBuffer[queue];
+    }
+  }
+  return stepBuffer;
+}
+
 export function useStepsPoller(props: RunPollerProps) {
   const { run, loading } = useRunPoller({
     currentRunPath: props.currentRunPath,
     previousRunPath: props.previousRunPath,
   });
   const {
-    data: { steps },
+    data: { steps, runIsComplete },
   } = usePolling<AllStepsData>(getRunSteps, POLL_INTERVAL, "runIsComplete", {
     steps: [],
     runIsComplete: false,
   });
   run.stages = refreshStagesFromSteps(run.stages, steps);
 
-  const [openStage, setOpenStage] = useState("");
+  const [openStageId, setOpenStageId] = useState("");
   const [expandedSteps, setExpandedSteps] = useState<string[]>([]);
   const collapsedSteps = useRef(new Set<string>());
-  const [stepBuffers, setStepBuffers] = useState(
-    new Map<string, StepLogBufferInfo>(),
-  );
-  // Avoid invalidating updateStepConsoleOffset on every stepBuffer change.
-  const stepBuffersRef = useRef(stepBuffers);
-  const updateStepConsoleOffset = useCallback(
-    async (stepId: string, forceUpdate: boolean, startByte: number) => {
-      const stepBuffers = stepBuffersRef.current;
-      let stepBuffer = stepBuffers.get(stepId);
-      if (!stepBuffer) {
-        stepBuffer = { lines: [], startByte: 0, endByte: TAIL_CONSOLE_LOG };
-        stepBuffers.set(stepId, stepBuffer);
-      }
+  const currentDefaultStep = useRef("");
 
-      // Cheap FIFO queue to avoid duplicate fetches.
-      const promise = (stepBuffer.pending || Promise.resolve()).finally(() =>
-        updateStepBuffer(stepBuffer, stepId, forceUpdate, startByte),
-      );
-      stepBuffer.pending = promise;
-      try {
-        await promise;
-      } finally {
-        if (stepBuffer.pending === promise) {
-          delete stepBuffer.pending;
+  const [tailLogs, setTailLogs] = useState(true);
+  // Make the latest tailLogs state available without a re-render.
+  const tailLogsRef = useRef(tailLogs);
+  const startTailingLogs = useCallback(() => {
+    history.replaceState({}, "", "?"); // Unset query parameters.
+    scrollToStepOnce.current = ""; // Unset from manually selected node.
+    tailLogsRef.current = true;
+    setTailLogs(true);
+  }, []);
+  const stopTailingLogs = useCallback(() => {
+    scrollToStepOnce.current = "";
+    tailLogsRef.current = false;
+    setTailLogs(false);
+  }, []);
+
+  // "scroll" events do not have a flag for telling "user has scrolled" vs programmatic "element.scrollIntoView()" apart.
+  // On a best-effort basis, we can infer from our state changes/DOM actions what was likely a programmatic event vs user action.
+  const programmaticScroll = useRef(false);
+  const switchingStage = useRef(false);
+  useEffect(() => {
+    if (!tailLogs) return;
+    programmaticScroll.current = false;
+    const handleScroll = () => {
+      if (programmaticScroll.current) {
+        programmaticScroll.current = false;
+      } else if (switchingStage.current) {
+        switchingStage.current = false;
+      } else {
+        // The user has scrolled.
+        stopTailingLogs();
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [stopTailingLogs, tailLogs]);
+
+  useEffect(() => {
+    if (!tailLogs) return;
+    // Best effort to avoid false-positives when switching stages during tailing.
+    // The incoming stage may be shorter and we will get a "scroll" event when the DOM changes.
+    // The timing for the "scroll" event is up to the browser. Put an optimistic limit of 100ms in place to handle the case of no need to scroll.
+    // In case we picked a limit that was too low, the tailing will stop early. The user can resume the tailing via the TailLogsButton.
+    // Picking a limit that is too high will result in continuous tailing despite the user scrolling. The user can stop the tailing via the TailLogsButton.
+    switchingStage.current = true;
+    let timer = 0;
+    const cleanup = () => {
+      switchingStage.current = false;
+      clearTimeout(timer);
+      window.removeEventListener("scroll", cleanup);
+    };
+    timer = window.setTimeout(cleanup, 100);
+    window.addEventListener("scroll", cleanup);
+    return () => cleanup();
+  }, [tailLogs, openStageId]);
+
+  const scrollToStepOnce = useRef("");
+  const scrollToTail = useCallback(
+    (stepId: string, element: HTMLDivElement) => {
+      const scrollDefaultStep =
+        tailLogsRef.current && stepId === currentDefaultStep.current;
+      if (!scrollDefaultStep) {
+        if (stepId !== scrollToStepOnce.current) return;
+        const stepBuffer = stepBuffersRef.current.get(stepId);
+        if (!stepBuffer || stepBuffer.endByte === TAIL_CONSOLE_LOG) {
+          // The initial fetch is still pending, avoid jumping back and forth.
+          return;
         }
+        scrollToStepOnce.current = "";
       }
-
-      stepBuffersRef.current = new Map(stepBuffers).set(stepId, stepBuffer);
-      setStepBuffers(stepBuffersRef.current);
+      programmaticScroll.current = true;
+      element.scrollIntoView({ block: "end" });
     },
     [],
   );
 
-  const fetchExceptionText = useCallback(async (stepId: string) => {
-    const stepBuffers = stepBuffersRef.current;
-    let stepBuffer = stepBuffers.get(stepId);
-    if (!stepBuffer) {
-      stepBuffer = { lines: [], startByte: 0, endByte: TAIL_CONSOLE_LOG };
-      stepBuffers.set(stepId, stepBuffer);
-    }
-    while (stepBuffer.pendingExceptionText) {
-      await stepBuffer.pendingExceptionText;
-    }
-    if (stepBuffer.exceptionText?.length) return; // Already fetched
-    const promise = getExceptionText(stepId);
-    stepBuffer.pendingExceptionText = promise;
-    try {
-      stepBuffer.exceptionText = await promise;
-    } finally {
-      delete stepBuffer.pendingExceptionText;
-    }
-
-    stepBuffer.lines = stepBuffer.lines.concat(stepBuffer.exceptionText);
-
-    stepBuffersRef.current = new Map(stepBuffers).set(stepId, stepBuffer);
-    setStepBuffers(stepBuffersRef.current);
+  const stepBuffersRef = useRef(new Map<string, StepLogBufferInfo>());
+  const fetchLogText = useCallback((stepId: string, startByte: number) => {
+    return fetchStepLogDetail(
+      stepBuffersRef.current,
+      stepId,
+      "pending",
+      (stepBuffer) => updateStepBuffer(stepBuffer, stepId, startByte),
+    );
   }, []);
 
-  const parseUrlParams = useCallback(
-    (steps: StepInfo[]): boolean => {
-      const params = new URLSearchParams(document.location.search.substring(1));
-      let selected = params.get("selected-node");
-      if (!selected) {
-        return false;
-      }
-      if (collapsedSteps.current.has(selected)) return true;
+  const fetchExceptionText = useCallback((stepId: string) => {
+    return fetchStepLogDetail(
+      stepBuffersRef.current,
+      stepId,
+      "pendingExceptionText",
+      async (stepBuffer: StepLogBufferInfo) => {
+        if (stepBuffer.exceptionText?.length) return; // Already fetched
+        stepBuffer.exceptionText = await getExceptionText(stepId);
+        stepBuffer.lines = stepBuffer.lines.concat(stepBuffer.exceptionText);
+      },
+    );
+  }, []);
 
-      const step = steps.find((s) => s.id === selected);
-      if (step) {
-        selected = step.stageId;
-        setExpandedSteps((prev) => {
-          if (prev.includes(step.id)) return prev;
-          return [...prev, step.id];
+  const expandLastStageStep = useCallback(
+    (steps: StepInfo[], stageId: string) => {
+      const stepsForStage = steps.filter((step) => step.stageId === stageId);
+      if (stepsForStage.length === 0) return;
+
+      const lastStep = stepsForStage[stepsForStage.length - 1];
+      if (collapsedSteps.current.has(lastStep.id)) return;
+
+      scrollToStepOnce.current = lastStep.id;
+      setExpandedSteps([lastStep.id]);
+    },
+    [],
+  );
+
+  const parsedURLParams = useRef(false);
+  useEffect(() => {
+    if (parsedURLParams.current || steps.length === 0) return;
+    parsedURLParams.current = true;
+    const params = new URLSearchParams(document.location.search.substring(1));
+    let selected = params.get("selected-node");
+    if (!selected) return;
+    stopTailingLogs();
+
+    const step = steps.find((s) => s.id === selected);
+    if (step) {
+      selected = step.stageId;
+      scrollToStepOnce.current = step.id;
+      setExpandedSteps([step.id]);
+      const startByteParam = params.get("start-byte");
+      if (startByteParam) {
+        const startByte = parseInt(startByteParam);
+        stepBuffersRef.current.set(step.id, {
+          lines: [],
+          startByte,
+          endByte: startByte,
         });
-
-        updateStepConsoleOffset(
-          step.id,
-          false,
-          parseInt(params.get("start-byte") || `${TAIL_CONSOLE_LOG}`),
-        );
       }
+    } else {
+      expandLastStageStep(steps, selected);
+    }
 
-      setOpenStage(selected);
-      return true;
-    },
-    [updateStepConsoleOffset],
-  );
-
-  const getDefaultSelectedStep = useCallback(
-    (steps: StepInfo[]) => {
-      let selectedStep = steps.find((step) => step !== undefined);
-      if (!steps || steps.length === 0 || !selectedStep) {
-        return null;
-      }
-      for (const step of steps) {
-        const stepResult = step.state.toLowerCase() as Result;
-        const selectedStepResult = selectedStep?.state.toLowerCase() as Result;
-        switch (stepResult) {
-          case Result.running:
-          case Result.queued:
-          case Result.paused:
-            // Return first running/queued/paused step.
-            return step;
-          case Result.unstable:
-          case Result.failure:
-          case Result.aborted:
-            if (
-              run.complete &&
-              selectedStepResult &&
-              stepResult < selectedStepResult
-            ) {
-              // If the run is complete return first unstable/failed/aborted step which has a state worse
-              // than the selectedStep.
-              // E.g. if the first step state is failure we want to return that over a later unstable step.
-              return step;
-            }
-            continue;
-          default:
-            // Otherwise select the step with the worst result with the largest id - e.g. (last step if all successful).
-            if (selectedStepResult && stepResult <= selectedStepResult) {
-              selectedStep = step;
-            }
-        }
-      }
-      return selectedStep;
-    },
-    [run.complete],
-  );
+    setOpenStageId(selected);
+  }, [steps, expandLastStageStep, stopTailingLogs]);
 
   useEffect(() => {
-    const usedUrl = parseUrlParams(steps);
-    if (!usedUrl) {
-      const defaultStep = getDefaultSelectedStep(steps);
-      if (defaultStep) {
-        setOpenStage(defaultStep.stageId);
-
-        if (defaultStep.stageId) {
-          setExpandedSteps((prev) => [...prev, defaultStep.id]);
-          updateStepConsoleOffset(defaultStep.id, false, TAIL_CONSOLE_LOG);
-        }
-      }
-    }
-  }, [getDefaultSelectedStep, parseUrlParams, steps, updateStepConsoleOffset]);
+    const defaultStep = getDefaultSelectedStep(steps, runIsComplete);
+    if (!defaultStep) return;
+    currentDefaultStep.current = defaultStep.id;
+    if (!tailLogsRef.current) return;
+    setOpenStageId(defaultStep.stageId);
+    if (collapsedSteps.current.has(defaultStep.id)) return;
+    setExpandedSteps((prev) => {
+      if (prev.includes(defaultStep.id)) return prev;
+      return [...prev, defaultStep.id];
+    });
+  }, [steps, tailLogs, runIsComplete]);
 
   const handleStageSelect = useCallback(
     (nodeId: string) => {
-      if (!nodeId) return;
-      if (nodeId === openStage) return; // skip if already selected
+      stopTailingLogs();
 
-      const stepsForStage = steps.filter((step) => step.stageId === nodeId);
-      const lastStep = stepsForStage[stepsForStage.length - 1];
+      if (!nodeId) return;
+      if (nodeId === openStageId) return; // skip if already selected
 
       history.replaceState({}, "", `?selected-node=` + nodeId);
 
-      setOpenStage(nodeId);
-      if (lastStep && !collapsedSteps.current.has(lastStep.id)) {
-        setExpandedSteps((prev) => [...prev, lastStep.id]);
-        updateStepConsoleOffset(lastStep.id, false, TAIL_CONSOLE_LOG);
-      }
+      setOpenStageId(nodeId);
+      expandLastStageStep(steps, nodeId);
     },
-    [openStage, steps, updateStepConsoleOffset],
+    [openStageId, steps, stopTailingLogs, expandLastStageStep],
   );
 
-  const onStepToggle = (nodeId: string) => {
-    if (!expandedSteps.includes(nodeId)) {
-      collapsedSteps.current.delete(nodeId);
-      setExpandedSteps((prev) => [...prev, nodeId]);
-      updateStepConsoleOffset(nodeId, false, TAIL_CONSOLE_LOG);
-    } else {
-      collapsedSteps.current.add(nodeId);
-      setExpandedSteps((prev) => prev.filter((id) => id !== nodeId));
-    }
-  };
-
-  const onMoreConsoleClick = useCallback(
-    (nodeId: string, startByte: number) => {
-      updateStepConsoleOffset(nodeId, true, startByte);
+  const onStepToggle = useCallback(
+    (nodeId: string) => {
+      stopTailingLogs();
+      setExpandedSteps((expandedSteps) => {
+        if (!expandedSteps.includes(nodeId)) {
+          collapsedSteps.current.delete(nodeId);
+          return [...expandedSteps, nodeId];
+        } else {
+          collapsedSteps.current.add(nodeId);
+          return expandedSteps.filter((id) => id !== nodeId);
+        }
+      });
     },
-    [updateStepConsoleOffset],
+    [stopTailingLogs],
   );
 
-  const getStageSteps = (stageId: string) => {
-    return steps.filter((step) => step.stageId === stageId);
-  };
+  const openStageSteps = useMemo(() => {
+    return steps.filter((step) => step.stageId === openStageId);
+  }, [steps, openStageId]);
 
-  const getStageStepBuffers = (stageId: string) => {
-    const buffers = new Map<string, StepLogBufferInfo>();
-    steps.forEach((step) => {
-      if (step.stageId === stageId && stepBuffers.has(step.id)) {
-        buffers.set(step.id, stepBuffers.get(step.id)!);
-      }
-    });
-    return buffers;
-  };
-
-  const getOpenStage = (): StageInfo | null => {
+  const openStage = useMemo(() => {
     const findStage = (stages: StageInfo[]): StageInfo | null => {
       for (const stage of stages) {
-        if (String(stage.id) === openStage) return stage;
+        if (String(stage.id) === openStageId) return stage;
         if (stage.children.length > 0) {
           const result = findStage(stage.children);
           if (result) return result;
@@ -319,20 +383,25 @@ export function useStepsPoller(props: RunPollerProps) {
       }
       return null;
     };
-    return openStage ? findStage(run.stages) : null;
-  };
+    return openStageId ? findStage(run.stages) : null;
+  }, [run.stages, openStageId]);
 
   return {
-    openStage: getOpenStage(),
-    openStageSteps: getStageSteps(openStage),
-    openStageStepBuffers: getStageStepBuffers(openStage),
+    openStage,
+    openStageSteps,
+    stepBuffers: stepBuffersRef.current,
     expandedSteps,
+    complete: runIsComplete,
     stages: run.stages,
     handleStageSelect,
     onStepToggle,
-    onMoreConsoleClick,
+    fetchLogText,
     fetchExceptionText,
     loading,
+    tailLogs,
+    scrollToTail,
+    startTailingLogs,
+    stopTailingLogs,
   };
 }
 

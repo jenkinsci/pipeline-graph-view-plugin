@@ -51,7 +51,7 @@ export interface StepLogBufferInfo {
   lastFetched?: number;
   stopTailing?: boolean;
   exceptionText?: string[];
-  pendingExceptionText?: Promise<string[]>;
+  pendingExceptionText?: Promise<void>;
 }
 
 // Returned from API, gets converted to 'StepLogBufferInfo'.

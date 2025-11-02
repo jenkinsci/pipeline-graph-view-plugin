@@ -2,8 +2,9 @@ import "./nodes.scss";
 
 import { CSSProperties, ReactElement } from "react";
 
-import StatusIcon, {
+import {
   resultToColor,
+  StageStatusIcon,
 } from "../../../../common/components/status-icon.tsx";
 import Tooltip from "../../../../common/components/tooltip.tsx";
 import { classNames } from "../../../../common/utils/classnames.ts";
@@ -51,16 +52,13 @@ export function Node({
                 className={"jenkins-button jenkins-button--tertiary"}
                 href={document.head.dataset.rooturl + stage.url}
               >
-                <StatusIcon
-                  status={stage.state}
-                  percentage={stage.completePercent}
-                  skeleton={stage.skeleton}
-                />
+                <StageStatusIcon stage={stage} />
                 {stage.name}
                 <span style={{ color: "var(--text-color-secondary)" }}>
                   <LiveTotal
                     total={stage.totalDurationMillis}
                     start={stage.startTimeMillis}
+                    paused={stage.pauseLiveTotal}
                   />
                 </span>
               </a>
@@ -108,12 +106,7 @@ export function Node({
   const groupChildren: SVGChildren = [];
   const { title, state, url } = node.stage ?? {};
   groupChildren.push(
-    <StatusIcon
-      key={`icon-${node.id}`}
-      status={node.stage.state}
-      percentage={node.stage.completePercent}
-      skeleton={node.stage.skeleton}
-    />,
+    <StageStatusIcon key={`icon-${node.id}`} stage={node.stage} />,
   );
 
   const clickable =
@@ -149,6 +142,7 @@ export function Node({
           <LiveTotal
             total={node.stage.totalDurationMillis}
             start={node.stage.startTimeMillis}
+            paused={node.stage.pauseLiveTotal}
           />
         </div>
       </div>
@@ -159,6 +153,7 @@ export function Node({
         <LiveTotal
           total={node.stage.totalDurationMillis}
           start={node.stage.startTimeMillis}
+          paused={node.stage.pauseLiveTotal}
         />
       </div>
     );

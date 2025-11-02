@@ -1,19 +1,19 @@
 import { StageInfo } from "../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
-import RunEstimator from "./run-estimator.ts";
 
 export const mergeStageInfos = (
   skeletons: StageInfo[],
   incoming: StageInfo[],
 ): StageInfo[] => {
   const marked = markSkeleton(skeletons);
-  const estimator = new RunEstimator(marked);
+  const lookup = new Map(marked.map((stage) => [stage.name, stage]));
   const merged = incoming.map((incomingItem) => {
-    const match = marked.find((s) => s.name === incomingItem.name);
+    const match = lookup.get(incomingItem.name);
     return {
       ...(match ?? {}),
       ...incomingItem,
+      totalDurationMillis: incomingItem.totalDurationMillis,
+      previousTotalDurationMillis: match?.totalDurationMillis,
       skeleton: false,
-      completePercent: estimator.estimateCompletion(incomingItem),
       children: mergeStageInfos(
         match?.children ?? [],
         incomingItem.children ?? [],
@@ -50,6 +50,6 @@ const markSkeleton = (stages: StageInfo[]): StageInfo[] =>
   stages.map((s) => ({
     ...s,
     skeleton: true,
-    completePercent: 0,
+    startTimeMillis: 0, // Do not display start of steps in previous run.
     children: markSkeleton(s.children ?? []),
   }));

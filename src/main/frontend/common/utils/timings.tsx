@@ -1,6 +1,9 @@
 import "@formatjs/intl-durationformat/polyfill";
 
+import { useEffect, useState } from "react";
+
 import { LocalizedMessageKey, useLocale, useMessages } from "../i18n/index.ts";
+import { MessageKeyType } from "../i18n/messages.ts";
 
 const ONE_SECOND_MS: number = 1000;
 const ONE_MINUTE_MS: number = 60 * ONE_SECOND_MS;
@@ -66,22 +69,17 @@ function humanise(duration: number, locale: string): string {
     applyDuration(hours, "hours", minutes, "minutes");
   } else if (minutes > 0) {
     applyDuration(minutes, "minutes", seconds, "seconds");
-  } else if (seconds >= 10) {
-    durationParts["seconds"] = seconds;
   } else if (seconds >= 1) {
     durationParts["seconds"] = seconds;
-    if (millis !== 0) {
-      durationParts["milliseconds"] = millis;
-      options.fractionalDigits = 1;
-      options.milliseconds = "numeric";
-    }
   } else if (millis >= 100) {
     durationParts["seconds"] = 0;
     durationParts["milliseconds"] = millis;
     options.fractionalDigits = Math.floor(millis / 10) % 10 === 0 ? 1 : 2;
     options.milliseconds = "numeric";
-  } else {
+  } else if (millis >= 1) {
     durationParts["milliseconds"] = millis;
+  } else {
+    return "<1ms";
   }
 
   // @ts-ignore https://github.com/microsoft/TypeScript/issues/60608
@@ -103,20 +101,78 @@ export function Paused({ since }: { since: number }) {
   );
 }
 
-export function Started({ since }: { since: number }) {
+export function Started({ since, live }: { since: number; live: boolean }) {
+  return (
+    <Since
+      localeKey={LocalizedMessageKey.startedAgo}
+      since={since}
+      live={live}
+    />
+  );
+}
+
+export function Since({
+  localeKey,
+  since,
+  live,
+  paused,
+}: {
+  localeKey?: MessageKeyType;
+  since: number;
+  live: boolean;
+  paused?: boolean;
+}) {
   const messages = useMessages();
   const locale = useLocale();
+
+  const [duration, setDuration] = useState(0);
+  useEffect(() => {
+    setDuration(Date.now() - since);
+  }, [since]);
+
+  useEffect(() => {
+    if (paused) {
+      // Best effort: Pause timer when a stage is expected to have finished to avoid having to decrement when done.
+      return;
+    }
+    // Update every second while in progress. Update every minute when done.
+    const resolution = live ? 1_000 : 60_000;
+    const update = () => setDuration(Date.now() - since);
+    let interval = 0;
+
+    update();
+    const delayIntervalSetup = setTimeout(
+      () => {
+        update();
+        interval = window.setInterval(update, resolution);
+      },
+      // Align interval with breakpoint of resolution.
+      // e.g. live and initial diff = 0.7s; wait 0.3s; then update every 1s.
+      // e.g. done and initial diff = 42.42s; wait 17.58s; then update every 1min.
+      resolution - ((Date.now() - since) % resolution),
+    );
+    return () => {
+      clearTimeout(delayIntervalSetup);
+      clearInterval(interval);
+    };
+  }, [live, since, paused]);
 
   if (since === 0) {
     return <></>;
   }
-  return (
-    <>
-      {messages.format(LocalizedMessageKey.startedAgo, {
-        "0": humanise(Math.abs(since - Date.now()), locale),
-      })}
-    </>
-  );
+  // Best effort: Avoid having to decrement the duration when done:
+  // - polling request finds running stage
+  // - 1ms laster said stage finishes
+  // - 1s later, we poll steps again and find all stage steps done, pause the timer
+  // - 2s later, we poll stages again and confirm the stage as done
+  // When using the accurate duration, we would have likely incremented one too many times.
+  const visibleDuration = live ? duration - 1_000 : duration;
+  const text =
+    visibleDuration < 1_000 ? "<1s" : humanise(visibleDuration, locale);
+  if (!localeKey) {
+    return <>{text}</>;
+  }
+  return <>{messages.format(localeKey, { "0": text })}</>;
 }
 
 export function time(since: number, locale: string = "en-GB"): string {

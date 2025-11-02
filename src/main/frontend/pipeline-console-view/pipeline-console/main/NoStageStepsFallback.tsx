@@ -25,7 +25,6 @@ export function NoStageStepsFallback() {
     name: "Step 1",
     title: "Step 1 Title",
     state: Result.success,
-    completePercent: 100,
     type: "STEP",
     startTimeMillis: 0,
     totalDurationMillis: 0,

@@ -9,7 +9,7 @@ import {
 } from "react";
 
 import Filter from "../../../common/components/filter.tsx";
-import StatusIcon from "../../../common/components/status-icon.tsx";
+import { StageStatusIcon } from "../../../common/components/status-icon.tsx";
 import { classNames } from "../../../common/utils/classnames.ts";
 import LiveTotal from "../../../common/utils/live-total.tsx";
 import {
@@ -176,11 +176,7 @@ const TreeNode = memo(function TreeNode({
         >
           <div className={"pgv-tree-item__content"}>
             <div className="pgv-status-icon">
-              <StatusIcon
-                status={stage.state}
-                percentage={stage.completePercent}
-                skeleton={stage.skeleton}
-              />
+              <StageStatusIcon stage={stage} />
             </div>
             <div className={"pgv-tree-item__info"}>
               <div
@@ -194,6 +190,7 @@ const TreeNode = memo(function TreeNode({
                 <LiveTotal
                   start={stage.startTimeMillis}
                   total={stage.totalDurationMillis}
+                  paused={stage.pauseLiveTotal}
                 />
               </div>
             </div>

@@ -1,14 +1,18 @@
 import "./stage-details.scss";
 
 import Dropdown from "../../../common/components/dropdown.tsx";
-import StatusIcon, {
+import {
   resultToColor,
+  StageStatusIcon,
 } from "../../../common/components/status-icon.tsx";
 import { DOCUMENT } from "../../../common/components/symbols.tsx";
 import Tooltip from "../../../common/components/tooltip.tsx";
 import LiveTotal from "../../../common/utils/live-total.tsx";
 import { exact, Paused, Started } from "../../../common/utils/timings.tsx";
-import { StageInfo } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
+import {
+  Result,
+  StageInfo,
+} from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import StageNodeLink from "./StageNodeLink.tsx";
 
 export default function StageDetails({ stage }: StageDetailsProps) {
@@ -26,11 +30,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
         <div className={"pgv-stage-details__running"} />
       )}
       <div>
-        <StatusIcon
-          status={stage.state}
-          skeleton={stage.skeleton}
-          percentage={stage.completePercent}
-        />
+        <StageStatusIcon stage={stage} />
         <h2>{stage.name}</h2>
       </div>
       <ul>
@@ -56,6 +56,7 @@ export default function StageDetails({ stage }: StageDetailsProps) {
           <LiveTotal
             total={stage.totalDurationMillis}
             start={stage.startTimeMillis}
+            paused={stage.pauseLiveTotal}
           />
         </li>
         <li>
@@ -78,7 +79,15 @@ export default function StageDetails({ stage }: StageDetailsProps) {
                   d="M256 128v144h96"
                 />
               </svg>
-              <Started since={stage.startTimeMillis} />
+              <Started
+                live={
+                  stage.skeleton ||
+                  stage.state === Result.paused ||
+                  stage.state === Result.queued ||
+                  stage.state === Result.running
+                }
+                since={stage.startTimeMillis}
+              />
             </span>
           </Tooltip>
         </li>

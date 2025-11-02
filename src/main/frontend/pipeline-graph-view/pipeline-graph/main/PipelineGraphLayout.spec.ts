@@ -15,7 +15,6 @@ describe("PipelineGraphLayout", () => {
     name: "",
     title: "",
     state: Result.success,
-    completePercent: 50,
     id: 0,
     type: "STAGE",
     children: [],

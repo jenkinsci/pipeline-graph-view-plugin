@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import useRunPoller from "../../../../common/tree-api.ts";
+import { refreshStagesFromSteps } from "../../../../common/utils/refresh-stages-from-steps.ts";
 import { usePolling } from "../../../../common/utils/use-polling.ts";
 import {
   AllStepsData,
@@ -107,6 +108,7 @@ export function useStepsPoller(props: RunPollerProps) {
     steps: [],
     runIsComplete: false,
   });
+  run.stages = refreshStagesFromSteps(run.stages, steps);
 
   const [openStage, setOpenStage] = useState("");
   const [expandedSteps, setExpandedSteps] = useState<string[]>([]);

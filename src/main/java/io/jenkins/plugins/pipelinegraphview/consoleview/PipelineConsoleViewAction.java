@@ -48,7 +48,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PipelineConsoleViewAction extends Tab {
-    public static final long LOG_THRESHOLD = 150 * 1024; // 150KB
     public static final String URL_NAME = "pipeline-overview";
     public static final int CACHE_AGE = (int) TimeUnit.DAYS.toSeconds(1);
 
@@ -187,93 +186,6 @@ public class PipelineConsoleViewAction extends Tab {
         String nodeId = req.getParameter("nodeId");
         if (nodeId == null) return HttpResponses.error(400, "missing ?nodeId");
         return HttpResponses.text(getNodeExceptionText(nodeId));
-    }
-
-    /*
-     * The default behavior of this functions differs from 'getConsoleOutput' in that it will use LOG_THRESHOLD from the end of the string.
-     * Note: if 'startByte' is negative and falls outside of the console text then we will start from byte 0.
-     *
-     * FIXME: This is not performant and needs to be re-written to not buffer in memory. Avoiding JSON for log text.
-     *
-     * Example:
-     * {
-     *   "startByte": 0,
-     *   "endByte": 13,
-     *   "text": "Hello, world!"
-     * }
-     */
-    @GET
-    @WebMethod(name = "consoleOutput")
-    public HttpResponse getConsoleOutput(StaplerRequest2 req) throws IOException {
-        run.checkPermission(Item.READ);
-        String nodeId = req.getParameter("nodeId");
-        if (nodeId == null) {
-            logger.error("'consoleJson' was not passed 'nodeId'.");
-            return HttpResponses.errorJSON("Error getting console json");
-        }
-        logger.debug("getConsoleOutput was passed node id '{}'.", nodeId);
-        // This will be a step, so return it's log output.
-        // startByte to start getting data from. If negative will startByte from end of string with
-        // LOG_THRESHOLD.
-        Long startByte = parseIntWithDefault(req.getParameter("startByte"), -LOG_THRESHOLD);
-        JSONObject data = getConsoleOutputJson(nodeId, startByte);
-        if (data == null) {
-            return HttpResponses.errorJSON("Something went wrong - check Jenkins logs.");
-        }
-        return HttpResponses.okJSON(data);
-    }
-
-    protected JSONObject getConsoleOutputJson(String nodeId, Long requestStartByte) throws IOException {
-        long startByte = 0L;
-        long endByte = 0L;
-        long textLength;
-        String text = "";
-        AnnotatedLargeText<? extends FlowNode> logText = null;
-        boolean nodeIsActive = false;
-        {
-            FlowExecution execution = run.getExecution();
-            if (execution != null) {
-                logger.debug("getConsoleOutputJson found execution.");
-                FlowNode node = execution.getNode(nodeId);
-                if (node != null) {
-                    // Look up active state before getting the logText.
-                    nodeIsActive = node.isActive();
-                    logText = PipelineNodeUtil.getLogText(node);
-                }
-            }
-        }
-
-        if (logText != null) {
-            textLength = logText.length();
-            // positive startByte
-            if (requestStartByte > textLength) {
-                // Avoid resource leak.
-                logger.error("consoleJson - user requested startByte larger than console output.");
-                return null;
-            }
-            // if startByte is negative make sure we don't try and get a byte before 0.
-            if (requestStartByte < 0L) {
-                logger.debug("consoleJson - requested negative startByte '{}'.", requestStartByte);
-                startByte = textLength + requestStartByte;
-                if (startByte < 0L) {
-                    logger.debug(
-                            "consoleJson - requested negative startByte '{}' out of bounds, starting at 0.",
-                            requestStartByte);
-                    startByte = 0L;
-                }
-            } else {
-                startByte = requestStartByte;
-            }
-            logger.debug("Returning '{}' bytes from 'getConsoleOutput'.", textLength - startByte);
-            text = PipelineNodeUtil.convertLogToString(logText, startByte);
-            endByte = textLength;
-        }
-        JSONObject json = new JSONObject();
-        json.element("text", text);
-        json.element("startByte", startByte);
-        json.element("endByte", endByte);
-        json.element("nodeIsActive", nodeIsActive);
-        return json;
     }
 
     private AnnotatedLargeText<? extends FlowNode> getLogForNode(String nodeId) throws IOException {

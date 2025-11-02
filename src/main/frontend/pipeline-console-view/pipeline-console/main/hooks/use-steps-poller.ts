@@ -62,7 +62,8 @@ async function updateStepBuffer(
   }
 
   const newLogLines = response.text.split("\n");
-  if (newLogLines[newLogLines.length - 1] === "") {
+  const hasTrailingNewLine = response.text.endsWith("\n");
+  if (!response.text || hasTrailingNewLine) {
     // Remove trailing empty new line caused by a) splitting an empty string or b) a trailing new line character in the response.
     newLogLines.pop();
   }
@@ -70,6 +71,14 @@ async function updateStepBuffer(
   const exceptionText = stepBuffer.exceptionText || [];
   if (stepBuffer.endByte > 0 && stepBuffer.endByte === startByte) {
     stepBuffer.lines.length -= exceptionText.length;
+    if (
+      !stepBuffer.hasTrailingNewLine &&
+      stepBuffer.lines.length > 0 &&
+      newLogLines.length > 0
+    ) {
+      // Combine a previously broken up line back together.
+      stepBuffer.lines[stepBuffer.lines.length - 1] += newLogLines.shift();
+    }
     stepBuffer.lines = [...stepBuffer.lines, ...newLogLines, ...exceptionText];
   } else {
     stepBuffer.lines = newLogLines.concat(exceptionText);
@@ -78,6 +87,10 @@ async function updateStepBuffer(
 
   stepBuffer.endByte = response.endByte;
   stepBuffer.consoleAnnotator = response.consoleAnnotator;
+  if (response.text) {
+    // Only overwrite when more text was available.
+    stepBuffer.hasTrailingNewLine = hasTrailingNewLine;
+  }
   if (!response.nodeIsActive) {
     // We've reached the end of the log now.
     stepBuffer.stopTailing = true;

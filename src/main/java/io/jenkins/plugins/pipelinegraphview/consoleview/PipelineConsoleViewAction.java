@@ -48,7 +48,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PipelineConsoleViewAction extends Tab {
-    public static final long LOG_THRESHOLD = 150 * 1024; // 150KB
     public static final String URL_NAME = "pipeline-overview";
     public static final int CACHE_AGE = (int) TimeUnit.DAYS.toSeconds(1);
 

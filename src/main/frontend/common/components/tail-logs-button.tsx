@@ -2,7 +2,6 @@ import { LocalizedMessageKey, useMessages } from "../i18n";
 import Tooltip from "./tooltip.tsx";
 
 export interface TailLogsButtonProps {
-  showText?: boolean;
   complete: boolean;
   loading: boolean;
   tailLogs: boolean;
@@ -16,28 +15,26 @@ export default function TailLogsButton({
   tailLogs,
   startTailingLogs,
   stopTailingLogs,
-  showText = true,
 }: TailLogsButtonProps) {
   const messages = useMessages();
   if (loading || complete) return null;
 
-  const text = tailLogs
-    ? messages.format(LocalizedMessageKey.tailLogsPause)
-    : messages.format(LocalizedMessageKey.tailLogsResume);
-  const btn = (
-    <button
-      className={"jenkins-button jenkins-!-info-color"}
-      onClick={tailLogs ? stopTailingLogs : startTailingLogs}
+  return (
+    <Tooltip
+      content={
+        tailLogs
+          ? messages.format(LocalizedMessageKey.tailLogsPause)
+          : messages.format(LocalizedMessageKey.tailLogsResume)
+      }
     >
-      {tailLogs ? pauseIcon() : playIcon()}
-      {showText ? text : ""}
-    </button>
+      <button
+        className={"jenkins-button jenkins-!-info-color"}
+        onClick={tailLogs ? stopTailingLogs : startTailingLogs}
+      >
+        {tailLogs ? pauseIcon() : playIcon()}
+      </button>
+    </Tooltip>
   );
-
-  if (showText) {
-    return btn;
-  }
-  return <Tooltip content={text}>{btn}</Tooltip>;
 }
 
 // play-circle-outline.svg

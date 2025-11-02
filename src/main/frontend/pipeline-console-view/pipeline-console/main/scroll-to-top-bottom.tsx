@@ -64,7 +64,7 @@ export default function ScrollToTopBottom(props: TailLogsButtonProps) {
         })}
         aria-hidden={!isScrollable}
       >
-        <TailLogsButton {...props} showText={false} />
+        <TailLogsButton {...props} />
         <button
           onClick={scrollToTop}
           className="jenkins-button"

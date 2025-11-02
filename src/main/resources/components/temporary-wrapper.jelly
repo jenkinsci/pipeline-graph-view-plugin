@@ -20,7 +20,6 @@
                     <link rel="stylesheet" href="${resURL}/plugin/pipeline-graph-view/js/style.css" type="text/css" />
 
                     <j:set var="controls">
-                        <div id="pgv-tail-logs" />
                         <j:if test="${it.buildInProgress}">
                             <l:hasPermission permission="${it.cancelPermission}">
                                 <j:set var="proxyId" value="${h.generateId()}" />

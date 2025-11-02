@@ -9,7 +9,6 @@ import {
   DOCUMENT,
   SETTINGS,
 } from "../../../common/components/symbols.tsx";
-import TailLogsPortal from "../../../common/components/tail-logs-portal.tsx";
 import { useUserPermissions } from "../../../common/user/user-permission-provider.tsx";
 import Skeleton from "./components/skeleton.tsx";
 import Stages from "./components/stages.tsx";
@@ -54,14 +53,6 @@ export default function PipelineConsole() {
 
   return (
     <>
-      <TailLogsPortal
-        complete={complete}
-        loading={loading}
-        tailLogs={tailLogs}
-        startTailingLogs={startTailingLogs}
-        stopTailingLogs={stopTailingLogs}
-        container={document.getElementById("pgv-tail-logs")}
-      />
       <DropdownPortal
         container={document.getElementById("console-pipeline-overflow-root")}
       >

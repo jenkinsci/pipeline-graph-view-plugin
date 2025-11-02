@@ -136,7 +136,7 @@ export default function PipelineConsole() {
                     </div>
                   ) : (
                     <DataTreeView
-                      onNodeSelect={(_, nodeId) => handleStageSelect(nodeId)}
+                      onNodeSelect={handleStageSelect}
                       selected={openStage?.id}
                       stages={stages}
                     />

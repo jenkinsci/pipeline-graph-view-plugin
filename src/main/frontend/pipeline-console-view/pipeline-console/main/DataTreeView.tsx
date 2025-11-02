@@ -3,7 +3,6 @@ import "./data-tree-view.scss";
 import {
   memo,
   MouseEvent as ReactMouseEvent,
-  useCallback,
   useEffect,
   useState,
 } from "react";
@@ -25,13 +24,6 @@ export default function DataTreeView({
 }: DataTreeViewProps) {
   const { search, setSearch, visibleStatuses } = useFilter();
   const filteredStages = filterStageTree(search, visibleStatuses, stages);
-
-  const handleSelect = useCallback(
-    (event: ReactMouseEvent, nodeId: string) => {
-      onNodeSelect(event, nodeId);
-    },
-    [onNodeSelect],
-  );
 
   if (stages.length === 1 && stages[0].placeholder) {
     return null;
@@ -97,7 +89,7 @@ export default function DataTreeView({
             key={stage.id}
             stage={stage}
             selected={String(selected)}
-            onSelect={handleSelect}
+            onSelect={onNodeSelect}
           />
         ))}
       </ol>
@@ -164,7 +156,7 @@ const TreeNode = memo(function TreeNode({
 
             history.replaceState({}, "", `?selected-node=` + stage.id);
             if (!isSelected) {
-              onSelect(e, String(stage.id));
+              onSelect(String(stage.id));
             }
             setIsExpanded(!isExpanded);
           }}
@@ -271,11 +263,11 @@ const filterStageTree = (
 interface DataTreeViewProps {
   stages: StageInfo[];
   selected?: number;
-  onNodeSelect: (event: ReactMouseEvent, nodeId: string) => void;
+  onNodeSelect: (nodeId: string) => void;
 }
 
 interface TreeNodeProps {
   stage: StageInfo;
   selected: string;
-  onSelect: (event: ReactMouseEvent, id: string) => void;
+  onSelect: (id: string) => void;
 }

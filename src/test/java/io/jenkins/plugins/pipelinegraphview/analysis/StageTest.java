@@ -77,8 +77,7 @@ class StageTest {
     void testBlockStage() throws Exception {
         WorkflowJob job = jenkinsRule.jenkins.createProject(WorkflowJob.class, "Blocky job");
 
-        job.setDefinition(new CpsFlowDefinition(
-                """
+        job.setDefinition(new CpsFlowDefinition("""
                 node {
                    stage ('Build') {
                      echo ('Building')
@@ -91,8 +90,7 @@ class StageTest {
                      archive(includes: 'file.txt')
                      echo ('Deploying')
                    }
-                }""",
-                true));
+                }""", true));
         /*
         * Node dump follows, format:
         [ID]{parent,ids} flowNodeClassName stepDisplayName [st=startId if a block node]

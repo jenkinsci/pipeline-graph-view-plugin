@@ -6,9 +6,7 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 0 0.5rem;
-  // TODO - var fallback can removed after baseline is moved >= 2.496
-  padding: 0.125rem calc(1rem + var(--jenkins-border-width, 2px));
-  padding-right: 0.7rem;
+  padding: 0.125rem 0.7rem 0.125rem calc(1rem + var(--jenkins-border-width));
   border-radius: var(--form-input-border-radius);
   margin-bottom: 0.75rem;
   z-index: 101;
@@ -18,8 +16,7 @@
     position: absolute;
     inset: 0;
     background: oklch(from var(--bg-color) l c h / 0.075);
-    // TODO - var fallback can removed after baseline is moved >= 2.496
-    border: var(--jenkins-border-width, 2px) solid
+    border: var(--jenkins-border-width) solid
       oklch(from var(--bg-color) l c h / 0.1);
     border-radius: inherit;
     transition: var(--standard-transition);

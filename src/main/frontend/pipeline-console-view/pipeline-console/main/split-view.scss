@@ -33,12 +33,10 @@
   &::after {
     content: "";
     position: absolute;
-    // TODO - var fallback can removed after baseline is moved >= 2.496
-    right: calc(50% - (var(--jenkins-border-width, 2px) / 2));
+    right: calc(50% - (var(--jenkins-border-width) / 2));
     top: 0;
     bottom: 0;
-    // TODO - var fallback can removed after baseline is moved >= 2.496
-    width: var(--jenkins-border-width, 2px);
+    width: var(--jenkins-border-width);
     border-radius: 5px;
     transition: var(--standard-transition);
     background-color: var(--text-color-secondary);
@@ -73,10 +71,8 @@
       right: 0;
       top: unset;
       width: unset;
-      // TODO - var fallback can removed after baseline is moved >= 2.496
-      bottom: calc(50% - (var(--jenkins-border-width, 2px) / 2));
-      // TODO - var fallback can removed after baseline is moved >= 2.496
-      height: var(--jenkins-border-width, 2px);
+      bottom: calc(50% - (var(--jenkins-border-width) / 2));
+      height: var(--jenkins-border-width);
     }
 
     &:hover {

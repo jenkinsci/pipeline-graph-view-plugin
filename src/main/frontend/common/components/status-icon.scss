@@ -29,9 +29,3 @@
     }
   }
 }
-
-// TODO - can be removed when Jenkins >= 2.506
-.jenkins-\!-skipped-color {
-  --color: var(--text-color-secondary);
-  color: var(--color);
-}

@@ -11,13 +11,9 @@ $pgv-item-padding-inline: 0.7rem;
     content: "";
     position: absolute;
     inset: 0;
-    background: var(--input-color);
+    background: var(--card-background);
+    border: var(--card-border-width) solid var(--card-border-color);
     border-radius: var(--form-input-border-radius);
-    // TODO - var fallback can removed after baseline is moved >= 2.496
-    border: var(
-      --jenkins-border,
-      2px solid color-mix(in srgb, var(--text-color-secondary) 10%, transparent)
-    );
     box-shadow: var(--form-input-glow);
     transition: var(--standard-transition);
   }
@@ -271,19 +267,13 @@ $pgv-item-padding-inline: 0.7rem;
     content: "";
     position: absolute;
     top: 0.375rem;
-    // TODO - var fallback can removed after baseline is moved >= 2.496
     left: calc(
-      $pgv-item-padding-inline + ($pgv-icon-size / 2) -
-        (var(--jenkins-border-width, 2px) / 2)
+      $pgv-item-padding-inline +
+        ($pgv-icon-size / 2) - var(--jenkins-border-width / 2)
     );
     bottom: 0.375rem;
-    // TODO - var fallback can removed after baseline is moved >= 2.496
-    background-color: var(
-      --jenkins-border-color,
-      color-mix(in srgb, var(--text-color-secondary) 25%, transparent)
-    );
-    // TODO - var fallback can removed after baseline is moved >= 2.496
-    width: var(--jenkins-border-width, 2px);
+    background-color: var(--jenkins-border-color);
+    width: var(--jenkins-border-width);
     border-radius: var(--form-input-border-radius);
   }
 }

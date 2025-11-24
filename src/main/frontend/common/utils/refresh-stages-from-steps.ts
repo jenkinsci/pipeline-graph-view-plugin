@@ -29,6 +29,13 @@ export function refreshStagesFromSteps(stages: StageInfo[], steps: StepInfo[]) {
         totalDurationMillis = undefined;
       }
     }
+    // Derived front-end flag: if any step has an inputStep or any child is paused/waiting, mark waitingForInput.
+    const waitingForInput =
+      state === Result.running &&
+      (stageSteps.some((s) => Boolean(s.inputStep)) ||
+        children.some(
+          (c) => c.waitingForInput || c.state === Result.paused,
+        ));
     // Best effort: Pause timer when a stage is expected to have finished to avoid having to decrement the total duration when done (as confirmed by the next run polling).
     pauseLiveTotal =
       startTimeMillis > 0 &&
@@ -40,7 +47,8 @@ export function refreshStagesFromSteps(stages: StageInfo[], steps: StepInfo[]) {
       Boolean(stage.pauseLiveTotal) !== pauseLiveTotal ||
       stage.startTimeMillis !== startTimeMillis ||
       stage.state !== state ||
-      stage.totalDurationMillis !== totalDurationMillis
+      stage.totalDurationMillis !== totalDurationMillis ||
+      Boolean(stage.waitingForInput) !== waitingForInput
     ) {
       // Update in-place to avoid frequent re-render, then trigger re-render.
       stage.children = children;
@@ -48,6 +56,7 @@ export function refreshStagesFromSteps(stages: StageInfo[], steps: StepInfo[]) {
       stage.startTimeMillis = startTimeMillis;
       stage.state = state;
       stage.totalDurationMillis = totalDurationMillis;
+      stage.waitingForInput = waitingForInput;
       if (!changed) stages = stages.slice();
       changed = true;
       stages[idx] = { ...stage };

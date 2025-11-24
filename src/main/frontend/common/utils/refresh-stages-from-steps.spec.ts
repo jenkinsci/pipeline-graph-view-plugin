@@ -177,14 +177,25 @@ it("should handle finished stage with children", () => {
 
 it("should mark running stage waitingForInput when input step present", () => {
   const originalStages: StageInfo[] = [
-    { ...mockStage, state: Result.running, startTimeMillis: 42, skeleton: false },
+    {
+      ...mockStage,
+      state: Result.running,
+      startTimeMillis: 42,
+      skeleton: false
+    },
   ];
   const stages = refreshStagesFromSteps(originalStages, [
     {
       ...mockStep,
       stageId: "1",
       state: Result.running,
-      inputStep: { message: "msg", cancel: "Cancel", id: "x", ok: "OK", parameters: false },
+      inputStep: {
+        message: "msg",
+        cancel: "Cancel",
+        id: "x",
+        ok: "OK",
+        parameters: false
+      },
     },
   ]);
   expect(stages[0].state).to.equal(Result.running);

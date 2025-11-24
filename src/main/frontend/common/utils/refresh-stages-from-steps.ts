@@ -33,9 +33,7 @@ export function refreshStagesFromSteps(stages: StageInfo[], steps: StepInfo[]) {
     const waitingForInput =
       state === Result.running &&
       (stageSteps.some((s) => Boolean(s.inputStep)) ||
-        children.some(
-          (c) => c.waitingForInput || c.state === Result.paused,
-        ));
+        children.some((c) => c.waitingForInput || c.state === Result.paused));
     // Best effort: Pause timer when a stage is expected to have finished to avoid having to decrement the total duration when done (as confirmed by the next run polling).
     pauseLiveTotal =
       startTimeMillis > 0 &&

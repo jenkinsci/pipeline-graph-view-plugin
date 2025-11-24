@@ -10,10 +10,13 @@ import {
 export function useStageProgress(stage: StageInfo) {
   const [percentage, setPercentage] = useState(0);
   useEffect(() => {
-    if (stage.state !== Result.running || stage.waitingForInput) {
-      // percentage is only needed for the running icon (and not when paused)
+    // If no longer running, immediately reset progress.
+    if (stage.state !== Result.running) {
+      setPercentage(0);
       return;
     }
+    // Keep updating progress while waitingForInput: the glyph changes to paused but
+    // the ring should continue to reflect underlying running progress.
     const update = () => {
       const currentTiming =
         stage.totalDurationMillis ?? Date.now() - stage.startTimeMillis;
@@ -28,7 +31,6 @@ export function useStageProgress(stage: StageInfo) {
     stage.startTimeMillis,
     stage.totalDurationMillis,
     stage.previousTotalDurationMillis,
-    stage.waitingForInput,
   ]);
   return percentage;
 }

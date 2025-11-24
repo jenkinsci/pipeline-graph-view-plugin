@@ -10,9 +10,8 @@ import {
 export function useStageProgress(stage: StageInfo) {
   const [percentage, setPercentage] = useState(0);
   useEffect(() => {
-    if (stage.state !== Result.running) {
-      // percentage is only needed for the running icon.
-      setPercentage(0);
+    if (stage.state !== Result.running || stage.waitingForInput) {
+      // percentage is only needed for the running icon (and not when paused)
       return;
     }
     const update = () => {
@@ -29,6 +28,7 @@ export function useStageProgress(stage: StageInfo) {
     stage.startTimeMillis,
     stage.totalDurationMillis,
     stage.previousTotalDurationMillis,
+    stage.waitingForInput,
   ]);
   return percentage;
 }
@@ -37,6 +37,7 @@ export function StageStatusIcon({ stage }: { stage: StageInfo }) {
   return (
     <StatusIcon
       status={stage.state}
+      waitingForInput={stage.waitingForInput}
       percentage={useStageProgress(stage)}
       skeleton={stage.skeleton}
     />
@@ -48,11 +49,14 @@ export function StageStatusIcon({ stage }: { stage: StageInfo }) {
  */
 export default function StatusIcon({
   status,
+  waitingForInput,
   percentage,
   skeleton,
 }: StatusIconProps) {
   const viewBoxSize = 512;
-  const strokeWidth = status === "running" ? 50 : 0;
+  const iconStatus = waitingForInput && status === Result.running ? Result.paused : status;
+  // Keep ring when underlying status is running (even if visually paused)
+  const strokeWidth = status === Result.running ? 50 : 0;
   const radius = (viewBoxSize - strokeWidth) / 2.2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - ((percentage ?? 100) / 100) * circumference;
@@ -63,7 +67,7 @@ export default function StatusIcon({
       className={"pgv-status-icon " + resultToColor(status, skeleton)}
       opacity={skeleton ? 0.5 : 1}
       role={"img"}
-      aria-label={status}
+      aria-label={iconStatus}
     >
       <circle
         cx={viewBoxSize / 2}
@@ -107,7 +111,7 @@ export default function StatusIcon({
         }}
       />
 
-      <Group currentStatus={status} status={Result.running}>
+  <Group currentStatus={iconStatus} status={Result.running}>
         <circle
           cx="256"
           cy="256"
@@ -117,7 +121,7 @@ export default function StatusIcon({
         />
       </Group>
 
-      <Group currentStatus={status} status={Result.success}>
+  <Group currentStatus={iconStatus} status={Result.success}>
         <path
           d="M336 189L224 323L176 269.4"
           fill="transparent"
@@ -128,7 +132,7 @@ export default function StatusIcon({
         />
       </Group>
 
-      <Group currentStatus={status} status={Result.failure}>
+  <Group currentStatus={iconStatus} status={Result.failure}>
         <path
           fill="none"
           stroke="var(--color)"
@@ -139,7 +143,7 @@ export default function StatusIcon({
         />
       </Group>
 
-      <Group currentStatus={status} status={Result.aborted}>
+  <Group currentStatus={iconStatus} status={Result.aborted}>
         <path
           fill="none"
           stroke="var(--color)"
@@ -150,7 +154,7 @@ export default function StatusIcon({
         />
       </Group>
 
-      <Group currentStatus={status} status={Result.unstable}>
+  <Group currentStatus={iconStatus} status={Result.unstable}>
         <path
           d="M250.26 166.05L256 288l5.73-121.95a5.74 5.74 0 00-5.79-6h0a5.74 5.74 0 00-5.68 6z"
           fill="none"
@@ -162,7 +166,7 @@ export default function StatusIcon({
         <ellipse cx="256" cy="350" rx="26" ry="26" fill="var(--color)" />
       </Group>
 
-      <Group currentStatus={status} status={Result.skipped}>
+  <Group currentStatus={iconStatus} status={Result.skipped}>
         <g transform="scale(0.8)">
           <path
             fill="none"
@@ -185,7 +189,7 @@ export default function StatusIcon({
         </g>
       </Group>
 
-      <Group currentStatus={status} status={Result.paused}>
+  <Group currentStatus={iconStatus} status={Result.paused}>
         <path
           fill="none"
           stroke="var(--color)"
@@ -196,13 +200,13 @@ export default function StatusIcon({
         />
       </Group>
 
-      <Group currentStatus={status} status={Result.not_built}>
+  <Group currentStatus={iconStatus} status={Result.not_built}>
         <circle cx="256" cy="256" r="30" fill="var(--color)" />
         <circle cx="352" cy="256" r="30" fill="var(--color)" />
         <circle cx="160" cy="256" r="30" fill="var(--color)" />
       </Group>
 
-      <Group currentStatus={status} status={Result.unknown}>
+  <Group currentStatus={iconStatus} status={Result.unknown}>
         <path
           d="M200 202.29s.84-17.5 19.57-32.57C230.68 160.77 244 158.18 256 158c10.93-.14 20.69 1.67 26.53 4.45 10 4.76 29.47 16.38 29.47 41.09 0 26-17 37.81-36.37 50.8S251 281.43 251 296"
           fill="none"
@@ -259,6 +263,8 @@ export function resultToColor(result: Result, skeleton: boolean | undefined) {
 
 interface StatusIconProps {
   status: Result;
+  /** True when a running stage is awaiting input; renders paused glyph but keeps running color & progress */
+  waitingForInput?: boolean;
   percentage?: number;
   skeleton?: boolean;
 }

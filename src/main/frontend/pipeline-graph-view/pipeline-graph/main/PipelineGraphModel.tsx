@@ -57,6 +57,11 @@ export interface StageInfo {
 
   skeleton?: boolean;
   pauseLiveTotal?: boolean;
+  /**
+   * Front-end derived flag indicating a running stage is awaiting input.
+   * Used to override the icon to the paused glyph while retaining the running state for filters & color.
+   */
+  waitingForInput?: boolean;
 }
 
 interface BaseNodeInfo {

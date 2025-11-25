@@ -181,7 +181,7 @@ it("should mark running stage waitingForInput when input step present", () => {
       ...mockStage,
       state: Result.running,
       startTimeMillis: 42,
-      skeleton: false
+      skeleton: false,
     },
   ];
   const stages = refreshStagesFromSteps(originalStages, [
@@ -194,7 +194,7 @@ it("should mark running stage waitingForInput when input step present", () => {
         cancel: "Cancel",
         id: "x",
         ok: "OK",
-        parameters: false
+        parameters: false,
       },
     },
   ]);

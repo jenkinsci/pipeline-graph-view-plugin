@@ -19,6 +19,7 @@ class PipelineStageInternal {
     private boolean synthetic;
     private TimingInfo timingInfo;
     private String agent;
+    private PipelineStepBuilderApi builder;
 
     public PipelineStageInternal(
             String id,
@@ -113,7 +114,44 @@ class PipelineStageInternal {
         this.agent = aAgent;
     }
 
+    public void setBuilder(PipelineStepBuilderApi builder) {
+        this.builder = builder;
+    }
+
+    /**
+     * Checks if this stage or any of its children are waiting for input.
+     * A stage is waiting for input if any of its steps have a non-null inputStep
+     * and the step state is PAUSED.
+     */
+    private boolean isWaitingForInput(List<PipelineStage> children) {
+        // Check if any child stages are waiting for input
+        if (children != null && !children.isEmpty()) {
+            for (PipelineStage child : children) {
+                if (child.waitingForInput) {
+                    return true;
+                }
+            }
+        }
+
+        // Check steps for this stage
+        if (builder != null && id != null) {
+            List<FlowNodeWrapper> steps = builder.getStageSteps(id);
+            if (steps != null) {
+                for (FlowNodeWrapper step : steps) {
+                    // Check if step has an input and is paused
+                    if (step.getInputStep() != null 
+                        && step.getStatus().state == BlueRun.BlueRunState.PAUSED) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     public PipelineStage toPipelineStage(List<PipelineStage> children, String runUrl) {
+        boolean waitingForInput = isWaitingForInput(children);
         return new PipelineStage(
                 id,
                 name,
@@ -128,6 +166,7 @@ class PipelineStageInternal {
                 synthetic && name.equals(Messages.FlowNodeWrapper_noStage()),
                 timingInfo,
                 agent,
-                runUrl);
+                runUrl,
+                waitingForInput);
     }
 }

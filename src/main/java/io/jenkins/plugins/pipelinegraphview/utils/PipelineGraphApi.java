@@ -67,6 +67,12 @@ public class PipelineGraphApi {
         // these are completely new representations.
         List<PipelineStageInternal> stages = getPipelineNodes(builder);
 
+        // Set the builder on each stage so they can check for paused steps
+        if (builder instanceof PipelineStepBuilderApi) {
+            PipelineStepBuilderApi stepBuilder = (PipelineStepBuilderApi) builder;
+            stages.forEach(stage -> stage.setBuilder(stepBuilder));
+        }
+
         // id => stage
         Map<String, PipelineStageInternal> stageMap = stages.stream()
                 .collect(Collectors.toMap(

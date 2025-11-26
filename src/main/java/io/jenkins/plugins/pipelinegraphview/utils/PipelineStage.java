@@ -17,6 +17,7 @@ public class PipelineStage extends AbstractPipelineNode {
     private final boolean placeholder;
     final String agent;
     private final String url;
+    public final boolean waitingForInput;
 
     public PipelineStage(
             String id,
@@ -32,8 +33,9 @@ public class PipelineStage extends AbstractPipelineNode {
             boolean placeholder,
             TimingInfo timingInfo,
             String agent,
-            String runUrl) {
-        super(id, name, state, type, title, timingInfo);
+            String runUrl,
+            boolean waitingForInput) {
+        super(id, name, waitingForInput ? PipelineState.PAUSED : state, type, title, timingInfo);
         this.children = children;
         this.seqContainerName = seqContainerName;
         this.nextSibling = nextSibling;
@@ -42,6 +44,7 @@ public class PipelineStage extends AbstractPipelineNode {
         this.placeholder = placeholder;
         this.agent = agent;
         this.url = "/" + runUrl + URL_NAME + "?selected-node=" + id;
+        this.waitingForInput = waitingForInput;
     }
 
     public static class PipelineStageJsonProcessor extends AbstractPipelineNodeJsonProcessor {
@@ -64,6 +67,7 @@ public class PipelineStage extends AbstractPipelineNode {
             json.element("placeholder", stage.placeholder);
             json.element("agent", stage.agent);
             json.element("url", stage.url);
+            json.element("waitingForInput", stage.waitingForInput);
             return json;
         }
     }

@@ -253,7 +253,7 @@ export function resultToColor(result: Result, skeleton: boolean | undefined) {
     case "unstable":
       return "jenkins-!-warning-color";
     case "paused":
-      return "jenkins-!-running-color";
+      return "jenkins-!-accent-color";
     default:
       return "jenkins-!-skipped-color";
   }

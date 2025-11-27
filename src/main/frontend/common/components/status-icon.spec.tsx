@@ -127,6 +127,23 @@ describe("StatusIcon", () => {
         expect(result.current).to.equal(0);
         unmount();
       });
+      it("should continue progress when waitingForInput is true", async () => {
+        const { result, unmount } = renderHook(() => {
+          return useStageProgress({
+            ...mockStage,
+            state: Result.running,
+            startTimeMillis: now - 2_000,
+            previousTotalDurationMillis: 20_000,
+            waitingForInput: true,
+          });
+        });
+        expect(result.current).to.equal(10);
+        await act(() => vi.advanceTimersByTime(1_000));
+        expect(result.current).to.equal(15);
+        await act(() => vi.advanceTimersByTime(1_000));
+        expect(result.current).to.equal(20);
+        unmount();
+      });
     });
     describe("other states", function () {
       for (const state in Result) {

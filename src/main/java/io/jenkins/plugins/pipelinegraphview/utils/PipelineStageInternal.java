@@ -139,8 +139,7 @@ class PipelineStageInternal {
             if (steps != null) {
                 for (FlowNodeWrapper step : steps) {
                     // Check if step has an input and is paused
-                    if (step.getInputStep() != null 
-                        && step.getStatus().state == BlueRun.BlueRunState.PAUSED) {
+                    if (step.getInputStep() != null && step.getStatus().state == BlueRun.BlueRunState.PAUSED) {
                         return true;
                     }
                 }

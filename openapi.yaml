@@ -376,6 +376,9 @@ components:
             - null
           format: int64
           description: Total duration in milliseconds (null if still running)
+        waitingForInput:
+          type: boolean
+          description: Whether the stage is waiting for user input
         children:
           type: array
           items:

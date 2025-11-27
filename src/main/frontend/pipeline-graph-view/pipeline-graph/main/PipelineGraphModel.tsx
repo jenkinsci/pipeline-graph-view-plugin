@@ -57,6 +57,7 @@ export interface StageInfo {
 
   skeleton?: boolean;
   pauseLiveTotal?: boolean;
+  waitingForInput?: boolean;
 }
 
 interface BaseNodeInfo {

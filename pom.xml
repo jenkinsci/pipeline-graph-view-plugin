@@ -35,7 +35,7 @@
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
     <jenkins.baseline>2.528</jenkins.baseline>
     <jenkins.version>2.534</jenkins.version>
-    <node.version>24.11.0</node.version>
+    <node.version>24.11.1</node.version>
     <npm.version>11.6.3</npm.version>
     <spotless.check.skip>false</spotless.check.skip>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>

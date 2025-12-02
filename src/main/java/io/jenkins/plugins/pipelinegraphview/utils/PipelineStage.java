@@ -67,7 +67,6 @@ public class PipelineStage extends AbstractPipelineNode {
             json.element("placeholder", stage.placeholder);
             json.element("agent", stage.agent);
             json.element("url", stage.url);
-            json.element("waitingForInput", stage.waitingForInput);
             return json;
         }
     }

@@ -134,7 +134,6 @@ describe("StatusIcon", () => {
             state: Result.running,
             startTimeMillis: now - 2_000,
             previousTotalDurationMillis: 20_000,
-            waitingForInput: true,
           });
         });
         expect(result.current).to.equal(10);

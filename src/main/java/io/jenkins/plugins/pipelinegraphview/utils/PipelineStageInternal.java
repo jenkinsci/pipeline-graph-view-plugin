@@ -127,7 +127,7 @@ class PipelineStageInternal {
         // Check if any child stages are waiting for input
         if (children != null && !children.isEmpty()) {
             for (PipelineStage child : children) {
-                if (child.waitingForInput) {
+                if (child.state == PipelineState.PAUSED) {
                     return true;
                 }
             }
@@ -151,11 +151,13 @@ class PipelineStageInternal {
 
     public PipelineStage toPipelineStage(List<PipelineStage> children, String runUrl) {
         boolean waitingForInput = isWaitingForInput(children);
+        PipelineState effectiveState = waitingForInput ? PipelineState.PAUSED : state;
+        
         return new PipelineStage(
                 id,
                 name,
                 children,
-                state,
+                effectiveState,
                 type.name(),
                 title,
                 seqContainerName,
@@ -165,7 +167,6 @@ class PipelineStageInternal {
                 synthetic && name.equals(Messages.FlowNodeWrapper_noStage()),
                 timingInfo,
                 agent,
-                runUrl,
-                waitingForInput);
+                runUrl);
     }
 }

@@ -17,7 +17,7 @@ public class PipelineStage extends AbstractPipelineNode {
     private final boolean placeholder;
     final String agent;
     private final String url;
-    
+
     public PipelineStage(
             String id,
             String name,

@@ -152,7 +152,7 @@ class PipelineStageInternal {
     public PipelineStage toPipelineStage(List<PipelineStage> children, String runUrl) {
         boolean waitingForInput = isWaitingForInput(children);
         PipelineState effectiveState = waitingForInput ? PipelineState.PAUSED : state;
-        
+
         return new PipelineStage(
                 id,
                 name,

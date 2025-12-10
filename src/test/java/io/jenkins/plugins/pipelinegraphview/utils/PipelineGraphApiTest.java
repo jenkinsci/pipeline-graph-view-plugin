@@ -532,4 +532,43 @@ class PipelineGraphApiTest {
                         "unstable-branch{unstable}",
                         "]")));
     }
+    
+    @Issue("GH#967")
+    @Test
+    void createTree_stageWithInputStepShowsAsPaused() throws Exception {
+        WorkflowJob job = TestUtils.createJob(j, "pipelineWithInput", "input.jenkinsfile");
+        QueueTaskFuture<WorkflowRun> futureRun = job.scheduleBuild2(0);
+        WorkflowRun run = futureRun.waitForStart();
+
+        // Wait for the input action to be available and have executions
+        org.jenkinsci.plugins.workflow.support.steps.input.InputAction inputAction = null;
+        while (inputAction == null || inputAction.getExecutions().isEmpty()) {
+            inputAction = run.getAction(org.jenkinsci.plugins.workflow.support.steps.input.InputAction.class);
+            Thread.sleep(100);
+        }
+
+        // Wait a bit more for the pause to be registered
+        Thread.sleep(500);
+
+        // Check the graph while paused on input
+        PipelineGraphApi api = new PipelineGraphApi(run);
+        PipelineGraph graph = api.createTree();
+
+        // Find the stage with input
+        PipelineStage inputStage = graph.stages.stream()
+                .filter(s -> s.name.equals("Input"))
+                .findFirst()
+                .orElseThrow();
+
+        // Verify it shows as PAUSED
+        assertThat(inputStage.state, equalTo(PipelineState.PAUSED));
+
+        // Approve the input and wait for completion
+        org.jenkinsci.plugins.workflow.support.steps.input.InputStepExecution execution = 
+            inputAction.getExecutions().get(0);
+        execution.proceed(null);
+        j.waitForCompletion(run);
+        
+        assertThat(run.getResult(), equalTo(Result.SUCCESS));
+    }
 }

@@ -4,6 +4,7 @@ import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import java.util.Collections;
 import java.util.List;
+import org.jenkinsci.plugins.workflow.support.steps.input.InputAction;
 
 class PipelineStageInternal {
 
@@ -20,6 +21,7 @@ class PipelineStageInternal {
     private TimingInfo timingInfo;
     private String agent;
     private PipelineStepBuilderApi builder;
+    private InputAction inputAction;
 
     public PipelineStageInternal(
             String id,
@@ -118,12 +120,22 @@ class PipelineStageInternal {
         this.builder = builder;
     }
 
+    public void setInputAction(InputAction inputAction) {
+        this.inputAction = inputAction;
+    }
+
     /**
      * Checks if this stage or any of its children are waiting for input.
      * A stage is waiting for input if any of its steps have a non-null inputStep
      * and the step state is PAUSED.
+     * Only performs the check if there is an InputAction attached to the WorkflowRun.
      */
     private boolean isWaitingForInput(List<PipelineStage> children) {
+        // Early exit if there's no InputAction on the run
+        if (inputAction == null) {
+            return false;
+        }
+
         // Check if any child stages are waiting for input
         if (children != null && !children.isEmpty()) {
             for (PipelineStage child : children) {

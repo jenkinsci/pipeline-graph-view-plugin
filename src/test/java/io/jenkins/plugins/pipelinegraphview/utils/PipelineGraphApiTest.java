@@ -532,7 +532,7 @@ class PipelineGraphApiTest {
                         "unstable-branch{unstable}",
                         "]")));
     }
-    
+
     @Issue("GH#967")
     @Test
     void createTree_stageWithInputStepShowsAsPaused() throws Exception {
@@ -564,11 +564,11 @@ class PipelineGraphApiTest {
         assertThat(inputStage.state, equalTo(PipelineState.PAUSED));
 
         // Approve the input and wait for completion
-        org.jenkinsci.plugins.workflow.support.steps.input.InputStepExecution execution = 
-            inputAction.getExecutions().get(0);
+        org.jenkinsci.plugins.workflow.support.steps.input.InputStepExecution execution =
+                inputAction.getExecutions().get(0);
         execution.proceed(null);
         j.waitForCompletion(run);
-        
+
         assertThat(run.getResult(), equalTo(Result.SUCCESS));
     }
 }

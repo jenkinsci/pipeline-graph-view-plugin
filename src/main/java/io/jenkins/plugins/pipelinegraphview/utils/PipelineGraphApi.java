@@ -11,6 +11,7 @@ import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.graphanalysis.DepthFirstScanner;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.jenkinsci.plugins.workflow.support.steps.input.InputAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,9 +68,15 @@ public class PipelineGraphApi {
         // these are completely new representations.
         List<PipelineStageInternal> stages = getPipelineNodes(builder);
 
-        // Set the builder on each stage so they can check for paused steps
+        // Get InputAction once for all stages
+        InputAction inputAction = run.getAction(InputAction.class);
+
+        // Set the builder and inputAction on each stage so they can check for paused steps
         if (builder instanceof PipelineStepBuilderApi stepBuilder) {
-            stages.forEach(stage -> stage.setBuilder(stepBuilder));
+            stages.forEach(stage -> {
+                stage.setBuilder(stepBuilder);
+                stage.setInputAction(inputAction);
+            });
         }
 
         // id => stage

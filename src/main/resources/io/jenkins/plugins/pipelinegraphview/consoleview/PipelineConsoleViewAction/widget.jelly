@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
-    <div id="graph"
+    <div class="jenkins-card"
+         id="graph"
          data-current-run-path="${rootURL + '/' + it.url}"
          data-previous-run-path="${it.previousBuild != null ? rootURL + '/' + it.previousBuild.url : null}" />
     <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/pipeline-graph-view-bundle.js" type="module"/>

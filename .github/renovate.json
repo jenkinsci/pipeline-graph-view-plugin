@@ -16,14 +16,14 @@
   "customManagers": [
     {
       "customType": "regex",
-      "fileMatch": ["pom.xml"],
+      "managerFilePatterns": ["/pom.xml/"],
       "matchStrings": ["<node.version>(?<currentValue>.*?)</node.version>"],
       "depNameTemplate": "node",
       "datasourceTemplate": "node-version"
     },
     {
       "customType": "regex",
-      "fileMatch": ["pom.xml"],
+      "managerFilePatterns": ["/pom.xml/"],
       "matchStrings": ["<npm.version>(?<currentValue>.*?)</npm.version>"],
       "depNameTemplate": "npm",
       "datasourceTemplate": "npm"

@@ -1,8 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended",
-    ":semanticCommitsDisabled",
+    "github>jenkinsci/renovate-config",
     ":disableRateLimiting",
     "schedule:earlyMondays"
   ],
@@ -29,7 +28,5 @@
       "depNameTemplate": "npm",
       "datasourceTemplate": "npm"
     }
-  ],
-  "labels": ["dependencies"],
-  "rebaseWhen": "conflicted"
+  ]
 }

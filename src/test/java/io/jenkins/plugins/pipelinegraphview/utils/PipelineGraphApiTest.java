@@ -550,14 +550,16 @@ class PipelineGraphApiTest {
         // Check the graph while paused on input
         PipelineGraphApi api = new PipelineGraphApi(run);
 
-        await().until(() -> {
-            PipelineGraph graph = api.createTree();
-            PipelineStage inputStage = graph.stages.stream()
-                .filter(s -> s.name.equals("Input"))
-                .findFirst()
-                .orElse(null);
-            return inputStage == null ? null : inputStage.state;
-        }, equalTo(PipelineState.PAUSED));
+        await().until(
+                        () -> {
+                            PipelineGraph graph = api.createTree();
+                            PipelineStage inputStage = graph.stages.stream()
+                                    .filter(s -> s.name.equals("Input"))
+                                    .findFirst()
+                                    .orElse(null);
+                            return inputStage == null ? null : inputStage.state;
+                        },
+                        equalTo(PipelineState.PAUSED));
 
         // Approve the input and wait for completion
         org.jenkinsci.plugins.workflow.support.steps.input.InputStepExecution execution =

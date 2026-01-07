@@ -1,5 +1,6 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
@@ -544,24 +545,19 @@ class PipelineGraphApiTest {
         org.jenkinsci.plugins.workflow.support.steps.input.InputAction inputAction = null;
         while (inputAction == null || inputAction.getExecutions().isEmpty()) {
             inputAction = run.getAction(org.jenkinsci.plugins.workflow.support.steps.input.InputAction.class);
-            Thread.sleep(100);
         }
-
-        // Wait a bit more for the pause to be registered
-        Thread.sleep(500);
 
         // Check the graph while paused on input
         PipelineGraphApi api = new PipelineGraphApi(run);
-        PipelineGraph graph = api.createTree();
 
-        // Find the stage with input
-        PipelineStage inputStage = graph.stages.stream()
+        await().until(() -> {
+            PipelineGraph graph = api.createTree();
+            PipelineStage inputStage = graph.stages.stream()
                 .filter(s -> s.name.equals("Input"))
                 .findFirst()
-                .orElseThrow();
-
-        // Verify it shows as PAUSED
-        assertThat(inputStage.state, equalTo(PipelineState.PAUSED));
+                .orElse(null);
+            return inputStage == null ? null : inputStage.state;
+        }, equalTo(PipelineState.PAUSED));
 
         // Approve the input and wait for completion
         org.jenkinsci.plugins.workflow.support.steps.input.InputStepExecution execution =

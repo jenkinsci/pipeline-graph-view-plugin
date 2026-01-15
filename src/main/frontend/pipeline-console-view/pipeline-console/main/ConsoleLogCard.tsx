@@ -25,6 +25,7 @@ import {
   StepLogBufferInfo,
   TAIL_CONSOLE_LOG,
 } from "./PipelineConsoleModel.tsx";
+import { useFilter } from "./providers/filter-provider.tsx";
 import InputStep from "./steps/InputStep.tsx";
 
 const ConsoleLogStream = lazy(() => import("./ConsoleLogStream.tsx"));
@@ -54,6 +55,7 @@ export default function ConsoleLogCard({
   };
 
   const messages = useMessages();
+  const { showHiddenSteps } = useFilter();
 
   const inputStep = step.inputStep;
   if (inputStep && !inputStep.parameters) {
@@ -61,7 +63,12 @@ export default function ConsoleLogCard({
   }
 
   return (
-    <div className={"pgv-step-detail-group"} key={`step-card-${step.id}`}>
+    <div
+      className={classNames("pgv-step-detail-group", {
+        "pgv-step-hidden": step.flags?.hidden === true && !showHiddenSteps,
+      })}
+      key={`step-card-${step.id}`}
+    >
       <div
         className={classNames("pgv-step-detail-header", "jenkins-button", {
           "jenkins-button--tertiary": !isExpanded,

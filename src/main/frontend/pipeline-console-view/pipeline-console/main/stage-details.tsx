@@ -7,6 +7,7 @@ import {
 } from "../../../common/components/status-icon.tsx";
 import { DOCUMENT } from "../../../common/components/symbols.tsx";
 import Tooltip from "../../../common/components/tooltip.tsx";
+import Filter from "../../../common/components/filter.tsx";
 import LiveTotal from "../../../common/utils/live-total.tsx";
 import { exact, Paused, Started } from "../../../common/utils/timings.tsx";
 import {
@@ -111,6 +112,9 @@ export default function StageDetails({ stage }: StageDetailsProps) {
           </li>
         )}
         <StageNodeLink agent={stage.agent} />
+        <li>
+          <Filter />
+        </li>
         <li>
           <Dropdown
             className={"jenkins-button--tertiary"}

@@ -15,7 +15,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.jenkinsci.plugins.workflow.actions.ArgumentsAction;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.LabelAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
@@ -29,6 +32,9 @@ import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
 
 /** @author Vivek Pandey */
 public class FlowNodeWrapper {
+
+    /** Prefix for pipeline graph view feature flag environment variables */
+    private static final String FEATURE_FLAG_PREFIX = "_PIPELINE_GRAPH_VIEW_";
 
     /**
      * Checks to see if `this` and `that` probably represent the same underlying
@@ -378,6 +384,70 @@ public class FlowNodeWrapper {
 
     public boolean isUnhandledException() {
         return PipelineNodeUtil.isUnhandledException(node);
+    }
+
+    /**
+     * Extracts feature flags from ancestor EnvStep nodes.
+     * Looks for environment variables with the _PIPELINE_GRAPH_VIEW_ prefix
+     * and validates them using registered validators.
+     * @return Map of feature flag key-value pairs with prefix stripped
+     */
+    public Map<String, Object> getParentEnvVars() {
+        Map<String, Object> flags = new HashMap<>();
+
+        // Get ALL enclosing blocks using the native FlowNode API
+        // This includes withEnv blocks which are not in the FlowNodeWrapper parent hierarchy
+        List<? extends BlockStartNode> enclosingBlocks = this.node.getEnclosingBlocks();
+
+        for (BlockStartNode block : enclosingBlocks) {
+            // Check if this is a StepStartNode (withEnv is a StepStartNode)
+            if (block instanceof StepStartNode) {
+                StepStartNode stepStartNode = (StepStartNode) block;
+
+                // Check if this is an EnvStep
+                var descriptor = stepStartNode.getDescriptor();
+                if (descriptor != null) {
+                    String descriptorId = descriptor.getId();
+
+                    if ("org.jenkinsci.plugins.workflow.steps.EnvStep".equals(descriptorId)) {
+                        // Extract environment variables from ArgumentsAction
+                        ArgumentsAction argsAction = block.getAction(ArgumentsAction.class);
+                        if (argsAction != null) {
+                            Map<String, Object> args = argsAction.getArguments();
+                            Object overrides = args.get("overrides");
+
+                            if (overrides instanceof List) {
+                                for (Object override : (List<?>) overrides) {
+                                    if (override instanceof String) {
+                                        String[] kv = ((String) override).split("=", 2);
+                                        if (kv.length == 2) {
+                                            String key = kv[0];
+                                            String rawValue = kv[1];
+
+                                            // Only include vars with our prefix
+                                            if (key.startsWith(FEATURE_FLAG_PREFIX)) {
+                                                // Strip the prefix from the key
+                                                String flagName = key.substring(FEATURE_FLAG_PREFIX.length());
+
+                                                // Validate using the registry
+                                                Object validatedValue = FeatureFlagRegistry.validateFlag(flagName, rawValue);
+
+                                                // Only include if validation passed (non-null)
+                                                if (validatedValue != null) {
+                                                    flags.put(flagName, validatedValue);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return flags;
     }
 
     public static class NodeComparator implements Comparator<FlowNodeWrapper>, Serializable {

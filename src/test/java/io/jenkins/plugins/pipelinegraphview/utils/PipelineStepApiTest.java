@@ -588,4 +588,49 @@ class PipelineStepApiTest {
         // 24-bit rgb
         assertThat(PipelineStepApi.cleanTextContent("\033[38;2;0;255;128mHello World\033[0m"), equalTo("Hello World"));
     }
+
+    @Test
+    @DisplayName("Feature flags are extracted and validated from withEnv blocks")
+    void featureFlags() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(j, "featureFlags", "featureFlags.jenkinsfile", Result.SUCCESS);
+        PipelineStepApi api = new PipelineStepApi(run);
+
+        // Get all steps
+        List<PipelineStep> allSteps = api.getAllSteps().steps;
+        assertThat(allSteps, hasSize(6));
+
+        // Test 1: Normal step with no flags
+        PipelineStep normalStep = allSteps.get(0);
+        assertThat(normalStep.name, is("This step has no flags"));
+        assertThat(normalStep.getFlags(), notNullValue());
+        assertThat(normalStep.getFlags().isEmpty(), is(true));
+
+        // Test 2: Step with hidden=true (valid)
+        PipelineStep hiddenTrueStep = allSteps.get(1);
+        assertThat(hiddenTrueStep.name, is("This should be marked as hidden"));
+        assertThat(hiddenTrueStep.getFlags(), hasEntry("hidden", Boolean.TRUE));
+
+        // Test 3: Step with hidden=false (REJECTED - false is not valid)
+        PipelineStep hiddenFalseStep = allSteps.get(2);
+        assertThat(hiddenFalseStep.name, is("This should NOT appear in flags (false is rejected)"));
+        assertThat(hiddenFalseStep.getFlags().isEmpty(), is(true));
+        assertThat(hiddenFalseStep.getFlags().containsKey("hidden"), is(false));
+
+        // Test 4: Step with hidden=yes (REJECTED - invalid value)
+        PipelineStep hiddenInvalidStep = allSteps.get(3);
+        assertThat(hiddenInvalidStep.name, is("This should NOT appear in flags (invalid value)"));
+        assertThat(hiddenInvalidStep.getFlags().isEmpty(), is(true));
+
+        // Test 5: Unknown flag (REJECTED - not registered)
+        PipelineStep unknownFlagStep = allSteps.get(4);
+        assertThat(unknownFlagStep.name, is("Unknown flag should be filtered out"));
+        assertThat(unknownFlagStep.getFlags().isEmpty(), is(true));
+        assertThat(unknownFlagStep.getFlags().containsKey("unknown"), is(false));
+
+        // Test 6: Multiple flags with some invalid
+        PipelineStep multipleStep = allSteps.get(5);
+        assertThat(multipleStep.name, is("Should only have hidden=true (last valid value wins)"));
+        assertThat(multipleStep.getFlags(), hasEntry("hidden", "true"));
+        assertThat(multipleStep.getFlags().containsKey("unknown"), is(false));
+    }
 }

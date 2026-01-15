@@ -1,0 +1,49 @@
+pipeline {
+    agent any
+    stages {
+        stage('Normal Stage') {
+            steps {
+                echo "This step has no flags"
+            }
+        }
+        stage('Hidden True Stage') {
+            steps {
+                withEnv(['_PIPELINE_GRAPH_VIEW_hidden=true']) {
+                    echo "This should be marked as hidden"
+                }
+            }
+        }
+        stage('Hidden False Stage') {
+            steps {
+                withEnv(['_PIPELINE_GRAPH_VIEW_hidden=false']) {
+                    echo "This should NOT appear in flags (false is rejected)"
+                }
+            }
+        }
+        stage('Hidden Invalid Stage') {
+            steps {
+                withEnv(['_PIPELINE_GRAPH_VIEW_hidden=yes']) {
+                    echo "This should NOT appear in flags (invalid value)"
+                }
+            }
+        }
+        stage('Unknown Flag Stage') {
+            steps {
+                withEnv(['_PIPELINE_GRAPH_VIEW_unknown=value']) {
+                    echo "Unknown flag should be filtered out"
+                }
+            }
+        }
+        stage('Multiple Flags Stage') {
+            steps {
+                withEnv([
+                    '_PIPELINE_GRAPH_VIEW_hidden=true',
+                    '_PIPELINE_GRAPH_VIEW_hidden=false',
+                    '_PIPELINE_GRAPH_VIEW_unknown=shouldBeFiltered'
+                ]) {
+                    echo "Should only have hidden=true (last valid value wins)"
+                }
+            }
+        }
+    }
+}

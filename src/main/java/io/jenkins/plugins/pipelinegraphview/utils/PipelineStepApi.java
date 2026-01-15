@@ -51,6 +51,9 @@ public class PipelineStepApi {
                         }
                     }
 
+                    // Extract feature flags from parent nodes
+                    Map<String, Object> flags = flowNodeWrapper.getParentEnvVars();
+
                     return new PipelineStep(
                             flowNodeWrapper.getId(),
                             displayName,
@@ -59,7 +62,8 @@ public class PipelineStepApi {
                             title,
                             stageId,
                             mapInputStep(flowNodeWrapper.getInputStep()),
-                            flowNodeWrapper.getTiming());
+                            flowNodeWrapper.getTiming(),
+                            flags);
                 })
                 .collect(Collectors.toList());
     }

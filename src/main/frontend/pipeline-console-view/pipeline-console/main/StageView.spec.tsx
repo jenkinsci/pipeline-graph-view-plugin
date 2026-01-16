@@ -5,8 +5,8 @@ import { TextEncoder } from "util";
 import { vi } from "vitest";
 
 import { Result, StageInfo, StepInfo } from "./PipelineConsoleModel.tsx";
-import StageView from "./StageView.tsx";
 import { FilterProvider } from "./providers/filter-provider.tsx";
+import StageView from "./StageView.tsx";
 
 (globalThis as any).TextEncoder = TextEncoder;
 

@@ -7,8 +7,8 @@ import {
   Result,
   StageInfo,
 } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
-import StageDetails from "./stage-details.tsx";
 import { FilterProvider } from "./providers/filter-provider.tsx";
+import StageDetails from "./stage-details.tsx";
 
 (globalThis as any).TextEncoder = TextEncoder;
 

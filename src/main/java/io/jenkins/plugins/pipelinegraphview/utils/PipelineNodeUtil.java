@@ -1,10 +1,19 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import com.google.common.base.Predicate;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.AbortException;
+import hudson.console.AnnotatedLargeText;
+import hudson.model.Action;
+import hudson.model.Queue;
+import hudson.model.queue.CauseOfBlockage;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.stream.Collectors;
-
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.jenkinsci.plugins.pipeline.StageStatus;
 import org.jenkinsci.plugins.pipeline.SyntheticStage;
@@ -26,18 +35,6 @@ import org.jenkinsci.plugins.workflow.support.actions.PauseAction;
 import org.jenkinsci.plugins.workflow.support.steps.ExecutorStep;
 import org.jenkinsci.plugins.workflow.support.steps.StageStep;
 import org.jenkinsci.plugins.workflow.support.steps.input.InputAction;
-
-import com.google.common.base.Predicate;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.AbortException;
-import hudson.console.AnnotatedLargeText;
-import hudson.model.Action;
-import hudson.model.Queue;
-import hudson.model.queue.CauseOfBlockage;
 
 /** @author Vivek Pandey */
 public class PipelineNodeUtil {

@@ -430,7 +430,8 @@ public class FlowNodeWrapper {
                                                 String flagName = key.substring(FEATURE_FLAG_PREFIX.length());
 
                                                 // Validate using the registry
-                                                Object validatedValue = FeatureFlagRegistry.validateFlag(flagName, rawValue);
+                                                Object validatedValue =
+                                                        FeatureFlagRegistry.validateFlag(flagName, rawValue);
 
                                                 // Only include if validation passed (non-null)
                                                 if (validatedValue != null) {

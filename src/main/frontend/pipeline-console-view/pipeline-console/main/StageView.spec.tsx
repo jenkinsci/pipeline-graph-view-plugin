@@ -6,6 +6,7 @@ import { vi } from "vitest";
 
 import { Result, StageInfo, StepInfo } from "./PipelineConsoleModel.tsx";
 import StageView from "./StageView.tsx";
+import { FilterProvider } from "./providers/filter-provider.tsx";
 
 (globalThis as any).TextEncoder = TextEncoder;
 
@@ -44,18 +45,20 @@ describe("StageView", () => {
   it("renders StageDetails and StageSteps with provided props", async () => {
     await act(async () => {
       render(
-        <StageView
-          tailLogs={false}
-          scrollToTail={() => {}}
-          stopTailingLogs={() => {}}
-          stage={mockStage}
-          steps={mockSteps}
-          stepBuffers={new Map()}
-          expandedSteps={["step-1"]}
-          onStepToggle={vi.fn()}
-          fetchLogText={async () => mockBuffer}
-          fetchExceptionText={async () => mockBuffer}
-        />,
+        <FilterProvider>
+          <StageView
+            tailLogs={false}
+            scrollToTail={() => {}}
+            stopTailingLogs={() => {}}
+            stage={mockStage}
+            steps={mockSteps}
+            stepBuffers={new Map()}
+            expandedSteps={["step-1"]}
+            onStepToggle={vi.fn()}
+            fetchLogText={async () => mockBuffer}
+            fetchExceptionText={async () => mockBuffer}
+          />
+        </FilterProvider>,
       );
     });
 

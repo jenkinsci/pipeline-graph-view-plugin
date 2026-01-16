@@ -630,7 +630,7 @@ class PipelineStepApiTest {
         // Test 6: Multiple flags with some invalid
         PipelineStep multipleStep = allSteps.get(5);
         assertThat(multipleStep.name, is("Should only have hidden=true (last valid value wins)"));
-        assertThat(multipleStep.getFlags(), hasEntry("hidden", "true"));
+        assertThat(multipleStep.getFlags(), hasEntry("hidden", Boolean.TRUE));
         assertThat(multipleStep.getFlags().containsKey("unknown"), is(false));
     }
 }

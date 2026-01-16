@@ -8,6 +8,7 @@ import {
   StageInfo,
 } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import StageDetails from "./stage-details.tsx";
+import { FilterProvider } from "./providers/filter-provider.tsx";
 
 (globalThis as any).TextEncoder = TextEncoder;
 
@@ -19,7 +20,11 @@ describe("StageDetails", () => {
   });
 
   it("renders stage name and status color class", () => {
-    render(<StageDetails stage={mockStage} />);
+    render(
+      <FilterProvider>
+        <StageDetails stage={mockStage} />
+      </FilterProvider>,
+    );
 
     const heading = screen.getByRole("heading", { level: 2 });
     expect(heading).toHaveTextContent("Build");
@@ -30,7 +35,11 @@ describe("StageDetails", () => {
   });
 
   it("shows running bar if stage is running", () => {
-    render(<StageDetails stage={{ ...mockStage, state: Result.running }} />);
+    render(
+      <FilterProvider>
+        <StageDetails stage={{ ...mockStage, state: Result.running }} />
+      </FilterProvider>,
+    );
 
     const runningIndicator = document.querySelector(
       ".pgv-stage-details__running",
@@ -39,19 +48,32 @@ describe("StageDetails", () => {
   });
 
   it("does not show pause time if pauseDurationMillis is 0", () => {
-    render(<StageDetails stage={{ ...mockStage, pauseDurationMillis: 0 }} />);
+    render(
+      <FilterProvider>
+        <StageDetails stage={{ ...mockStage, pauseDurationMillis: 0 }} />
+      </FilterProvider>,
+    );
 
     expect(screen.queryByText("Queued")).not.toBeInTheDocument();
   });
 
   it("disables dropdown if stage is synthetic", () => {
-    render(<StageDetails stage={{ ...mockStage, synthetic: true }} />);
+    render(
+      <FilterProvider>
+        <StageDetails stage={{ ...mockStage, synthetic: true }} />
+      </FilterProvider>,
+    );
 
-    expect(screen.queryByRole("button")).toBeDisabled();
+    const dropdownButton = screen.getByRole("button", { name: "More actions" });
+    expect(dropdownButton).toBeDisabled();
   });
 
   it("displays total duration", () => {
-    render(<StageDetails stage={{ ...mockStage }} />);
+    render(
+      <FilterProvider>
+        <StageDetails stage={{ ...mockStage }} />
+      </FilterProvider>,
+    );
 
     expect(
       screen.queryByLabelText("Total duration")?.nextSibling,
@@ -60,9 +82,11 @@ describe("StageDetails", () => {
 
   it("displays start from stage", () => {
     render(
-      <StageDetails
-        stage={{ ...mockStage, startTimeMillis: Date.now() - 60_000 }}
-      />,
+      <FilterProvider>
+        <StageDetails
+          stage={{ ...mockStage, startTimeMillis: Date.now() - 60_000 }}
+        />
+      </FilterProvider>,
     );
 
     expect(screen.queryByText("Started 1m ago")).toBeInTheDocument();

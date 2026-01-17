@@ -23,7 +23,10 @@ public class PipelineGraphViewFlagsStepExecution extends StepExecution {
     public boolean start() throws Exception {
         // Simply execute the body block
         // The flags are stored in ArgumentsAction automatically by Jenkins
-        getContext().newBodyInvoker().withCallback(BodyExecutionCallback.wrap(getContext())).start();
+        getContext()
+                .newBodyInvoker()
+                .withCallback(BodyExecutionCallback.wrap(getContext()))
+                .start();
         return false; // Async execution
     }
 

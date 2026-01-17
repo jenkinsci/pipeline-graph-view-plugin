@@ -1,5 +1,15 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+import hudson.model.Action;
+import hudson.model.Result;
+import io.jenkins.plugins.pipelinegraphview.Messages;
+import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
+import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
+import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunResult;
+import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunState;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,7 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.jenkinsci.plugins.workflow.actions.ArgumentsAction;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.LabelAction;
@@ -22,20 +31,8 @@ import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException;
 import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
-import hudson.model.Action;
-import hudson.model.Result;
-import io.jenkins.plugins.pipelinegraphview.Messages;
-import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
-import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
-import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunResult;
-import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunState;
-
 /** @author Vivek Pandey */
 public class FlowNodeWrapper {
-
 
     /**
      * Checks to see if `this` and `that` probably represent the same underlying
@@ -87,9 +84,7 @@ public class FlowNodeWrapper {
     /**
      * Set of known feature flag names that can be extracted from pipelineGraphViewFlags steps.
      */
-    private static final Set<String> KNOWN_FLAGS = Set.of(
-            FeatureFlagNames.HIDDEN
-    );
+    private static final Set<String> KNOWN_FLAGS = Set.of(FeatureFlagNames.HIDDEN);
 
     private final FlowNode node;
     private final NodeRunStatus status;

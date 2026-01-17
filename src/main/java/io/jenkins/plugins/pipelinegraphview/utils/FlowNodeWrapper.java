@@ -18,8 +18,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import org.jenkinsci.plugins.workflow.actions.ArgumentsAction;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.LabelAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
@@ -80,11 +78,6 @@ public class FlowNodeWrapper {
         UNHANDLED_EXCEPTION,
         PIPELINE_START,
     }
-
-    /**
-     * Set of known feature flag names that can be extracted from pipelineGraphViewFlags steps.
-     */
-    private static final Set<String> KNOWN_FLAGS = Set.of(FeatureFlagNames.HIDDEN);
 
     private final FlowNode node;
     private final NodeRunStatus status;
@@ -390,8 +383,8 @@ public class FlowNodeWrapper {
     }
 
     /**
-     * Extracts feature flags from ancestor pipelineGraphViewFlags step nodes.
-     * @return Map of feature flag key-value pairs (typed values)
+     * Extracts feature flags from ancestor markAsHiddenForDisplay step nodes.
+     * @return Map of feature flag key-value pairs (currently only "hidden" is supported)
      */
     public Map<String, Object> getFeatureFlags() {
         Map<String, Object> flags = new HashMap<>();
@@ -412,20 +405,11 @@ public class FlowNodeWrapper {
 
             String descriptorId = descriptor.getId();
 
-            // Look for our custom step
-            if ("io.jenkins.plugins.pipelinegraphview.steps.PipelineGraphViewFlagsStep".equals(descriptorId)) {
-                ArgumentsAction argsAction = block.getAction(ArgumentsAction.class);
-                if (argsAction != null) {
-                    Map<String, Object> args = argsAction.getArguments();
-
-                    // Extract all known flags generically
-                    // Only set if not already set (inner blocks take precedence)
-                    for (String flagName : KNOWN_FLAGS) {
-                        if (args.containsKey(flagName) && !flags.containsKey(flagName)) {
-                            flags.put(flagName, args.get(flagName));
-                        }
-                    }
-                }
+            // Check for markAsHiddenForDisplay step
+            if ("io.jenkins.plugins.pipelinegraphview.steps.MarkAsHiddenForDisplayStep".equals(descriptorId)) {
+                // Found hidden marker - set flag and stop
+                flags.put("hidden", Boolean.TRUE);
+                break; // Inner block found, no need to check outer blocks
             }
         }
 

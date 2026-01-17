@@ -1,6 +1,5 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
-import static io.jenkins.plugins.pipelinegraphview.utils.FeatureFlagNames.HIDDEN;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -591,45 +590,36 @@ class PipelineStepApiTest {
     }
 
     @Test
-    @DisplayName("Feature flags are extracted from pipelineGraphViewFlags steps")
-    void pipelineGraphViewFlags() throws Exception {
+    @DisplayName("Feature flags are extracted from markAsHiddenForDisplay steps")
+    void markAsHiddenForDisplay() throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
-                j, "pipelineGraphViewFlags", "pipelineGraphViewFlags.jenkinsfile", Result.SUCCESS);
+                j, "markAsHiddenForDisplay", "markAsHiddenForDisplay.jenkinsfile", Result.SUCCESS);
         PipelineStepApi api = new PipelineStepApi(run);
 
         // Get all steps
         List<PipelineStep> allSteps = api.getAllSteps().steps;
-        assertThat(allSteps, hasSize(6));
+        assertThat(allSteps, hasSize(4));
 
         // Test 1: Normal step with no flags
         PipelineStep normalStep = allSteps.get(0);
-        assertThat(normalStep.name, is("This is a normal step without any flags"));
+        assertThat(normalStep.name, is("This is visible"));
         assertThat(normalStep.getFlags(), notNullValue());
         assertThat(normalStep.getFlags().isEmpty(), is(true));
 
-        // Test 2: Step with hidden=true (Boolean type preserved)
-        PipelineStep hiddenTrueStep = allSteps.get(1);
-        assertThat(hiddenTrueStep.name, is("This step is marked as hidden (true)"));
-        assertThat(hiddenTrueStep.getFlags(), hasEntry(HIDDEN, Boolean.TRUE));
+        // Test 2: Step marked as hidden
+        PipelineStep hiddenStep = allSteps.get(1);
+        assertThat(hiddenStep.name, is("This step is hidden"));
+        assertThat(hiddenStep.getFlags(), hasEntry("hidden", Boolean.TRUE));
 
-        // Test 3: Step with hidden=false (Boolean false is now valid!)
-        PipelineStep hiddenFalseStep = allSteps.get(2);
-        assertThat(hiddenFalseStep.name, is("This step has hidden flag set to false"));
-        assertThat(hiddenFalseStep.getFlags(), hasEntry(HIDDEN, Boolean.FALSE));
+        // Test 3: Another visible step
+        PipelineStep visibleStep = allSteps.get(2);
+        assertThat(visibleStep.name, is("This is also visible"));
+        assertThat(visibleStep.getFlags(), notNullValue());
+        assertThat(visibleStep.getFlags().isEmpty(), is(true));
 
-        // Test 4: Step with no parameters
-        PipelineStep noParamsStep = allSteps.get(3);
-        assertThat(noParamsStep.name, is("This step uses pipelineGraphViewFlags but with no parameters"));
-        assertThat(noParamsStep.getFlags().isEmpty(), is(true));
-
-        // Test 5: Nested flags - parent step
-        PipelineStep nestedParentStep = allSteps.get(4);
-        assertThat(nestedParentStep.name, is("Parent step with hidden=true"));
-        assertThat(nestedParentStep.getFlags(), hasEntry(HIDDEN, Boolean.TRUE));
-
-        // Test 6: Nested flags - child step
-        PipelineStep nestedChildStep = allSteps.get(5);
-        assertThat(nestedChildStep.name, is("Nested step with hidden=false"));
-        assertThat(nestedChildStep.getFlags(), hasEntry(HIDDEN, Boolean.FALSE));
+        // Test 4: Nested hidden - outer is hidden
+        PipelineStep nestedOuterStep = allSteps.get(3);
+        assertThat(nestedOuterStep.name, is("Outer is hidden"));
+        assertThat(nestedOuterStep.getFlags(), hasEntry("hidden", Boolean.TRUE));
     }
 }

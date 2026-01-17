@@ -1,0 +1,29 @@
+pipeline {
+    agent any
+    stages {
+        stage('Normal Step') {
+            steps {
+                echo "This is visible"
+            }
+        }
+        stage('Hidden Step') {
+            steps {
+                markAsHiddenForDisplay {
+                    echo "This step is hidden"
+                }
+            }
+        }
+        stage('Another Normal Step') {
+            steps {
+                echo "This is also visible"
+            }
+        }
+        stage('Nested Hidden') {
+            steps {
+                markAsHiddenForDisplay {
+                    echo "Outer is hidden"
+                }
+            }
+        }
+    }
+}

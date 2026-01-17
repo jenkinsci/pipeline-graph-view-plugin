@@ -52,7 +52,7 @@ public class PipelineStepApi {
                     }
 
                     // Extract feature flags from parent nodes
-                    Map<String, Object> flags = flowNodeWrapper.getParentEnvVars();
+                    Map<String, Object> flags = flowNodeWrapper.getFeatureFlags();
 
                     return new PipelineStep(
                             flowNodeWrapper.getId(),

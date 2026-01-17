@@ -1,15 +1,5 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
-import hudson.model.Action;
-import hudson.model.Result;
-import io.jenkins.plugins.pipelinegraphview.Messages;
-import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
-import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
-import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunResult;
-import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunState;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -18,6 +8,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import org.jenkinsci.plugins.workflow.actions.ArgumentsAction;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.LabelAction;
@@ -30,11 +22,20 @@ import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException;
 import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+import hudson.model.Action;
+import hudson.model.Result;
+import io.jenkins.plugins.pipelinegraphview.Messages;
+import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
+import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
+import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunResult;
+import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunState;
+
 /** @author Vivek Pandey */
 public class FlowNodeWrapper {
 
-    /** Prefix for pipeline graph view feature flag environment variables */
-    private static final String FEATURE_FLAG_PREFIX = "_PIPELINE_GRAPH_VIEW_";
 
     /**
      * Checks to see if `this` and `that` probably represent the same underlying
@@ -82,6 +83,13 @@ public class FlowNodeWrapper {
         UNHANDLED_EXCEPTION,
         PIPELINE_START,
     }
+
+    /**
+     * Set of known feature flag names that can be extracted from pipelineGraphViewFlags steps.
+     */
+    private static final Set<String> KNOWN_FLAGS = Set.of(
+            FeatureFlagNames.HIDDEN
+    );
 
     private final FlowNode node;
     private final NodeRunStatus status;
@@ -387,61 +395,38 @@ public class FlowNodeWrapper {
     }
 
     /**
-     * Extracts feature flags from ancestor EnvStep nodes.
-     * Looks for environment variables with the _PIPELINE_GRAPH_VIEW_ prefix
-     * and validates them using registered validators.
-     * @return Map of feature flag key-value pairs with prefix stripped
+     * Extracts feature flags from ancestor pipelineGraphViewFlags step nodes.
+     * @return Map of feature flag key-value pairs (typed values)
      */
-    public Map<String, Object> getParentEnvVars() {
+    public Map<String, Object> getFeatureFlags() {
         Map<String, Object> flags = new HashMap<>();
 
-        // Get ALL enclosing blocks using the native FlowNode API
-        // This includes withEnv blocks which are not in the FlowNodeWrapper parent hierarchy
+        // Get all enclosing blocks
         List<? extends BlockStartNode> enclosingBlocks = this.node.getEnclosingBlocks();
 
         for (BlockStartNode block : enclosingBlocks) {
-            // Check if this is a StepStartNode (withEnv is a StepStartNode)
-            if (block instanceof StepStartNode) {
-                StepStartNode stepStartNode = (StepStartNode) block;
+            if (!(block instanceof StepStartNode)) {
+                continue;
+            }
 
-                // Check if this is an EnvStep
-                var descriptor = stepStartNode.getDescriptor();
-                if (descriptor != null) {
-                    String descriptorId = descriptor.getId();
+            StepStartNode stepStartNode = (StepStartNode) block;
+            var descriptor = stepStartNode.getDescriptor();
+            if (descriptor == null) {
+                continue;
+            }
 
-                    if ("org.jenkinsci.plugins.workflow.steps.EnvStep".equals(descriptorId)) {
-                        // Extract environment variables from ArgumentsAction
-                        ArgumentsAction argsAction = block.getAction(ArgumentsAction.class);
-                        if (argsAction != null) {
-                            Map<String, Object> args = argsAction.getArguments();
-                            Object overrides = args.get("overrides");
+            String descriptorId = descriptor.getId();
 
-                            if (overrides instanceof List) {
-                                for (Object override : (List<?>) overrides) {
-                                    if (override instanceof String) {
-                                        String[] kv = ((String) override).split("=", 2);
-                                        if (kv.length == 2) {
-                                            String key = kv[0];
-                                            String rawValue = kv[1];
+            // Look for our custom step
+            if ("io.jenkins.plugins.pipelinegraphview.steps.PipelineGraphViewFlagsStep".equals(descriptorId)) {
+                ArgumentsAction argsAction = block.getAction(ArgumentsAction.class);
+                if (argsAction != null) {
+                    Map<String, Object> args = argsAction.getArguments();
 
-                                            // Only include vars with our prefix
-                                            if (key.startsWith(FEATURE_FLAG_PREFIX)) {
-                                                // Strip the prefix from the key
-                                                String flagName = key.substring(FEATURE_FLAG_PREFIX.length());
-
-                                                // Validate using the registry
-                                                Object validatedValue =
-                                                        FeatureFlagRegistry.validateFlag(flagName, rawValue);
-
-                                                // Only include if validation passed (non-null)
-                                                if (validatedValue != null) {
-                                                    flags.put(flagName, validatedValue);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                    // Extract all known flags generically
+                    for (String flagName : KNOWN_FLAGS) {
+                        if (args.containsKey(flagName)) {
+                            flags.put(flagName, args.get(flagName));
                         }
                     }
                 }

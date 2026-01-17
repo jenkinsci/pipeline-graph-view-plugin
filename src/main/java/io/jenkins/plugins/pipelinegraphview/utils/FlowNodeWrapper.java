@@ -424,8 +424,9 @@ public class FlowNodeWrapper {
                     Map<String, Object> args = argsAction.getArguments();
 
                     // Extract all known flags generically
+                    // Only set if not already set (inner blocks take precedence)
                     for (String flagName : KNOWN_FLAGS) {
-                        if (args.containsKey(flagName)) {
+                        if (args.containsKey(flagName) && !flags.containsKey(flagName)) {
                             flags.put(flagName, args.get(flagName));
                         }
                     }

@@ -55,11 +55,11 @@ public class PipelineGraphViewFlagsStep extends Step {
     /**
      * Gets the hidden flag value.
      *
-     * @return the hidden flag value, or null if not set
+     * @return the hidden flag value, or false if not set
      */
     public Boolean getHidden() {
         Object value = flags.get(FeatureFlagNames.HIDDEN);
-        return value instanceof Boolean ? (Boolean) value : null;
+        return value instanceof Boolean ? (Boolean) value : Boolean.FALSE;
     }
 
     /**

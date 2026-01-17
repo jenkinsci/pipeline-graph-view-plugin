@@ -6,10 +6,10 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
+
+import org.junit.jupiter.api.Test;
 
 import hudson.model.TaskListener;
-import org.junit.jupiter.api.Test;
 
 class PipelineGraphViewFlagsStepTest {
 
@@ -17,7 +17,7 @@ class PipelineGraphViewFlagsStepTest {
     void testStepInstantiation() {
         PipelineGraphViewFlagsStep step = new PipelineGraphViewFlagsStep();
         assertThat(step, notNullValue());
-        assertThat(step.getHidden(), nullValue()); // No flags set by default
+        assertThat(step.getHidden(), equalTo(Boolean.FALSE)); // Set to false by default
     }
 
     @Test

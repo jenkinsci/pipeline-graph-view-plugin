@@ -7,9 +7,8 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
-import org.junit.jupiter.api.Test;
-
 import hudson.model.TaskListener;
+import org.junit.jupiter.api.Test;
 
 class PipelineGraphViewFlagsStepTest {
 

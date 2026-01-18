@@ -1,7 +1,7 @@
 package io.jenkins.plugins.pipelinegraphview.steps;
 
 import hudson.Extension;
-import hudson.model.TaskListener;
+import io.jenkins.plugins.pipelinegraphview.Messages;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Set;
@@ -48,7 +48,7 @@ public class MarkAsHiddenForDisplayStep extends Step implements Serializable {
 
         @Override
         public String getDisplayName() {
-            return "Mark as Hidden for Display";
+            return Messages.MarkAsHiddenForDisplayStep_displayName();
         }
 
         @Override
@@ -58,7 +58,7 @@ public class MarkAsHiddenForDisplayStep extends Step implements Serializable {
 
         @Override
         public Set<? extends Class<?>> getRequiredContext() {
-            return Collections.singleton(TaskListener.class);
+            return Collections.emptySet();
         }
     }
 }

@@ -3,6 +3,7 @@ import "./stage-steps.scss";
 import { StepInfo, StepLogBufferInfo } from "../../../common/RestClient.tsx";
 import ConsoleLogCard from "./ConsoleLogCard.tsx";
 import { StageInfo } from "./PipelineConsoleModel.tsx";
+import { useFilter } from "./providers/filter-provider.tsx";
 
 export default function StageSteps({
   tailLogs,
@@ -16,6 +17,8 @@ export default function StageSteps({
   fetchLogText,
   fetchExceptionText,
 }: StageStepsProps) {
+  const { showHiddenSteps } = useFilter();
+
   if (steps.length === 0) {
     return null;
   }
@@ -25,22 +28,24 @@ export default function StageSteps({
       className={"pgv-stage-steps"}
       key={`stage-steps-container-${stage ? stage.id : "unk"}`}
     >
-      {steps.map((stepItemData) => {
-        return (
-          <ConsoleLogCard
-            tailLogs={tailLogs}
-            scrollToTail={scrollToTail}
-            stopTailingLogs={stopTailingLogs}
-            step={stepItemData}
-            stepBuffers={stepBuffers}
-            onStepToggle={onStepToggle}
-            isExpanded={expandedSteps.includes(stepItemData.id)}
-            fetchLogText={fetchLogText}
-            fetchExceptionText={fetchExceptionText}
-            key={`step-console-card-${stepItemData.id}`}
-          />
-        );
-      })}
+      {steps
+        .filter((step) => showHiddenSteps || !step.flags?.hidden)
+        .map((stepItemData) => {
+          return (
+            <ConsoleLogCard
+              tailLogs={tailLogs}
+              scrollToTail={scrollToTail}
+              stopTailingLogs={stopTailingLogs}
+              step={stepItemData}
+              stepBuffers={stepBuffers}
+              onStepToggle={onStepToggle}
+              isExpanded={expandedSteps.includes(stepItemData.id)}
+              fetchLogText={fetchLogText}
+              fetchExceptionText={fetchExceptionText}
+              key={`step-console-card-${stepItemData.id}`}
+            />
+          );
+        })}
     </div>
   );
 }

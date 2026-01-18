@@ -7,6 +7,7 @@ import hudson.model.Action;
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
+import io.jenkins.plugins.pipelinegraphview.steps.MarkAsHiddenForDisplayStep;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunResult;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunState;
@@ -406,7 +407,7 @@ public class FlowNodeWrapper {
             String descriptorId = descriptor.getId();
 
             // Check for markAsHiddenForDisplay step
-            if ("io.jenkins.plugins.pipelinegraphview.steps.MarkAsHiddenForDisplayStep".equals(descriptorId)) {
+            if (MarkAsHiddenForDisplayStep.class.getName().equals(descriptorId)) {
                 // Found hidden marker - set flag and stop
                 flags.put("hidden", Boolean.TRUE);
                 break; // Inner block found, no need to check outer blocks

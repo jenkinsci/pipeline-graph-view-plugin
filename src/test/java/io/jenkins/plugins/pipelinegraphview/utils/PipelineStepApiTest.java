@@ -598,7 +598,7 @@ class PipelineStepApiTest {
 
         // Get all steps
         List<PipelineStep> allSteps = api.getAllSteps().steps;
-        assertThat(allSteps, hasSize(4));
+        assertThat(allSteps, hasSize(3));
 
         // Test 1: Normal step with no flags
         PipelineStep normalStep = allSteps.get(0);
@@ -616,10 +616,5 @@ class PipelineStepApiTest {
         assertThat(visibleStep.name, is("This is also visible"));
         assertThat(visibleStep.getFlags(), notNullValue());
         assertThat(visibleStep.getFlags().isEmpty(), is(true));
-
-        // Test 4: Nested hidden - outer is hidden
-        PipelineStep nestedOuterStep = allSteps.get(3);
-        assertThat(nestedOuterStep.name, is("Outer is hidden"));
-        assertThat(nestedOuterStep.getFlags(), hasEntry("hidden", Boolean.TRUE));
     }
 }

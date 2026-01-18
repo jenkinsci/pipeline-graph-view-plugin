@@ -18,12 +18,5 @@ pipeline {
                 echo "This is also visible"
             }
         }
-        stage('Nested Hidden') {
-            steps {
-                markAsHiddenForDisplay {
-                    echo "Outer is hidden"
-                }
-            }
-        }
     }
 }

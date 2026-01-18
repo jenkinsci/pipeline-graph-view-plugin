@@ -11,7 +11,6 @@ import {
   StepLogBufferInfo,
   TAIL_CONSOLE_LOG,
 } from "./PipelineConsoleModel.tsx";
-import { FilterProvider } from "./providers/filter-provider.tsx";
 
 vi.mock("./ConsoleLogStream.tsx", () => {
   return vi.fn((props: ConsoleLogStreamProps) => {
@@ -60,30 +59,20 @@ describe("ConsoleLogCard", () => {
   });
 
   it("renders step header only when not expanded", async () => {
-    const { getByText } = render(
-      <FilterProvider>
-        <ConsoleLogCard {...DefaultTestProps} />
-      </FilterProvider>,
-    );
+    const { getByText } = render(<ConsoleLogCard {...DefaultTestProps} />);
     expect(getByText(/This is a step/));
   });
 
   it("renders step console when expanded", async () => {
     const { getByText, findByText } = render(
-      <FilterProvider>
-        <ConsoleLogCard {...DefaultTestProps} />
-      </FilterProvider>,
+      <ConsoleLogCard {...DefaultTestProps} />,
     );
     expect(getByText(/This is a step/));
     expect(findByText(/Hello, world!/));
   });
 
   it("calls fetchLogText on load was card isExpanded set", async () => {
-    render(
-      <FilterProvider>
-        <ConsoleLogCard {...DefaultTestProps} isExpanded />
-      </FilterProvider>,
-    );
+    render(<ConsoleLogCard {...DefaultTestProps} isExpanded />);
     expect(DefaultTestProps.fetchLogText as Mock).toHaveBeenCalledWith(
       DefaultTestProps.step.id,
       TAIL_CONSOLE_LOG,
@@ -91,11 +80,7 @@ describe("ConsoleLogCard", () => {
   });
 
   it("does not call fetchLogText on load was card isExpanded set", async () => {
-    render(
-      <FilterProvider>
-        <ConsoleLogCard {...DefaultTestProps} />
-      </FilterProvider>,
-    );
+    render(<ConsoleLogCard {...DefaultTestProps} />);
     expect(DefaultTestProps.fetchLogText as Mock).not.toHaveBeenCalled();
   });
 });

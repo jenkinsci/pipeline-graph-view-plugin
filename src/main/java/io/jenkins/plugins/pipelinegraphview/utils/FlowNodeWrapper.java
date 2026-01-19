@@ -401,10 +401,8 @@ public class FlowNodeWrapper {
                 continue;
             }
 
-            String descriptorId = descriptor.getId();
-
             // Check for markAsHiddenForDisplay step
-            if (MarkAsHiddenForDisplayStep.class.getName().equals(descriptorId)) {
+            if (MarkAsHiddenForDisplayStep.class.getName().equals(descriptor.getId())) {
                 // Found hidden marker - set flag and stop
                 flags.put("hidden", Boolean.TRUE);
                 break; // Inner block found, no need to check outer blocks

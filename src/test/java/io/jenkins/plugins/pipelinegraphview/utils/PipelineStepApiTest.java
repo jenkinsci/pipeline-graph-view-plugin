@@ -590,10 +590,9 @@ class PipelineStepApiTest {
     }
 
     @Test
-    @DisplayName("Feature flags are extracted from markAsHiddenForDisplay steps")
-    void markAsHiddenForDisplay() throws Exception {
-        WorkflowRun run = TestUtils.createAndRunJob(
-                j, "markAsHiddenForDisplay", "markAsHiddenForDisplay.jenkinsfile", Result.SUCCESS);
+    @DisplayName("Feature flags are extracted from hideFromView steps")
+    void hideFromView() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(j, "hideFromView", "hideFromView.jenkinsfile", Result.SUCCESS);
         PipelineStepApi api = new PipelineStepApi(run);
 
         // Get all steps

@@ -12,11 +12,11 @@ import org.jenkinsci.plugins.workflow.steps.StepExecution;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
- * Pipeline step that marks enclosed steps as hidden for display purposes.
+ * Pipeline step that hides enclosed steps from view.
  *
  * <p>Usage:</p>
  * <pre>
- * markAsHiddenForDisplay {
+ * hideFromView {
  *     echo "This step will be hidden"
  * }
  * </pre>
@@ -24,18 +24,18 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * <p>This step takes no parameters - its presence in the flow graph serves as a marker
  * that the enclosed steps should be treated as hidden by the Pipeline Graph View plugin.</p>
  */
-public class MarkAsHiddenForDisplayStep extends Step implements Serializable {
+public class HideFromViewStep extends Step implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @DataBoundConstructor
-    public MarkAsHiddenForDisplayStep() {
+    public HideFromViewStep() {
         // No parameters needed - the step itself is the marker
     }
 
     @Override
     public StepExecution start(StepContext context) throws Exception {
-        return new MarkAsHiddenForDisplayStepExecution(context);
+        return new HideFromViewStepExecution(context);
     }
 
     @Extension
@@ -43,12 +43,12 @@ public class MarkAsHiddenForDisplayStep extends Step implements Serializable {
 
         @Override
         public String getFunctionName() {
-            return "markAsHiddenForDisplay";
+            return "hideFromView";
         }
 
         @Override
         public String getDisplayName() {
-            return Messages.MarkAsHiddenForDisplayStep_displayName();
+            return Messages.HideFromViewStep_displayName();
         }
 
         @Override

@@ -8,7 +8,7 @@ pipeline {
         }
         stage('Hidden Step') {
             steps {
-                markAsHiddenForDisplay {
+                hideFromView {
                     echo "This step is hidden"
                 }
             }

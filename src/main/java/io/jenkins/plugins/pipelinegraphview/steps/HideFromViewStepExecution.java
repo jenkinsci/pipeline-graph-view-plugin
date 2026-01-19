@@ -5,17 +5,17 @@ import org.jenkinsci.plugins.workflow.steps.StepContext;
 import org.jenkinsci.plugins.workflow.steps.StepExecution;
 
 /**
- * Execution for {@link MarkAsHiddenForDisplayStep}.
+ * Execution for {@link HideFromViewStep}.
  *
  * <p>This execution simply runs the enclosed body block. The step's presence in the
  * flow graph serves as a marker for the Pipeline Graph View plugin to identify
  * hidden steps.</p>
  */
-public class MarkAsHiddenForDisplayStepExecution extends StepExecution {
+public class HideFromViewStepExecution extends StepExecution {
 
     private static final long serialVersionUID = 1L;
 
-    protected MarkAsHiddenForDisplayStepExecution(StepContext context) {
+    protected HideFromViewStepExecution(StepContext context) {
         super(context);
     }
 

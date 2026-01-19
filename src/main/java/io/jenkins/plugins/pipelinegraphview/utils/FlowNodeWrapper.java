@@ -7,7 +7,7 @@ import hudson.model.Action;
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
-import io.jenkins.plugins.pipelinegraphview.steps.MarkAsHiddenForDisplayStep;
+import io.jenkins.plugins.pipelinegraphview.steps.HideFromViewStep;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunResult;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunState;
@@ -385,7 +385,7 @@ public class FlowNodeWrapper {
     }
 
     /**
-     * Extracts feature flags from ancestor markAsHiddenForDisplay step nodes.
+     * Extracts feature flags from ancestor hideFromView step nodes.
      * @return Map of feature flag key-value pairs (currently only "hidden" is supported)
      */
     public Map<String, Object> getFeatureFlags() {
@@ -401,8 +401,8 @@ public class FlowNodeWrapper {
                 continue;
             }
 
-            // Check for markAsHiddenForDisplay step
-            if (MarkAsHiddenForDisplayStep.class.getName().equals(descriptor.getId())) {
+            // Check for hideFromView step
+            if (HideFromViewStep.class.getName().equals(descriptor.getId())) {
                 // Found hidden marker - set flag and stop
                 flags.put("hidden", Boolean.TRUE);
                 break; // Inner block found, no need to check outer blocks

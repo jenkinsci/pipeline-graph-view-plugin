@@ -28,6 +28,7 @@ import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.graph.FlowStartNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException;
+import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
 
 /** @author Vivek Pandey */
@@ -390,16 +391,12 @@ public class FlowNodeWrapper {
     public Map<String, Object> getFeatureFlags() {
         Map<String, Object> flags = new HashMap<>();
 
-        // Get all enclosing blocks
-        List<? extends BlockStartNode> enclosingBlocks = this.node.getEnclosingBlocks();
-
-        for (BlockStartNode block : enclosingBlocks) {
-            if (!(block instanceof StepStartNode)) {
+        for (BlockStartNode block : this.node.iterateEnclosingBlocks()) {
+            if (!(block instanceof StepStartNode stepStartNode)) {
                 continue;
             }
 
-            StepStartNode stepStartNode = (StepStartNode) block;
-            var descriptor = stepStartNode.getDescriptor();
+            StepDescriptor descriptor = stepStartNode.getDescriptor();
             if (descriptor == null) {
                 continue;
             }

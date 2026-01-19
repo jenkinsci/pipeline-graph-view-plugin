@@ -61,7 +61,7 @@ export default function ConsoleLogCard({
   }
 
   return (
-    <div className={"pgv-step-detail-group"} key={`step-card-${step.id}`}>
+    <div className="pgv-step-detail-group" key={`step-card-${step.id}`}>
       <div
         className={classNames("pgv-step-detail-header", "jenkins-button", {
           "jenkins-button--tertiary": !isExpanded,

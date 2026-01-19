@@ -38,6 +38,7 @@ export interface StepInfo {
   pauseDurationMillis: number;
   startTimeMillis: number;
   totalDurationMillis: number;
+  flags?: Record<string, unknown>;
 }
 
 // Internal representation of console log.

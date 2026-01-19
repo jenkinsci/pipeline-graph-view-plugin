@@ -7,6 +7,7 @@ import hudson.model.Action;
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
+import io.jenkins.plugins.pipelinegraphview.steps.MarkAsHiddenForDisplayStep;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunResult;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunState;
@@ -15,7 +16,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.LabelAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
@@ -378,6 +381,40 @@ public class FlowNodeWrapper {
 
     public boolean isUnhandledException() {
         return PipelineNodeUtil.isUnhandledException(node);
+    }
+
+    /**
+     * Extracts feature flags from ancestor markAsHiddenForDisplay step nodes.
+     * @return Map of feature flag key-value pairs (currently only "hidden" is supported)
+     */
+    public Map<String, Object> getFeatureFlags() {
+        Map<String, Object> flags = new HashMap<>();
+
+        // Get all enclosing blocks
+        List<? extends BlockStartNode> enclosingBlocks = this.node.getEnclosingBlocks();
+
+        for (BlockStartNode block : enclosingBlocks) {
+            if (!(block instanceof StepStartNode)) {
+                continue;
+            }
+
+            StepStartNode stepStartNode = (StepStartNode) block;
+            var descriptor = stepStartNode.getDescriptor();
+            if (descriptor == null) {
+                continue;
+            }
+
+            String descriptorId = descriptor.getId();
+
+            // Check for markAsHiddenForDisplay step
+            if (MarkAsHiddenForDisplayStep.class.getName().equals(descriptorId)) {
+                // Found hidden marker - set flag and stop
+                flags.put("hidden", Boolean.TRUE);
+                break; // Inner block found, no need to check outer blocks
+            }
+        }
+
+        return flags;
     }
 
     public static class NodeComparator implements Comparator<FlowNodeWrapper>, Serializable {

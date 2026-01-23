@@ -27,6 +27,24 @@ This plugin adds a visual representation of Jenkins pipelines, showing each stag
 2. Go to some pipeline build page (not the job page)
 3. Click _Pipeline Overview_
 
+Hidden steps are not displayed by default in the Pipeline Overview, but can be toggled visible using the filter controls.
+
+## Screenshots
+
+Basic pipeline:
+
+![Different statuses](./docs/images/different-statuses.png)
+
+Semi-complex pipeline:
+
+![Semi complex pipeline](./docs/images/semi-complex-pipeline.png)
+
+## Video
+
+See a live demonstration from a Jenkins Contributor Summit:
+
+[![Demo of Pipeline Graph View plugin](https://img.youtube.com/vi/MBI3MBY2eJ8/0.jpg)](https://www.youtube.com/watch?v=MBI3MBY2eJ8&t=3295 "Pipeline Graph View plugin")
+
 ## Pipeline DSL Extensions
 
 ### Hiding Steps from View
@@ -51,24 +69,6 @@ pipeline {
     }
 }
 ```
-
-Hidden steps are not displayed by default in the Pipeline Overview, but can be toggled visible using the filter controls.
-
-## Screenshots
-
-Basic pipeline:
-
-![Different statuses](./docs/images/different-statuses.png)
-
-Semi-complex pipeline:
-
-![Semi complex pipeline](./docs/images/semi-complex-pipeline.png)
-
-## Video
-
-See a live demonstration from a Jenkins Contributor Summit:
-
-[![Demo of Pipeline Graph View plugin](https://img.youtube.com/vi/MBI3MBY2eJ8/0.jpg)](https://www.youtube.com/watch?v=MBI3MBY2eJ8&t=3295 "Pipeline Graph View plugin")
 
 ## REST API
 

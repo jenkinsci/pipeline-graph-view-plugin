@@ -18,6 +18,7 @@ This plugin adds a visual representation of Jenkins pipelines, showing each stag
 - View logs in real time without leaving the interface
 - Toggle between graph and stage views; move and resize panes to suit your workflow
 - Quickly access details of each step and its results
+- Hide specific steps from view using the `hideFromView` Pipeline DSL step
 - Designed for better readability and faster troubleshooting
 
 ## Getting started
@@ -25,6 +26,8 @@ This plugin adds a visual representation of Jenkins pipelines, showing each stag
 1. Install the [Pipeline Graph View](https://plugins.jenkins.io/pipeline-graph-view/) plugin
 2. Go to some pipeline build page (not the job page)
 3. Click _Pipeline Overview_
+
+Hidden steps are not displayed by default in the Pipeline Overview, but can be toggled visible using the filter controls.
 
 ## Screenshots
 
@@ -41,6 +44,31 @@ Semi-complex pipeline:
 See a live demonstration from a Jenkins Contributor Summit:
 
 [![Demo of Pipeline Graph View plugin](https://img.youtube.com/vi/MBI3MBY2eJ8/0.jpg)](https://www.youtube.com/watch?v=MBI3MBY2eJ8&t=3295 "Pipeline Graph View plugin")
+
+## Pipeline DSL Extensions
+
+### Hiding Steps from View
+
+You can mark specific pipeline steps as hidden from the view by wrapping them with the `hideFromView` step:
+
+```groovy
+pipeline {
+    agent any
+    stages {
+        stage('Build') {
+            steps {
+                echo "This step is visible"
+
+                hideFromView {
+                    echo "This step is hidden by default"
+                }
+
+                echo "This step is also visible"
+            }
+        }
+    }
+}
+```
 
 ## REST API
 

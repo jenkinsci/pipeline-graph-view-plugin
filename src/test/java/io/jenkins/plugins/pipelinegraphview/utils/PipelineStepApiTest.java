@@ -588,4 +588,32 @@ class PipelineStepApiTest {
         // 24-bit rgb
         assertThat(PipelineStepApi.cleanTextContent("\033[38;2;0;255;128mHello World\033[0m"), equalTo("Hello World"));
     }
+
+    @Test
+    @DisplayName("Feature flags are extracted from hideFromView steps")
+    void hideFromView() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(j, "hideFromView", "hideFromView.jenkinsfile", Result.SUCCESS);
+        PipelineStepApi api = new PipelineStepApi(run);
+
+        // Get all steps
+        List<PipelineStep> allSteps = api.getAllSteps().steps;
+        assertThat(allSteps, hasSize(3));
+
+        // Test 1: Normal step with no flags
+        PipelineStep normalStep = allSteps.get(0);
+        assertThat(normalStep.name, is("This is visible"));
+        assertThat(normalStep.getFlags(), notNullValue());
+        assertThat(normalStep.getFlags().isEmpty(), is(true));
+
+        // Test 2: Step marked as hidden
+        PipelineStep hiddenStep = allSteps.get(1);
+        assertThat(hiddenStep.name, is("This step is hidden"));
+        assertThat(hiddenStep.getFlags(), hasEntry("hidden", Boolean.TRUE));
+
+        // Test 3: Another visible step
+        PipelineStep visibleStep = allSteps.get(2);
+        assertThat(visibleStep.name, is("This is also visible"));
+        assertThat(visibleStep.getFlags(), notNullValue());
+        assertThat(visibleStep.getFlags().isEmpty(), is(true));
+    }
 }

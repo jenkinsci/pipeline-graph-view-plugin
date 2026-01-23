@@ -7,6 +7,7 @@ import hudson.model.Action;
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
+import io.jenkins.plugins.pipelinegraphview.steps.HideFromViewStep;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunResult;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunState;
@@ -15,7 +16,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.LabelAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
@@ -25,6 +28,7 @@ import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.graph.FlowStartNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException;
+import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
 
 /** @author Vivek Pandey */
@@ -378,6 +382,34 @@ public class FlowNodeWrapper {
 
     public boolean isUnhandledException() {
         return PipelineNodeUtil.isUnhandledException(node);
+    }
+
+    /**
+     * Extracts feature flags from ancestor hideFromView step nodes.
+     * @return Map of feature flag key-value pairs (currently only "hidden" is supported)
+     */
+    public Map<String, Object> getFeatureFlags() {
+        Map<String, Object> flags = new HashMap<>();
+
+        for (BlockStartNode block : this.node.iterateEnclosingBlocks()) {
+            if (!(block instanceof StepStartNode stepStartNode)) {
+                continue;
+            }
+
+            StepDescriptor descriptor = stepStartNode.getDescriptor();
+            if (descriptor == null) {
+                continue;
+            }
+
+            // Check for hideFromView step
+            if (HideFromViewStep.class.getName().equals(descriptor.getId())) {
+                // Found hidden marker - set flag and stop
+                flags.put("hidden", Boolean.TRUE);
+                break; // Inner block found, no need to check outer blocks
+            }
+        }
+
+        return flags;
     }
 
     public static class NodeComparator implements Comparator<FlowNodeWrapper>, Serializable {

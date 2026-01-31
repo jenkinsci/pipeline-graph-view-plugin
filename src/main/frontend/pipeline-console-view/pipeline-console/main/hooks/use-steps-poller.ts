@@ -176,11 +176,25 @@ export function useStepsPoller(props: RunPollerProps) {
   run.stages = refreshStagesFromSteps(run.stages, steps);
 
   const [openStageId, setOpenStageId] = useState("");
+  const openStage = useMemo(() => {
+    const findStage = (stages: StageInfo[]): StageInfo | null => {
+      for (const stage of stages) {
+        if (String(stage.id) === openStageId) return stage;
+        if (stage.children.length > 0) {
+          const result = findStage(stage.children);
+          if (result) return result;
+        }
+      }
+      return null;
+    };
+    return openStageId ? findStage(run.stages) : null;
+  }, [run.stages, openStageId]);
   const [expandedSteps, setExpandedSteps] = useState<string[]>([]);
   const collapsedSteps = useRef(new Set<string>());
-  const currentDefaultStep = useRef("");
+  const tailStep = useRef("");
 
   const [tailLogs, setTailLogs] = useState(true);
+  const [tailStage, setTailStage] = useState("");
   // Make the latest tailLogs state available without a re-render.
   const tailLogsRef = useRef(tailLogs);
   const startTailingLogs = useCallback(() => {
@@ -188,11 +202,19 @@ export function useStepsPoller(props: RunPollerProps) {
     scrollToStepOnce.current = ""; // Unset from manually selected node.
     tailLogsRef.current = true;
     setTailLogs(true);
-  }, []);
+    if (openStage?.state === "running") {
+      // Keep tailing in the current stage.
+      setTailStage(openStageId);
+    } else {
+      // Select the next best stage using the default step.
+      setTailStage("");
+    }
+  }, [openStageId, openStage?.state]);
   const stopTailingLogs = useCallback(() => {
     scrollToStepOnce.current = "";
     tailLogsRef.current = false;
     setTailLogs(false);
+    setTailStage("");
   }, []);
 
   // "scroll" events do not have a flag for telling "user has scrolled" vs programmatic "element.scrollIntoView()" apart.
@@ -241,7 +263,7 @@ export function useStepsPoller(props: RunPollerProps) {
   const scrollToTail = useCallback(
     (stepId: string, element: HTMLDivElement) => {
       const scrollDefaultStep =
-        tailLogsRef.current && stepId === currentDefaultStep.current;
+        tailLogsRef.current && stepId === tailStep.current;
       if (!scrollDefaultStep) {
         if (stepId !== scrollToStepOnce.current) return;
         const stepBuffer = stepBuffersRef.current.get(stepId);
@@ -325,9 +347,22 @@ export function useStepsPoller(props: RunPollerProps) {
   }, [steps, expandLastStageStep, stopTailingLogs]);
 
   useEffect(() => {
-    const defaultStep = getDefaultSelectedStep(steps, runIsComplete);
+    let defaultStep;
+    if (tailStage) {
+      defaultStep = steps.filter((s) => s.stageId === tailStage).pop() || null;
+      if (
+        defaultStep &&
+        defaultStep.state !== "running" &&
+        stepBuffersRef.current.get(defaultStep.id)?.stopTailing
+      ) {
+        // Tailed in full. Let the user resume tailing in another stage.
+        stopTailingLogs();
+      }
+    } else {
+      defaultStep = getDefaultSelectedStep(steps, runIsComplete);
+    }
     if (!defaultStep) return;
-    currentDefaultStep.current = defaultStep.id;
+    tailStep.current = defaultStep.id;
     if (!tailLogsRef.current) return;
     setOpenStageId(defaultStep.stageId);
     if (collapsedSteps.current.has(defaultStep.id)) return;
@@ -335,22 +370,18 @@ export function useStepsPoller(props: RunPollerProps) {
       if (prev.includes(defaultStep.id)) return prev;
       return [...prev, defaultStep.id];
     });
-  }, [steps, tailLogs, runIsComplete]);
+  }, [steps, tailLogs, runIsComplete, tailStage, stopTailingLogs]);
 
-  const handleStageSelect = useCallback(
-    (nodeId: string) => {
-      stopTailingLogs();
+  const handleStageSelect = useCallback((nodeId: string) => {
+    if (!nodeId) return;
 
-      if (!nodeId) return;
-      if (nodeId === openStageId) return; // skip if already selected
-
+    setTailStage(nodeId);
+    setOpenStageId((openStageId) => {
+      if (nodeId === openStageId) return openStageId; // skip if already selected
       history.replaceState({}, "", `?selected-node=` + nodeId);
-
-      setOpenStageId(nodeId);
-      expandLastStageStep(steps, nodeId);
-    },
-    [openStageId, steps, stopTailingLogs, expandLastStageStep],
-  );
+      return nodeId;
+    });
+  }, []);
 
   const onStepToggle = useCallback(
     (nodeId: string) => {
@@ -371,20 +402,6 @@ export function useStepsPoller(props: RunPollerProps) {
   const openStageSteps = useMemo(() => {
     return steps.filter((step) => step.stageId === openStageId);
   }, [steps, openStageId]);
-
-  const openStage = useMemo(() => {
-    const findStage = (stages: StageInfo[]): StageInfo | null => {
-      for (const stage of stages) {
-        if (String(stage.id) === openStageId) return stage;
-        if (stage.children.length > 0) {
-          const result = findStage(stage.children);
-          if (result) return result;
-        }
-      }
-      return null;
-    };
-    return openStageId ? findStage(run.stages) : null;
-  }, [run.stages, openStageId]);
 
   return {
     openStage,

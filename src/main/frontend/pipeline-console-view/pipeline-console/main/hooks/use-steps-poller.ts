@@ -372,20 +372,16 @@ export function useStepsPoller(props: RunPollerProps) {
     });
   }, [steps, tailLogs, runIsComplete, tailStage, stopTailingLogs]);
 
-  const handleStageSelect = useCallback(
-    (nodeId: string) => {
-      stopTailingLogs();
+  const handleStageSelect = useCallback((nodeId: string) => {
+    if (!nodeId) return;
 
-      if (!nodeId) return;
-      if (nodeId === openStageId) return; // skip if already selected
-
+    setTailStage(nodeId);
+    setOpenStageId((openStageId) => {
+      if (nodeId === openStageId) return openStageId; // skip if already selected
       history.replaceState({}, "", `?selected-node=` + nodeId);
-
-      setOpenStageId(nodeId);
-      expandLastStageStep(steps, nodeId);
-    },
-    [openStageId, steps, stopTailingLogs, expandLastStageStep],
-  );
+      return nodeId;
+    });
+  }, []);
 
   const onStepToggle = useCallback(
     (nodeId: string) => {

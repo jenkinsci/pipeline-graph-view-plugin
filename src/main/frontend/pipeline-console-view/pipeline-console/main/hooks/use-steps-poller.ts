@@ -176,6 +176,19 @@ export function useStepsPoller(props: RunPollerProps) {
   run.stages = refreshStagesFromSteps(run.stages, steps);
 
   const [openStageId, setOpenStageId] = useState("");
+  const openStage = useMemo(() => {
+    const findStage = (stages: StageInfo[]): StageInfo | null => {
+      for (const stage of stages) {
+        if (String(stage.id) === openStageId) return stage;
+        if (stage.children.length > 0) {
+          const result = findStage(stage.children);
+          if (result) return result;
+        }
+      }
+      return null;
+    };
+    return openStageId ? findStage(run.stages) : null;
+  }, [run.stages, openStageId]);
   const [expandedSteps, setExpandedSteps] = useState<string[]>([]);
   const collapsedSteps = useRef(new Set<string>());
   const currentDefaultStep = useRef("");
@@ -371,20 +384,6 @@ export function useStepsPoller(props: RunPollerProps) {
   const openStageSteps = useMemo(() => {
     return steps.filter((step) => step.stageId === openStageId);
   }, [steps, openStageId]);
-
-  const openStage = useMemo(() => {
-    const findStage = (stages: StageInfo[]): StageInfo | null => {
-      for (const stage of stages) {
-        if (String(stage.id) === openStageId) return stage;
-        if (stage.children.length > 0) {
-          const result = findStage(stage.children);
-          if (result) return result;
-        }
-      }
-      return null;
-    };
-    return openStageId ? findStage(run.stages) : null;
-  }, [run.stages, openStageId]);
 
   return {
     openStage,

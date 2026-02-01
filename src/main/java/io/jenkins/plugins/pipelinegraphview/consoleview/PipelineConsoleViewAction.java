@@ -48,7 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PipelineConsoleViewAction extends Tab {
-    public static final String URL_NAME = "pipeline-overview";
+    public static final String URL_NAME = "stages";
     public static final int CACHE_AGE = (int) TimeUnit.DAYS.toSeconds(1);
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineConsoleViewAction.class);
@@ -72,7 +72,7 @@ public class PipelineConsoleViewAction extends Tab {
 
     @Override
     public String getDisplayName() {
-        return "Stages";
+        return Messages.stages();
     }
 
     @Override

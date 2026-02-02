@@ -18,7 +18,7 @@ info:
     url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: "{build_url}/pipeline-overview"
+  - url: "{build_url}/stages"
     description: Pipeline Overview API - Individual pipeline run
     variables:
       build_url:
@@ -612,7 +612,7 @@ components:
               synthetic: false
               placeholder: false
               agent: "linux"
-              url: "/job/my-pipeline/1/pipeline-overview?selected-node=6"
+              url: "/job/my-pipeline/1/stages?selected-node=6"
 
     StepListExample:
       summary: Example step list

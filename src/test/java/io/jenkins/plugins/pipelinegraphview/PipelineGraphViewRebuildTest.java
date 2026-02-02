@@ -42,11 +42,11 @@ class PipelineGraphViewRebuildTest {
                 .goToPipelineOverview();
 
         String jobUrl = j.getURL() + job.getUrl();
-        assertThat(p).hasURL(jobUrl + "1/pipeline-overview/");
+        assertThat(p).hasURL(jobUrl + "1/stages/");
 
         op.rerun();
 
-        assertThat(p).hasURL(jobUrl + "2/pipeline-overview/");
+        assertThat(p).hasURL(jobUrl + "2/stages/");
 
         waitUntilBuildIsComplete(j, run);
     }

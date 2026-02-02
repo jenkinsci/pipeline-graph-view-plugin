@@ -18,7 +18,7 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
     private final String jobUrl;
 
     public PipelineOverviewPage(Page page, String jobUrl, String buildName) {
-        super(page, jobUrl + "pipeline-overview/");
+        super(page, jobUrl + "stages/");
         this.buildName = buildName;
         this.jobUrl = jobUrl;
         graph = new PipelineGraph(page.locator(".PWGx-PipelineGraph-container"));

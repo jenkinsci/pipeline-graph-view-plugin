@@ -38,7 +38,7 @@ export default function Stages({
       {onRunPage && (
         <a
           className={"pgv-stages-graph__controls pgv-stages-graph__heading"}
-          href="pipeline-overview"
+          href="stages"
         >
           Stages
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">

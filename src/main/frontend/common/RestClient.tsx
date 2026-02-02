@@ -65,7 +65,7 @@ export interface ConsoleLogData {
 }
 
 export async function getRunStatusFromPath(url: string): Promise<RunStatus> {
-  const response = await fetch(url + "pipeline-overview/tree");
+  const response = await fetch(url + "stages/tree");
   if (!response.ok) {
     throw response.statusText;
   }

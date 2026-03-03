@@ -171,6 +171,8 @@ class PipelineGraphViewTest {
         String name = "gh1169";
         WorkflowRun run = TestUtils.createAndRunJob(j, name, "gh1169_errorWithMessage.jenkinsfile", Result.FAILURE);
 
+        // Note that the locator used in stageHasSteps accumulates the error step's message text content into the found
+        // step name so we just check that instead of also calling stepContainText
         new PipelineJobPage(p, run.getParent())
                 .goTo()
                 .hasBuilds(1)
@@ -179,7 +181,7 @@ class PipelineGraphViewTest {
                 .goToPipelineOverview()
                 .hasStagesInGraph(1, "Stage")
                 .selectStageInGraph("Stage")
-                .stageHasSteps("Error signalError"); // the locator used in stageHasSteps accumulates the error message text content into the step name
+                .stageHasSteps("Error signalError");
     }
 
     @Issue("GH#1169")

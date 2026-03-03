@@ -118,6 +118,7 @@ export async function getExceptionText(stepId: string): Promise<string[]> {
     const response = await fetch(`exceptionText?nodeId=${stepId}`);
     if (!response.ok) throw response.statusText;
     const text = await response.text();
+    if (!text) return [];
     return text.split("\n");
   } catch (e) {
     console.error(`Caught error when fetching console: '${e}'`);

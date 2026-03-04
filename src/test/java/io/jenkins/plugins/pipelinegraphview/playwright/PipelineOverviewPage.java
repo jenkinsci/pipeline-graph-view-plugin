@@ -85,6 +85,11 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
         return this;
     }
 
+    public PipelineOverviewPage stepDoesNotContainText(String stepName, String textToNotFind) {
+        logs.stepDoesNotContainText(stepName, textToNotFind);
+        return this;
+    }
+
     public PipelineOverviewPage stageHasSteps(String step, String... additional) {
         logs.stageHasSteps(step, additional);
         return this;

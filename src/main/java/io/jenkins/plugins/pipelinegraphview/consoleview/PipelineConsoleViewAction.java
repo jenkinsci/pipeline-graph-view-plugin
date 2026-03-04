@@ -185,7 +185,8 @@ public class PipelineConsoleViewAction extends Tab {
         run.checkPermission(Item.READ);
         String nodeId = req.getParameter("nodeId");
         if (nodeId == null) return HttpResponses.error(400, "missing ?nodeId");
-        return HttpResponses.text(getNodeExceptionText(nodeId));
+        String exceptionText = getNodeExceptionText(nodeId);
+        return HttpResponses.text(exceptionText != null ? exceptionText : "");
     }
 
     private AnnotatedLargeText<? extends FlowNode> getLogForNode(String nodeId) throws IOException {

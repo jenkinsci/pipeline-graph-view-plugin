@@ -164,4 +164,42 @@ class PipelineGraphViewTest {
                 .scrollToText("Hello, world 1000!")
                 .scrollToText("Hello, world 1!");
     }
+
+    @Test
+    @ConfiguredWithCode("configure-appearance.yml")
+    void errorWithMessage(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
+        String name = "gh1169";
+        WorkflowRun run = TestUtils.createAndRunJob(j, name, "gh1169_errorWithMessage.jenkinsfile", Result.FAILURE);
+
+        // Note that the locator used in stageHasSteps accumulates the error step's message text content into the found
+        // step name so we just check that instead of also calling stepContainText
+        new PipelineJobPage(p, run.getParent())
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .goToBuild()
+                .goToPipelineOverview()
+                .hasStagesInGraph(1, "Stage")
+                .selectStageInGraph("Stage")
+                .stageHasSteps("Error signalError");
+    }
+
+    @Issue("GH#1169")
+    @Test
+    @ConfiguredWithCode("configure-appearance.yml")
+    void errorWithNoMessage(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
+        String name = "gh1169";
+        WorkflowRun run = TestUtils.createAndRunJob(j, name, "gh1169_errorWithNoMessage.jenkinsfile", Result.FAILURE);
+
+        new PipelineJobPage(p, run.getParent())
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .goToBuild()
+                .goToPipelineOverview()
+                .hasStagesInGraph(1, "Stage")
+                .selectStageInGraph("Stage")
+                .stageHasSteps("Error signal")
+                .stepDoesNotContainText("Error signal", "null");
+    }
 }

@@ -31,7 +31,7 @@
   },
   "homepage": "https://github.com/jenkinsci/pipeline-graph-view-plugin/#readme",
   "dependencies": {
-    "@formatjs/intl-durationformat": "^0.7.4",
+    "@formatjs/intl-durationformat": "^0.10.0",
     "@tippyjs/react": "^4.2.6",
     "linkify-html": "^4.3.1",
     "linkify-react": "^4.3.1",

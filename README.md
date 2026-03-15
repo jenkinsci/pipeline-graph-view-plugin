@@ -1,6 +1,6 @@
 # Pipeline Graph View Plugin
 
-[![Build Status](https://ci.jenkins.io/job/Plugins/job/pipeline-graph-view-plugin/job/main/badge/icon)](https://ci.jenkins.io/job/Plugins/job/pipeline-graph-view-plugin/job/main/)
+[![Build Status](https://ci.jenkins.io/buildStatus/icon?job=Plugins%2Fpipeline-graph-view-plugin%2Fmain)](https://ci.jenkins.io/job/Plugins/job/pipeline-graph-view-plugin/job/main/)
 [![Gitter](https://badges.gitter.im/jenkinsci/ux-sig.svg)](https://gitter.im/jenkinsci/ux-sig?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Jenkins Plugin](https://img.shields.io/jenkins/plugin/v/pipeline-graph-view.svg)](https://plugins.jenkins.io/pipeline-graph-view)
 [![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/pipeline-graph-view.svg?color=blue)](https://plugins.jenkins.io/pipeline-graph-view)

@@ -1,10 +1,10 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -60,7 +60,7 @@ public class TestUtils {
         WorkflowJob job = jenkins.createProject(WorkflowJob.class, jobName);
 
         URL resource = Resources.getResource(TestUtils.class, jenkinsFileName);
-        String jenkinsFile = Resources.toString(resource, Charsets.UTF_8);
+        String jenkinsFile = Resources.toString(resource, StandardCharsets.UTF_8);
         job.setDefinition(new CpsFlowDefinition(jenkinsFile, sandbox));
         return job;
     }

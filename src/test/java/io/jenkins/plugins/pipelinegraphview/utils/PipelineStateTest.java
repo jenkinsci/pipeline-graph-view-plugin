@@ -90,15 +90,6 @@ class PipelineStateTest {
         assertEquals("[\"running\",\"success\"]", serialized);
     }
 
-    public static class TestBean {
-        private final PipelineState state;
-
-        public TestBean(PipelineState state) {
-            this.state = state;
-        }
-
-        public PipelineState getState() {
-            return state;
-        }
+    public record TestBean(PipelineState state) {
     }
 }

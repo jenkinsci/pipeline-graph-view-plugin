@@ -40,15 +40,14 @@ export default function ConsoleLogCard({
   onStepToggle,
   fetchExceptionText,
 }: ConsoleLogCardProps) {
-  const handleToggle = (e: ReactMouseEvent<HTMLElement>) => {
+  const handleToggle = (e: ReactMouseEvent<HTMLAnchorElement>) => {
     // Only prevent left clicks
     if (e.button !== 0 || e.metaKey || e.ctrlKey) {
       return;
     }
 
     e.preventDefault();
-
-    history.replaceState({}, "", `?selected-node=` + step.id);
+    history.replaceState({}, "", e.currentTarget.href);
 
     onStepToggle(step.id);
   };

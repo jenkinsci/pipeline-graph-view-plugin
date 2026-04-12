@@ -153,8 +153,8 @@ const TreeNode = memo(function TreeNode({
             }
 
             e.preventDefault();
+            history.replaceState({}, "", e.currentTarget.href);
 
-            history.replaceState({}, "", `?selected-node=` + stage.id);
             if (!isSelected) {
               onSelect(String(stage.id));
             }

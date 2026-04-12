@@ -679,7 +679,7 @@ describe("incremental log fetching", function () {
 
       for (const evolution of evolutions) {
         (model.getConsoleTextOffset as Mock).mockImplementation(
-          (stepId, startByte, consoleAnnotator) => {
+          (_url, stepId, startByte, consoleAnnotator) => {
             expect(stepId).to.equal("step-2");
             expect(startByte).to.equal(evolution.fetchStartByte);
             expect(consoleAnnotator).to.equal(evolution.fetchConsoleAnnotator);

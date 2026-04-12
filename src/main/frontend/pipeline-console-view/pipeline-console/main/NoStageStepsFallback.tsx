@@ -19,7 +19,7 @@ async function fetchData(url: string): Promise<StepLogBufferInfo> {
 }
 
 interface NoStageStepsFallbackProps {
-  url: string;
+  currentRunPath: string;
   tailLogs: boolean;
   scrollToTail: (stepId: string, element: HTMLDivElement) => void;
 }
@@ -32,13 +32,13 @@ export function NoStageStepsFallback(props: NoStageStepsFallbackProps) {
   });
 
   useEffect(() => {
-    fetchData(props.url)
+    fetchData(props.currentRunPath)
       .then((data) => {
         setLogBuffer(data);
         return data;
       })
       .catch((err) => console.log(err));
-  }, [props.url]);
+  }, [props.currentRunPath]);
 
   return (
     <div className={"pgv-stage-steps"}>
@@ -52,6 +52,7 @@ export function NoStageStepsFallback(props: NoStageStepsFallbackProps) {
           stepId={""}
           stepState={Result.success}
           fetchExceptionText={async () => logBuffer}
+          currentRunPath={props.currentRunPath}
         />
       </div>
     </div>

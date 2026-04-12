@@ -47,6 +47,7 @@ describe("StageView", () => {
       render(
         <FilterProvider>
           <StageView
+            currentRunPath="/jenkins/job/name/1/"
             tailLogs={false}
             scrollToTail={() => {}}
             stopTailingLogs={() => {}}

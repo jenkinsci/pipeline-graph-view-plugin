@@ -49,6 +49,7 @@ describe("ConsoleLogStream", () => {
     tailLogs: false,
     stopTailingLogs: () => {},
     scrollToTail: () => {},
+    currentRunPath: "/jenkins/job/name/1/",
   } as ConsoleLogStreamProps;
 
   it("renders step console", async () => {

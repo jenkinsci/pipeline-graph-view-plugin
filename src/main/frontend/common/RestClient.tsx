@@ -72,7 +72,7 @@ function fixStaleStageURL(stages: StageInfo[]) {
 }
 
 export async function getRunStatusFromPath(url: string): Promise<RunStatus> {
-  const response = await fetch(url + "stages/tree");
+  const response = await fetch(`${url}stages/tree`);
   if (!response.ok) {
     throw response.statusText;
   }
@@ -84,8 +84,8 @@ export async function getRunStatusFromPath(url: string): Promise<RunStatus> {
   return json.data;
 }
 
-export async function getRunSteps(): Promise<AllStepsData> {
-  const response = await fetch("allSteps");
+export async function getRunSteps(url: string): Promise<AllStepsData> {
+  const response = await fetch(`${url}stages/allSteps`);
   if (!response.ok) throw response.statusText;
   const text = await response.text();
   const json = JSON.parse(text);
@@ -94,6 +94,7 @@ export async function getRunSteps(): Promise<AllStepsData> {
 }
 
 export async function getConsoleTextOffset(
+  url: string,
   stepId: string,
   startByte: number,
   consoleAnnotator: string,
@@ -102,7 +103,7 @@ export async function getConsoleTextOffset(
   if (consoleAnnotator) headers.set("X-ConsoleAnnotator", consoleAnnotator);
   try {
     const response = await fetch(
-      `../execution/node/${stepId}/log/logText/progressiveHtml?start=${startByte.toString()}`,
+      `${url}execution/node/${stepId}/log/logText/progressiveHtml?start=${startByte.toString()}`,
       { headers },
     );
     if (!response.ok) throw response.statusText;
@@ -122,9 +123,12 @@ export async function getConsoleTextOffset(
   }
 }
 
-export async function getExceptionText(stepId: string): Promise<string[]> {
+export async function getExceptionText(
+  url: string,
+  stepId: string,
+): Promise<string[]> {
   try {
-    const response = await fetch(`exceptionText?nodeId=${stepId}`);
+    const response = await fetch(`${url}stages/exceptionText?nodeId=${stepId}`);
     if (!response.ok) throw response.statusText;
     const text = await response.text();
     if (!text) return [];

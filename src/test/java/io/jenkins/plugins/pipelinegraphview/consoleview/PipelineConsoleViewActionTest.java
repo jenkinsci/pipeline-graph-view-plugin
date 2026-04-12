@@ -8,6 +8,8 @@ import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter
 import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import java.util.List;
+import org.htmlunit.html.DomElement;
+import org.htmlunit.html.HtmlPage;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
@@ -47,5 +49,19 @@ class PipelineConsoleViewActionTest {
         PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
         String message = consoleAction.getNodeExceptionText(execStep.getId());
         assertThat(message, equalTo("script returned exit code 1"));
+    }
+
+    @Issue("GH#1047")
+    @Test
+    void getBuildUrlResolvesLastXXX(JenkinsRule j) throws Exception {
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "hello_world_scripted", "simpleError.jenkinsfile", Result.FAILURE);
+
+        try (var c = j.createWebClient()) {
+            HtmlPage page = c.goTo(run.getParent().getUrl() + "lastBuild/stages");
+            DomElement root = page.getElementById("console-pipeline-root");
+            assertThat(root, notNullValue());
+            assertThat(root.getAttribute("data-current-run-path"), endsWith("/" + run.getNumber() + "/"));
+        }
     }
 }

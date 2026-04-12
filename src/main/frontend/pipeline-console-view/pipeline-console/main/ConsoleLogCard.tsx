@@ -39,6 +39,7 @@ export default function ConsoleLogCard({
   fetchLogText,
   onStepToggle,
   fetchExceptionText,
+  currentRunPath,
 }: ConsoleLogCardProps) {
   const handleToggle = (e: ReactMouseEvent<HTMLAnchorElement>) => {
     // Only prevent left clicks
@@ -67,7 +68,7 @@ export default function ConsoleLogCard({
         })}
       >
         <a
-          href={`?selected-node=` + step.id}
+          href={currentRunPath + `stages?selected-node=` + step.id}
           onClick={handleToggle}
           key={`step-action-area-${step.id}`}
         >
@@ -152,6 +153,7 @@ export default function ConsoleLogCard({
           fetchLogText={fetchLogText}
           fetchExceptionText={fetchExceptionText}
           onStepToggle={onStepToggle}
+          currentRunPath={currentRunPath}
         />
       )}
     </div>
@@ -192,6 +194,7 @@ const ConsoleLogBody = memo(function ConsoleLogBody({
   stepBuffers,
   fetchLogText,
   fetchExceptionText,
+  currentRunPath,
 }: ConsoleLogCardBodyProps) {
   const [stepBuffer, setStepBuffer] = useState<StepLogBufferInfo>({
     ...(stepBuffers.get(stepId) || defaultStepBuffer()),
@@ -264,6 +267,7 @@ const ConsoleLogBody = memo(function ConsoleLogBody({
           fetchExceptionText={fetchExceptionText}
           stepId={stepId}
           stepState={stepState}
+          currentRunPath={currentRunPath}
         />
       </Suspense>
     </div>
@@ -283,6 +287,7 @@ export type ConsoleLogCardProps = {
   tailLogs: boolean;
   scrollToTail: (stepId: string, element: HTMLDivElement) => void;
   stopTailingLogs: () => void;
+  currentRunPath: string;
 };
 
 export type ConsoleLogCardBodyProps = {
@@ -298,4 +303,5 @@ export type ConsoleLogCardBodyProps = {
   tailLogs: boolean;
   scrollToTail: (stepId: string, element: HTMLDivElement) => void;
   stopTailingLogs: () => void;
+  currentRunPath: string;
 };

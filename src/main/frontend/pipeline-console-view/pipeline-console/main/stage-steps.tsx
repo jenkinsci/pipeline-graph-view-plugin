@@ -16,6 +16,7 @@ export default function StageSteps({
   expandedSteps,
   fetchLogText,
   fetchExceptionText,
+  currentRunPath,
 }: StageStepsProps) {
   const { showHiddenSteps } = useFilter();
 
@@ -42,6 +43,7 @@ export default function StageSteps({
               isExpanded={expandedSteps.includes(stepItemData.id)}
               fetchLogText={fetchLogText}
               fetchExceptionText={fetchExceptionText}
+              currentRunPath={currentRunPath}
               key={`step-console-card-${stepItemData.id}`}
             />
           );
@@ -64,4 +66,5 @@ export interface StageStepsProps {
   tailLogs: boolean;
   scrollToTail: (stepId: string, element: HTMLDivElement) => void;
   stopTailingLogs: () => void;
+  currentRunPath: string;
 }

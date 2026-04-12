@@ -21,6 +21,7 @@ export default function DataTreeView({
   stages,
   selected,
   onNodeSelect,
+  currentRunPath,
 }: DataTreeViewProps) {
   const { search, setSearch, visibleStatuses } = useFilter();
   const filteredStages = filterStageTree(search, visibleStatuses, stages);
@@ -90,6 +91,7 @@ export default function DataTreeView({
             stage={stage}
             selected={String(selected)}
             onSelect={onNodeSelect}
+            currentRunPath={currentRunPath}
           />
         ))}
       </ol>
@@ -108,6 +110,7 @@ const TreeNode = memo(function TreeNode({
   stage,
   selected,
   onSelect,
+  currentRunPath,
 }: TreeNodeProps) {
   const { search, visibleStatuses, allVisible } = useFilter();
   const hasChildren = stage.children && stage.children.length > 0;
@@ -145,7 +148,7 @@ const TreeNode = memo(function TreeNode({
     >
       <div className="pgv-tree-item-container">
         <a
-          href={`?selected-node=` + stage.id}
+          href={currentRunPath + `stages?selected-node=` + stage.id}
           onClick={(e) => {
             // Only prevent left clicks
             if (e.button !== 0 || e.metaKey || e.ctrlKey) {
@@ -223,6 +226,7 @@ const TreeNode = memo(function TreeNode({
                 stage={child}
                 selected={selected}
                 onSelect={onSelect}
+                currentRunPath={currentRunPath}
               />
             ))}
           </ol>
@@ -264,10 +268,12 @@ interface DataTreeViewProps {
   stages: StageInfo[];
   selected?: number;
   onNodeSelect: (nodeId: string) => void;
+  currentRunPath: string;
 }
 
 interface TreeNodeProps {
   stage: StageInfo;
   selected: string;
   onSelect: (id: string) => void;
+  currentRunPath: string;
 }

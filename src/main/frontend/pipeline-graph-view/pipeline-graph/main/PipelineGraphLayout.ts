@@ -217,9 +217,18 @@ export function createNodeColumns(
       const rowNodes: Array<NodeInfo> = [];
       if (!willRecurse && stageHasChildren(nodeStage)) {
         column.hasBranchLabels = true;
-        forEachChildStage(nodeStage, (parentStage, childStage, _) =>
-          rowNodes.push(makeNodeForStage(childStage, parentStage.name)),
-        );
+        forEachChildStage(nodeStage, (parentStage, childStage, _) => {
+          const hasNestedParallel =
+            stageHasChildren(childStage) &&
+            childStage.children[0].type === "PARALLEL";
+          if (hasNestedParallel) {
+            for (const nested of childStage.children) {
+              rowNodes.push(makeNodeForStage(nested, childStage.name));
+            }
+          } else {
+            rowNodes.push(makeNodeForStage(childStage, parentStage.name));
+          }
+        });
       } else {
         rowNodes.push(makeNodeForStage(nodeStage));
       }

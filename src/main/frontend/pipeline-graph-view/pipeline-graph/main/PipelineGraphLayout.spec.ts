@@ -351,6 +351,36 @@ describe("PipelineGraphLayout", () => {
         },
       ]);
     });
+
+    it("returns next best columns (GH#1155)", () => {
+      // The "proper columns" will require rendering of nested rows.
+      const columns = createNodeColumns([
+        makeStage(4, "top", [
+          makeParallel(7, "BranchA", [
+            makeStage(10, "Branch A", [
+              makeParallel(16, "A-1"),
+              makeParallel(17, "A-2"),
+            ]),
+          ]),
+          makeParallel(8, "BranchB", [
+            makeStage(12, "Branch B", [
+              makeParallel(21, "B-1"),
+              makeParallel(22, "B-2"),
+            ]),
+          ]),
+        ]),
+      ]);
+
+      expect(columns).toMatchObject([
+        {
+          hasBranchLabels: true,
+          rows: [
+            [makeNode(16, "A-1", "Branch A"), makeNode(17, "A-2", "Branch A")],
+            [makeNode(21, "B-1", "Branch B"), makeNode(22, "B-2", "Branch B")],
+          ],
+        },
+      ]);
+    });
   });
 
   describe("layoutGraph", () => {

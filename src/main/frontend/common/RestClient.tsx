@@ -126,9 +126,9 @@ export async function getExceptionText(stepId: string): Promise<string[]> {
   }
 }
 
-export async function getConsoleBuildOutput(): Promise<string | null> {
+export async function getConsoleBuildOutput(url: string): Promise<string | null> {
   try {
-    const response = await fetch(`consoleBuildOutput`);
+    const response = await fetch(`${url}/stages/consoleBuildOutput`);
     if (!response.ok) throw response.statusText;
     return await response.text();
   } catch (e) {

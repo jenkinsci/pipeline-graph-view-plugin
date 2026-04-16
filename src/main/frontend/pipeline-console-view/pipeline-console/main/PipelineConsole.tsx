@@ -161,7 +161,7 @@ export default function PipelineConsole() {
       )}
 
       {!loading && stages.length === 0 && (
-        <NoStageStepsFallback tailLogs={tailLogs} scrollToTail={scrollToTail} />
+        <NoStageStepsFallback url={currentRunPath} tailLogs={tailLogs} scrollToTail={scrollToTail} />
       )}
 
       <ScrollToTopBottom

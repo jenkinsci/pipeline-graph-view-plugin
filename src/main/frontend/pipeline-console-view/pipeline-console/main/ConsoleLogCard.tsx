@@ -122,7 +122,7 @@ export default function ConsoleLogCard({
 
         <Tooltip content={messages.format(LocalizedMessageKey.consoleNewTab)}>
           <a
-            href={`${currentRunPath}log?nodeId=${step.id}`}
+            href={`${currentRunPath}stages/log?nodeId=${step.id}`}
             className={"jenkins-button jenkins-button--tertiary"}
             target="_blank"
             rel="noreferrer"

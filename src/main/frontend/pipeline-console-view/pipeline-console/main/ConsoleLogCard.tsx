@@ -68,7 +68,7 @@ export default function ConsoleLogCard({
         })}
       >
         <a
-          href={currentRunPath + `stages?selected-node=` + step.id}
+          href={currentRunPath + `stages/?selected-node=` + step.id}
           onClick={handleToggle}
           key={`step-action-area-${step.id}`}
         >

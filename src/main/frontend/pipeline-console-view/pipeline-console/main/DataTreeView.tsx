@@ -148,7 +148,7 @@ const TreeNode = memo(function TreeNode({
     >
       <div className="pgv-tree-item-container">
         <a
-          href={currentRunPath + `stages?selected-node=` + stage.id}
+          href={currentRunPath + `stages/?selected-node=` + stage.id}
           onClick={(e) => {
             // Only prevent left clicks
             if (e.button !== 0 || e.metaKey || e.ctrlKey) {

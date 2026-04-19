@@ -15,7 +15,7 @@ export interface ConsoleLineProps {
 
 // Console output line
 export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
-  const baseURL = `${props.currentRunPath}stages?start-byte=${props.startByte}&selected-node=${props.stepId}`;
+  const baseURL = `${props.currentRunPath}stages/?start-byte=${props.startByte}&selected-node=${props.stepId}`;
   const id = `log-${props.stepId}-${props.lineNumber}`;
   return (
     <pre

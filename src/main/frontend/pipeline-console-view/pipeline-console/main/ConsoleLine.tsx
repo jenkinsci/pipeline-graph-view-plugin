@@ -10,11 +10,12 @@ export interface ConsoleLineProps {
   content: string;
   stepId: string;
   startByte: number;
+  currentRunPath: string;
 }
 
 // Console output line
 export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
-  const baseURL = `?start-byte=${props.startByte}&selected-node=${props.stepId}`;
+  const baseURL = `${props.currentRunPath}stages/?start-byte=${props.startByte}&selected-node=${props.stepId}`;
   const id = `log-${props.stepId}-${props.lineNumber}`;
   return (
     <pre

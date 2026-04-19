@@ -48,7 +48,7 @@ export default function App() {
           <div className={"jenkins-card__content"}>
             <div className={"pgv-console-card"}>
               <NoStageStepsFallback
-                url={currentRunPath}
+                currentRunPath={currentRunPath}
                 tailLogs={false}
                 scrollToTail={() => {}}
               />

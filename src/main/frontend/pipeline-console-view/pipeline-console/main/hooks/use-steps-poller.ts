@@ -17,6 +17,7 @@ import {
 } from "../PipelineConsoleModel.tsx";
 
 async function updateStepBuffer(
+  url: string,
   stepBuffer: StepLogBufferInfo,
   stepId: string,
   startByte: number,
@@ -47,6 +48,7 @@ async function updateStepBuffer(
   }
   stepBuffer.lastFetched = performance.now();
   const response = await getConsoleTextOffset(
+    url,
     stepId,
     startByte,
     consoleAnnotator,
@@ -162,14 +164,21 @@ async function fetchStepLogDetail(
   return stepBuffer;
 }
 
-export function useStepsPoller(props: RunPollerProps) {
+export function useStepsPoller({
+  currentRunPath,
+  previousRunPath,
+}: RunPollerProps) {
   const { run, loading } = useRunPoller({
-    currentRunPath: props.currentRunPath,
-    previousRunPath: props.previousRunPath,
+    currentRunPath,
+    previousRunPath,
   });
+  const fetchRunSteps = useCallback(
+    () => getRunSteps(currentRunPath),
+    [currentRunPath],
+  );
   const {
     data: { steps, runIsComplete },
-  } = usePolling<AllStepsData>(getRunSteps, POLL_INTERVAL, "runIsComplete", {
+  } = usePolling<AllStepsData>(fetchRunSteps, POLL_INTERVAL, "runIsComplete", {
     steps: [],
     runIsComplete: false,
   });
@@ -280,27 +289,35 @@ export function useStepsPoller(props: RunPollerProps) {
   );
 
   const stepBuffersRef = useRef(new Map<string, StepLogBufferInfo>());
-  const fetchLogText = useCallback((stepId: string, startByte: number) => {
-    return fetchStepLogDetail(
-      stepBuffersRef.current,
-      stepId,
-      "pending",
-      (stepBuffer) => updateStepBuffer(stepBuffer, stepId, startByte),
-    );
-  }, []);
+  const fetchLogText = useCallback(
+    (stepId: string, startByte: number) =>
+      fetchStepLogDetail(
+        stepBuffersRef.current,
+        stepId,
+        "pending",
+        (stepBuffer) =>
+          updateStepBuffer(currentRunPath, stepBuffer, stepId, startByte),
+      ),
+    [currentRunPath],
+  );
 
-  const fetchExceptionText = useCallback((stepId: string) => {
-    return fetchStepLogDetail(
-      stepBuffersRef.current,
-      stepId,
-      "pendingExceptionText",
-      async (stepBuffer: StepLogBufferInfo) => {
-        if (stepBuffer.exceptionText?.length) return; // Already fetched
-        stepBuffer.exceptionText = await getExceptionText(stepId);
-        stepBuffer.lines = stepBuffer.lines.concat(stepBuffer.exceptionText);
-      },
-    );
-  }, []);
+  const fetchExceptionText = useCallback(
+    (stepId: string) =>
+      fetchStepLogDetail(
+        stepBuffersRef.current,
+        stepId,
+        "pendingExceptionText",
+        async (stepBuffer: StepLogBufferInfo) => {
+          if (stepBuffer.exceptionText?.length) return; // Already fetched
+          stepBuffer.exceptionText = await getExceptionText(
+            currentRunPath,
+            stepId,
+          );
+          stepBuffer.lines = stepBuffer.lines.concat(stepBuffer.exceptionText);
+        },
+      ),
+    [currentRunPath],
+  );
 
   const expandLastStageStep = useCallback(
     (steps: StepInfo[], stageId: string) => {
@@ -376,11 +393,7 @@ export function useStepsPoller(props: RunPollerProps) {
     if (!nodeId) return;
 
     setTailStage(nodeId);
-    setOpenStageId((openStageId) => {
-      if (nodeId === openStageId) return openStageId; // skip if already selected
-      history.replaceState({}, "", `?selected-node=` + nodeId);
-      return nodeId;
-    });
+    setOpenStageId(nodeId);
   }, []);
 
   const onStepToggle = useCallback(

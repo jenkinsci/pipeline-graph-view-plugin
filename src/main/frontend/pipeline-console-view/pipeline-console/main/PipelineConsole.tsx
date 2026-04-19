@@ -127,6 +127,7 @@ export default function PipelineConsole() {
                     </div>
                   ) : (
                     <DataTreeView
+                      currentRunPath={currentRunPath}
                       onNodeSelect={handleStageSelect}
                       selected={openStage?.id}
                       stages={stages}
@@ -153,6 +154,7 @@ export default function PipelineConsole() {
                   onStepToggle={onStepToggle}
                   fetchLogText={fetchLogText}
                   fetchExceptionText={fetchExceptionText}
+                  currentRunPath={currentRunPath}
                 />
               )}
             </div>
@@ -162,7 +164,7 @@ export default function PipelineConsole() {
 
       {!loading && stages.length === 0 && (
         <NoStageStepsFallback
-          url={currentRunPath}
+          currentRunPath={currentRunPath}
           tailLogs={tailLogs}
           scrollToTail={scrollToTail}
         />

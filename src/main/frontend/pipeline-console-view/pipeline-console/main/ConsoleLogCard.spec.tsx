@@ -52,6 +52,7 @@ describe("ConsoleLogCard", () => {
     tailLogs: true,
     scrollToTail: () => {},
     stopTailingLogs: () => {},
+    currentRunPath: "/jenkins/job/name/1/",
   } as ConsoleLogCardProps;
   beforeEach(function () {
     (DefaultTestProps.fetchLogText as Mock).mockReset();

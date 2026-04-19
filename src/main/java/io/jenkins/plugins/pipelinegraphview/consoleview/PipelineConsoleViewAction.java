@@ -372,7 +372,7 @@ public class PipelineConsoleViewAction extends Tab {
     }
 
     public String getBuildUrl() {
-        return run.getUrl();
+        return run.getParent().getUrl() + run.getNumber() + "/";
     }
 
     public String getPreviousBuildNumber() {
@@ -381,7 +381,10 @@ public class PipelineConsoleViewAction extends Tab {
 
     public String getPreviousBuildUrl() {
         WorkflowRun previousBuild = run.getPreviousBuild();
-        return previousBuild == null ? null : previousBuild.getUrl();
+        if (previousBuild == null) {
+            return null;
+        }
+        return run.getParent().getUrl() + previousBuild.getNumber() + "/";
     }
 
     public String getNextBuildNumber() {

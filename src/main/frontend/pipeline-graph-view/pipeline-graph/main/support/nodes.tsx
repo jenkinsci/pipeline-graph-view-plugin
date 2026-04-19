@@ -169,6 +169,8 @@ export function Node({
             onClick={(e) => {
               if (onStageSelect) {
                 e.preventDefault();
+                history.replaceState({}, "", e.currentTarget.href);
+
                 onStageSelect(String(node.stage.id));
               }
             }}

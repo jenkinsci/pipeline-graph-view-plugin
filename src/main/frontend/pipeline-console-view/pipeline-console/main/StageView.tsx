@@ -21,6 +21,7 @@ export default function StageView(props: StageViewProps) {
         stopTailingLogs={props.stopTailingLogs}
         fetchLogText={props.fetchLogText}
         fetchExceptionText={props.fetchExceptionText}
+        currentRunPath={props.currentRunPath}
       />
     </>
   );
@@ -40,4 +41,5 @@ export interface StageViewProps {
   tailLogs: boolean;
   scrollToTail: (stepId: string, element: HTMLDivElement) => void;
   stopTailingLogs: () => void;
+  currentRunPath: string;
 }

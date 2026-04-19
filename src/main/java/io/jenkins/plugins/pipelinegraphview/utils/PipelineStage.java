@@ -41,7 +41,7 @@ public class PipelineStage extends AbstractPipelineNode {
         this.synthetic = synthetic;
         this.placeholder = placeholder;
         this.agent = agent;
-        this.url = "/" + runUrl + URL_NAME + "?selected-node=" + id;
+        this.url = "/" + runUrl + URL_NAME + "/?selected-node=" + id;
     }
 
     public static class PipelineStageJsonProcessor extends AbstractPipelineNodeJsonProcessor {

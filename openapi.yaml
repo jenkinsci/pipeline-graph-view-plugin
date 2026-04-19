@@ -612,7 +612,7 @@ components:
               synthetic: false
               placeholder: false
               agent: "linux"
-              url: "/job/my-pipeline/1/stages?selected-node=6"
+              url: "/job/my-pipeline/1/stages/?selected-node=6"
 
     StepListExample:
       summary: Example step list

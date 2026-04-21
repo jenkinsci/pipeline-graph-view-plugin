@@ -60,6 +60,18 @@ public class PipelineNodeTreeScanner {
     }
 
     /**
+     * Alternate constructor that uses a caller-supplied node collection instead of walking
+     * the execution graph with a {@link DepthFirstScanner}. Intended for use by the
+     * live-state path, which has already observed every node via {@code GraphListener}.
+     */
+    public PipelineNodeTreeScanner(@NonNull WorkflowRun run, @NonNull Collection<FlowNode> nodes) {
+        this.run = run;
+        this.execution = run.getExecution();
+        this.declarative = run.getAction(ExecutionModelAction.class) != null;
+        this.buildFrom(nodes);
+    }
+
+    /**
      * Builds the flow node graph.
      */
     public void build() {
@@ -67,28 +79,36 @@ public class PipelineNodeTreeScanner {
             logger.debug("Building graph");
         }
         if (execution != null) {
-            Collection<FlowNode> nodes = getAllNodes();
-            NodeRelationshipFinder finder = new NodeRelationshipFinder();
-            Map<String, NodeRelationship> relationships = finder.getNodeRelationships(nodes);
-            GraphBuilder builder = new GraphBuilder(nodes, relationships, this.run, this.execution);
-            if (isDebugEnabled) {
-                logger.debug("Original nodes:");
-                logger.debug("{}", builder.getNodes());
-            }
-            this.stageNodeMap = builder.getStageMapping();
-            this.stepNodeMap = builder.getStepMapping();
-            List<FlowNodeWrapper> remappedNodes = new ArrayList<>(this.stageNodeMap.values());
-            remappedNodes.addAll(this.stepNodeMap.values());
-            if (isDebugEnabled) {
-                logger.debug("Remapped nodes:");
-                logger.debug("{}", remappedNodes);
-            }
+            buildFrom(getAllNodes());
         } else {
             this.stageNodeMap = new LinkedHashMap<>();
             this.stepNodeMap = new LinkedHashMap<>();
         }
         if (isDebugEnabled) {
             logger.debug("Graph built");
+        }
+    }
+
+    private void buildFrom(Collection<FlowNode> nodes) {
+        if (execution == null || nodes.isEmpty()) {
+            this.stageNodeMap = new LinkedHashMap<>();
+            this.stepNodeMap = new LinkedHashMap<>();
+            return;
+        }
+        NodeRelationshipFinder finder = new NodeRelationshipFinder();
+        Map<String, NodeRelationship> relationships = finder.getNodeRelationships(nodes);
+        GraphBuilder builder = new GraphBuilder(nodes, relationships, this.run, this.execution);
+        if (isDebugEnabled) {
+            logger.debug("Original nodes:");
+            logger.debug("{}", builder.getNodes());
+        }
+        this.stageNodeMap = builder.getStageMapping();
+        this.stepNodeMap = builder.getStepMapping();
+        if (isDebugEnabled) {
+            List<FlowNodeWrapper> remappedNodes = new ArrayList<>(this.stageNodeMap.values());
+            remappedNodes.addAll(this.stepNodeMap.values());
+            logger.debug("Remapped nodes:");
+            logger.debug("{}", remappedNodes);
         }
     }
 

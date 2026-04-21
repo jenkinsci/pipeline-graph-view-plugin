@@ -1,5 +1,8 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphRegistry;
+import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphSnapshot;
+import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -121,6 +124,10 @@ public class PipelineStepApi {
     PipelineStepList computeAllSteps() {
         // Look up the completed state before computing steps.
         boolean runIsComplete = !run.isBuilding();
+        LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
+        if (snapshot != null) {
+            return getAllSteps(new PipelineNodeGraphAdapter(run, snapshot.nodes()), runIsComplete);
+        }
         return getAllSteps(CachedPipelineNodeGraphAdaptor.instance.getFor(run), runIsComplete);
     }
 }

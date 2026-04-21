@@ -2,6 +2,10 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 import static java.util.Collections.emptyList;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphRegistry;
+import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphSnapshot;
+import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
@@ -18,6 +22,14 @@ import org.slf4j.LoggerFactory;
 public class PipelineGraphApi {
     private static final Logger logger = LoggerFactory.getLogger(PipelineGraphApi.class);
     private final transient WorkflowRun run;
+
+    /**
+     * Non-null when the live-state path supplied a pre-collected list of nodes carrying a
+     * {@link WorkspaceAction}. Avoids the per-stage {@code DepthFirstScanner} walk inside
+     * {@link #getStageNode(FlowNodeWrapper)}.
+     */
+    @CheckForNull
+    private transient List<FlowNode> workspaceNodesOverride;
 
     public PipelineGraphApi(WorkflowRun run) {
         this.run = run;
@@ -113,12 +125,13 @@ public class PipelineGraphApi {
         return new PipelineGraph(stageResults, complete);
     }
 
-    private static String getStageNode(FlowNodeWrapper flowNodeWrapper) {
+    private String getStageNode(FlowNodeWrapper flowNodeWrapper) {
         FlowNode flowNode = flowNodeWrapper.getNode();
-        DepthFirstScanner scan = new DepthFirstScanner();
         logger.debug("Checking node {}", flowNode);
         FlowExecution execution = flowNode.getExecution();
-        for (FlowNode n : scan.allNodes(execution)) {
+        Iterable<FlowNode> candidates =
+                workspaceNodesOverride != null ? workspaceNodesOverride : new DepthFirstScanner().allNodes(execution);
+        for (FlowNode n : candidates) {
             WorkspaceAction ws = n.getAction(WorkspaceAction.class);
             if (ws != null) {
                 logger.debug("Found workspace node: {}", n);
@@ -161,6 +174,15 @@ public class PipelineGraphApi {
     }
 
     PipelineGraph computeTree() {
+        LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
+        if (snapshot != null) {
+            try {
+                workspaceNodesOverride = snapshot.workspaceNodes();
+                return createTree(new PipelineNodeGraphAdapter(run, snapshot.nodes()));
+            } finally {
+                workspaceNodesOverride = null;
+            }
+        }
         return createTree(CachedPipelineNodeGraphAdaptor.instance.getFor(run));
     }
 }

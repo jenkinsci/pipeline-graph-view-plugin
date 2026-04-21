@@ -4,11 +4,13 @@ import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphBuilderApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepBuilderApi;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +34,14 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
 
     public PipelineNodeGraphAdapter(WorkflowRun run) {
         treeScanner = new PipelineNodeTreeScanner(run);
+    }
+
+    /**
+     * Builds the adapter over a pre-collected node set rather than walking the execution
+     * graph. Used by the live-state path.
+     */
+    public PipelineNodeGraphAdapter(WorkflowRun run, Collection<FlowNode> preCollectedNodes) {
+        treeScanner = new PipelineNodeTreeScanner(run, preCollectedNodes);
     }
 
     private final Object pipelineLock = new Object();

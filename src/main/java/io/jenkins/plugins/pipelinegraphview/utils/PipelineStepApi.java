@@ -105,13 +105,20 @@ public class PipelineStepApi {
     }
 
     public PipelineStepList getSteps(String stageId) {
-        // Look up the completed state before computing steps.
-        boolean runIsComplete = !run.isBuilding();
-        return getSteps(stageId, CachedPipelineNodeGraphAdaptor.instance.getFor(run), runIsComplete);
+        PipelineStepList all = getAllSteps();
+        List<PipelineStep> filtered =
+                all.steps.stream().filter(s -> stageId.equals(s.stageId)).collect(Collectors.toList());
+        PipelineStepList result = new PipelineStepList(filtered, all.runIsComplete);
+        result.sort();
+        return result;
     }
 
     /* Returns a PipelineStepList, sorted by stageId and Id. */
     public PipelineStepList getAllSteps() {
+        return PipelineGraphViewCache.get().getAllSteps(run, this::computeAllSteps);
+    }
+
+    PipelineStepList computeAllSteps() {
         // Look up the completed state before computing steps.
         boolean runIsComplete = !run.isBuilding();
         return getAllSteps(CachedPipelineNodeGraphAdaptor.instance.getFor(run), runIsComplete);

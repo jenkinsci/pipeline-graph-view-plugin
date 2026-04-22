@@ -157,6 +157,10 @@ public class PipelineGraphApi {
     }
 
     public PipelineGraph createTree() {
+        return PipelineGraphViewCache.get().getGraph(run, this::computeTree);
+    }
+
+    PipelineGraph computeTree() {
         return createTree(CachedPipelineNodeGraphAdaptor.instance.getFor(run));
     }
 }

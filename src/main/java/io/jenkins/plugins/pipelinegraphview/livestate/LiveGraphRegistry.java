@@ -21,8 +21,10 @@ public final class LiveGraphRegistry {
         return INSTANCE;
     }
 
+    private static final int CACHE_MAX_SIZE = SystemProperties.getInteger(LiveGraphRegistry.class.getName() + ".size", 512);
+
     private final Cache<String, LiveGraphState> states = Caffeine.newBuilder()
-            .maximumSize(256)
+            .maximumSize(CACHE_MAX_SIZE)
             .expireAfterAccess(Duration.ofMinutes(30))
             .build();
 

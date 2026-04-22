@@ -92,7 +92,7 @@ public class PipelineGraphApi {
                 stageToChildrenMap.put(stage.getId(), new ArrayList<>());
             } else {
                 List<String> parentChildren =
-                        stageToChildrenMap.getOrDefault(stage.getParents().get(0), new ArrayList<String>());
+                        stageToChildrenMap.getOrDefault(stage.getParents().get(0), new ArrayList<>());
                 parentChildren.add(stage.getId());
                 childNodes.add(stage.getId());
                 stageToChildrenMap.put(stage.getParents().get(0), parentChildren);

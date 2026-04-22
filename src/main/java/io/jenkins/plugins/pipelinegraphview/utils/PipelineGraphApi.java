@@ -23,19 +23,12 @@ public class PipelineGraphApi {
     private static final Logger logger = LoggerFactory.getLogger(PipelineGraphApi.class);
     private final transient WorkflowRun run;
 
-    /**
-     * Non-null when the live-state path supplied a pre-collected list of nodes carrying a
-     * {@link WorkspaceAction}. Avoids the per-stage {@code DepthFirstScanner} walk inside
-     * {@link #getStageNode(FlowNodeWrapper)}.
-     */
-    @CheckForNull
-    private transient List<FlowNode> workspaceNodesOverride;
-
     public PipelineGraphApi(WorkflowRun run) {
         this.run = run;
     }
 
-    private List<PipelineStageInternal> getPipelineNodes(PipelineGraphBuilderApi builder) {
+    private List<PipelineStageInternal> getPipelineNodes(
+            PipelineGraphBuilderApi builder, @CheckForNull List<FlowNode> workspaceNodes) {
         return builder.getPipelineNodes().stream()
                 .map(flowNodeWrapper -> new PipelineStageInternal(
                         flowNodeWrapper.getId(), // TODO no need to parse it BO returns a string even though the
@@ -49,7 +42,7 @@ public class PipelineGraphApi {
                         flowNodeWrapper.getDisplayName(), // TODO blue ocean uses timing information: "Passed in 0s"
                         flowNodeWrapper.isSynthetic(),
                         flowNodeWrapper.getTiming(),
-                        getStageNode(flowNodeWrapper)))
+                        getStageNode(flowNodeWrapper, workspaceNodes)))
                 .collect(Collectors.toList());
     }
 
@@ -64,7 +57,7 @@ public class PipelineGraphApi {
         };
     }
 
-    private PipelineGraph createTree(PipelineGraphBuilderApi builder) {
+    private PipelineGraph createTree(PipelineGraphBuilderApi builder, @CheckForNull List<FlowNode> workspaceNodes) {
         FlowExecution execution = run.getExecution();
         if (execution == null) {
             // If we don't have an execution - e.g. if the Pipeline has a syntax error -
@@ -78,7 +71,7 @@ public class PipelineGraphApi {
         // We want to remap children here, so we don't update the parents of the
         // original objects - as
         // these are completely new representations.
-        List<PipelineStageInternal> stages = getPipelineNodes(builder);
+        List<PipelineStageInternal> stages = getPipelineNodes(builder, workspaceNodes);
 
         // Get InputAction once for all stages
         InputAction inputAction = run.getAction(InputAction.class);
@@ -125,12 +118,14 @@ public class PipelineGraphApi {
         return new PipelineGraph(stageResults, complete);
     }
 
-    private String getStageNode(FlowNodeWrapper flowNodeWrapper) {
+    private static String getStageNode(FlowNodeWrapper flowNodeWrapper, @CheckForNull List<FlowNode> workspaceNodes) {
         FlowNode flowNode = flowNodeWrapper.getNode();
         logger.debug("Checking node {}", flowNode);
         FlowExecution execution = flowNode.getExecution();
+        // When the caller supplies a pre-filtered workspace-node list (the live-state path),
+        // iterate that; otherwise fall back to scanning the whole execution graph.
         Iterable<FlowNode> candidates =
-                workspaceNodesOverride != null ? workspaceNodesOverride : new DepthFirstScanner().allNodes(execution);
+                workspaceNodes != null ? workspaceNodes : new DepthFirstScanner().allNodes(execution);
         for (FlowNode n : candidates) {
             WorkspaceAction ws = n.getAction(WorkspaceAction.class);
             if (ws != null) {
@@ -180,15 +175,11 @@ public class PipelineGraphApi {
             if (cached != null) {
                 return cached;
             }
-            try {
-                workspaceNodesOverride = snapshot.workspaceNodes();
-                PipelineGraph computed = createTree(new PipelineNodeGraphAdapter(run, snapshot.nodes()));
-                LiveGraphRegistry.get().cacheGraph(run, snapshot.version(), computed);
-                return computed;
-            } finally {
-                workspaceNodesOverride = null;
-            }
+            PipelineGraph computed =
+                    createTree(new PipelineNodeGraphAdapter(run, snapshot.nodes()), snapshot.workspaceNodes());
+            LiveGraphRegistry.get().cacheGraph(run, snapshot.version(), computed);
+            return computed;
         }
-        return createTree(CachedPipelineNodeGraphAdaptor.instance.getFor(run));
+        return createTree(CachedPipelineNodeGraphAdaptor.instance.getFor(run), null);
     }
 }

@@ -33,10 +33,16 @@ final class LiveGraphState {
     private long version = 0;
     private volatile boolean poisoned = false;
 
-    // Output cache. Volatile reference to an immutable (version, value) tuple so readers
-    // and writers never see a torn pair.
-    private volatile VersionedCache<PipelineGraph> cachedGraph;
-    private volatile VersionedCache<PipelineStepList> cachedAllSteps;
+    // Memoise the last snapshot. Poll-frequent readers at the same version skip the O(N)
+    // copy and workspace scan under the monitor — important because the writer (addNode)
+    // is the CPS VM thread and must not block for long.
+    private LiveGraphSnapshot lastSnapshot;
+
+    // Output cache. Mutations synchronise on the instance monitor so concurrent writers
+    // cannot regress a newer version with an older one (check-then-set on a volatile
+    // reference alone would be racy).
+    private VersionedCache<PipelineGraph> cachedGraph;
+    private VersionedCache<PipelineStepList> cachedAllSteps;
 
     synchronized void addNode(FlowNode node) {
         if (!seenIds.add(node.getId())) {
@@ -58,6 +64,9 @@ final class LiveGraphState {
         if (poisoned) {
             return null;
         }
+        if (lastSnapshot != null && lastSnapshot.version() == version) {
+            return lastSnapshot;
+        }
         // Filter for WorkspaceAction at snapshot time rather than at addNode time:
         // WorkspaceAction is attached to a block-start node when the workspace is allocated,
         // which can happen AFTER onNewHead has already fired for that node. A snapshot-time
@@ -74,7 +83,8 @@ final class LiveGraphState {
                 workspaceNodes.add(n);
             }
         }
-        return new LiveGraphSnapshot(List.copyOf(nodes), List.copyOf(workspaceNodes), version);
+        lastSnapshot = new LiveGraphSnapshot(List.copyOf(nodes), List.copyOf(workspaceNodes), version);
+        return lastSnapshot;
     }
 
     /**
@@ -82,26 +92,22 @@ final class LiveGraphState {
      * a newer cache than requested is intentional — the caller's snapshot can only become
      * staler, so a newer output is strictly more accurate.
      */
-    PipelineGraph cachedGraph(long minVersion) {
-        VersionedCache<PipelineGraph> cached = cachedGraph;
-        return (cached != null && cached.version >= minVersion) ? cached.value : null;
+    synchronized PipelineGraph cachedGraph(long minVersion) {
+        return (cachedGraph != null && cachedGraph.version >= minVersion) ? cachedGraph.value : null;
     }
 
-    void cacheGraph(long version, PipelineGraph graph) {
-        VersionedCache<PipelineGraph> current = cachedGraph;
-        if (current == null || current.version < version) {
+    synchronized void cacheGraph(long version, PipelineGraph graph) {
+        if (cachedGraph == null || cachedGraph.version < version) {
             cachedGraph = new VersionedCache<>(version, graph);
         }
     }
 
-    PipelineStepList cachedAllSteps(long minVersion) {
-        VersionedCache<PipelineStepList> cached = cachedAllSteps;
-        return (cached != null && cached.version >= minVersion) ? cached.value : null;
+    synchronized PipelineStepList cachedAllSteps(long minVersion) {
+        return (cachedAllSteps != null && cachedAllSteps.version >= minVersion) ? cachedAllSteps.value : null;
     }
 
-    void cacheAllSteps(long version, PipelineStepList steps) {
-        VersionedCache<PipelineStepList> current = cachedAllSteps;
-        if (current == null || current.version < version) {
+    synchronized void cacheAllSteps(long version, PipelineStepList steps) {
+        if (cachedAllSteps == null || cachedAllSteps.version < version) {
             cachedAllSteps = new VersionedCache<>(version, steps);
         }
     }

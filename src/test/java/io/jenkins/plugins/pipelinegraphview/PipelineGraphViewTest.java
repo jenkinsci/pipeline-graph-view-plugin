@@ -15,14 +15,10 @@ import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.test.steps.SemaphoreStep;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @WithJenkinsConfiguredWithCode
 @UsePlaywright(PlaywrightConfig.class)
 class PipelineGraphViewTest {
-    private static final Logger log = LoggerFactory.getLogger(PipelineGraphViewTest.class);
-
     // Code generation can be generated against local using to give an idea of what commands to use
     // mvn exec:java -e -D exec.mainClass="com.microsoft.playwright.CLI" -Dexec.classpathScope=test -Dexec.args="codegen
     // http://localhost:8080/jenkins
@@ -168,7 +164,7 @@ class PipelineGraphViewTest {
     @Test
     @ConfiguredWithCode("configure-appearance.yml")
     void errorWithMessage(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
-        String name = "gh1169";
+        String name = "gh1169_errorWithMessage";
         WorkflowRun run = TestUtils.createAndRunJob(j, name, "gh1169_errorWithMessage.jenkinsfile", Result.FAILURE);
 
         // Note that the locator used in stageHasSteps accumulates the error step's message text content into the found

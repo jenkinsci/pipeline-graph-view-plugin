@@ -44,9 +44,6 @@ public class PipelineGraphViewCache {
             return compute.get();
         }
         CachedPayload payload = load(run);
-        if (payload.graph != null) {
-            return payload.graph;
-        }
         synchronized (payload) {
             if (payload.graph == null) {
                 payload.graph = compute.get();
@@ -62,9 +59,6 @@ public class PipelineGraphViewCache {
             return compute.get();
         }
         CachedPayload payload = load(run);
-        if (payload.allSteps != null) {
-            return payload.allSteps;
-        }
         synchronized (payload) {
             if (payload.allSteps == null) {
                 payload.allSteps = compute.get();

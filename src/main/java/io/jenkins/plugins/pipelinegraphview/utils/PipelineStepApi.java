@@ -126,7 +126,13 @@ public class PipelineStepApi {
         boolean runIsComplete = !run.isBuilding();
         LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
         if (snapshot != null) {
-            return getAllSteps(new PipelineNodeGraphAdapter(run, snapshot.nodes()), runIsComplete);
+            PipelineStepList cached = LiveGraphRegistry.get().cachedAllSteps(run, snapshot.version());
+            if (cached != null) {
+                return cached;
+            }
+            PipelineStepList computed = getAllSteps(new PipelineNodeGraphAdapter(run, snapshot.nodes()), runIsComplete);
+            LiveGraphRegistry.get().cacheAllSteps(run, snapshot.version(), computed);
+            return computed;
         }
         return getAllSteps(CachedPipelineNodeGraphAdaptor.instance.getFor(run), runIsComplete);
     }

@@ -2,6 +2,8 @@ package io.jenkins.plugins.pipelinegraphview.livestate;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import java.time.Duration;
 import jenkins.util.SystemProperties;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
@@ -52,7 +54,7 @@ public final class LiveGraphRegistry {
         if (key == null) {
             return null;
         }
-        return states.get(key, LiveGraphState::new);
+        return states.get(key, k -> new LiveGraphState());
     }
 
     /**
@@ -72,6 +74,48 @@ public final class LiveGraphRegistry {
         String key = keyFor(execution);
         if (key != null) {
             states.invalidate(key);
+        }
+    }
+
+    /**
+     * Returns a previously-cached {@link PipelineGraph} for this run if it was computed at
+     * or after {@code minVersion}, otherwise {@code null}. Use {@link LiveGraphSnapshot#version()}
+     * as the argument — cache entries older than the caller's snapshot are rejected.
+     */
+    public PipelineGraph cachedGraph(WorkflowRun run, long minVersion) {
+        if (disabled()) {
+            return null;
+        }
+        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        return state == null ? null : state.cachedGraph(minVersion);
+    }
+
+    /** Stores a {@link PipelineGraph} computed from a snapshot at {@code version}. */
+    public void cacheGraph(WorkflowRun run, long version, PipelineGraph graph) {
+        if (disabled()) {
+            return;
+        }
+        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        if (state != null) {
+            state.cacheGraph(version, graph);
+        }
+    }
+
+    public PipelineStepList cachedAllSteps(WorkflowRun run, long minVersion) {
+        if (disabled()) {
+            return null;
+        }
+        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        return state == null ? null : state.cachedAllSteps(minVersion);
+    }
+
+    public void cacheAllSteps(WorkflowRun run, long version, PipelineStepList steps) {
+        if (disabled()) {
+            return;
+        }
+        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        if (state != null) {
+            state.cacheAllSteps(version, steps);
         }
     }
 

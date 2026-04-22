@@ -176,9 +176,15 @@ public class PipelineGraphApi {
     PipelineGraph computeTree() {
         LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
         if (snapshot != null) {
+            PipelineGraph cached = LiveGraphRegistry.get().cachedGraph(run, snapshot.version());
+            if (cached != null) {
+                return cached;
+            }
             try {
                 workspaceNodesOverride = snapshot.workspaceNodes();
-                return createTree(new PipelineNodeGraphAdapter(run, snapshot.nodes()));
+                PipelineGraph computed = createTree(new PipelineNodeGraphAdapter(run, snapshot.nodes()));
+                LiveGraphRegistry.get().cacheGraph(run, snapshot.version(), computed);
+                return computed;
             } finally {
                 workspaceNodesOverride = null;
             }

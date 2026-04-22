@@ -121,7 +121,7 @@ public class PipelineStepApi {
         return PipelineGraphViewCache.get().getAllSteps(run, this::computeAllSteps);
     }
 
-    PipelineStepList computeAllSteps() {
+    public PipelineStepList computeAllSteps() {
         // Look up the completed state before computing steps.
         boolean runIsComplete = !run.isBuilding();
         LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);

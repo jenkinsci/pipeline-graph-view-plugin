@@ -16,8 +16,11 @@ import org.jenkinsci.plugins.workflow.graph.FlowNode;
  *
  * <p>Two things live here:
  * <ul>
- *   <li>The raw {@link FlowNode} list (plus the {@link WorkspaceAction}-carrying subset)
- *       that the downstream relationship-finder / graph-builder path consumes.</li>
+ *   <li>The raw {@link FlowNode} list that the downstream relationship-finder /
+ *       graph-builder path consumes. The {@link WorkspaceAction}-carrying subset used by
+ *       agent detection is derived at snapshot time by iterating this list, not at
+ *       add-time — {@code WorkspaceAction} can be attached to a node after {@code onNewHead}
+ *       fires.</li>
  *   <li>A small cache of the last-computed {@link PipelineGraph} / {@link PipelineStepList}
  *       keyed by a monotonic version counter that bumps on every {@link #addNode}. HTTP
  *       polls that hit between node arrivals return the cached DTO verbatim — no rebuild.</li>
@@ -27,7 +30,6 @@ final class LiveGraphState {
 
     private final List<FlowNode> nodes = new ArrayList<>();
     private final Set<String> seenIds = new HashSet<>();
-    private final List<FlowNode> workspaceNodes = new ArrayList<>();
     private long version = 0;
     private volatile boolean poisoned = false;
 
@@ -41,9 +43,6 @@ final class LiveGraphState {
             return;
         }
         nodes.add(node);
-        if (node.getAction(WorkspaceAction.class) != null) {
-            workspaceNodes.add(node);
-        }
         version++;
     }
 
@@ -58,6 +57,16 @@ final class LiveGraphState {
     synchronized LiveGraphSnapshot snapshot() {
         if (poisoned) {
             return null;
+        }
+        // Filter for WorkspaceAction at snapshot time rather than at addNode time:
+        // WorkspaceAction is attached to a block-start node when the workspace is allocated,
+        // which can happen AFTER onNewHead has already fired for that node. A snapshot-time
+        // scan always observes the latest action state on each captured FlowNode.
+        List<FlowNode> workspaceNodes = new ArrayList<>();
+        for (FlowNode n : nodes) {
+            if (n.getAction(WorkspaceAction.class) != null) {
+                workspaceNodes.add(n);
+            }
         }
         return new LiveGraphSnapshot(List.copyOf(nodes), List.copyOf(workspaceNodes), version);
     }

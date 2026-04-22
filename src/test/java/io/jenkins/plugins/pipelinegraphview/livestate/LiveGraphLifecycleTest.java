@@ -14,6 +14,7 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
+import java.io.File;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -64,12 +65,15 @@ class LiveGraphLifecycleTest {
         }
         j.assertBuildStatus(Result.SUCCESS, run);
 
-        // onCompleted evicts the live state; subsequent reads fall through to the scanner
-        // path (which, combined with the #885 disk cache, handles completed runs).
+        // onCompleted evicts the live state; subsequent reads fall through to the disk cache
+        // that onCompleted seeded (so the first post-completion request doesn't re-scan).
         assertThat(
                 "live snapshot is evicted once the run completes",
                 LiveGraphRegistry.get().snapshot(run),
                 is(nullValue()));
+        File cacheFile = new File(run.getRootDir(), "pipeline-graph-view-cache.xml");
+        assertThat("disk cache file was written at completion", cacheFile.exists(), is(true));
+        assertThat("disk cache file is non-empty", cacheFile.length(), is(greaterThan(0L)));
     }
 
     @Test

@@ -173,7 +173,7 @@ public class PipelineGraphApi {
         return PipelineGraphViewCache.get().getGraph(run, this::computeTree);
     }
 
-    PipelineGraph computeTree() {
+    public PipelineGraph computeTree() {
         LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
         if (snapshot != null) {
             PipelineGraph cached = LiveGraphRegistry.get().cachedGraph(run, snapshot.version());

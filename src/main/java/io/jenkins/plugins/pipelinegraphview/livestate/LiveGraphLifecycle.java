@@ -23,7 +23,7 @@ public class LiveGraphLifecycle extends FlowExecutionListener {
         try {
             LiveGraphRegistry.get().getOrCreate(execution);
         } catch (Throwable t) {
-            logger.warn("pipeline-graph-view live state onRunning failed", t);
+            logger.warn("onRunning failed", t);
         }
     }
 
@@ -35,7 +35,7 @@ public class LiveGraphLifecycle extends FlowExecutionListener {
                 LiveGraphPopulator.catchUp(execution, state);
             }
         } catch (Throwable t) {
-            logger.warn("pipeline-graph-view live state onResumed failed", t);
+            logger.warn("onResumed failed", t);
         }
     }
 
@@ -44,7 +44,7 @@ public class LiveGraphLifecycle extends FlowExecutionListener {
         try {
             LiveGraphRegistry.get().remove(execution);
         } catch (Throwable t) {
-            logger.warn("pipeline-graph-view live state onCompleted failed", t);
+            logger.warn("onCompleted failed", t);
         }
     }
 }

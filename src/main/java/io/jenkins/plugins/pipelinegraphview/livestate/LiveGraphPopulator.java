@@ -47,7 +47,7 @@ public class LiveGraphPopulator implements GraphListener.Synchronous {
             // A thrown exception here propagates into the CPS VM and can abort the build.
             // Poison the state so subsequent reads fall back to the scanner; log the failure
             // but never rethrow.
-            logger.warn("pipeline-graph-view live state failed; falling back to scanner", t);
+            logger.warn("live state failed; falling back to scanner", t);
             if (state != null) {
                 state.poison();
             }
@@ -62,7 +62,7 @@ public class LiveGraphPopulator implements GraphListener.Synchronous {
                 state.addNode(existing);
             }
         } catch (Throwable t) {
-            logger.warn("pipeline-graph-view live state catch-up failed; poisoning", t);
+            logger.warn("catch-up failed; poisoning state", t);
             state.poison();
         }
     }

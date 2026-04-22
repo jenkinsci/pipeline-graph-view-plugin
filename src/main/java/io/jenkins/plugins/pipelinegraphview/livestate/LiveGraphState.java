@@ -62,8 +62,14 @@ final class LiveGraphState {
         // WorkspaceAction is attached to a block-start node when the workspace is allocated,
         // which can happen AFTER onNewHead has already fired for that node. A snapshot-time
         // scan always observes the latest action state on each captured FlowNode.
+        //
+        // The list is built newest-first (reverse insertion order) to match the iteration
+        // order of DepthFirstScanner (from current heads backward): PipelineGraphApi#getStageNode
+        // returns on the first match, and for nested agents the innermost workspace is the
+        // more-specific match — the one a later-created inner `node {}` block sits in.
         List<FlowNode> workspaceNodes = new ArrayList<>();
-        for (FlowNode n : nodes) {
+        for (int i = nodes.size() - 1; i >= 0; i--) {
+            FlowNode n = nodes.get(i);
             if (n.getAction(WorkspaceAction.class) != null) {
                 workspaceNodes.add(n);
             }

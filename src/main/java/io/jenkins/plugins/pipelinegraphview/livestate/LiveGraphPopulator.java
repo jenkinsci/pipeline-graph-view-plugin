@@ -20,6 +20,13 @@ import org.slf4j.LoggerFactory;
  * The work done under the monitor is trivial ({@code ArrayList}/{@code HashSet} additions),
  * so the CPS VM thread is not meaningfully blocked. Every code path is still wrapped in
  * try/catch and poisons the state on failure so a bug here can never disrupt a build.
+ *
+ * <p>The javadoc also forbids blocking work here, which rules out any {@code DepthFirstScanner}
+ * catch-up walk inside this method. {@link LiveGraphState} starts unready and is only
+ * marked ready by {@link LiveGraphLifecycle} (on an event thread, not the CPS VM). If
+ * {@code onNewHead} fires for an execution the lifecycle never saw (e.g. plugin installed
+ * mid-build), the state stays unready, {@code snapshot()} keeps returning {@code null},
+ * and HTTP readers fall back to the scanner for the remainder of that run.
  */
 @Extension
 public class LiveGraphPopulator implements GraphListener.Synchronous {
@@ -35,13 +42,6 @@ public class LiveGraphPopulator implements GraphListener.Synchronous {
             if (state == null) {
                 return; // feature disabled or execution not a WorkflowRun
             }
-            // Lazy initial catch-up: if the listener is seeing nodes for an execution it's
-            // never observed (plugin upgrade mid-build, Jenkins resume without onResumed
-            // firing first), the early history is already in the FlowExecution's storage.
-            // Backfill it once before processing this event.
-            if (state.size() == 0 && !state.hasSeen(node.getId())) {
-                catchUp(execution, state);
-            }
             state.addNode(node);
         } catch (Throwable t) {
             // A thrown exception here propagates into the CPS VM and can abort the build.
@@ -54,6 +54,11 @@ public class LiveGraphPopulator implements GraphListener.Synchronous {
         }
     }
 
+    /**
+     * Backfills the live state from the execution's persisted graph. Called only from
+     * {@link LiveGraphLifecycle#onResumed}, which runs on a Jenkins event thread — never
+     * from a {@link GraphListener.Synchronous} path on the CPS VM.
+     */
     static void catchUp(FlowExecution execution, LiveGraphState state) {
         try {
             DepthFirstScanner scanner = new DepthFirstScanner();

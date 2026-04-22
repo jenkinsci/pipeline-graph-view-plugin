@@ -27,7 +27,12 @@ public class LiveGraphLifecycle extends FlowExecutionListener {
     @Override
     public void onRunning(@NonNull FlowExecution execution) {
         try {
-            LiveGraphRegistry.get().getOrCreate(execution);
+            // Fresh execution — no history to catch up, so mark ready immediately. The
+            // listener will populate nodes as they arrive via onNewHead.
+            LiveGraphState state = LiveGraphRegistry.get().getOrCreate(execution);
+            if (state != null) {
+                state.markReady();
+            }
         } catch (Throwable t) {
             logger.warn("onRunning failed", t);
         }
@@ -36,9 +41,14 @@ public class LiveGraphLifecycle extends FlowExecutionListener {
     @Override
     public void onResumed(@NonNull FlowExecution execution) {
         try {
+            // Resume after a Jenkins restart. The execution's persisted graph may contain
+            // nodes from before the restart that our in-memory state doesn't know about,
+            // so catch up here (safe — this runs on a Jenkins event thread, not the CPS VM)
+            // before flipping the state to ready.
             LiveGraphState state = LiveGraphRegistry.get().getOrCreate(execution);
             if (state != null) {
                 LiveGraphPopulator.catchUp(execution, state);
+                state.markReady();
             }
         } catch (Throwable t) {
             logger.warn("onResumed failed", t);

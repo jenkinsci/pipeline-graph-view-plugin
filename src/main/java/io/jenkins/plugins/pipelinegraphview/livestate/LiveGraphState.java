@@ -33,6 +33,13 @@ final class LiveGraphState {
     private long version = 0;
     private volatile boolean poisoned = false;
 
+    // Starts unready. Lifecycle callbacks ({@link LiveGraphLifecycle}) run on Jenkins event
+    // threads and flip this on after they've done any needed catch-up. If lifecycle never
+    // fires for an execution (plugin installed while the build was running), the state stays
+    // unready and HTTP readers fall back to the scanner path — we can't safely backfill from
+    // the CPS VM thread inside {@code onNewHead}.
+    private boolean ready = false;
+
     // Memoise the last snapshot. Poll-frequent readers at the same version skip the O(N)
     // copy and workspace scan under the monitor — important because the writer (addNode)
     // is the CPS VM thread and must not block for long.
@@ -61,7 +68,7 @@ final class LiveGraphState {
     }
 
     synchronized LiveGraphSnapshot snapshot() {
-        if (poisoned) {
+        if (poisoned || !ready) {
             return null;
         }
         if (lastSnapshot != null && lastSnapshot.version() == version) {
@@ -114,6 +121,10 @@ final class LiveGraphState {
 
     void poison() {
         poisoned = true;
+    }
+
+    synchronized void markReady() {
+        ready = true;
     }
 
     private record VersionedCache<T>(long version, T value) {}

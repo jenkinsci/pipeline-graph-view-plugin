@@ -91,7 +91,7 @@ public class FlowNodeWrapper {
     private final WorkflowRun run;
     private String causeOfFailure;
 
-    private List<FlowNodeWrapper> parents = new ArrayList<>();
+    private final List<FlowNodeWrapper> parents = new ArrayList<>();
 
     private ErrorAction blockErrorAction;
     private Collection<Action> pipelineActions;
@@ -439,32 +439,13 @@ public class FlowNodeWrapper {
         }
     }
 
-    public static class FlowNodeComparator implements Comparator<FlowNode>, Serializable {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public int compare(FlowNode a, FlowNode b) {
-            return FlowNodeWrapper.compareIds(a.getId(), b.getId());
-        }
-    }
-
-    public static class NodeIdComparator implements Comparator<String>, Serializable {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public int compare(String a, String b) {
-            return FlowNodeWrapper.compareIds(a, b);
-        }
-    }
-
     public static int compareIds(String ida, String idb) {
         return Integer.compare(Integer.parseInt(ida), Integer.parseInt(idb));
     }
 
     /**
      * Sorts {@code nodes} by the integer value of their {@link FlowNode#getId()}. Parses each
-     * ID exactly once via decorate-sort-undecorate; {@link FlowNodeComparator} would reparse
-     * each ID on every comparison, which at 300k nodes dominates {@code /allSteps}.
+     * ID exactly once via decorate-sort-undecorate.
      */
     public static List<FlowNode> sortByFlowNodeId(Collection<FlowNode> nodes, boolean descending) {
         List<KeyedFlowNode> decorated = new ArrayList<>(nodes.size());

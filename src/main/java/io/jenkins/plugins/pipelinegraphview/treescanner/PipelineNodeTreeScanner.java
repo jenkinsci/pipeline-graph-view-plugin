@@ -260,9 +260,7 @@ public class PipelineNodeTreeScanner {
                         .filter(e -> isStartNode(e.getValue()))
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             }
-            // Remap operates on each entry independently — the result doesn't depend on
-            // iteration order, so we skip the O(N log N) sort.
-            for (FlowNodeWrapper stage : new ArrayList<>(stageMap.values())) {
+            for (FlowNodeWrapper stage : stageMap.values()) {
                 FlowNodeWrapper firstParent = stage.getFirstParent();
                 // Remap parentage of stages that aren't children of stages (e.g. allocate node
                 // step).
@@ -346,9 +344,7 @@ public class PipelineNodeTreeScanner {
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
             Map<String, FlowNodeWrapper> stageMap = this.getStageMapping();
-            // Same story as getStageMapping — no cross-iteration dependency, so sorting the
-            // ~300k-entry step map was pure overhead.
-            for (FlowNodeWrapper step : new ArrayList<>(stepMap.values())) {
+            for (FlowNodeWrapper step : stepMap.values()) {
                 FlowNodeWrapper firstParent = step.getFirstParent();
                 // Remap parentage of steps that aren't children of stages (e.g. are in Step
                 // Block).

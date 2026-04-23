@@ -52,7 +52,7 @@ measure() {
     local endpoint="$1"
     local url="$BASE/$endpoint"
     local out
-    out=$(curl -so /dev/null -w '%{http_code},%{time_total},%{size_download}' \
+    out=$(curl -so /dev/null --compressed -w '%{http_code},%{time_total},%{size_download}' \
           "${AUTH[@]}" "$url" 2>/dev/null || echo "000,0,0")
     local http_code="${out%%,*}"
     local rest="${out#*,}"

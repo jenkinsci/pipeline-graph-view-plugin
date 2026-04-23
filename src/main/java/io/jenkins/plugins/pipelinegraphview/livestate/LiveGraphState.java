@@ -126,8 +126,7 @@ final class LiveGraphState {
         }
         // Concurrent maps/sets are published by reference — consumers must treat them as
         // read-only (see {@link LiveGraphSnapshot}).
-        return new LiveGraphSnapshot(
-                nodesCopy, workspaceNodes, enclosingIdsByNodeId, hideFromViewBlockStartIds, v);
+        return new LiveGraphSnapshot(nodesCopy, workspaceNodes, enclosingIdsByNodeId, hideFromViewBlockStartIds, v);
     }
 
     /**

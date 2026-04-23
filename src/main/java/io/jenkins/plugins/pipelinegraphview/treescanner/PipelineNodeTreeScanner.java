@@ -103,16 +103,13 @@ public class PipelineNodeTreeScanner {
         Map<String, NodeRelationship> relationships = finder.getNodeRelationships(nodes);
         GraphBuilder builder = new GraphBuilder(nodes, relationships, this.run, this.execution, enclosingIdsByNodeId);
         if (isDebugEnabled) {
-            logger.debug("Original nodes:");
-            logger.debug("{}", builder.getNodes());
+            logger.debug("Original nodes: count={}", builder.getNodes().size());
         }
         this.stageNodeMap = builder.getStageMapping();
         this.stepNodeMap = builder.getStepMapping();
         if (isDebugEnabled) {
-            List<FlowNodeWrapper> remappedNodes = new ArrayList<>(this.stageNodeMap.values());
-            remappedNodes.addAll(this.stepNodeMap.values());
-            logger.debug("Remapped nodes:");
-            logger.debug("{}", remappedNodes);
+            logger.debug(
+                    "Remapped nodes: stages={}, steps={}", this.stageNodeMap.size(), this.stepNodeMap.size());
         }
     }
 
@@ -503,9 +500,6 @@ public class PipelineNodeTreeScanner {
             }
             Set<String> knownNodes = wrappedNodeMap.keySet();
             for (String possibleParentId : enclosingIds) {
-                if (isDebugEnabled) {
-                    logger.debug("Checking if {} in {}", possibleParentId, String.join(", ", knownNodes));
-                }
                 if (knownNodes.contains(possibleParentId)) {
                     return wrappedNodeMap.get(possibleParentId);
                 }

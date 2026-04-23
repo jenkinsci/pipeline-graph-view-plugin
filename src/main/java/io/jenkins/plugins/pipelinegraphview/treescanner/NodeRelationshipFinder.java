@@ -131,13 +131,7 @@ public class NodeRelationshipFinder {
             String grandparentId = secondEnclosingIdOf(node);
             ArrayDeque<FlowNode> parentsLaterSiblings = getProcessedChildren(grandparentId);
             after = parentsLaterSiblings.isEmpty() ? null : parentsLaterSiblings.peek();
-            if (isDebugEnabled) {
-                logger.debug(parentsLaterSiblings.toString());
-            }
         } else {
-            if (isDebugEnabled) {
-                logger.debug(laterSiblings.toString());
-            }
             after = laterSiblings.peek();
         }
         return after;

@@ -180,10 +180,10 @@
         <executions>
           <execution>
             <id>install-playwright-chromium</id>
-            <phase>generate-test-resources</phase>
             <goals>
               <goal>java</goal>
             </goals>
+            <phase>generate-test-resources</phase>
             <configuration>
               <mainClass>com.microsoft.playwright.CLI</mainClass>
               <classpathScope>test</classpathScope>

@@ -23,6 +23,7 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStep;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepListJsonWriter;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -108,12 +109,10 @@ public class PipelineConsoleViewAction extends Tab {
     public void getAllSteps(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         run.checkPermission(Item.READ);
         PipelineStepList steps = stepApi.getAllSteps();
-        JSONObject json = JSONObject.fromObject(steps, jsonConfig);
-        HttpResponse response = HttpResponses.okJSON(json);
-
         rsp.setStatus(200);
+        rsp.setContentType("application/json;charset=UTF-8");
         setCache(rsp, steps.runIsComplete);
-        response.generateResponse(req, rsp, null);
+        PipelineStepListJsonWriter.write(steps, rsp.getOutputStream());
     }
 
     private void setCache(StaplerResponse2 rsp, boolean complete) {

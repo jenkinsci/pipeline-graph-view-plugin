@@ -7,7 +7,7 @@ import net.sf.json.JsonConfig;
 
 public class PipelineStep extends AbstractPipelineNode {
     final String stageId;
-    private final PipelineInputStep inputStep;
+    final PipelineInputStep inputStep;
     private final Map<String, Object> flags;
 
     public PipelineStep(

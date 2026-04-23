@@ -42,7 +42,19 @@ public class NodeRelationshipFinder {
 
     private LinkedHashMap<String, NodeRelationship> relationships = new LinkedHashMap<>();
 
-    public NodeRelationshipFinder() {}
+    // Pre-computed ancestry (node id → enclosing ids, innermost first). When present, this
+    // class never calls FlowNode#getEnclosingId / #getEnclosingBlocks, both of which hit the
+    // execution's storage read lock and contend with the running build's writes.
+    @CheckForNull
+    private final Map<String, List<String>> enclosingIdsByNodeId;
+
+    public NodeRelationshipFinder() {
+        this(null);
+    }
+
+    public NodeRelationshipFinder(@CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
+        this.enclosingIdsByNodeId = enclosingIdsByNodeId;
+    }
 
     /**
      * Determines the relationship between FlowNodes {@link FlowNode#getParents()}.
@@ -96,7 +108,7 @@ public class NodeRelationshipFinder {
     }
 
     private void addSeenNodes(FlowNode node) {
-        String enclosingId = node.getEnclosingId();
+        String enclosingId = firstEnclosingIdOf(node);
         if (!seenChildNodes.containsKey(enclosingId)) {
             seenChildNodes.put(enclosingId, new ArrayDeque<>());
         }
@@ -111,33 +123,42 @@ public class NodeRelationshipFinder {
         FlowNode after;
         // The after node is the last child of the enclosing node, except for the last node in
         // a block, then it's the last node in the enclosing nodes list (likely, this blocks end node).
-        FlowNode parentStartNode = getFirstEnclosingNode(node);
-        ArrayDeque<FlowNode> laterSiblings = getProcessedChildren(parentStartNode);
-        if (parentStartNode != null && laterSiblings.isEmpty()) {
-            // If there are no later siblings, get the parents later sibling.
-            ArrayDeque<FlowNode> parentsLaterSiblings = getProcessedChildren(getFirstEnclosingNode(parentStartNode));
+        String parentStartId = firstEnclosingIdOf(node);
+        ArrayDeque<FlowNode> laterSiblings = getProcessedChildren(parentStartId);
+        if (parentStartId != null && laterSiblings.isEmpty()) {
+            // If there are no later siblings, get the parent's later siblings via the
+            // grandparent id.
+            String grandparentId = secondEnclosingIdOf(node);
+            ArrayDeque<FlowNode> parentsLaterSiblings = getProcessedChildren(grandparentId);
             after = parentsLaterSiblings.isEmpty() ? null : parentsLaterSiblings.peek();
-            if (isDebugEnabled) {
-                logger.debug(parentsLaterSiblings.toString());
-            }
         } else {
-            if (isDebugEnabled) {
-                logger.debug(laterSiblings.toString());
-            }
             after = laterSiblings.peek();
         }
         return after;
     }
 
     @CheckForNull
-    private BlockStartNode getFirstEnclosingNode(FlowNode node) {
-        List<? extends BlockStartNode> enclosingBlocks = node.getEnclosingBlocks();
-        return enclosingBlocks.isEmpty() ? null : enclosingBlocks.get(0);
+    private String firstEnclosingIdOf(FlowNode node) {
+        if (enclosingIdsByNodeId != null) {
+            List<String> ids = enclosingIdsByNodeId.get(node.getId());
+            return (ids != null && !ids.isEmpty()) ? ids.get(0) : null;
+        }
+        return node.getEnclosingId();
     }
 
-    private ArrayDeque<FlowNode> getProcessedChildren(@CheckForNull FlowNode node) {
-        if (node != null && seenChildNodes.containsKey(node.getId())) {
-            return seenChildNodes.get(node.getId());
+    @CheckForNull
+    private String secondEnclosingIdOf(FlowNode node) {
+        if (enclosingIdsByNodeId != null) {
+            List<String> ids = enclosingIdsByNodeId.get(node.getId());
+            return (ids != null && ids.size() >= 2) ? ids.get(1) : null;
+        }
+        List<? extends BlockStartNode> enclosingBlocks = node.getEnclosingBlocks();
+        return enclosingBlocks.size() >= 2 ? enclosingBlocks.get(1).getId() : null;
+    }
+
+    private ArrayDeque<FlowNode> getProcessedChildren(@CheckForNull String nodeId) {
+        if (nodeId != null && seenChildNodes.containsKey(nodeId)) {
+            return seenChildNodes.get(nodeId);
         }
         return new ArrayDeque<>();
     }

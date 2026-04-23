@@ -44,7 +44,11 @@ class PipelineGraphViewCacheTest {
     void coldCache_computesAndWritesFile() throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(j, "cold", "smokeTest.jenkinsfile", Result.FAILURE);
         File cacheFile = new File(run.getRootDir(), CACHE_FILE_NAME);
-        assertThat("no cache file before first call", cacheFile.exists(), is(false));
+        // LiveGraphLifecycle#onCompleted now seeds the on-disk cache at build completion,
+        // so the file usually exists by this point. Delete it to exercise the cold-cache
+        // path of getGraph without changing the rest of the test's intent.
+        Files.deleteIfExists(cacheFile.toPath());
+        cache.invalidateMemory();
 
         AtomicInteger computes = new AtomicInteger();
         PipelineGraph graph = cache.getGraph(run, () -> {

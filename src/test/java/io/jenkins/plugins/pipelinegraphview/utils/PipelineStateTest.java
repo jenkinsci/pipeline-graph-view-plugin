@@ -3,10 +3,6 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.stream.Stream;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -53,12 +49,6 @@ class PipelineStateTest {
                 Arguments.arguments(BlueRun.BlueRunState.NOT_BUILT, PipelineState.NOT_BUILT));
     }
 
-    private static final JsonConfig CONFIG = new JsonConfig();
-
-    static {
-        PipelineState.PipelineStateJsonProcessor.configure(CONFIG);
-    }
-
     @ParameterizedTest
     @CsvSource({
         "QUEUED, queued",
@@ -73,32 +63,7 @@ class PipelineStateTest {
         "UNKNOWN, unknown",
         "ABORTED, aborted"
     })
-    void objectSerialization(String input, String expected) {
-        PipelineState status = PipelineState.valueOf(input);
-
-        String serialized = JSONObject.fromObject(new TestBean(status), CONFIG).toString();
-
-        assertEquals("{\"state\":\"%s\"}".formatted(expected), serialized);
-    }
-
-    @Test
-    void arrayValueSerialization() {
-        PipelineState[] states = {PipelineState.RUNNING, PipelineState.SUCCESS};
-
-        String serialized = JSONArray.fromObject(states, CONFIG).toString();
-
-        assertEquals("[\"running\",\"success\"]", serialized);
-    }
-
-    public static class TestBean {
-        private final PipelineState state;
-
-        public TestBean(PipelineState state) {
-            this.state = state;
-        }
-
-        public PipelineState getState() {
-            return state;
-        }
+    void toStringReturnsLowercaseName(String input, String expected) {
+        assertEquals(expected, PipelineState.valueOf(input).toString());
     }
 }

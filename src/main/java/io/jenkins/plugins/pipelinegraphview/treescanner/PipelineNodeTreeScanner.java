@@ -9,6 +9,7 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,6 +61,22 @@ public class PipelineNodeTreeScanner {
     }
 
     /**
+     * Builds from a caller-supplied node collection, skipping the {@link DepthFirstScanner}
+     * walk. The caller is responsible for having observed every node already. Pass
+     * {@code enclosingIdsByNodeId} to skip the storage read lock during ancestry resolution
+     * (the live-state path captures this on the CPS VM thread).
+     */
+    public PipelineNodeTreeScanner(
+            @NonNull WorkflowRun run,
+            @NonNull Collection<FlowNode> nodes,
+            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
+        this.run = run;
+        this.execution = run.getExecution();
+        this.declarative = run.getAction(ExecutionModelAction.class) != null;
+        this.buildFrom(nodes, enclosingIdsByNodeId);
+    }
+
+    /**
      * Builds the flow node graph.
      */
     public void build() {
@@ -67,28 +84,32 @@ public class PipelineNodeTreeScanner {
             logger.debug("Building graph");
         }
         if (execution != null) {
-            Collection<FlowNode> nodes = getAllNodes();
-            NodeRelationshipFinder finder = new NodeRelationshipFinder();
-            Map<String, NodeRelationship> relationships = finder.getNodeRelationships(nodes);
-            GraphBuilder builder = new GraphBuilder(nodes, relationships, this.run, this.execution);
-            if (isDebugEnabled) {
-                logger.debug("Original nodes:");
-                logger.debug("{}", builder.getNodes());
-            }
-            this.stageNodeMap = builder.getStageMapping();
-            this.stepNodeMap = builder.getStepMapping();
-            List<FlowNodeWrapper> remappedNodes = new ArrayList<>(this.stageNodeMap.values());
-            remappedNodes.addAll(this.stepNodeMap.values());
-            if (isDebugEnabled) {
-                logger.debug("Remapped nodes:");
-                logger.debug("{}", remappedNodes);
-            }
+            buildFrom(getAllNodes(), null);
         } else {
             this.stageNodeMap = new LinkedHashMap<>();
             this.stepNodeMap = new LinkedHashMap<>();
         }
         if (isDebugEnabled) {
             logger.debug("Graph built");
+        }
+    }
+
+    private void buildFrom(Collection<FlowNode> nodes, @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
+        if (execution == null || nodes.isEmpty()) {
+            this.stageNodeMap = new LinkedHashMap<>();
+            this.stepNodeMap = new LinkedHashMap<>();
+            return;
+        }
+        NodeRelationshipFinder finder = new NodeRelationshipFinder(enclosingIdsByNodeId);
+        Map<String, NodeRelationship> relationships = finder.getNodeRelationships(nodes);
+        GraphBuilder builder = new GraphBuilder(nodes, relationships, this.run, this.execution, enclosingIdsByNodeId);
+        if (isDebugEnabled) {
+            logger.debug("Original nodes: count={}", builder.getNodes().size());
+        }
+        this.stageNodeMap = builder.getStageMapping();
+        this.stepNodeMap = builder.getStepMapping();
+        if (isDebugEnabled) {
+            logger.debug("Remapped nodes: stages={}, steps={}", this.stageNodeMap.size(), this.stepNodeMap.size());
         }
     }
 
@@ -110,22 +131,42 @@ public class PipelineNodeTreeScanner {
 
     @NonNull
     public List<FlowNodeWrapper> getStageSteps(String startNodeId) {
-        FlowNodeWrapper wrappedStage = stageNodeMap.get(startNodeId);
-        List<FlowNodeWrapper> stageSteps = stepNodeMap.values().stream()
-                .filter(wrappedStep -> wrappedStep.getParents().contains(wrappedStage))
-                .sorted(new FlowNodeWrapper.NodeComparator())
-                .collect(Collectors.toCollection(ArrayList::new));
-        if (isDebugEnabled) {
-            logger.debug("Returning {} steps for node '{}'", stageSteps.size(), startNodeId);
-        }
-        return stageSteps;
+        return getAllSteps().getOrDefault(startNodeId, new ArrayList<>());
     }
 
     @NonNull
     public Map<String, List<FlowNodeWrapper>> getAllSteps() {
         Map<String, List<FlowNodeWrapper>> stageNodeStepMap = new LinkedHashMap<>();
         for (String stageId : stageNodeMap.keySet()) {
-            stageNodeStepMap.put(stageId, getStageSteps(stageId));
+            stageNodeStepMap.put(stageId, new ArrayList<>());
+        }
+        for (FlowNodeWrapper step : stepNodeMap.values()) {
+            List<FlowNodeWrapper> parents = step.getParents();
+            if (parents.isEmpty()) {
+                continue;
+            }
+            if (parents.size() == 1) {
+                List<FlowNodeWrapper> bucket =
+                        stageNodeStepMap.get(parents.get(0).getId());
+                if (bucket != null) {
+                    bucket.add(step);
+                }
+                continue;
+            }
+            // A step with multiple parents belongs to every matching stage, but only once.
+            Set<String> seen = new HashSet<>(parents.size());
+            for (FlowNodeWrapper parent : parents) {
+                if (seen.add(parent.getId())) {
+                    List<FlowNodeWrapper> bucket = stageNodeStepMap.get(parent.getId());
+                    if (bucket != null) {
+                        bucket.add(step);
+                    }
+                }
+            }
+        }
+        FlowNodeWrapper.NodeComparator comparator = new FlowNodeWrapper.NodeComparator();
+        for (List<FlowNodeWrapper> bucket : stageNodeStepMap.values()) {
+            bucket.sort(comparator);
         }
         return stageNodeStepMap;
     }
@@ -154,6 +195,11 @@ public class PipelineNodeTreeScanner {
         @NonNull
         private final FlowExecution execution;
 
+        // Optional pre-computed ancestry. When present, findParentNode avoids the storage
+        // read lock that FlowNode#getAllEnclosingIds would take.
+        @CheckForNull
+        private final Map<String, List<String>> enclosingIdsByNodeId;
+
         private final Map<String, FlowNodeWrapper> wrappedNodeMap = new LinkedHashMap<>();
         // These two are populated when required using by filtering unwanted nodes from
         // 'wrappedNodeMap' into a new map.
@@ -175,12 +221,14 @@ public class PipelineNodeTreeScanner {
                 Collection<FlowNode> nodes,
                 @NonNull Map<String, NodeRelationship> relationships,
                 @NonNull WorkflowRun run,
-                @NonNull FlowExecution execution) {
+                @NonNull FlowExecution execution,
+                @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
             this.nodes = nodes;
             this.relationships = relationships;
             this.run = run;
             this.inputAction = run.getAction(InputAction.class);
             this.execution = execution;
+            this.enclosingIdsByNodeId = enclosingIdsByNodeId;
             buildGraph();
         }
 
@@ -461,12 +509,16 @@ public class PipelineNodeTreeScanner {
          */
         private @CheckForNull FlowNodeWrapper findParentNode(
                 @NonNull FlowNodeWrapper child, @NonNull Map<String, FlowNodeWrapper> wrappedNodeMap) {
-            List<String> enclosingIds = child.getNode().getAllEnclosingIds();
+            // Prefer the pre-computed ancestry: FlowNode#getAllEnclosingIds goes through the
+            // storage read lock and contends with the running build's writes.
+            List<String> enclosingIds;
+            if (enclosingIdsByNodeId != null) {
+                enclosingIds = enclosingIdsByNodeId.getOrDefault(child.getId(), List.of());
+            } else {
+                enclosingIds = child.getNode().getAllEnclosingIds();
+            }
             Set<String> knownNodes = wrappedNodeMap.keySet();
             for (String possibleParentId : enclosingIds) {
-                if (isDebugEnabled) {
-                    logger.debug("Checking if {} in {}", possibleParentId, String.join(", ", knownNodes));
-                }
                 if (knownNodes.contains(possibleParentId)) {
                     return wrappedNodeMap.get(possibleParentId);
                 }

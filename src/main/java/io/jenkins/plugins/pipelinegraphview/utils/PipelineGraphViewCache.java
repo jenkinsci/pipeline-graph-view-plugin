@@ -69,6 +69,22 @@ public class PipelineGraphViewCache {
         }
     }
 
+    /**
+     * Writes a final graph and step list directly to disk, bypassing the {@code isBuilding}
+     * guard on {@link #getGraph} / {@link #getAllSteps}. Intended for
+     * {@code FlowExecutionListener.onCompleted}, where the execution is known complete but
+     * {@code WorkflowRun.isBuilding()} may not have flipped yet.
+     */
+    public void seed(WorkflowRun run, PipelineGraph graph, PipelineStepList allSteps) {
+        CachedPayload payload = load(run);
+        synchronized (payload) {
+            payload.graph = graph;
+            payload.allSteps = allSteps;
+            payload.schemaVersion = SCHEMA_VERSION;
+            write(run, payload);
+        }
+    }
+
     private CachedPayload load(WorkflowRun run) {
         return memCache.get(run.getExternalizableId(), k -> readFromDisk(run));
     }

@@ -19,6 +19,7 @@ import io.jenkins.plugins.pipelinegraphview.cards.items.ChangesRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.TestResultRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineJsonWriter;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStep;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
@@ -31,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
 import jenkins.model.Tab;
 import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
 import org.jenkinsci.plugins.pipeline.modeldefinition.actions.RestartDeclarativePipelineAction;
 import org.jenkinsci.plugins.workflow.cps.replay.ReplayAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
@@ -52,12 +52,6 @@ public class PipelineConsoleViewAction extends Tab {
     public static final int CACHE_AGE = (int) TimeUnit.DAYS.toSeconds(1);
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineConsoleViewAction.class);
-    private static final JsonConfig jsonConfig = new JsonConfig();
-
-    static {
-        PipelineStepList.PipelineStepListJsonProcessor.configure(jsonConfig);
-        PipelineGraph.PipelineGraphJsonProcessor.configure(jsonConfig);
-    }
 
     private final PipelineGraphApi graphApi;
     private final WorkflowRun run;
@@ -84,22 +78,18 @@ public class PipelineConsoleViewAction extends Tab {
     // running).
     @GET
     @WebMethod(name = "steps")
-    public HttpResponse getSteps(StaplerRequest2 req) {
+    public void getSteps(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         run.checkPermission(Item.READ);
         String nodeId = req.getParameter("nodeId");
-        if (nodeId != null) {
-            return HttpResponses.okJSON(getSteps(nodeId));
-        } else {
-            return HttpResponses.errorJSON("Error getting console text");
+        if (nodeId == null) {
+            HttpResponses.errorJSON("Error getting console text").generateResponse(req, rsp, null);
+            return;
         }
-    }
-
-    private JSONObject getSteps(String nodeId) {
         logger.debug("getSteps was passed nodeId '{}'.", nodeId);
         PipelineStepList steps = stepApi.getSteps(nodeId);
-        JSONObject json = JSONObject.fromObject(steps, jsonConfig);
-        logger.debug("Steps for {}: '{}'.", nodeId, json);
-        return json;
+        rsp.setStatus(200);
+        rsp.setContentType("application/json;charset=UTF-8");
+        PipelineJsonWriter.write(steps, rsp.getOutputStream());
     }
 
     // Return all steps to:
@@ -110,13 +100,10 @@ public class PipelineConsoleViewAction extends Tab {
     public void getAllSteps(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         run.checkPermission(Item.READ);
         PipelineStepList steps = stepApi.getAllSteps();
-        JSONObject json = JSONObject.fromObject(steps, jsonConfig);
-        logger.debug("Steps: '{}'.", json);
-        HttpResponse response = HttpResponses.okJSON(json);
-
         rsp.setStatus(200);
+        rsp.setContentType("application/json;charset=UTF-8");
         setCache(rsp, steps.runIsComplete);
-        response.generateResponse(req, rsp, null);
+        PipelineJsonWriter.write(steps, rsp.getOutputStream());
     }
 
     private void setCache(StaplerResponse2 rsp, boolean complete) {
@@ -397,11 +384,10 @@ public class PipelineConsoleViewAction extends Tab {
         run.checkPermission(Item.READ);
 
         PipelineGraph tree = graphApi.createTree();
-        HttpResponse response = HttpResponses.okJSON(JSONObject.fromObject(tree, jsonConfig));
-
         rsp.setStatus(200);
+        rsp.setContentType("application/json;charset=UTF-8");
         setCache(rsp, tree.complete);
-        response.generateResponse(req, rsp, null);
+        PipelineJsonWriter.write(tree, rsp.getOutputStream());
     }
 
     // Icon related methods these may appear as unused but are used by /lib/hudson/buildCaption.jelly

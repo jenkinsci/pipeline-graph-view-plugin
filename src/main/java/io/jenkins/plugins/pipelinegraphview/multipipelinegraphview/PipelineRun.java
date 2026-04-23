@@ -2,11 +2,9 @@ package io.jenkins.plugins.pipelinegraphview.multipipelinegraphview;
 
 import static io.jenkins.plugins.pipelinegraphview.utils.ChangesUtil.getChanges;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
-import net.sf.json.processors.JsonBeanProcessor;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 public class PipelineRun {
@@ -20,6 +18,9 @@ public class PipelineRun {
     private final long timestamp;
     private final long duration;
     private final int changesCount;
+
+    // Not part of the wire format — only used server-side via {@link #isBuilding()}.
+    @JsonIgnore
     private final boolean building;
 
     @NonNull
@@ -53,6 +54,7 @@ public class PipelineRun {
         this.building = building;
     }
 
+    @JsonIgnore
     public boolean isBuilding() {
         return building;
     }
@@ -69,28 +71,5 @@ public class PipelineRun {
                 + this.changesCount
                 + '|'
                 + this.result.name();
-    }
-
-    public static class PipelineRunJsonProcessor implements JsonBeanProcessor {
-
-        public static void configure(JsonConfig config) {
-            config.registerJsonBeanProcessor(PipelineRun.class, new PipelineRunJsonProcessor());
-            PipelineState.PipelineStateJsonProcessor.configure(config);
-        }
-
-        @Override
-        public JSONObject processBean(Object bean, JsonConfig jsonConfig) {
-            if (!(bean instanceof PipelineRun run)) {
-                return null;
-            }
-            JSONObject json = new JSONObject();
-            json.element("id", run.id);
-            json.element("displayName", run.displayName);
-            json.element("timestamp", run.timestamp);
-            json.element("duration", run.duration);
-            json.element("changesCount", run.changesCount);
-            json.element("result", run.result, jsonConfig);
-            return json;
-        }
     }
 }

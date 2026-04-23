@@ -4,7 +4,6 @@ import io.jenkins.plugins.pipelinegraphview.steps.HideFromViewStep;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -125,12 +124,10 @@ final class LiveGraphState {
                 workspaceNodes.add(n);
             }
         }
+        // Concurrent maps/sets are published by reference — consumers must treat them as
+        // read-only (see {@link LiveGraphSnapshot}).
         return new LiveGraphSnapshot(
-                Collections.unmodifiableList(nodesCopy),
-                Collections.unmodifiableList(workspaceNodes),
-                Collections.unmodifiableMap(enclosingIdsByNodeId),
-                Collections.unmodifiableSet(hideFromViewBlockStartIds),
-                v);
+                nodesCopy, workspaceNodes, enclosingIdsByNodeId, hideFromViewBlockStartIds, v);
     }
 
     /**

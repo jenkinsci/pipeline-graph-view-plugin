@@ -20,9 +20,8 @@ import org.jenkinsci.plugins.workflow.graph.FlowNode;
  * so callers can derive a step's "hidden" flag by intersecting with the step's enclosing IDs.
  *
  * <p>{@code activeNodeIds} contains the IDs of all nodes considered "active" at snapshot
- * time (current heads plus their enclosing block starts). Status resolution uses this
- * instead of {@link org.jenkinsci.plugins.workflow.graph.FlowNode#isActive()}, which takes
- * the {@code CpsFlowExecution} monitor per call.
+ * time: the execution's current heads plus every enclosing block start. Status resolution
+ * reads liveness from this set.
  *
  * <p>{@code version} is a monotonic counter that bumps on every new flow node, so callers
  * can use it as a cache key for computed DTOs.

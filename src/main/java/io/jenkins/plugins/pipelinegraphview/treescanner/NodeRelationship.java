@@ -136,11 +136,9 @@ public class NodeRelationship {
     }
 
     /**
-     * Same as {@link #getStatus(WorkflowRun)} but with a pre-resolved {@code activeNodeIds}
-     * set so per-node {@link FlowNode#isActive()} calls (which take the CPS monitor) can be
-     * replaced with a lock-free {@link Set#contains(Object)} lookup. Only the step-node leaf
-     * uses the set; block-case resolution defers to {@link #getStatus(WorkflowRun)} so
-     * subclass overrides (e.g. {@link ParallelBlockRelationship}) still apply.
+     * Same as {@link #getStatus(WorkflowRun)} but threads {@code activeNodeIds} through to
+     * the step-node leaf. Block cases defer to {@link #getStatus(WorkflowRun)} so subclass
+     * overrides (e.g. {@link ParallelBlockRelationship}) apply.
      */
     public @NonNull NodeRunStatus getStatus(WorkflowRun run, @CheckForNull Set<String> activeNodeIds) {
         if (activeNodeIds == null) {
@@ -158,13 +156,9 @@ public class NodeRelationship {
                 return new NodeRunStatus(GenericStatus.fromResult(warningAction.getResult()));
             }
         }
-        // Step node: start and end are the same FlowNode. Skip FlowNode#isActive in favour
-        // of the pre-resolved set.
         if (this.start.getId().equals(this.end.getId())) {
             return new NodeRunStatus(this.start, activeNodeIds);
         }
-        // Block case — subclass may override getStatus(WorkflowRun) to aggregate across
-        // children (e.g. parallel branches), so defer to it.
         return getStatus(run);
     }
 }

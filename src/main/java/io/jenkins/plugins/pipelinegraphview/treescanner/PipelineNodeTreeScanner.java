@@ -61,11 +61,10 @@ public class PipelineNodeTreeScanner {
 
     /**
      * Builds from a caller-supplied node collection, skipping the {@link DepthFirstScanner}
-     * walk. The caller is responsible for having observed every node already. Pass
-     * {@code enclosingIdsByNodeId} to skip the storage read lock during ancestry resolution
-     * (the live-state path captures this on the CPS VM thread). Pass {@code activeNodeIds} to
-     * replace {@link FlowNode#isActive()}'s synchronised CPS lookup with a lock-free set
-     * membership check.
+     * walk. The caller is responsible for having observed every node already. Supply
+     * {@code enclosingIdsByNodeId} to read ancestry from the map instead of FlowNode storage,
+     * and {@code activeNodeIds} to use the set for liveness checks instead of
+     * {@link FlowNode#isActive()}.
      */
     public PipelineNodeTreeScanner(
             @NonNull WorkflowRun run,
@@ -202,8 +201,8 @@ public class PipelineNodeTreeScanner {
         @CheckForNull
         private final Map<String, List<String>> enclosingIdsByNodeId;
 
-        // Optional pre-computed set of node IDs that are active (current heads + enclosing
-        // blocks). When present, NodeRunStatus skips the synchronised FlowNode#isActive call.
+        // Node IDs considered active at snapshot time (current heads + enclosing blocks).
+        // When non-null, {@code NodeRunStatus} reads liveness from this set.
         @CheckForNull
         private final Set<String> activeNodeIds;
 

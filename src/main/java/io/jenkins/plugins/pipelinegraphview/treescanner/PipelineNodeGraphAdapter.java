@@ -45,10 +45,8 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
 
     /**
      * Builds the adapter over a pre-collected node set plus pre-computed snapshot data.
-     * Supplying {@code enclosingIdsByNodeId} lets graph construction resolve ancestry without
-     * touching the execution's node storage. Supplying {@code activeNodeIds} replaces the
-     * synchronised {@link FlowNode#isActive()} call in per-node status resolution with a
-     * lock-free set membership check.
+     * Supply {@code enclosingIdsByNodeId} to read ancestry from the map instead of FlowNode
+     * storage, and {@code activeNodeIds} to use the set for per-node liveness checks.
      */
     public PipelineNodeGraphAdapter(
             WorkflowRun run,

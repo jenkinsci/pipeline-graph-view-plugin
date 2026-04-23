@@ -24,9 +24,8 @@ public class NodeRunStatus {
     }
 
     /**
-     * When {@code activeNodeIds} is non-null it replaces {@link FlowNode#isActive()} — the latter
-     * synchronises on {@code CpsFlowExecution} per call, which contends with the CPS VM thread
-     * for every one of thousands of per-node status checks.
+     * When {@code activeNodeIds} is non-null, liveness is read from the set rather than from
+     * {@link FlowNode#isActive()}.
      */
     public NodeRunStatus(@NonNull FlowNode endNode, @CheckForNull Set<String> activeNodeIds) {
         boolean active = activeNodeIds != null ? activeNodeIds.contains(endNode.getId()) : endNode.isActive();

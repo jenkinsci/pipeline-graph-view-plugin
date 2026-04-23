@@ -145,9 +145,8 @@ final class LiveGraphState {
 
     /**
      * Resolves the "active" node set for this snapshot: all current heads plus every
-     * enclosing block start. Status-resolution code consults this set instead of calling
-     * {@link FlowNode#isActive()}, which takes the {@code CpsFlowExecution} monitor per call.
-     * Prefers the already-captured {@link #enclosingIdsByNodeId} over a fresh storage walk.
+     * enclosing block start. Prefers the already-captured {@link #enclosingIdsByNodeId} over
+     * a fresh storage walk when looking up a head's enclosing chain.
      */
     private Set<String> computeActiveNodeIds(FlowExecution execution) {
         if (execution == null || execution.isComplete()) {

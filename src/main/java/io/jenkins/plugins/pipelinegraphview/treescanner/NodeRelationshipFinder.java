@@ -70,9 +70,7 @@ public class NodeRelationshipFinder {
         // iteration.
         // If there was a method to tell if a node was a parallel block this might be
         // less of an issue.
-        List<FlowNode> sorted = nodes.stream()
-                .sorted(new FlowNodeWrapper.FlowNodeComparator().reversed())
-                .toList();
+        List<FlowNode> sorted = FlowNodeWrapper.sortByFlowNodeId(nodes, true);
         if (isDebugEnabled) {
             logger.atDebug()
                     .addArgument(() -> sorted.stream().map(FlowNode::getId).collect(Collectors.joining(", ")))

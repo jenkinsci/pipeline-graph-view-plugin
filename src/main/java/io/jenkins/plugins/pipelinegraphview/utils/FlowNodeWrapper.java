@@ -91,7 +91,7 @@ public class FlowNodeWrapper {
     private final WorkflowRun run;
     private String causeOfFailure;
 
-    private List<FlowNodeWrapper> parents = new ArrayList<>();
+    private final List<FlowNodeWrapper> parents = new ArrayList<>();
 
     private ErrorAction blockErrorAction;
     private Collection<Action> pipelineActions;
@@ -191,6 +191,24 @@ public class FlowNodeWrapper {
 
     public @NonNull String getId() {
         return node.getId();
+    }
+
+    /**
+     * Lazily-parsed numeric form of {@link #getId()} for sort comparisons. FlowNode IDs are
+     * monotonically assigned integer strings; caching the parsed value means {@link NodeComparator}
+     * doesn't reparse both IDs on every one of {@code O(N log N)} TimSort comparisons.
+     */
+    private int cachedIdInt = Integer.MIN_VALUE;
+
+    public int getIdAsInt() {
+        // Benign race: two threads may both parse and store, but they store the same value —
+        // int stores are atomic and the write is idempotent, so no synchronisation needed.
+        int v = cachedIdInt;
+        if (v == Integer.MIN_VALUE) {
+            v = Integer.parseInt(node.getId());
+            cachedIdInt = v;
+        }
+        return v;
     }
 
     public @NonNull FlowNode getNode() {
@@ -417,31 +435,36 @@ public class FlowNodeWrapper {
 
         @Override
         public int compare(FlowNodeWrapper a, FlowNodeWrapper b) {
-            return FlowNodeWrapper.compareIds(a.getId(), b.getId());
-        }
-    }
-
-    public static class FlowNodeComparator implements Comparator<FlowNode>, Serializable {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public int compare(FlowNode a, FlowNode b) {
-            return FlowNodeWrapper.compareIds(a.getId(), b.getId());
-        }
-    }
-
-    public static class NodeIdComparator implements Comparator<String>, Serializable {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public int compare(String a, String b) {
-            return FlowNodeWrapper.compareIds(a, b);
+            return Integer.compare(a.getIdAsInt(), b.getIdAsInt());
         }
     }
 
     public static int compareIds(String ida, String idb) {
         return Integer.compare(Integer.parseInt(ida), Integer.parseInt(idb));
     }
+
+    /**
+     * Sorts {@code nodes} by the integer value of their {@link FlowNode#getId()}. Parses each
+     * ID exactly once via decorate-sort-undecorate.
+     */
+    public static List<FlowNode> sortByFlowNodeId(Collection<FlowNode> nodes, boolean descending) {
+        List<KeyedFlowNode> decorated = new ArrayList<>(nodes.size());
+        for (FlowNode node : nodes) {
+            decorated.add(new KeyedFlowNode(Integer.parseInt(node.getId()), node));
+        }
+        Comparator<KeyedFlowNode> cmp = Comparator.comparingInt(KeyedFlowNode::key);
+        if (descending) {
+            cmp = cmp.reversed();
+        }
+        decorated.sort(cmp);
+        List<FlowNode> out = new ArrayList<>(decorated.size());
+        for (KeyedFlowNode k : decorated) {
+            out.add(k.node());
+        }
+        return out;
+    }
+
+    private record KeyedFlowNode(int key, FlowNode node) {}
 
     // Useful for dumping node maps to console. These can then be viewed in dor or
     // online via:

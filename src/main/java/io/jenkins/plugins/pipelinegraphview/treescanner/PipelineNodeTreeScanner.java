@@ -377,9 +377,7 @@ public class PipelineNodeTreeScanner {
          * Builds a graph from the list of nodes and relationships given to the class.
          */
         private void buildGraph() {
-            List<FlowNode> nodeList = nodes.stream()
-                    .sorted(new FlowNodeWrapper.FlowNodeComparator())
-                    .toList();
+            List<FlowNode> nodeList = FlowNodeWrapper.sortByFlowNodeId(nodes, false);
             // If the Pipeline ended with an unhandled exception, then we want to catch the
             // node which threw it.
             BlockEndNode<?> nodeThatThrewException = null;

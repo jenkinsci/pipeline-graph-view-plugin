@@ -1,10 +1,18 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphRegistry;
+import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphSnapshot;
+import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,9 +24,13 @@ public class PipelineStepApi {
         this.run = run;
     }
 
-    private List<PipelineStep> parseSteps(List<FlowNodeWrapper> stepNodes, String stageId) {
+    private List<PipelineStep> parseSteps(
+            List<FlowNodeWrapper> stepNodes,
+            String stageId,
+            @CheckForNull Set<String> hideFromViewBlockStartIds,
+            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
         if (logger.isDebugEnabled()) {
-            logger.debug("PipelineStepApi steps: '{}'.", stepNodes);
+            logger.debug("PipelineStepApi parsing {} steps for stage {}", stepNodes.size(), stageId);
         }
         return stepNodes.stream()
                 .map(flowNodeWrapper -> {
@@ -51,8 +63,8 @@ public class PipelineStepApi {
                         }
                     }
 
-                    // Extract feature flags from parent nodes
-                    Map<String, Object> flags = flowNodeWrapper.getFeatureFlags();
+                    Map<String, Object> flags =
+                            resolveFlags(flowNodeWrapper, hideFromViewBlockStartIds, enclosingIdsByNodeId);
 
                     return new PipelineStep(
                             flowNodeWrapper.getId(),
@@ -66,6 +78,32 @@ public class PipelineStepApi {
                             flags);
                 })
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Derives per-step feature flags from the snapshot-provided sets when available, falling
+     * back to {@link FlowNodeWrapper#getFeatureFlags()}. The fallback walks each step's
+     * enclosing blocks through FlowNode storage, which contends with the running build's
+     * write lock.
+     */
+    private static Map<String, Object> resolveFlags(
+            FlowNodeWrapper wrapper,
+            @CheckForNull Set<String> hideFromViewBlockStartIds,
+            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
+        if (hideFromViewBlockStartIds != null && enclosingIdsByNodeId != null) {
+            Map<String, Object> flags = new HashMap<>();
+            List<String> enclosing = enclosingIdsByNodeId.get(wrapper.getId());
+            if (enclosing != null) {
+                for (String id : enclosing) {
+                    if (hideFromViewBlockStartIds.contains(id)) {
+                        flags.put("hidden", Boolean.TRUE);
+                        break;
+                    }
+                }
+            }
+            return flags;
+        }
+        return wrapper.getFeatureFlags();
     }
 
     private PipelineInputStep mapInputStep(InputStep inputStep) {
@@ -86,19 +124,16 @@ public class PipelineStepApi {
         return text.trim();
     }
 
-    private PipelineStepList getSteps(String stageId, PipelineStepBuilderApi builder, boolean runIsComplete) {
-        List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
-        PipelineStepList steps = new PipelineStepList(parseSteps(stepNodes, stageId), runIsComplete);
-        steps.sort();
-        return steps;
-    }
-
-    /* Returns a PipelineStepList, sorted by stageId and Id. */
-    private PipelineStepList getAllSteps(PipelineStepBuilderApi builder, boolean runIsComplete) {
+    private PipelineStepList getAllSteps(
+            PipelineStepBuilderApi builder,
+            boolean runIsComplete,
+            @CheckForNull Set<String> hideFromViewBlockStartIds,
+            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
         Map<String, List<FlowNodeWrapper>> stepNodes = builder.getAllSteps();
         PipelineStepList allSteps = new PipelineStepList(runIsComplete);
         for (Map.Entry<String, List<FlowNodeWrapper>> entry : stepNodes.entrySet()) {
-            allSteps.addAll(parseSteps(entry.getValue(), entry.getKey()));
+            allSteps.addAll(
+                    parseSteps(entry.getValue(), entry.getKey(), hideFromViewBlockStartIds, enclosingIdsByNodeId));
         }
         allSteps.sort();
         return allSteps;
@@ -118,9 +153,63 @@ public class PipelineStepApi {
         return PipelineGraphViewCache.get().getAllSteps(run, this::computeAllSteps);
     }
 
-    PipelineStepList computeAllSteps() {
-        // Look up the completed state before computing steps.
+    /** Uncached compute path; callers are responsible for any caching. */
+    @Restricted(NoExternalUse.class)
+    public PipelineStepList computeAllSteps() {
         boolean runIsComplete = !run.isBuilding();
-        return getAllSteps(CachedPipelineNodeGraphAdaptor.instance.getFor(run), runIsComplete);
+        // Fast path: cache hit without locking.
+        Long currentVersion = LiveGraphRegistry.get().currentVersion(run);
+        if (currentVersion != null) {
+            PipelineStepList cached = LiveGraphRegistry.get().cachedAllSteps(run, currentVersion);
+            if (cached != null) {
+                return cached;
+            }
+        }
+        // Slow path: serialise concurrent rebuilds for this run — see computeTree for why.
+        Object lock = LiveGraphRegistry.get().allStepsComputeLock(run);
+        if (lock != null) {
+            synchronized (lock) {
+                Long retryVersion = LiveGraphRegistry.get().currentVersion(run);
+                if (retryVersion != null) {
+                    PipelineStepList cached = LiveGraphRegistry.get().cachedAllSteps(run, retryVersion);
+                    if (cached != null) {
+                        return cached;
+                    }
+                }
+                LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
+                if (snapshot != null) {
+                    PipelineStepList computed = getAllSteps(
+                            new PipelineNodeGraphAdapter(run, snapshot.nodes(), snapshot.enclosingIdsByNodeId()),
+                            runIsComplete,
+                            snapshot.hideFromViewBlockStartIds(),
+                            snapshot.enclosingIdsByNodeId());
+                    LiveGraphRegistry.get().cacheAllSteps(run, snapshot.version(), computed);
+                    return computed;
+                }
+            }
+        }
+        return getAllSteps(CachedPipelineNodeGraphAdaptor.instance.getFor(run), runIsComplete, null, null);
+    }
+
+    /**
+     * Builds a {@link PipelineStepList} from a caller-supplied adapter. Doesn't touch the
+     * live-state DTO cache — caller owns caching.
+     */
+    @Restricted(NoExternalUse.class)
+    public PipelineStepList getAllStepsFrom(PipelineStepBuilderApi builder, boolean runIsComplete) {
+        return getAllStepsFrom(builder, runIsComplete, null, null);
+    }
+
+    /**
+     * Same as {@link #getAllStepsFrom(PipelineStepBuilderApi, boolean)} but with pre-computed
+     * snapshot data so feature-flag resolution doesn't need to walk enclosing blocks per step.
+     */
+    @Restricted(NoExternalUse.class)
+    public PipelineStepList getAllStepsFrom(
+            PipelineStepBuilderApi builder,
+            boolean runIsComplete,
+            @CheckForNull Set<String> hideFromViewBlockStartIds,
+            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
+        return getAllSteps(builder, runIsComplete, hideFromViewBlockStartIds, enclosingIdsByNodeId);
     }
 }

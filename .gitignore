@@ -25,3 +25,6 @@ src/main/webapp/js/bundles
 
 # macOS
 .DS_Store
+
+results.txt
+

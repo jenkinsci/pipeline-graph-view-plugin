@@ -60,9 +60,8 @@ public class PipelineNodeTreeScanner {
     }
 
     /**
-     * Alternate constructor that uses a caller-supplied node collection instead of walking
-     * the execution graph with a {@link DepthFirstScanner}. Intended for use by the
-     * live-state path, which has already observed every node via {@code GraphListener}.
+     * Builds from a caller-supplied node collection, skipping the {@link DepthFirstScanner}
+     * walk. The caller is responsible for having observed every node already.
      */
     public PipelineNodeTreeScanner(@NonNull WorkflowRun run, @NonNull Collection<FlowNode> nodes) {
         this.run = run;

@@ -90,7 +90,6 @@ public final class LiveGraphRegistry {
         return state == null ? null : state.cachedGraph(minVersion);
     }
 
-    /** Stores a {@link PipelineGraph} computed from a snapshot at {@code version}. */
     public void cacheGraph(WorkflowRun run, long version, PipelineGraph graph) {
         if (disabled()) {
             return;

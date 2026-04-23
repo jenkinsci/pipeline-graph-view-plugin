@@ -124,8 +124,6 @@ public class PipelineGraphApi {
         FlowNode flowNode = flowNodeWrapper.getNode();
         logger.debug("Checking node {}", flowNode);
         FlowExecution execution = flowNode.getExecution();
-        // When the caller supplies a pre-filtered workspace-node list (the live-state path),
-        // iterate that; otherwise fall back to scanning the whole execution graph.
         Iterable<FlowNode> candidates =
                 workspaceNodes != null ? workspaceNodes : new DepthFirstScanner().allNodes(execution);
         for (FlowNode n : candidates) {
@@ -170,12 +168,7 @@ public class PipelineGraphApi {
         return PipelineGraphViewCache.get().getGraph(run, this::computeTree);
     }
 
-    /**
-     * Internal: direct uncached compute path, for use by
-     * {@link io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphLifecycle} to build a
-     * final graph at completion without going through {@code PipelineGraphViewCache} (which
-     * would skip caching while {@code WorkflowRun.isBuilding()} is true).
-     */
+    /** Uncached compute path; callers are responsible for any caching. */
     @Restricted(NoExternalUse.class)
     public PipelineGraph computeTree() {
         LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);

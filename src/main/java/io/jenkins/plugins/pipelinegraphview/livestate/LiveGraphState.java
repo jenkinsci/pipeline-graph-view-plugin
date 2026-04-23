@@ -13,18 +13,6 @@ import org.jenkinsci.plugins.workflow.graph.FlowNode;
  * Per-run mutable state built up by {@link LiveGraphPopulator} as {@code GraphListener}
  * events arrive. Reads and writes are serialised on the instance monitor; holders should
  * snapshot and release quickly — the writer is the CPS VM thread and must not block.
- *
- * <p>Two things live here:
- * <ul>
- *   <li>The raw {@link FlowNode} list that the downstream relationship-finder /
- *       graph-builder path consumes. The {@link WorkspaceAction}-carrying subset used by
- *       agent detection is derived at snapshot time by iterating this list, not at
- *       add-time — {@code WorkspaceAction} can be attached to a node after {@code onNewHead}
- *       fires.</li>
- *   <li>A small cache of the last-computed {@link PipelineGraph} / {@link PipelineStepList}
- *       keyed by a monotonic version counter that bumps on every {@link #addNode}. HTTP
- *       polls that hit between node arrivals return the cached DTO verbatim — no rebuild.</li>
- * </ul>
  */
 final class LiveGraphState {
 
@@ -33,20 +21,13 @@ final class LiveGraphState {
     private long version = 0;
     private volatile boolean poisoned = false;
 
-    // Starts unready. Lifecycle callbacks ({@link LiveGraphLifecycle}) run on Jenkins event
-    // threads and flip this on after they've done any needed catch-up. If lifecycle never
-    // fires for an execution (plugin installed while the build was running), the state stays
-    // unready and HTTP readers fall back to the scanner path — we can't safely backfill from
-    // the CPS VM thread inside {@code onNewHead}.
+    // Starts unready. Only the lifecycle ({@link LiveGraphLifecycle}) flips it on, after any
+    // needed catch-up — callers of {@link #snapshot} treat a null return as "fall back to
+    // the scanner", so a partial state that never gets the ready handshake stays invisible.
     private boolean ready = false;
 
-    // Output cache. Mutations synchronise on the instance monitor so concurrent writers
-    // cannot regress a newer version with an older one (check-then-set on a volatile
-    // reference alone would be racy). Repeat polls at the same version hit this cache and
-    // skip rebuilding the DTOs entirely — that's the real savings, not snapshot-level
-    // memoisation (which would make the WorkspaceAction subset stale: actions can be
-    // attached to an existing FlowNode after onNewHead has already fired, without bumping
-    // the node-count version).
+    // Mutations synchronise on the instance monitor so concurrent writers cannot regress a
+    // newer version with an older one (check-then-set on a volatile reference would be racy).
     private VersionedCache<PipelineGraph> cachedGraph;
     private VersionedCache<PipelineStepList> cachedAllSteps;
 

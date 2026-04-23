@@ -36,10 +36,7 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
         treeScanner = new PipelineNodeTreeScanner(run);
     }
 
-    /**
-     * Builds the adapter over a pre-collected node set rather than walking the execution
-     * graph. Used by the live-state path.
-     */
+    /** Builds the adapter over a pre-collected node set rather than walking the execution. */
     public PipelineNodeGraphAdapter(WorkflowRun run, Collection<FlowNode> preCollectedNodes) {
         treeScanner = new PipelineNodeTreeScanner(run, preCollectedNodes);
     }

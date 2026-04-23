@@ -10,23 +10,13 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Extension that captures every new {@link FlowNode} across every running execution and
- * feeds it to the corresponding {@link LiveGraphState}. The downstream {@code PipelineGraphApi}
- * path reads a snapshot of that state instead of walking the whole execution each time.
+ * feeds it to the corresponding {@link LiveGraphState}.
  *
- * <p>We use {@link GraphListener.Synchronous} rather than the async variant because callers
- * expect "once a node is a head, the next API read reflects it" — async delivery creates a
- * lag window where the snapshot is behind the execution, which breaks tests that check state
- * at precise trigger points and would surprise anyone hitting the REST API after an event.
- * The work done under the monitor is trivial ({@code ArrayList}/{@code HashSet} additions),
- * so the CPS VM thread is not meaningfully blocked. Every code path is still wrapped in
- * try/catch and poisons the state on failure so a bug here can never disrupt a build.
- *
- * <p>The javadoc also forbids blocking work here, which rules out any {@code DepthFirstScanner}
- * catch-up walk inside this method. {@link LiveGraphState} starts unready and is only
- * marked ready by {@link LiveGraphLifecycle} (on an event thread, not the CPS VM). If
- * {@code onNewHead} fires for an execution the lifecycle never saw (e.g. plugin installed
- * mid-build), the state stays unready, {@code snapshot()} keeps returning {@code null},
- * and HTTP readers fall back to the scanner for the remainder of that run.
+ * <p>We use {@link GraphListener.Synchronous} because callers expect that once a node is a
+ * head, the next API read reflects it — async delivery would create a lag window where the
+ * snapshot is behind the execution. The listener therefore does the minimum under the
+ * monitor and never scans: any catch-up belongs in {@link LiveGraphLifecycle}, on a Jenkins
+ * event thread.
  */
 @Extension
 public class LiveGraphPopulator implements GraphListener.Synchronous {

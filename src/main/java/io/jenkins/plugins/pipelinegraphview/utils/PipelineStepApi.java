@@ -123,11 +123,7 @@ public class PipelineStepApi {
         return PipelineGraphViewCache.get().getAllSteps(run, this::computeAllSteps);
     }
 
-    /**
-     * Internal: direct uncached compute path, for use by
-     * {@link io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphLifecycle} to build a
-     * final step list at completion without going through {@code PipelineGraphViewCache}.
-     */
+    /** Uncached compute path; callers are responsible for any caching. */
     @Restricted(NoExternalUse.class)
     public PipelineStepList computeAllSteps() {
         // Look up the completed state before computing steps.

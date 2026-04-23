@@ -35,6 +35,12 @@ final class LiveGraphState {
     // whether a step is hidden by intersecting with the step's enclosing IDs, avoiding a
     // per-step {@code iterateEnclosingBlocks} walk through storage.
     private final Set<String> hideFromViewBlockStartIds = ConcurrentHashMap.newKeySet();
+
+    // StepStartNodes observed so far — the only flow-node kind that can carry a
+    // WorkspaceAction. Scanning {@code nodes} for WorkspaceAction at snapshot time was
+    // O(N) with ~300k nodes even though only a handful are actual {@code node{}} blocks;
+    // keeping this narrower list means snapshot scans O(candidates) instead.
+    private final List<FlowNode> workspaceCandidates = new ArrayList<>();
     private long version = 0;
     private volatile boolean poisoned = false;
 
@@ -66,8 +72,8 @@ final class LiveGraphState {
         } catch (Throwable ignored) {
             enclosingIdsByNodeId.put(node.getId(), List.of());
         }
-        // See the hideFromViewBlockStartIds field comment for why this is captured here.
         if (node instanceof StepStartNode stepStartNode) {
+            // See the hideFromViewBlockStartIds field comment for why this is captured here.
             try {
                 StepDescriptor descriptor = stepStartNode.getDescriptor();
                 if (descriptor != null && HideFromViewStep.class.getName().equals(descriptor.getId())) {
@@ -76,6 +82,9 @@ final class LiveGraphState {
             } catch (Throwable ignored) {
                 // Descriptor lookup is best-effort; fall back to "not hidden".
             }
+            // WorkspaceAction can only attach to a StepStartNode; track all of them so
+            // snapshot can check this narrower list instead of every FlowNode.
+            workspaceCandidates.add(node);
         }
         version++;
     }
@@ -100,17 +109,19 @@ final class LiveGraphState {
     }
 
     LiveGraphSnapshot snapshot() {
-        // Only the nodes list needs to be copied — enclosingIds and hideFromView are on
+        // Only the node lists need to be copied — enclosingIds and hideFromView are on
         // concurrent structures we can publish by reference. Keeping the monitor-held
-        // section down to a single array copy means addNode (on the CPS VM thread) almost
-        // never blocks on a snapshot.
+        // section down to a couple of array copies means addNode (on the CPS VM thread)
+        // almost never blocks on a snapshot.
         List<FlowNode> nodesCopy;
+        List<FlowNode> candidatesCopy;
         long v;
         synchronized (this) {
             if (poisoned || !ready) {
                 return null;
             }
             nodesCopy = new ArrayList<>(nodes);
+            candidatesCopy = new ArrayList<>(workspaceCandidates);
             v = version;
         }
         // Scan for WorkspaceAction outside the monitor: each getAction call walks the node's
@@ -119,8 +130,8 @@ final class LiveGraphState {
         // order matches DepthFirstScanner so PipelineGraphApi#getStageNode picks the
         // innermost workspace for nested agents.
         List<FlowNode> workspaceNodes = new ArrayList<>();
-        for (int i = nodesCopy.size() - 1; i >= 0; i--) {
-            FlowNode n = nodesCopy.get(i);
+        for (int i = candidatesCopy.size() - 1; i >= 0; i--) {
+            FlowNode n = candidatesCopy.get(i);
             if (n.getAction(WorkspaceAction.class) != null) {
                 workspaceNodes.add(n);
             }

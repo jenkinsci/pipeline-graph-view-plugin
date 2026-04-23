@@ -4,11 +4,12 @@ import io.jenkins.plugins.pipelinegraphview.steps.HideFromViewStep;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.jenkinsci.plugins.workflow.actions.WorkspaceAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
@@ -16,8 +17,10 @@ import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 
 /**
  * Per-run mutable state built up by {@link LiveGraphPopulator} as {@code GraphListener}
- * events arrive. Reads and writes are serialised on the instance monitor; holders should
- * snapshot and release quickly — the writer is the CPS VM thread and must not block.
+ * events arrive. Writes run on the CPS VM thread and must not block, so the instance monitor
+ * is only held around the append to the nodes list + version bump; the ancestry map and
+ * hideFromView set are {@link ConcurrentHashMap}-backed so readers can publish them without
+ * copying.
  */
 final class LiveGraphState {
 
@@ -25,12 +28,13 @@ final class LiveGraphState {
     private final Set<String> seenIds = new HashSet<>();
     // Node ID → its enclosing-block IDs (innermost first). Populated at add time on the CPS
     // VM thread so HTTP graph builds don't contend with the storage write lock to resolve
-    // ancestry.
-    private final Map<String, List<String>> enclosingIdsByNodeId = new HashMap<>();
+    // ancestry. ConcurrentHashMap so {@link #snapshot} can publish the live map (wrapped
+    // unmodifiable) without copying — readers iterate weakly-consistent views.
+    private final Map<String, List<String>> enclosingIdsByNodeId = new ConcurrentHashMap<>();
     // IDs of BlockStartNodes that wrap a {@code hideFromView} step. Lets HTTP readers decide
     // whether a step is hidden by intersecting with the step's enclosing IDs, avoiding a
     // per-step {@code iterateEnclosingBlocks} walk through storage.
-    private final Set<String> hideFromViewBlockStartIds = new HashSet<>();
+    private final Set<String> hideFromViewBlockStartIds = ConcurrentHashMap.newKeySet();
     private long version = 0;
     private volatile boolean poisoned = false;
 
@@ -94,17 +98,17 @@ final class LiveGraphState {
     }
 
     LiveGraphSnapshot snapshot() {
+        // Only the nodes list needs to be copied — enclosingIds and hideFromView are on
+        // concurrent structures we can publish by reference. Keeping the monitor-held
+        // section down to a single array copy means addNode (on the CPS VM thread) almost
+        // never blocks on a snapshot.
         List<FlowNode> nodesCopy;
-        Map<String, List<String>> enclosingCopy;
-        Set<String> hideFromViewCopy;
         long v;
         synchronized (this) {
             if (poisoned || !ready) {
                 return null;
             }
-            nodesCopy = List.copyOf(nodes);
-            enclosingCopy = Map.copyOf(enclosingIdsByNodeId);
-            hideFromViewCopy = Set.copyOf(hideFromViewBlockStartIds);
+            nodesCopy = new ArrayList<>(nodes);
             v = version;
         }
         // Scan for WorkspaceAction outside the monitor: each getAction call walks the node's
@@ -119,7 +123,12 @@ final class LiveGraphState {
                 workspaceNodes.add(n);
             }
         }
-        return new LiveGraphSnapshot(nodesCopy, List.copyOf(workspaceNodes), enclosingCopy, hideFromViewCopy, v);
+        return new LiveGraphSnapshot(
+                Collections.unmodifiableList(nodesCopy),
+                Collections.unmodifiableList(workspaceNodes),
+                Collections.unmodifiableMap(enclosingIdsByNodeId),
+                Collections.unmodifiableSet(hideFromViewBlockStartIds),
+                v);
     }
 
     /**

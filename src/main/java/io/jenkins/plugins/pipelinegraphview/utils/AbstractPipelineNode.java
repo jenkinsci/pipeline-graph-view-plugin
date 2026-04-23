@@ -2,9 +2,6 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
-import net.sf.json.processors.JsonBeanProcessor;
 
 public class AbstractPipelineNode {
     final String name;
@@ -13,6 +10,7 @@ public class AbstractPipelineNode {
     final String title;
     public final String id;
     private final long pauseDurationMillis;
+
     // Cached value; the serialised view is the null-aware getTotalDurationMillis() below.
     @JsonIgnore
     private final long cachedTotalDurationMillis;
@@ -39,25 +37,5 @@ public class AbstractPipelineNode {
 
     public Long getTotalDurationMillis() {
         return state.isInProgress() ? null : cachedTotalDurationMillis;
-    }
-
-    abstract static class AbstractPipelineNodeJsonProcessor implements JsonBeanProcessor {
-
-        protected static void baseConfigure(JsonConfig config) {
-            config.registerJsonValueProcessor(PipelineState.class, new PipelineState.PipelineStateJsonProcessor());
-        }
-
-        protected JSONObject create(AbstractPipelineNode node, JsonConfig config) {
-            JSONObject json = new JSONObject();
-            json.element("id", node.id);
-            json.element("name", node.name);
-            json.element("state", node.state, config);
-            json.element("type", node.type);
-            json.element("title", node.title);
-            json.element("pauseDurationMillis", node.pauseDurationMillis);
-            json.element("startTimeMillis", node.getStartTimeMillis());
-            json.element("totalDurationMillis", node.getTotalDurationMillis());
-            return json;
-        }
     }
 }

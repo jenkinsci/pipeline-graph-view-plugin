@@ -109,8 +109,7 @@ public class PipelineNodeTreeScanner {
         this.stageNodeMap = builder.getStageMapping();
         this.stepNodeMap = builder.getStepMapping();
         if (isDebugEnabled) {
-            logger.debug(
-                    "Remapped nodes: stages={}, steps={}", this.stageNodeMap.size(), this.stepNodeMap.size());
+            logger.debug("Remapped nodes: stages={}, steps={}", this.stageNodeMap.size(), this.stepNodeMap.size());
         }
     }
 
@@ -147,7 +146,8 @@ public class PipelineNodeTreeScanner {
                 continue;
             }
             if (parents.size() == 1) {
-                List<FlowNodeWrapper> bucket = stageNodeStepMap.get(parents.get(0).getId());
+                List<FlowNodeWrapper> bucket =
+                        stageNodeStepMap.get(parents.get(0).getId());
                 if (bucket != null) {
                     bucket.add(step);
                 }

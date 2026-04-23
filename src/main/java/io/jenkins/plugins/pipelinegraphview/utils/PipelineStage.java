@@ -46,5 +46,4 @@ public class PipelineStage extends AbstractPipelineNode {
         this.agent = agent;
         this.url = "/" + runUrl + URL_NAME + "/?selected-node=" + id;
     }
-
 }

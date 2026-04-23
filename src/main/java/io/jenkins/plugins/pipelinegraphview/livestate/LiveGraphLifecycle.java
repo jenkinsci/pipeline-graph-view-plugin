@@ -63,13 +63,12 @@ public class LiveGraphLifecycle extends FlowExecutionListener {
                 PipelineStepList allSteps;
                 LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
                 if (snapshot != null) {
-                    // Share a single adapter (and therefore a single tree-scanner pass) for
-                    // both graph and steps rather than paying the cost twice.
+                    // Share a single adapter so both graph and step builds reuse one
+                    // tree-scanner pass.
                     PipelineNodeGraphAdapter adapter =
                             new PipelineNodeGraphAdapter(run, snapshot.nodes(), snapshot.enclosingIdsByNodeId());
-                    // runIsComplete=true here directly: WorkflowRun.isBuilding() can still be
-                    // true even though FlowExecution is complete. PipelineGraph.complete is
-                    // already derived from FlowExecution.isComplete() inside createTreeFrom.
+                    // Force runIsComplete=true for the step list: WorkflowRun.isBuilding() can
+                    // still return true here even though the execution is complete.
                     graph = new PipelineGraphApi(run)
                             .createTreeFrom(adapter, snapshot.workspaceNodes(), snapshot.enclosingIdsByNodeId());
                     allSteps = new PipelineStepApi(run)
@@ -79,11 +78,9 @@ public class LiveGraphLifecycle extends FlowExecutionListener {
                                     snapshot.hideFromViewBlockStartIds(),
                                     snapshot.enclosingIdsByNodeId());
                 } else {
-                    // No live state (feature disabled, poisoned, plugin installed mid-build).
-                    // Fall back to the scanner-backed paths and rebuild steps with
-                    // runIsComplete=true to keep the persisted copy consistent. Defensively
-                    // copy the list: PipelineStepList.steps is publicly mutable, and `raw`
-                    // may be held by the DTO cache or returned to a concurrent HTTP reader.
+                    // Fall back to the scanner-backed paths. Defensively copy the step list:
+                    // PipelineStepList.steps is publicly mutable and `raw` may be aliased
+                    // with a concurrent HTTP reader's cached entry.
                     graph = new PipelineGraphApi(run).computeTree();
                     PipelineStepList raw = new PipelineStepApi(run).computeAllSteps();
                     allSteps = new PipelineStepList(new ArrayList<>(raw.steps), true);

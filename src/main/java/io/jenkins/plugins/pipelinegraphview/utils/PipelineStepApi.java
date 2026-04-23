@@ -81,10 +81,10 @@ public class PipelineStepApi {
     }
 
     /**
-     * Derives per-step feature flags. Prefers the snapshot-provided sets over
-     * {@link FlowNodeWrapper#getFeatureFlags()}, which would otherwise call
-     * {@code FlowNode#iterateEnclosingBlocks()} once per step — O(depth) storage reads
-     * per step, and the HTTP reader bottleneck on large in-progress graphs.
+     * Derives per-step feature flags from the snapshot-provided sets when available, falling
+     * back to {@link FlowNodeWrapper#getFeatureFlags()}. The fallback walks each step's
+     * enclosing blocks through FlowNode storage, which contends with the running build's
+     * write lock.
      */
     private static Map<String, Object> resolveFlags(
             FlowNodeWrapper wrapper,

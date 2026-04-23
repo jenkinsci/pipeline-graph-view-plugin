@@ -27,10 +27,8 @@ import org.jenkinsci.plugins.workflow.job.WorkflowRun;
  */
 public final class LiveGraphRegistry {
 
-    // IMPORTANT: keep CACHE_MAX_SIZE declared BEFORE INSTANCE. Static fields initialise in
-    // source order, and the instance's Caffeine builder reads CACHE_MAX_SIZE — if INSTANCE
-    // were declared first, CACHE_MAX_SIZE would still be 0 during construction and Caffeine
-    // would evict every entry immediately (maximumSize(0) means "no entries allowed").
+    // Must be declared before INSTANCE: the Caffeine builder reads this during INSTANCE
+    // construction, and Caffeine's maximumSize(0) means "no entries allowed".
     private static final int CACHE_MAX_SIZE =
             SystemProperties.getInteger(LiveGraphRegistry.class.getName() + ".size", 512);
 

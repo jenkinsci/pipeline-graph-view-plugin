@@ -134,9 +134,9 @@ public class PipelineGraphApi {
         FlowExecution execution = flowNode.getExecution();
         Iterable<FlowNode> candidates =
                 workspaceNodes != null ? workspaceNodes : new DepthFirstScanner().allNodes(execution);
-        // Prefer pre-computed ancestry over FlowNode#getAllEnclosingIds / getEnclosingId /
-        // execution.getNode, all of which acquire the storage read lock and can block for
-        // minutes on a large graph when the CPS VM is writing frequently.
+        // Prefer pre-computed ancestry: FlowNode#getAllEnclosingIds / getEnclosingId /
+        // execution.getNode all acquire the storage read lock, which contends with the
+        // running build's writes.
         List<String> flowNodeEnclosingIds = enclosingIdsFor(flowNode, enclosingIdsByNodeId);
         for (FlowNode n : candidates) {
             WorkspaceAction ws = n.getAction(WorkspaceAction.class);
@@ -148,9 +148,8 @@ public class PipelineGraphApi {
                         || Objects.equals(nDirectEnclosingId, flowNode.getId())
                         || flowNodeEnclosingIds.contains(n.getId());
 
-                // Parallel stages have a sub-stage, so we need to check the 3rd parent for a match.
-                // Original code walked three levels via execution.getNode(...); the third-level
-                // enclosing ID is simply enclosingIds[2] in the pre-computed list.
+                // For parallel stages the stage wrapper sits three levels above the workspace
+                // node (branch → parallel block → sub-stage → workspace).
                 if (flowNodeWrapper.getType() == FlowNodeWrapper.NodeType.PARALLEL) {
                     if (enclosingIdsByNodeId != null) {
                         if (nEnclosingIds.size() >= 3) {

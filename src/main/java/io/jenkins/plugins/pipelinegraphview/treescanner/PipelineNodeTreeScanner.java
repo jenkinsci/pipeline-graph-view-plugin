@@ -135,14 +135,6 @@ public class PipelineNodeTreeScanner {
         return getAllSteps().getOrDefault(startNodeId, new ArrayList<>());
     }
 
-    /**
-     * Buckets every step into its parent stage's list in a single O(steps) pass.
-     *
-     * <p>The previous implementation called {@code getStageSteps} per stage, each scan running
-     * {@code steps.filter(s -> s.getParents().contains(stage))}. That's O(stages × steps); on a
-     * 300k-node run with ~6000 stages this was the dominant cost of the {@code /allSteps}
-     * endpoint — 90+ seconds of CPU per request observed in production jstacks.
-     */
     @NonNull
     public Map<String, List<FlowNodeWrapper>> getAllSteps() {
         Map<String, List<FlowNodeWrapper>> stageNodeStepMap = new LinkedHashMap<>();
@@ -161,8 +153,7 @@ public class PipelineNodeTreeScanner {
                 }
                 continue;
             }
-            // Rare: multi-parent step. Match the legacy contains() semantics without adding the
-            // same step twice to the same stage's bucket.
+            // A step with multiple parents belongs to every matching stage, but only once.
             Set<String> seen = new HashSet<>(parents.size());
             for (FlowNodeWrapper parent : parents) {
                 if (seen.add(parent.getId())) {
@@ -518,9 +509,8 @@ public class PipelineNodeTreeScanner {
          */
         private @CheckForNull FlowNodeWrapper findParentNode(
                 @NonNull FlowNodeWrapper child, @NonNull Map<String, FlowNodeWrapper> wrappedNodeMap) {
-            // Prefer the pre-computed ancestry: FlowNode#getAllEnclosingIds reaches back into
-            // the execution's storage, which contends with the running build's write lock
-            // and can make HTTP requests block for minutes on a large graph.
+            // Prefer the pre-computed ancestry: FlowNode#getAllEnclosingIds goes through the
+            // storage read lock and contends with the running build's writes.
             List<String> enclosingIds;
             if (enclosingIdsByNodeId != null) {
                 enclosingIds = enclosingIdsByNodeId.getOrDefault(child.getId(), List.of());

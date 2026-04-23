@@ -1,9 +1,11 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.analysis.GenericStatus;
 import io.jenkins.plugins.pipelinegraphview.analysis.StatusAndTiming;
+import java.util.Set;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.NotExecutedNodeAction;
 import org.jenkinsci.plugins.workflow.actions.QueueItemAction;
@@ -18,6 +20,16 @@ public class NodeRunStatus {
     public final BlueRun.BlueRunState state;
 
     public NodeRunStatus(@NonNull FlowNode endNode) {
+        this(endNode, null);
+    }
+
+    /**
+     * When {@code activeNodeIds} is non-null it replaces {@link FlowNode#isActive()} — the latter
+     * synchronises on {@code CpsFlowExecution} per call, which contends with the CPS VM thread
+     * for every one of thousands of per-node status checks.
+     */
+    public NodeRunStatus(@NonNull FlowNode endNode, @CheckForNull Set<String> activeNodeIds) {
+        boolean active = activeNodeIds != null ? activeNodeIds.contains(endNode.getId()) : endNode.isActive();
         ErrorAction errorAction = endNode.getError();
         WarningAction warningAction = endNode.getPersistentAction(WarningAction.class);
         if (errorAction != null) {
@@ -26,17 +38,17 @@ public class NodeRunStatus {
                 result = ((FlowInterruptedException) errorAction.getError()).getResult();
             }
             this.result = result != null ? BlueRun.BlueRunResult.fromResult(result) : BlueRun.BlueRunResult.FAILURE;
-            this.state = endNode.isActive() ? BlueRun.BlueRunState.RUNNING : BlueRun.BlueRunState.FINISHED;
+            this.state = active ? BlueRun.BlueRunState.RUNNING : BlueRun.BlueRunState.FINISHED;
         } else if (warningAction != null) {
             this.result = BlueRun.BlueRunResult.fromResult(warningAction.getResult());
-            this.state = endNode.isActive() ? BlueRun.BlueRunState.RUNNING : BlueRun.BlueRunState.FINISHED;
+            this.state = active ? BlueRun.BlueRunState.RUNNING : BlueRun.BlueRunState.FINISHED;
         } else if (QueueItemAction.getNodeState(endNode) == QueueItemAction.QueueState.QUEUED) {
             this.result = BlueRun.BlueRunResult.UNKNOWN;
             this.state = BlueRun.BlueRunState.QUEUED;
         } else if (QueueItemAction.getNodeState(endNode) == QueueItemAction.QueueState.CANCELLED) {
             this.result = BlueRun.BlueRunResult.ABORTED;
             this.state = BlueRun.BlueRunState.FINISHED;
-        } else if (endNode.isActive()) {
+        } else if (active) {
             this.result = BlueRun.BlueRunResult.UNKNOWN;
             this.state = BlueRun.BlueRunState.RUNNING;
         } else if (NotExecutedNodeAction.isExecuted(endNode)) {

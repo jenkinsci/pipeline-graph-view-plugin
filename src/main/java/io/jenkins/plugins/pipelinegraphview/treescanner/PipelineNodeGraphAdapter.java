@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -39,20 +40,22 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
 
     /** Builds the adapter over a pre-collected node set rather than walking the execution. */
     public PipelineNodeGraphAdapter(WorkflowRun run, Collection<FlowNode> preCollectedNodes) {
-        this(run, preCollectedNodes, null);
+        this(run, preCollectedNodes, null, null);
     }
 
     /**
-     * Builds the adapter over a pre-collected node set plus a pre-computed
-     * {@code nodeId → enclosingIds} map. Supplying the map lets graph construction resolve
-     * ancestry without touching the execution's node storage (and its read lock, which
-     * contends with the running build's writes).
+     * Builds the adapter over a pre-collected node set plus pre-computed snapshot data.
+     * Supplying {@code enclosingIdsByNodeId} lets graph construction resolve ancestry without
+     * touching the execution's node storage. Supplying {@code activeNodeIds} replaces the
+     * synchronised {@link FlowNode#isActive()} call in per-node status resolution with a
+     * lock-free set membership check.
      */
     public PipelineNodeGraphAdapter(
             WorkflowRun run,
             Collection<FlowNode> preCollectedNodes,
-            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
-        treeScanner = new PipelineNodeTreeScanner(run, preCollectedNodes, enclosingIdsByNodeId);
+            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId,
+            @CheckForNull Set<String> activeNodeIds) {
+        treeScanner = new PipelineNodeTreeScanner(run, preCollectedNodes, enclosingIdsByNodeId, activeNodeIds);
     }
 
     private final Object pipelineLock = new Object();

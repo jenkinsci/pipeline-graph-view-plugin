@@ -226,7 +226,8 @@ public class PipelineGraphApi {
                 LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
                 if (snapshot != null) {
                     PipelineGraph computed = createTree(
-                            new PipelineNodeGraphAdapter(run, snapshot.nodes(), snapshot.enclosingIdsByNodeId()),
+                            new PipelineNodeGraphAdapter(
+                                    run, snapshot.nodes(), snapshot.enclosingIdsByNodeId(), snapshot.activeNodeIds()),
                             snapshot.workspaceNodes(),
                             snapshot.enclosingIdsByNodeId());
                     LiveGraphRegistry.get().cacheGraph(run, snapshot.version(), computed);

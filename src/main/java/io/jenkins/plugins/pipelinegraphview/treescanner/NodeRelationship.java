@@ -8,6 +8,7 @@ import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun;
 import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
+import java.util.Set;
 import org.jenkinsci.plugins.workflow.actions.WarningAction;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -105,6 +106,15 @@ public class NodeRelationship {
      * Gets Status for relationship.
      */
     public @NonNull NodeRunStatus getStatus(WorkflowRun run) {
+        return getStatus(run, null);
+    }
+
+    /**
+     * Same as {@link #getStatus(WorkflowRun)} but with a pre-resolved {@code activeNodeIds}
+     * set so per-node {@link FlowNode#isActive()} calls (which take the CPS monitor) can be
+     * replaced with a lock-free {@link Set#contains(Object)} lookup.
+     */
+    public @NonNull NodeRunStatus getStatus(WorkflowRun run, @CheckForNull Set<String> activeNodeIds) {
         boolean skippedStage = PipelineNodeUtil.isSkippedStage(start);
         if (skippedStage) {
             return new NodeRunStatus(BlueRun.BlueRunResult.NOT_BUILT, BlueRun.BlueRunState.SKIPPED);
@@ -126,7 +136,7 @@ public class NodeRelationship {
 
         // If start and end are equal this is a StepNode
         if (this.start.getId().equals(this.end.getId())) {
-            return new NodeRunStatus(this.start);
+            return new NodeRunStatus(this.start, activeNodeIds);
         }
 
         // Catch-all if none of the above are applicable.

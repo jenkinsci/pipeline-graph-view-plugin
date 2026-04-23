@@ -40,14 +40,13 @@ final class LiveGraphState {
     // the CPS VM thread inside {@code onNewHead}.
     private boolean ready = false;
 
-    // Memoise the last snapshot. Poll-frequent readers at the same version skip the O(N)
-    // copy and workspace scan under the monitor — important because the writer (addNode)
-    // is the CPS VM thread and must not block for long.
-    private LiveGraphSnapshot lastSnapshot;
-
     // Output cache. Mutations synchronise on the instance monitor so concurrent writers
     // cannot regress a newer version with an older one (check-then-set on a volatile
-    // reference alone would be racy).
+    // reference alone would be racy). Repeat polls at the same version hit this cache and
+    // skip rebuilding the DTOs entirely — that's the real savings, not snapshot-level
+    // memoisation (which would make the WorkspaceAction subset stale: actions can be
+    // attached to an existing FlowNode after onNewHead has already fired, without bumping
+    // the node-count version).
     private VersionedCache<PipelineGraph> cachedGraph;
     private VersionedCache<PipelineStepList> cachedAllSteps;
 
@@ -71,9 +70,6 @@ final class LiveGraphState {
         if (poisoned || !ready) {
             return null;
         }
-        if (lastSnapshot != null && lastSnapshot.version() == version) {
-            return lastSnapshot;
-        }
         // Filter for WorkspaceAction at snapshot time rather than at addNode time:
         // WorkspaceAction is attached to a block-start node when the workspace is allocated,
         // which can happen AFTER onNewHead has already fired for that node. A snapshot-time
@@ -90,8 +86,7 @@ final class LiveGraphState {
                 workspaceNodes.add(n);
             }
         }
-        lastSnapshot = new LiveGraphSnapshot(List.copyOf(nodes), List.copyOf(workspaceNodes), version);
-        return lastSnapshot;
+        return new LiveGraphSnapshot(List.copyOf(nodes), List.copyOf(workspaceNodes), version);
     }
 
     /**

@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -121,6 +123,12 @@ public class PipelineStepApi {
         return PipelineGraphViewCache.get().getAllSteps(run, this::computeAllSteps);
     }
 
+    /**
+     * Internal: direct uncached compute path, for use by
+     * {@link io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphLifecycle} to build a
+     * final step list at completion without going through {@code PipelineGraphViewCache}.
+     */
+    @Restricted(NoExternalUse.class)
     public PipelineStepList computeAllSteps() {
         // Look up the completed state before computing steps.
         boolean runIsComplete = !run.isBuilding();

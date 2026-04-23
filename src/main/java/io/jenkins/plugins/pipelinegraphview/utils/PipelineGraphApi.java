@@ -16,6 +16,8 @@ import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.graphanalysis.DepthFirstScanner;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.support.steps.input.InputAction;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -168,6 +170,13 @@ public class PipelineGraphApi {
         return PipelineGraphViewCache.get().getGraph(run, this::computeTree);
     }
 
+    /**
+     * Internal: direct uncached compute path, for use by
+     * {@link io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphLifecycle} to build a
+     * final graph at completion without going through {@code PipelineGraphViewCache} (which
+     * would skip caching while {@code WorkflowRun.isBuilding()} is true).
+     */
+    @Restricted(NoExternalUse.class)
     public PipelineGraph computeTree() {
         LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
         if (snapshot != null) {

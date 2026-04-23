@@ -46,6 +46,8 @@ final class LiveGraphState {
     private VersionedCache<PipelineGraph> cachedGraph;
     private VersionedCache<PipelineStepList> cachedAllSteps;
 
+    private final WarningActionCache warningActionCache = new WarningActionCache();
+
     // Serialise concurrent rebuilds so N HTTP readers don't each do the same O(nodes) work.
     // Separate locks for tree vs steps — a slow tree rebuild must not starve steps.
     private final Object graphComputeLock = new Object();
@@ -170,6 +172,10 @@ final class LiveGraphState {
 
     Object allStepsComputeLock() {
         return allStepsComputeLock;
+    }
+
+    WarningActionCache warningActionCache() {
+        return warningActionCache;
     }
 
     private record VersionedCache<T>(long version, T value) {}

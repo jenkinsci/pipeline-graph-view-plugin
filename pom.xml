@@ -174,10 +174,37 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>3.6.3</version>
+        <executions>
+          <execution>
+            <id>install-playwright-chromium</id>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <phase>generate-test-resources</phase>
+            <configuration>
+              <mainClass>com.microsoft.playwright.CLI</mainClass>
+              <classpathScope>test</classpathScope>
+              <!-- Playwright CLI calls System.exit; without blocking it, it halts Maven execution. -->
+              <blockSystemExit>true</blockSystemExit>
+              <arguments>
+                <argument>install</argument>
+                <argument>chromium</argument>
+              </arguments>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory" />
+          <environmentVariables>
+            <PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD>1</PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD>
+          </environmentVariables>
         </configuration>
       </plugin>
     </plugins>

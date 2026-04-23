@@ -137,8 +137,9 @@ public class PipelineStepApi {
             }
             LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
             if (snapshot != null) {
-                PipelineStepList computed =
-                        getAllSteps(new PipelineNodeGraphAdapter(run, snapshot.nodes()), runIsComplete);
+                PipelineStepList computed = getAllSteps(
+                        new PipelineNodeGraphAdapter(run, snapshot.nodes(), snapshot.enclosingIdsByNodeId()),
+                        runIsComplete);
                 LiveGraphRegistry.get().cacheAllSteps(run, snapshot.version(), computed);
                 return computed;
             }

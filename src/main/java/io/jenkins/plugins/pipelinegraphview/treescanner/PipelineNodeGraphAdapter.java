@@ -1,5 +1,6 @@
 package io.jenkins.plugins.pipelinegraphview.treescanner;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphBuilderApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepBuilderApi;
@@ -38,7 +39,20 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
 
     /** Builds the adapter over a pre-collected node set rather than walking the execution. */
     public PipelineNodeGraphAdapter(WorkflowRun run, Collection<FlowNode> preCollectedNodes) {
-        treeScanner = new PipelineNodeTreeScanner(run, preCollectedNodes);
+        this(run, preCollectedNodes, null);
+    }
+
+    /**
+     * Builds the adapter over a pre-collected node set plus a pre-computed
+     * {@code nodeId → enclosingIds} map. Supplying the map lets graph construction resolve
+     * ancestry without touching the execution's node storage (and its read lock, which
+     * contends with the running build's writes).
+     */
+    public PipelineNodeGraphAdapter(
+            WorkflowRun run,
+            Collection<FlowNode> preCollectedNodes,
+            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
+        treeScanner = new PipelineNodeTreeScanner(run, preCollectedNodes, enclosingIdsByNodeId);
     }
 
     private final Object pipelineLock = new Object();

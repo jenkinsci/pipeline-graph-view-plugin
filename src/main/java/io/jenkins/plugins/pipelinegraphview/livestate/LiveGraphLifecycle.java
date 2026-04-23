@@ -65,11 +65,13 @@ public class LiveGraphLifecycle extends FlowExecutionListener {
                 if (snapshot != null) {
                     // Share a single adapter (and therefore a single tree-scanner pass) for
                     // both graph and steps rather than paying the cost twice.
-                    PipelineNodeGraphAdapter adapter = new PipelineNodeGraphAdapter(run, snapshot.nodes());
+                    PipelineNodeGraphAdapter adapter =
+                            new PipelineNodeGraphAdapter(run, snapshot.nodes(), snapshot.enclosingIdsByNodeId());
                     // runIsComplete=true here directly: WorkflowRun.isBuilding() can still be
                     // true even though FlowExecution is complete. PipelineGraph.complete is
                     // already derived from FlowExecution.isComplete() inside createTreeFrom.
-                    graph = new PipelineGraphApi(run).createTreeFrom(adapter, snapshot.workspaceNodes());
+                    graph = new PipelineGraphApi(run)
+                            .createTreeFrom(adapter, snapshot.workspaceNodes(), snapshot.enclosingIdsByNodeId());
                     allSteps = new PipelineStepApi(run).getAllStepsFrom(adapter, true);
                 } else {
                     // No live state (feature disabled, poisoned, plugin installed mid-build).

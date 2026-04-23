@@ -3,8 +3,10 @@ package io.jenkins.plugins.pipelinegraphview.livestate;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.jenkinsci.plugins.workflow.actions.WorkspaceAction;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
@@ -18,6 +20,11 @@ final class LiveGraphState {
 
     private final List<FlowNode> nodes = new ArrayList<>();
     private final Set<String> seenIds = new HashSet<>();
+    // Node ID → its enclosing-block IDs (innermost first). Populated at add time on the
+    // CPS VM thread, so HTTP graph builds don't need to acquire the storage read lock to
+    // resolve ancestry. Without this, each findParentNode call goes back to storage and
+    // contends with the write lock the running build is holding.
+    private final Map<String, List<String>> enclosingIdsByNodeId = new HashMap<>();
     private long version = 0;
     private volatile boolean poisoned = false;
 
@@ -36,6 +43,14 @@ final class LiveGraphState {
             return;
         }
         nodes.add(node);
+        // Capture ancestry now. On the CPS VM thread (the usual onNewHead caller) this is a
+        // reentrant read against the already-held storage write lock — effectively free.
+        // A node's enclosing chain never changes after creation, so we only pay this once.
+        try {
+            enclosingIdsByNodeId.put(node.getId(), List.copyOf(node.getAllEnclosingIds()));
+        } catch (Throwable ignored) {
+            enclosingIdsByNodeId.put(node.getId(), List.of());
+        }
         version++;
     }
 
@@ -64,12 +79,14 @@ final class LiveGraphState {
         // getAction(WorkspaceAction.class) walks the FlowNode's action list, so doing N of
         // them under the lock the CPS VM also uses would block pipeline execution for O(N).
         List<FlowNode> nodesCopy;
+        Map<String, List<String>> enclosingCopy;
         long v;
         synchronized (this) {
             if (poisoned || !ready) {
                 return null;
             }
             nodesCopy = List.copyOf(nodes);
+            enclosingCopy = Map.copyOf(enclosingIdsByNodeId);
             v = version;
         }
         // Filter for WorkspaceAction at snapshot time, not at addNode time: a node can have
@@ -85,7 +102,7 @@ final class LiveGraphState {
                 workspaceNodes.add(n);
             }
         }
-        return new LiveGraphSnapshot(nodesCopy, List.copyOf(workspaceNodes), v);
+        return new LiveGraphSnapshot(nodesCopy, List.copyOf(workspaceNodes), enclosingCopy, v);
     }
 
     /**

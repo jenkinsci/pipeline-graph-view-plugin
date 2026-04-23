@@ -30,7 +30,9 @@ public class PipelineGraphApi {
     }
 
     private List<PipelineStageInternal> getPipelineNodes(
-            PipelineGraphBuilderApi builder, @CheckForNull List<FlowNode> workspaceNodes) {
+            PipelineGraphBuilderApi builder,
+            @CheckForNull List<FlowNode> workspaceNodes,
+            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
         return builder.getPipelineNodes().stream()
                 .map(flowNodeWrapper -> new PipelineStageInternal(
                         flowNodeWrapper.getId(), // TODO no need to parse it BO returns a string even though the
@@ -44,7 +46,7 @@ public class PipelineGraphApi {
                         flowNodeWrapper.getDisplayName(), // TODO blue ocean uses timing information: "Passed in 0s"
                         flowNodeWrapper.isSynthetic(),
                         flowNodeWrapper.getTiming(),
-                        getStageNode(flowNodeWrapper, workspaceNodes)))
+                        getStageNode(flowNodeWrapper, workspaceNodes, enclosingIdsByNodeId)))
                 .collect(Collectors.toList());
     }
 
@@ -59,7 +61,10 @@ public class PipelineGraphApi {
         };
     }
 
-    private PipelineGraph createTree(PipelineGraphBuilderApi builder, @CheckForNull List<FlowNode> workspaceNodes) {
+    private PipelineGraph createTree(
+            PipelineGraphBuilderApi builder,
+            @CheckForNull List<FlowNode> workspaceNodes,
+            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
         FlowExecution execution = run.getExecution();
         if (execution == null) {
             // If we don't have an execution - e.g. if the Pipeline has a syntax error -
@@ -73,7 +78,7 @@ public class PipelineGraphApi {
         // We want to remap children here, so we don't update the parents of the
         // original objects - as
         // these are completely new representations.
-        List<PipelineStageInternal> stages = getPipelineNodes(builder, workspaceNodes);
+        List<PipelineStageInternal> stages = getPipelineNodes(builder, workspaceNodes, enclosingIdsByNodeId);
 
         // Get InputAction once for all stages
         InputAction inputAction = run.getAction(InputAction.class);
@@ -120,34 +125,51 @@ public class PipelineGraphApi {
         return new PipelineGraph(stageResults, complete);
     }
 
-    private static String getStageNode(FlowNodeWrapper flowNodeWrapper, @CheckForNull List<FlowNode> workspaceNodes) {
+    private static String getStageNode(
+            FlowNodeWrapper flowNodeWrapper,
+            @CheckForNull List<FlowNode> workspaceNodes,
+            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
         FlowNode flowNode = flowNodeWrapper.getNode();
         logger.debug("Checking node {}", flowNode);
         FlowExecution execution = flowNode.getExecution();
         Iterable<FlowNode> candidates =
                 workspaceNodes != null ? workspaceNodes : new DepthFirstScanner().allNodes(execution);
+        // Prefer pre-computed ancestry over FlowNode#getAllEnclosingIds / getEnclosingId /
+        // execution.getNode, all of which acquire the storage read lock and can block for
+        // minutes on a large graph when the CPS VM is writing frequently.
+        List<String> flowNodeEnclosingIds = enclosingIdsFor(flowNode, enclosingIdsByNodeId);
         for (FlowNode n : candidates) {
             WorkspaceAction ws = n.getAction(WorkspaceAction.class);
             if (ws != null) {
                 logger.debug("Found workspace node: {}", n);
+                List<String> nEnclosingIds = enclosingIdsFor(n, enclosingIdsByNodeId);
+                String nDirectEnclosingId = nEnclosingIds.isEmpty() ? null : nEnclosingIds.get(0);
                 boolean isWorkspaceNode = Objects.equals(n.getId(), flowNode.getId())
-                        || Objects.equals(n.getEnclosingId(), flowNode.getId())
-                        || flowNode.getAllEnclosingIds().contains(n.getId());
+                        || Objects.equals(nDirectEnclosingId, flowNode.getId())
+                        || flowNodeEnclosingIds.contains(n.getId());
 
-                // Parallel stages have a sub-stage, so we need to check the 3rd parent for a match
+                // Parallel stages have a sub-stage, so we need to check the 3rd parent for a match.
+                // Original code walked three levels via execution.getNode(...); the third-level
+                // enclosing ID is simply enclosingIds[2] in the pre-computed list.
                 if (flowNodeWrapper.getType() == FlowNodeWrapper.NodeType.PARALLEL) {
-                    try {
-                        if (n.getEnclosingId() != null) {
-                            FlowNode p = execution.getNode(n.getEnclosingId());
-                            if (p != null && p.getEnclosingId() != null) {
-                                p = execution.getNode(p.getEnclosingId());
+                    if (enclosingIdsByNodeId != null) {
+                        if (nEnclosingIds.size() >= 3) {
+                            isWorkspaceNode = Objects.equals(flowNode.getId(), nEnclosingIds.get(2));
+                        }
+                    } else {
+                        try {
+                            if (n.getEnclosingId() != null) {
+                                FlowNode p = execution.getNode(n.getEnclosingId());
                                 if (p != null && p.getEnclosingId() != null) {
-                                    isWorkspaceNode = Objects.equals(flowNode.getId(), p.getEnclosingId());
+                                    p = execution.getNode(p.getEnclosingId());
+                                    if (p != null && p.getEnclosingId() != null) {
+                                        isWorkspaceNode = Objects.equals(flowNode.getId(), p.getEnclosingId());
+                                    }
                                 }
                             }
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
                         }
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
                     }
                 }
 
@@ -162,6 +184,16 @@ public class PipelineGraphApi {
             }
         }
         return null;
+    }
+
+    private static List<String> enclosingIdsFor(FlowNode node, @CheckForNull Map<String, List<String>> map) {
+        if (map != null) {
+            List<String> pre = map.get(node.getId());
+            if (pre != null) {
+                return pre;
+            }
+        }
+        return node.getAllEnclosingIds();
     }
 
     public PipelineGraph createTree() {
@@ -181,21 +213,27 @@ public class PipelineGraphApi {
             }
             LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
             if (snapshot != null) {
-                PipelineGraph computed =
-                        createTree(new PipelineNodeGraphAdapter(run, snapshot.nodes()), snapshot.workspaceNodes());
+                PipelineGraph computed = createTree(
+                        new PipelineNodeGraphAdapter(run, snapshot.nodes(), snapshot.enclosingIdsByNodeId()),
+                        snapshot.workspaceNodes(),
+                        snapshot.enclosingIdsByNodeId());
                 LiveGraphRegistry.get().cacheGraph(run, snapshot.version(), computed);
                 return computed;
             }
         }
-        return createTree(CachedPipelineNodeGraphAdaptor.instance.getFor(run), null);
+        return createTree(CachedPipelineNodeGraphAdaptor.instance.getFor(run), null, null);
     }
 
     /**
-     * Builds a {@link PipelineGraph} from a caller-supplied adapter and workspace-node list.
-     * Doesn't touch the live-state DTO cache — caller owns caching.
+     * Builds a {@link PipelineGraph} from a caller-supplied adapter, workspace-node list,
+     * and optional pre-computed ancestry map. Doesn't touch the live-state DTO cache —
+     * caller owns caching.
      */
     @Restricted(NoExternalUse.class)
-    public PipelineGraph createTreeFrom(PipelineGraphBuilderApi builder, @CheckForNull List<FlowNode> workspaceNodes) {
-        return createTree(builder, workspaceNodes);
+    public PipelineGraph createTreeFrom(
+            PipelineGraphBuilderApi builder,
+            @CheckForNull List<FlowNode> workspaceNodes,
+            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
+        return createTree(builder, workspaceNodes, enclosingIdsByNodeId);
     }
 }

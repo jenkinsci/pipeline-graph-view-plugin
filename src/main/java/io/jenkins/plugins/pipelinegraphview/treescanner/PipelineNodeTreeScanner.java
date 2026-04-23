@@ -61,13 +61,18 @@ public class PipelineNodeTreeScanner {
 
     /**
      * Builds from a caller-supplied node collection, skipping the {@link DepthFirstScanner}
-     * walk. The caller is responsible for having observed every node already.
+     * walk. The caller is responsible for having observed every node already. Pass
+     * {@code enclosingIdsByNodeId} to skip the storage read lock during ancestry resolution
+     * (the live-state path captures this on the CPS VM thread).
      */
-    public PipelineNodeTreeScanner(@NonNull WorkflowRun run, @NonNull Collection<FlowNode> nodes) {
+    public PipelineNodeTreeScanner(
+            @NonNull WorkflowRun run,
+            @NonNull Collection<FlowNode> nodes,
+            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
         this.run = run;
         this.execution = run.getExecution();
         this.declarative = run.getAction(ExecutionModelAction.class) != null;
-        this.buildFrom(nodes);
+        this.buildFrom(nodes, enclosingIdsByNodeId);
     }
 
     /**
@@ -78,7 +83,7 @@ public class PipelineNodeTreeScanner {
             logger.debug("Building graph");
         }
         if (execution != null) {
-            buildFrom(getAllNodes());
+            buildFrom(getAllNodes(), null);
         } else {
             this.stageNodeMap = new LinkedHashMap<>();
             this.stepNodeMap = new LinkedHashMap<>();
@@ -88,7 +93,7 @@ public class PipelineNodeTreeScanner {
         }
     }
 
-    private void buildFrom(Collection<FlowNode> nodes) {
+    private void buildFrom(Collection<FlowNode> nodes, @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
         if (execution == null || nodes.isEmpty()) {
             this.stageNodeMap = new LinkedHashMap<>();
             this.stepNodeMap = new LinkedHashMap<>();
@@ -96,7 +101,7 @@ public class PipelineNodeTreeScanner {
         }
         NodeRelationshipFinder finder = new NodeRelationshipFinder();
         Map<String, NodeRelationship> relationships = finder.getNodeRelationships(nodes);
-        GraphBuilder builder = new GraphBuilder(nodes, relationships, this.run, this.execution);
+        GraphBuilder builder = new GraphBuilder(nodes, relationships, this.run, this.execution, enclosingIdsByNodeId);
         if (isDebugEnabled) {
             logger.debug("Original nodes:");
             logger.debug("{}", builder.getNodes());
@@ -173,6 +178,11 @@ public class PipelineNodeTreeScanner {
         @NonNull
         private final FlowExecution execution;
 
+        // Optional pre-computed ancestry. When present, findParentNode avoids the storage
+        // read lock that FlowNode#getAllEnclosingIds would take.
+        @CheckForNull
+        private final Map<String, List<String>> enclosingIdsByNodeId;
+
         private final Map<String, FlowNodeWrapper> wrappedNodeMap = new LinkedHashMap<>();
         // These two are populated when required using by filtering unwanted nodes from
         // 'wrappedNodeMap' into a new map.
@@ -194,12 +204,14 @@ public class PipelineNodeTreeScanner {
                 Collection<FlowNode> nodes,
                 @NonNull Map<String, NodeRelationship> relationships,
                 @NonNull WorkflowRun run,
-                @NonNull FlowExecution execution) {
+                @NonNull FlowExecution execution,
+                @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
             this.nodes = nodes;
             this.relationships = relationships;
             this.run = run;
             this.inputAction = run.getAction(InputAction.class);
             this.execution = execution;
+            this.enclosingIdsByNodeId = enclosingIdsByNodeId;
             buildGraph();
         }
 
@@ -480,7 +492,15 @@ public class PipelineNodeTreeScanner {
          */
         private @CheckForNull FlowNodeWrapper findParentNode(
                 @NonNull FlowNodeWrapper child, @NonNull Map<String, FlowNodeWrapper> wrappedNodeMap) {
-            List<String> enclosingIds = child.getNode().getAllEnclosingIds();
+            // Prefer the pre-computed ancestry: FlowNode#getAllEnclosingIds reaches back into
+            // the execution's storage, which contends with the running build's write lock
+            // and can make HTTP requests block for minutes on a large graph.
+            List<String> enclosingIds;
+            if (enclosingIdsByNodeId != null) {
+                enclosingIds = enclosingIdsByNodeId.getOrDefault(child.getId(), List.of());
+            } else {
+                enclosingIds = child.getNode().getAllEnclosingIds();
+            }
             Set<String> knownNodes = wrappedNodeMap.keySet();
             for (String possibleParentId : enclosingIds) {
                 if (isDebugEnabled) {

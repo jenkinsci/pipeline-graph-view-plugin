@@ -203,22 +203,36 @@ public class PipelineGraphApi {
     /** Uncached compute path; callers are responsible for any caching. */
     @Restricted(NoExternalUse.class)
     public PipelineGraph computeTree() {
-        // Check the cache first using the cheap version read — if we already have a graph
-        // for the current state, we can skip the O(N) snapshot copy entirely.
+        // Fast path: cache hit without locking.
         Long currentVersion = LiveGraphRegistry.get().currentVersion(run);
         if (currentVersion != null) {
             PipelineGraph cached = LiveGraphRegistry.get().cachedGraph(run, currentVersion);
             if (cached != null) {
                 return cached;
             }
-            LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
-            if (snapshot != null) {
-                PipelineGraph computed = createTree(
-                        new PipelineNodeGraphAdapter(run, snapshot.nodes(), snapshot.enclosingIdsByNodeId()),
-                        snapshot.workspaceNodes(),
-                        snapshot.enclosingIdsByNodeId());
-                LiveGraphRegistry.get().cacheGraph(run, snapshot.version(), computed);
-                return computed;
+        }
+        // Slow path: serialise concurrent rebuilds for this run. Without this, N concurrent
+        // HTTP readers each spend O(nodes) CPU on the same computation.
+        Object lock = LiveGraphRegistry.get().graphComputeLock(run);
+        if (lock != null) {
+            synchronized (lock) {
+                // Re-check — another thread likely computed while we waited.
+                Long retryVersion = LiveGraphRegistry.get().currentVersion(run);
+                if (retryVersion != null) {
+                    PipelineGraph cached = LiveGraphRegistry.get().cachedGraph(run, retryVersion);
+                    if (cached != null) {
+                        return cached;
+                    }
+                }
+                LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
+                if (snapshot != null) {
+                    PipelineGraph computed = createTree(
+                            new PipelineNodeGraphAdapter(run, snapshot.nodes(), snapshot.enclosingIdsByNodeId()),
+                            snapshot.workspaceNodes(),
+                            snapshot.enclosingIdsByNodeId());
+                    LiveGraphRegistry.get().cacheGraph(run, snapshot.version(), computed);
+                    return computed;
+                }
             }
         }
         return createTree(CachedPipelineNodeGraphAdaptor.instance.getFor(run), null, null);

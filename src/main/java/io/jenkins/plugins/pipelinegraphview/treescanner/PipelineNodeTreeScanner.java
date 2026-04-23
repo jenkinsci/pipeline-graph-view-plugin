@@ -99,7 +99,7 @@ public class PipelineNodeTreeScanner {
             this.stepNodeMap = new LinkedHashMap<>();
             return;
         }
-        NodeRelationshipFinder finder = new NodeRelationshipFinder();
+        NodeRelationshipFinder finder = new NodeRelationshipFinder(enclosingIdsByNodeId);
         Map<String, NodeRelationship> relationships = finder.getNodeRelationships(nodes);
         GraphBuilder builder = new GraphBuilder(nodes, relationships, this.run, this.execution, enclosingIdsByNodeId);
         if (isDebugEnabled) {

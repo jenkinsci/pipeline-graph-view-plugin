@@ -72,7 +72,12 @@ public class LiveGraphLifecycle extends FlowExecutionListener {
                     // already derived from FlowExecution.isComplete() inside createTreeFrom.
                     graph = new PipelineGraphApi(run)
                             .createTreeFrom(adapter, snapshot.workspaceNodes(), snapshot.enclosingIdsByNodeId());
-                    allSteps = new PipelineStepApi(run).getAllStepsFrom(adapter, true);
+                    allSteps = new PipelineStepApi(run)
+                            .getAllStepsFrom(
+                                    adapter,
+                                    true,
+                                    snapshot.hideFromViewBlockStartIds(),
+                                    snapshot.enclosingIdsByNodeId());
                 } else {
                     // No live state (feature disabled, poisoned, plugin installed mid-build).
                     // Fall back to the scanner-backed paths and rebuild steps with

@@ -1,5 +1,6 @@
 package io.jenkins.plugins.pipelinegraphview.livestate;
 
+import io.jenkins.plugins.pipelinegraphview.steps.HideFromViewStep;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import java.util.ArrayList;
@@ -9,7 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.jenkinsci.plugins.workflow.actions.WorkspaceAction;
+import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
+import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 
 /**
  * Per-run mutable state built up by {@link LiveGraphPopulator} as {@code GraphListener}
@@ -25,6 +28,10 @@ final class LiveGraphState {
     // resolve ancestry. Without this, each findParentNode call goes back to storage and
     // contends with the write lock the running build is holding.
     private final Map<String, List<String>> enclosingIdsByNodeId = new HashMap<>();
+    // IDs of BlockStartNodes that wrap a {@code hideFromView} step. Lets HTTP readers check
+    // whether a step is "hidden" by scanning this set against the step's enclosing IDs,
+    // instead of calling FlowNode#iterateEnclosingBlocks which goes to storage per step.
+    private final Set<String> hideFromViewBlockStartIds = new HashSet<>();
     private long version = 0;
     private volatile boolean poisoned = false;
 
@@ -38,6 +45,14 @@ final class LiveGraphState {
     private VersionedCache<PipelineGraph> cachedGraph;
     private VersionedCache<PipelineStepList> cachedAllSteps;
 
+    // Per-compute dedup locks. N concurrent HTTP threads rebuilding the same graph
+    // multiplies CPU cost by N (they each do the same O(nodes) work). With these, the
+    // first thread computes and caches; the rest block here, then re-check cache and
+    // usually find the fresh result. Separate locks for tree vs steps — they're independent
+    // computations and a slow tree rebuild shouldn't starve steps (or vice versa).
+    private final Object graphComputeLock = new Object();
+    private final Object allStepsComputeLock = new Object();
+
     synchronized void addNode(FlowNode node) {
         if (!seenIds.add(node.getId())) {
             return;
@@ -50,6 +65,18 @@ final class LiveGraphState {
             enclosingIdsByNodeId.put(node.getId(), List.copyOf(node.getAllEnclosingIds()));
         } catch (Throwable ignored) {
             enclosingIdsByNodeId.put(node.getId(), List.of());
+        }
+        // Record hideFromView block starts once, here, so readers never need to walk a
+        // node's enclosing blocks through storage to tell whether the node is hidden.
+        if (node instanceof StepStartNode stepStartNode) {
+            try {
+                StepDescriptor descriptor = stepStartNode.getDescriptor();
+                if (descriptor != null && HideFromViewStep.class.getName().equals(descriptor.getId())) {
+                    hideFromViewBlockStartIds.add(node.getId());
+                }
+            } catch (Throwable ignored) {
+                // Descriptor lookup is best-effort; fall back to "not hidden".
+            }
         }
         version++;
     }
@@ -80,6 +107,7 @@ final class LiveGraphState {
         // them under the lock the CPS VM also uses would block pipeline execution for O(N).
         List<FlowNode> nodesCopy;
         Map<String, List<String>> enclosingCopy;
+        Set<String> hideFromViewCopy;
         long v;
         synchronized (this) {
             if (poisoned || !ready) {
@@ -87,6 +115,7 @@ final class LiveGraphState {
             }
             nodesCopy = List.copyOf(nodes);
             enclosingCopy = Map.copyOf(enclosingIdsByNodeId);
+            hideFromViewCopy = Set.copyOf(hideFromViewBlockStartIds);
             v = version;
         }
         // Filter for WorkspaceAction at snapshot time, not at addNode time: a node can have
@@ -102,7 +131,7 @@ final class LiveGraphState {
                 workspaceNodes.add(n);
             }
         }
-        return new LiveGraphSnapshot(nodesCopy, List.copyOf(workspaceNodes), enclosingCopy, v);
+        return new LiveGraphSnapshot(nodesCopy, List.copyOf(workspaceNodes), enclosingCopy, hideFromViewCopy, v);
     }
 
     /**
@@ -136,6 +165,14 @@ final class LiveGraphState {
 
     synchronized void markReady() {
         ready = true;
+    }
+
+    Object graphComputeLock() {
+        return graphComputeLock;
+    }
+
+    Object allStepsComputeLock() {
+        return allStepsComputeLock;
     }
 
     private record VersionedCache<T>(long version, T value) {}

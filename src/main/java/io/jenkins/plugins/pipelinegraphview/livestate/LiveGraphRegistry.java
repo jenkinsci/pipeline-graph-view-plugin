@@ -138,6 +138,29 @@ public final class LiveGraphRegistry {
         }
     }
 
+    /**
+     * Returns a per-run monitor that callers can synchronise on to dedup concurrent graph
+     * rebuilds. Null when the live state isn't present (caller just computes directly).
+     */
+    @edu.umd.cs.findbugs.annotations.CheckForNull
+    public Object graphComputeLock(WorkflowRun run) {
+        if (disabled()) {
+            return null;
+        }
+        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        return state == null ? null : state.graphComputeLock();
+    }
+
+    /** See {@link #graphComputeLock(WorkflowRun)} — the matching lock for the steps path. */
+    @edu.umd.cs.findbugs.annotations.CheckForNull
+    public Object allStepsComputeLock(WorkflowRun run) {
+        if (disabled()) {
+            return null;
+        }
+        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        return state == null ? null : state.allStepsComputeLock();
+    }
+
     private static String keyFor(FlowExecution execution) {
         try {
             Object exec = execution.getOwner().getExecutable();

@@ -9,6 +9,7 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -131,22 +132,50 @@ public class PipelineNodeTreeScanner {
 
     @NonNull
     public List<FlowNodeWrapper> getStageSteps(String startNodeId) {
-        FlowNodeWrapper wrappedStage = stageNodeMap.get(startNodeId);
-        List<FlowNodeWrapper> stageSteps = stepNodeMap.values().stream()
-                .filter(wrappedStep -> wrappedStep.getParents().contains(wrappedStage))
-                .sorted(new FlowNodeWrapper.NodeComparator())
-                .collect(Collectors.toCollection(ArrayList::new));
-        if (isDebugEnabled) {
-            logger.debug("Returning {} steps for node '{}'", stageSteps.size(), startNodeId);
-        }
-        return stageSteps;
+        return getAllSteps().getOrDefault(startNodeId, new ArrayList<>());
     }
 
+    /**
+     * Buckets every step into its parent stage's list in a single O(steps) pass.
+     *
+     * <p>The previous implementation called {@code getStageSteps} per stage, each scan running
+     * {@code steps.filter(s -> s.getParents().contains(stage))}. That's O(stages × steps); on a
+     * 300k-node run with ~6000 stages this was the dominant cost of the {@code /allSteps}
+     * endpoint — 90+ seconds of CPU per request observed in production jstacks.
+     */
     @NonNull
     public Map<String, List<FlowNodeWrapper>> getAllSteps() {
         Map<String, List<FlowNodeWrapper>> stageNodeStepMap = new LinkedHashMap<>();
         for (String stageId : stageNodeMap.keySet()) {
-            stageNodeStepMap.put(stageId, getStageSteps(stageId));
+            stageNodeStepMap.put(stageId, new ArrayList<>());
+        }
+        for (FlowNodeWrapper step : stepNodeMap.values()) {
+            List<FlowNodeWrapper> parents = step.getParents();
+            if (parents.isEmpty()) {
+                continue;
+            }
+            if (parents.size() == 1) {
+                List<FlowNodeWrapper> bucket = stageNodeStepMap.get(parents.get(0).getId());
+                if (bucket != null) {
+                    bucket.add(step);
+                }
+                continue;
+            }
+            // Rare: multi-parent step. Match the legacy contains() semantics without adding the
+            // same step twice to the same stage's bucket.
+            Set<String> seen = new HashSet<>(parents.size());
+            for (FlowNodeWrapper parent : parents) {
+                if (seen.add(parent.getId())) {
+                    List<FlowNodeWrapper> bucket = stageNodeStepMap.get(parent.getId());
+                    if (bucket != null) {
+                        bucket.add(step);
+                    }
+                }
+            }
+        }
+        FlowNodeWrapper.NodeComparator comparator = new FlowNodeWrapper.NodeComparator();
+        for (List<FlowNodeWrapper> bucket : stageNodeStepMap.values()) {
+            bucket.sort(comparator);
         }
         return stageNodeStepMap;
     }

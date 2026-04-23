@@ -1,6 +1,8 @@
 package io.jenkins.plugins.pipelinegraphview.livestate;
 
 import hudson.Extension;
+import java.util.ArrayList;
+import java.util.List;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.flow.GraphListener;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
@@ -53,8 +55,16 @@ public class LiveGraphPopulator implements GraphListener.Synchronous {
         try {
             DepthFirstScanner scanner = new DepthFirstScanner();
             scanner.setup(execution.getCurrentHeads());
+            // The scanner walks from current heads backward (newest→oldest). Add nodes in
+            // the reverse of that order so the state's insertion order matches the
+            // oldest→newest sequence the onNewHead path maintains — LiveGraphState#snapshot
+            // reverses again to surface workspace candidates newest-first.
+            List<FlowNode> scanned = new ArrayList<>();
             for (FlowNode existing : scanner) {
-                state.addNode(existing);
+                scanned.add(existing);
+            }
+            for (int i = scanned.size() - 1; i >= 0; i--) {
+                state.addNode(scanned.get(i));
             }
         } catch (Throwable t) {
             logger.warn("catch-up failed; poisoning state", t);

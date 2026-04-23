@@ -2,11 +2,13 @@ package io.jenkins.plugins.pipelinegraphview.livestate;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphViewCache;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
+import java.util.ArrayList;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.flow.FlowExecutionListener;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -57,13 +59,29 @@ public class LiveGraphLifecycle extends FlowExecutionListener {
         try {
             WorkflowRun run = workflowRunFor(execution);
             if (run != null) {
-                PipelineGraph graph = new PipelineGraphApi(run).computeTree();
-                PipelineStepList allSteps = new PipelineStepApi(run).computeAllSteps();
-                // WorkflowRun.isBuilding() can still be true here even though FlowExecution
-                // is complete; rebuild with runIsComplete=true so the persisted copy matches
-                // reality. PipelineGraph.complete already reflects FlowExecution.isComplete().
-                PipelineStepList finalSteps = new PipelineStepList(allSteps.steps, true);
-                PipelineGraphViewCache.get().seed(run, graph, finalSteps);
+                PipelineGraph graph;
+                PipelineStepList allSteps;
+                LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
+                if (snapshot != null) {
+                    // Share a single adapter (and therefore a single tree-scanner pass) for
+                    // both graph and steps rather than paying the cost twice.
+                    PipelineNodeGraphAdapter adapter = new PipelineNodeGraphAdapter(run, snapshot.nodes());
+                    // runIsComplete=true here directly: WorkflowRun.isBuilding() can still be
+                    // true even though FlowExecution is complete. PipelineGraph.complete is
+                    // already derived from FlowExecution.isComplete() inside createTreeFrom.
+                    graph = new PipelineGraphApi(run).createTreeFrom(adapter, snapshot.workspaceNodes());
+                    allSteps = new PipelineStepApi(run).getAllStepsFrom(adapter, true);
+                } else {
+                    // No live state (feature disabled, poisoned, plugin installed mid-build).
+                    // Fall back to the scanner-backed paths and rebuild steps with
+                    // runIsComplete=true to keep the persisted copy consistent. Defensively
+                    // copy the list: PipelineStepList.steps is publicly mutable, and `raw`
+                    // may be held by the DTO cache or returned to a concurrent HTTP reader.
+                    graph = new PipelineGraphApi(run).computeTree();
+                    PipelineStepList raw = new PipelineStepApi(run).computeAllSteps();
+                    allSteps = new PipelineStepList(new ArrayList<>(raw.steps), true);
+                }
+                PipelineGraphViewCache.get().seed(run, graph, allSteps);
             }
         } catch (Throwable t) {
             logger.warn("seeding disk cache on completion failed", t);

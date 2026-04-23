@@ -14,6 +14,16 @@ import org.jenkinsci.plugins.workflow.job.WorkflowRun;
  * Entries are created on demand by the listener / lifecycle code, removed on completion,
  * and otherwise bounded by a Caffeine LRU so abandoned entries (deleted runs, listener
  * bugs) don't leak.
+ *
+ * <p>Operator knobs:
+ * <ul>
+ *   <li>{@code io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphRegistry.enabled}
+ *       ({@code boolean}, default {@code true}) — set to {@code false} to disable the
+ *       live-state path entirely and force scanner fallback.</li>
+ *   <li>{@code io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphRegistry.size}
+ *       ({@code int}, default {@code 512}) — max concurrent in-progress runs tracked.
+ *       Extra runs use the scanner path until an entry evicts.</li>
+ * </ul>
  */
 public final class LiveGraphRegistry {
 
@@ -37,11 +47,7 @@ public final class LiveGraphRegistry {
 
     LiveGraphRegistry() {}
 
-    /**
-     * Escape hatch. Setting this system property to {@code false} makes
-     * {@link #snapshot(WorkflowRun)} always return {@code null}, forcing callers to use the
-     * scanner fallback. Useful if a regression lands in the live-state path.
-     */
+    /** See the {@code .enabled} knob documented on the class javadoc. */
     private static boolean disabled() {
         return !SystemProperties.getBoolean(LiveGraphRegistry.class.getName() + ".enabled", true);
     }
@@ -55,6 +61,20 @@ public final class LiveGraphRegistry {
             return null;
         }
         return states.get(key, k -> new LiveGraphState());
+    }
+
+    /**
+     * Returns the state's current version, or {@code null} if there's no usable state
+     * (feature disabled, not populated, poisoned, or not yet ready). Cheap — lets callers
+     * short-circuit to {@link #cachedGraph}/{@link #cachedAllSteps} without paying for a
+     * full snapshot first.
+     */
+    public Long currentVersion(WorkflowRun run) {
+        if (disabled()) {
+            return null;
+        }
+        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        return state == null ? null : state.currentVersion();
     }
 
     /**

@@ -126,18 +126,32 @@ public class PipelineStepApi {
     /** Uncached compute path; callers are responsible for any caching. */
     @Restricted(NoExternalUse.class)
     public PipelineStepList computeAllSteps() {
-        // Look up the completed state before computing steps.
         boolean runIsComplete = !run.isBuilding();
-        LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
-        if (snapshot != null) {
-            PipelineStepList cached = LiveGraphRegistry.get().cachedAllSteps(run, snapshot.version());
+        // Check the cache first using the cheap version read — if we already have steps
+        // for the current state, we can skip the O(N) snapshot copy entirely.
+        Long currentVersion = LiveGraphRegistry.get().currentVersion(run);
+        if (currentVersion != null) {
+            PipelineStepList cached = LiveGraphRegistry.get().cachedAllSteps(run, currentVersion);
             if (cached != null) {
                 return cached;
             }
-            PipelineStepList computed = getAllSteps(new PipelineNodeGraphAdapter(run, snapshot.nodes()), runIsComplete);
-            LiveGraphRegistry.get().cacheAllSteps(run, snapshot.version(), computed);
-            return computed;
+            LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
+            if (snapshot != null) {
+                PipelineStepList computed =
+                        getAllSteps(new PipelineNodeGraphAdapter(run, snapshot.nodes()), runIsComplete);
+                LiveGraphRegistry.get().cacheAllSteps(run, snapshot.version(), computed);
+                return computed;
+            }
         }
         return getAllSteps(CachedPipelineNodeGraphAdaptor.instance.getFor(run), runIsComplete);
+    }
+
+    /**
+     * Builds a {@link PipelineStepList} from a caller-supplied adapter. Doesn't touch the
+     * live-state DTO cache — caller owns caching.
+     */
+    @Restricted(NoExternalUse.class)
+    public PipelineStepList getAllStepsFrom(PipelineStepBuilderApi builder, boolean runIsComplete) {
+        return getAllSteps(builder, runIsComplete);
     }
 }

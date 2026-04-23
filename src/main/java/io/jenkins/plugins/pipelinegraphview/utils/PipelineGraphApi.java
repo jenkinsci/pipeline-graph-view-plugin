@@ -171,17 +171,31 @@ public class PipelineGraphApi {
     /** Uncached compute path; callers are responsible for any caching. */
     @Restricted(NoExternalUse.class)
     public PipelineGraph computeTree() {
-        LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
-        if (snapshot != null) {
-            PipelineGraph cached = LiveGraphRegistry.get().cachedGraph(run, snapshot.version());
+        // Check the cache first using the cheap version read — if we already have a graph
+        // for the current state, we can skip the O(N) snapshot copy entirely.
+        Long currentVersion = LiveGraphRegistry.get().currentVersion(run);
+        if (currentVersion != null) {
+            PipelineGraph cached = LiveGraphRegistry.get().cachedGraph(run, currentVersion);
             if (cached != null) {
                 return cached;
             }
-            PipelineGraph computed =
-                    createTree(new PipelineNodeGraphAdapter(run, snapshot.nodes()), snapshot.workspaceNodes());
-            LiveGraphRegistry.get().cacheGraph(run, snapshot.version(), computed);
-            return computed;
+            LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
+            if (snapshot != null) {
+                PipelineGraph computed =
+                        createTree(new PipelineNodeGraphAdapter(run, snapshot.nodes()), snapshot.workspaceNodes());
+                LiveGraphRegistry.get().cacheGraph(run, snapshot.version(), computed);
+                return computed;
+            }
         }
         return createTree(CachedPipelineNodeGraphAdaptor.instance.getFor(run), null);
+    }
+
+    /**
+     * Builds a {@link PipelineGraph} from a caller-supplied adapter and workspace-node list.
+     * Doesn't touch the live-state DTO cache — caller owns caching.
+     */
+    @Restricted(NoExternalUse.class)
+    public PipelineGraph createTreeFrom(PipelineGraphBuilderApi builder, @CheckForNull List<FlowNode> workspaceNodes) {
+        return createTree(builder, workspaceNodes);
     }
 }

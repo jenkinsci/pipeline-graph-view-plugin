@@ -47,27 +47,45 @@ final class LiveGraphState {
         return nodes.size();
     }
 
-    synchronized LiveGraphSnapshot snapshot() {
+    /**
+     * Cheap version read for cache-hit short-circuits — same readiness/poison semantics as
+     * {@link #snapshot()}, but skips the O(N) copy. Callers check this first and only take
+     * a full snapshot on cache miss.
+     */
+    synchronized Long currentVersion() {
         if (poisoned || !ready) {
             return null;
         }
-        // Filter for WorkspaceAction at snapshot time rather than at addNode time:
-        // WorkspaceAction is attached to a block-start node when the workspace is allocated,
-        // which can happen AFTER onNewHead has already fired for that node. A snapshot-time
-        // scan always observes the latest action state on each captured FlowNode.
-        //
-        // The list is built newest-first (reverse insertion order) to match the iteration
-        // order of DepthFirstScanner (from current heads backward): PipelineGraphApi#getStageNode
-        // returns on the first match, and for nested agents the innermost workspace is the
-        // more-specific match — the one a later-created inner `node {}` block sits in.
+        return version;
+    }
+
+    LiveGraphSnapshot snapshot() {
+        // Release the monitor before running the WorkspaceAction scan: each
+        // getAction(WorkspaceAction.class) walks the FlowNode's action list, so doing N of
+        // them under the lock the CPS VM also uses would block pipeline execution for O(N).
+        List<FlowNode> nodesCopy;
+        long v;
+        synchronized (this) {
+            if (poisoned || !ready) {
+                return null;
+            }
+            nodesCopy = List.copyOf(nodes);
+            v = version;
+        }
+        // Filter for WorkspaceAction at snapshot time, not at addNode time: a node can have
+        // WorkspaceAction attached after onNewHead fires (when the workspace is allocated),
+        // so scanning here always observes the latest action state. Newest-first ordering
+        // matches DepthFirstScanner (from current heads backward); PipelineGraphApi#getStageNode
+        // returns on the first match, and for nested agents the innermost workspace — the
+        // one a later-created inner `node {}` block sits in — is the more-specific match.
         List<FlowNode> workspaceNodes = new ArrayList<>();
-        for (int i = nodes.size() - 1; i >= 0; i--) {
-            FlowNode n = nodes.get(i);
+        for (int i = nodesCopy.size() - 1; i >= 0; i--) {
+            FlowNode n = nodesCopy.get(i);
             if (n.getAction(WorkspaceAction.class) != null) {
                 workspaceNodes.add(n);
             }
         }
-        return new LiveGraphSnapshot(List.copyOf(nodes), List.copyOf(workspaceNodes), version);
+        return new LiveGraphSnapshot(nodesCopy, List.copyOf(workspaceNodes), v);
     }
 
     /**

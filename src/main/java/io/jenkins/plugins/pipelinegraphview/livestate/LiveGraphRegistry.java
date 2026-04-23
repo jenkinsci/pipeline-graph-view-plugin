@@ -2,6 +2,7 @@ package io.jenkins.plugins.pipelinegraphview.livestate;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import java.time.Duration;
@@ -140,7 +141,7 @@ public final class LiveGraphRegistry {
      * Returns a per-run monitor that callers can synchronise on to dedup concurrent graph
      * rebuilds. Null when the live state isn't present (caller just computes directly).
      */
-    @edu.umd.cs.findbugs.annotations.CheckForNull
+    @CheckForNull
     public Object graphComputeLock(WorkflowRun run) {
         if (disabled()) {
             return null;
@@ -150,13 +151,30 @@ public final class LiveGraphRegistry {
     }
 
     /** See {@link #graphComputeLock(WorkflowRun)} — the matching lock for the steps path. */
-    @edu.umd.cs.findbugs.annotations.CheckForNull
+    @CheckForNull
     public Object allStepsComputeLock(WorkflowRun run) {
         if (disabled()) {
             return null;
         }
         LiveGraphState state = states.getIfPresent(run.getExternalizableId());
         return state == null ? null : state.allStepsComputeLock();
+    }
+
+    /**
+     * Returns the {@link WarningActionCache} for this execution, or {@code null} when the
+     * live state isn't present. Callers fall back to uncached scans on null.
+     */
+    @CheckForNull
+    public WarningActionCache warningActionCache(FlowExecution execution) {
+        if (disabled()) {
+            return null;
+        }
+        String key = keyFor(execution);
+        if (key == null) {
+            return null;
+        }
+        LiveGraphState state = states.getIfPresent(key);
+        return state == null ? null : state.warningActionCache();
     }
 
     private static String keyFor(FlowExecution execution) {

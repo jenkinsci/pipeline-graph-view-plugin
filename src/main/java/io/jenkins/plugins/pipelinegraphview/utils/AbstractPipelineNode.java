@@ -1,5 +1,6 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
@@ -12,7 +13,11 @@ public class AbstractPipelineNode {
     final String title;
     public final String id;
     private final long pauseDurationMillis;
-    private final long totalDurationMillis;
+    // Cached value; the serialised view is the null-aware getTotalDurationMillis() below.
+    @JsonIgnore
+    private final long cachedTotalDurationMillis;
+
+    @JsonIgnore
     final TimingInfo timingInfo;
 
     public AbstractPipelineNode(
@@ -25,7 +30,7 @@ public class AbstractPipelineNode {
         this.timingInfo = timingInfo;
         // These values won't change for a given TimingInfo.
         this.pauseDurationMillis = timingInfo.getPauseDurationMillis();
-        this.totalDurationMillis = timingInfo.getTotalDurationMillis();
+        this.cachedTotalDurationMillis = timingInfo.getTotalDurationMillis();
     }
 
     public long getStartTimeMillis() {
@@ -33,7 +38,7 @@ public class AbstractPipelineNode {
     }
 
     public Long getTotalDurationMillis() {
-        return state.isInProgress() ? null : totalDurationMillis;
+        return state.isInProgress() ? null : cachedTotalDurationMillis;
     }
 
     abstract static class AbstractPipelineNodeJsonProcessor implements JsonBeanProcessor {

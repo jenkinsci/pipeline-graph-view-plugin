@@ -5,9 +5,11 @@ import static org.hamcrest.Matchers.equalTo;
 
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
 import org.junit.jupiter.api.Test;
@@ -37,11 +39,32 @@ class PipelineStepListJsonWriterTest {
         PipelineStepList.PipelineStepListJsonProcessor.configure(config);
         String legacyOutput = JSONObject.fromObject(list, config).toString();
 
-        // Jackson may emit keys/values in a different order than net.sf.json, so compare
-        // parsed trees rather than raw strings.
-        JSONObject parsedJackson = JSONObject.fromObject(jacksonOutput);
-        JSONObject parsedLegacy = JSONObject.fromObject(legacyOutput);
-        assertThat(parsedJackson, equalTo(parsedLegacy));
+        // Compare as sorted maps so a difference in key order (which isn't part of the wire
+        // contract) doesn't fail the test — only structural / value differences matter.
+        assertThat(canonicalize(jacksonOutput), equalTo(canonicalize(legacyOutput)));
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Object canonicalize(String json) {
+        Object parsed = JSONObject.fromObject(json);
+        return canonicalize(parsed);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Object canonicalize(Object node) {
+        if (node instanceof Map<?, ?> map) {
+            Map<String, Object> sorted = new TreeMap<>();
+            map.forEach((k, v) -> sorted.put(String.valueOf(k), canonicalize(v)));
+            return sorted;
+        }
+        if (node instanceof List<?> list) {
+            List<Object> out = new ArrayList<>(list.size());
+            for (Object v : list) {
+                out.add(canonicalize(v));
+            }
+            return out;
+        }
+        return node;
     }
 
     private static PipelineStepList build() {

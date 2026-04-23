@@ -193,6 +193,24 @@ public class FlowNodeWrapper {
         return node.getId();
     }
 
+    /**
+     * Lazily-parsed numeric form of {@link #getId()} for sort comparisons. FlowNode IDs are
+     * monotonically assigned integer strings; caching the parsed value means {@link NodeComparator}
+     * doesn't reparse both IDs on every one of {@code O(N log N)} TimSort comparisons.
+     */
+    private int cachedIdInt = Integer.MIN_VALUE;
+
+    public int getIdAsInt() {
+        // Benign race: two threads may both parse and store, but they store the same value —
+        // int stores are atomic and the write is idempotent, so no synchronisation needed.
+        int v = cachedIdInt;
+        if (v == Integer.MIN_VALUE) {
+            v = Integer.parseInt(node.getId());
+            cachedIdInt = v;
+        }
+        return v;
+    }
+
     public @NonNull FlowNode getNode() {
         return node;
     }
@@ -417,7 +435,7 @@ public class FlowNodeWrapper {
 
         @Override
         public int compare(FlowNodeWrapper a, FlowNodeWrapper b) {
-            return FlowNodeWrapper.compareIds(a.getId(), b.getId());
+            return Integer.compare(a.getIdAsInt(), b.getIdAsInt());
         }
     }
 
@@ -442,6 +460,30 @@ public class FlowNodeWrapper {
     public static int compareIds(String ida, String idb) {
         return Integer.compare(Integer.parseInt(ida), Integer.parseInt(idb));
     }
+
+    /**
+     * Sorts {@code nodes} by the integer value of their {@link FlowNode#getId()}. Parses each
+     * ID exactly once via decorate-sort-undecorate; {@link FlowNodeComparator} would reparse
+     * each ID on every comparison, which at 300k nodes dominates {@code /allSteps}.
+     */
+    public static List<FlowNode> sortByFlowNodeId(Collection<FlowNode> nodes, boolean descending) {
+        List<KeyedFlowNode> decorated = new ArrayList<>(nodes.size());
+        for (FlowNode node : nodes) {
+            decorated.add(new KeyedFlowNode(Integer.parseInt(node.getId()), node));
+        }
+        Comparator<KeyedFlowNode> cmp = Comparator.comparingInt(KeyedFlowNode::key);
+        if (descending) {
+            cmp = cmp.reversed();
+        }
+        decorated.sort(cmp);
+        List<FlowNode> out = new ArrayList<>(decorated.size());
+        for (KeyedFlowNode k : decorated) {
+            out.add(k.node());
+        }
+        return out;
+    }
+
+    private record KeyedFlowNode(int key, FlowNode node) {}
 
     // Useful for dumping node maps to console. These can then be viewed in dor or
     // online via:

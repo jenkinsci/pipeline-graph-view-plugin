@@ -1,10 +1,16 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import java.util.Map;
 
 public class PipelineStep extends AbstractPipelineNode {
     final String stageId;
+
+    // Parsed form of {@link #stageId} for sort comparisons.
+    @JsonIgnore
+    final int stageIdAsInt;
+
     final PipelineInputStep inputStep;
     private final Map<String, Object> flags;
 
@@ -20,6 +26,7 @@ public class PipelineStep extends AbstractPipelineNode {
             Map<String, Object> flags) {
         super(id, name, state, type, title, timingInfo);
         this.stageId = stageId;
+        this.stageIdAsInt = Integer.parseInt(stageId);
         this.inputStep = inputStep;
         this.flags = flags;
     }

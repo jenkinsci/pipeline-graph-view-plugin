@@ -193,11 +193,7 @@ public class FlowNodeWrapper {
         return node.getId();
     }
 
-    /**
-     * Lazily-parsed numeric form of {@link #getId()} for sort comparisons. FlowNode IDs are
-     * monotonically assigned integer strings; caching the parsed value means {@link NodeComparator}
-     * doesn't reparse both IDs on every one of {@code O(N log N)} TimSort comparisons.
-     */
+    /** Lazily-parsed numeric form of {@link #getId()} for sort comparisons. */
     private int cachedIdInt = Integer.MIN_VALUE;
 
     public int getIdAsInt() {

@@ -21,10 +21,11 @@ public class PipelineStepList {
     /* Sorts the list of PipelineSteps by stageId and Id. */
     public void sort() {
         this.steps.sort((lhs, rhs) -> {
-            if (!lhs.stageId.equals(rhs.stageId)) {
-                return FlowNodeWrapper.compareIds(lhs.stageId, rhs.stageId);
+            int cmp = Integer.compare(lhs.stageIdAsInt, rhs.stageIdAsInt);
+            if (cmp != 0) {
+                return cmp;
             }
-            return FlowNodeWrapper.compareIds(lhs.id, rhs.id);
+            return Integer.compare(lhs.idAsInt, rhs.idAsInt);
         });
     }
 

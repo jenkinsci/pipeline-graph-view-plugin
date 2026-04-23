@@ -15,6 +15,10 @@ public class AbstractPipelineNode {
     @JsonIgnore
     private final long cachedTotalDurationMillis;
 
+    // Parsed form of {@link #id} for sort comparisons.
+    @JsonIgnore
+    final int idAsInt;
+
     @JsonIgnore
     final TimingInfo timingInfo;
 
@@ -29,6 +33,7 @@ public class AbstractPipelineNode {
         // These values won't change for a given TimingInfo.
         this.pauseDurationMillis = timingInfo.getPauseDurationMillis();
         this.cachedTotalDurationMillis = timingInfo.getTotalDurationMillis();
+        this.idAsInt = Integer.parseInt(id);
     }
 
     public long getStartTimeMillis() {

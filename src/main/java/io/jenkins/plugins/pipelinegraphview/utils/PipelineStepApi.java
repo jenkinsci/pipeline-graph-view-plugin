@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
@@ -118,10 +119,11 @@ public class PipelineStepApi {
                 !inputStep.getParameters().isEmpty());
     }
 
+    // Strips ANSI colour-code escape sequences from step display names.
+    private static final Pattern ANSI_COLOUR_CODES = Pattern.compile("\\e\\[(\\d+[;:]?)+m");
+
     static String cleanTextContent(String text) {
-        // strips off all ANSI color codes
-        text = text.replaceAll("\\e\\[(\\d+[;:]?)+m", "");
-        return text.trim();
+        return ANSI_COLOUR_CODES.matcher(text).replaceAll("").trim();
     }
 
     private PipelineStepList getAllSteps(

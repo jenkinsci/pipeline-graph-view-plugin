@@ -30,7 +30,7 @@ public class PipelineStepApi {
             @CheckForNull Set<String> hideFromViewBlockStartIds,
             @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
         if (logger.isDebugEnabled()) {
-            logger.debug("PipelineStepApi steps: '{}'.", stepNodes);
+            logger.debug("PipelineStepApi parsing {} steps for stage {}", stepNodes.size(), stageId);
         }
         return stepNodes.stream()
                 .map(flowNodeWrapper -> {

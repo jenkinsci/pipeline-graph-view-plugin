@@ -97,9 +97,7 @@ public class PipelineConsoleViewAction extends Tab {
     private JSONObject getSteps(String nodeId) {
         logger.debug("getSteps was passed nodeId '{}'.", nodeId);
         PipelineStepList steps = stepApi.getSteps(nodeId);
-        JSONObject json = JSONObject.fromObject(steps, jsonConfig);
-        logger.debug("Steps for {}: '{}'.", nodeId, json);
-        return json;
+        return JSONObject.fromObject(steps, jsonConfig);
     }
 
     // Return all steps to:
@@ -111,7 +109,6 @@ public class PipelineConsoleViewAction extends Tab {
         run.checkPermission(Item.READ);
         PipelineStepList steps = stepApi.getAllSteps();
         JSONObject json = JSONObject.fromObject(steps, jsonConfig);
-        logger.debug("Steps: '{}'.", json);
         HttpResponse response = HttpResponses.okJSON(json);
 
         rsp.setStatus(200);

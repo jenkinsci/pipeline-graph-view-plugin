@@ -54,6 +54,7 @@ final class LiveGraphState {
 
     private final WarningActionCache warningActionCache = new WarningActionCache();
     private final BlockResolutionCache blockResolutionCache = new BlockResolutionCache();
+    private final SkippedStageCache skippedStageCache = new SkippedStageCache();
 
     // Serialise concurrent rebuilds so N HTTP readers don't each do the same O(nodes) work.
     // Separate locks for tree vs steps — a slow tree rebuild must not starve steps.
@@ -223,6 +224,10 @@ final class LiveGraphState {
 
     BlockResolutionCache blockResolutionCache() {
         return blockResolutionCache;
+    }
+
+    SkippedStageCache skippedStageCache() {
+        return skippedStageCache;
     }
 
     private record VersionedCache<T>(long version, T value) {}

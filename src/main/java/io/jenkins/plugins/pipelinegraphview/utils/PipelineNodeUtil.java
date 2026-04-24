@@ -10,6 +10,8 @@ import hudson.console.AnnotatedLargeText;
 import hudson.model.Action;
 import hudson.model.Queue;
 import hudson.model.queue.CauseOfBlockage;
+import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphRegistry;
+import io.jenkins.plugins.pipelinegraphview.livestate.SkippedStageCache;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
@@ -122,7 +124,14 @@ public class PipelineNodeUtil {
         if (node == null) {
             return false;
         }
+        SkippedStageCache cache = LiveGraphRegistry.get().skippedStageCache(node.getExecution());
+        if (cache != null) {
+            return cache.getOrCompute(node.getId(), () -> computeIsSkippedStage(node));
+        }
+        return computeIsSkippedStage(node);
+    }
 
+    private static boolean computeIsSkippedStage(@NonNull FlowNode node) {
         for (Action action : node.getActions()) {
             if (action instanceof TagsAction && ((TagsAction) action).getTagValue(StageStatus.TAG_NAME) != null) {
                 TagsAction tagsAction = (TagsAction) action;

@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jenkinsci.plugins.workflow.actions.WorkspaceAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
+import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 
@@ -108,7 +109,7 @@ final class LiveGraphState {
         return version;
     }
 
-    LiveGraphSnapshot snapshot() {
+    LiveGraphSnapshot snapshot(FlowExecution execution) {
         // Only the node lists need to be copied — enclosingIds and hideFromView are on
         // concurrent structures we can publish by reference. Keeping the monitor-held
         // section down to a couple of array copies means addNode (on the CPS VM thread)
@@ -138,7 +139,41 @@ final class LiveGraphState {
         }
         // Concurrent maps/sets are published by reference — consumers must treat them as
         // read-only (see {@link LiveGraphSnapshot}).
-        return new LiveGraphSnapshot(nodesCopy, workspaceNodes, enclosingIdsByNodeId, hideFromViewBlockStartIds, v);
+        Set<String> activeNodeIds = computeActiveNodeIds(execution);
+        return new LiveGraphSnapshot(
+                nodesCopy, workspaceNodes, enclosingIdsByNodeId, hideFromViewBlockStartIds, activeNodeIds, v);
+    }
+
+    /**
+     * Resolves the "active" node set for this snapshot: all current heads plus every
+     * enclosing block start. Prefers the already-captured {@link #enclosingIdsByNodeId} over
+     * a fresh storage walk when looking up a head's enclosing chain.
+     */
+    private Set<String> computeActiveNodeIds(FlowExecution execution) {
+        if (execution == null || execution.isComplete()) {
+            return Set.of();
+        }
+        Set<String> active = new HashSet<>();
+        try {
+            for (FlowNode head : execution.getCurrentHeads()) {
+                active.add(head.getId());
+                List<String> enclosing = enclosingIdsByNodeId.get(head.getId());
+                if (enclosing != null) {
+                    active.addAll(enclosing);
+                } else {
+                    try {
+                        active.addAll(head.getAllEnclosingIds());
+                    } catch (Throwable ignored) {
+                        // Best-effort: a missing enclosing chain just means a few block
+                        // starts won't be flagged active, which degrades gracefully.
+                    }
+                }
+            }
+        } catch (Throwable ignored) {
+            // Execution may become invalid; callers fall back to FlowNode#isActive().
+            return Set.of();
+        }
+        return Set.copyOf(active);
     }
 
     /**

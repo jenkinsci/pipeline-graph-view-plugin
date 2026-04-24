@@ -86,7 +86,7 @@ public final class LiveGraphRegistry {
             return null;
         }
         LiveGraphState state = states.getIfPresent(run.getExternalizableId());
-        return state == null ? null : state.snapshot();
+        return state == null ? null : state.snapshot(run.getExecution());
     }
 
     void remove(FlowExecution execution) {

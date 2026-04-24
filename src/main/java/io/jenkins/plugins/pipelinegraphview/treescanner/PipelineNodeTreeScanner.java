@@ -63,18 +63,20 @@ public class PipelineNodeTreeScanner {
 
     /**
      * Builds from a caller-supplied node collection, skipping the {@link DepthFirstScanner}
-     * walk. The caller is responsible for having observed every node already. Pass
-     * {@code enclosingIdsByNodeId} to skip the storage read lock during ancestry resolution
-     * (the live-state path captures this on the CPS VM thread).
+     * walk. The caller is responsible for having observed every node already. Supply
+     * {@code enclosingIdsByNodeId} to read ancestry from the map instead of FlowNode storage,
+     * and {@code activeNodeIds} to use the set for liveness checks instead of
+     * {@link FlowNode#isActive()}.
      */
     public PipelineNodeTreeScanner(
             @NonNull WorkflowRun run,
             @NonNull Collection<FlowNode> nodes,
-            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
+            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId,
+            @CheckForNull Set<String> activeNodeIds) {
         this.run = run;
         this.execution = run.getExecution();
         this.declarative = run.getAction(ExecutionModelAction.class) != null;
-        this.buildFrom(nodes, enclosingIdsByNodeId);
+        this.buildFrom(nodes, enclosingIdsByNodeId, activeNodeIds);
     }
 
     /**
@@ -85,7 +87,7 @@ public class PipelineNodeTreeScanner {
             logger.debug("Building graph");
         }
         if (execution != null) {
-            buildFrom(getAllNodes(), null);
+            buildFrom(getAllNodes(), null, null);
         } else {
             this.stageNodeMap = new LinkedHashMap<>();
             this.stepNodeMap = new LinkedHashMap<>();
@@ -95,7 +97,10 @@ public class PipelineNodeTreeScanner {
         }
     }
 
-    private void buildFrom(Collection<FlowNode> nodes, @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
+    private void buildFrom(
+            Collection<FlowNode> nodes,
+            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId,
+            @CheckForNull Set<String> activeNodeIds) {
         if (execution == null || nodes.isEmpty()) {
             this.stageNodeMap = new LinkedHashMap<>();
             this.stepNodeMap = new LinkedHashMap<>();
@@ -103,7 +108,8 @@ public class PipelineNodeTreeScanner {
         }
         NodeRelationshipFinder finder = new NodeRelationshipFinder(enclosingIdsByNodeId);
         Map<String, NodeRelationship> relationships = finder.getNodeRelationships(nodes);
-        GraphBuilder builder = new GraphBuilder(nodes, relationships, this.run, this.execution, enclosingIdsByNodeId);
+        GraphBuilder builder =
+                new GraphBuilder(nodes, relationships, this.run, this.execution, enclosingIdsByNodeId, activeNodeIds);
         if (isDebugEnabled) {
             logger.debug("Original nodes: count={}", builder.getNodes().size());
         }
@@ -197,6 +203,11 @@ public class PipelineNodeTreeScanner {
         @CheckForNull
         private final Map<String, List<String>> enclosingIdsByNodeId;
 
+        // Node IDs considered active at snapshot time (current heads + enclosing blocks).
+        // When non-null, {@code NodeRunStatus} reads liveness from this set.
+        @CheckForNull
+        private final Set<String> activeNodeIds;
+
         private final Map<String, FlowNodeWrapper> wrappedNodeMap = new LinkedHashMap<>();
         // These two are populated when required using by filtering unwanted nodes from
         // 'wrappedNodeMap' into a new map.
@@ -219,13 +230,15 @@ public class PipelineNodeTreeScanner {
                 @NonNull Map<String, NodeRelationship> relationships,
                 @NonNull WorkflowRun run,
                 @NonNull FlowExecution execution,
-                @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
+                @CheckForNull Map<String, List<String>> enclosingIdsByNodeId,
+                @CheckForNull Set<String> activeNodeIds) {
             this.nodes = nodes;
             this.relationships = relationships;
             this.run = run;
             this.inputAction = run.getAction(InputAction.class);
             this.execution = execution;
             this.enclosingIdsByNodeId = enclosingIdsByNodeId;
+            this.activeNodeIds = activeNodeIds;
             buildGraph();
         }
 
@@ -555,7 +568,7 @@ public class PipelineNodeTreeScanner {
                             start.getId(), end.getId(), () -> relationship.getStatus(this.run));
                 } else {
                     timing = relationship.getTimingInfo(this.run);
-                    status = relationship.getStatus(this.run);
+                    status = relationship.getStatus(this.run, activeNodeIds);
                 }
             }
 

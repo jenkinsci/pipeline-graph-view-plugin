@@ -65,8 +65,8 @@ public class LiveGraphLifecycle extends FlowExecutionListener {
                 if (snapshot != null) {
                     // Share a single adapter so both graph and step builds reuse one
                     // tree-scanner pass.
-                    PipelineNodeGraphAdapter adapter =
-                            new PipelineNodeGraphAdapter(run, snapshot.nodes(), snapshot.enclosingIdsByNodeId());
+                    PipelineNodeGraphAdapter adapter = new PipelineNodeGraphAdapter(
+                            run, snapshot.nodes(), snapshot.enclosingIdsByNodeId(), snapshot.activeNodeIds());
                     // Force runIsComplete=true for the step list: WorkflowRun.isBuilding() can
                     // still return true here even though the execution is complete.
                     graph = new PipelineGraphApi(run)

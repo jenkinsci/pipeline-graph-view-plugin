@@ -8,6 +8,7 @@ import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun;
 import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
+import java.util.Set;
 import org.jenkinsci.plugins.workflow.actions.WarningAction;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -132,5 +133,32 @@ public class NodeRelationship {
         // Catch-all if none of the above are applicable.
         return new NodeRunStatus(
                 StatusAndTiming.computeChunkStatus2(run, this.before, this.start, this.end, this.after));
+    }
+
+    /**
+     * Same as {@link #getStatus(WorkflowRun)} but threads {@code activeNodeIds} through to
+     * the step-node leaf. Block cases defer to {@link #getStatus(WorkflowRun)} so subclass
+     * overrides (e.g. {@link ParallelBlockRelationship}) apply.
+     */
+    public @NonNull NodeRunStatus getStatus(WorkflowRun run, @CheckForNull Set<String> activeNodeIds) {
+        if (activeNodeIds == null) {
+            return getStatus(run);
+        }
+        if (PipelineNodeUtil.isSkippedStage(start)) {
+            return new NodeRunStatus(BlueRun.BlueRunResult.NOT_BUILT, BlueRun.BlueRunState.SKIPPED);
+        }
+        if (PipelineNodeUtil.isPaused(this.end)) {
+            return new NodeRunStatus(BlueRun.BlueRunResult.UNKNOWN, BlueRun.BlueRunState.PAUSED);
+        }
+        if (PipelineNodeUtil.isStage(start)) {
+            WarningAction warningAction = start.getPersistentAction(WarningAction.class);
+            if (warningAction != null) {
+                return new NodeRunStatus(GenericStatus.fromResult(warningAction.getResult()));
+            }
+        }
+        if (this.start.getId().equals(this.end.getId())) {
+            return new NodeRunStatus(this.start, activeNodeIds);
+        }
+        return getStatus(run);
     }
 }

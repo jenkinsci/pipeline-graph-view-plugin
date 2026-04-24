@@ -545,10 +545,9 @@ public class PipelineNodeTreeScanner {
                 FlowNode end = relationship.getEnd();
                 // Timing and status for a closed block are stable once the BlockEndNode
                 // exists; memoise so subsequent requests don't re-walk actions per block.
-                BlockResolutionCache cache =
-                        (start != end && end instanceof BlockEndNode<?>)
-                                ? LiveGraphRegistry.get().blockResolutionCache(execution)
-                                : null;
+                BlockResolutionCache cache = (start != end && end instanceof BlockEndNode<?>)
+                        ? LiveGraphRegistry.get().blockResolutionCache(execution)
+                        : null;
                 if (cache != null) {
                     timing = cache.getOrComputeTiming(
                             start.getId(), end.getId(), () -> relationship.getTimingInfo(this.run));

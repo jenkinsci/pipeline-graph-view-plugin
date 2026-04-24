@@ -260,9 +260,7 @@ public class PipelineNodeTreeScanner {
                         .filter(e -> isStartNode(e.getValue()))
                         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             }
-            List<FlowNodeWrapper> nodeList = new ArrayList<>(stageMap.values());
-            nodeList.sort(new FlowNodeWrapper.NodeComparator());
-            for (FlowNodeWrapper stage : nodeList) {
+            for (FlowNodeWrapper stage : stageMap.values()) {
                 FlowNodeWrapper firstParent = stage.getFirstParent();
                 // Remap parentage of stages that aren't children of stages (e.g. allocate node
                 // step).
@@ -346,9 +344,7 @@ public class PipelineNodeTreeScanner {
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
             Map<String, FlowNodeWrapper> stageMap = this.getStageMapping();
-            List<FlowNodeWrapper> nodeList = new ArrayList<>(stepMap.values());
-            nodeList.sort(new FlowNodeWrapper.NodeComparator());
-            for (FlowNodeWrapper step : nodeList) {
+            for (FlowNodeWrapper step : stepMap.values()) {
                 FlowNodeWrapper firstParent = step.getFirstParent();
                 // Remap parentage of steps that aren't children of stages (e.g. are in Step
                 // Block).

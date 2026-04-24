@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
-import java.util.stream.Collectors;
 import org.jenkinsci.plugins.pipeline.modeldefinition.actions.ExecutionModelAction;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
@@ -164,10 +163,6 @@ public class PipelineNodeTreeScanner {
                 }
             }
         }
-        FlowNodeWrapper.NodeComparator comparator = new FlowNodeWrapper.NodeComparator();
-        for (List<FlowNodeWrapper> bucket : stageNodeStepMap.values()) {
-            bucket.sort(comparator);
-        }
         return stageNodeStepMap;
     }
 
@@ -250,15 +245,24 @@ public class PipelineNodeTreeScanner {
             if (isDebugEnabled) {
                 logger.debug("Remapping stages");
             }
-            Map<String, FlowNodeWrapper> stageMap = this.wrappedNodeMap.entrySet().stream()
-                    .filter(e -> shouldBeInStageMap(e.getValue()))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            // Preserve wrappedNodeMap's LinkedHashMap insertion order (ID-ascending) —
+            // downstream code in getAllSteps relies on iteration order to produce
+            // per-stage step buckets without an extra sort.
+            // i.e., don't change this to a stream.
+            Map<String, FlowNodeWrapper> stageMap = new LinkedHashMap<>();
+            for (Map.Entry<String, FlowNodeWrapper> e : this.wrappedNodeMap.entrySet()) {
+                if (shouldBeInStageMap(e.getValue())) {
+                    stageMap.put(e.getKey(), e.getValue());
+                }
+            }
 
             if (stageMap.isEmpty()) {
                 // Force at least one stage so that the log can be viewed
-                stageMap = this.wrappedNodeMap.entrySet().stream()
-                        .filter(e -> isStartNode(e.getValue()))
-                        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                for (Map.Entry<String, FlowNodeWrapper> e : this.wrappedNodeMap.entrySet()) {
+                    if (isStartNode(e.getValue())) {
+                        stageMap.put(e.getKey(), e.getValue());
+                    }
+                }
             }
             for (FlowNodeWrapper stage : stageMap.values()) {
                 FlowNodeWrapper firstParent = stage.getFirstParent();
@@ -339,9 +343,12 @@ public class PipelineNodeTreeScanner {
             if (isDebugEnabled) {
                 logger.debug("Remapping steps");
             }
-            Map<String, FlowNodeWrapper> stepMap = this.wrappedNodeMap.entrySet().stream()
-                    .filter(e -> shouldBeInStepMap(e.getValue()))
-                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            Map<String, FlowNodeWrapper> stepMap = new LinkedHashMap<>();
+            for (Map.Entry<String, FlowNodeWrapper> e : this.wrappedNodeMap.entrySet()) {
+                if (shouldBeInStepMap(e.getValue())) {
+                    stepMap.put(e.getKey(), e.getValue());
+                }
+            }
 
             Map<String, FlowNodeWrapper> stageMap = this.getStageMapping();
             for (FlowNodeWrapper step : stepMap.values()) {

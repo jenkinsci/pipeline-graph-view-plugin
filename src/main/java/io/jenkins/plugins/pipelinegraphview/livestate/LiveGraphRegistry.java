@@ -177,6 +177,23 @@ public final class LiveGraphRegistry {
         return state == null ? null : state.warningActionCache();
     }
 
+    /**
+     * Returns the {@link BlockResolutionCache} for this execution, or {@code null} when the
+     * live state isn't present. Callers fall back to uncached resolution on null.
+     */
+    @CheckForNull
+    public BlockResolutionCache blockResolutionCache(FlowExecution execution) {
+        if (disabled()) {
+            return null;
+        }
+        String key = keyFor(execution);
+        if (key == null) {
+            return null;
+        }
+        LiveGraphState state = states.getIfPresent(key);
+        return state == null ? null : state.blockResolutionCache();
+    }
+
     private static String keyFor(FlowExecution execution) {
         try {
             Object exec = execution.getOwner().getExecutable();

@@ -3,6 +3,8 @@ package io.jenkins.plugins.pipelinegraphview.treescanner;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
+import io.jenkins.plugins.pipelinegraphview.livestate.BlockResolutionCache;
+import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphRegistry;
 import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
 import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
@@ -552,8 +554,22 @@ public class PipelineNodeTreeScanner {
                 timing = parallelRelationship.getBranchTimingInfo(this.run, (BlockStartNode) node);
                 status = parallelRelationship.getBranchStatus(this.run, (BlockStartNode) node);
             } else {
-                timing = relationship.getTimingInfo(this.run);
-                status = relationship.getStatus(this.run, activeNodeIds);
+                FlowNode start = relationship.getStart();
+                FlowNode end = relationship.getEnd();
+                // Timing and status for a closed block are stable once the BlockEndNode
+                // exists; memoise so subsequent requests don't re-walk actions per block.
+                BlockResolutionCache cache = (start != end && end instanceof BlockEndNode<?>)
+                        ? LiveGraphRegistry.get().blockResolutionCache(execution)
+                        : null;
+                if (cache != null) {
+                    timing = cache.getOrComputeTiming(
+                            start.getId(), end.getId(), () -> relationship.getTimingInfo(this.run));
+                    status = cache.getOrComputeStatus(
+                            start.getId(), end.getId(), () -> relationship.getStatus(this.run));
+                } else {
+                    timing = relationship.getTimingInfo(this.run);
+                    status = relationship.getStatus(this.run, activeNodeIds);
+                }
             }
 
             InputStep inputStep = null;

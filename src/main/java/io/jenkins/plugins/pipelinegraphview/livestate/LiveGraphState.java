@@ -53,6 +53,7 @@ final class LiveGraphState {
     private VersionedCache<PipelineStepList> cachedAllSteps;
 
     private final WarningActionCache warningActionCache = new WarningActionCache();
+    private final BlockResolutionCache blockResolutionCache = new BlockResolutionCache();
 
     // Serialise concurrent rebuilds so N HTTP readers don't each do the same O(nodes) work.
     // Separate locks for tree vs steps — a slow tree rebuild must not starve steps.
@@ -218,6 +219,10 @@ final class LiveGraphState {
 
     WarningActionCache warningActionCache() {
         return warningActionCache;
+    }
+
+    BlockResolutionCache blockResolutionCache() {
+        return blockResolutionCache;
     }
 
     private record VersionedCache<T>(long version, T value) {}

@@ -41,7 +41,7 @@ class PipelineGraphViewTest {
                 .goTo()
                 .hasBuilds(1)
                 .nthBuild(0)
-                .hasStages(7, "Checkout", "Test", "A1", "A2", "Build", "B1", "B2")
+                .hasStages(5, "Checkout", "Test", "A1", "A2", "Build")
                 .goToBuild()
                 .hasStagesInGraph(4, /*A*/ "Checkout", "Test", /*B*/ "Build", "Parallel")
                 .goToPipelineOverview()

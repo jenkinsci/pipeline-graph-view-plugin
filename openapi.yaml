@@ -405,6 +405,15 @@ components:
             - string
             - null
           description: Agent information for the stage
+        causeOfBlockage:
+          types:
+            - string
+            - null
+          description: >-
+            Human-readable reason this stage is blocked. Currently set when the
+            stage's state is "queued" because its `agent`/`node` step is waiting
+            for an executor (e.g. "Waiting for next available executor on 'linux'").
+            Omitted when the stage is not blocked.
         url:
           type: string
           description: URL to view this stage in the UI

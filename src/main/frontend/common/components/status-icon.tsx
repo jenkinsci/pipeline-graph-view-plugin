@@ -196,6 +196,25 @@ export default function StatusIcon({
         />
       </Group>
 
+      <Group currentStatus={status} status={Result.queued}>
+        <path
+          fill="none"
+          stroke="var(--color)"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={28}
+          d="M192 160h128M192 352h128M198 160c0 56 116 56 116 96s-116 40-116 96M314 160c0 56-116 56-116 96s116 40 116 96"
+        />
+        <ellipse
+          cx="256"
+          cy="256"
+          rx="14"
+          ry="14"
+          fill="var(--color)"
+          className="pgv-scale"
+        />
+      </Group>
+
       <Group currentStatus={status} status={Result.not_built}>
         <circle cx="256" cy="256" r="30" fill="var(--color)" />
         <circle cx="352" cy="256" r="30" fill="var(--color)" />
@@ -245,6 +264,7 @@ export function resultToColor(result: Result, skeleton: boolean | undefined) {
     case "unstable":
       return "jenkins-!-warning-color";
     case "paused":
+    case "queued":
       return "jenkins-!-accent-color";
     default:
       return "jenkins-!-skipped-color";

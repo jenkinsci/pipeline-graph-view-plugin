@@ -127,6 +127,9 @@ function NodeImpl({ node, collapsed, onStageSelect, isSelected }: NodeProps) {
     ),
   };
 
+  const causeOfBlockage =
+    node.stage.state === "queued" ? node.stage.causeOfBlockage : undefined;
+
   let tooltip: ReactElement;
   if (collapsed) {
     tooltip = (
@@ -139,6 +142,7 @@ function NodeImpl({ node, collapsed, onStageSelect, isSelected }: NodeProps) {
             paused={node.stage.pauseLiveTotal}
           />
         </div>
+        {causeOfBlockage && <div>{causeOfBlockage}</div>}
       </div>
     );
   } else {
@@ -149,6 +153,7 @@ function NodeImpl({ node, collapsed, onStageSelect, isSelected }: NodeProps) {
           start={node.stage.startTimeMillis}
           paused={node.stage.pauseLiveTotal}
         />
+        {causeOfBlockage && <div>{causeOfBlockage}</div>}
       </div>
     );
   }

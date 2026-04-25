@@ -24,7 +24,7 @@ public class PipelineStep extends AbstractPipelineNode {
             PipelineInputStep inputStep,
             TimingInfo timingInfo,
             Map<String, Object> flags) {
-        super(id, name, state, type, title, timingInfo);
+        super(id, name, state, type, title, timingInfo, null);
         this.stageId = stageId;
         this.stageIdAsInt = Integer.parseInt(stageId);
         this.inputStep = inputStep;

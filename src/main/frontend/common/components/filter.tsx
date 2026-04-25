@@ -28,6 +28,11 @@ export default function Filter({ disabled }: FilterProps) {
       status: Result.running,
     },
     {
+      key: "queued",
+      text: "Queued",
+      status: Result.queued,
+    },
+    {
       key: "success",
       text: "Successful",
       status: Result.success,

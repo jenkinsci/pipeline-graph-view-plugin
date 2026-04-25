@@ -54,6 +54,7 @@ export interface StageInfo {
   previousTotalDurationMillis?: number; // populated from previous run, if exists
   agent: string;
   url: string;
+  causeOfBlockage?: string; // Set when state is "queued" — e.g. "Waiting for next available executor on 'linux'"
 
   skeleton?: boolean;
   pauseLiveTotal?: boolean;

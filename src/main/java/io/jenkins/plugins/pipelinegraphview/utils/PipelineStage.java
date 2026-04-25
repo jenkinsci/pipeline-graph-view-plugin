@@ -35,8 +35,9 @@ public class PipelineStage extends AbstractPipelineNode {
             boolean placeholder,
             TimingInfo timingInfo,
             String agent,
-            String runUrl) {
-        super(id, name, state, type, title, timingInfo);
+            String runUrl,
+            String causeOfBlockage) {
+        super(id, name, state, type, title, timingInfo, causeOfBlockage);
         this.children = children;
         this.seqContainerName = seqContainerName;
         this.nextSibling = nextSibling;

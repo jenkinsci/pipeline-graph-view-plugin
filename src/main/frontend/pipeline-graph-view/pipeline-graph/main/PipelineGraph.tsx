@@ -1,16 +1,9 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useMemo } from "react";
 
 import { I18NContext } from "../../../common/i18n/index.ts";
 import { useUserPreferences } from "../../../common/user/user-preferences-provider.tsx";
 import { layoutGraph } from "./PipelineGraphLayout";
-import {
-  CompositeConnection,
-  defaultLayout,
-  LayoutInfo,
-  NodeColumn,
-  NodeLabelInfo,
-  StageInfo,
-} from "./PipelineGraphModel.tsx";
+import { defaultLayout, LayoutInfo, StageInfo } from "./PipelineGraphModel.tsx";
 import { GraphConnections } from "./support/connections.tsx";
 import {
   BigLabel,
@@ -27,14 +20,6 @@ export function PipelineGraph({
   collapsed,
   onStageSelect,
 }: Props) {
-  const [nodeColumns, setNodeColumns] = useState<NodeColumn[]>([]);
-  const [connections, setConnections] = useState<CompositeConnection[]>([]);
-  const [bigLabels, setBigLabels] = useState<NodeLabelInfo[]>([]);
-  const [timings, setTimings] = useState<NodeLabelInfo[]>([]);
-  const [smallLabels, setSmallLabels] = useState<NodeLabelInfo[]>([]);
-  const [branchLabels, setBranchLabels] = useState<NodeLabelInfo[]>([]);
-  const [measuredWidth, setMeasuredWidth] = useState<number>(0);
-  const [measuredHeight, setMeasuredHeight] = useState<number>(0);
   const fullLayout = useMemo(() => {
     return {
       ...defaultLayout,
@@ -45,24 +30,27 @@ export function PipelineGraph({
 
   const messages = useContext(I18NContext);
 
-  useEffect(() => {
-    const newLayout = layoutGraph(
-      stages,
-      fullLayout,
-      collapsed ?? false,
-      messages,
-      showNames,
-      showDurations,
-    );
-    setNodeColumns(newLayout.nodeColumns);
-    setConnections(newLayout.connections);
-    setBigLabels(newLayout.bigLabels);
-    setSmallLabels(newLayout.smallLabels);
-    setTimings(newLayout.timings);
-    setBranchLabels(newLayout.branchLabels);
-    setMeasuredWidth(newLayout.measuredWidth);
-    setMeasuredHeight(newLayout.measuredHeight);
-  }, [stages, fullLayout, collapsed, messages, showNames, showDurations]);
+  const {
+    nodeColumns,
+    connections,
+    bigLabels,
+    timings,
+    smallLabels,
+    branchLabels,
+    measuredWidth,
+    measuredHeight,
+  } = useMemo(
+    () =>
+      layoutGraph(
+        stages,
+        fullLayout,
+        collapsed ?? false,
+        messages,
+        showNames,
+        showDurations,
+      ),
+    [stages, fullLayout, collapsed, messages, showNames, showDurations],
+  );
 
   const stageIsSelected = useCallback(
     (stage?: StageInfo): boolean => {

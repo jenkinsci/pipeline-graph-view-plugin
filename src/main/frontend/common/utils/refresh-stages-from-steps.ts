@@ -4,18 +4,38 @@ import {
 } from "../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import { StepInfo } from "../RestClient.tsx";
 
-export function refreshStagesFromSteps(stages: StageInfo[], steps: StepInfo[]) {
-  const stateIsPending = (state: Result) =>
-    [Result.running, Result.paused, Result.queued, Result.unknown].includes(
-      state,
-    );
+const PENDING_STATES: ReadonlySet<Result> = new Set([
+  Result.running,
+  Result.paused,
+  Result.queued,
+  Result.unknown,
+]);
 
+const stateIsPending = (state: Result) => PENDING_STATES.has(state);
+
+export function refreshStagesFromSteps(stages: StageInfo[], steps: StepInfo[]) {
+  const stepsByStageId = new Map<string, StepInfo[]>();
+  for (const step of steps) {
+    let bucket = stepsByStageId.get(step.stageId);
+    if (!bucket) {
+      bucket = [];
+      stepsByStageId.set(step.stageId, bucket);
+    }
+    bucket.push(step);
+  }
+  return refreshStages(stages, stepsByStageId);
+}
+
+function refreshStages(
+  stages: StageInfo[],
+  stepsByStageId: Map<string, StepInfo[]>,
+) {
   let changed = false;
   for (let idx = 0; idx < stages.length; idx++) {
     const stage = stages[idx];
-    const children = refreshStagesFromSteps(stage.children, steps);
+    const children = refreshStages(stage.children, stepsByStageId);
     const stageId = String(stage.id);
-    const stageSteps = steps.filter((s) => s.stageId === stageId);
+    const stageSteps = stepsByStageId.get(stageId) ?? [];
     let { state, startTimeMillis, totalDurationMillis, pauseLiveTotal } = stage;
     if (stage.skeleton && stageSteps.length > 0) {
       startTimeMillis = stageSteps[0].startTimeMillis;

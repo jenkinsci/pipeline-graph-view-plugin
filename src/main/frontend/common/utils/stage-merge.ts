@@ -33,6 +33,7 @@ export const mergeStageInfos = (
     return merged;
   }
 
+  const incomingNames = new Set(incoming.map((i) => i.name));
   const lastRanIndex = incoming.reduce((maxIdx, item) => {
     const idx = nameToIndex.get(item.name) ?? -1;
     return idx > maxIdx ? idx : maxIdx;
@@ -40,7 +41,7 @@ export const mergeStageInfos = (
 
   const futureSkeletons = marked.filter((s) => {
     const idx = nameToIndex.get(s.name) ?? Infinity;
-    return idx > lastRanIndex && !incoming.some((i) => i.name === s.name);
+    return idx > lastRanIndex && !incomingNames.has(s.name);
   });
 
   return [...merged, ...futureSkeletons];

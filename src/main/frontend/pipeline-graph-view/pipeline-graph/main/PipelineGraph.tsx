@@ -2,6 +2,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -10,7 +11,10 @@ import { Context as TransformContext } from "react-zoom-pan-pinch";
 
 import { I18NContext } from "../../../common/i18n/index.ts";
 import { useUserPreferences } from "../../../common/user/user-preferences-provider.tsx";
-import { layoutGraph } from "./PipelineGraphLayout";
+import {
+  DEFAULT_MAX_COLUMNS_WHEN_COLLAPSED,
+  layoutGraph,
+} from "./PipelineGraphLayout";
 import { defaultLayout, LayoutInfo, StageInfo } from "./PipelineGraphModel.tsx";
 import { GraphConnections } from "./support/connections.tsx";
 import {
@@ -30,6 +34,8 @@ interface Viewport {
 
 const VIEWPORT_MARGIN = 300;
 
+const MIN_COLUMNS_WHEN_COLLAPSED = 5;
+
 export function PipelineGraph({
   stages = [],
   layout,
@@ -46,6 +52,35 @@ export function PipelineGraph({
   const { showNames, showDurations } = useUserPreferences();
 
   const messages = useContext(I18NContext);
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [maxColumnsWhenCollapsed, setMaxColumnsWhenCollapsed] =
+    useState<number>(DEFAULT_MAX_COLUMNS_WHEN_COLLAPSED);
+
+  useLayoutEffect(() => {
+    if (!collapsed) return;
+    const node = containerRef.current;
+    if (!node) return;
+
+    const apply = (width: number) => {
+      if (width <= 0) return;
+      const next = Math.max(
+        MIN_COLUMNS_WHEN_COLLAPSED,
+        Math.floor(width / fullLayout.nodeSpacingH) - 2,
+      );
+      setMaxColumnsWhenCollapsed((prev) => (prev === next ? prev : next));
+    };
+
+    apply(node.getBoundingClientRect().width);
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        apply(entry.contentRect.width);
+      }
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [collapsed, fullLayout.nodeSpacingH]);
 
   const {
     nodeColumns,
@@ -65,8 +100,17 @@ export function PipelineGraph({
         messages,
         showNames,
         showDurations,
+        maxColumnsWhenCollapsed,
       ),
-    [stages, fullLayout, collapsed, messages, showNames, showDurations],
+    [
+      stages,
+      fullLayout,
+      collapsed,
+      messages,
+      showNames,
+      showDurations,
+      maxColumnsWhenCollapsed,
+    ],
   );
 
   const stageIsSelected = useCallback(
@@ -189,7 +233,7 @@ export function PipelineGraph({
   };
 
   return (
-    <div className="PWGx-PipelineGraph-container">
+    <div ref={containerRef} className="PWGx-PipelineGraph-container">
       <div style={outerDivStyle} className="PWGx-PipelineGraph">
         <svg width={measuredWidth} height={measuredHeight}>
           <GraphConnections connections={connections} layout={fullLayout} />

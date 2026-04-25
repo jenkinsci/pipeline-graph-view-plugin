@@ -226,16 +226,8 @@ function Group({
   status: Result;
   children: ReactNode;
 }) {
-  return (
-    <g
-      style={{
-        transform: currentStatus !== status ? "scale(0)" : "scale(1)",
-        opacity: currentStatus !== status ? 0 : 1,
-      }}
-    >
-      {children}
-    </g>
-  );
+  if (currentStatus !== status) return null;
+  return <>{children}</>;
 }
 
 export function resultToColor(result: Result, skeleton: boolean | undefined) {

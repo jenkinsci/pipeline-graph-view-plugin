@@ -1,6 +1,6 @@
 import "./stages.scss";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
   TransformComponent,
   TransformWrapper,
@@ -22,6 +22,14 @@ export default function Stages({
   onRunPage,
 }: StagesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+
+  const handleStageSelect = useCallback(
+    (nodeId: string) => {
+      onStageSelect?.(nodeId);
+      setIsExpanded(false);
+    },
+    [onStageSelect],
+  );
 
   return (
     <div
@@ -101,12 +109,7 @@ export default function Stages({
           <PipelineGraph
             stages={stages}
             selectedStage={selectedStage}
-            {...(onStageSelect && {
-              onStageSelect: (e) => {
-                onStageSelect(e);
-                setIsExpanded(false);
-              },
-            })}
+            {...(onStageSelect && { onStageSelect: handleStageSelect })}
           />
         </TransformComponent>
       </TransformWrapper>

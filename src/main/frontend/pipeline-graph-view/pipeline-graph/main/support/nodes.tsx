@@ -1,6 +1,6 @@
 import "./nodes.scss";
 
-import { CSSProperties, ReactElement } from "react";
+import { CSSProperties, memo, ReactElement } from "react";
 
 import {
   resultToColor,
@@ -29,15 +29,9 @@ interface NodeProps {
   isSelected: boolean;
 }
 
-/**
- * Generate the SVG elements to represent a node.
- */
-export function Node({
-  node,
-  collapsed,
-  onStageSelect,
-  isSelected,
-}: NodeProps) {
+export const Node = memo(NodeImpl);
+
+function NodeImpl({ node, collapsed, onStageSelect, isSelected }: NodeProps) {
   const key = node.key;
 
   if (node.isPlaceholder) {

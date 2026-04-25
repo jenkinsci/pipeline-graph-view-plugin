@@ -3,11 +3,7 @@ import { useCallback, useContext, useMemo } from "react";
 import { I18NContext } from "../../../common/i18n/index.ts";
 import { useUserPreferences } from "../../../common/user/user-preferences-provider.tsx";
 import { layoutGraph } from "./PipelineGraphLayout";
-import {
-  defaultLayout,
-  LayoutInfo,
-  StageInfo,
-} from "./PipelineGraphModel.tsx";
+import { defaultLayout, LayoutInfo, StageInfo } from "./PipelineGraphModel.tsx";
 import { GraphConnections } from "./support/connections.tsx";
 import {
   BigLabel,

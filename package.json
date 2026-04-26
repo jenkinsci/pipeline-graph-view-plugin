@@ -31,6 +31,7 @@
   },
   "homepage": "https://github.com/jenkinsci/pipeline-graph-view-plugin/#readme",
   "dependencies": {
+    "@eslint-react/eslint-plugin": "^4.2.3",
     "@formatjs/intl-durationformat": "^0.10.0",
     "@tippyjs/react": "^4.2.6",
     "linkify-html": "^4.3.1",

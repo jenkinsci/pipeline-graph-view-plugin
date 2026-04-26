@@ -1,4 +1,4 @@
-import "@formatjs/intl-durationformat/polyfill";
+import "@formatjs/intl-durationformat/polyfill.js";
 
 import { useEffect, useState } from "react";
 

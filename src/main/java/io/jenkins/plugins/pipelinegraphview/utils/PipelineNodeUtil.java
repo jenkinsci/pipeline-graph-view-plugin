@@ -29,6 +29,7 @@ import org.jenkinsci.plugins.workflow.actions.ThreadNameAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
 import org.jenkinsci.plugins.workflow.cps.steps.ParallelStep;
+import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.AtomNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException;
@@ -210,25 +211,61 @@ public class PipelineNodeUtil {
             // Check and see if this node block is inside this stage
             for (FlowNode p : nodeBlock.getParents()) {
                 if (p.equals(stage)) {
-                    Queue.Item item = QueueItemAction.getQueueItem(nodeBlock);
-                    if (item != null) {
-                        CauseOfBlockage causeOfBlockage = item.getCauseOfBlockage();
-                        String cause = null;
-                        if (causeOfBlockage != null) {
-                            cause = causeOfBlockage.getShortDescription();
-                            if (cause == null) {
-                                causeOfBlockage = item.task.getCauseOfBlockage();
-                                if (causeOfBlockage != null) {
-                                    return causeOfBlockage.getShortDescription();
-                                }
-                            }
-                        }
-                        return cause;
-                    }
+                    return extractCauseFromQueueItem(QueueItemAction.getQueueItem(nodeBlock));
                 }
             }
         }
         return null;
+    }
+
+    /**
+     * Find the cause-of-blockage for a queued agent allocation under the given stage.
+     *
+     * <p>Used to surface "Waiting for next available executor on '...'" for stages whose
+     * {@code agent { label '...' }} or {@code node('...')} step is currently blocked on the
+     * Jenkins queue. Walks the execution's current heads, picks any that is an
+     * {@link StepStartNode} carrying a {@link QueueItemAction} in {@code QUEUED} state and
+     * is enclosed by {@code stage}, and returns its
+     * {@link hudson.model.queue.CauseOfBlockage#getShortDescription()}.
+     */
+    public static @CheckForNull String getCauseOfBlockage(@NonNull FlowNode stage) {
+        FlowExecution execution = stage.getExecution();
+        String stageId = stage.getId();
+        for (FlowNode head : execution.getCurrentHeads()) {
+            if (!(head instanceof StepStartNode)) {
+                continue;
+            }
+            if (head.getAction(QueueItemAction.class) == null) {
+                continue;
+            }
+            if (QueueItemAction.getNodeState(head) != QueueItemAction.QueueState.QUEUED) {
+                continue;
+            }
+            if (!head.getAllEnclosingIds().contains(stageId)) {
+                continue;
+            }
+            String cause = extractCauseFromQueueItem(QueueItemAction.getQueueItem(head));
+            if (cause != null) {
+                return cause;
+            }
+        }
+        return null;
+    }
+
+    private static @CheckForNull String extractCauseFromQueueItem(@Nullable Queue.Item item) {
+        if (item == null) {
+            return null;
+        }
+        CauseOfBlockage causeOfBlockage = item.getCauseOfBlockage();
+        if (causeOfBlockage == null) {
+            return null;
+        }
+        String cause = causeOfBlockage.getShortDescription();
+        if (cause != null) {
+            return cause;
+        }
+        CauseOfBlockage taskBlockage = item.task.getCauseOfBlockage();
+        return taskBlockage != null ? taskBlockage.getShortDescription() : null;
     }
 
     public static final Predicate<FlowNode> isLoggable = input -> {

@@ -1,15 +1,29 @@
 /** * @vitest-environment jsdom */
 
-import { act, renderHook } from "@testing-library/react";
+import { act, render, renderHook, screen } from "@testing-library/react";
 import { vi } from "vitest";
 
 import {
   Result,
   StageInfo,
 } from "../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
-import { useStageProgress } from "./status-icon.tsx";
+import StatusIcon, { resultToColor, useStageProgress } from "./status-icon.tsx";
 
 describe("StatusIcon", () => {
+  describe("queued state", () => {
+    it("renders with the accent color class", () => {
+      render(<StatusIcon status={Result.queued} />);
+      const icon = screen.getByRole("img", { name: "queued" });
+      expect(icon.getAttribute("class")).toContain("jenkins-!-accent-color");
+    });
+
+    it("maps to the accent color via resultToColor", () => {
+      expect(resultToColor(Result.queued, undefined)).to.equal(
+        "jenkins-!-accent-color",
+      );
+    });
+  });
+
   describe("useStageProgress", function () {
     const now = Date.now();
     beforeEach(() => {

@@ -111,6 +111,25 @@ export default function StageDetails({ stage }: StageDetailsProps) {
             <Paused since={stage.pauseDurationMillis} />
           </li>
         )}
+        {stage.state === Result.queued && stage.causeOfBlockage && (
+          <li>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 512 512"
+              aria-label={"Cause of blockage"}
+            >
+              <path
+                d="M192 160h128M192 352h128M198 160c0 56 116 56 116 96s-116 40-116 96M314 160c0 56-116 56-116 96s116 40 116 96"
+                fill="none"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="28"
+              />
+            </svg>
+            <span>{stage.causeOfBlockage}</span>
+          </li>
+        )}
         <StageNodeLink agent={stage.agent} />
         <li>
           <Filter />

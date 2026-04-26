@@ -91,6 +91,43 @@ describe("StageDetails", () => {
 
     expect(screen.queryByText("Started 1m ago")).toBeInTheDocument();
   });
+
+  it("shows cause of blockage when stage is queued", () => {
+    render(
+      <FilterProvider>
+        <StageDetails
+          stage={{
+            ...mockStage,
+            state: Result.queued,
+            agent: undefined as unknown as string,
+            causeOfBlockage: "Waiting for next available executor on ‘linux’",
+          }}
+        />
+      </FilterProvider>,
+    );
+
+    expect(
+      screen.queryByText(/Waiting for next available executor/),
+    ).toBeInTheDocument();
+  });
+
+  it("does not show cause of blockage when stage is running", () => {
+    render(
+      <FilterProvider>
+        <StageDetails
+          stage={{
+            ...mockStage,
+            state: Result.running,
+            causeOfBlockage: "Waiting for next available executor on 'linux'",
+          }}
+        />
+      </FilterProvider>,
+    );
+
+    expect(
+      screen.queryByText(/Waiting for next available executor/),
+    ).not.toBeInTheDocument();
+  });
 });
 
 const mockStage: StageInfo = {

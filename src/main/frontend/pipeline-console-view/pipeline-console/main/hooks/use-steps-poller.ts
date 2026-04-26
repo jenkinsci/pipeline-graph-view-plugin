@@ -196,7 +196,16 @@ export function useStepsPoller({
       }
       return null;
     };
-    return openStageId ? findStage(run.stages) : null;
+    if (openStageId) {
+      return findStage(run.stages);
+    }
+    // Default-select the only stage when there's nothing else to show — e.g. a
+    // queued `node('label') { }` placeholder hasn't produced any steps yet, so
+    // without this StageDetails would render nothing for the entire pipeline.
+    if (run.stages.length === 1 && run.stages[0].placeholder) {
+      return run.stages[0];
+    }
+    return null;
   }, [run.stages, openStageId]);
   const [expandedSteps, setExpandedSteps] = useState<string[]>([]);
   const collapsedSteps = useRef(new Set<string>());
@@ -335,15 +344,20 @@ export function useStepsPoller({
 
   const parsedURLParams = useRef(false);
   useEffect(() => {
-    if (parsedURLParams.current || steps.length === 0) return;
-    parsedURLParams.current = true;
+    if (parsedURLParams.current) return;
     const params = new URLSearchParams(document.location.search.substring(1));
     let selected = params.get("selected-node");
-    if (!selected) return;
-    stopTailingLogs();
+    if (!selected) {
+      if (steps.length > 0 || run.stages.length > 0) {
+        parsedURLParams.current = true;
+      }
+      return;
+    }
 
     const step = steps.find((s) => s.id === selected);
     if (step) {
+      parsedURLParams.current = true;
+      stopTailingLogs();
       selected = step.stageId;
       scrollToStepOnce.current = step.id;
       setExpandedSteps([step.id]);
@@ -356,12 +370,37 @@ export function useStepsPoller({
           endByte: startByte,
         });
       }
-    } else {
-      expandLastStageStep(steps, selected);
+      setOpenStageId(selected);
+      return;
     }
 
-    setOpenStageId(selected);
-  }, [steps, expandLastStageStep, stopTailingLogs]);
+    if (steps.length > 0) {
+      // Steps have arrived but `selected` matches none — assume it's a stage ID.
+      parsedURLParams.current = true;
+      stopTailingLogs();
+      expandLastStageStep(steps, selected);
+      setOpenStageId(selected);
+      return;
+    }
+
+    // No steps yet (e.g. queued stage) — only honour the URL if `selected`
+    // matches a known stage. Otherwise wait for steps to arrive.
+    const findStage = (stages: StageInfo[]): StageInfo | undefined => {
+      for (const stage of stages) {
+        if (String(stage.id) === selected) return stage;
+        if (stage.children?.length) {
+          const child = findStage(stage.children);
+          if (child) return child;
+        }
+      }
+      return undefined;
+    };
+    if (findStage(run.stages)) {
+      parsedURLParams.current = true;
+      stopTailingLogs();
+      setOpenStageId(selected);
+    }
+  }, [steps, run.stages, expandLastStageStep, stopTailingLogs]);
 
   useEffect(() => {
     let defaultStep;

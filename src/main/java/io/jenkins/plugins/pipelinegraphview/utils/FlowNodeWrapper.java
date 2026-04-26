@@ -149,6 +149,23 @@ public class FlowNodeWrapper {
         return null;
     }
 
+    /**
+     * Returns the human-readable reason an agent allocation under this stage is blocked
+     * (e.g. "Waiting for next available executor on 'linux'"), or {@code null} if no
+     * agent step under this stage is currently queued.
+     *
+     * <p>Checked even when {@link #getStatus()} doesn't report {@link BlueRunState#QUEUED}:
+     * for declarative parallel branches, the chunked status computation can report
+     * {@code IN_PROGRESS} while a child {@code agent {...}} block is actually queued. The
+     * presence of a non-null cause is the source of truth that the stage is queued.
+     */
+    public @CheckForNull String getCauseOfBlockage() {
+        if (getStatus().state == BlueRunState.FINISHED) {
+            return null;
+        }
+        return PipelineNodeUtil.getCauseOfBlockage(node);
+    }
+
     private static NodeType getNodeType(FlowNode node) {
         if (PipelineNodeUtil.isStep(node)) {
             return NodeType.STEP;

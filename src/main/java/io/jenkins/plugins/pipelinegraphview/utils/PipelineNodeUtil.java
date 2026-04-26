@@ -230,9 +230,6 @@ public class PipelineNodeUtil {
      */
     public static @CheckForNull String getCauseOfBlockage(@NonNull FlowNode stage) {
         FlowExecution execution = stage.getExecution();
-        if (execution == null) {
-            return null;
-        }
         String stageId = stage.getId();
         for (FlowNode head : execution.getCurrentHeads()) {
             if (!(head instanceof StepStartNode)) {

@@ -1,5 +1,7 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import static jenkins.test.RunMatchers.completed;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -125,8 +127,8 @@ class PipelineNodeUtilTest {
             for (Queue.Item item : Queue.getInstance().getItems()) {
                 Queue.getInstance().cancel(item);
             }
-            run.doKill();
-            j.waitForCompletion(run);
+            run.doStop();
+            await().until(() -> run, completed());
         }
     }
 }

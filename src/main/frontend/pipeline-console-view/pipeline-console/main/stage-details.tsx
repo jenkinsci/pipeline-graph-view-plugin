@@ -1,7 +1,6 @@
 import "./stage-details.scss";
 
 import Dropdown from "../../../common/components/dropdown.tsx";
-import Filter from "../../../common/components/filter.tsx";
 import {
   resultToColor,
   StageStatusIcon,

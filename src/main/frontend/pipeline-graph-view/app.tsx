@@ -7,6 +7,7 @@ import { UserPreferencesProvider } from "../common/user/user-preferences-provide
 import Stages from "../pipeline-console-view/pipeline-console/main/components/stages.tsx";
 import { NoStageStepsFallback } from "../pipeline-console-view/pipeline-console/main/NoStageStepsFallback.tsx";
 import { StageViewPosition } from "../pipeline-console-view/pipeline-console/main/providers/user-preference-provider.tsx";
+import { Result } from "./pipeline-graph/main/PipelineGraphModel.tsx";
 
 export default function App() {
   const rootElement = document.getElementById("graph");
@@ -17,9 +18,16 @@ export default function App() {
     previousRunPath,
   });
 
+  const onlyQueuedPlaceholder =
+    run.stages.length === 1 &&
+    run.stages[0].placeholder === true &&
+    run.stages[0].state === Result.queued;
+  const showBuildConsoleFallback =
+    !loading && (run.stages.length === 0 || onlyQueuedPlaceholder);
+
   return (
     <UserPreferencesProvider>
-      {!loading && run.stages.length === 0 && (
+      {showBuildConsoleFallback && (
         <>
           <div className={"jenkins-card__title"}>
             <a
@@ -57,7 +65,7 @@ export default function App() {
         </>
       )}
 
-      {run.stages.length > 0 && (
+      {run.stages.length > 0 && !onlyQueuedPlaceholder && (
         <Stages
           stages={run.stages}
           stageViewPosition={StageViewPosition.TOP}

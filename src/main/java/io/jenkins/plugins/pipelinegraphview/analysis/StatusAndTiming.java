@@ -278,7 +278,10 @@ public class StatusAndTiming {
         }
         boolean isLastChunk = after == null || exec.isCurrentHead(lastNode);
         if (isLastChunk) {
-            if (run.isBuilding()) {
+            // FlowExecutionListener.onCompleted seeds the cache while WorkflowRun.isBuilding()
+            // can still return true; preferring the execution's own complete flag avoids
+            // persisting a final chunk as IN_PROGRESS in that window.
+            if (run.isBuilding() && !exec.isComplete()) {
                 if (exec.getCurrentHeads().size() > 1
                         && lastNode instanceof BlockEndNode) { // Check to see if all the action is on other branches
                     BlockStartNode start = ((BlockEndNode) lastNode).getStartNode();

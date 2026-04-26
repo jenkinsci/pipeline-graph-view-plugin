@@ -132,9 +132,6 @@ export default function StageDetails({ stage }: StageDetailsProps) {
         )}
         <StageNodeLink agent={stage.agent} />
         <li>
-          <Filter />
-        </li>
-        <li>
           <Dropdown
             className={"jenkins-button--tertiary"}
             disabled={stage.synthetic && !stage.placeholder}

@@ -163,6 +163,7 @@ public class PipelineConsoleViewAction extends Tab {
                     "Doesn't seem to matter in practice, docs aren't clear on how to handle and most places ignore it")
     public void getBuildConsole(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         run.checkPermission(Item.READ);
+        rsp.setContentType("text/html;charset=UTF-8");
         run.getLogText().writeHtmlTo(0L, rsp.getWriter());
     }
 

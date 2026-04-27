@@ -147,7 +147,7 @@ public class PipelineGraphViewCache {
             return MAPPER.readValue(in, type);
         } catch (IOException e) {
             // A corrupt/older file shouldn't wedge the cache: drop it and fall back to compute.
-            logger.warn("Failed to read pipeline graph cache for {}; recomputing", source.getFileName(), e);
+            logger.warn("Failed to read pipeline graph cache for {}; recomputing", source, e);
             return null;
         }
     }

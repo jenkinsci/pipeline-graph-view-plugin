@@ -6,15 +6,13 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.function.Supplier;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -78,12 +76,12 @@ public class PipelineGraphViewCache {
         return tryServe(allStepsFile(run), out);
     }
 
-    private boolean tryServe(File file, OutputStream out) throws IOException {
-        if (!file.isFile()) {
+    private boolean tryServe(Path file, OutputStream out) throws IOException {
+        if (!Files.exists(file)) {
             return false;
         }
         out.write(ENVELOPE_PREFIX);
-        try (InputStream in = new BufferedInputStream(new FileInputStream(file))) {
+        try (InputStream in = new BufferedInputStream(Files.newInputStream(file))) {
             in.transferTo(out);
         }
         out.write(ENVELOPE_SUFFIX);
@@ -141,55 +139,59 @@ public class PipelineGraphViewCache {
     }
 
     /** Returns the JSON-decoded value at {@code source} or {@code null} if the file is absent or unreadable. */
-    private <T> T readJson(File source, Class<T> type) {
-        if (!source.isFile()) {
+    private <T> T readJson(Path source, Class<T> type) {
+        if (!Files.exists(source)) {
             return null;
         }
-        try (InputStream in = new BufferedInputStream(new FileInputStream(source))) {
+        try (InputStream in = new BufferedInputStream(Files.newInputStream(source))) {
             return MAPPER.readValue(in, type);
         } catch (IOException e) {
             // A corrupt/older file shouldn't wedge the cache: drop it and fall back to compute.
-            logger.warn("Failed to read pipeline graph cache for {}; recomputing", source.getName(), e);
+            logger.warn("Failed to read pipeline graph cache for {}; recomputing", source.getFileName(), e);
             return null;
         }
     }
 
-    private void writeJson(File target, Object data) {
-        File dir = target.getParentFile();
-        File tmp = null;
+    private void writeJson(Path target, Object data) {
+        Path dir = target.getParent();
+        Path tmp = null;
         try {
-            tmp = File.createTempFile(target.getName() + ".", ".tmp", dir);
-            try (OutputStream os = new BufferedOutputStream(new FileOutputStream(tmp))) {
+            tmp = Files.createTempFile(dir, target.getFileName() + ".", ".tmp");
+            try (OutputStream os = new BufferedOutputStream(Files.newOutputStream(tmp))) {
                 MAPPER.writeValue(os, data);
             }
             try {
                 Files.move(
-                        tmp.toPath(),
-                        target.toPath(),
+                        tmp,
+                        target,
                         StandardCopyOption.ATOMIC_MOVE,
                         StandardCopyOption.REPLACE_EXISTING);
             } catch (AtomicMoveNotSupportedException e) {
-                Files.move(tmp.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                Files.move(tmp, target, StandardCopyOption.REPLACE_EXISTING);
             }
             tmp = null;
             // Best-effort cleanup of any pre-v1 XStream cache left behind by older versions
             // of the plugin.
-            new File(dir, LEGACY_XSTREAM_FILE_NAME).delete();
+            Files.deleteIfExists(dir.resolve(LEGACY_XSTREAM_FILE_NAME));
         } catch (IOException e) {
-            logger.warn("Failed to write pipeline graph cache for {}", target.getName(), e);
+            logger.warn("Failed to write pipeline graph cache for {}", target.getFileName(), e);
         } finally {
             if (tmp != null) {
-                tmp.delete();
+                try {
+                    Files.deleteIfExists(tmp);
+                } catch (IOException e) {
+                    logger.warn("Failed to delete temporary pipeline graph cache file", e);
+                }
             }
         }
     }
 
-    private File treeFile(WorkflowRun run) {
-        return new File(run.getRootDir(), TREE_FILE_NAME);
+    private Path treeFile(WorkflowRun run) {
+        return run.getRootDir().toPath().resolve(TREE_FILE_NAME);
     }
 
-    private File allStepsFile(WorkflowRun run) {
-        return new File(run.getRootDir(), ALL_STEPS_FILE_NAME);
+    private Path allStepsFile(WorkflowRun run) {
+        return run.getRootDir().toPath().resolve(ALL_STEPS_FILE_NAME);
     }
 
     /** Test hook: drop in-memory entries so the next call re-runs the supplier. */

@@ -56,8 +56,8 @@ export default function ConsoleLogCard({
   const messages = useMessages();
 
   const inputStep = step.inputStep;
-  if (inputStep && !inputStep.parameters) {
-    return <InputStep step={step} />;
+  if (inputStep) {
+    return <InputStep step={step} currentRunPath={currentRunPath} />;
   }
 
   return (

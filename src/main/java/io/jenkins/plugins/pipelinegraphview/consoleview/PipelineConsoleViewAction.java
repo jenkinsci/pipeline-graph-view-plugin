@@ -19,6 +19,7 @@ import io.jenkins.plugins.pipelinegraphview.cards.items.ChangesRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.TestResultRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphViewCache;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineJsonWriter;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStep;
@@ -99,9 +100,15 @@ public class PipelineConsoleViewAction extends Tab {
     @WebMethod(name = "allSteps")
     public void getAllSteps(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         run.checkPermission(Item.READ);
-        PipelineStepList steps = stepApi.getAllSteps();
         rsp.setStatus(200);
         rsp.setContentType("application/json;charset=UTF-8");
+        // Speculative: a cache hit always implies the run was complete when persisted.
+        // Overwritten below if we fall through to the compute path.
+        setCache(rsp, true);
+        if (PipelineGraphViewCache.get().tryServeAllSteps(run, rsp.getOutputStream())) {
+            return;
+        }
+        PipelineStepList steps = stepApi.getAllSteps();
         setCache(rsp, steps.runIsComplete);
         PipelineJsonWriter.write(steps, rsp.getOutputStream());
     }
@@ -383,10 +390,13 @@ public class PipelineConsoleViewAction extends Tab {
     @WebMethod(name = "tree")
     public void getTree(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         run.checkPermission(Item.READ);
-
-        PipelineGraph tree = graphApi.createTree();
         rsp.setStatus(200);
         rsp.setContentType("application/json;charset=UTF-8");
+        setCache(rsp, true);
+        if (PipelineGraphViewCache.get().tryServeTree(run, rsp.getOutputStream())) {
+            return;
+        }
+        PipelineGraph tree = graphApi.createTree();
         setCache(rsp, tree.complete);
         PipelineJsonWriter.write(tree, rsp.getOutputStream());
     }

@@ -1,5 +1,6 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import hudson.model.Result;
 import java.util.Locale;
@@ -68,5 +69,10 @@ public enum PipelineState {
     @Override
     public String toString() {
         return name().toLowerCase(Locale.ROOT);
+    }
+
+    @JsonCreator
+    public static PipelineState fromWire(String value) {
+        return value == null ? null : PipelineState.valueOf(value.toUpperCase(Locale.ROOT));
     }
 }

@@ -1,5 +1,6 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +14,7 @@ public class PipelineStepList {
         this.runIsComplete = runIsComplete;
     }
 
+    @JsonCreator
     public PipelineStepList(List<PipelineStep> steps, boolean runIsComplete) {
         this.steps = steps;
         this.runIsComplete = runIsComplete;

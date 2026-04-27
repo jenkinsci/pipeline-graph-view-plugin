@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.sameInstance;
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphViewCache;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
@@ -71,7 +72,7 @@ class LiveGraphLifecycleTest {
                 "live snapshot is evicted once the run completes",
                 LiveGraphRegistry.get().snapshot(run),
                 is(nullValue()));
-        File cacheFile = new File(run.getRootDir(), "pipeline-graph-view-cache.xml");
+        File cacheFile = new File(run.getRootDir(), PipelineGraphViewCache.TREE_FILE_NAME);
         assertThat("disk cache file was written at completion", cacheFile.exists(), is(true));
         assertThat("disk cache file is non-empty", cacheFile.length(), is(greaterThan(0L)));
     }

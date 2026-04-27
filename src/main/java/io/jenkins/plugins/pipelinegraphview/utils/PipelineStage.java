@@ -2,6 +2,7 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 import static io.jenkins.plugins.pipelinegraphview.consoleview.PipelineConsoleViewAction.URL_NAME;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import java.util.List;
@@ -46,5 +47,35 @@ public class PipelineStage extends AbstractPipelineNode {
         this.placeholder = placeholder;
         this.agent = agent;
         this.url = "/" + runUrl + URL_NAME + "/?selected-node=" + id;
+    }
+
+    @JsonCreator
+    PipelineStage(
+            String id,
+            String name,
+            List<PipelineStage> children,
+            PipelineState state,
+            String type,
+            String title,
+            String seqContainerName,
+            PipelineStage nextSibling,
+            @JsonProperty("isSequential") boolean sequential,
+            boolean synthetic,
+            boolean placeholder,
+            long pauseDurationMillis,
+            Long totalDurationMillis,
+            long startTimeMillis,
+            String agent,
+            String url,
+            String causeOfBlockage) {
+        super(id, name, state, type, title, pauseDurationMillis, totalDurationMillis, startTimeMillis, causeOfBlockage);
+        this.children = children;
+        this.seqContainerName = seqContainerName;
+        this.nextSibling = nextSibling;
+        this.sequential = sequential;
+        this.synthetic = synthetic;
+        this.placeholder = placeholder;
+        this.agent = agent;
+        this.url = url;
     }
 }

@@ -154,6 +154,9 @@ public class PipelineGraphViewCache {
 
     private void writeJson(Path target, Object data) {
         Path dir = target.getParent();
+        if (dir == null) {
+            throw new RuntimeException("No parent directory for " + target);
+        }
         Path tmp = null;
         try {
             tmp = Files.createTempFile(dir, target.getFileName() + ".", ".tmp");

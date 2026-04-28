@@ -562,11 +562,11 @@ public class PipelineNodeTreeScanner {
                 // We must not cache while the start node is still active: the status can
                 // still change (e.g. IN_PROGRESS → SUCCESS), and an incorrectly cached
                 // value would be returned for the remainder of the run.
-                boolean blockClosed = start != end && end instanceof BlockEndNode<?>
+                boolean blockClosed = start != end
+                        && end instanceof BlockEndNode<?>
                         && (activeNodeIds == null || !activeNodeIds.contains(start.getId()));
-                BlockResolutionCache cache = blockClosed
-                        ? LiveGraphRegistry.get().blockResolutionCache(execution)
-                        : null;
+                BlockResolutionCache cache =
+                        blockClosed ? LiveGraphRegistry.get().blockResolutionCache(execution) : null;
                 if (cache != null) {
                     timing = cache.getOrComputeTiming(
                             start.getId(), end.getId(), () -> relationship.getTimingInfo(this.run));

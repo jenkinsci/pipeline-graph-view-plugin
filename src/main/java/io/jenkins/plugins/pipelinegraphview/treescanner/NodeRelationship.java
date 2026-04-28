@@ -136,9 +136,16 @@ public class NodeRelationship {
     }
 
     /**
-     * Same as {@link #getStatus(WorkflowRun)} but threads {@code activeNodeIds} through to
-     * the step-node leaf. Block cases defer to {@link #getStatus(WorkflowRun)} so subclass
-     * overrides (e.g. {@link ParallelBlockRelationship}) apply.
+     * Same as {@link #getStatus(WorkflowRun)} but uses {@code activeNodeIds} for liveness
+     * checks instead of {@link FlowNode#isActive()}.
+     *
+     * <ul>
+     *   <li>Step nodes ({@code start == end}): liveness read from the set.</li>
+     *   <li>Block nodes ({@code start != end}): if {@code start} is in the active set the
+     *       block is still running (RUNNING/UNKNOWN); otherwise delegates to
+     *       {@link #getStatus(WorkflowRun)} so subclass overrides (e.g.
+     *       {@link ParallelBlockRelationship}) apply.</li>
+     * </ul>
      */
     public @NonNull NodeRunStatus getStatus(WorkflowRun run, @CheckForNull Set<String> activeNodeIds) {
         if (activeNodeIds == null) {
@@ -156,8 +163,16 @@ public class NodeRelationship {
                 return new NodeRunStatus(GenericStatus.fromResult(warningAction.getResult()));
             }
         }
+        // Step node: start and end are the same FlowNode — use the activeNodeIds set.
         if (this.start.getId().equals(this.end.getId())) {
             return new NodeRunStatus(this.start, activeNodeIds);
+        }
+        // Block node: if the start is in the active set the block is still running.
+        // computeChunkStatus2 / getStatus(run) use FlowNode#isActive() / isCurrentHead()
+        // which can disagree with the snapshot's activeNodeIds during live execution.
+        // Honour the snapshot's view here so status stays consistent within a single read.
+        if (activeNodeIds.contains(this.start.getId())) {
+            return new NodeRunStatus(BlueRun.BlueRunResult.UNKNOWN, BlueRun.BlueRunState.RUNNING);
         }
         return getStatus(run);
     }

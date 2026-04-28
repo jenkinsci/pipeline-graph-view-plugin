@@ -557,15 +557,23 @@ public class PipelineNodeTreeScanner {
                 FlowNode start = relationship.getStart();
                 FlowNode end = relationship.getEnd();
                 // Timing and status for a closed block are stable once the BlockEndNode
-                // exists; memoise so subsequent requests don't re-walk actions per block.
-                BlockResolutionCache cache = (start != end && end instanceof BlockEndNode<?>)
+                // exists AND the block is no longer active; memoise so subsequent requests
+                // don't re-walk actions per block.
+                // We must not cache while the start node is still active: the status can
+                // still change (e.g. IN_PROGRESS → SUCCESS), and an incorrectly cached
+                // value would be returned for the remainder of the run.
+                boolean blockClosed = start != end && end instanceof BlockEndNode<?>
+                        && (activeNodeIds == null || !activeNodeIds.contains(start.getId()));
+                BlockResolutionCache cache = blockClosed
                         ? LiveGraphRegistry.get().blockResolutionCache(execution)
                         : null;
                 if (cache != null) {
                     timing = cache.getOrComputeTiming(
                             start.getId(), end.getId(), () -> relationship.getTimingInfo(this.run));
+                    // Use the activeNodeIds-aware overload so the set is consulted even for
+                    // cached entries — the cache supplier captures activeNodeIds by reference.
                     status = cache.getOrComputeStatus(
-                            start.getId(), end.getId(), () -> relationship.getStatus(this.run));
+                            start.getId(), end.getId(), () -> relationship.getStatus(this.run, activeNodeIds));
                 } else {
                     timing = relationship.getTimingInfo(this.run);
                     status = relationship.getStatus(this.run, activeNodeIds);

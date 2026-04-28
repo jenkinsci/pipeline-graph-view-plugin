@@ -37,7 +37,7 @@ import tools.jackson.databind.json.JsonMapper;
  */
 public class PipelineGraphViewCache {
 
-    public static final int SCHEMA_VERSION = 1;
+    public static final int SCHEMA_VERSION = 2;
 
     public static final String TREE_FILE_NAME = "pipeline-graph-view-tree.v" + SCHEMA_VERSION + ".json";
     public static final String ALL_STEPS_FILE_NAME = "pipeline-graph-view-allsteps.v" + SCHEMA_VERSION + ".json";

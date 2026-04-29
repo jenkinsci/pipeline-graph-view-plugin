@@ -1,7 +1,6 @@
 import "./stage-details.scss";
 
 import Dropdown from "../../../common/components/dropdown.tsx";
-import Filter from "../../../common/components/filter.tsx";
 import {
   resultToColor,
   StageStatusIcon,
@@ -135,9 +134,6 @@ export default function StageDetails({ stage }: StageDetailsProps) {
           </li>
         )}
         <StageNodeLink agent={stage.agent} />
-        <li>
-          <Filter />
-        </li>
         <li>
           <Dropdown
             className={"jenkins-button--tertiary"}

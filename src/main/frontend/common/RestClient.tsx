@@ -152,6 +152,17 @@ export async function getConsoleBuildOutput(
   }
 }
 
+export async function getInputDialog(
+  currentRunPath: string,
+  inputId: string,
+): Promise<string> {
+  const response = await fetch(
+    `${currentRunPath}input/${encodeURIComponent(inputId)}/dialog`,
+  );
+  if (!response.ok) throw response.statusText;
+  return response.text();
+}
+
 export async function getResourceBundle(
   resource: string,
 ): Promise<ResourceBundle | undefined> {

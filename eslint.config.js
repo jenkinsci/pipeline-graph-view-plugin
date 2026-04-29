@@ -1,3 +1,4 @@
+import eslintReact from "@eslint-react/eslint-plugin";
 import reactHooks from "eslint-plugin-react-hooks";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import neostandard, { plugins, resolveIgnoresFromGitignore } from "neostandard";
@@ -5,18 +6,11 @@ import neostandard, { plugins, resolveIgnoresFromGitignore } from "neostandard";
 export default [
   ...neostandard({
     ignores: resolveIgnoresFromGitignore(),
+    noJsx: true,
     noStyle: true,
     ts: true,
   }),
-  {
-    ...plugins.react.configs.flat.recommended,
-    settings: {
-      react: {
-        version: "detect",
-      },
-    },
-  },
-  plugins.react.configs.flat["jsx-runtime"],
+  eslintReact.configs.recommended,
   {
     plugins: {
       "react-hooks": reactHooks,

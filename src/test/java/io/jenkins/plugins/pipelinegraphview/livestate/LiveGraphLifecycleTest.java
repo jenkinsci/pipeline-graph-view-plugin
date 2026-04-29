@@ -9,6 +9,9 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 
 import hudson.model.Result;
+import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
+import io.jenkins.plugins.pipelinegraphview.utils.BlueRun;
+import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphViewCache;
@@ -16,7 +19,11 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import java.io.File;
+import java.util.Set;
+import org.jenkinsci.plugins.workflow.actions.LabelAction;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
+import org.jenkinsci.plugins.workflow.graph.BlockEndNode;
+import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.test.steps.SemaphoreStep;
@@ -120,6 +127,75 @@ class LiveGraphLifecycleTest {
             SemaphoreStep.success("wait/1", null);
             j.waitForCompletion(run);
         }
+    }
+
+    @Test
+    void wrapWithBlockEndInActiveSetDoesNotPopulateCache() throws Exception {
+        // Regression for #1252. When a block's BlockEndNode is itself a current head (the
+        // brief transitional moment between one stage closing and the next opening), the
+        // BlockResolutionCache must not store a status for that block: computeChunkStatus2
+        // would return IN_PROGRESS in that window and persist as state="running" in the
+        // seeded JSON for the rest of the run's life.
+        WorkflowJob job = j.createProject(WorkflowJob.class, "block-end-active");
+        job.setDefinition(new CpsFlowDefinition(
+                "stage('one') { echo 'in stage one' }\n" + "stage('two') { semaphore 'wait' }\n", true));
+        WorkflowRun run = job.scheduleBuild2(0).waitForStart();
+        try {
+            SemaphoreStep.waitForStart("wait/1", run);
+
+            LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
+            assertThat(snapshot, is(notNullValue()));
+
+            FlowNode stage1Start = null;
+            FlowNode stage1End = null;
+            for (FlowNode n : snapshot.nodes()) {
+                if (n instanceof BlockEndNode<?> blockEnd) {
+                    FlowNode start = blockEnd.getStartNode();
+                    LabelAction la = start.getAction(LabelAction.class);
+                    if (la != null && "one".equals(la.getDisplayName())) {
+                        stage1Start = start;
+                        stage1End = n;
+                        break;
+                    }
+                }
+            }
+            assertThat("stage 'one' BlockStartNode resolved", stage1Start, is(notNullValue()));
+            assertThat("stage 'one' BlockEndNode resolved", stage1End, is(notNullValue()));
+
+            // Simulate the transitional snapshot: activeNodeIds contains only the
+            // BlockEndNode of the just-closed stage. (A BlockEndNode's enclosing chain
+            // does NOT include its own BlockStartNode, so a snapshot taken while the
+            // BlockEndNode is the head genuinely produces this set.)
+            new PipelineNodeGraphAdapter(
+                    run, snapshot.nodes(), snapshot.enclosingIdsByNodeId(), Set.of(stage1End.getId()));
+
+            // After the wrap pass, the cache must have NO entry for stage 1's
+            // (start,end) pair. We detect this by passing a sentinel supplier to
+            // getOrComputeStatus: it only runs on cache miss.
+            BlockResolutionCache cache = LiveGraphRegistry.get().blockResolutionCache(run.getExecution());
+            assertThat(cache, is(notNullValue()));
+            boolean[] supplierRan = {false};
+            NodeRunStatus value = cache.getOrComputeStatus(stage1Start.getId(), stage1End.getId(), () -> {
+                supplierRan[0] = true;
+                return new NodeRunStatus(BlueRun.BlueRunResult.SUCCESS, BlueRun.BlueRunState.FINISHED);
+            });
+            assertThat("wrap pass must not populate the cache when end is in activeNodeIds", supplierRan[0], is(true));
+            assertThat(value.getState(), is(BlueRun.BlueRunState.FINISHED));
+        } finally {
+            SemaphoreStep.success("wait/1", null);
+            j.waitForCompletion(run);
+        }
+        j.assertBuildStatus(Result.SUCCESS, run);
+
+        // Belt and braces: the seeded post-completion JSON must never report a stage as
+        // still 'running'. A poisoned cache entry from any earlier wrap would surface here.
+        File treeFile = new File(run.getRootDir(), PipelineGraphViewCache.TREE_FILE_NAME);
+        assertThat(treeFile.exists(), is(true));
+        String content = java.nio.file.Files.readString(treeFile.toPath());
+        assertThat(
+                "completed run never persists a stage as 'running'",
+                content.contains("\"state\":\"running\""),
+                is(false));
     }
 
     @Test

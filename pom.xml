@@ -93,6 +93,8 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>pipeline-input-step</artifactId>
+      <!-- TODO https://github.com/jenkinsci/pipeline-input-step-plugin/pull/258 -->
+      <version>553.vf6e71b_c0f860</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>

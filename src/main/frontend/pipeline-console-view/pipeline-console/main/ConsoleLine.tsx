@@ -25,7 +25,7 @@ export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
     const classicUrl = buildStep.classicUrl;
     const pipelineViewUrl = buildStep.pipelineViewUrl;
     if (classicUrl && pipelineViewUrl) {
-      content = content.replace(classicUrl, pipelineViewUrl); 
+      content = content.replace(classicUrl, pipelineViewUrl);
     }
   }
   return (

@@ -139,6 +139,6 @@ class PipelineConsole {
                 step.click();
             }
         }
-        assertThat(logs.locator("a[href$='/stages']")).isVisible();
+        assertThat(logs.locator("a[href$='/stages']").first()).isVisible();
     }
 }

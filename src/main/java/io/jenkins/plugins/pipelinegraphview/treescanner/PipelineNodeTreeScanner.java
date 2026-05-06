@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import org.jenkinsci.plugins.pipeline.modeldefinition.actions.ExecutionModelAction;
+import org.jenkinsci.plugins.workflow.actions.ArgumentsAction;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
@@ -29,6 +30,7 @@ import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.graphanalysis.DepthFirstScanner;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.support.steps.build.DownstreamBuildAction;
+import org.jenkinsci.plugins.workflow.support.steps.build.WaitForBuildStep;
 import org.jenkinsci.plugins.workflow.support.steps.input.InputAction;
 import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
 import org.jenkinsci.plugins.workflow.support.steps.input.InputStepExecution;
@@ -618,6 +620,22 @@ public class PipelineNodeTreeScanner {
                             }
                         })
                         .orElse(null);
+            }
+
+            if (downstreamBuildRun == null && node instanceof StepAtomNode stepAtomNode) {
+                if (stepAtomNode.getDescriptor() instanceof WaitForBuildStep.DescriptorImpl) {
+                    Object runId = ArgumentsAction.getArguments(node).get("runId");
+                    if (runId instanceof String runIdStr) {
+                        try {
+                            downstreamBuildRun = Run.fromExternalizableId(runIdStr);
+                        } catch (Exception e) {
+                            logger.warn(
+                                    "Could not get downstream build run for waitForBuild node {}: {}",
+                                    node.getId(),
+                                    e.getMessage());
+                        }
+                    }
+                }
             }
 
             return new FlowNodeWrapper(node, status, timing, inputStep, downstreamBuildRun, this.run);

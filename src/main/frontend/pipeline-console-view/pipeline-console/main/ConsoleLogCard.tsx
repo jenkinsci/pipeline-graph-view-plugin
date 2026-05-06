@@ -13,6 +13,7 @@ import {
   useState,
 } from "react";
 
+import { BuildStep } from "../../../common/RestClient.tsx";
 import StatusIcon from "../../../common/components/status-icon.tsx";
 import Tooltip from "../../../common/components/tooltip.tsx";
 import { LocalizedMessageKey, useMessages } from "../../../common/i18n";
@@ -154,6 +155,7 @@ export default function ConsoleLogCard({
           fetchExceptionText={fetchExceptionText}
           onStepToggle={onStepToggle}
           currentRunPath={currentRunPath}
+          buildStep={step.buildStep}
         />
       )}
     </div>
@@ -195,6 +197,7 @@ const ConsoleLogBody = memo(function ConsoleLogBody({
   fetchLogText,
   fetchExceptionText,
   currentRunPath,
+  buildStep,
 }: ConsoleLogCardBodyProps) {
   const [stepBuffer, setStepBuffer] = useState<StepLogBufferInfo>({
     ...(stepBuffers.get(stepId) || defaultStepBuffer()),
@@ -268,6 +271,7 @@ const ConsoleLogBody = memo(function ConsoleLogBody({
           stepId={stepId}
           stepState={stepState}
           currentRunPath={currentRunPath}
+          buildStep={buildStep}
         />
       </Suspense>
     </div>
@@ -304,4 +308,5 @@ export type ConsoleLogCardBodyProps = {
   scrollToTail: (stepId: string, element: HTMLDivElement) => void;
   stopTailingLogs: () => void;
   currentRunPath: string;
+  buildStep?: BuildStep;
 };

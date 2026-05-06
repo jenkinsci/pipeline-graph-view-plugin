@@ -7,6 +7,7 @@ import {
   StepLogBufferInfo,
   TAIL_CONSOLE_LOG,
 } from "./PipelineConsoleModel.tsx";
+import { BuildStep } from "../../../common/RestClient.tsx";
 
 export default function ConsoleLogStream({
   tailLogs,
@@ -19,6 +20,7 @@ export default function ConsoleLogStream({
   fetchLogText,
   fetchExceptionText,
   currentRunPath,
+  buildStep,
 }: ConsoleLogStreamProps) {
   const logRef = useRef<HTMLDivElement>(null);
   const [logVisible, setLogVisible] = useState(true);
@@ -102,6 +104,7 @@ export default function ConsoleLogStream({
           startByte={logBuffer.startByte}
           stopTailingLogs={stopTailingLogs}
           currentRunPath={currentRunPath}
+          buildStep={buildStep}
         />
       ))}
     </div>
@@ -122,4 +125,5 @@ export interface ConsoleLogStreamProps {
   stopTailingLogs: () => void;
   scrollToTail: (stepId: string, element: HTMLDivElement) => void;
   currentRunPath: string;
+  buildStep?: BuildStep;
 }

@@ -1,6 +1,8 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.model.Run;
+import io.jenkins.plugins.pipelinegraphview.consoleview.PipelineConsoleViewAction;
 import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphRegistry;
 import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphSnapshot;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
@@ -118,6 +120,15 @@ public class PipelineStepApi {
                 inputStep.getId(),
                 inputStep.getOk(),
                 !inputStep.getParameters().isEmpty());
+    }
+
+    private PipelineBuildStep mapBuildStep(Run<?, ?> downstreamBuildRun) {
+        if (downstreamBuildRun == null) {
+            return null;
+        }
+        String classicUrl = downstreamBuildRun.getUrl();
+        String pipelineViewUrl = classicUrl + PipelineConsoleViewAction.URL_NAME;
+        return new PipelineBuildStep(classicUrl, pipelineViewUrl, downstreamBuildRun.getFullDisplayName());
     }
 
     // Strips ANSI colour-code escape sequences from step display names.

@@ -1,0 +1,10 @@
+pipeline {
+    agent any
+    stages {
+        stage('Trigger') {
+            steps {
+                build job: 'downstream'
+            }
+        }
+    }
+}

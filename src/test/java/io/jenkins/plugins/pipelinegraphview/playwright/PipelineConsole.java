@@ -129,4 +129,16 @@ class PipelineConsole {
         logLine.scrollIntoViewIfNeeded();
         assertThat(logLine).isInViewport();
     }
+
+    public void buildStepLinkHasStagesSuffix() {
+        log.info("Checking that a build step has a downstream link with /stages suffix");
+        int count = steps().count();
+        for (int i = 0; i < count; i++) {
+            Locator step = steps().nth(i);
+            if (!isOpenStep(step)) {
+                step.click();
+            }
+        }
+        assertThat(logs.locator("a[href$='/stages']").first()).isVisible();
+    }
 }

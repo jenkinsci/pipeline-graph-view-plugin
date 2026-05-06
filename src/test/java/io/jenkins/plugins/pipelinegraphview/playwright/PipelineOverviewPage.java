@@ -198,4 +198,9 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
         logs.scrollToText(text);
         return this;
     }
+
+    public PipelineOverviewPage buildStepLinkHasStagesSuffix() {
+        logs.buildStepLinkHasStagesSuffix();
+        return this;
+    }
 }

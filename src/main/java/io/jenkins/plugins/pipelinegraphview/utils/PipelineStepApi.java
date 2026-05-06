@@ -75,6 +75,7 @@ public class PipelineStepApi {
                             title,
                             stageId,
                             mapInputStep(flowNodeWrapper.getInputStep()),
+                            mapBuildStep(flowNodeWrapper.getDownstreamBuildRun()),
                             flowNodeWrapper.getTiming(),
                             flags);
                 })

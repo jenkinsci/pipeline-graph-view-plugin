@@ -13,6 +13,7 @@ public class PipelineStep extends AbstractPipelineNode {
     final int stageIdAsInt;
 
     final PipelineInputStep inputStep;
+    final PipelineBuildStep buildStep;
     private final Map<String, Object> flags;
 
     public PipelineStep(
@@ -23,12 +24,14 @@ public class PipelineStep extends AbstractPipelineNode {
             String title,
             String stageId,
             PipelineInputStep inputStep,
+            PipelineBuildStep buildStep,
             TimingInfo timingInfo,
             Map<String, Object> flags) {
         super(id, name, state, type, title, timingInfo, null);
         this.stageId = stageId;
         this.stageIdAsInt = Integer.parseInt(stageId);
         this.inputStep = inputStep;
+        this.buildStep = buildStep;
         this.flags = flags;
     }
 
@@ -44,11 +47,13 @@ public class PipelineStep extends AbstractPipelineNode {
             long startTimeMillis,
             String stageId,
             PipelineInputStep inputStep,
+            PipelineBuildStep buildStep,
             Map<String, Object> flags) {
         super(id, name, state, type, title, pauseDurationMillis, totalDurationMillis, startTimeMillis, null);
         this.stageId = stageId;
         this.stageIdAsInt = Integer.parseInt(stageId);
         this.inputStep = inputStep;
+        this.buildStep = buildStep;
         this.flags = flags;
     }
 

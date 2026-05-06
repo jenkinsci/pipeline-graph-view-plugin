@@ -1,4 +1,4 @@
 stage('Trigger') {
-    def downstream = build(job: 'downstream', wait: false, waitForBuildStart: true)
+    def downstream = build(job: 'downstream', wait: false, waitForStart: true)
     waitForBuild(runId: downstream.getExternalizableId())
 }

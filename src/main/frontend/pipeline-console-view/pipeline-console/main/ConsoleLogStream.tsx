@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
+import { BuildStep } from "../../../common/RestClient.tsx";
 import { ConsoleLine } from "./ConsoleLine.tsx";
 import {
   POLL_INTERVAL,
@@ -7,7 +8,6 @@ import {
   StepLogBufferInfo,
   TAIL_CONSOLE_LOG,
 } from "./PipelineConsoleModel.tsx";
-import { BuildStep } from "../../../common/RestClient.tsx";
 
 export default function ConsoleLogStream({
   tailLogs,

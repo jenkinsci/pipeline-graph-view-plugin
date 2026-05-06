@@ -1,9 +1,9 @@
 import linkifyHtml from "linkify-html";
 import { memo } from "react";
 
+import { BuildStep } from "../../../common/RestClient.tsx";
 import { linkifyJsOptions } from "../../../common/utils/linkify-js.ts";
 import { makeReactChildren, tokenizeANSIString } from "./Ansi.tsx";
-import { BuildStep } from "../../../common/RestClient.tsx";
 
 export interface ConsoleLineProps {
   stopTailingLogs: () => void;
@@ -20,7 +20,7 @@ export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
   const baseURL = `${props.currentRunPath}stages/?start-byte=${props.startByte}&selected-node=${props.stepId}`;
   const id = `log-${props.stepId}-${props.lineNumber}`;
   let content = props.content;
-  let buildStep = props.buildStep;
+  const buildStep = props.buildStep;
   if (buildStep) {
     const classicUrl = buildStep.classicUrl;
     const pipelineViewUrl = buildStep.pipelineViewUrl;

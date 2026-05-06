@@ -13,10 +13,10 @@ import {
   useState,
 } from "react";
 
-import { BuildStep } from "../../../common/RestClient.tsx";
 import StatusIcon from "../../../common/components/status-icon.tsx";
 import Tooltip from "../../../common/components/tooltip.tsx";
 import { LocalizedMessageKey, useMessages } from "../../../common/i18n";
+import { BuildStep } from "../../../common/RestClient.tsx";
 import { classNames } from "../../../common/utils/classnames.ts";
 import { linkifyJsOptions } from "../../../common/utils/linkify-js.ts";
 import LiveTotal from "../../../common/utils/live-total.tsx";

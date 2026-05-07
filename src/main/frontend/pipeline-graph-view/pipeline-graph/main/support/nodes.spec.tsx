@@ -11,6 +11,7 @@ describe("Counter node with 50+ parallel stages", () => {
   const layout: LayoutInfo = {
     nodeSpacingH: 120,
     parallelSpacingH: 120,
+    nodeSpacingV: 70,
     nodeRadius: 12,
     terminalRadius: 7,
     curveRadius: 12,

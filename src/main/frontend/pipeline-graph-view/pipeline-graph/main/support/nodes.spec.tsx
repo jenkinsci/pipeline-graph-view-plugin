@@ -3,15 +3,8 @@ import { describe, expect, it } from "vitest";
 
 import { DEFAULT_LOCALE } from "../../../../common/i18n/index.ts";
 import { defaultMessages } from "../../../../common/i18n/messages.ts";
-import {
-  CounterNodeInfo,
-  layoutGraph,
-} from "../PipelineGraphLayout.ts";
-import {
-  LayoutInfo,
-  Result,
-  StageInfo,
-} from "../PipelineGraphModel.tsx";
+import { CounterNodeInfo, layoutGraph } from "../PipelineGraphLayout.ts";
+import { LayoutInfo, Result, StageInfo } from "../PipelineGraphModel.tsx";
 import { Node } from "./nodes.tsx";
 
 describe("Counter node with 50+ parallel stages", () => {
@@ -108,7 +101,9 @@ describe("Counter node with 50+ parallel stages", () => {
         isPlaceholder: true,
         key: "counter-node",
         type: "counter",
-        stages: Array.from({ length: 55 }, (_, i) => makeStage(i + 1, `Stage ${i + 1}`)),
+        stages: Array.from({ length: 55 }, (_, i) =>
+          makeStage(i + 1, `Stage ${i + 1}`),
+        ),
       };
 
       render(<Node node={counterNode} isSelected={false} />);

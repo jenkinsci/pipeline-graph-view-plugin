@@ -158,6 +158,7 @@ export function layoutGraph(
 
   return {
     nodes,
+    allNodes: [],
     connections,
     bigLabels,
     timings,

@@ -1,0 +1,66 @@
+node {
+    parallel([
+        "A": {
+            stage("Checkout") {
+                echo("Checkout A")
+            }
+            stage("Test") {
+                parallel([
+                    "A1" : {
+                       echo("Test A1")
+                    },
+                    "A2" : {
+                       echo("Test A2")
+                    },
+                    "A3" : {
+                       echo("Test A3")
+                    }
+                ])
+            }
+
+            stage("Test 2") {
+                parallel([
+                    "A1" : {
+                       echo("Test A1")
+                    },
+                    "A2" : {
+                       echo("Test A2")
+                    },
+                ])
+            }
+
+            stage("Coverage") {
+                echo("Coverage")
+            }
+        },
+        "B": {
+            stage("Checkout") {
+                echo("Checkout B")
+            }
+            stage("Build") {
+                echo("Build B")
+            }
+            parallel([
+                "B1" : {
+                   echo("Test B1")
+                   sleep time: 1, unit: 'MILLISECONDS'
+                   pwd()
+                },
+                "B2" : {
+                   echo("Test B2")
+                   unstable 'this step is unstable'
+                }
+            ])
+            stage("Archive") {
+                echo("Archive")
+            }
+        },
+        "C": {
+            for(int i=1; i<=7; i++) {
+                stage("Stage - ${i}") {
+                    echo("ok")
+                }
+            }
+        }
+    ])
+}

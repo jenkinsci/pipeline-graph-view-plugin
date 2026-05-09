@@ -86,7 +86,7 @@ export interface PlaceholderNodeInfo extends BaseNodeInfo {
   isPlaceholder: true;
 
   // -- Unique
-  type: "start" | "end";
+  type: "start" | "end" | "root" | "stage-end";
 }
 
 export interface CounterNodeInfo extends BaseNodeInfo {
@@ -99,6 +99,24 @@ export interface CounterNodeInfo extends BaseNodeInfo {
 }
 
 export type NodeInfo = StageNodeInfo | PlaceholderNodeInfo | CounterNodeInfo;
+
+export type GraphNode = {
+  children: GraphNode[];
+  shiftX: number;
+  width: number;
+  shiftY: number;
+  height: number;
+  isHidden?: boolean;
+  isParallel?: boolean;
+  isSkipped?: boolean;
+  firstChildIsSkipped?: boolean;
+  hasBigLabel?: boolean;
+  hasBranchLabel?: boolean;
+  hasChildWithBranchLabel?: boolean;
+  hasParallel?: boolean;
+  hasSmallLabel?: boolean;
+  hasTiming?: boolean;
+} & NodeInfo;
 
 export interface NodeColumn {
   topStage?: StageInfo; // Top-most stage for this column, which will have no rendered nodes if it's parallel
@@ -143,6 +161,7 @@ export type LayoutInfo = typeof defaultLayout;
  */
 export interface PositionedGraph {
   nodes: Array<NodeInfo>;
+  allNodes: Array<GraphNode>;
   connections: Array<CompositeConnection>;
   bigLabels: Array<NodeLabelInfo>;
   timings: Array<NodeLabelInfo>;
@@ -151,3 +170,22 @@ export interface PositionedGraph {
   measuredWidth: number;
   measuredHeight: number;
 }
+
+export function isFlagEnabled(flag: string) {
+  const isEnabled = (v: string | null) =>
+    ["yes", "1", "true", "enabled"].includes(v?.toLowerCase() ?? "");
+
+  try {
+    const search = new URLSearchParams(window.location.search);
+    if (search.has(flag)) return isEnabled(search.get(flag));
+  } catch {}
+  try {
+    // LocalStorage access can throw, gracefully access the key.
+    return isEnabled(window.localStorage.getItem(flag));
+  } catch {}
+  return false;
+}
+
+export const nestedLayout = () => isFlagEnabled("nestedLayout");
+// Optionally turn on debugging for the graph. Once the nested layout is stable, we could use a constant to let tree-shaking remove debug code in production bundles.
+export const debugPipelineGraph = () => isFlagEnabled("debugPipelineGraph");

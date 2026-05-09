@@ -1,0 +1,168 @@
+pipeline {
+    agent any
+    stages {
+        stage('Non-Parallel Stage') {
+            steps {
+                echo 'This stage will be executed first.'
+            }
+        }
+        stage('Parallel Stage') {
+            failFast true
+            parallel {
+                stage('Branch A') {
+                    steps {
+                        echo "On Branch A"
+                    }
+                }
+                stage('Skipped Branch B') {
+                    when {
+                        branch 'some-pattern'
+                    }
+                    steps {
+                        echo "On skipped Branch B"
+                    }
+                }
+                stage('Branch C') {
+                    stages {
+                        stage('Nested 1 C') {
+                            steps {
+                                echo "In stage Nested 1 within Branch C"
+                            }
+                        }
+                        stage('Nested 2 C') {
+                            steps {
+                                echo "In stage Nested 2 within Branch C"
+                            }
+                        }
+                        stage('Skipped stage c nested 3') {
+                            when {
+                                branch 'some-pattern'
+                            }
+                            steps {
+                                echo "in skipped c nested 3"
+                            }
+                        }
+                        stage('Skipped stage c nested 4') {
+                            when {
+                                branch 'some-pattern'
+                            }
+                            steps {
+                                echo "in skipped c nested 4"
+                            }
+                        }
+                    }
+                }
+                stage('Branch D') {
+                    stages {
+                        stage('Skipped stage d nested 1') {
+                            when {
+                                branch 'some-pattern'
+                            }
+                            steps {
+                                echo "in skipped d nested 1"
+                            }
+                        }
+                        stage('Nested 2 D') {
+                            steps {
+                                echo "In stage Nested 2 within Branch D"
+                            }
+                        }
+                    }
+                }
+                stage('Branch E') {
+                    stages {
+                        stage('Skipped stage e nested 1') {
+                            when {
+                                branch 'some-pattern'
+                            }
+                            steps {
+                                echo "in skipped e nested 1"
+                            }
+                        }
+                        stage('Nested 2 E') {
+                            steps {
+                                echo "In stage Nested 2 within Branch E"
+                            }
+                        }
+                        stage('Nested 3 E') {
+                            steps {
+                                echo "In stage Nested 3 within Branch E"
+                            }
+                        }
+                        stage('Nested 4 E') {
+                            steps {
+                                echo "In stage Nested 4 within Branch E"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        stage('Skipped stage 1') {
+            when {
+                branch 'some-pattern'
+            }
+            stages {
+                stage('Skipped 1') {
+                    steps {
+                        echo "in skipped 1"
+                    }
+                }
+                stage('Skipped 2') {
+                    steps {
+                        echo "in skipped 2"
+                    }
+                }
+            }
+        }
+        stage('Skipped stage 2') {
+            when {
+                branch 'some-pattern'
+            }
+            stages {
+                stage('Skipped 1') {
+                    steps {
+                        echo "in skipped 1"
+                    }
+                }
+                stage('Skipped 2') {
+                    steps {
+                        echo "in skipped 2"
+                    }
+                }
+            }
+        }
+        stage('Parallel Stage 2') {
+            failFast true
+            parallel {
+                stage('Branch A') {
+                    when {
+                        branch 'some-pattern'
+                    }
+                    steps {
+                        echo "On Branch A"
+                    }
+                }
+                stage('Branch B') {
+                    steps {
+                        echo "On Branch B"
+                    }
+                }
+                stage('Branch C') {
+                    stages {
+                        stage('Nested 1') {
+                            steps {
+                                echo "In stage Nested 1 within Branch C"
+                            }
+                        }
+                        stage('Nested 2') {
+                            steps {
+                                echo "In stage Nested 2 within Branch C"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

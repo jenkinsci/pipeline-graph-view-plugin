@@ -1,4 +1,5 @@
 import {
+  CSSProperties,
   useCallback,
   useContext,
   useEffect,
@@ -11,12 +12,20 @@ import { Context as TransformContext } from "react-zoom-pan-pinch";
 
 import { I18NContext } from "../../../common/i18n/index.ts";
 import { useUserPreferences } from "../../../common/user/user-preferences-provider.tsx";
+import { nestedGraphLayout } from "./NestedPipelineGraphLayout.ts";
 import {
   DEFAULT_MAX_COLUMNS_WHEN_COLLAPSED,
   layoutGraph,
 } from "./PipelineGraphLayout";
-import { defaultLayout, LayoutInfo, StageInfo } from "./PipelineGraphModel.tsx";
+import {
+  debugPipelineGraph,
+  defaultLayout,
+  LayoutInfo,
+  nestedLayout,
+  StageInfo,
+} from "./PipelineGraphModel.tsx";
 import { GraphConnections } from "./support/connections.tsx";
+import { DebugOutline } from "./support/DebugOutline.tsx";
 import {
   BigLabel,
   SequentialContainerLabel,
@@ -89,6 +98,7 @@ export function PipelineGraph({
 
   const {
     nodes,
+    allNodes,
     connections,
     bigLabels,
     timings,
@@ -96,27 +106,36 @@ export function PipelineGraph({
     branchLabels,
     measuredWidth,
     measuredHeight,
-  } = useMemo(
-    () =>
-      layoutGraph(
+  } = useMemo(() => {
+    if (nestedLayout()) {
+      return nestedGraphLayout(
         stages,
         fullLayout,
         collapsed ?? false,
         messages,
-        showNames,
+        showNames || !collapsed,
         showDurations,
         maxColumnsWhenCollapsed,
-      ),
-    [
+      );
+    }
+    return layoutGraph(
       stages,
       fullLayout,
-      collapsed,
+      collapsed ?? false,
       messages,
       showNames,
       showDurations,
       maxColumnsWhenCollapsed,
-    ],
-  );
+    );
+  }, [
+    stages,
+    fullLayout,
+    collapsed,
+    messages,
+    showNames,
+    showDurations,
+    maxColumnsWhenCollapsed,
+  ]);
 
   const stageIsSelected = useCallback(
     (stage?: StageInfo): boolean => {
@@ -227,10 +246,13 @@ export function PipelineGraph({
     [branchLabels, isInViewport],
   );
 
-  const outerDivStyle = {
-    position: "relative" as const,
-    overflow: "visible" as const,
+  const outerDivStyle: CSSProperties = {
+    position: "relative",
+    overflow: "visible",
   };
+  if (debugPipelineGraph()) {
+    outerDivStyle.border = "1px dashed red";
+  }
 
   return (
     <div ref={containerRef} className="PWGx-PipelineGraph-container">
@@ -243,6 +265,11 @@ export function PipelineGraph({
             nodes={nodes}
             isStageSelected={stageIsSelected}
           />
+
+          {debugPipelineGraph() &&
+            allNodes.map((node) => (
+              <DebugOutline node={node} layout={fullLayout} key={node.id} />
+            ))}
         </svg>
 
         {visibleNodes.map((node) => (

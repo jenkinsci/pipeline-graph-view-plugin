@@ -1,0 +1,82 @@
+stage('Top level') {
+    // outer parallel: two branches
+    parallel(
+        // First top-level branch
+        BranchA: {
+            stage('Branch A') {
+                echo "Starting Branch A"
+
+                // inner parallel inside Branch A
+                parallel(
+                    'A-1': {
+                        stage('A-1') {
+                            parallel(
+                                'A-1-1': {
+                                    stage('A-1-1') {
+                                        echo "Doing work in A-1-1"
+                                        sleep 2
+                                    }
+                                },
+                                'A-1-2': {
+                                    stage('A-1-2') {
+                                        echo "Doing work in A-1-2"
+                                        sleep 2
+                                    }
+                                }
+                            )
+                        }
+                    },
+                    'A-2': {
+                        stage('A-2') {
+                            echo "Doing work in A-2"
+                            sleep 2
+                        }
+                    }
+                )
+
+                echo "Finished Branch A"
+            }
+        },
+
+        // Second top-level branch
+        BranchB: {
+            stage('Branch B') {
+                echo "Starting Branch B"
+
+                // inner parallel inside Branch B
+                parallel(
+                    'B-1': {
+                        stage('B-1-1') {
+                            echo "Doing work in B-1-1"
+                            sleep 2
+                        }
+                        stage('B-1-2') {
+                            echo "Starting Branch B-1-2"
+                            parallel(
+                                'B-1-2-1': {
+                                    stage('B-1-2-1') {
+                                        echo "Doing work in B-1-2-1"
+                                    }
+                                },
+                                'B-1-2-2': {
+                                    stage('B-1-2-2') {
+                                        echo "Doing work in B-1-2-2"
+                                    }
+                                }
+                            )
+                            echo "Finishing Branch B-1.1"
+                        }
+                    },
+                    'B-2': {
+                        stage('B-2') {
+                            echo "Doing work in B-2"
+                            sleep 2
+                        }
+                    }
+                )
+
+                echo "Finished Branch B"
+            }
+        }
+    )
+}

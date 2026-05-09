@@ -54,35 +54,31 @@ describe("Counter node with 50+ parallel stages", () => {
       false,
       maxColumns,
     );
+  const counterFor = (graph: ReturnType<typeof buildGraphWithManyStages>) => {
+    return graph.nodes.find(
+      (node) => node.key === "counter-node",
+    ) as CounterNodeInfo;
+  };
 
   describe("layout with 50+ stages", () => {
     it("collapses 55 stages into a counter node with correct count", () => {
       const graph = buildGraphWithManyStages(55, 5);
-      const counterColumn = graph.nodeColumns.find(
-        (column) => column.rows[0][0].key === "counter-node",
-      );
-      expect(counterColumn).toBeDefined();
-      const counter = counterColumn!.rows[0][0] as CounterNodeInfo;
+      const counter = counterFor(graph);
+      expect(counter).toBeDefined();
       expect(counter.stages.length).toBe(50);
     });
 
     it("collapses 100 stages into a counter node with correct count", () => {
       const graph = buildGraphWithManyStages(100, 5);
-      const counterColumn = graph.nodeColumns.find(
-        (column) => column.rows[0][0].key === "counter-node",
-      );
-      expect(counterColumn).toBeDefined();
-      const counter = counterColumn!.rows[0][0] as CounterNodeInfo;
+      const counter = counterFor(graph);
+      expect(counter).toBeDefined();
       expect(counter.stages.length).toBe(95);
     });
 
     it("counter node holds all stage references for 60 stages at default threshold", () => {
       const graph = buildGraphWithManyStages(60, 13);
-      const counterColumn = graph.nodeColumns.find(
-        (column) => column.rows[0][0].key === "counter-node",
-      );
-      expect(counterColumn).toBeDefined();
-      const counter = counterColumn!.rows[0][0] as CounterNodeInfo;
+      const counter = counterFor(graph);
+      expect(counter).toBeDefined();
       expect(counter.stages.length).toBe(47);
       // Each stage should retain its identity
       counter.stages.forEach((stage) => {

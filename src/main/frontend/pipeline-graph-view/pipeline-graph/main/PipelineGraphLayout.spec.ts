@@ -440,46 +440,43 @@ describe("PipelineGraphLayout", () => {
         );
 
       const counterFor = (graph: ReturnType<typeof callLayout>) => {
-        const counterColumn = graph.nodeColumns.find(
-          (column) => column.rows[0][0].key === "counter-node",
-        );
-        return counterColumn
-          ? (counterColumn.rows[0][0] as CounterNodeInfo)
-          : undefined;
+        return graph.nodes.find(
+          (node) => node.key === "counter-node",
+        ) as CounterNodeInfo;
       };
 
       it("uses the default threshold of 13 when no override is provided", () => {
         const graph = callLayout(25, true);
 
-        expect(graph.nodeColumns.length).toBe(16);
+        expect(graph.nodes.length).toBe(16);
         expect(counterFor(graph)?.stages.length).toBe(12);
       });
 
       it("respects an explicit lower maxColumns override", () => {
         const graph = callLayout(25, true, 5);
 
-        expect(graph.nodeColumns.length).toBe(8);
+        expect(graph.nodes.length).toBe(8);
         expect(counterFor(graph)?.stages.length).toBe(20);
       });
 
       it("respects an explicit higher maxColumns override", () => {
         const graph = callLayout(25, true, 20);
 
-        expect(graph.nodeColumns.length).toBe(23);
+        expect(graph.nodes.length).toBe(23);
         expect(counterFor(graph)?.stages.length).toBe(5);
       });
 
       it("omits the counter when maxColumns exceeds the stage count", () => {
         const graph = callLayout(25, true, 30);
 
-        expect(graph.nodeColumns.length).toBe(27);
+        expect(graph.nodes.length).toBe(27);
         expect(counterFor(graph)).toBeUndefined();
       });
 
       it("ignores maxColumns when collapsed is false", () => {
         const graph = callLayout(25, false, 5);
 
-        expect(graph.nodeColumns.length).toBe(27);
+        expect(graph.nodes.length).toBe(27);
         expect(counterFor(graph)).toBeUndefined();
       });
     });

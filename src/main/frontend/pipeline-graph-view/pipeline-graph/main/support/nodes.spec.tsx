@@ -68,21 +68,21 @@ describe("Counter node with 50+ parallel stages", () => {
       const graph = buildGraphWithManyStages(55, 5);
       const counter = counterFor(graph);
       expect(counter).toBeDefined();
-      expect(counter?.stages.length).toBe(50);
+      expect(counter?.stages.length).toBe(51);
     });
 
     it("collapses 100 stages into a counter node with correct count", () => {
       const graph = buildGraphWithManyStages(100, 5);
       const counter = counterFor(graph);
       expect(counter).toBeDefined();
-      expect(counter?.stages.length).toBe(95);
+      expect(counter?.stages.length).toBe(96);
     });
 
     it("counter node holds all stage references for 60 stages at default threshold", () => {
       const graph = buildGraphWithManyStages(60, 13);
       const counter = counterFor(graph);
       expect(counter).toBeDefined();
-      expect(counter?.stages.length).toBe(47);
+      expect(counter?.stages.length).toBe(48);
       // Each stage should retain its identity
       counter?.stages.forEach((stage) => {
         expect(stage.name).toMatch(/^Stage \d+$/);

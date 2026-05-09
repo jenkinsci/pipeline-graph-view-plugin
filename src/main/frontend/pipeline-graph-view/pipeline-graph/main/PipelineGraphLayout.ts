@@ -107,22 +107,21 @@ export function layoutGraph(
 
     const newMiddleNodes = createNodeColumns(middleStages);
 
-    const visibleNodes = newMiddleNodes.slice(0, maxColumnsWhenCollapsed);
-    const hiddenNodes = newMiddleNodes.slice(maxColumnsWhenCollapsed);
+    if (newMiddleNodes.length <= maxColumnsWhenCollapsed) {
+      return [start, ...newMiddleNodes, end];
+    }
 
-    const result = [start, ...visibleNodes];
+    // Make space for the counter node.
+    const breakPoint = maxColumnsWhenCollapsed - 1;
 
-    if (hiddenNodes.length > 0) {
-      counterNode.stages = hiddenNodes.flatMap((node) =>
+    counterNode.stages = newMiddleNodes
+      .slice(breakPoint)
+      .flatMap((node) =>
         node.rows.flatMap((row) =>
           row.flatMap((e) => (e as StageNodeInfo).stage),
         ),
       );
-      result.push(counter);
-    }
-
-    result.push(end);
-    return result;
+    return [start, ...newMiddleNodes.slice(0, breakPoint), counter, end];
   }
 
   const allNodeColumns: Array<NodeColumn> = filterWhenCollapsed([

@@ -442,22 +442,22 @@ describe("PipelineGraphLayout", () => {
       it("uses the default threshold of 13 when no override is provided", () => {
         const graph = callLayout(25, true);
 
-        expect(graph.nodes.length).toBe(16);
-        expect(counterFor(graph)?.stages.length).toBe(12);
+        expect(graph.nodes.length).toBe(15);
+        expect(counterFor(graph)?.stages.length).toBe(13);
       });
 
       it("respects an explicit lower maxColumns override", () => {
         const graph = callLayout(25, true, 5);
 
-        expect(graph.nodes.length).toBe(8);
-        expect(counterFor(graph)?.stages.length).toBe(20);
+        expect(graph.nodes.length).toBe(7);
+        expect(counterFor(graph)?.stages.length).toBe(21);
       });
 
       it("respects an explicit higher maxColumns override", () => {
         const graph = callLayout(25, true, 20);
 
-        expect(graph.nodes.length).toBe(23);
-        expect(counterFor(graph)?.stages.length).toBe(5);
+        expect(graph.nodes.length).toBe(22);
+        expect(counterFor(graph)?.stages.length).toBe(6);
       });
 
       it("omits the counter when maxColumns exceeds the stage count", () => {

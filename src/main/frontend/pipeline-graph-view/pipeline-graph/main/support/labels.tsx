@@ -57,7 +57,7 @@ function BigLabelImpl({
   if (details.stage?.skeleton) {
     classNames.push("pgv-graph-node--skeleton");
   }
-  if (details.node.id < 0) {
+  if (details.node.isPlaceholder) {
     classNames.push("pgv-graph-node--skeleton");
   }
 
@@ -116,7 +116,7 @@ function TimingsLabelImpl({
   if (details.stage?.skeleton) {
     classNames.push("pgv-graph-node--skeleton");
   }
-  if (details.node.id < 0) {
+  if (details.node.isPlaceholder) {
     classNames.push("pgv-graph-node--skeleton");
   }
 

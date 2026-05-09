@@ -1,6 +1,7 @@
 import { LocalizedMessageKey, Messages } from "../../../common/i18n/index.ts";
 import {
   CompositeConnection,
+  ConnectionEdge,
   CounterNodeInfo,
   LayoutInfo,
   NodeColumn,
@@ -491,11 +492,14 @@ function createConnections(
   const connections: Array<CompositeConnection> = [];
 
   let sourceNodes: Array<NodeInfo> = [];
-  let skippedNodes: Array<NodeInfo> = [];
+  let skippedNodes: Array<ConnectionEdge> = [];
 
   for (const column of columns) {
     if (!collapsed && column.topStage?.state === Result.skipped) {
-      skippedNodes.push(column.rows[0][0]);
+      skippedNodes.push({
+        ...column.rows[0][0],
+        isSkipped: true,
+      });
       continue;
     }
 

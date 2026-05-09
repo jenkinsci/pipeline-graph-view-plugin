@@ -108,10 +108,22 @@ export interface NodeColumn {
   startX: number; // Where to put the branch labels, or if none, the center of the left-most node(s)
 }
 
+export interface ConnectionEdge {
+  x: number;
+  y: number;
+  key: string;
+  type: NodeInfo["type"];
+  firstChildIsSkipped?: boolean;
+  isHidden?: boolean;
+  isParallel?: boolean;
+  isPlaceholder?: boolean;
+  isSkipped?: boolean;
+}
+
 export interface CompositeConnection {
-  sourceNodes: Array<NodeInfo>;
-  destinationNodes: Array<NodeInfo>;
-  skippedNodes: Array<NodeInfo>;
+  sourceNodes: Array<ConnectionEdge>;
+  destinationNodes: Array<ConnectionEdge>;
+  skippedNodes: Array<ConnectionEdge>;
   hasBranchLabels: boolean;
 }
 

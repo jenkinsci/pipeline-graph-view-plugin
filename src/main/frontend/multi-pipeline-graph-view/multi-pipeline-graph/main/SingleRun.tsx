@@ -49,15 +49,22 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
       layout.nodeSpacingH = 90;
     }
 
+    if (!showNames) {
+      // Do not reserve space for big label.
+      layout.ypStart -= layout.labelOffsetV + 16;
+    }
+    if (!showDurations) {
+      // Do not reserve space for small label.
+      layout.nodeSpacingV -= layout.labelOffsetV + 15;
+    }
+    // Do not reserve space for big label on next row.
+    layout.nodeSpacingV -= layout.labelOffsetV;
+
     return layout;
   }
 
-  function getCompactLayout() {
-    return !showNames && !showDurations ? "pgv-single-run--compact" : "";
-  }
-
   return (
-    <div className={`pgv-single-run ${getCompactLayout()}`}>
+    <div className="pgv-single-run">
       <div>
         <a href={currentJobPath + run.id} className="pgv-user-specified-text">
           <StatusIcon status={run.result} />

@@ -35,7 +35,6 @@ export function layoutGraph(
   maxColumnsWhenCollapsed: number = DEFAULT_MAX_COLUMNS_WHEN_COLLAPSED,
 ): PositionedGraph {
   const stageNodeColumns = createNodeColumns(newStages);
-  const { nodeSpacingH, ypStart } = layout;
 
   const startNode: NodeInfo = {
     x: 0,
@@ -145,16 +144,15 @@ export function layoutGraph(
 
   // Calculate the size of the graph
   let measuredWidth = 0;
-  let measuredHeight = 60;
-
+  let measuredHeight = 0;
   for (const column of allNodeColumns) {
     for (const row of column.rows) {
       for (const node of row) {
-        measuredWidth = Math.max(measuredWidth, node.x + nodeSpacingH / 2);
-        measuredHeight =
-          collapsed && !showNames && !showDurations
-            ? 60
-            : Math.max(measuredHeight, node.y + ypStart);
+        measuredWidth = Math.max(
+          measuredWidth,
+          node.x + layout.nodeSpacingH / 2,
+        );
+        measuredHeight = Math.max(measuredHeight, node.y + layout.nodeSpacingV);
       }
     }
   }

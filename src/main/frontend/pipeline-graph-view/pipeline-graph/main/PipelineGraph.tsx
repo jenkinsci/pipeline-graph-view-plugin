@@ -240,7 +240,7 @@ export function PipelineGraph({
 
           <SelectionHighlight
             layout={fullLayout}
-            nodeColumns={nodeColumns}
+            nodes={nodes}
             isStageSelected={stageIsSelected}
           />
         </svg>

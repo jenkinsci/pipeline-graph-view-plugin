@@ -1,11 +1,11 @@
 import { LocalizedMessageKey, Messages } from "../../../common/i18n/index.ts";
 import {
   CompositeConnection,
+  CounterNodeInfo,
   LayoutInfo,
   NodeColumn,
   NodeInfo,
   NodeLabelInfo,
-  PlaceholderNodeInfo,
   PositionedGraph,
   Result,
   StageInfo,
@@ -116,11 +116,10 @@ export function layoutGraph(
     const result = [start, ...visibleNodes];
 
     if (hiddenNodes.length > 0) {
-      (counter.rows[0][0] as CounterNodeInfo).stages = hiddenNodes.flatMap(
-        (node) =>
-          node.rows.flatMap((row) =>
-            row.flatMap((e) => (e as StageNodeInfo).stage),
-          ),
+      counterNode.stages = hiddenNodes.flatMap((node) =>
+        node.rows.flatMap((row) =>
+          row.flatMap((e) => (e as StageNodeInfo).stage),
+        ),
       );
       result.push(counter);
     }
@@ -174,10 +173,6 @@ export function layoutGraph(
   };
 }
 
-export interface CounterNodeInfo extends PlaceholderNodeInfo {
-  stages: StageInfo[];
-}
-
 /**
  * Generate an array of columns, based on the top-level stages
  */
@@ -199,6 +194,7 @@ export function createNodeColumns(
       seqContainerName,
       isPlaceholder: false,
       key: "n_" + stage.id,
+      type: "stage",
     };
   };
 
@@ -293,7 +289,7 @@ function positionNodes(
       // Advance X position
       if (previousTopNode.isPlaceholder || topNode.isPlaceholder) {
         // Don't space placeholder nodes (start/end) as wide as normal.
-        if (topNode.key === "counter-node") {
+        if (topNode.type === "counter") {
           xp += nodeSpacingH;
         } else {
           xp += Math.floor(nodeSpacingH * 0.7);
@@ -358,7 +354,7 @@ function createBigLabels(
   for (const column of columns) {
     const node = column.rows[0][0];
 
-    if (node.isPlaceholder && node.type === "counter") {
+    if (node.type === "counter") {
       continue;
     }
     const stage = column.topStage;

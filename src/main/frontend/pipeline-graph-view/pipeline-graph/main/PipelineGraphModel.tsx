@@ -76,6 +76,7 @@ export interface StageNodeInfo extends BaseNodeInfo {
   isPlaceholder: false;
 
   // -- Unique
+  type: "stage";
   stage: StageInfo;
   seqContainerName?: string; // Used within a parallel branch to denote the name of the container of the parallel sequential stages
 }
@@ -85,10 +86,19 @@ export interface PlaceholderNodeInfo extends BaseNodeInfo {
   isPlaceholder: true;
 
   // -- Unique
-  type: "start" | "end" | "counter";
+  type: "start" | "end";
 }
 
-export type NodeInfo = StageNodeInfo | PlaceholderNodeInfo;
+export interface CounterNodeInfo extends BaseNodeInfo {
+  // -- Marker
+  isPlaceholder: true;
+
+  // -- Unique
+  type: "counter";
+  stages: StageInfo[];
+}
+
+export type NodeInfo = StageNodeInfo | PlaceholderNodeInfo | CounterNodeInfo;
 
 export interface NodeColumn {
   topStage?: StageInfo; // Top-most stage for this column, which will have no rendered nodes if it's parallel

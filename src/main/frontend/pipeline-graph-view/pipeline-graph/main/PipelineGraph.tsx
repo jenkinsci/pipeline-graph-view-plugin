@@ -83,7 +83,7 @@ export function PipelineGraph({
   }, [collapsed, fullLayout.nodeSpacingH]);
 
   const {
-    nodeColumns,
+    nodes,
     connections,
     bigLabels,
     timings,
@@ -118,11 +118,6 @@ export function PipelineGraph({
       return (selectedStage && stage && selectedStage.id === stage.id) || false;
     },
     [selectedStage],
-  );
-
-  const nodes = useMemo(
-    () => nodeColumns.flatMap((column) => column.rows.flatMap((row) => row)),
-    [nodeColumns],
   );
 
   // When inside a TransformWrapper, only mount the nodes/labels intersecting

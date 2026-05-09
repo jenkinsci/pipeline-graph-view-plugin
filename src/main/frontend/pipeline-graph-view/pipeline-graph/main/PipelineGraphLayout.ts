@@ -159,7 +159,11 @@ export function layoutGraph(
     }
   }
 
+  const nodes = allNodeColumns.flatMap((column) =>
+    column.rows.flatMap((row) => row),
+  );
   return {
+    nodes,
     nodeColumns: allNodeColumns,
     connections,
     bigLabels,

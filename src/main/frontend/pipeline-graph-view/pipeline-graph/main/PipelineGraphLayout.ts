@@ -142,24 +142,18 @@ export function layoutGraph(
   const branchLabels = createBranchLabels(allNodeColumns, collapsed);
   const connections = createConnections(allNodeColumns, collapsed);
 
-  // Calculate the size of the graph
-  let measuredWidth = 0;
-  let measuredHeight = 0;
-  for (const column of allNodeColumns) {
-    for (const row of column.rows) {
-      for (const node of row) {
-        measuredWidth = Math.max(
-          measuredWidth,
-          node.x + layout.nodeSpacingH / 2,
-        );
-        measuredHeight = Math.max(measuredHeight, node.y + layout.nodeSpacingV);
-      }
-    }
-  }
-
   const nodes = allNodeColumns.flatMap((column) =>
     column.rows.flatMap((row) => row),
   );
+
+  // Calculate the size of the graph
+  let measuredWidth = 0;
+  let measuredHeight = 0;
+  for (const node of nodes) {
+    measuredWidth = Math.max(measuredWidth, node.x + layout.nodeSpacingH / 2);
+    measuredHeight = Math.max(measuredHeight, node.y + layout.nodeSpacingV);
+  }
+
   return {
     nodes,
     connections,

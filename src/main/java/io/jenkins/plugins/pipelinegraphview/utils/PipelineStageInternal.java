@@ -4,6 +4,7 @@ import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import java.util.Collections;
 import java.util.List;
+import org.jenkinsci.plugins.workflow.support.steps.input.InputAction;
 
 class PipelineStageInternal {
 
@@ -19,6 +20,9 @@ class PipelineStageInternal {
     private boolean synthetic;
     private TimingInfo timingInfo;
     private String agent;
+    private String causeOfBlockage;
+    private PipelineStepBuilderApi builder;
+    private InputAction inputAction;
 
     public PipelineStageInternal(
             String id,
@@ -29,7 +33,8 @@ class PipelineStageInternal {
             String title,
             boolean synthetic,
             TimingInfo times,
-            String agent) {
+            String agent,
+            String causeOfBlockage) {
         this.id = id;
         this.name = name;
         this.parents = parents;
@@ -39,6 +44,7 @@ class PipelineStageInternal {
         this.synthetic = synthetic;
         this.timingInfo = times;
         this.agent = agent;
+        this.causeOfBlockage = causeOfBlockage;
     }
 
     public boolean isSequential() {
@@ -113,12 +119,70 @@ class PipelineStageInternal {
         this.agent = aAgent;
     }
 
+    public void setBuilder(PipelineStepBuilderApi builder) {
+        this.builder = builder;
+    }
+
+    public void setInputAction(InputAction inputAction) {
+        this.inputAction = inputAction;
+    }
+
+    /**
+     * Checks if this stage or any of its children are waiting for input.
+     * A stage is waiting for input if any of its steps have a non-null inputStep
+     * and the step state is PAUSED.
+     * Only performs the check if there is an InputAction attached to the WorkflowRun.
+     */
+    private boolean isWaitingForInput(List<PipelineStage> children) {
+        // Early exit if there's no InputAction on the run
+        if (inputAction == null) {
+            return false;
+        }
+
+        // Check if any child stages are waiting for input
+        if (children != null && !children.isEmpty()) {
+            for (PipelineStage child : children) {
+                if (child.state == PipelineState.PAUSED) {
+                    return true;
+                }
+            }
+        }
+
+        // Check steps for this stage
+        if (builder != null && id != null) {
+            List<FlowNodeWrapper> steps = builder.getStageSteps(id);
+            if (steps != null) {
+                for (FlowNodeWrapper step : steps) {
+                    // Check if step has an input and is paused
+                    if (step.getInputStep() != null && step.getStatus().state == BlueRun.BlueRunState.PAUSED) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
     public PipelineStage toPipelineStage(List<PipelineStage> children, String runUrl) {
+        boolean waitingForInput = isWaitingForInput(children);
+        PipelineState effectiveState;
+        if (waitingForInput) {
+            effectiveState = PipelineState.PAUSED;
+        } else if (causeOfBlockage != null && state.isInProgress()) {
+            // The chunked status compute can report IN_PROGRESS for a declarative parallel
+            // branch whose agent allocation is actually queued; the presence of a cause of
+            // blockage is the authoritative signal that the stage is waiting for an executor.
+            effectiveState = PipelineState.QUEUED;
+        } else {
+            effectiveState = state;
+        }
+
         return new PipelineStage(
                 id,
                 name,
                 children,
-                state,
+                effectiveState,
                 type.name(),
                 title,
                 seqContainerName,
@@ -128,6 +192,7 @@ class PipelineStageInternal {
                 synthetic && name.equals(Messages.FlowNodeWrapper_noStage()),
                 timingInfo,
                 agent,
-                runUrl);
+                runUrl,
+                causeOfBlockage);
     }
 }

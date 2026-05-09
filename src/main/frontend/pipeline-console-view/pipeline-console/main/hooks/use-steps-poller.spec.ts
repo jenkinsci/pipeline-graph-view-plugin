@@ -69,7 +69,7 @@ it("selects default step if URL param is missing", async () => {
   const { openStage, expandedSteps } = result.current;
 
   expect(openStage?.id).toBe("stage-2");
-  expect(expandedSteps).toContain("step-2");
+  expect(expandedSteps).to.deep.equal(["step-2"]);
 
   unmount();
 });
@@ -85,9 +85,9 @@ it("handles empty console log", async () => {
     useStepsPoller({ currentRunPath: "/run/1", previousRunPath: undefined }),
   );
 
-  await waitFor(() => expect(result.current.expandedSteps).toContain("step-2"));
+  await act(() => result.current.fetchLogText("step-2", TAIL_CONSOLE_LOG));
   await waitFor(() =>
-    expectSameStepBuffer(result.current.openStageStepBuffers.get("step-2"), {
+    expectSameStepBuffer(result.current.stepBuffers.get("step-2"), {
       startByte: 0,
       endByte: 0,
       lines: [],
@@ -110,11 +110,13 @@ it("handles empty console log lines before and after text", async () => {
     useStepsPoller({ currentRunPath: "/run/1", previousRunPath: undefined }),
   );
 
-  await waitFor(() => expect(result.current.expandedSteps).toContain("step-2"));
+  await act(() => result.current.fetchLogText("step-2", TAIL_CONSOLE_LOG));
   await waitFor(() =>
-    expect(
-      result.current.openStageStepBuffers.get("step-2")?.lines,
-    ).to.deep.equal(["", "Hello", ""]),
+    expect(result.current.stepBuffers.get("step-2")?.lines).to.deep.equal([
+      "",
+      "Hello",
+      "",
+    ]),
   );
 
   unmount();
@@ -125,18 +127,19 @@ it("appends the exception message", async () => {
     useStepsPoller({ currentRunPath: "/run/1", previousRunPath: undefined }),
   );
 
-  await waitFor(() => expect(result.current.expandedSteps).toContain("step-2"));
+  await act(() => result.current.fetchLogText("step-2", TAIL_CONSOLE_LOG));
   await waitFor(() =>
-    expect(
-      result.current.openStageStepBuffers.get("step-2")?.lines,
-    ).to.deep.equal(["log line"]),
+    expect(result.current.stepBuffers.get("step-2")?.lines).to.deep.equal([
+      "log line",
+    ]),
   );
   await act(() => result.current.fetchExceptionText("step-2"));
 
   await waitFor(() =>
-    expect(
-      result.current.openStageStepBuffers.get("step-2")?.lines,
-    ).to.deep.equal(["log line", "Error message"]),
+    expect(result.current.stepBuffers.get("step-2")?.lines).to.deep.equal([
+      "log line",
+      "Error message",
+    ]),
   );
 
   unmount();
@@ -153,11 +156,9 @@ it("handles empty console log and exception message", async () => {
     useStepsPoller({ currentRunPath: "/run/1", previousRunPath: undefined }),
   );
 
-  await waitFor(() => expect(result.current.expandedSteps).toContain("step-2"));
+  await act(() => result.current.fetchLogText("step-2", TAIL_CONSOLE_LOG));
   await waitFor(() =>
-    expect(
-      result.current.openStageStepBuffers.get("step-2")?.lines,
-    ).to.deep.equal([]),
+    expect(result.current.stepBuffers.get("step-2")?.lines).to.deep.equal([]),
   );
   await act(() => result.current.fetchExceptionText("step-2"));
 
@@ -166,9 +167,9 @@ it("handles empty console log and exception message", async () => {
   expect(model.getExceptionText as Mock).toHaveBeenCalledOnce();
 
   await waitFor(() =>
-    expect(
-      result.current.openStageStepBuffers.get("step-2")?.lines,
-    ).to.deep.equal(["Error message"]),
+    expect(result.current.stepBuffers.get("step-2")?.lines).to.deep.equal([
+      "Error message",
+    ]),
   );
 
   unmount();
@@ -186,6 +187,27 @@ it("selects the step from URL on initial load", async () => {
 
   expect(openStage?.id).toBe("stage-1");
   expect(expandedSteps).toContain("step-1");
+
+  unmount();
+});
+
+it("skips logs from URL on initial load", async () => {
+  window.history.pushState({}, "", "/?selected-node=step-1&start-byte=42");
+  const { result, unmount } = renderHook(() =>
+    useStepsPoller({ currentRunPath: "/run/1", previousRunPath: undefined }),
+  );
+
+  await waitFor(() => expect(result.current.expandedSteps).toContain("step-1"));
+
+  const { openStage, expandedSteps, stepBuffers } = result.current;
+
+  expect(openStage?.id).toBe("stage-1");
+  expect(expandedSteps).toContain("step-1");
+  expectSameStepBuffer(stepBuffers.get("step-1"), {
+    endByte: 42,
+    startByte: 42,
+    lines: [],
+  });
 
   unmount();
 });
@@ -330,6 +352,7 @@ describe("incremental log fetching", function () {
           lines: ["0"],
           endByte: 2,
           consoleAnnotator: "0",
+          hasTrailingNewLine: true,
         },
       },
       {
@@ -348,6 +371,7 @@ describe("incremental log fetching", function () {
           lines: ["0", "1"],
           endByte: 4,
           consoleAnnotator: "1",
+          hasTrailingNewLine: true,
         },
       },
       {
@@ -366,6 +390,7 @@ describe("incremental log fetching", function () {
           lines: ["0", "1", "2", "3"],
           endByte: 8,
           consoleAnnotator: "3",
+          hasTrailingNewLine: true,
         },
       },
       {
@@ -384,6 +409,7 @@ describe("incremental log fetching", function () {
           lines: ["0", "1", "2", "3"],
           endByte: 8,
           consoleAnnotator: "empty",
+          hasTrailingNewLine: true,
         },
       },
       {
@@ -402,6 +428,66 @@ describe("incremental log fetching", function () {
           lines: ["0", "1", "2", "3", "4"],
           endByte: 10,
           consoleAnnotator: "4",
+          hasTrailingNewLine: true,
+        },
+      },
+    ],
+    "when gluing lines together": [
+      {
+        clickMoreStartByte: TAIL_CONSOLE_LOG,
+        fetchStartByte: TAIL_CONSOLE_LOG,
+        fetchConsoleAnnotator: "",
+        logData: {
+          text: "0\n1",
+          startByte: 0,
+          endByte: 3,
+          nodeIsActive: true,
+          consoleAnnotator: "1",
+        },
+        result: {
+          startByte: 0,
+          lines: ["0", "1"],
+          endByte: 3,
+          consoleAnnotator: "1",
+          hasTrailingNewLine: false,
+        },
+      },
+      {
+        clickMoreStartByte: TAIL_CONSOLE_LOG,
+        fetchStartByte: 3,
+        fetchConsoleAnnotator: "1",
+        logData: {
+          text: "2\n3",
+          startByte: 3,
+          endByte: 6,
+          nodeIsActive: true,
+          consoleAnnotator: "3",
+        },
+        result: {
+          startByte: 0,
+          lines: ["0", "12", "3"],
+          endByte: 6,
+          consoleAnnotator: "3",
+          hasTrailingNewLine: false,
+        },
+      },
+      {
+        clickMoreStartByte: TAIL_CONSOLE_LOG,
+        fetchStartByte: 6,
+        fetchConsoleAnnotator: "3",
+        logData: {
+          text: "\n4\n",
+          startByte: 6,
+          endByte: 9,
+          nodeIsActive: true,
+          consoleAnnotator: "4",
+        },
+        result: {
+          startByte: 0,
+          lines: ["0", "12", "3", "4"],
+          endByte: 9,
+          consoleAnnotator: "4",
+          hasTrailingNewLine: true,
         },
       },
     ],
@@ -422,6 +508,7 @@ describe("incremental log fetching", function () {
           lines: ["0"],
           endByte: 1_000_002,
           consoleAnnotator: "0",
+          hasTrailingNewLine: true,
         },
       },
       {
@@ -440,6 +527,7 @@ describe("incremental log fetching", function () {
           lines: ["0", "1"],
           endByte: 1_000_004,
           consoleAnnotator: "1",
+          hasTrailingNewLine: true,
         },
       },
     ],
@@ -460,6 +548,7 @@ describe("incremental log fetching", function () {
           lines: ["0"],
           endByte: 1_000_002,
           consoleAnnotator: "0",
+          hasTrailingNewLine: true,
         },
       },
       {
@@ -478,6 +567,7 @@ describe("incremental log fetching", function () {
           lines: ["xxx", "0"],
           endByte: 1_000_002,
           consoleAnnotator: "x",
+          hasTrailingNewLine: true,
         },
       },
       {
@@ -496,6 +586,7 @@ describe("incremental log fetching", function () {
           lines: ["yyy", "xxx", "0"],
           endByte: 1_000_002,
           consoleAnnotator: "y",
+          hasTrailingNewLine: true,
         },
       },
     ],
@@ -516,6 +607,7 @@ describe("incremental log fetching", function () {
           lines: ["0"],
           endByte: 1_000_002,
           consoleAnnotator: "0",
+          hasTrailingNewLine: true,
         },
       },
       {
@@ -534,6 +626,7 @@ describe("incremental log fetching", function () {
           lines: ["xxx", "0"],
           endByte: 1_000_002,
           consoleAnnotator: "x",
+          hasTrailingNewLine: true,
         },
       },
       {
@@ -552,6 +645,7 @@ describe("incremental log fetching", function () {
           lines: ["xxx", "0", "1"],
           endByte: 1_000_004,
           consoleAnnotator: "1",
+          hasTrailingNewLine: true,
         },
       },
       {
@@ -571,6 +665,7 @@ describe("incremental log fetching", function () {
           endByte: 1_000_004,
           consoleAnnotator: "y",
           stopTailing: true,
+          hasTrailingNewLine: true,
         },
       },
     ],
@@ -580,45 +675,23 @@ describe("incremental log fetching", function () {
     it(name, async function () {
       const props = { currentRunPath: "/run/1" };
 
-      const firstEvolution = evolutions.shift()!;
-      (model.getConsoleTextOffset as Mock).mockImplementation(
-        (stepId, startByte, consoleAnnotator) => {
-          expect(stepId).to.equal("step-2");
-          expect(startByte).to.equal(firstEvolution.fetchStartByte);
-          expect(consoleAnnotator).to.equal(
-            firstEvolution.fetchConsoleAnnotator,
-          );
-          return Promise.resolve(firstEvolution.logData);
-        },
-      );
-
       const { result, unmount } = renderHook(() => useStepsPoller(props));
-      await waitFor(() =>
-        expect(result.current.expandedSteps).toContain("step-2"),
-      );
-      await waitFor(() =>
-        expectSameStepBuffer(
-          result.current.openStageStepBuffers.get("step-2"),
-          firstEvolution.result,
-        ),
-      );
 
       for (const evolution of evolutions) {
         (model.getConsoleTextOffset as Mock).mockImplementation(
-          (stepId, startByte, consoleAnnotator) => {
+          (_url, stepId, startByte, consoleAnnotator) => {
             expect(stepId).to.equal("step-2");
             expect(startByte).to.equal(evolution.fetchStartByte);
             expect(consoleAnnotator).to.equal(evolution.fetchConsoleAnnotator);
             return Promise.resolve(evolution.logData);
           },
         );
-        result.current.onMoreConsoleClick(
-          "step-2",
-          evolution.clickMoreStartByte,
+        await act(() =>
+          result.current.fetchLogText("step-2", evolution.clickMoreStartByte),
         );
         await waitFor(() => {
           expectSameStepBuffer(
-            result.current.openStageStepBuffers.get("step-2"),
+            result.current.stepBuffers.get("step-2"),
             evolution.result,
           );
         });

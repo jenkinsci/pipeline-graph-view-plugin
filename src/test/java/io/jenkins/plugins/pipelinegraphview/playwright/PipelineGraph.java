@@ -64,8 +64,8 @@ class PipelineGraph {
     }
 
     private Locator getStages() {
-        // select all those apart from the start and end nodes which are indicated by the PWGx-pipeline-node-terminal
-        // class
-        return graph.locator(".PWGx-pipeline-node:not(:has(.PWGx-pipeline-node-terminal))");
+        // exclude start/end terminals and the "+N hidden" counter node, which is a UI affordance rather than a stage
+        return graph.locator(
+                ".PWGx-pipeline-node:not(:has(.PWGx-pipeline-node-terminal)):not(:has(.PWGx-pipeline-node-counter))");
     }
 }

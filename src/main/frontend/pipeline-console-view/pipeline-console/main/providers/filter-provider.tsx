@@ -9,12 +9,15 @@ interface FilterContextType {
   allVisible: boolean;
   search: string;
   setSearch: (value: string) => void;
+  showHiddenSteps: boolean;
+  setShowHiddenSteps: (show: boolean) => void;
 }
 
 const FilterContext = createContext<FilterContextType | undefined>(undefined);
 
 const defaultStatuses: Result[] = [
   Result.running,
+  Result.queued,
   Result.success,
   Result.failure,
   Result.unstable,
@@ -26,6 +29,7 @@ const defaultStatuses: Result[] = [
 export const FilterProvider = ({ children }: { children: ReactNode }) => {
   const [visibleStatuses, setVisibleStatuses] = useState<Result[]>([]);
   const [search, setSearch] = useState("");
+  const [showHiddenSteps, setShowHiddenSteps] = useState(false);
 
   const toggleStatus = (key: Result) => {
     if (visibleStatuses.includes(key as Result)) {
@@ -51,6 +55,8 @@ export const FilterProvider = ({ children }: { children: ReactNode }) => {
             .length === defaultStatuses.length,
         search,
         setSearch,
+        showHiddenSteps,
+        setShowHiddenSteps,
       }}
     >
       {children}

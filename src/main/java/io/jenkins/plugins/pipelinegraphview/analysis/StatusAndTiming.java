@@ -31,6 +31,8 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.Action;
 import hudson.model.Result;
+import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphRegistry;
+import io.jenkins.plugins.pipelinegraphview.livestate.WarningActionCache;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -276,7 +278,10 @@ public class StatusAndTiming {
         }
         boolean isLastChunk = after == null || exec.isCurrentHead(lastNode);
         if (isLastChunk) {
-            if (run.isBuilding()) {
+            // FlowExecutionListener.onCompleted seeds the cache while WorkflowRun.isBuilding()
+            // can still return true; preferring the execution's own complete flag avoids
+            // persisting a final chunk as IN_PROGRESS in that window.
+            if (run.isBuilding() && !exec.isComplete()) {
                 if (exec.getCurrentHeads().size() > 1
                         && lastNode instanceof BlockEndNode) { // Check to see if all the action is on other branches
                     BlockStartNode start = ((BlockEndNode) lastNode).getStartNode();
@@ -349,7 +354,18 @@ public class StatusAndTiming {
         if (DISABLE_WARNING_ACTION_LOOKUP) {
             return null;
         }
-        // TODO: Cache the result?
+        // Only memoise closed blocks: once a BlockEndNode exists, the set of inner nodes is
+        // fixed and WarningActions on them don't change. For open-ended chunks (start == end,
+        // or end isn't a block end) the scan is either trivial or the result may still change.
+        boolean cacheable = start != end && end instanceof BlockEndNode<?>;
+        WarningActionCache cache = cacheable ? LiveGraphRegistry.get().warningActionCache(start.getExecution()) : null;
+        if (cache != null) {
+            return cache.getOrCompute(start.getId(), end.getId(), () -> scanForWarning(start, end));
+        }
+        return scanForWarning(start, end);
+    }
+
+    private static @CheckForNull WarningAction scanForWarning(@NonNull FlowNode start, @NonNull FlowNode end) {
         DepthFirstScanner scanner = new DepthFirstScanner();
         if (!scanner.setup(end, Collections.singletonList(start))) {
             return null;

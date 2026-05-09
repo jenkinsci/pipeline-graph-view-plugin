@@ -1,16 +1,21 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { Context as TransformContext } from "react-zoom-pan-pinch";
 
 import { I18NContext } from "../../../common/i18n/index.ts";
 import { useUserPreferences } from "../../../common/user/user-preferences-provider.tsx";
-import { layoutGraph } from "./PipelineGraphLayout";
 import {
-  CompositeConnection,
-  defaultLayout,
-  LayoutInfo,
-  NodeColumn,
-  NodeLabelInfo,
-  StageInfo,
-} from "./PipelineGraphModel.tsx";
+  DEFAULT_MAX_COLUMNS_WHEN_COLLAPSED,
+  layoutGraph,
+} from "./PipelineGraphLayout";
+import { defaultLayout, LayoutInfo, StageInfo } from "./PipelineGraphModel.tsx";
 import { GraphConnections } from "./support/connections.tsx";
 import {
   BigLabel,
@@ -20,6 +25,17 @@ import {
 } from "./support/labels.tsx";
 import { Node, SelectionHighlight } from "./support/nodes.tsx";
 
+interface Viewport {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+const VIEWPORT_MARGIN = 300;
+
+const MIN_COLUMNS_WHEN_COLLAPSED = 5;
+
 export function PipelineGraph({
   stages = [],
   layout,
@@ -27,14 +43,6 @@ export function PipelineGraph({
   collapsed,
   onStageSelect,
 }: Props) {
-  const [nodeColumns, setNodeColumns] = useState<NodeColumn[]>([]);
-  const [connections, setConnections] = useState<CompositeConnection[]>([]);
-  const [bigLabels, setBigLabels] = useState<NodeLabelInfo[]>([]);
-  const [timings, setTimings] = useState<NodeLabelInfo[]>([]);
-  const [smallLabels, setSmallLabels] = useState<NodeLabelInfo[]>([]);
-  const [branchLabels, setBranchLabels] = useState<NodeLabelInfo[]>([]);
-  const [measuredWidth, setMeasuredWidth] = useState<number>(0);
-  const [measuredHeight, setMeasuredHeight] = useState<number>(0);
   const fullLayout = useMemo(() => {
     return {
       ...defaultLayout,
@@ -45,24 +53,65 @@ export function PipelineGraph({
 
   const messages = useContext(I18NContext);
 
-  useEffect(() => {
-    const newLayout = layoutGraph(
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [maxColumnsWhenCollapsed, setMaxColumnsWhenCollapsed] =
+    useState<number>(DEFAULT_MAX_COLUMNS_WHEN_COLLAPSED);
+
+  useLayoutEffect(() => {
+    if (!collapsed) return;
+    const node = containerRef.current;
+    if (!node) return;
+
+    const apply = (width: number) => {
+      if (width <= 0) return;
+      const next = Math.max(
+        MIN_COLUMNS_WHEN_COLLAPSED,
+        Math.floor(width / fullLayout.nodeSpacingH) - 2,
+      );
+      setMaxColumnsWhenCollapsed((prev) => (prev === next ? prev : next));
+    };
+
+    apply(node.getBoundingClientRect().width);
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        apply(entry.contentRect.width);
+      }
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [collapsed, fullLayout.nodeSpacingH]);
+
+  const {
+    nodeColumns,
+    connections,
+    bigLabels,
+    timings,
+    smallLabels,
+    branchLabels,
+    measuredWidth,
+    measuredHeight,
+  } = useMemo(
+    () =>
+      layoutGraph(
+        stages,
+        fullLayout,
+        collapsed ?? false,
+        messages,
+        showNames,
+        showDurations,
+        maxColumnsWhenCollapsed,
+      ),
+    [
       stages,
       fullLayout,
-      collapsed ?? false,
+      collapsed,
       messages,
       showNames,
       showDurations,
-    );
-    setNodeColumns(newLayout.nodeColumns);
-    setConnections(newLayout.connections);
-    setBigLabels(newLayout.bigLabels);
-    setSmallLabels(newLayout.smallLabels);
-    setTimings(newLayout.timings);
-    setBranchLabels(newLayout.branchLabels);
-    setMeasuredWidth(newLayout.measuredWidth);
-    setMeasuredHeight(newLayout.measuredHeight);
-  }, [stages, fullLayout, collapsed, messages, showNames, showDurations]);
+      maxColumnsWhenCollapsed,
+    ],
+  );
 
   const stageIsSelected = useCallback(
     (stage?: StageInfo): boolean => {
@@ -71,9 +120,112 @@ export function PipelineGraph({
     [selectedStage],
   );
 
-  const nodes = nodeColumns.flatMap((column) => {
-    return column.rows.flatMap((row) => row);
-  });
+  const nodes = useMemo(
+    () => nodeColumns.flatMap((column) => column.rows.flatMap((row) => row)),
+    [nodeColumns],
+  );
+
+  // When inside a TransformWrapper, only mount the nodes/labels intersecting
+  // the visible region. Mounting thousands of absolute-positioned divs forces
+  // a synchronous layout flush that blocks the main thread for seconds.
+  const transform = useContext(TransformContext);
+  const virtualize = transform != null;
+  const [viewport, setViewport] = useState<Viewport | null>(null);
+  const cachedViewport = useRef<Viewport | null>(null);
+
+  useEffect(() => {
+    if (!transform) return;
+    let raf = 0;
+    const compute = () => {
+      raf = 0;
+      const wrapper = transform.wrapperComponent;
+      if (!wrapper) return;
+      const { positionX, positionY, scale } = transform.state;
+      const next: Viewport = {
+        x: -positionX / scale,
+        y: -positionY / scale,
+        w: wrapper.offsetWidth / scale,
+        h: wrapper.offsetHeight / scale,
+      };
+      const prev = cachedViewport.current;
+      if (
+        prev &&
+        Math.abs(prev.x - next.x) < 50 &&
+        Math.abs(prev.y - next.y) < 50 &&
+        Math.abs(prev.w - next.w) < 50 &&
+        Math.abs(prev.h - next.h) < 50
+      ) {
+        return;
+      }
+      cachedViewport.current = next;
+      setViewport(next);
+    };
+    const schedule = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(compute);
+    };
+    schedule();
+    const unsubChange = transform.onChange(schedule);
+    const unsubInit = transform.wrapperComponent
+      ? undefined
+      : transform.onInit(() => schedule());
+    const observer = new ResizeObserver(schedule);
+    const observed = transform.wrapperComponent;
+    if (observed) observer.observe(observed);
+    const unsubInitObserve = transform.wrapperComponent
+      ? undefined
+      : transform.onInit((ctx) => {
+          if (ctx.instance.wrapperComponent) {
+            observer.observe(ctx.instance.wrapperComponent);
+          }
+        });
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      unsubChange();
+      unsubInit?.();
+      unsubInitObserve?.();
+      observer.disconnect();
+    };
+  }, [transform]);
+
+  const isInViewport = useCallback(
+    (x: number, y: number): boolean => {
+      if (!virtualize) return true;
+      if (!viewport) return false;
+      return (
+        x >= viewport.x - VIEWPORT_MARGIN &&
+        x <= viewport.x + viewport.w + VIEWPORT_MARGIN &&
+        y >= viewport.y - VIEWPORT_MARGIN &&
+        y <= viewport.y + viewport.h + VIEWPORT_MARGIN
+      );
+    },
+    [viewport, virtualize],
+  );
+
+  const selectedStageId = selectedStage?.id;
+  const visibleNodes = useMemo(() => {
+    const filtered = nodes.filter((n) => isInViewport(n.x, n.y));
+    if (!virtualize || selectedStageId == null) return filtered;
+    if (
+      filtered.some((n) => !n.isPlaceholder && n.stage?.id === selectedStageId)
+    ) {
+      return filtered;
+    }
+    const sel = nodes.find(
+      (n) => !n.isPlaceholder && n.stage?.id === selectedStageId,
+    );
+    return sel ? [...filtered, sel] : filtered;
+  }, [nodes, isInViewport, virtualize, selectedStageId]);
+
+  const visibleSmallLabels = useMemo(
+    () => smallLabels.filter((l) => isInViewport(l.x, l.y)),
+    [smallLabels, isInViewport],
+  );
+
+  const visibleBranchLabels = useMemo(
+    () => branchLabels.filter((l) => isInViewport(l.x, l.y)),
+    [branchLabels, isInViewport],
+  );
 
   const outerDivStyle = {
     position: "relative" as const,
@@ -81,7 +233,7 @@ export function PipelineGraph({
   };
 
   return (
-    <div className="PWGx-PipelineGraph-container">
+    <div ref={containerRef} className="PWGx-PipelineGraph-container">
       <div style={outerDivStyle} className="PWGx-PipelineGraph">
         <svg width={measuredWidth} height={measuredHeight}>
           <GraphConnections connections={connections} layout={fullLayout} />
@@ -93,7 +245,7 @@ export function PipelineGraph({
           />
         </svg>
 
-        {nodes.map((node) => (
+        {visibleNodes.map((node) => (
           <Node
             key={node.id}
             node={node}
@@ -125,7 +277,7 @@ export function PipelineGraph({
           />
         ))}
 
-        {smallLabels.map((label) => (
+        {visibleSmallLabels.map((label) => (
           <SmallLabel
             key={label.key}
             details={label}
@@ -134,7 +286,7 @@ export function PipelineGraph({
           />
         ))}
 
-        {branchLabels.map((label) => (
+        {visibleBranchLabels.map((label) => (
           <SequentialContainerLabel
             key={label.key}
             details={label}

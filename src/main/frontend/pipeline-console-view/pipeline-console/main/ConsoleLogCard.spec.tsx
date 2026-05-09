@@ -1,7 +1,7 @@
 /** * @vitest-environment jsdom */
 
 import { render } from "@testing-library/react";
-import { vi } from "vitest";
+import { beforeEach, Mock, vi } from "vitest";
 
 import ConsoleLogCard, { ConsoleLogCardProps } from "./ConsoleLogCard.tsx";
 import { ConsoleLogStreamProps } from "./ConsoleLogStream.tsx";
@@ -9,17 +9,20 @@ import {
   Result,
   StepInfo,
   StepLogBufferInfo,
+  TAIL_CONSOLE_LOG,
 } from "./PipelineConsoleModel.tsx";
 
 vi.mock("./ConsoleLogStream.tsx", () => {
-  return vi.fn((props: ConsoleLogStreamProps) => {
-    return (
-      <div>
-        <div>SimpleConsoleLogStream...</div>
-        <div>Hello, world!</div>
-      </div>
-    );
-  });
+  return {
+    default: vi.fn((props: ConsoleLogStreamProps) => {
+      return (
+        <div>
+          <div>SimpleConsoleLogStream...</div>
+          <div>Hello, world!</div>
+        </div>
+      );
+    }),
+  };
 });
 
 describe("ConsoleLogCard", () => {
@@ -27,7 +30,6 @@ describe("ConsoleLogCard", () => {
     name: "This is a step",
     title: "This is a title",
     state: Result.success,
-    completePercent: 50,
     id: "2",
     type: "STAGE",
     pauseDurationMillis: 0,
@@ -42,18 +44,22 @@ describe("ConsoleLogCard", () => {
     endByte: 13,
   };
 
-  const DefaultTestProps = {
+  const DefaultTestProps: ConsoleLogCardProps = {
     step: baseStep,
-    stepBuffer: baseBuffer,
+    stepBuffers: new Map().set(baseStep.id, baseBuffer),
     isExpanded: false,
-    onStepToggle: () => {
-      console.log("onStepToggle triggered");
-    },
-    onMoreConsoleClick: () => {
-      console.log("onMoreConsoleClick triggered");
-    },
-    fetchExceptionText: () => {},
+    onStepToggle: vi.fn(),
+    fetchLogText: vi.fn().mockResolvedValue(baseBuffer),
+    fetchExceptionText: vi.fn().mockResolvedValue(baseBuffer),
+    tailLogs: true,
+    scrollToTail: () => {},
+    stopTailingLogs: () => {},
+    currentRunPath: "/jenkins/job/name/1/",
   } as ConsoleLogCardProps;
+  beforeEach(function () {
+    (DefaultTestProps.fetchLogText as Mock).mockReset();
+    (DefaultTestProps.fetchLogText as Mock).mockResolvedValue(baseBuffer);
+  });
 
   it("renders step header only when not expanded", async () => {
     const { getByText } = render(<ConsoleLogCard {...DefaultTestProps} />);
@@ -68,17 +74,16 @@ describe("ConsoleLogCard", () => {
     expect(findByText(/Hello, world!/));
   });
 
-  it("calls onMoreConsoleClick on load was card isExpanded set", async () => {
-    console.log = vi.fn();
+  it("calls fetchLogText on load was card isExpanded set", async () => {
     render(<ConsoleLogCard {...DefaultTestProps} isExpanded />);
-    expect(console.log).toHaveBeenCalledWith("onMoreConsoleClick triggered");
+    expect(DefaultTestProps.fetchLogText as Mock).toHaveBeenCalledWith(
+      DefaultTestProps.step.id,
+      TAIL_CONSOLE_LOG,
+    );
   });
 
-  it("does not call onMoreConsoleClick on load was card isExpanded set", async () => {
-    console.log = vi.fn();
+  it("does not call fetchLogText on load was card isExpanded set", async () => {
     render(<ConsoleLogCard {...DefaultTestProps} />);
-    expect(console.log).not.toHaveBeenCalledWith(
-      "onMoreConsoleClick triggered",
-    );
+    expect(DefaultTestProps.fetchLogText as Mock).not.toHaveBeenCalled();
   });
 });

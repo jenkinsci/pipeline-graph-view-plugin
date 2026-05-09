@@ -14,7 +14,7 @@ import {
 
 export const sequentialStagesLabelOffset = 80;
 
-const maxColumnsWhenCollapsed = 13;
+export const DEFAULT_MAX_COLUMNS_WHEN_COLLAPSED = 13;
 
 /**
  * Main process for laying out the graph. Creates and positions markers for each component, but creates no components.
@@ -32,6 +32,7 @@ export function layoutGraph(
   messages: Messages,
   showNames: boolean,
   showDurations: boolean,
+  maxColumnsWhenCollapsed: number = DEFAULT_MAX_COLUMNS_WHEN_COLLAPSED,
 ): PositionedGraph {
   const stageNodeColumns = createNodeColumns(newStages);
   const { nodeSpacingH, ypStart } = layout;

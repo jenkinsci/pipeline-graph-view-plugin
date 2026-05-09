@@ -2,10 +2,15 @@ import "./console-log-card.scss";
 
 import Linkify from "linkify-react";
 import {
+  Dispatch,
   lazy,
+  memo,
   MouseEvent as ReactMouseEvent,
+  SetStateAction,
   Suspense,
+  useCallback,
   useEffect,
+  useState,
 } from "react";
 
 import StatusIcon from "../../../common/components/status-icon.tsx";
@@ -15,7 +20,7 @@ import { classNames } from "../../../common/utils/classnames.ts";
 import { linkifyJsOptions } from "../../../common/utils/linkify-js.ts";
 import LiveTotal from "../../../common/utils/live-total.tsx";
 import {
-  LOG_FETCH_SIZE,
+  Result,
   StepInfo,
   StepLogBufferInfo,
   TAIL_CONSOLE_LOG,
@@ -25,28 +30,25 @@ import InputStep from "./steps/InputStep.tsx";
 const ConsoleLogStream = lazy(() => import("./ConsoleLogStream.tsx"));
 
 export default function ConsoleLogCard({
+  tailLogs,
+  scrollToTail,
+  stopTailingLogs,
   step,
-  stepBuffer,
+  stepBuffers,
   isExpanded,
-  onMoreConsoleClick,
+  fetchLogText,
   onStepToggle,
   fetchExceptionText,
+  currentRunPath,
 }: ConsoleLogCardProps) {
-  useEffect(() => {
-    if (isExpanded) {
-      onMoreConsoleClick(step.id, TAIL_CONSOLE_LOG);
-    }
-  }, [isExpanded, onMoreConsoleClick, step.id, stepBuffer]);
-
-  const handleToggle = (e: ReactMouseEvent<HTMLElement>) => {
+  const handleToggle = (e: ReactMouseEvent<HTMLAnchorElement>) => {
     // Only prevent left clicks
     if (e.button !== 0 || e.metaKey || e.ctrlKey) {
       return;
     }
 
     e.preventDefault();
-
-    history.replaceState({}, "", `?selected-node=` + step.id);
+    history.replaceState({}, "", e.currentTarget.href);
 
     onStepToggle(step.id);
   };
@@ -59,19 +61,19 @@ export default function ConsoleLogCard({
   }
 
   return (
-    <div className={"pgv-step-detail-group"} key={`step-card-${step.id}`}>
+    <div className="pgv-step-detail-group" key={`step-card-${step.id}`}>
       <div
         className={classNames("pgv-step-detail-header", "jenkins-button", {
           "jenkins-button--tertiary": !isExpanded,
         })}
       >
         <a
-          href={`?selected-node=` + step.id}
+          href={currentRunPath + `stages/?selected-node=` + step.id}
           onClick={handleToggle}
           key={`step-action-area-${step.id}`}
         >
           <div className="pgv-step-detail-header__content">
-            <StatusIcon status={step.state} percentage={step.completePercent} />
+            <StatusIcon status={step.state} />
 
             {step.title !== "" && (
               <span>
@@ -120,7 +122,7 @@ export default function ConsoleLogCard({
 
         <Tooltip content={messages.format(LocalizedMessageKey.consoleNewTab)}>
           <a
-            href={`log?nodeId=${step.id}`}
+            href={`${currentRunPath}stages/log?nodeId=${step.id}`}
             className={"jenkins-button jenkins-button--tertiary"}
             target="_blank"
             rel="noreferrer"
@@ -142,24 +144,81 @@ export default function ConsoleLogCard({
 
       {isExpanded && (
         <ConsoleLogBody
-          step={step}
-          stepBuffer={stepBuffer}
-          onMoreConsoleClick={onMoreConsoleClick}
+          tailLogs={tailLogs}
+          scrollToTail={scrollToTail}
+          stopTailingLogs={stopTailingLogs}
+          stepId={step.id}
+          stepState={step.state}
+          stepBuffers={stepBuffers}
+          fetchLogText={fetchLogText}
           fetchExceptionText={fetchExceptionText}
-          isExpanded={false}
           onStepToggle={onStepToggle}
+          currentRunPath={currentRunPath}
         />
       )}
     </div>
   );
 }
 
-function ConsoleLogBody({
-  step,
-  stepBuffer,
-  onMoreConsoleClick,
+function defaultStepBuffer(): StepLogBufferInfo {
+  return {
+    lines: [],
+    startByte: 0,
+    endByte: TAIL_CONSOLE_LOG,
+  };
+}
+
+function setStepBufferIfChanged(
+  setStepBuffer: Dispatch<SetStateAction<StepLogBufferInfo>>,
+  next: StepLogBufferInfo,
+) {
+  setStepBuffer((prev) => {
+    if (
+      prev.startByte === next.startByte &&
+      prev.endByte === next.endByte &&
+      prev.lines === next.lines &&
+      prev.stopTailing === next.stopTailing
+    ) {
+      return prev;
+    }
+    return { ...next };
+  });
+}
+
+const ConsoleLogBody = memo(function ConsoleLogBody({
+  tailLogs,
+  scrollToTail,
+  stopTailingLogs,
+  stepId,
+  stepState,
+  stepBuffers,
+  fetchLogText,
   fetchExceptionText,
-}: ConsoleLogCardProps) {
+  currentRunPath,
+}: ConsoleLogCardBodyProps) {
+  const [stepBuffer, setStepBuffer] = useState<StepLogBufferInfo>({
+    ...(stepBuffers.get(stepId) || defaultStepBuffer()),
+  });
+
+  useEffect(() => {
+    const next = stepBuffers.get(stepId) || defaultStepBuffer();
+    setStepBufferIfChanged(setStepBuffer, next);
+  }, [stepBuffers, stepId]);
+
+  const updateStepBufferIfChanged = useCallback(
+    (promise: Promise<StepLogBufferInfo>) => {
+      promise
+        .then((next) => setStepBufferIfChanged(setStepBuffer, next))
+        .catch(console.error);
+    },
+    [],
+  );
+
+  useEffect(() => {
+    // prefetch while lazy loading ConsoleLogStream
+    updateStepBufferIfChanged(fetchLogText(stepId, TAIL_CONSOLE_LOG));
+  }, [fetchLogText, stepId, updateStepBufferIfChanged]);
+
   const prettySizeString = (size: number) => {
     const kib = 1024;
     const mib = 1024 * 1024;
@@ -171,9 +230,10 @@ function ConsoleLogBody({
   };
 
   const showMoreLogs = () => {
-    let startByte = stepBuffer.startByte - LOG_FETCH_SIZE;
-    if (startByte < 0) startByte = 0;
-    onMoreConsoleClick(step.id, startByte);
+    // Double the amount of fetched logs with every click.
+    const alreadyFetched = stepBuffer.endByte - stepBuffer.startByte;
+    const startByte = Math.max(0, stepBuffer.startByte - alreadyFetched);
+    updateStepBufferIfChanged(fetchLogText(stepId, startByte));
   };
 
   const getTruncatedLogWarning = () => {
@@ -198,21 +258,50 @@ function ConsoleLogBody({
       {getTruncatedLogWarning()}
       <Suspense>
         <ConsoleLogStream
+          tailLogs={tailLogs}
+          scrollToTail={scrollToTail}
+          stopTailingLogs={stopTailingLogs}
           logBuffer={stepBuffer}
-          onMoreConsoleClick={onMoreConsoleClick}
+          updateLogBufferIfChanged={updateStepBufferIfChanged}
+          fetchLogText={fetchLogText}
           fetchExceptionText={fetchExceptionText}
-          step={step}
+          stepId={stepId}
+          stepState={stepState}
+          currentRunPath={currentRunPath}
         />
       </Suspense>
     </div>
   );
-}
+});
 
 export type ConsoleLogCardProps = {
   step: StepInfo;
-  stepBuffer: StepLogBufferInfo;
+  stepBuffers: Map<string, StepLogBufferInfo>;
   isExpanded: boolean;
   onStepToggle: (nodeId: string) => void;
-  onMoreConsoleClick: (nodeId: string, startByte: number) => void;
-  fetchExceptionText: (nodeId: string) => void;
+  fetchLogText: (
+    nodeId: string,
+    startByte: number,
+  ) => Promise<StepLogBufferInfo>;
+  fetchExceptionText: (nodeId: string) => Promise<StepLogBufferInfo>;
+  tailLogs: boolean;
+  scrollToTail: (stepId: string, element: HTMLDivElement) => void;
+  stopTailingLogs: () => void;
+  currentRunPath: string;
+};
+
+export type ConsoleLogCardBodyProps = {
+  stepId: string;
+  stepState: Result;
+  stepBuffers: Map<string, StepLogBufferInfo>;
+  onStepToggle: (nodeId: string) => void;
+  fetchLogText: (
+    nodeId: string,
+    startByte: number,
+  ) => Promise<StepLogBufferInfo>;
+  fetchExceptionText: (nodeId: string) => Promise<StepLogBufferInfo>;
+  tailLogs: boolean;
+  scrollToTail: (stepId: string, element: HTMLDivElement) => void;
+  stopTailingLogs: () => void;
+  currentRunPath: string;
 };

@@ -41,7 +41,6 @@ export interface StageInfo {
   name: string;
   title: string;
   state: Result;
-  completePercent: number;
   id: number;
   type: StageType;
   children: Array<StageInfo>; // Used by the top-most stages with parallel branches
@@ -52,10 +51,13 @@ export interface StageInfo {
   pauseDurationMillis: number;
   startTimeMillis: number;
   totalDurationMillis?: number; // will be null if the stage is still running
+  previousTotalDurationMillis?: number; // populated from previous run, if exists
   agent: string;
   url: string;
+  causeOfBlockage?: string; // Set when state is "queued" — e.g. "Waiting for next available executor on 'linux'"
 
   skeleton?: boolean;
+  pauseLiveTotal?: boolean;
 }
 
 interface BaseNodeInfo {

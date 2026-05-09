@@ -77,6 +77,28 @@ class PipelineConsole {
         }
     }
 
+    public void stepDoesNotContainText(String stepName, String textToNotFind) {
+        log.info("Checking that the step {} does not contain a log with the text {}", stepName, textToNotFind);
+
+        Locator stepContainer = steps().filter(new Locator.FilterOptions()
+                        .setHas(page.locator(
+                                STEP_NAME_CLASS,
+                                new Page.LocatorOptions().setHasText(Pattern.compile("^" + stepName + "$")))))
+                .first();
+
+        if (!isOpenStep(stepContainer)) {
+            stepContainer.click();
+        }
+        Locator stepLogs = stepContainer.getByRole(AriaRole.LOG);
+        assertThat(stepLogs).not().containsText(textToNotFind);
+
+        Locator plainTextLogsLink = stepContainer.getByRole(
+                AriaRole.LINK, new Locator.GetByRoleOptions().setName("View step as plain text"));
+        try (Page plainText = page.context().waitForPage(plainTextLogsLink::click)) {
+            assertThat(plainText.locator("body")).not().containsText(textToNotFind);
+        }
+    }
+
     public void stageHasSteps(String step, String... additional) {
         List<String> expectedSteps = new ArrayList<>();
         expectedSteps.add(step);

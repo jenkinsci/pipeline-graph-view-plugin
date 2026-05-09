@@ -1,6 +1,6 @@
 import "./stages.scss";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
   TransformComponent,
   TransformWrapper,
@@ -23,6 +23,14 @@ export default function Stages({
 }: StagesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const handleStageSelect = useCallback(
+    (nodeId: string) => {
+      onStageSelect?.(nodeId);
+      setIsExpanded(false);
+    },
+    [onStageSelect],
+  );
+
   return (
     <div
       className={classNames("pgv-stages-graph", {
@@ -38,7 +46,7 @@ export default function Stages({
       {onRunPage && (
         <a
           className={"pgv-stages-graph__controls pgv-stages-graph__heading"}
-          href="pipeline-overview"
+          href="stages"
         >
           Stages
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
@@ -101,12 +109,7 @@ export default function Stages({
           <PipelineGraph
             stages={stages}
             selectedStage={selectedStage}
-            {...(onStageSelect && {
-              onStageSelect: (e) => {
-                onStageSelect(e);
-                setIsExpanded(false);
-              },
-            })}
+            {...(onStageSelect && { onStageSelect: handleStageSelect })}
           />
         </TransformComponent>
       </TransformWrapper>

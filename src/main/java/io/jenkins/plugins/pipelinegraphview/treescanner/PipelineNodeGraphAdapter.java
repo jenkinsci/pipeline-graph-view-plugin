@@ -1,14 +1,18 @@
 package io.jenkins.plugins.pipelinegraphview.treescanner;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphBuilderApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepBuilderApi;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
+import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +36,24 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
 
     public PipelineNodeGraphAdapter(WorkflowRun run) {
         treeScanner = new PipelineNodeTreeScanner(run);
+    }
+
+    /** Builds the adapter over a pre-collected node set rather than walking the execution. */
+    public PipelineNodeGraphAdapter(WorkflowRun run, Collection<FlowNode> preCollectedNodes) {
+        this(run, preCollectedNodes, null, null);
+    }
+
+    /**
+     * Builds the adapter over a pre-collected node set plus pre-computed snapshot data.
+     * Supply {@code enclosingIdsByNodeId} to read ancestry from the map instead of FlowNode
+     * storage, and {@code activeNodeIds} to use the set for per-node liveness checks.
+     */
+    public PipelineNodeGraphAdapter(
+            WorkflowRun run,
+            Collection<FlowNode> preCollectedNodes,
+            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId,
+            @CheckForNull Set<String> activeNodeIds) {
+        treeScanner = new PipelineNodeTreeScanner(run, preCollectedNodes, enclosingIdsByNodeId, activeNodeIds);
     }
 
     private final Object pipelineLock = new Object();

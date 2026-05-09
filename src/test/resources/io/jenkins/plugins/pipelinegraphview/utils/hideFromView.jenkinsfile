@@ -1,0 +1,22 @@
+pipeline {
+    agent any
+    stages {
+        stage('Normal Step') {
+            steps {
+                echo "This is visible"
+            }
+        }
+        stage('Hidden Step') {
+            steps {
+                hideFromView {
+                    echo "This step is hidden"
+                }
+            }
+        }
+        stage('Another Normal Step') {
+            steps {
+                echo "This is also visible"
+            }
+        }
+    }
+}

@@ -2,17 +2,21 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 import static io.jenkins.plugins.pipelinegraphview.consoleview.PipelineConsoleViewAction.URL_NAME;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import java.util.List;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
 
 public class PipelineStage extends AbstractPipelineNode {
 
     final List<PipelineStage> children;
     private final String seqContainerName;
     private final PipelineStage nextSibling;
+
+    // The legacy wire format spells this {@code isSequential}, not {@code sequential}.
+    @JsonProperty("isSequential")
     private final boolean sequential;
+
     final boolean synthetic;
     private final boolean placeholder;
     final String agent;
@@ -32,8 +36,9 @@ public class PipelineStage extends AbstractPipelineNode {
             boolean placeholder,
             TimingInfo timingInfo,
             String agent,
-            String runUrl) {
-        super(id, name, state, type, title, timingInfo);
+            String runUrl,
+            String causeOfBlockage) {
+        super(id, name, state, type, title, timingInfo, causeOfBlockage);
         this.children = children;
         this.seqContainerName = seqContainerName;
         this.nextSibling = nextSibling;
@@ -41,30 +46,36 @@ public class PipelineStage extends AbstractPipelineNode {
         this.synthetic = synthetic;
         this.placeholder = placeholder;
         this.agent = agent;
-        this.url = "/" + runUrl + URL_NAME + "?selected-node=" + id;
+        this.url = "/" + runUrl + URL_NAME + "/?selected-node=" + id;
     }
 
-    public static class PipelineStageJsonProcessor extends AbstractPipelineNodeJsonProcessor {
-        public static void configure(JsonConfig config) {
-            baseConfigure(config);
-            config.registerJsonBeanProcessor(PipelineStage.class, new PipelineStageJsonProcessor());
-        }
-
-        @Override
-        public JSONObject processBean(Object bean, JsonConfig config) {
-            if (!(bean instanceof PipelineStage stage)) {
-                return null;
-            }
-            JSONObject json = create(stage, config);
-            json.element("children", stage.children, config);
-            json.element("seqContainerName", stage.seqContainerName);
-            json.element("nextSibling", stage.nextSibling, config);
-            json.element("isSequential", stage.sequential);
-            json.element("synthetic", stage.synthetic);
-            json.element("placeholder", stage.placeholder);
-            json.element("agent", stage.agent);
-            json.element("url", stage.url);
-            return json;
-        }
+    @JsonCreator
+    PipelineStage(
+            String id,
+            String name,
+            List<PipelineStage> children,
+            PipelineState state,
+            String type,
+            String title,
+            String seqContainerName,
+            PipelineStage nextSibling,
+            @JsonProperty("isSequential") boolean sequential,
+            boolean synthetic,
+            boolean placeholder,
+            long pauseDurationMillis,
+            Long totalDurationMillis,
+            long startTimeMillis,
+            String agent,
+            String url,
+            String causeOfBlockage) {
+        super(id, name, state, type, title, pauseDurationMillis, totalDurationMillis, startTimeMillis, causeOfBlockage);
+        this.children = children;
+        this.seqContainerName = seqContainerName;
+        this.nextSibling = nextSibling;
+        this.sequential = sequential;
+        this.synthetic = synthetic;
+        this.placeholder = placeholder;
+        this.agent = agent;
+        this.url = url;
     }
 }

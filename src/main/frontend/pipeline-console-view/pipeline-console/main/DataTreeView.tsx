@@ -3,13 +3,12 @@ import "./data-tree-view.scss";
 import {
   memo,
   MouseEvent as ReactMouseEvent,
-  useCallback,
   useEffect,
   useState,
 } from "react";
 
 import Filter from "../../../common/components/filter.tsx";
-import StatusIcon from "../../../common/components/status-icon.tsx";
+import { StageStatusIcon } from "../../../common/components/status-icon.tsx";
 import { classNames } from "../../../common/utils/classnames.ts";
 import LiveTotal from "../../../common/utils/live-total.tsx";
 import {
@@ -22,16 +21,10 @@ export default function DataTreeView({
   stages,
   selected,
   onNodeSelect,
+  currentRunPath,
 }: DataTreeViewProps) {
   const { search, setSearch, visibleStatuses } = useFilter();
   const filteredStages = filterStageTree(search, visibleStatuses, stages);
-
-  const handleSelect = useCallback(
-    (event: ReactMouseEvent, nodeId: string) => {
-      onNodeSelect(event, nodeId);
-    },
-    [onNodeSelect],
-  );
 
   if (stages.length === 1 && stages[0].placeholder) {
     return null;
@@ -97,7 +90,8 @@ export default function DataTreeView({
             key={stage.id}
             stage={stage}
             selected={String(selected)}
-            onSelect={handleSelect}
+            onSelect={onNodeSelect}
+            currentRunPath={currentRunPath}
           />
         ))}
       </ol>
@@ -116,6 +110,7 @@ const TreeNode = memo(function TreeNode({
   stage,
   selected,
   onSelect,
+  currentRunPath,
 }: TreeNodeProps) {
   const { search, visibleStatuses, allVisible } = useFilter();
   const hasChildren = stage.children && stage.children.length > 0;
@@ -153,7 +148,7 @@ const TreeNode = memo(function TreeNode({
     >
       <div className="pgv-tree-item-container">
         <a
-          href={`?selected-node=` + stage.id}
+          href={currentRunPath + `stages/?selected-node=` + stage.id}
           onClick={(e) => {
             // Only prevent left clicks
             if (e.button !== 0 || e.metaKey || e.ctrlKey) {
@@ -161,10 +156,10 @@ const TreeNode = memo(function TreeNode({
             }
 
             e.preventDefault();
+            history.replaceState({}, "", e.currentTarget.href);
 
-            history.replaceState({}, "", `?selected-node=` + stage.id);
             if (!isSelected) {
-              onSelect(e, String(stage.id));
+              onSelect(String(stage.id));
             }
             setIsExpanded(!isExpanded);
           }}
@@ -176,11 +171,7 @@ const TreeNode = memo(function TreeNode({
         >
           <div className={"pgv-tree-item__content"}>
             <div className="pgv-status-icon">
-              <StatusIcon
-                status={stage.state}
-                percentage={stage.completePercent}
-                skeleton={stage.skeleton}
-              />
+              <StageStatusIcon stage={stage} />
             </div>
             <div className={"pgv-tree-item__info"}>
               <div
@@ -194,6 +185,7 @@ const TreeNode = memo(function TreeNode({
                 <LiveTotal
                   start={stage.startTimeMillis}
                   total={stage.totalDurationMillis}
+                  paused={stage.pauseLiveTotal}
                 />
               </div>
             </div>
@@ -234,6 +226,7 @@ const TreeNode = memo(function TreeNode({
                 stage={child}
                 selected={selected}
                 onSelect={onSelect}
+                currentRunPath={currentRunPath}
               />
             ))}
           </ol>
@@ -274,11 +267,13 @@ const filterStageTree = (
 interface DataTreeViewProps {
   stages: StageInfo[];
   selected?: number;
-  onNodeSelect: (event: ReactMouseEvent, nodeId: string) => void;
+  onNodeSelect: (nodeId: string) => void;
+  currentRunPath: string;
 }
 
 interface TreeNodeProps {
   stage: StageInfo;
   selected: string;
-  onSelect: (event: ReactMouseEvent, id: string) => void;
+  onSelect: (id: string) => void;
+  currentRunPath: string;
 }

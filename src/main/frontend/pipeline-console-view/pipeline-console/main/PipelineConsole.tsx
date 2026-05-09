@@ -10,6 +10,7 @@ import {
   SETTINGS,
 } from "../../../common/components/symbols.tsx";
 import { useUserPermissions } from "../../../common/user/user-permission-provider.tsx";
+import { Result } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import Skeleton from "./components/skeleton.tsx";
 import Stages from "./components/stages.tsx";
 import StagesCustomization from "./components/stages-customization.tsx";
@@ -19,6 +20,7 @@ import { NoStageStepsFallback } from "./NoStageStepsFallback.tsx";
 import { useLayoutPreferences } from "./providers/user-preference-provider.tsx";
 import ScrollToTopBottom from "./scroll-to-top-bottom.tsx";
 import SplitView from "./split-view.tsx";
+import StageDetails from "./stage-details.tsx";
 import StageView from "./StageView.tsx";
 
 export default function PipelineConsole() {
@@ -28,21 +30,29 @@ export default function PipelineConsole() {
 
   const { stageViewPosition, mainViewVisibility } = useLayoutPreferences();
   const {
+    complete,
+    tailLogs,
+    scrollToTail,
+    startTailingLogs,
+    stopTailingLogs,
     openStage,
     openStageSteps,
-    openStageStepBuffers,
+    stepBuffers,
     expandedSteps,
     stages,
     handleStageSelect,
     onStepToggle,
-    onMoreConsoleClick,
+    fetchLogText,
     fetchExceptionText,
     loading,
   } = useStepsPoller({ currentRunPath, previousRunPath });
 
-  const showSplitView = loading || (!loading && stages.length > 0);
-
   const isOnlyPlaceholderNode = stages.length === 1 && stages[0].placeholder;
+  const onlyQueuedPlaceholder =
+    isOnlyPlaceholderNode && stages[0].state === Result.queued;
+
+  const showSplitView =
+    loading || (!loading && stages.length > 0 && !onlyQueuedPlaceholder);
 
   const { canConfigure } = useUserPermissions();
 
@@ -52,6 +62,12 @@ export default function PipelineConsole() {
         container={document.getElementById("console-pipeline-overflow-root")}
       >
         <Dropdown
+          className={
+            rootElement?.closest(".app-build-content")
+              ? "jenkins-details__button"
+              : ""
+          }
+          icon={SETTINGS}
           items={[
             showSplitView ? (
               <StagesCustomization key="visibility-select" />
@@ -116,7 +132,8 @@ export default function PipelineConsole() {
                     </div>
                   ) : (
                     <DataTreeView
-                      onNodeSelect={(_, nodeId) => handleStageSelect(nodeId)}
+                      currentRunPath={currentRunPath}
+                      onNodeSelect={handleStageSelect}
                       selected={openStage?.id}
                       stages={stages}
                     />
@@ -132,13 +149,17 @@ export default function PipelineConsole() {
                 </div>
               ) : (
                 <StageView
+                  tailLogs={tailLogs}
+                  scrollToTail={scrollToTail}
+                  stopTailingLogs={stopTailingLogs}
                   stage={openStage}
                   steps={openStageSteps}
-                  stepBuffers={openStageStepBuffers}
+                  stepBuffers={stepBuffers}
                   expandedSteps={expandedSteps}
                   onStepToggle={onStepToggle}
-                  onMoreConsoleClick={onMoreConsoleClick}
+                  fetchLogText={fetchLogText}
                   fetchExceptionText={fetchExceptionText}
+                  currentRunPath={currentRunPath}
                 />
               )}
             </div>
@@ -146,9 +167,32 @@ export default function PipelineConsole() {
         </SplitView>
       )}
 
-      {!loading && stages.length === 0 && <NoStageStepsFallback />}
+      {!loading && onlyQueuedPlaceholder && (
+        <>
+          <StageDetails stage={stages[0]} />
+          <NoStageStepsFallback
+            currentRunPath={currentRunPath}
+            tailLogs={tailLogs}
+            scrollToTail={scrollToTail}
+          />
+        </>
+      )}
 
-      <ScrollToTopBottom />
+      {!loading && stages.length === 0 && (
+        <NoStageStepsFallback
+          currentRunPath={currentRunPath}
+          tailLogs={tailLogs}
+          scrollToTail={scrollToTail}
+        />
+      )}
+
+      <ScrollToTopBottom
+        complete={complete}
+        loading={loading}
+        tailLogs={tailLogs}
+        startTailingLogs={startTailingLogs}
+        stopTailingLogs={stopTailingLogs}
+      />
     </>
   );
 }

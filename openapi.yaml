@@ -18,7 +18,7 @@ info:
     url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: "{build_url}/pipeline-overview"
+  - url: "{build_url}/stages"
     description: Pipeline Overview API - Individual pipeline run
     variables:
       build_url:
@@ -121,46 +121,6 @@ paths:
                 $ref: "#/components/schemas/StepListResponse"
         "400":
           description: Missing or invalid nodeId parameter
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /consoleOutput:
-    get:
-      tags:
-        - Pipeline Overview
-      summary: Get console output for a step
-      description: |
-        Returns console output for a specific step or stage. Supports pagination
-        through startByte parameter.
-      operationId: getConsoleOutput
-      parameters:
-        - name: nodeId
-          in: query
-          required: true
-          description: The ID of the step/stage to get console output for
-          schema:
-            type: string
-        - name: startByte
-          in: query
-          required: false
-          description: |
-            Starting byte position. If negative, starts from end minus the absolute value.
-            If larger than output length, returns error. Default is -153600 (150KB from end).
-          schema:
-            type: integer
-            format: int64
-            default: -153600
-      responses:
-        "200":
-          description: Console output data
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ConsoleOutputResponse"
-        "400":
-          description: Missing or invalid parameters
           content:
             application/json:
               schema:
@@ -445,6 +405,15 @@ components:
             - string
             - null
           description: Agent information for the stage
+        causeOfBlockage:
+          types:
+            - string
+            - null
+          description: >-
+            Human-readable reason this stage is blocked. Currently set when the
+            stage's state is "queued" because its `agent`/`node` step is waiting
+            for an executor (e.g. "Waiting for next available executor on 'linux'").
+            Omitted when the stage is not blocked.
         url:
           type: string
           description: URL to view this stage in the UI
@@ -542,33 +511,6 @@ components:
         parameters:
           type: boolean
           description: Whether the input step has parameters
-
-    ConsoleOutputResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          enum: [ok]
-        data:
-          $ref: "#/components/schemas/ConsoleOutput"
-
-    ConsoleOutput:
-      type: object
-      properties:
-        text:
-          type: string
-          description: Console text content
-        startByte:
-          type: integer
-          format: int64
-          description: Starting byte position of this text chunk
-        endByte:
-          type: integer
-          format: int64
-          description: Ending byte position of this text chunk
-        nodeIsActive:
-          type: boolean
-          description: Whether the node is currently active/running
 
     NextBuildResponse:
       type: object
@@ -679,7 +621,7 @@ components:
               synthetic: false
               placeholder: false
               agent: "linux"
-              url: "/job/my-pipeline/1/pipeline-overview?selected-node=6"
+              url: "/job/my-pipeline/1/stages/?selected-node=6"
 
     StepListExample:
       summary: Example step list

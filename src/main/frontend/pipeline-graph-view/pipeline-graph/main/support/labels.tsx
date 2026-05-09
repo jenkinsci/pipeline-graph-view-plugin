@@ -1,4 +1,4 @@
-import { CSSProperties } from "react";
+import { CSSProperties, memo } from "react";
 
 import LiveTotal from "../../../../common/utils/live-total.tsx";
 import { sequentialStagesLabelOffset } from "../PipelineGraphLayout.ts";
@@ -14,10 +14,9 @@ interface RenderBigLabelProps {
   isSelected: boolean;
 }
 
-/**
- * Generate the Component for a big label
- */
-export function BigLabel({
+export const BigLabel = memo(BigLabelImpl);
+
+function BigLabelImpl({
   details,
   layout,
   measuredHeight,
@@ -73,10 +72,9 @@ export function BigLabel({
   );
 }
 
-/**
- * Generate the Component for a big label
- */
-export function TimingsLabel({
+export const TimingsLabel = memo(TimingsLabelImpl);
+
+function TimingsLabelImpl({
   details,
   layout,
   measuredHeight,
@@ -127,6 +125,7 @@ export function TimingsLabel({
       <LiveTotal
         total={details.stage?.totalDurationMillis}
         start={details.stage?.startTimeMillis ?? Date.now()}
+        paused={details.stage?.pauseLiveTotal}
       />
     </div>
   );
@@ -138,10 +137,9 @@ interface SmallLabelProps {
   isSelected?: boolean;
 }
 
-/**
- * Generate the Component for a small label
- */
-export function SmallLabel({ details, layout, isSelected }: SmallLabelProps) {
+export const SmallLabel = memo(SmallLabelImpl);
+
+function SmallLabelImpl({ details, layout, isSelected }: SmallLabelProps) {
   const {
     nodeSpacingH,
     nodeSpacingV,
@@ -193,10 +191,9 @@ interface SequentialContainerLabelProps {
   layout: LayoutInfo;
 }
 
-/**
- * Generate the Component for a small label denoting the name of the container of a group of sequential parallel stages
- */
-export function SequentialContainerLabel({
+export const SequentialContainerLabel = memo(SequentialContainerLabelImpl);
+
+function SequentialContainerLabelImpl({
   details,
   layout,
 }: SequentialContainerLabelProps) {

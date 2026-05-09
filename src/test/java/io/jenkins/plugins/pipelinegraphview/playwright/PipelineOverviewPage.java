@@ -18,7 +18,7 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
     private final String jobUrl;
 
     public PipelineOverviewPage(Page page, String jobUrl, String buildName) {
-        super(page, jobUrl + "pipeline-overview/");
+        super(page, jobUrl + "stages/");
         this.buildName = buildName;
         this.jobUrl = jobUrl;
         graph = new PipelineGraph(page.locator(".PWGx-PipelineGraph-container"));
@@ -82,6 +82,11 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
 
     public PipelineOverviewPage stepContainsText(String stepName, String textToFind) {
         logs.stepContainsText(stepName, textToFind);
+        return this;
+    }
+
+    public PipelineOverviewPage stepDoesNotContainText(String stepName, String textToNotFind) {
+        logs.stepDoesNotContainText(stepName, textToNotFind);
         return this;
     }
 

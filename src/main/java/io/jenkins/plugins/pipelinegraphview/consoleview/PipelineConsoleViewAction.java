@@ -4,7 +4,6 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Plugin;
 import hudson.console.AnnotatedLargeText;
-import hudson.model.Action;
 import hudson.model.BallColor;
 import hudson.model.Item;
 import hudson.model.ParametersDefinitionProperty;
@@ -14,17 +13,14 @@ import hudson.security.Permission;
 import hudson.util.HttpResponses;
 import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.PipelineGraphViewConfiguration;
-import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsCard;
 import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.ArtifactRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.ChangesRunDetailsItem;
-import io.jenkins.plugins.pipelinegraphview.cards.items.SCMRunDetailsItems;
 import io.jenkins.plugins.pipelinegraphview.cards.items.TestResultRunDetailsItem;
-import io.jenkins.plugins.pipelinegraphview.cards.items.TimingRunDetailsItems;
-import io.jenkins.plugins.pipelinegraphview.cards.items.UpstreamCauseRunDetailsItem;
-import io.jenkins.plugins.pipelinegraphview.cards.items.UserIdCauseRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphViewCache;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineJsonWriter;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStep;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
@@ -35,9 +31,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
+import jenkins.model.Tab;
 import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
-import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.pipeline.modeldefinition.actions.RestartDeclarativePipelineAction;
 import org.jenkinsci.plugins.workflow.cps.replay.ReplayAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
@@ -53,24 +48,18 @@ import org.kohsuke.stapler.verb.GET;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PipelineConsoleViewAction implements Action, IconSpec {
-    public static final long LOG_THRESHOLD = 150 * 1024; // 150KB
-    public static final String URL_NAME = "pipeline-overview";
+public class PipelineConsoleViewAction extends Tab {
+    public static final String URL_NAME = "stages";
     public static final int CACHE_AGE = (int) TimeUnit.DAYS.toSeconds(1);
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineConsoleViewAction.class);
-    private static final JsonConfig jsonConfig = new JsonConfig();
-
-    static {
-        PipelineStepList.PipelineStepListJsonProcessor.configure(jsonConfig);
-        PipelineGraph.PipelineGraphJsonProcessor.configure(jsonConfig);
-    }
 
     private final PipelineGraphApi graphApi;
     private final WorkflowRun run;
     private final PipelineStepApi stepApi;
 
     public PipelineConsoleViewAction(WorkflowRun target) {
+        super(target);
         this.run = target;
         this.graphApi = new PipelineGraphApi(this.run);
         this.stepApi = new PipelineStepApi(this.run);
@@ -78,7 +67,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
 
     @Override
     public String getDisplayName() {
-        return "Pipeline Overview";
+        return Messages.stages();
     }
 
     @Override
@@ -90,22 +79,18 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     // running).
     @GET
     @WebMethod(name = "steps")
-    public HttpResponse getSteps(StaplerRequest2 req) {
+    public void getSteps(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         run.checkPermission(Item.READ);
         String nodeId = req.getParameter("nodeId");
-        if (nodeId != null) {
-            return HttpResponses.okJSON(getSteps(nodeId));
-        } else {
-            return HttpResponses.errorJSON("Error getting console text");
+        if (nodeId == null) {
+            HttpResponses.errorJSON("Error getting console text").generateResponse(req, rsp, null);
+            return;
         }
-    }
-
-    private JSONObject getSteps(String nodeId) {
         logger.debug("getSteps was passed nodeId '{}'.", nodeId);
         PipelineStepList steps = stepApi.getSteps(nodeId);
-        JSONObject json = JSONObject.fromObject(steps, jsonConfig);
-        logger.debug("Steps for {}: '{}'.", nodeId, json);
-        return json;
+        rsp.setStatus(200);
+        rsp.setContentType("application/json;charset=UTF-8");
+        PipelineJsonWriter.write(steps, rsp.getOutputStream());
     }
 
     // Return all steps to:
@@ -115,14 +100,17 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     @WebMethod(name = "allSteps")
     public void getAllSteps(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         run.checkPermission(Item.READ);
-        PipelineStepList steps = stepApi.getAllSteps();
-        JSONObject json = JSONObject.fromObject(steps, jsonConfig);
-        logger.debug("Steps: '{}'.", json);
-        HttpResponse response = HttpResponses.okJSON(json);
-
         rsp.setStatus(200);
+        rsp.setContentType("application/json;charset=UTF-8");
+        // Speculative: a cache hit always implies the run was complete when persisted.
+        // Overwritten below if we fall through to the compute path.
+        setCache(rsp, true);
+        if (PipelineGraphViewCache.get().tryServeAllSteps(run, rsp.getOutputStream())) {
+            return;
+        }
+        PipelineStepList steps = stepApi.getAllSteps();
         setCache(rsp, steps.runIsComplete);
-        response.generateResponse(req, rsp, null);
+        PipelineJsonWriter.write(steps, rsp.getOutputStream());
     }
 
     private void setCache(StaplerResponse2 rsp, boolean complete) {
@@ -182,6 +170,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
                     "Doesn't seem to matter in practice, docs aren't clear on how to handle and most places ignore it")
     public void getBuildConsole(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         run.checkPermission(Item.READ);
+        rsp.setContentType("text/html;charset=UTF-8");
         run.getLogText().writeHtmlTo(0L, rsp.getWriter());
     }
 
@@ -191,94 +180,8 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
         run.checkPermission(Item.READ);
         String nodeId = req.getParameter("nodeId");
         if (nodeId == null) return HttpResponses.error(400, "missing ?nodeId");
-        return HttpResponses.text(getNodeExceptionText(nodeId));
-    }
-
-    /*
-     * The default behavior of this functions differs from 'getConsoleOutput' in that it will use LOG_THRESHOLD from the end of the string.
-     * Note: if 'startByte' is negative and falls outside of the console text then we will start from byte 0.
-     *
-     * FIXME: This is not performant and needs to be re-written to not buffer in memory. Avoiding JSON for log text.
-     *
-     * Example:
-     * {
-     *   "startByte": 0,
-     *   "endByte": 13,
-     *   "text": "Hello, world!"
-     * }
-     */
-    @GET
-    @WebMethod(name = "consoleOutput")
-    public HttpResponse getConsoleOutput(StaplerRequest2 req) throws IOException {
-        run.checkPermission(Item.READ);
-        String nodeId = req.getParameter("nodeId");
-        if (nodeId == null) {
-            logger.error("'consoleJson' was not passed 'nodeId'.");
-            return HttpResponses.errorJSON("Error getting console json");
-        }
-        logger.debug("getConsoleOutput was passed node id '{}'.", nodeId);
-        // This will be a step, so return it's log output.
-        // startByte to start getting data from. If negative will startByte from end of string with
-        // LOG_THRESHOLD.
-        Long startByte = parseIntWithDefault(req.getParameter("startByte"), -LOG_THRESHOLD);
-        JSONObject data = getConsoleOutputJson(nodeId, startByte);
-        if (data == null) {
-            return HttpResponses.errorJSON("Something went wrong - check Jenkins logs.");
-        }
-        return HttpResponses.okJSON(data);
-    }
-
-    protected JSONObject getConsoleOutputJson(String nodeId, Long requestStartByte) throws IOException {
-        long startByte = 0L;
-        long endByte = 0L;
-        long textLength;
-        String text = "";
-        AnnotatedLargeText<? extends FlowNode> logText = null;
-        boolean nodeIsActive = false;
-        {
-            FlowExecution execution = run.getExecution();
-            if (execution != null) {
-                logger.debug("getConsoleOutputJson found execution.");
-                FlowNode node = execution.getNode(nodeId);
-                if (node != null) {
-                    // Look up active state before getting the logText.
-                    nodeIsActive = node.isActive();
-                    logText = PipelineNodeUtil.getLogText(node);
-                }
-            }
-        }
-
-        if (logText != null) {
-            textLength = logText.length();
-            // positive startByte
-            if (requestStartByte > textLength) {
-                // Avoid resource leak.
-                logger.error("consoleJson - user requested startByte larger than console output.");
-                return null;
-            }
-            // if startByte is negative make sure we don't try and get a byte before 0.
-            if (requestStartByte < 0L) {
-                logger.debug("consoleJson - requested negative startByte '{}'.", requestStartByte);
-                startByte = textLength + requestStartByte;
-                if (startByte < 0L) {
-                    logger.debug(
-                            "consoleJson - requested negative startByte '{}' out of bounds, starting at 0.",
-                            requestStartByte);
-                    startByte = 0L;
-                }
-            } else {
-                startByte = requestStartByte;
-            }
-            logger.debug("Returning '{}' bytes from 'getConsoleOutput'.", textLength - startByte);
-            text = PipelineNodeUtil.convertLogToString(logText, startByte);
-            endByte = textLength;
-        }
-        JSONObject json = new JSONObject();
-        json.element("text", text);
-        json.element("startByte", startByte);
-        json.element("endByte", endByte);
-        json.element("nodeIsActive", nodeIsActive);
-        return json;
+        String exceptionText = getNodeExceptionText(nodeId);
+        return HttpResponses.text(exceptionText != null ? exceptionText : "");
     }
 
     private AnnotatedLargeText<? extends FlowNode> getLogForNode(String nodeId) throws IOException {
@@ -318,24 +221,12 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     }
 
     @SuppressWarnings("unused")
-    public RunDetailsCard getRunDetailsCard() {
-
-        List<RunDetailsItem> runDetailsItems = new ArrayList<>(SCMRunDetailsItems.get(run));
-
-        if (!runDetailsItems.isEmpty()) {
-            runDetailsItems.add(RunDetailsItem.SEPARATOR);
-        }
-
-        UpstreamCauseRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
-        UserIdCauseRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
-
-        runDetailsItems.addAll(TimingRunDetailsItems.get(run));
-
+    public List<RunDetailsItem> getRunDetailsItems() {
+        List<RunDetailsItem> runDetailsItems = new ArrayList<>();
         ChangesRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
         TestResultRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
         ArtifactRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
-
-        return new RunDetailsCard(runDetailsItems);
+        return runDetailsItems;
     }
 
     public boolean isShowGraphOnBuildPage() {
@@ -476,7 +367,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     }
 
     public String getBuildUrl() {
-        return run.getUrl();
+        return run.getParent().getUrl() + run.getNumber() + "/";
     }
 
     public String getPreviousBuildNumber() {
@@ -485,7 +376,10 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
 
     public String getPreviousBuildUrl() {
         WorkflowRun previousBuild = run.getPreviousBuild();
-        return previousBuild == null ? null : previousBuild.getUrl();
+        if (previousBuild == null) {
+            return null;
+        }
+        return run.getParent().getUrl() + previousBuild.getNumber() + "/";
     }
 
     public String getNextBuildNumber() {
@@ -496,13 +390,15 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     @WebMethod(name = "tree")
     public void getTree(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         run.checkPermission(Item.READ);
-
-        PipelineGraph tree = graphApi.createTree();
-        HttpResponse response = HttpResponses.okJSON(JSONObject.fromObject(tree, jsonConfig));
-
         rsp.setStatus(200);
+        rsp.setContentType("application/json;charset=UTF-8");
+        setCache(rsp, true);
+        if (PipelineGraphViewCache.get().tryServeTree(run, rsp.getOutputStream())) {
+            return;
+        }
+        PipelineGraph tree = graphApi.createTree();
         setCache(rsp, tree.complete);
-        response.generateResponse(req, rsp, null);
+        PipelineJsonWriter.write(tree, rsp.getOutputStream());
     }
 
     // Icon related methods these may appear as unused but are used by /lib/hudson/buildCaption.jelly
@@ -517,12 +413,7 @@ public class PipelineConsoleViewAction implements Action, IconSpec {
     }
 
     @Override
-    public String getIconClassName() {
-        return "symbol-git-network-outline plugin-ionicons-api";
-    }
-
-    @Override
     public String getIconFileName() {
-        return null;
+        return "symbol-git-network-outline plugin-ionicons-api";
     }
 }

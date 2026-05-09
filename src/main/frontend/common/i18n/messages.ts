@@ -79,6 +79,8 @@ export enum LocalizedMessageKey {
   showNames = "settings.showStageName",
   showDuration = "settings.showStageDuration",
   consoleNewTab = "console.newTab",
+  tailLogsResume = "tailLogs.resume",
+  tailLogsPause = "tailLogs.pause",
 }
 
 const DEFAULT_MESSAGES: ResourceBundle = {
@@ -92,6 +94,8 @@ const DEFAULT_MESSAGES: ResourceBundle = {
   [LocalizedMessageKey.showNames]: "Show stage names",
   [LocalizedMessageKey.showDuration]: "Show stage duration",
   [LocalizedMessageKey.consoleNewTab]: "View step as plain text",
+  [LocalizedMessageKey.tailLogsResume]: "Resume tailing logs",
+  [LocalizedMessageKey.tailLogsPause]: "Pause tailing logs",
 };
 
 export function defaultMessages(locale: string): Messages {

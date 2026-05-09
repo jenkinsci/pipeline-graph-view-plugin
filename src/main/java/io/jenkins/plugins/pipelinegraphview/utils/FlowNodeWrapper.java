@@ -7,6 +7,7 @@ import hudson.model.Action;
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
+import io.jenkins.plugins.pipelinegraphview.steps.HideFromViewStep;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunResult;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunState;
@@ -15,7 +16,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.LabelAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
@@ -25,6 +28,7 @@ import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.graph.FlowStartNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException;
+import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
 
 /** @author Vivek Pandey */
@@ -87,7 +91,7 @@ public class FlowNodeWrapper {
     private final WorkflowRun run;
     private String causeOfFailure;
 
-    private List<FlowNodeWrapper> parents = new ArrayList<>();
+    private final List<FlowNodeWrapper> parents = new ArrayList<>();
 
     private ErrorAction blockErrorAction;
     private Collection<Action> pipelineActions;
@@ -145,6 +149,23 @@ public class FlowNodeWrapper {
         return null;
     }
 
+    /**
+     * Returns the human-readable reason an agent allocation under this stage is blocked
+     * (e.g. "Waiting for next available executor on 'linux'"), or {@code null} if no
+     * agent step under this stage is currently queued.
+     *
+     * <p>Checked even when {@link #getStatus()} doesn't report {@link BlueRunState#QUEUED}:
+     * for declarative parallel branches, the chunked status computation can report
+     * {@code IN_PROGRESS} while a child {@code agent {...}} block is actually queued. The
+     * presence of a non-null cause is the source of truth that the stage is queued.
+     */
+    public @CheckForNull String getCauseOfBlockage() {
+        if (getStatus().state == BlueRunState.FINISHED) {
+            return null;
+        }
+        return PipelineNodeUtil.getCauseOfBlockage(node);
+    }
+
     private static NodeType getNodeType(FlowNode node) {
         if (PipelineNodeUtil.isStep(node)) {
             return NodeType.STEP;
@@ -187,6 +208,20 @@ public class FlowNodeWrapper {
 
     public @NonNull String getId() {
         return node.getId();
+    }
+
+    /** Lazily-parsed numeric form of {@link #getId()} for sort comparisons. */
+    private int cachedIdInt = Integer.MIN_VALUE;
+
+    public int getIdAsInt() {
+        // Benign race: two threads may both parse and store, but they store the same value —
+        // int stores are atomic and the write is idempotent, so no synchronisation needed.
+        int v = cachedIdInt;
+        if (v == Integer.MIN_VALUE) {
+            v = Integer.parseInt(node.getId());
+            cachedIdInt = v;
+        }
+        return v;
     }
 
     public @NonNull FlowNode getNode() {
@@ -380,36 +415,69 @@ public class FlowNodeWrapper {
         return PipelineNodeUtil.isUnhandledException(node);
     }
 
+    /**
+     * Extracts feature flags from ancestor hideFromView step nodes.
+     * @return Map of feature flag key-value pairs (currently only "hidden" is supported)
+     */
+    public Map<String, Object> getFeatureFlags() {
+        Map<String, Object> flags = new HashMap<>();
+
+        for (BlockStartNode block : this.node.iterateEnclosingBlocks()) {
+            if (!(block instanceof StepStartNode stepStartNode)) {
+                continue;
+            }
+
+            StepDescriptor descriptor = stepStartNode.getDescriptor();
+            if (descriptor == null) {
+                continue;
+            }
+
+            // Check for hideFromView step
+            if (HideFromViewStep.class.getName().equals(descriptor.getId())) {
+                // Found hidden marker - set flag and stop
+                flags.put("hidden", Boolean.TRUE);
+                break; // Inner block found, no need to check outer blocks
+            }
+        }
+
+        return flags;
+    }
+
     public static class NodeComparator implements Comparator<FlowNodeWrapper>, Serializable {
         private static final long serialVersionUID = 1L;
 
         @Override
         public int compare(FlowNodeWrapper a, FlowNodeWrapper b) {
-            return FlowNodeWrapper.compareIds(a.getId(), b.getId());
-        }
-    }
-
-    public static class FlowNodeComparator implements Comparator<FlowNode>, Serializable {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public int compare(FlowNode a, FlowNode b) {
-            return FlowNodeWrapper.compareIds(a.getId(), b.getId());
-        }
-    }
-
-    public static class NodeIdComparator implements Comparator<String>, Serializable {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public int compare(String a, String b) {
-            return FlowNodeWrapper.compareIds(a, b);
+            return Integer.compare(a.getIdAsInt(), b.getIdAsInt());
         }
     }
 
     public static int compareIds(String ida, String idb) {
         return Integer.compare(Integer.parseInt(ida), Integer.parseInt(idb));
     }
+
+    /**
+     * Sorts {@code nodes} by the integer value of their {@link FlowNode#getId()}. Parses each
+     * ID exactly once via decorate-sort-undecorate.
+     */
+    public static List<FlowNode> sortByFlowNodeId(Collection<FlowNode> nodes, boolean descending) {
+        List<KeyedFlowNode> decorated = new ArrayList<>(nodes.size());
+        for (FlowNode node : nodes) {
+            decorated.add(new KeyedFlowNode(Integer.parseInt(node.getId()), node));
+        }
+        Comparator<KeyedFlowNode> cmp = Comparator.comparingInt(KeyedFlowNode::key);
+        if (descending) {
+            cmp = cmp.reversed();
+        }
+        decorated.sort(cmp);
+        List<FlowNode> out = new ArrayList<>(decorated.size());
+        for (KeyedFlowNode k : decorated) {
+            out.add(k.node());
+        }
+        return out;
+    }
+
+    private record KeyedFlowNode(int key, FlowNode node) {}
 
     // Useful for dumping node maps to console. These can then be viewed in dor or
     // online via:

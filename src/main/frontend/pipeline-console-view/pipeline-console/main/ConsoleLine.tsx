@@ -5,15 +5,17 @@ import { linkifyJsOptions } from "../../../common/utils/linkify-js.ts";
 import { makeReactChildren, tokenizeANSIString } from "./Ansi.tsx";
 
 export interface ConsoleLineProps {
+  stopTailingLogs: () => void;
   lineNumber: string;
   content: string;
   stepId: string;
   startByte: number;
+  currentRunPath: string;
 }
 
 // Console output line
 export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
-  const baseURL = `?start-byte=${props.startByte}&selected-node=${props.stepId}`;
+  const baseURL = `${props.currentRunPath}stages/?start-byte=${props.startByte}&selected-node=${props.stepId}`;
   const id = `log-${props.stepId}-${props.lineNumber}`;
   return (
     <pre
@@ -26,6 +28,7 @@ export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
           id={id}
           href={`${baseURL}#${id}`}
           onClick={() => {
+            props.stopTailingLogs();
             // Avoid an actual page navigation by swapping the current URL for
             // the baseURL (query without hash) before the default "click"
             // behavior (the browsers page navigation logic) runs. The

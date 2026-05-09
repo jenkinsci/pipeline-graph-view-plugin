@@ -8,6 +8,7 @@ import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun;
 import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
+import java.util.Set;
 import org.jenkinsci.plugins.workflow.actions.WarningAction;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -132,5 +133,47 @@ public class NodeRelationship {
         // Catch-all if none of the above are applicable.
         return new NodeRunStatus(
                 StatusAndTiming.computeChunkStatus2(run, this.before, this.start, this.end, this.after));
+    }
+
+    /**
+     * Same as {@link #getStatus(WorkflowRun)} but uses {@code activeNodeIds} for liveness
+     * checks instead of {@link FlowNode#isActive()}.
+     *
+     * <ul>
+     *   <li>Step nodes ({@code start == end}): liveness read from the set.</li>
+     *   <li>Block nodes ({@code start != end}): if {@code start} is in the active set the
+     *       block is still running (RUNNING/UNKNOWN); otherwise delegates to
+     *       {@link #getStatus(WorkflowRun)} so subclass overrides (e.g.
+     *       {@link ParallelBlockRelationship}) apply.</li>
+     * </ul>
+     */
+    public @NonNull NodeRunStatus getStatus(WorkflowRun run, @CheckForNull Set<String> activeNodeIds) {
+        if (activeNodeIds == null) {
+            return getStatus(run);
+        }
+        if (PipelineNodeUtil.isSkippedStage(start)) {
+            return new NodeRunStatus(BlueRun.BlueRunResult.NOT_BUILT, BlueRun.BlueRunState.SKIPPED);
+        }
+        if (PipelineNodeUtil.isPaused(this.end)) {
+            return new NodeRunStatus(BlueRun.BlueRunResult.UNKNOWN, BlueRun.BlueRunState.PAUSED);
+        }
+        if (PipelineNodeUtil.isStage(start)) {
+            WarningAction warningAction = start.getPersistentAction(WarningAction.class);
+            if (warningAction != null) {
+                return new NodeRunStatus(GenericStatus.fromResult(warningAction.getResult()));
+            }
+        }
+        // Step node: start and end are the same FlowNode — use the activeNodeIds set.
+        if (this.start.getId().equals(this.end.getId())) {
+            return new NodeRunStatus(this.start, activeNodeIds);
+        }
+        // Block node: if the start is in the active set the block is still running.
+        // computeChunkStatus2 / getStatus(run) use FlowNode#isActive() / isCurrentHead()
+        // which can disagree with the snapshot's activeNodeIds during live execution.
+        // Honour the snapshot's view here so status stays consistent within a single read.
+        if (activeNodeIds.contains(this.start.getId())) {
+            return new NodeRunStatus(BlueRun.BlueRunResult.UNKNOWN, BlueRun.BlueRunState.RUNNING);
+        }
+        return getStatus(run);
     }
 }

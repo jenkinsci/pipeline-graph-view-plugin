@@ -145,11 +145,7 @@ a.console-line-number {
   margin-bottom: -0.375rem;
   margin-left: -0.375rem;
   margin-right: -0.375rem;
-  // TODO - var fallback can removed after baseline is moved >= 2.496
-  border-top: var(
-    --jenkins-border,
-    2px solid color-mix(in srgb, var(--text-color-secondary) 10%, transparent)
-  );
+  border-top: var(--jenkins-border);
   background-color: color-mix(in srgb, var(--accent-color) 2.5%, transparent);
   border-bottom-left-radius: 0.375rem;
   border-bottom-right-radius: 0.375rem;
@@ -183,8 +179,7 @@ div.console-output-line {
         var(--blue) 15%,
         transparent
       ) !important;
-      // TODO - var fallback can removed after baseline is moved >= 2.496
-      border: var(--jenkins-border-width, 2px) solid
+      border: var(--jenkins-border-width) solid
         color-mix(in srgb, var(--blue) 10%, transparent);
       opacity: 1;
     }
@@ -199,8 +194,7 @@ div.console-output-line {
       var(--text-color-secondary) 5%,
       transparent
     );
-    // TODO - var fallback can removed after baseline is moved >= 2.496
-    border: var(--jenkins-border-width, 2px) solid
+    border: var(--jenkins-border-width) solid
       color-mix(in srgb, var(--text-color-secondary) 2.5%, transparent);
     border-radius: 0.375rem;
     opacity: 0;

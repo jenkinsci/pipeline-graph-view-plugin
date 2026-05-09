@@ -1,8 +1,11 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import static jenkins.test.RunMatchers.*;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
+import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.QueueTaskFuture;
@@ -16,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.test.steps.SemaphoreStep;
@@ -531,5 +535,98 @@ class PipelineGraphApiTest {
                         "failure-branch{failure},",
                         "unstable-branch{unstable}",
                         "]")));
+    }
+
+    @Issue("GH#967")
+    @Test
+    void createTree_stageWithInputStepShowsAsPaused() throws Exception {
+        WorkflowJob job = TestUtils.createJob(j, "pipelineWithInput", "input.jenkinsfile");
+        QueueTaskFuture<WorkflowRun> futureRun = job.scheduleBuild2(0);
+        WorkflowRun run = futureRun.waitForStart();
+
+        // Wait for the input action to be available and have executions
+        org.jenkinsci.plugins.workflow.support.steps.input.InputAction inputAction = null;
+        while (inputAction == null || inputAction.getExecutions().isEmpty()) {
+            inputAction = run.getAction(org.jenkinsci.plugins.workflow.support.steps.input.InputAction.class);
+        }
+
+        // Check the graph while paused on input
+        PipelineGraphApi api = new PipelineGraphApi(run);
+
+        await().until(
+                        () -> {
+                            PipelineGraph graph = api.createTree();
+                            PipelineStage inputStage = graph.stages.stream()
+                                    .filter(s -> s.name.equals("Input"))
+                                    .findFirst()
+                                    .orElse(null);
+                            return inputStage == null ? null : inputStage.state;
+                        },
+                        equalTo(PipelineState.PAUSED));
+
+        // Approve the input and wait for completion
+        org.jenkinsci.plugins.workflow.support.steps.input.InputStepExecution execution =
+                inputAction.getExecutions().get(0);
+        execution.proceed(null);
+        j.waitForCompletion(run);
+
+        assertThat(run.getResult(), equalTo(Result.SUCCESS));
+    }
+
+    @Issue("GH#486")
+    @Test
+    void queuedStageReportsCauseOfBlockage() throws Exception {
+        WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "queuedCauseOfBlockage");
+        job.setDefinition(new CpsFlowDefinition("""
+                pipeline {
+                  agent none
+                  stages {
+                    stage('Build') {
+                      parallel {
+                        stage('Linux') {
+                          agent { label 'linux-never-exists' }
+                          steps { echo 'unreachable' }
+                        }
+                        stage('Windows') {
+                          agent { label 'windows-never-exists' }
+                          steps { echo 'unreachable' }
+                        }
+                      }
+                    }
+                  }
+                }
+                """, true));
+
+        WorkflowRun run = job.scheduleBuild2(0).waitForStart();
+        try {
+            j.waitForMessage("Still waiting to schedule task", run);
+
+            List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
+            PipelineStage build = stages.stream()
+                    .filter(s -> "Build".equals(s.name))
+                    .findFirst()
+                    .orElseThrow();
+
+            for (PipelineStage branch : build.children) {
+                assertThat(branch.name, anyOf(equalTo("Linux"), equalTo("Windows")));
+                assertThat(
+                        "Branch %s should be queued".formatted(branch.name),
+                        branch.state,
+                        equalTo(PipelineState.QUEUED));
+                assertThat(
+                        "Branch %s should report a cause of blockage".formatted(branch.name),
+                        branch.getCauseOfBlockage(),
+                        notNullValue());
+                assertThat(
+                        branch.getCauseOfBlockage(),
+                        anyOf(containsString("linux-never-exists"), containsString("windows-never-exists")));
+            }
+        } finally {
+            for (Queue.Item item : Queue.getInstance().getItems()) {
+                Queue.getInstance().cancel(item);
+            }
+            run.doStop();
+            await().until(() -> run, completed());
+        }
     }
 }

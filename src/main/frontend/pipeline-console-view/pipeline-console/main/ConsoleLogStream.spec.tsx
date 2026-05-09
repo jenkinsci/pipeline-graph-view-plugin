@@ -1,7 +1,6 @@
 /** * @vitest-environment jsdom */
 
 import { render } from "@testing-library/react";
-import { vi } from "vitest";
 
 import ConsoleLogStream, {
   ConsoleLogStreamProps,
@@ -20,14 +19,11 @@ const TestComponent = (props: ConsoleLogStreamProps) => {
   );
 };
 
-window.HTMLElement.prototype.scrollBy = vi.fn();
-
 describe("ConsoleLogStream", () => {
   const baseStep: StepInfo = {
     name: "This is a step",
     title: "This is a title",
     state: Result.success,
-    completePercent: 50,
     id: "2",
     type: "STAGE",
     pauseDurationMillis: 0,
@@ -43,13 +39,17 @@ describe("ConsoleLogStream", () => {
   };
 
   const DefaultTestProps = {
-    step: baseStep,
+    stepId: baseStep.id,
+    stepState: baseStep.state,
     logBuffer: baseBuffer,
+    updateLogBufferIfChanged: vi.fn(),
     isExpanded: false,
-    onMoreConsoleClick: () => {
-      console.log("onMoreConsoleClick triggered");
-    },
-    fetchExceptionText: vi.fn(),
+    fetchLogText: vi.fn().mockResolvedValue(baseBuffer),
+    fetchExceptionText: vi.fn().mockResolvedValue(baseBuffer),
+    tailLogs: false,
+    stopTailingLogs: () => {},
+    scrollToTail: () => {},
+    currentRunPath: "/jenkins/job/name/1/",
   } as ConsoleLogStreamProps;
 
   it("renders step console", async () => {
@@ -62,10 +62,7 @@ describe("ConsoleLogStream", () => {
     const { findByText } = render(
       TestComponent({
         ...DefaultTestProps,
-        step: {
-          ...baseStep,
-          state: Result.failure,
-        },
+        stepState: Result.failure,
       }),
     );
     expect(findByText(/Hello, world!/));

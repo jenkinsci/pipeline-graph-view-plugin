@@ -2,15 +2,14 @@ import { lazy, useEffect, useState } from "react";
 
 import {
   getConsoleBuildOutput,
-  StepInfo,
   StepLogBufferInfo,
 } from "../../../common/RestClient.tsx";
 import { Result } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 
 const ConsoleLogStream = lazy(() => import("./ConsoleLogStream.tsx"));
 
-async function fetchData(): Promise<StepLogBufferInfo> {
-  const consoleBuildOutput = await getConsoleBuildOutput();
+async function fetchData(url: string): Promise<StepLogBufferInfo> {
+  const consoleBuildOutput = await getConsoleBuildOutput(url);
 
   return {
     lines: consoleBuildOutput?.split("\n") ?? [],
@@ -19,39 +18,41 @@ async function fetchData(): Promise<StepLogBufferInfo> {
   };
 }
 
-export function NoStageStepsFallback() {
-  const step: StepInfo = {
-    id: "step-1",
-    name: "Step 1",
-    title: "Step 1 Title",
-    state: Result.success,
-    completePercent: 100,
-    type: "STEP",
-    startTimeMillis: 0,
-    totalDurationMillis: 0,
-    stageId: "",
-    pauseDurationMillis: 0,
-  };
+interface NoStageStepsFallbackProps {
+  currentRunPath: string;
+  tailLogs: boolean;
+  scrollToTail: (stepId: string, element: HTMLDivElement) => void;
+}
 
-  const [logBuffer, setLogBuffer] = useState<StepLogBufferInfo>();
+export function NoStageStepsFallback(props: NoStageStepsFallbackProps) {
+  const [logBuffer, setLogBuffer] = useState<StepLogBufferInfo>({
+    lines: [],
+    startByte: 0,
+    endByte: 0,
+  });
 
   useEffect(() => {
-    fetchData()
+    fetchData(props.currentRunPath)
       .then((data) => {
         setLogBuffer(data);
         return data;
       })
       .catch((err) => console.log(err));
-  }, []);
+  }, [props.currentRunPath]);
 
   return (
     <div className={"pgv-stage-steps"}>
       <div className={"pgv-step-detail-group"}>
         <ConsoleLogStream
-          logBuffer={logBuffer ?? { lines: [], startByte: 0, endByte: 0 }}
-          onMoreConsoleClick={() => {}}
-          step={step}
-          fetchExceptionText={() => {}}
+          {...props}
+          logBuffer={logBuffer}
+          updateLogBufferIfChanged={() => {}}
+          fetchLogText={async () => logBuffer}
+          stopTailingLogs={() => {}}
+          stepId={""}
+          stepState={Result.success}
+          fetchExceptionText={async () => logBuffer}
+          currentRunPath={props.currentRunPath}
         />
       </div>
     </div>

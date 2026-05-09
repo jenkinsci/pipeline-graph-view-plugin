@@ -1,9 +1,10 @@
 import "./nodes.scss";
 
-import { CSSProperties, ReactElement } from "react";
+import { CSSProperties, memo, ReactElement } from "react";
 
-import StatusIcon, {
+import {
   resultToColor,
+  StageStatusIcon,
 } from "../../../../common/components/status-icon.tsx";
 import Tooltip from "../../../../common/components/tooltip.tsx";
 import { classNames } from "../../../../common/utils/classnames.ts";
@@ -28,15 +29,9 @@ interface NodeProps {
   isSelected: boolean;
 }
 
-/**
- * Generate the SVG elements to represent a node.
- */
-export function Node({
-  node,
-  collapsed,
-  onStageSelect,
-  isSelected,
-}: NodeProps) {
+export const Node = memo(NodeImpl);
+
+function NodeImpl({ node, collapsed, onStageSelect, isSelected }: NodeProps) {
   const key = node.key;
 
   if (node.isPlaceholder) {
@@ -51,16 +46,13 @@ export function Node({
                 className={"jenkins-button jenkins-button--tertiary"}
                 href={document.head.dataset.rooturl + stage.url}
               >
-                <StatusIcon
-                  status={stage.state}
-                  percentage={stage.completePercent}
-                  skeleton={stage.skeleton}
-                />
+                <StageStatusIcon stage={stage} />
                 {stage.name}
                 <span style={{ color: "var(--text-color-secondary)" }}>
                   <LiveTotal
                     total={stage.totalDurationMillis}
                     start={stage.startTimeMillis}
+                    paused={stage.pauseLiveTotal}
                   />
                 </span>
               </a>
@@ -108,12 +100,7 @@ export function Node({
   const groupChildren: SVGChildren = [];
   const { title, state, url } = node.stage ?? {};
   groupChildren.push(
-    <StatusIcon
-      key={`icon-${node.id}`}
-      status={node.stage.state}
-      percentage={node.stage.completePercent}
-      skeleton={node.stage.skeleton}
-    />,
+    <StageStatusIcon key={`icon-${node.id}`} stage={node.stage} />,
   );
 
   const clickable =
@@ -140,6 +127,9 @@ export function Node({
     ),
   };
 
+  const causeOfBlockage =
+    node.stage.state === "queued" ? node.stage.causeOfBlockage : undefined;
+
   let tooltip: ReactElement;
   if (collapsed) {
     tooltip = (
@@ -149,8 +139,10 @@ export function Node({
           <LiveTotal
             total={node.stage.totalDurationMillis}
             start={node.stage.startTimeMillis}
+            paused={node.stage.pauseLiveTotal}
           />
         </div>
+        {causeOfBlockage && <div>{causeOfBlockage}</div>}
       </div>
     );
   } else {
@@ -159,7 +151,9 @@ export function Node({
         <LiveTotal
           total={node.stage.totalDurationMillis}
           start={node.stage.startTimeMillis}
+          paused={node.stage.pauseLiveTotal}
         />
+        {causeOfBlockage && <div>{causeOfBlockage}</div>}
       </div>
     );
   }
@@ -174,6 +168,8 @@ export function Node({
             onClick={(e) => {
               if (onStageSelect) {
                 e.preventDefault();
+                history.replaceState({}, "", e.currentTarget.href);
+
                 onStageSelect(String(node.stage.id));
               }
             }}

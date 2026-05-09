@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+  <p>You can mark specific pipeline steps as hidden from the view by wrapping them with the <code>hideFromView</code> step.</p>
+
+  <p>In the stage filter you can toggle hiding and showing hidden steps, they are hidden by default.</p>
+
+</j:jelly>

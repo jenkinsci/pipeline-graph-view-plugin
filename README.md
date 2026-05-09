@@ -1,6 +1,6 @@
 # Pipeline Graph View Plugin
 
-[![Build Status](https://ci.jenkins.io/job/Plugins/job/pipeline-graph-view-plugin/job/main/badge/icon)](https://ci.jenkins.io/job/Plugins/job/pipeline-graph-view-plugin/job/main/)
+[![Build Status](https://ci.jenkins.io/buildStatus/icon?job=Plugins%2Fpipeline-graph-view-plugin%2Fmain)](https://ci.jenkins.io/job/Plugins/job/pipeline-graph-view-plugin/job/main/)
 [![Gitter](https://badges.gitter.im/jenkinsci/ux-sig.svg)](https://gitter.im/jenkinsci/ux-sig?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Jenkins Plugin](https://img.shields.io/jenkins/plugin/v/pipeline-graph-view.svg)](https://plugins.jenkins.io/pipeline-graph-view)
 [![Jenkins Plugin Installs](https://img.shields.io/jenkins/plugin/i/pipeline-graph-view.svg?color=blue)](https://plugins.jenkins.io/pipeline-graph-view)
@@ -18,6 +18,7 @@ This plugin adds a visual representation of Jenkins pipelines, showing each stag
 - View logs in real time without leaving the interface
 - Toggle between graph and stage views; move and resize panes to suit your workflow
 - Quickly access details of each step and its results
+- Hide specific steps from view using the `hideFromView` Pipeline DSL step
 - Designed for better readability and faster troubleshooting
 
 ## Getting started
@@ -25,6 +26,8 @@ This plugin adds a visual representation of Jenkins pipelines, showing each stag
 1. Install the [Pipeline Graph View](https://plugins.jenkins.io/pipeline-graph-view/) plugin
 2. Go to some pipeline build page (not the job page)
 3. Click _Pipeline Overview_
+
+Hidden steps are not displayed by default in the Pipeline Overview, but can be toggled visible using the filter controls.
 
 ## Screenshots
 
@@ -41,6 +44,31 @@ Semi-complex pipeline:
 See a live demonstration from a Jenkins Contributor Summit:
 
 [![Demo of Pipeline Graph View plugin](https://img.youtube.com/vi/MBI3MBY2eJ8/0.jpg)](https://www.youtube.com/watch?v=MBI3MBY2eJ8&t=3295 "Pipeline Graph View plugin")
+
+## Pipeline DSL Extensions
+
+### Hiding Steps from View
+
+You can mark specific pipeline steps as hidden from the view by wrapping them with the `hideFromView` step:
+
+```groovy
+pipeline {
+    agent any
+    stages {
+        stage('Build') {
+            steps {
+                echo "This step is visible"
+
+                hideFromView {
+                    echo "This step is hidden by default"
+                }
+
+                echo "This step is also visible"
+            }
+        }
+    }
+}
+```
 
 ## REST API
 

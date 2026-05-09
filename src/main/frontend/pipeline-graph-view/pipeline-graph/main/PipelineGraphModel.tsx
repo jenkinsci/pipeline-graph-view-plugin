@@ -121,7 +121,6 @@ export type LayoutInfo = typeof defaultLayout;
  */
 export interface PositionedGraph {
   nodes: Array<NodeInfo>;
-  nodeColumns: Array<NodeColumn>;
   connections: Array<CompositeConnection>;
   bigLabels: Array<NodeLabelInfo>;
   timings: Array<NodeLabelInfo>;

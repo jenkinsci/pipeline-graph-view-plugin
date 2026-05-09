@@ -1,7 +1,6 @@
 import { CSSProperties, memo } from "react";
 
 import LiveTotal from "../../../../common/utils/live-total.tsx";
-import { sequentialStagesLabelOffset } from "../PipelineGraphLayout.ts";
 import { LayoutInfo, NodeLabelInfo } from "../PipelineGraphModel.tsx";
 import { TooltipLabel } from "./convertLabelToTooltip.tsx";
 import { nodeStrokeWidth } from "./StatusIcons.tsx";
@@ -211,7 +210,7 @@ function SequentialContainerLabelImpl({
     lineHeight,
     marginTop: `-${lineHeight / 2}em`,
     position: "absolute" as const,
-    maxWidth: sequentialStagesLabelOffset,
+    maxWidth: layout.nodeSpacingH,
     overflow: "hidden",
     textOverflow: "ellipsis",
     background: "var(--card-background)",

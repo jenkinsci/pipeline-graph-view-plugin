@@ -175,6 +175,14 @@
 .pgv-sticky-sidebar {
   position: sticky;
   top: calc(var(--pgv-header-height) + var(--section-padding));
+  max-height: calc(
+    100vh -
+      (
+        var(--pgv-header-height) + var(--section-padding) +
+          var(--section-padding)
+      )
+  );
+  overflow-y: auto;
 }
 
 .pgv-skeleton-column {

@@ -64,9 +64,14 @@ export function PipelineGraph({
 
     const apply = (width: number) => {
       if (width <= 0) return;
+      const reservedSpace =
+        fullLayout.nodeSpacingH / 2 + // before start
+        fullLayout.nodeSpacingH * 0.7 + // start node with reduced spacing
+        -fullLayout.nodeSpacingH * 0.3 + // reduced spacing to end node
+        fullLayout.nodeSpacingH / 2; // after end;
       const next = Math.max(
         MIN_COLUMNS_WHEN_COLLAPSED,
-        Math.floor(width / fullLayout.nodeSpacingH) - 2,
+        Math.floor((width - reservedSpace) / fullLayout.nodeSpacingH),
       );
       setMaxColumnsWhenCollapsed((prev) => (prev === next ? prev : next));
     };

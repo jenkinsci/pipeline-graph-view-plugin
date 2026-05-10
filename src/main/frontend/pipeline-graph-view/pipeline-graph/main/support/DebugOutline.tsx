@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import Tooltip from "../../../../common/components/tooltip.tsx";
 import { GraphNode, LayoutInfo } from "../PipelineGraphModel.tsx";
@@ -10,6 +10,19 @@ interface DebugOutlineProps {
 
 export function DebugOutline({ node, layout }: DebugOutlineProps) {
   const [visible, setVisible] = useState(true);
+  const timeoutRef = useRef<number>(0);
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
+  const hide = useCallback(() => {
+    setVisible(false);
+    clearTimeout(timeoutRef.current);
+    timeoutRef.current = window.setTimeout(() => {
+      setVisible(true);
+    }, 10_000);
+  }, []);
   if (!visible) return null;
   return (
     <>
@@ -23,10 +36,7 @@ export function DebugOutline({ node, layout }: DebugOutlineProps) {
           stroke={"red"}
           fill="red"
           fillOpacity={0.1}
-          onClick={() => {
-            setVisible(false);
-            setTimeout(() => setVisible(true), 10_000);
-          }}
+          onClick={hide}
         />
       </Tooltip>
       {node.shiftX > 0 && (
@@ -41,10 +51,7 @@ export function DebugOutline({ node, layout }: DebugOutlineProps) {
             stroke={"blue"}
             fill="blue"
             fillOpacity={0.075}
-            onClick={() => {
-              setVisible(false);
-              setTimeout(() => setVisible(true), 10_000);
-            }}
+            onClick={hide}
           />
         </Tooltip>
       )}
@@ -60,10 +67,7 @@ export function DebugOutline({ node, layout }: DebugOutlineProps) {
             stroke={"green"}
             fill="green"
             fillOpacity={0.075}
-            onClick={() => {
-              setVisible(false);
-              setTimeout(() => setVisible(true), 10_000);
-            }}
+            onClick={hide}
           />
         </Tooltip>
       )}
@@ -78,10 +82,7 @@ export function DebugOutline({ node, layout }: DebugOutlineProps) {
           stroke={"black"}
           fill="black"
           fillOpacity={0.075}
-          onClick={() => {
-            setVisible(false);
-            setTimeout(() => setVisible(true), 10_000);
-          }}
+          onClick={hide}
         />
       </Tooltip>
     </>

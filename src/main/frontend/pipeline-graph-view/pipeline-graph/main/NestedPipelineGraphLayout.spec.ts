@@ -75,7 +75,7 @@ function leanEdge(full: ConnectionEdge): ConnectionEdge {
     key: full.key,
     type: full.type,
   };
-  // Cherry-pick truely fields that are relevant for connections.
+  // Cherry-pick truthy fields that are relevant for connections.
   if (full.firstChildIsSkipped) lean.firstChildIsSkipped = true;
   if (full.isHidden) lean.isHidden = true;
   if (full.isParallel) lean.isParallel = true;

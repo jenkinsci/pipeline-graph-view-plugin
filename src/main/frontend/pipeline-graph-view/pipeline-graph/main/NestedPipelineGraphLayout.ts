@@ -317,7 +317,7 @@ function computePositions(
         yP += child.shiftY;
       }
       yP += child.height;
-      // Shift small childrean close to center, prefer closer to start than end.
+      // Shift small children close to center, prefer closer to start than end.
       childExtraXp = floorToMultipleOf(
         (node.width - extraXp - child.width) / 2,
         layout.nodeSpacingH,

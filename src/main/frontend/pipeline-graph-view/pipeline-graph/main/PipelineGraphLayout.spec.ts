@@ -2,11 +2,7 @@ import { describe, expect } from "vitest";
 
 import { DEFAULT_LOCALE } from "../../../common/i18n/index.ts";
 import { defaultMessages } from "../../../common/i18n/messages.ts";
-import {
-  CounterNodeInfo,
-  createNodeColumns,
-  layoutGraph,
-} from "./PipelineGraphLayout.ts";
+import { createNodeColumns, layoutGraph } from "./PipelineGraphLayout.ts";
 import {
   LayoutInfo,
   Result,
@@ -440,9 +436,7 @@ describe("PipelineGraphLayout", () => {
         );
 
       const counterFor = (graph: ReturnType<typeof callLayout>) => {
-        return graph.nodes.find(
-          (node) => node.key === "counter-node",
-        ) as CounterNodeInfo;
+        return graph.nodes.find((node) => node.type === "counter");
       };
 
       it("uses the default threshold of 13 when no override is provided", () => {

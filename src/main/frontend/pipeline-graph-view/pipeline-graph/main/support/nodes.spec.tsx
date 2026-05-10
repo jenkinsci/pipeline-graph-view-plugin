@@ -3,8 +3,13 @@ import { describe, expect, it } from "vitest";
 
 import { DEFAULT_LOCALE } from "../../../../common/i18n/index.ts";
 import { defaultMessages } from "../../../../common/i18n/messages.ts";
-import { CounterNodeInfo, layoutGraph } from "../PipelineGraphLayout.ts";
-import { LayoutInfo, Result, StageInfo } from "../PipelineGraphModel.tsx";
+import { layoutGraph } from "../PipelineGraphLayout.ts";
+import {
+  CounterNodeInfo,
+  LayoutInfo,
+  Result,
+  StageInfo,
+} from "../PipelineGraphModel.tsx";
 import { Node } from "./nodes.tsx";
 
 describe("Counter node with 50+ parallel stages", () => {
@@ -55,9 +60,7 @@ describe("Counter node with 50+ parallel stages", () => {
       maxColumns,
     );
   const counterFor = (graph: ReturnType<typeof buildGraphWithManyStages>) => {
-    return graph.nodes.find(
-      (node) => node.key === "counter-node",
-    ) as CounterNodeInfo;
+    return graph.nodes.find((node) => node.type === "counter");
   };
 
   describe("layout with 50+ stages", () => {
@@ -65,23 +68,23 @@ describe("Counter node with 50+ parallel stages", () => {
       const graph = buildGraphWithManyStages(55, 5);
       const counter = counterFor(graph);
       expect(counter).toBeDefined();
-      expect(counter.stages.length).toBe(50);
+      expect(counter?.stages.length).toBe(50);
     });
 
     it("collapses 100 stages into a counter node with correct count", () => {
       const graph = buildGraphWithManyStages(100, 5);
       const counter = counterFor(graph);
       expect(counter).toBeDefined();
-      expect(counter.stages.length).toBe(95);
+      expect(counter?.stages.length).toBe(95);
     });
 
     it("counter node holds all stage references for 60 stages at default threshold", () => {
       const graph = buildGraphWithManyStages(60, 13);
       const counter = counterFor(graph);
       expect(counter).toBeDefined();
-      expect(counter.stages.length).toBe(47);
+      expect(counter?.stages.length).toBe(47);
       // Each stage should retain its identity
-      counter.stages.forEach((stage) => {
+      counter?.stages.forEach((stage) => {
         expect(stage.name).toMatch(/^Stage \d+$/);
         expect(stage.url).toContain("selected-node=");
       });

@@ -9,7 +9,6 @@ import {
 import Tooltip from "../../../../common/components/tooltip.tsx";
 import { classNames } from "../../../../common/utils/classnames.ts";
 import LiveTotal from "../../../../common/utils/live-total.tsx";
-import { CounterNodeInfo } from "../PipelineGraphLayout.ts";
 import { LayoutInfo, NodeInfo, StageInfo } from "../PipelineGraphModel.tsx";
 
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck
@@ -31,11 +30,9 @@ function NodeImpl({ node, collapsed, onStageSelect, isSelected }: NodeProps) {
 
   if (node.isPlaceholder) {
     if (node.type === "counter") {
-      const mappedNode = node as CounterNodeInfo;
-
       const tooltip = (
         <ol className="pgv-node__counter-tooltip">
-          {mappedNode.stages.map((stage) => (
+          {node.stages.map((stage) => (
             <li key={stage.id}>
               <a
                 className={"jenkins-button jenkins-button--tertiary"}
@@ -69,7 +66,7 @@ function NodeImpl({ node, collapsed, onStageSelect, isSelected }: NodeProps) {
             className={"PWGx-pipeline-node"}
           >
             <span className={"PWGx-pipeline-node-counter"}>
-              {mappedNode.stages.length}
+              {node.stages.length}
             </span>
           </div>
         </Tooltip>

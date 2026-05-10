@@ -1,18 +1,16 @@
 import { LocalizedMessageKey, Messages } from "../../../common/i18n/index.ts";
 import {
   CompositeConnection,
+  CounterNodeInfo,
   LayoutInfo,
   NodeColumn,
   NodeInfo,
   NodeLabelInfo,
-  PlaceholderNodeInfo,
   PositionedGraph,
   Result,
   StageInfo,
   StageNodeInfo,
 } from "./PipelineGraphModel.tsx";
-
-export const sequentialStagesLabelOffset = 80;
 
 export const DEFAULT_MAX_COLUMNS_WHEN_COLLAPSED = 13;
 
@@ -35,7 +33,6 @@ export function layoutGraph(
   maxColumnsWhenCollapsed: number = DEFAULT_MAX_COLUMNS_WHEN_COLLAPSED,
 ): PositionedGraph {
   const stageNodeColumns = createNodeColumns(newStages);
-  const { nodeSpacingH, ypStart } = layout;
 
   const startNode: NodeInfo = {
     x: 0,
@@ -116,11 +113,10 @@ export function layoutGraph(
     const result = [start, ...visibleNodes];
 
     if (hiddenNodes.length > 0) {
-      (counter.rows[0][0] as CounterNodeInfo).stages = hiddenNodes.flatMap(
-        (node) =>
-          node.rows.flatMap((row) =>
-            row.flatMap((e) => (e as StageNodeInfo).stage),
-          ),
+      counterNode.stages = hiddenNodes.flatMap((node) =>
+        node.rows.flatMap((row) =>
+          row.flatMap((e) => (e as StageNodeInfo).stage),
+        ),
       );
       result.push(counter);
     }
@@ -137,31 +133,29 @@ export function layoutGraph(
 
   positionNodes(allNodeColumns, layout);
 
-  const bigLabels = createBigLabels(allNodeColumns, collapsed, showNames);
+  const bigLabels = createBigLabels(
+    allNodeColumns,
+    collapsed,
+    showNames,
+    layout,
+  );
   const timings = createTimings(allNodeColumns, collapsed, showDurations);
   const smallLabels = createSmallLabels(allNodeColumns, collapsed);
   const branchLabels = createBranchLabels(allNodeColumns, collapsed);
   const connections = createConnections(allNodeColumns, collapsed);
 
-  // Calculate the size of the graph
-  let measuredWidth = 0;
-  let measuredHeight = 60;
-
-  for (const column of allNodeColumns) {
-    for (const row of column.rows) {
-      for (const node of row) {
-        measuredWidth = Math.max(measuredWidth, node.x + nodeSpacingH / 2);
-        measuredHeight =
-          collapsed && !showNames && !showDurations
-            ? 60
-            : Math.max(measuredHeight, node.y + ypStart);
-      }
-    }
-  }
-
   const nodes = allNodeColumns.flatMap((column) =>
     column.rows.flatMap((row) => row),
   );
+
+  // Calculate the size of the graph
+  let measuredWidth = 0;
+  let measuredHeight = 0;
+  for (const node of nodes) {
+    measuredWidth = Math.max(measuredWidth, node.x + layout.nodeSpacingH / 2);
+    measuredHeight = Math.max(measuredHeight, node.y + layout.nodeSpacingV);
+  }
+
   return {
     nodes,
     connections,
@@ -172,10 +166,6 @@ export function layoutGraph(
     measuredWidth,
     measuredHeight,
   };
-}
-
-export interface CounterNodeInfo extends PlaceholderNodeInfo {
-  stages: StageInfo[];
 }
 
 /**
@@ -199,6 +189,7 @@ export function createNodeColumns(
       seqContainerName,
       isPlaceholder: false,
       key: "n_" + stage.id,
+      type: "stage",
     };
   };
 
@@ -293,7 +284,7 @@ function positionNodes(
       // Advance X position
       if (previousTopNode.isPlaceholder || topNode.isPlaceholder) {
         // Don't space placeholder nodes (start/end) as wide as normal.
-        if (topNode.key === "counter-node") {
+        if (topNode.type === "counter") {
           xp += nodeSpacingH;
         } else {
           xp += Math.floor(nodeSpacingH * 0.7);
@@ -312,7 +303,7 @@ function positionNodes(
 
     // Make room for row labels
     if (column.hasBranchLabels) {
-      xp += sequentialStagesLabelOffset;
+      xp += nodeSpacingH;
     }
 
     let maxX = xp;
@@ -348,6 +339,7 @@ function createBigLabels(
   columns: Array<NodeColumn>,
   collapsed: boolean,
   showNames: boolean,
+  layout: LayoutInfo,
 ): Array<NodeLabelInfo> {
   const labels: Array<NodeLabelInfo> = [];
 
@@ -358,7 +350,7 @@ function createBigLabels(
   for (const column of columns) {
     const node = column.rows[0][0];
 
-    if (node.isPlaceholder && node.type === "counter") {
+    if (node.type === "counter") {
       continue;
     }
     const stage = column.topStage;
@@ -368,7 +360,7 @@ function createBigLabels(
     // bigLabel is located above center of column, but offset if there's branch labels
     let x = column.centerX;
     if (column.hasBranchLabels) {
-      x += Math.floor(sequentialStagesLabelOffset / 2);
+      x += Math.floor(layout.nodeSpacingH / 2);
     }
 
     labels.push({

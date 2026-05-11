@@ -68,21 +68,25 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
             if (this.nodesToRemap != null) {
                 return this.nodesToRemap;
             }
+            Map<String, Integer> childrenCount = new HashMap<>();
+            for (FlowNodeWrapper node : pipelineNodesList) {
+                for (FlowNodeWrapper parent : node.getParents()) {
+                    int prev = childrenCount.getOrDefault(parent.getId(), 0);
+                    childrenCount.put(parent.getId(), prev + 1);
+                }
+            }
             // Get a map of nodes to remap. The first id is the node to map from, the second
-            // is the node to
-            // map to.
-            // Most of the logic here is to recreate old behavior - it might not be to
-            // everyone's liking.
+            // is the node to map to.
+            // Most of the logic here is to recreate old behavior - it might not be to everyone's liking.
             Map<String, String> nodesToRemap = new HashMap<>();
             for (int i = pipelineNodesList.size() - 1; i >= 0; i--) {
                 FlowNodeWrapper node = pipelineNodesList.get(i);
                 for (FlowNodeWrapper parent : node.getParents()) {
-                    // Parallel Start Nodes that have a Stage with the same name as a parent will be
-                    // mapped to that
-                    // parent stage
-                    // id.
+                    // Parallel Start Nodes that have a Stage as the parent and are the only child will be mapped to
+                    // that parent.
                     if (node.getType() == FlowNodeWrapper.NodeType.PARALLEL_BLOCK
-                            && parent.getType() == FlowNodeWrapper.NodeType.STAGE) {
+                            && parent.getType() == FlowNodeWrapper.NodeType.STAGE
+                            && childrenCount.get(parent.getId()) == 1) {
                         if (isDebugEnabled) {
                             logger.debug(
                                     "getNodesToRemap => Found Parallel block {id: {}, name: {}, type: {}} that has a Stage {id: {}, name: {}, type: {}} as a parent. Adding to remap list.",
@@ -98,10 +102,10 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
                         continue;
                     }
                     // If the node has a parent which is a parallel branch, with the same name and
-                    // has only one child (this node)
-                    // then remap child nodes to that parent. This removes some superfluous stages
-                    // in parallel branches.
+                    // has only one child (this node) then remap child nodes to that parent.
+                    // This removes some superfluous stages in parallel branches.
                     if (parent.getType() == FlowNodeWrapper.NodeType.PARALLEL
+                            && childrenCount.get(parent.getId()) == 1
                             && node.getDisplayName().equals(parent.getDisplayName())) {
                         if (isDebugEnabled) {
                             logger.debug(

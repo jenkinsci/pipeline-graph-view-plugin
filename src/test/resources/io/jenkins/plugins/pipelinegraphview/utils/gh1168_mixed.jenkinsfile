@@ -1,0 +1,34 @@
+pipeline {
+    agent none
+
+    stages {
+        stage('top-level') {
+            steps {
+                script {
+                    stage ("config") {
+                        echo "config"
+                    }
+                    def tasks = [
+                        'stage 1': {
+                            stage("hello") {
+                                echo "Hello 1"
+                            }
+                            stage("world") {
+                                echo "world 1"
+                            }
+                        },
+                        'stage 2': {
+                            stage("hello") {
+                                echo "hello 2"
+                            }
+                            stage("world") {
+                                echo "world 2"
+                            }
+                        }
+                        ]
+                    parallel tasks
+                }
+            }
+        }
+    }
+}

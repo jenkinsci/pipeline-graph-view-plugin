@@ -4,7 +4,8 @@
 */
 buildPlugin(
   useContainerAgent: true, // Set to `false` if you need to use Docker for containerized tests
+  forkCount: '1C',
   configurations: [
     [platform: 'linux', jdk: 25],
-    [platform: 'windows', jdk: 21],
+    [platform: 'linux', jdk: 21],
 ])

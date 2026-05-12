@@ -629,4 +629,80 @@ class PipelineGraphApiTest {
             await().until(() -> run, completed());
         }
     }
+
+    @Issue("GH#771")
+    @Test
+    void wrapParallelStagesInParallelBlock771() throws Exception {
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "gh771", "gh771_non_wrapped_parallel.jenkinsfile", Result.SUCCESS);
+
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
+
+        assertThat(stages.size(), equalTo(2));
+        // One
+        PipelineStage one = stages.get(0);
+        assertThat(one.type, equalTo("STAGE"));
+        assertThat(one.name, equalTo("one"));
+
+        // One -> 1st parallel
+        List<PipelineStage> childrenOne = one.children;
+        assertThat(childrenOne.size(), equalTo(2));
+        assertThat(childrenOne.get(0).type, equalTo("PARALLEL_BLOCK"));
+        List<PipelineStage> childrenOne1 = childrenOne.get(0).children;
+        assertThat(childrenOne1.get(0).name, equalTo("branch 1.1"));
+        assertThat(childrenOne1.get(1).name, equalTo("branch 1.2"));
+
+        // One -> 2nd parallel
+        assertThat(childrenOne.get(1).type, equalTo("PARALLEL_BLOCK"));
+        List<PipelineStage> childrenOne2 = childrenOne.get(1).children;
+        assertThat(childrenOne2.get(0).name, equalTo("branch 2.1"));
+        assertThat(childrenOne2.get(1).name, equalTo("branch 2.2"));
+
+        // Two
+        PipelineStage two = stages.get(1);
+        assertThat(two.type, equalTo("STAGE"));
+        assertThat(two.name, equalTo("two"));
+
+        // Two -> 1st parallel
+        List<PipelineStage> childrenTwo = two.children;
+        assertThat(childrenTwo.size(), equalTo(2));
+        assertThat(childrenTwo.get(0).name, equalTo("branch 3.1"));
+        assertThat(childrenTwo.get(1).name, equalTo("branch 3.2"));
+    }
+
+    @Issue("GH#1168")
+    @Test
+    void wrapParallelStagesInParallelBlock1168() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(j, "gh1168", "gh1168_mixed.jenkinsfile", Result.SUCCESS);
+
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
+
+        assertThat(stages.size(), equalTo(1));
+        // top-level
+        PipelineStage topLevel = stages.get(0);
+        assertThat(topLevel.type, equalTo("STAGE"));
+        assertThat(topLevel.name, equalTo("top-level"));
+        assertThat(topLevel.children.size(), equalTo(2));
+
+        // config
+        PipelineStage config = topLevel.children.get(0);
+        assertThat(config.type, equalTo("STAGE"));
+        assertThat(config.name, equalTo("config"));
+        assertThat(config.children.size(), equalTo(0));
+
+        // actual parallel
+        PipelineStage parallelBlock = topLevel.children.get(1);
+        assertThat(parallelBlock.type, equalTo("PARALLEL_BLOCK"));
+        assertThat(parallelBlock.children.size(), equalTo(2));
+
+        // stage 1
+        PipelineStage stage1 = parallelBlock.children.get(0);
+        assertThat(stage1.type, equalTo("PARALLEL"));
+        assertThat(stage1.name, equalTo("stage 1"));
+
+        // stage 2
+        PipelineStage stage2 = parallelBlock.children.get(1);
+        assertThat(stage2.type, equalTo("PARALLEL"));
+        assertThat(stage2.name, equalTo("stage 2"));
+    }
 }

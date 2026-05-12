@@ -1,0 +1,21 @@
+node("built-in") {
+    stage("one") {
+        parallel "branch 1.1": {
+            echo "branch 1.1"
+        }, "branch 1.2": {
+            echo "branch 1.2"
+        }
+        parallel "branch 2.1": {
+            echo "branch 2.1"
+        }, "branch 2.2": {
+            echo "branch 2.2"
+        }
+    }
+    stage("two") {
+        parallel "branch 3.1": {
+            echo "branch 3.1"
+        }, "branch 3.2": {
+            echo "branch 3.2"
+        }
+    }
+}

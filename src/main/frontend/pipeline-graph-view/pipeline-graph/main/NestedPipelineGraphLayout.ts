@@ -56,7 +56,7 @@ export function nestedGraphLayout(
       maxColumnsWhenCollapsed,
     );
   } else {
-    buildGraphNested(root, stages, layout);
+    buildGraphNested(root, stages, layout, false);
   }
 
   root.y = Math.max(
@@ -117,7 +117,10 @@ function roundToMultipleOf(n: number, multiple: number): number {
 function centerOfNode(node: GraphNode, layout: LayoutInfo) {
   return (
     node.x +
-    roundToMultipleOf(node.width / 2, layout.nodeSpacingH / 2) -
+    roundToMultipleOf(
+      (node.width - (node.hasStageEnd ? layout.nodeSpacingH / 2 : 0)) / 2,
+      layout.nodeSpacingH / 2,
+    ) -
     layout.nodeSpacingH / 2
   );
 }
@@ -195,9 +198,11 @@ function buildGraphNested(
   node: GraphNode,
   stages: StageInfo[],
   layout: LayoutInfo,
+  isLast: boolean,
 ) {
   if (node.isSkipped || stages.length === 0) return;
-  for (let stage of stages) {
+  for (let [idx, stage] of stages.entries()) {
+    const isLast = idx === stages.length - 1;
     const isParallel = stage.type === "PARALLEL";
     const hasChildren = stage.children.length > 0;
     let hasParallel = hasChildren && stage.children[0].type === "PARALLEL";
@@ -231,6 +236,7 @@ function buildGraphNested(
     const isHidden = hasBranchLabel || hasParallel || isChainedParallel;
     const hasBigLabel =
       hasParallel ||
+      (stage.type === "STAGE" && hasChildren && !hasBranchLabel) ||
       // Do not add a big label to parallel skipped stages. Only use one when we show a "skipped", curved connection.
       (isSkipped && !isParallel);
     const hasSmallLabel = !isHidden && !hasBigLabel;
@@ -245,7 +251,7 @@ function buildGraphNested(
       hasSmallLabel,
       firstChildIsSkipped,
     };
-    buildGraphNested(childNode, stage.children, layout);
+    buildGraphNested(childNode, stage.children, layout, isLast);
     if (hasBigLabel) childNode.shiftY += layout.labelOffsetV;
     if (
       isChainedParallel ||
@@ -274,11 +280,11 @@ function buildGraphNested(
     node.shiftY = maxGraphNodeProp(node, "shiftY");
   }
   const last = node.children[node.children.length - 1];
-  if (
+  node.hasStageEnd =
     !node.hasParallel &&
-    (last.isSkipped || last.hasParallel) &&
-    node.type !== "root"
-  ) {
+    (isLast || node.isParallel) &&
+    (last.isSkipped || last.hasParallel);
+  if (node.hasStageEnd) {
     // - Add a dummy node to "close" the skipped curve before closing the stage.
     // - Add a dummy node to "close" the parallel curve of the child.
     // In both cases, the dummy node will be the new stage end that is connected to the next node.
@@ -517,7 +523,7 @@ function printDebugInfo(
   );
   console.log("newStages", newStages);
   for (const node of nodes) {
-    removeFalselyGraphNodeFields(node);
+    removeFalseOptionalGraphNodeFlags(node);
   }
   console.log("graph root", root);
   console.table(
@@ -551,13 +557,21 @@ function printDebugInfo(
   );
 }
 
-export function removeFalselyGraphNodeFields(node: GraphNode) {
+export function removeFalseOptionalGraphNodeFlags(node: GraphNode) {
+  if (!node.firstChildIsSkipped) delete node.firstChildIsSkipped;
+  if (!node.hasBigLabel) delete node.hasBigLabel;
+  if (!node.hasBranchLabel) delete node.hasBranchLabel;
+  if (!node.hasParallel) delete node.hasParallel;
+  if (!node.hasSmallLabel) delete node.hasSmallLabel;
+  if (!node.hasStageEnd) delete node.hasStageEnd;
+  if (!node.isHidden) delete node.isHidden;
   if (!node.isParallel) delete node.isParallel;
   if (!node.isSkipped) delete node.isSkipped;
-  if (!node.isHidden) delete node.isHidden;
-  if (!node.hasParallel) delete node.hasParallel;
-  if (!node.hasBranchLabel) delete node.hasBranchLabel;
-  if (!node.hasBigLabel) delete node.hasBigLabel;
-  if (!node.hasSmallLabel) delete node.hasSmallLabel;
-  if (!node.firstChildIsSkipped) delete node.firstChildIsSkipped;
+
+  for (const [key, value] of Object.entries(node)) {
+    if (key === "isPlaceholder") continue; // isPlaceholder is required.
+    if (value === false) {
+      throw new Error(`Bug: Missed false flag: ${key} on node`);
+    }
+  }
 }

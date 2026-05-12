@@ -2,7 +2,7 @@ import { DEFAULT_LOCALE } from "../../../common/i18n/index.ts";
 import { defaultMessages } from "../../../common/i18n/messages.ts";
 import {
   nestedGraphLayout,
-  removeFalselyGraphNodeFields,
+  removeFalseOptionalGraphNodeFlags,
 } from "./NestedPipelineGraphLayout.ts";
 import {
   ConnectionEdge,
@@ -104,7 +104,7 @@ function trimGraphNode(node: GraphNode) {
     // Hide verbose input data.
     node.stage.children = [];
   }
-  removeFalselyGraphNodeFields(node);
+  removeFalseOptionalGraphNodeFlags(node);
 }
 
 /**

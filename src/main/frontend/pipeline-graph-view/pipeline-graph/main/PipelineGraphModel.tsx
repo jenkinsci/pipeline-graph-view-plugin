@@ -116,6 +116,7 @@ export type GraphNode = {
   hasParallel?: boolean;
   hasSmallLabel?: boolean;
   hasTiming?: boolean;
+  hasStageEnd?: boolean;
 } & NodeInfo;
 
 export interface NodeColumn {

@@ -27,6 +27,18 @@ describe("NestedPipelineGraphLayout", () => {
       });
     });
 
+    describe("gh771_non_wrapped_parallel.jenkinsfile", () => {
+      const raw =
+        '[{"name":"1","state":"success","id":"6","type":"STAGE","children":[{"name":"Parallel","state":"success","id":"7","type":"PARALLEL_BLOCK","children":[{"name":"branch 1.1","state":"success","id":"9","type":"PARALLEL","children":[]},{"name":"branch 1.2","state":"success","id":"10","type":"PARALLEL","children":[]}]},{"name":"Parallel","state":"success","id":"16","type":"PARALLEL_BLOCK","children":[{"name":"branch 2.1","state":"success","id":"18","type":"PARALLEL","children":[]},{"name":"branch 2.2","state":"success","id":"19","type":"PARALLEL","children":[]}]}]},{"name":"2","state":"success","id":"28","type":"STAGE","children":[{"name":"branch 3.1","state":"success","id":"31","type":"PARALLEL","children":[]},{"name":"branch 3.2","state":"success","id":"32","type":"PARALLEL","children":[]}]}]';
+
+      it("should render layout", () => {
+        shouldMatchSnapshot(raw, false);
+      });
+      it("should render collapsed layout", () => {
+        shouldMatchSnapshot(raw, true);
+      });
+    });
+
     describe("gh1155_complexSmokes.jenkinsfile", () => {
       const raw =
         '[{"name":"Non-Parallel Stage","state":"success","id":"6","type":"STAGE","children":[]},{"name":"Parallel Stage","state":"success","id":"11","type":"STAGE","children":[{"name":"Branch A","state":"success","id":"17","type":"PARALLEL","children":[]},{"name":"Skipped Branch B","state":"skipped","id":"18","type":"PARALLEL","children":[]},{"name":"Branch C","state":"success","id":"19","type":"PARALLEL","children":[{"name":"Nested 1 C","state":"success","id":"35","type":"STAGE","children":[]},{"name":"Nested 2 C","state":"success","id":"60","type":"STAGE","children":[]},{"name":"Skipped stage c nested 3","state":"skipped","id":"76","type":"STAGE","children":[]},{"name":"Skipped stage c nested 4","state":"skipped","id":"84","type":"STAGE","children":[]}]},{"name":"Branch D","state":"success","id":"20","type":"PARALLEL","children":[{"name":"Skipped stage d nested 1","state":"skipped","id":"37","type":"STAGE","children":[]},{"name":"Nested 2 D","state":"success","id":"55","type":"STAGE","children":[]}]},{"name":"Branch E","state":"success","id":"21","type":"PARALLEL","children":[{"name":"Skipped stage e nested 1","state":"skipped","id":"39","type":"STAGE","children":[]},{"name":"Nested 2 E","state":"success","id":"57","type":"STAGE","children":[]},{"name":"Nested 3 E","state":"success","id":"71","type":"STAGE","children":[]},{"name":"Nested 4 E","state":"success","id":"86","type":"STAGE","children":[]}]}]},{"name":"Skipped stage 1","state":"skipped","id":"103","type":"STAGE","children":[]},{"name":"Skipped stage 2","state":"skipped","id":"118","type":"STAGE","children":[]},{"name":"Parallel Stage 2","state":"success","id":"133","type":"STAGE","children":[{"name":"Branch A","state":"skipped","id":"137","type":"PARALLEL","children":[]},{"name":"Branch B","state":"success","id":"138","type":"PARALLEL","children":[]},{"name":"Branch C","state":"success","id":"139","type":"PARALLEL","children":[{"name":"Nested 1","state":"success","id":"149","type":"STAGE","children":[]},{"name":"Nested 2","state":"success","id":"160","type":"STAGE","children":[]}]}]}]';

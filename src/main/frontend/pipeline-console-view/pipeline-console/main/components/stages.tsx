@@ -2,6 +2,7 @@ import "./stages.scss";
 
 import { useCallback, useState } from "react";
 import {
+  ReactZoomPanPinchContextState,
   TransformComponent,
   TransformWrapper,
   useControls,
@@ -13,6 +14,8 @@ import { classNames } from "../../../../common/utils/classnames.ts";
 import { PipelineGraph } from "../../../../pipeline-graph-view/pipeline-graph/main/PipelineGraph.tsx";
 import { StageInfo } from "../../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import { StageViewPosition } from "../providers/user-preference-provider.tsx";
+
+const MAX_SCALE = 3;
 
 export default function Stages({
   stages,
@@ -31,18 +34,18 @@ export default function Stages({
     [onStageSelect],
   );
 
+  const [initialScale, setInitialScale] = useState(1);
+  const [minScale, setMinScale] = useState(0.75);
+
   return (
     <div
       className={classNames("pgv-stages-graph", {
         "pgv-stages-graph--left": stageViewPosition === StageViewPosition.LEFT,
         "pgv-stages-graph--dialog": isExpanded,
+        "pvg-stages-graph--spacing-top": onRunPage,
+        "pvg-stages-graph--spacing-right": !onRunPage && !isExpanded,
       })}
     >
-      {!onRunPage && (
-        <div className={"pgv-stages-graph__controls pgv-stages-graph__heading"}>
-          Graph
-        </div>
-      )}
       {onRunPage && (
         <a
           className={"pgv-stages-graph__controls pgv-stages-graph__heading"}
@@ -99,16 +102,19 @@ export default function Stages({
         </Tooltip>
       </div>
       <TransformWrapper
-        minScale={0.75}
-        maxScale={3}
+        initialScale={initialScale}
+        minScale={minScale}
+        maxScale={MAX_SCALE}
         wheel={{ activationKeys: isExpanded ? [] : ["Control"] }}
       >
-        <ZoomControls />
+        <ZoomControls initialScale={initialScale} minScale={minScale} />
 
         <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
           <PipelineGraph
             stages={stages}
             selectedStage={selectedStage}
+            setInitialScale={setInitialScale}
+            setMinScale={setMinScale}
             {...(onStageSelect && { onStageSelect: handleStageSelect })}
           />
         </TransformComponent>
@@ -125,25 +131,19 @@ interface StagesProps {
   onRunPage?: boolean;
 }
 
-function ZoomControls() {
-  const { zoomIn, zoomOut, resetTransform } = useControls();
-  const [buttonState, setButtonState] = useState({
-    zoomIn: false,
-    zoomOut: false,
-    reset: true,
-  });
+interface ZoomControlsProps {
+  initialScale: number;
+  minScale: number;
+}
 
-  useTransformEffect(({ state, instance }) => {
-    const cantZoomIn = state.scale >= instance.props.maxScale!;
-    const cantZoomOut = state.scale <= instance.props.minScale!;
-    const cantReset = state.scale === 1;
-
-    setButtonState({
-      zoomIn: cantZoomIn,
-      zoomOut: cantZoomOut,
-      reset: cantReset,
-    });
-  });
+function ZoomControls({ initialScale, minScale }: ZoomControlsProps) {
+  const { zoomIn, zoomOut, centerView } = useControls();
+  const [scale, setScale] = useState(initialScale);
+  const handleTransformEffect = useCallback(
+    (ref: ReactZoomPanPinchContextState) => setScale(ref.state.scale),
+    [],
+  );
+  useTransformEffect(handleTransformEffect);
 
   return (
     <div className="pgv-stages-graph__controls pgw-zoom-controls">
@@ -151,7 +151,7 @@ function ZoomControls() {
         <button
           className={"jenkins-button jenkins-button--tertiary"}
           onClick={() => zoomIn()}
-          disabled={buttonState.zoomIn}
+          disabled={scale >= MAX_SCALE}
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
             <path
@@ -169,7 +169,7 @@ function ZoomControls() {
         <button
           className={"jenkins-button jenkins-button--tertiary"}
           onClick={() => zoomOut()}
-          disabled={buttonState.zoomOut}
+          disabled={scale <= minScale}
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
             <path
@@ -186,8 +186,8 @@ function ZoomControls() {
       <Tooltip content={"Reset"}>
         <button
           className={"jenkins-button jenkins-button--tertiary"}
-          onClick={() => resetTransform()}
-          disabled={buttonState.reset}
+          onClick={() => centerView(initialScale)}
+          disabled={scale === initialScale}
         >
           <svg className="ionicon" viewBox="0 0 512 512">
             <path

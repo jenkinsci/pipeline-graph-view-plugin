@@ -51,6 +51,8 @@ export function PipelineGraph({
   selectedStage,
   collapsed,
   onStageSelect,
+  setMinScale,
+  setInitialScale,
 }: Props) {
   const fullLayout = useMemo(() => {
     return {
@@ -144,10 +146,50 @@ export function PipelineGraph({
     [selectedStage],
   );
 
+  const transform = useContext(TransformContext);
+  const [transformWidth, setTransformWidth] = useState<number>(0);
+  useEffect(() => {
+    if (!transform?.wrapperComponent) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setTransformWidth(entry.contentRect.width);
+      }
+    });
+    observer.observe(transform.wrapperComponent);
+    return () => observer.disconnect();
+  }, [transform?.wrapperComponent]);
+
+  const [fitToWidth, setFitToWidth] = useState(true);
+  useEffect(() => {
+    if (!setMinScale || !setInitialScale || !transform) return;
+    const initialScale = Math.min(1, transformWidth / measuredWidth);
+    const minScale = initialScale * 0.75;
+    setMinScale(minScale);
+    setInitialScale(initialScale);
+    if (fitToWidth) {
+      // Don't scale too small by default.
+      const autoScale = Math.max(initialScale, 0.5);
+      const centerOffset = Math.max(0, (transformWidth - measuredWidth) / 2);
+      if (
+        transform.state.scale !== autoScale ||
+        transform.state.positionX !== centerOffset
+      ) {
+        transform.setState(autoScale, centerOffset, 0);
+      }
+      return transform.onChange(() => setFitToWidth(false));
+    }
+  }, [
+    transform,
+    transformWidth,
+    fitToWidth,
+    measuredWidth,
+    setMinScale,
+    setInitialScale,
+  ]);
+
   // When inside a TransformWrapper, only mount the nodes/labels intersecting
   // the visible region. Mounting thousands of absolute-positioned divs forces
   // a synchronous layout flush that blocks the main thread for seconds.
-  const transform = useContext(TransformContext);
   const virtualize = transform != null;
   const [viewport, setViewport] = useState<Viewport | null>(null);
   const cachedViewport = useRef<Viewport | null>(null);
@@ -331,4 +373,6 @@ interface Props {
   selectedStage?: StageInfo;
   collapsed?: boolean;
   onStageSelect?: (nodeId: string) => void;
+  setMinScale?: (value: number) => void;
+  setInitialScale?: (value: number) => void;
 }

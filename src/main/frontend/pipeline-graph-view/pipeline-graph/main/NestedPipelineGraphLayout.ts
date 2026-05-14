@@ -22,7 +22,7 @@ export function nestedGraphLayout(
   showDurations: boolean,
   maxColumnsWhenCollapsed: number = DEFAULT_MAX_COLUMNS_WHEN_COLLAPSED,
 ): PositionedGraph {
-  const graphSpacingX = layout.nodeSpacingH / 2;
+  const graphSpacingX = layout.nodeSpacingH / 4;
   const startEndReducedSpacing = Math.floor(layout.nodeSpacingH * 0.3);
   const root: GraphNode = {
     ...baseGraphNode(layout),
@@ -59,10 +59,8 @@ export function nestedGraphLayout(
     buildGraphNested(root, stages, layout, false);
   }
 
-  root.y = Math.max(
-    layout.ypStart,
-    root.shiftY + (showNames ? layout.nodeRadius + layout.labelOffsetV : 0),
-  );
+  root.y =
+    root.shiftY + (showNames ? layout.nodeRadius + layout.labelOffsetV : 0);
   root.children.push({
     ...baseGraphNode(layout, showNames),
     width: graphSpacingX,
@@ -115,6 +113,7 @@ function roundToMultipleOf(n: number, multiple: number): number {
 }
 
 function centerOfNode(node: GraphNode, layout: LayoutInfo) {
+  if (node.isPlaceholder) return node.x;
   return (
     node.x +
     roundToMultipleOf(

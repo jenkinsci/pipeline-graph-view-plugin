@@ -232,7 +232,7 @@ function buildGraphNested(
       hasChildren &&
       // Do not add a branch label on the parent of a nested parallel. Instead, show a big label on the nested parallel block.
       !isChainedParallel;
-    const isHidden = hasBranchLabel || hasParallel || isChainedParallel;
+    const isHidden = hasBranchLabel || hasChildren || isChainedParallel;
     const hasBigLabel =
       hasParallel ||
       (stage.type === "STAGE" && hasChildren && !hasBranchLabel) ||

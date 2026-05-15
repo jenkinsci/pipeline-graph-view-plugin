@@ -1,0 +1,13 @@
+import org.jenkinsci.plugins.pipeline.modeldefinition.Utils
+
+stage("Wrapper") {
+    stage("Skipped 1") {
+        Utils.markStageSkippedForConditional(STAGE_NAME)
+    }
+    stage("Skipped 2") {
+        Utils.markStageSkippedForConditional(STAGE_NAME)
+    }
+}
+stage("Next") {
+    echo "next"
+}

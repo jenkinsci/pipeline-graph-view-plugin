@@ -405,7 +405,10 @@ function computeTailNodes(
     );
   }
   const last = node.children[node.children.length - 1];
-  if (last.isSkipped || skippedNodes.size > 0 || sourceNodes.size > 0) {
+  if (last.isSkipped) {
+    return [...sourceNodes, ...skippedNodes, last];
+  }
+  if (skippedNodes.size > 0 || sourceNodes.size > 0) {
     throw new Error("bug: buildGraphNested did not add trailing dummy node");
   }
   return computeTailNodes(connections, last);

@@ -1,3 +1,4 @@
+// Used by test snapshots in NestedPipelineGraphLayout.spec.ts, see comment there.
 import org.jenkinsci.plugins.pipeline.modeldefinition.Utils
 
 stage("Wrapper") {

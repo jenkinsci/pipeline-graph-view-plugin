@@ -1,3 +1,4 @@
+// Used by test snapshots in NestedPipelineGraphLayout.spec.ts, see comment there.
 stage('Top level') {
     // outer parallel: two branches
     parallel(

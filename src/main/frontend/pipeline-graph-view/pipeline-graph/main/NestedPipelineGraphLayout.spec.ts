@@ -1,3 +1,22 @@
+/**
+ * Snapshot tests for NestedPipelineGraphLayout
+ *
+ * The Jenkinsfiles for all the tests-suites below are located in "src/test/resources/io/jenkins/plugins/pipelinegraphview/utils".
+ *
+ * After making changes to the stages tree/data structure, consider loading up
+ * the pipelines and updating the "raw" snapshots below:
+ * 1. Create a new pipeline job for each of the pipelines listed below.
+ * 2. Trigger a new run for a pipeline.
+ * 3. Open the stages view with query flag "?debugPipelineGraph=1".
+ * 4. In the browser console, locate the JSON blob after "For test snapshot".
+ * 5. Copy and paste it into the "raw" snapshots below.
+ * 6. Go to 2. with the next pipeline.
+ *
+ * In case there are any changes, confirm visually that these are desired:
+ * Open the stages view before and after making the changes and compare them.
+ * In case the changes are desired, update the vitest snapshots.
+ */
+
 import { DEFAULT_LOCALE } from "../../../common/i18n/index.ts";
 import { defaultMessages } from "../../../common/i18n/messages.ts";
 import {

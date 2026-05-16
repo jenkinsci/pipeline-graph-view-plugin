@@ -1,3 +1,4 @@
+// Used by test snapshots in NestedPipelineGraphLayout.spec.ts, see comment there.
 node("built-in") {
     stage("one") {
         parallel "branch 1.1": {

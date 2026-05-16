@@ -3604,28 +3604,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
     {
       "destinationNodes": [
         {
-          "isHidden": true,
-          "key": "n_6",
-          "type": "stage",
-          "x": 133,
-          "y": 78,
-        },
-      ],
-      "hasBranchLabels": false,
-      "skippedNodes": [],
-      "sourceNodes": [
-        {
-          "isPlaceholder": true,
-          "key": "start-node",
-          "type": "start",
-          "x": 35,
-          "y": 78,
-        },
-      ],
-    },
-    {
-      "destinationNodes": [
-        {
           "isParallel": true,
           "key": "n_9",
           "type": "stage",
@@ -3644,10 +3622,10 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
       "skippedNodes": [],
       "sourceNodes": [
         {
-          "isHidden": true,
-          "key": "n_6",
-          "type": "stage",
-          "x": 133,
+          "isPlaceholder": true,
+          "key": "start-node",
+          "type": "start",
+          "x": 35,
           "y": 78,
         },
       ],
@@ -19816,29 +19794,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_all_skip
     {
       "destinationNodes": [
         {
-          "firstChildIsSkipped": true,
-          "isHidden": true,
-          "key": "n_4",
-          "type": "stage",
-          "x": 133,
-          "y": 78,
-        },
-      ],
-      "hasBranchLabels": false,
-      "skippedNodes": [],
-      "sourceNodes": [
-        {
-          "isPlaceholder": true,
-          "key": "start-node",
-          "type": "start",
-          "x": 35,
-          "y": 78,
-        },
-      ],
-    },
-    {
-      "destinationNodes": [
-        {
           "key": "n_16",
           "type": "stage",
           "x": 413,
@@ -19864,11 +19819,10 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_all_skip
       ],
       "sourceNodes": [
         {
-          "firstChildIsSkipped": true,
-          "isHidden": true,
-          "key": "n_4",
-          "type": "stage",
-          "x": 133,
+          "isPlaceholder": true,
+          "key": "start-node",
+          "type": "start",
+          "x": 35,
           "y": 78,
         },
       ],

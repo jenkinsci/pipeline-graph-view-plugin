@@ -363,6 +363,17 @@ function computeTailNodes(
   // Collect nodes in a Set. With two skipped nodes next to each other, we need to deduplicate them.
   const sourceNodes = new Set<GraphNode>();
   const skippedNodes = new Set<GraphNode>();
+  const resolveDestination = (node: GraphNode): GraphNode[] => {
+    if (node.hasParallel) {
+      // Connect directly to parallel children
+      return node.children;
+    }
+    if (node.children.length > 0) {
+      // Connect directly to 1st child, recusively resolve it.
+      return resolveDestination(node.children[0]);
+    }
+    return [node];
+  };
   const connect = (
     tailNodes: GraphNode[],
     destination: GraphNode,
@@ -375,9 +386,7 @@ function computeTailNodes(
         skippedNodes.add(node);
       }
     }
-    const destinationNodes = destination.hasParallel
-      ? destination.children // Connect directly to parallel children
-      : [destination];
+    const destinationNodes = resolveDestination(destination);
     if (!destinationNodes.some((n) => !n.isSkipped)) {
       for (const node of destinationNodes) skippedNodes.add(node);
       return;
@@ -391,7 +400,8 @@ function computeTailNodes(
     sourceNodes.clear();
     skippedNodes.clear();
   };
-  if (node.type !== "root") {
+  if (node.isParallel) {
+    // Non-parallel stages will have been connected already via resolveDestination.
     connect([node], node.children[0], true);
   }
   for (let i = 0; i < node.children.length - 1; i++) {

@@ -112,7 +112,6 @@ export type GraphNode = {
   firstChildIsSkipped?: boolean;
   hasBigLabel?: boolean;
   hasBranchLabel?: boolean;
-  hasChildWithBranchLabel?: boolean;
   hasParallel?: boolean;
   hasSmallLabel?: boolean;
   hasTiming?: boolean;

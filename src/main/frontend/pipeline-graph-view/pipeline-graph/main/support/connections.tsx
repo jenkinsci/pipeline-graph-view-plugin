@@ -136,7 +136,7 @@ export class GraphConnections extends Component {
       if (node.isHidden) return 0;
       return terminalRadius;
     }
-    if (node.isParallel && node.firstChildIsSkipped) {
+    if (node.firstChildIsSkipped) {
       // Turn half of the regular connecting line into a skipped line.
       if (edge === "right") return nodeSpacingH / 2;
       if (edge === "left") return -nodeSpacingH / 2;

@@ -219,13 +219,13 @@ function buildGraphNested(
     }
     const isChainedParallel =
       isParallel &&
-      stage.children.length === 1 &&
+      stage.children.length > 0 &&
       stage.children[0].children.length > 0 &&
       stage.children[0].children[0].type === "PARALLEL" &&
       stage.name === stage.children[0].name;
     const isSkipped = stage.state === Result.skipped;
     const firstChildIsSkipped =
-      hasChildren && stage.children[0].state === Result.skipped;
+      effectiveFirstChildStage(stage.children)?.state === Result.skipped;
 
     const hasBranchLabel =
       isParallel &&
@@ -302,6 +302,13 @@ function buildGraphNested(
   }
 }
 
+function effectiveFirstChildStage(children: StageInfo[]): StageInfo | null {
+  if (children.length === 0) return null;
+  if (children[0].type === "PARALLEL") return children[0];
+  if (children[0].children.length === 0) return children[0];
+  return effectiveFirstChildStage(children[0].children);
+}
+
 function computePositions(
   node: GraphNode,
   extraXp: number,
@@ -348,6 +355,17 @@ function computeConnections(node: GraphNode): CompositeConnection[] {
   return connections;
 }
 
+function resolveNestedSequentialGraphNode(node: GraphNode): GraphNode {
+  // This node is a leaf.
+  if (node.children.length === 0) return node;
+  // Parallel nesting: Connect directly to parallel children.
+  if (node.hasParallel) return node;
+  // Sequential nesting with first child skipped: Connect to parent (non-skipped) before starting the skipped curve.
+  if (node.firstChildIsSkipped) return node;
+  // Sequential nesting: Connect directly to 1st child, recursively resolve it.
+  return resolveNestedSequentialGraphNode(node.children[0]);
+}
+
 function computeTailNodes(
   connections: CompositeConnection[],
   node: GraphNode,
@@ -363,17 +381,6 @@ function computeTailNodes(
   // Collect nodes in a Set. With two skipped nodes next to each other, we need to deduplicate them.
   const sourceNodes = new Set<GraphNode>();
   const skippedNodes = new Set<GraphNode>();
-  const resolveDestination = (node: GraphNode): GraphNode[] => {
-    if (node.hasParallel) {
-      // Connect directly to parallel children
-      return node.children;
-    }
-    if (node.children.length > 0) {
-      // Connect directly to 1st child, recusively resolve it.
-      return resolveDestination(node.children[0]);
-    }
-    return [node];
-  };
   const connect = (
     tailNodes: GraphNode[],
     destination: GraphNode,
@@ -386,22 +393,26 @@ function computeTailNodes(
         skippedNodes.add(node);
       }
     }
-    const destinationNodes = resolveDestination(destination);
+    destination = resolveNestedSequentialGraphNode(destination);
+    const destinationNodes = destination.hasParallel
+      ? destination.children
+      : [destination];
     if (!destinationNodes.some((n) => !n.isSkipped)) {
       for (const node of destinationNodes) skippedNodes.add(node);
       return;
     }
+    if (!sourceNodes.size) throw new Error("bug: empty sourceNodes");
     connections.push({
       sourceNodes: Array.from(sourceNodes),
       destinationNodes,
       skippedNodes: Array.from(skippedNodes),
-      hasBranchLabels: destinationNodes.some((n) => n.hasBranchLabel),
+      hasBranchLabels: destination.shiftX > 0, // shift curved connections
     });
     sourceNodes.clear();
     skippedNodes.clear();
   };
-  if (node.isParallel) {
-    // Non-parallel stages will have been connected already via resolveDestination.
+  if (node.isParallel || node.firstChildIsSkipped) {
+    // See comments in resolveNestedSequentialGraphNode.
     connect([node], node.children[0], true);
   }
   for (let i = 0; i < node.children.length - 1; i++) {

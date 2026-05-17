@@ -19775,6 +19775,29 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_1st_skip
     {
       "destinationNodes": [
         {
+          "firstChildIsSkipped": true,
+          "isHidden": true,
+          "key": "n_4",
+          "type": "stage",
+          "x": 133,
+          "y": 78,
+        },
+      ],
+      "hasBranchLabels": false,
+      "skippedNodes": [],
+      "sourceNodes": [
+        {
+          "isPlaceholder": true,
+          "key": "start-node",
+          "type": "start",
+          "x": 35,
+          "y": 78,
+        },
+      ],
+    },
+    {
+      "destinationNodes": [
+        {
           "key": "n_10",
           "type": "stage",
           "x": 273,
@@ -19791,7 +19814,16 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_1st_skip
           "y": 78,
         },
       ],
-      "sourceNodes": [],
+      "sourceNodes": [
+        {
+          "firstChildIsSkipped": true,
+          "isHidden": true,
+          "key": "n_4",
+          "type": "stage",
+          "x": 133,
+          "y": 78,
+        },
+      ],
     },
     {
       "destinationNodes": [
@@ -19803,23 +19835,8 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_1st_skip
         },
       ],
       "hasBranchLabels": false,
-      "skippedNodes": [
-        {
-          "isSkipped": true,
-          "key": "n_6",
-          "type": "stage",
-          "x": 133,
-          "y": 78,
-        },
-      ],
+      "skippedNodes": [],
       "sourceNodes": [
-        {
-          "isPlaceholder": true,
-          "key": "start-node",
-          "type": "start",
-          "x": 35,
-          "y": 78,
-        },
         {
           "key": "n_10",
           "type": "stage",
@@ -22045,6 +22062,29 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_all_skip
     {
       "destinationNodes": [
         {
+          "firstChildIsSkipped": true,
+          "isHidden": true,
+          "key": "n_4",
+          "type": "stage",
+          "x": 133,
+          "y": 78,
+        },
+      ],
+      "hasBranchLabels": false,
+      "skippedNodes": [],
+      "sourceNodes": [
+        {
+          "isPlaceholder": true,
+          "key": "start-node",
+          "type": "start",
+          "x": 35,
+          "y": 78,
+        },
+      ],
+    },
+    {
+      "destinationNodes": [
+        {
           "key": "n_16",
           "type": "stage",
           "x": 413,
@@ -22070,10 +22110,11 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_all_skip
       ],
       "sourceNodes": [
         {
-          "isPlaceholder": true,
-          "key": "start-node",
-          "type": "start",
-          "x": 35,
+          "firstChildIsSkipped": true,
+          "isHidden": true,
+          "key": "n_4",
+          "type": "stage",
+          "x": 133,
           "y": 78,
         },
       ],

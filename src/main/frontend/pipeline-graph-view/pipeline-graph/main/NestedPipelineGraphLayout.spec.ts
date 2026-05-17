@@ -94,6 +94,30 @@ describe("NestedPipelineGraphLayout", () => {
       });
     });
 
+    describe("gh1286_wrapped_1st_skipped.jenkinsfile", () => {
+      const raw =
+        '[{"name":"Wrapper","state":"success","id":"4","type":"STAGE","children":[{"name":"Skipped 1","state":"skipped","id":"6","type":"STAGE","children":[]},{"name":"Not skipped","state":"success","id":"10","type":"STAGE","children":[]}]},{"name":"Next","state":"success","id":"17","type":"STAGE","children":[]}]';
+
+      it("should render layout", () => {
+        shouldMatchSnapshot(raw, false);
+      });
+      it("should render collapsed layout", () => {
+        shouldMatchSnapshot(raw, true);
+      });
+    });
+
+    describe("gh1286_wrapped_2nd_skipped.jenkinsfile", () => {
+      const raw =
+        '[{"name":"Wrapper","state":"success","id":"4","type":"STAGE","children":[{"name":"Not skipped","state":"success","id":"6","type":"STAGE","children":[]},{"name":"Skipped 1","state":"skipped","id":"11","type":"STAGE","children":[]}]},{"name":"Next","state":"success","id":"17","type":"STAGE","children":[]}]';
+
+      it("should render layout", () => {
+        shouldMatchSnapshot(raw, false);
+      });
+      it("should render collapsed layout", () => {
+        shouldMatchSnapshot(raw, true);
+      });
+    });
+
     describe("gh1286_wrapped_all_skipped.jenkinsfile", () => {
       const raw =
         '[{"name":"Wrapper","state":"success","id":"4","type":"STAGE","children":[{"name":"Skipped 1","state":"skipped","id":"6","type":"STAGE","children":[]},{"name":"Skipped 2","state":"skipped","id":"10","type":"STAGE","children":[]}]},{"name":"Next","state":"success","id":"16","type":"STAGE","children":[]}]';

@@ -221,8 +221,7 @@ class PipelineGraphViewNestedTest {
                 .displayNamesOnStageViewByDefault()
                 .save();
 
-        // With collapse enabled, nested stages should not appear in the graph,
-        // but the tree view still shows all stages for log access.
+        // Nested and parallel stages should be visible in the tree for log access.
         new PipelineJobPage(p, run.getParent())
                 .goTo()
                 .hasBuilds(1)

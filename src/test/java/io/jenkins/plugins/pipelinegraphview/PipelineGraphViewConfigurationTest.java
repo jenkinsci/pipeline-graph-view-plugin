@@ -26,8 +26,8 @@ class PipelineGraphViewConfigurationTest {
     }
 
     @Test
-    @ConfiguredWithCode("configure-appearance-collapse.yml")
-    void jcascLoadsCollapseNestedStages(JenkinsConfiguredWithCodeRule j) {
+    @ConfiguredWithCode("configure-appearance.yml")
+    void jcascLoadsAppearanceSettings(JenkinsConfiguredWithCodeRule j) {
         PipelineGraphViewConfiguration config = PipelineGraphViewConfiguration.get();
         assertTrue(config.isShowGraphOnBuildPage());
         assertTrue(config.isShowGraphOnJobPage());

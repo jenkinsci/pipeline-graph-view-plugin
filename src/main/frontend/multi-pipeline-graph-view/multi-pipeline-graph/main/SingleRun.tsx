@@ -19,9 +19,8 @@ import { useCollapsedStages } from "../../../pipeline-graph-view/pipeline-graph/
 import { RunInfo } from "./MultiPipelineGraphModel.ts";
 
 export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
-  const { run: runInfo } = useRunPoller({
-    currentRunPath: currentJobPath + run.id + "/",
-  });
+  const currentRunPath = currentJobPath + run.id + "/";
+  const { run: runInfo } = useRunPoller({ currentRunPath });
 
   function Changes() {
     const messages = useContext(I18NContext);
@@ -65,10 +64,7 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
   }
 
   const { effectiveStages, collapsedStageIds, toggleCollapseStage } =
-    useCollapsedStages(
-      "pgv.collapsedStages." + currentJobPath + run.id,
-      runInfo.stages,
-    );
+    useCollapsedStages("pgv.collapsedStages." + currentRunPath, runInfo.stages);
 
   return (
     <div className="pgv-single-run">

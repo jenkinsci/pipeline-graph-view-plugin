@@ -20,8 +20,6 @@
 import { DEFAULT_LOCALE } from "../../../common/i18n/index.ts";
 import { defaultMessages } from "../../../common/i18n/messages.ts";
 import {
-  collapseSelectiveStages,
-  collectParentStageIds,
   nestedGraphLayout,
   removeFalseOptionalGraphNodeFlags,
 } from "./NestedPipelineGraphLayout.ts";
@@ -34,6 +32,10 @@ import {
   Result,
   StageInfo,
 } from "./PipelineGraphModel.tsx";
+import {
+  collapseSelectiveStages,
+  collectParentStageIds,
+} from "./support/useCollapsedStages.ts";
 
 describe("NestedPipelineGraphLayout", () => {
   describe("nestedGraphLayout", () => {

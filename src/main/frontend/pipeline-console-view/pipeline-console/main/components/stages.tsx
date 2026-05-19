@@ -17,10 +17,7 @@ import {
 import { classNames } from "../../../../common/utils/classnames.ts";
 import { PipelineGraph } from "../../../../pipeline-graph-view/pipeline-graph/main/PipelineGraph.tsx";
 import { StageInfo } from "../../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
-import {
-  deriveBuildPath,
-  useCollapsedStages,
-} from "../../../../pipeline-graph-view/pipeline-graph/main/support/useCollapsedStages.ts";
+import { useCollapsedStages } from "../../../../pipeline-graph-view/pipeline-graph/main/support/useCollapsedStages.ts";
 import { StageViewPosition } from "../providers/user-preference-provider.tsx";
 
 const MAX_SCALE = 3;
@@ -31,6 +28,7 @@ export default function Stages({
   stageViewPosition,
   onStageSelect,
   onRunPage,
+  currentRunPath,
 }: StagesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -42,7 +40,7 @@ export default function Stages({
     hasCollapsibleStages,
     effectiveStages,
   } = useCollapsedStages(
-    "pgv.collapsedStages." + deriveBuildPath(),
+    "pgv.collapsedStages." + currentRunPath,
     stages,
     selectedStage?.id,
   );
@@ -159,6 +157,7 @@ interface StagesProps {
   stageViewPosition: StageViewPosition;
   onStageSelect?: (nodeId: string) => void;
   onRunPage?: boolean;
+  currentRunPath: string;
 }
 
 interface ZoomControlsProps {

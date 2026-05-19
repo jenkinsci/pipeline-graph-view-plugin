@@ -1,10 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import {
-  collapseSelectiveStages,
-  collectParentStageIds,
-} from "../NestedPipelineGraphLayout.ts";
-import { StageInfo } from "../PipelineGraphModel.tsx";
+import { Result, StageInfo } from "../PipelineGraphModel.tsx";
 
 function loadFromStorage(key: string): Set<number> {
   try {
@@ -26,50 +22,123 @@ function saveToStorage(key: string, ids: Set<number>) {
   }
 }
 
-/**
- * Extract the job + build path from the current page URL, stripping any
- * page suffix (e.g. "stages/") but keeping the build number.
- * /jenkins/job/my-pipeline/42/stages/ → /jenkins/job/my-pipeline/42
- * /jenkins/job/my-pipeline/42/ → /jenkins/job/my-pipeline/42
- */
-export function deriveBuildPath(): string {
-  const parts = window.location.pathname.replace(/\/+$/, "").split("/");
-  for (let i = parts.length - 1; i >= 0; i--) {
-    if (/^\d+$/.test(parts[i])) {
-      return parts.slice(0, i + 1).join("/");
+const STATE_PRIORITY: Record<string, number> = {
+  [Result.failure]: 0,
+  [Result.unstable]: 1,
+  [Result.aborted]: 2,
+  [Result.paused]: 3,
+  [Result.running]: 4,
+  [Result.queued]: 5,
+  [Result.not_built]: 6,
+  [Result.skipped]: 7,
+  [Result.success]: 8,
+  [Result.unknown]: 9,
+};
+
+function worstState(a: Result, b: Result): Result {
+  return (STATE_PRIORITY[a] ?? 9) <= (STATE_PRIORITY[b] ?? 9) ? a : b;
+}
+
+function isTransparentState(state: Result): boolean {
+  return state === Result.skipped || state === Result.not_built;
+}
+
+function aggregateChildState(stage: StageInfo): Result {
+  let all = stage.state;
+  let nonTransparent: Result | null = isTransparentState(stage.state)
+    ? null
+    : stage.state;
+  for (const child of stage.children) {
+    const childState = aggregateChildState(child);
+    all = worstState(all, childState);
+    if (!isTransparentState(childState)) {
+      nonTransparent =
+        nonTransparent == null
+          ? childState
+          : worstState(nonTransparent, childState);
     }
   }
-  return window.location.pathname;
+  return nonTransparent ?? all;
+}
+
+export function collapseSelectiveStages(
+  stages: StageInfo[],
+  collapsedIds: Set<number>,
+): StageInfo[] {
+  return stages.map((stage) => {
+    if (stage.children.length === 0) {
+      return stage;
+    }
+    if (collapsedIds.has(stage.id)) {
+      return {
+        ...stage,
+        children: [],
+        collapsedChildCount: countLeafStages(stage),
+        state: aggregateChildState(stage),
+      };
+    }
+    return {
+      ...stage,
+      children: collapseSelectiveStages(stage.children, collapsedIds),
+    };
+  });
+}
+
+function countLeafStages(stage: StageInfo): number {
+  if (stage.children.length === 0) {
+    return 1;
+  }
+  return stage.children.reduce((sum, child) => sum + countLeafStages(child), 0);
+}
+
+export function collectParentStageIds(stages: StageInfo[]): Set<number> {
+  const ids = new Set<number>();
+  function walk(list: StageInfo[]) {
+    for (const stage of list) {
+      if (stage.children.length > 0) {
+        ids.add(stage.id);
+        walk(stage.children);
+      }
+    }
+  }
+  walk(stages);
+  return ids;
 }
 
 /**
  * Walk the original (uncollapsed) stage tree and return the IDs of any
- * collapsed ancestors of the stage with the given id.
+ * collapsed ancestors of the stage with the given id (plus the target
+ * itself if it is collapsed).
  */
 function findCollapsedAncestors(
   stages: StageInfo[],
   targetId: number,
   collapsedIds: Set<number>,
 ): number[] {
-  const result: number[] = [];
-
-  function walk(nodes: StageInfo[], path: number[]): boolean {
+  function walk(nodes: StageInfo[]): number[] | null {
     for (const stage of nodes) {
       if (stage.id === targetId) {
-        result.push(...path.filter((id) => collapsedIds.has(id)));
-        return true;
+        return [];
       }
       if (stage.children.length > 0) {
-        if (walk(stage.children, [...path, stage.id])) {
-          return true;
+        const path = walk(stage.children);
+        if (path !== null) {
+          if (collapsedIds.has(stage.id)) {
+            path.push(stage.id);
+          }
+          return path;
         }
       }
     }
-    return false;
+    return null;
   }
 
-  walk(stages, []);
-  return result;
+  const path = walk(stages);
+  if (path === null) return [];
+  if (collapsedIds.has(targetId)) {
+    path.push(targetId);
+  }
+  return path;
 }
 
 export function useCollapsedStages(

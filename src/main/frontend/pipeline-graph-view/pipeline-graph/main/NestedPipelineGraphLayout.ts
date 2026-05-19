@@ -73,8 +73,6 @@ export function nestedGraphLayout(
     buildGraphNested(root, stages, layout, false);
   }
 
-  root.y =
-    root.shiftY + (showNames ? layout.nodeRadius + layout.labelOffsetV : 0);
   root.children.push({
     ...baseGraphNode(layout, showNames),
     width: graphSpacingX,
@@ -85,6 +83,7 @@ export function nestedGraphLayout(
     key: "end-node",
     id: -3,
   });
+  root.y = root.shiftY + layout.nodeRadius + 4;
   root.width = root.shiftX + sumGraphNodeProp(root, "width") - endReduction;
   const measuredWidth = root.width;
   const measuredHeight = root.y + root.height;
@@ -204,6 +203,8 @@ function buildGraphCollapsed(
       stages: collapsedStages.slice(breakPoint),
     });
   }
+
+  root.shiftY = maxGraphNodeProp(root, "shiftY");
 }
 
 function buildGraphNested(
@@ -601,6 +602,7 @@ export function removeFalseOptionalGraphNodeFlags(node: GraphNode) {
   if (!node.hasParallel) delete node.hasParallel;
   if (!node.hasSmallLabel) delete node.hasSmallLabel;
   if (!node.hasStageEnd) delete node.hasStageEnd;
+  if (!node.hasTiming) delete node.hasTiming;
   if (!node.isHidden) delete node.isHidden;
   if (!node.isParallel) delete node.isParallel;
   if (!node.isSkipped) delete node.isSkipped;

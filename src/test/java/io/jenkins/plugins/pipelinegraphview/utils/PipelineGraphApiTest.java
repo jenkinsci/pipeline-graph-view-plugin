@@ -705,4 +705,30 @@ class PipelineGraphApiTest {
         assertThat(stage2.type, equalTo("PARALLEL"));
         assertThat(stage2.name, equalTo("stage 2"));
     }
+
+    @Issue("GH#1296")
+    @Test
+    void runningUnstableStageInProgress() throws Exception {
+        QueueTaskFuture<WorkflowRun> futureRun = TestUtils.createAndRunJobNoWait(
+                j, "githubIssue1296", "gh1296_unstableStageInProgress.jenkinsfile", false);
+        WorkflowRun run = futureRun.waitForStart();
+
+        SemaphoreStep.waitForStart("wait/1", run);
+        PipelineGraphApi api = new PipelineGraphApi(run);
+        List<PipelineStage> stages = api.createTree().stages;
+
+        String stagesStringRunning = TestUtils.collectStagesAsString(
+                stages, (PipelineStage stage) -> String.format("{%s,%s}", stage.name, stage.state));
+        assertThat(stagesStringRunning, equalTo("{unstable-stage,running}"));
+
+        SemaphoreStep.success("wait/1", null);
+        // Wait for Pipeline to end (terminating it means end nodes might not be
+        // created).
+        j.waitForCompletion(run);
+
+        stages = api.createTree().stages;
+        String stagesStringFinished = TestUtils.collectStagesAsString(
+                stages, (PipelineStage stage) -> String.format("{%s,%s}", stage.name, stage.state));
+        assertThat(stagesStringFinished, equalTo("{unstable-stage,unstable}"));
+    }
 }

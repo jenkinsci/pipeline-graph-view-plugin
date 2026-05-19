@@ -53,6 +53,10 @@ public class PipelineNodeUtil {
                 : name;
     }
 
+    public static boolean isActive(FlowNode node) {
+        return node != null ? node.isActive() : false;
+    }
+
     public static boolean isStep(FlowNode node) {
         if (node != null) {
             if (node instanceof AtomNode) {

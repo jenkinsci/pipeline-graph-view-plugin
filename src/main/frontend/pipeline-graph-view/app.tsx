@@ -70,6 +70,7 @@ export default function App() {
           stages={run.stages}
           stageViewPosition={StageViewPosition.TOP}
           onRunPage
+          currentRunPath={currentRunPath}
         />
       )}
     </UserPreferencesProvider>

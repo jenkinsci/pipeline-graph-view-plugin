@@ -113,6 +113,7 @@ export default function PipelineConsole() {
                 selectedStage={openStage || undefined}
                 stageViewPosition={stageViewPosition}
                 onStageSelect={handleStageSelect}
+                currentRunPath={currentRunPath}
               />
             ))}
 

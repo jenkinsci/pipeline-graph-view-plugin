@@ -29,7 +29,6 @@ import {
   GraphNode,
   NodeInfo,
   NodeLabelInfo,
-  Result,
   StageInfo,
 } from "./PipelineGraphModel.tsx";
 import { collapseSelectiveStages } from "./support/useCollapsedStages.ts";

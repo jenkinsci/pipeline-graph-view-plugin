@@ -172,7 +172,7 @@ export interface PositionedGraph {
   measuredHeight: number;
 }
 
-export function isFlagEnabled(flag: string) {
+export function isFlagEnabled(flag: string, defaultValue: boolean = false) {
   const isEnabled = (v: string | null) =>
     ["yes", "1", "true", "enabled"].includes(v?.toLowerCase() ?? "");
 
@@ -182,11 +182,12 @@ export function isFlagEnabled(flag: string) {
   } catch {}
   try {
     // LocalStorage access can throw, gracefully access the key.
-    return isEnabled(window.localStorage.getItem(flag));
+    const v = window.localStorage.getItem(flag);
+    if (v !== null) return isEnabled(v);
   } catch {}
-  return false;
+  return defaultValue;
 }
 
-export const nestedLayout = () => isFlagEnabled("nestedLayout");
+export const nestedLayout = () => isFlagEnabled("nestedLayout", true);
 // Optionally turn on debugging for the graph. Once the nested layout is stable, we could use a constant to let tree-shaking remove debug code in production bundles.
 export const debugPipelineGraph = () => isFlagEnabled("debugPipelineGraph");

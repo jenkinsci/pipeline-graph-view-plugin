@@ -24,11 +24,6 @@ class PipelineGraphViewNestedTest {
     // mvn exec:java -e -D exec.mainClass="com.microsoft.playwright.CLI" -Dexec.classpathScope=test -Dexec.args="codegen
     // http://localhost:8080/jenkins
 
-    @BeforeEach
-    void setUp(Page p) {
-        p.context().addInitScript("window.localStorage.setItem('nestedLayout', 'true')");
-    }
-
     @Test
     void smokeTest(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
         String name = "Integration Tests";

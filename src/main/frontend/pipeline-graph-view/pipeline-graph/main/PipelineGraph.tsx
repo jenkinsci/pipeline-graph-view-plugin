@@ -51,6 +51,8 @@ export function PipelineGraph({
   selectedStage,
   collapsed,
   onStageSelect,
+  collapsedStageIds,
+  onToggleCollapse,
   setMinScale,
   setInitialScale,
 }: Props) {
@@ -333,6 +335,10 @@ export function PipelineGraph({
             layout={fullLayout}
             measuredHeight={measuredHeight}
             isSelected={selectedStage?.id === label.stage?.id}
+            isCollapsed={
+              label.stage ? collapsedStageIds.has(label.stage.id) : false
+            }
+            onToggleCollapse={onToggleCollapse}
           />
         ))}
 
@@ -352,6 +358,10 @@ export function PipelineGraph({
             details={label}
             layout={fullLayout}
             isSelected={selectedStage?.id === label.stage?.id}
+            isCollapsed={
+              label.stage ? collapsedStageIds.has(label.stage.id) : false
+            }
+            onToggleCollapse={onToggleCollapse}
           />
         ))}
 
@@ -360,6 +370,10 @@ export function PipelineGraph({
             key={label.key}
             details={label}
             layout={fullLayout}
+            isCollapsed={
+              label.stage ? collapsedStageIds.has(label.stage.id) : false
+            }
+            onToggleCollapse={onToggleCollapse}
           />
         ))}
       </div>
@@ -373,6 +387,8 @@ interface Props {
   selectedStage?: StageInfo;
   collapsed?: boolean;
   onStageSelect?: (nodeId: string) => void;
+  collapsedStageIds: Set<number>;
+  onToggleCollapse: (stageId: number) => void;
   setMinScale?: (value: number) => void;
   setInitialScale?: (value: number) => void;
 }

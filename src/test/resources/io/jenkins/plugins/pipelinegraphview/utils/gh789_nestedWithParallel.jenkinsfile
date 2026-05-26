@@ -1,0 +1,56 @@
+pipeline {
+    agent any
+    stages {
+        stage("build") {
+            steps {
+                echo "build"
+            }
+        }
+        stage("parallel-build") {
+            parallel {
+                stage("windows") {
+                    stages {
+                        stage("compile") {
+                            steps {
+                                echo "compile windows"
+                            }
+                        }
+                        stage("test") {
+                            steps {
+                                echo "test windows"
+                            }
+                        }
+                    }
+                }
+                stage("linux") {
+                    stages {
+                        stage("compile") {
+                            steps {
+                                echo "compile linux"
+                            }
+                        }
+                        stage("test") {
+                            steps {
+                                echo "test linux"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        stage("post") {
+            stages {
+                stage("notifications") {
+                    steps {
+                        echo "slack"
+                    }
+                }
+                stage("telemetry") {
+                    steps {
+                        echo "logstash"
+                    }
+                }
+            }
+        }
+    }
+}

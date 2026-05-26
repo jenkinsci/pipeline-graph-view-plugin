@@ -58,6 +58,7 @@ export interface StageInfo {
 
   skeleton?: boolean;
   pauseLiveTotal?: boolean;
+  collapsedChildCount?: number; // Set when this stage's children were collapsed away
 }
 
 interface BaseNodeInfo {

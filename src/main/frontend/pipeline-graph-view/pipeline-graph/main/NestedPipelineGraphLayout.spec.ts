@@ -31,6 +31,7 @@ import {
   NodeLabelInfo,
   StageInfo,
 } from "./PipelineGraphModel.tsx";
+import { collapseSelectiveStages } from "./support/useCollapsedStages.ts";
 
 describe("NestedPipelineGraphLayout", () => {
   describe("nestedGraphLayout", () => {
@@ -129,6 +130,20 @@ describe("NestedPipelineGraphLayout", () => {
         shouldMatchSnapshot(raw, true);
       });
     });
+
+    describe("selective collapse", () => {
+      const raw =
+        '[{"name":"Non-Parallel Stage","state":"success","id":"6","type":"STAGE","children":[]},{"name":"Parallel Stage","state":"success","id":"12","type":"STAGE","children":[{"name":"Branch A","state":"success","id":"16","type":"PARALLEL","children":[]},{"name":"Branch B","state":"success","id":"17","type":"PARALLEL","children":[]},{"name":"Branch C","state":"success","id":"18","type":"PARALLEL","children":[{"name":"Nested 1","state":"success","id":"26","type":"STAGE","children":[]},{"name":"Nested 2","state":"success","id":"42","type":"STAGE","children":[]}]}]},{"name":"Skipped stage","state":"skipped","id":"54","type":"STAGE","children":[]}]';
+
+      it("should render layout with one branch collapsed", () => {
+        // IDs are strings at runtime from JSON.parse, matching the actual API data shape
+        shouldMatchSelectiveSnapshot(raw, new Set(["18" as unknown as number]));
+      });
+
+      it("should render layout with top-level stage collapsed", () => {
+        shouldMatchSelectiveSnapshot(raw, new Set(["12" as unknown as number]));
+      });
+    });
   });
 });
 
@@ -180,6 +195,28 @@ function shouldMatchSnapshot(raw: string, collapsed: boolean) {
     !collapsed,
     collapsed,
   );
+  trimGraph(graph);
+  expect(graph).toMatchSnapshot();
+}
+
+function shouldMatchSelectiveSnapshot(raw: string, collapsedIds: Set<number>) {
+  const stages = collapseSelectiveStages(
+    JSON.parse(raw) as StageInfo[],
+    collapsedIds,
+  );
+  const graph = nestedGraphLayout(
+    stages,
+    defaultLayout,
+    false,
+    defaultMessages(DEFAULT_LOCALE),
+    true,
+    false,
+  );
+  trimGraph(graph);
+  expect(graph).toMatchSnapshot();
+}
+
+function trimGraph(graph: ReturnType<typeof nestedGraphLayout>) {
   for (const labels of [
     graph.smallLabels,
     graph.bigLabels,
@@ -198,5 +235,4 @@ function shouldMatchSnapshot(raw: string, collapsed: boolean) {
   for (const node of graph.allNodes) {
     trimGraphNode(node);
   }
-  expect(graph).toMatchSnapshot();
 }

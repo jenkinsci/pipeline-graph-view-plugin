@@ -86,6 +86,10 @@ export enum LocalizedMessageKey {
   buildFlowError = "buildFlow.error",
   buildFlowEmpty = "buildFlow.empty",
   buildFlowTruncated = "buildFlow.truncated",
+  expandNestedStages = "collapse.expandNested",
+  collapseNestedStages = "collapse.collapseNested",
+  expandAllStages = "collapse.expandAll",
+  collapseAllStages = "collapse.collapseAll",
 }
 
 const DEFAULT_MESSAGES: ResourceBundle = {
@@ -108,6 +112,10 @@ const DEFAULT_MESSAGES: ResourceBundle = {
     "No upstream or downstream builds found.",
   [LocalizedMessageKey.buildFlowTruncated]:
     "Graph truncated at {0} nodes. Some builds may not be shown.",
+  [LocalizedMessageKey.expandNestedStages]: "Expand nested stages",
+  [LocalizedMessageKey.collapseNestedStages]: "Collapse nested stages",
+  [LocalizedMessageKey.expandAllStages]: "Expand all stages",
+  [LocalizedMessageKey.collapseAllStages]: "Collapse all stages",
 };
 
 export function defaultMessages(locale: string): Messages {

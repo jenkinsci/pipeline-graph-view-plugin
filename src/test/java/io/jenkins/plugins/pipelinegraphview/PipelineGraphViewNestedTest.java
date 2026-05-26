@@ -206,4 +206,30 @@ class PipelineGraphViewNestedTest {
                 .stageHasSteps("Error signal")
                 .stepDoesNotContainText("Error signal", "null");
     }
+
+    @Issue("GH#789")
+    @Test
+    void collapseNestedStages(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
+        String name = "Collapse Nested";
+        WorkflowRun run = TestUtils.createAndRunJob(j, name, "gh789_nestedWithParallel.jenkinsfile", Result.SUCCESS);
+
+        new ManageAppearancePage(p, j.jenkins.getRootUrl())
+                .goTo()
+                .displayPipelineOnBuildPage()
+                .displayPipelineOnJobPage()
+                .setPipelineGraphAsConsoleProvider()
+                .displayNamesOnStageViewByDefault()
+                .save();
+
+        // Nested and parallel stages should be visible in the tree for log access.
+        new PipelineJobPage(p, run.getParent())
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .goToBuild()
+                .goToPipelineOverview()
+                .stageIsVisibleInTree("build")
+                .stageIsVisibleInTree("parallel-build")
+                .stageIsVisibleInTree("post");
+    }
 }

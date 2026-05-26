@@ -69,7 +69,6 @@ export function nestedGraphLayout(
     key: "end-node",
     id: -3,
   });
-
   root.y = root.shiftY + layout.nodeRadius + 4;
   root.width =
     root.shiftX + sumGraphNodeProp(root, "width") - startEndReducedSpacing;
@@ -461,6 +460,7 @@ function computeBranchLabels(nodes: GraphNode[], layout: LayoutInfo) {
         y: node.y,
         key: "l_branch_" + node.key,
         node,
+        stage: "stage" in node ? node.stage : undefined,
         text: node.name,
       };
     });

@@ -17,6 +17,7 @@ This plugin adds a visual representation of Jenkins pipelines, showing each stag
 - Navigate pipeline stages in a clear, collapsible list view
 - View logs in real time without leaving the interface
 - Toggle between graph and stage views; move and resize panes to suit your workflow
+- [Collapse and expand individual stages](./docs/per-stage-collapse.md) with parallel branches or nested children
 - Quickly access details of each step and its results
 - Hide specific steps from view using the `hideFromView` Pipeline DSL step
 - Designed for better readability and faster troubleshooting

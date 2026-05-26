@@ -1,6 +1,6 @@
 import "./stages.scss";
 
-import { useCallback, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 import {
   ReactZoomPanPinchContextState,
   TransformComponent,
@@ -10,9 +10,14 @@ import {
 } from "react-zoom-pan-pinch";
 
 import Tooltip from "../../../../common/components/tooltip.tsx";
+import {
+  I18NContext,
+  LocalizedMessageKey,
+} from "../../../../common/i18n/index.ts";
 import { classNames } from "../../../../common/utils/classnames.ts";
 import { PipelineGraph } from "../../../../pipeline-graph-view/pipeline-graph/main/PipelineGraph.tsx";
 import { StageInfo } from "../../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
+import { useCollapsedStages } from "../../../../pipeline-graph-view/pipeline-graph/main/support/useCollapsedStages.ts";
 import { StageViewPosition } from "../providers/user-preference-provider.tsx";
 
 const MAX_SCALE = 3;
@@ -23,8 +28,22 @@ export default function Stages({
   stageViewPosition,
   onStageSelect,
   onRunPage,
+  currentRunPath,
 }: StagesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+
+  const {
+    collapsedStageIds,
+    toggleCollapseStage,
+    collapseAll,
+    expandAll,
+    hasCollapsibleStages,
+    effectiveStages,
+  } = useCollapsedStages(
+    "pgv.collapsedStages." + currentRunPath,
+    stages,
+    selectedStage?.id,
+  );
 
   const handleStageSelect = useCallback(
     (nodeId: string) => {
@@ -107,12 +126,21 @@ export default function Stages({
         maxScale={MAX_SCALE}
         wheel={{ activationKeys: isExpanded ? [] : ["Control"] }}
       >
-        <ZoomControls initialScale={initialScale} minScale={minScale} />
+        <ZoomControls
+          initialScale={initialScale}
+          minScale={minScale}
+          collapsedStageIds={collapsedStageIds}
+          hasCollapsibleStages={hasCollapsibleStages}
+          onCollapseAll={collapseAll}
+          onExpandAll={expandAll}
+        />
 
         <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
           <PipelineGraph
-            stages={stages}
+            stages={effectiveStages}
             selectedStage={selectedStage}
+            collapsedStageIds={collapsedStageIds}
+            onToggleCollapse={toggleCollapseStage}
             setInitialScale={setInitialScale}
             setMinScale={setMinScale}
             {...(onStageSelect && { onStageSelect: handleStageSelect })}
@@ -129,15 +157,28 @@ interface StagesProps {
   stageViewPosition: StageViewPosition;
   onStageSelect?: (nodeId: string) => void;
   onRunPage?: boolean;
+  currentRunPath: string;
 }
 
 interface ZoomControlsProps {
   initialScale: number;
   minScale: number;
+  collapsedStageIds: Set<number>;
+  hasCollapsibleStages: boolean;
+  onCollapseAll: () => void;
+  onExpandAll: () => void;
 }
 
-function ZoomControls({ initialScale, minScale }: ZoomControlsProps) {
+function ZoomControls({
+  initialScale,
+  minScale,
+  collapsedStageIds,
+  hasCollapsibleStages,
+  onCollapseAll,
+  onExpandAll,
+}: ZoomControlsProps) {
   const { zoomIn, zoomOut, centerView } = useControls();
+  const messages = useContext(I18NContext);
   const [scale, setScale] = useState(initialScale);
   const handleTransformEffect = useCallback(
     (ref: ReactZoomPanPinchContextState) => setScale(ref.state.scale),
@@ -209,6 +250,44 @@ function ZoomControls({ initialScale, minScale }: ZoomControlsProps) {
           </svg>
         </button>
       </Tooltip>
+      {hasCollapsibleStages && (
+        <Tooltip
+          content={
+            collapsedStageIds.size > 0
+              ? messages.format(LocalizedMessageKey.expandAllStages)
+              : messages.format(LocalizedMessageKey.collapseAllStages)
+          }
+        >
+          <button
+            className={"jenkins-button jenkins-button--tertiary"}
+            onClick={collapsedStageIds.size > 0 ? onExpandAll : onCollapseAll}
+          >
+            {collapsedStageIds.size > 0 ? (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="32"
+                  d="M136 208l120-104 120 104M136 304l120 104 120-104"
+                />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <path
+                  fill="none"
+                  stroke="currentColor"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="32"
+                  d="M136 104l120 104 120-104M136 408l120-104 120 104"
+                />
+              </svg>
+            )}
+          </button>
+        </Tooltip>
+      )}
     </div>
   );
 }

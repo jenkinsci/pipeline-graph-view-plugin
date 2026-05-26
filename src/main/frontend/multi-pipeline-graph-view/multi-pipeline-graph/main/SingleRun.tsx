@@ -15,12 +15,12 @@ import {
   defaultLayout,
   LayoutInfo,
 } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
+import { useCollapsedStages } from "../../../pipeline-graph-view/pipeline-graph/main/support/useCollapsedStages.ts";
 import { RunInfo } from "./MultiPipelineGraphModel.ts";
 
 export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
-  const { run: runInfo } = useRunPoller({
-    currentRunPath: currentJobPath + run.id + "/",
-  });
+  const currentRunPath = currentJobPath + run.id + "/";
+  const { run: runInfo } = useRunPoller({ currentRunPath });
 
   function Changes() {
     const messages = useContext(I18NContext);
@@ -63,6 +63,9 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
     return layout;
   }
 
+  const { effectiveStages, collapsedStageIds, toggleCollapseStage } =
+    useCollapsedStages("pgv.collapsedStages." + currentRunPath, runInfo.stages);
+
   return (
     <div className="pgv-single-run">
       <div>
@@ -75,7 +78,13 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
           </span>
         </a>
       </div>
-      <PipelineGraph stages={runInfo.stages} layout={getLayout()} collapsed />
+      <PipelineGraph
+        stages={effectiveStages}
+        layout={getLayout()}
+        collapsed
+        collapsedStageIds={collapsedStageIds}
+        onToggleCollapse={toggleCollapseStage}
+      />
     </div>
   );
 }

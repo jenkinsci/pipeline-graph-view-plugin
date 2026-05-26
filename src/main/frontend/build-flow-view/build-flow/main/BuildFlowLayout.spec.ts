@@ -15,7 +15,6 @@ import {
   NODE_WIDTH_MAX,
   NODE_WIDTH_MIN,
   PADDING,
-  ROW_GAP,
 } from "./BuildFlowLayout.ts";
 
 function makeNode(

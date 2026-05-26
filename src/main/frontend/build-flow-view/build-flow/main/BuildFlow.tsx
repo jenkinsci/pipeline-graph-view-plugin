@@ -36,7 +36,6 @@ import {
   type LayoutNode,
   NODE_HEIGHT,
   NODE_WIDTH_MIN,
-  PADDING,
 } from "./BuildFlowLayout.ts";
 import {
   getBaseUrl,
@@ -890,8 +889,9 @@ export const BuildFlow: FunctionComponent = () => {
   const svgWidth = layout?.width ?? 0;
   const svgHeight = layout?.height ?? 0;
   const initialScale = useMemo(() => {
-    if (!containerWidth || !containerHeight || !svgWidth || !svgHeight)
+    if (!containerWidth || !containerHeight || !svgWidth || !svgHeight) {
       return 1;
+    }
     // Reserve space for heading overlay (top) and toggle controls (bottom)
     const availWidth = containerWidth - 20;
     const availHeight = containerHeight - 80;
@@ -1033,7 +1033,7 @@ export const BuildFlow: FunctionComponent = () => {
         initialScale={initialScale}
         minScale={minScale}
         maxScale={MAX_SCALE}
-        centerOnInit={true}
+        centerOnInit
         wheel={{ activationKeys: isExpanded ? [] : ["Control"] }}
         ref={transformRef}
       >

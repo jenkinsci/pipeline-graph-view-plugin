@@ -74,15 +74,16 @@ export class GraphConnections extends Component {
     svgElements: SVGChildren,
     hasBranchLabels: boolean,
   ) {
-    const { nodeSpacingH } = this.props.layout;
+    const { curveRadius, nodeSpacingH } = this.props.layout;
     const halfSpacingH = nodeSpacingH / 2;
 
-    this.renderHorizontalConnection(
-      sourceNodes[0],
-      destinationNodes[0],
-      svgElements,
-    );
     if (sourceNodes.length === 1 && destinationNodes.length === 1) {
+      this.renderHorizontalConnection(
+        sourceNodes[0],
+        destinationNodes[0],
+        svgElements,
+        sourceNodes[0].isSkipped || destinationNodes[0].isSkipped,
+      );
       return; // No curves needed.
     }
 
@@ -103,12 +104,38 @@ export class GraphConnections extends Component {
 
     // Collapse from previous node(s) to top column node
     const collapseMidPointX = Math.round(rightmostSource + halfSpacingH);
+
+    if (sourceNodes[0].isSkipped === destinationNodes[0].isSkipped) {
+      this.renderHorizontalConnection(
+        sourceNodes[0],
+        destinationNodes[0],
+        svgElements,
+      );
+    } else {
+      // Connect up to the point where the curved connection touches the base.
+      this.renderHorizontalConnection(
+        sourceNodes[0],
+        { ...destinationNodes[0], x: collapseMidPointX + curveRadius },
+        svgElements,
+        sourceNodes[0].isSkipped,
+      );
+      this.renderHorizontalConnection(
+        { ...sourceNodes[0], x: collapseMidPointX - curveRadius },
+        destinationNodes[0],
+        svgElements,
+        destinationNodes[0].isSkipped,
+      );
+    }
+
     for (const previousNode of sourceNodes.slice(1)) {
       this.renderBasicCurvedConnection(
         previousNode,
         destinationNodes[0],
         collapseMidPointX,
         svgElements,
+        sourceNodes.length > 1
+          ? previousNode.isSkipped
+          : destinationNodes[0].isSkipped,
       );
     }
 
@@ -126,6 +153,9 @@ export class GraphConnections extends Component {
         destNode,
         expandMidPointX,
         svgElements,
+        destinationNodes.length > 1
+          ? destNode.isSkipped
+          : sourceNodes[0].isSkipped,
       );
     }
   }
@@ -169,7 +199,7 @@ export class GraphConnections extends Component {
 
     leftNode = skippedNodes[0];
     for (rightNode of skippedNodes.slice(1)) {
-      this.renderHorizontalConnection(leftNode, rightNode, svgElements);
+      this.renderHorizontalConnection(leftNode, rightNode, svgElements, true);
       leftNode = rightNode;
     }
 
@@ -399,6 +429,7 @@ export class GraphConnections extends Component {
     leftNode: ConnectionEdge,
     rightNode: ConnectionEdge,
     svgElements: SVGChildren,
+    skipped = false,
   ) {
     const leftNodeRadius = this.getNodeRadius(leftNode, "left");
     const rightNodeRadius = this.getNodeRadius(rightNode, "right");
@@ -411,7 +442,7 @@ export class GraphConnections extends Component {
 
     svgElements.push(
       <line
-        {...this.getConnectorStroke(leftNode.isSkipped || rightNode.isSkipped)}
+        {...this.getConnectorStroke(skipped)}
         key={key}
         x1={x1}
         y1={y}
@@ -431,6 +462,7 @@ export class GraphConnections extends Component {
     rightNode: ConnectionEdge,
     midPointX: number,
     svgElements: SVGChildren,
+    skipped = false,
   ) {
     const { curveRadius } = this.props.layout;
     const leftNodeRadius = this.getNodeRadius(leftNode, "left");
@@ -461,7 +493,7 @@ export class GraphConnections extends Component {
 
     svgElements.push(
       <path
-        {...this.getConnectorStroke(leftNode.isSkipped || rightNode.isSkipped)}
+        {...this.getConnectorStroke(skipped)}
         key={key}
         d={pathData}
         fill="none"
@@ -487,11 +519,11 @@ export class GraphConnections extends Component {
     const cv = verticalDirection * curveRadius;
 
     return (
-      ` l ${w1} 0` + // first horizontal line
+      (y1 > y2 ? ` l ${w1} 0` : ` m ${w1} 0`) + // first horizontal line
       ` c ${curveRadius} 0 ${curveRadius} ${cv} ${curveRadius} ${cv}` + // turn
       ` l 0 ${v}` + // vertical line
       ` c 0 ${cv} ${curveRadius} ${cv} ${curveRadius} ${cv}` + // turn again
-      ` l ${w2} 0` // second horizontal line
+      (y1 < y2 ? ` l ${w2} 0` : "") // second horizontal line
     );
   }
 

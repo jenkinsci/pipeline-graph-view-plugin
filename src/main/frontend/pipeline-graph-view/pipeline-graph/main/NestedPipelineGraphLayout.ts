@@ -388,7 +388,7 @@ function computeTailNodes(
     ignoreSkipped?: boolean,
   ) => {
     for (const node of tailNodes) {
-      if (ignoreSkipped || !node.isSkipped) {
+      if (ignoreSkipped || !node.isSkipped || node.isParallel) {
         sourceNodes.add(node);
       } else {
         skippedNodes.add(node);
@@ -398,7 +398,7 @@ function computeTailNodes(
     const destinationNodes = destination.hasParallel
       ? destination.children
       : [destination];
-    if (!destinationNodes.some((n) => !n.isSkipped)) {
+    if (!destinationNodes.some((n) => !n.isSkipped || n.isParallel)) {
       for (const node of destinationNodes) skippedNodes.add(node);
       return;
     }

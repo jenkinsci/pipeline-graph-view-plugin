@@ -123,8 +123,8 @@ public class BuildFlowGraph {
                                 nodeMap.put(
                                         queuedId,
                                         new BuildFlowNode(
-                                                queuedId, jobName, jobName, 0, jobName, "", "QUEUED", null, null,
-                                                null, false, null));
+                                                queuedId, jobName, jobName, 0, jobName, "", "QUEUED", null, null, null,
+                                                false, null));
                                 edges.add(new BuildFlowEdge(upstreamId, queuedId));
                                 anyOngoing = true;
                             }
@@ -134,8 +134,7 @@ public class BuildFlowGraph {
             }
         }
 
-        return new BuildFlowResponse(
-                new ArrayList<>(nodeMap.values()), edges, anyOngoing, nodeMap.size() >= MAX_NODES);
+        return new BuildFlowResponse(new ArrayList<>(nodeMap.values()), edges, anyOngoing, nodeMap.size() >= MAX_NODES);
     }
 
     /**

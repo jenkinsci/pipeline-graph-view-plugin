@@ -81,6 +81,11 @@ export enum LocalizedMessageKey {
   consoleNewTab = "console.newTab",
   tailLogsResume = "tailLogs.resume",
   tailLogsPause = "tailLogs.pause",
+  buildFlowTitle = "buildFlow.title",
+  buildFlowLoading = "buildFlow.loading",
+  buildFlowError = "buildFlow.error",
+  buildFlowEmpty = "buildFlow.empty",
+  buildFlowTruncated = "buildFlow.truncated",
 }
 
 const DEFAULT_MESSAGES: ResourceBundle = {
@@ -96,6 +101,13 @@ const DEFAULT_MESSAGES: ResourceBundle = {
   [LocalizedMessageKey.consoleNewTab]: "View step as plain text",
   [LocalizedMessageKey.tailLogsResume]: "Resume tailing logs",
   [LocalizedMessageKey.tailLogsPause]: "Pause tailing logs",
+  [LocalizedMessageKey.buildFlowTitle]: "Build Flow",
+  [LocalizedMessageKey.buildFlowLoading]: "Loading build flow\u2026",
+  [LocalizedMessageKey.buildFlowError]: "Failed to load build flow: {0}",
+  [LocalizedMessageKey.buildFlowEmpty]:
+    "No upstream or downstream builds found.",
+  [LocalizedMessageKey.buildFlowTruncated]:
+    "Graph truncated at {0} nodes. Some builds may not be shown.",
 };
 
 export function defaultMessages(locale: string): Messages {

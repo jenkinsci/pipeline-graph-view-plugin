@@ -19,6 +19,7 @@ This plugin adds a visual representation of Jenkins pipelines, showing each stag
 - Toggle between graph and stage views; move and resize panes to suit your workflow
 - Quickly access details of each step and its results
 - Hide specific steps from view using the `hideFromView` Pipeline DSL step
+- **Build Flow** - a zoomable, pannable DAG visualization with build history dots, inspired by the YABV plugin
 - Designed for better readability and faster troubleshooting
 
 ## Getting started
@@ -28,6 +29,25 @@ This plugin adds a visual representation of Jenkins pipelines, showing each stag
 3. Click _Pipeline Overview_
 
 Hidden steps are not displayed by default in the Pipeline Overview, but can be toggled visible using the filter controls.
+
+## Build Flow
+
+The Build Flow view provides a zoomable, pannable DAG (directed acyclic graph) visualization of pipeline stages, inspired by the [Yet Another Build Visualizer](https://plugins.jenkins.io/yet-another-build-visualizer/) plugin.
+
+**Accessing Build Flow:**
+
+- On the build page sidebar, click _Build Flow_
+- On the job page, the Build Flow widget shows the latest build's graph
+
+**Capabilities:**
+
+- Zoom and pan with mouse wheel / trackpad; pinch-to-zoom on touch devices
+- Center / zoom-to-fit controls
+- Toggle between DAG and flat grid layouts
+- Show/hide edge connections, stage labels, duration, and status badges
+- Auto-refresh while the build is in progress
+- Build history dots showing recent build results (click to navigate)
+- Compact summary and widget views embedded in the build/job pages
 
 ## Screenshots
 

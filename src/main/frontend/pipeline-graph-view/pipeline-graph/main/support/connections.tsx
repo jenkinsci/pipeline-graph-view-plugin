@@ -44,7 +44,9 @@ export class GraphConnections extends Component {
     const { sourceNodes, destinationNodes, skippedNodes, hasBranchLabels } =
       connection;
 
-    if (skippedNodes.length === 0) {
+    if (sourceNodes.length === 1 && sourceNodes[0].allChildrenSkipped) {
+      this.renderAllChildrenSkippedConnection(sourceNodes[0], svgElements);
+    } else if (skippedNodes.length === 0) {
       // Nothing too complicated, use the original connection drawing code
       this.renderBasicConnections(
         sourceNodes,
@@ -74,15 +76,16 @@ export class GraphConnections extends Component {
     svgElements: SVGChildren,
     hasBranchLabels: boolean,
   ) {
-    const { nodeSpacingH } = this.props.layout;
+    const { curveRadius, nodeSpacingH } = this.props.layout;
     const halfSpacingH = nodeSpacingH / 2;
 
-    this.renderHorizontalConnection(
-      sourceNodes[0],
-      destinationNodes[0],
-      svgElements,
-    );
     if (sourceNodes.length === 1 && destinationNodes.length === 1) {
+      this.renderHorizontalConnection(
+        sourceNodes[0],
+        destinationNodes[0],
+        svgElements,
+        sourceNodes[0].isSkipped || destinationNodes[0].isSkipped,
+      );
       return; // No curves needed.
     }
 
@@ -103,12 +106,38 @@ export class GraphConnections extends Component {
 
     // Collapse from previous node(s) to top column node
     const collapseMidPointX = Math.round(rightmostSource + halfSpacingH);
+
+    if (sourceNodes[0].isSkipped === destinationNodes[0].isSkipped) {
+      this.renderHorizontalConnection(
+        sourceNodes[0],
+        destinationNodes[0],
+        svgElements,
+      );
+    } else {
+      // Connect up to the point where the curved connection touches the base.
+      this.renderHorizontalConnection(
+        sourceNodes[0],
+        { ...destinationNodes[0], x: collapseMidPointX + curveRadius },
+        svgElements,
+        sourceNodes[0].isSkipped,
+      );
+      this.renderHorizontalConnection(
+        { ...sourceNodes[0], x: collapseMidPointX - curveRadius },
+        destinationNodes[0],
+        svgElements,
+        destinationNodes[0].isSkipped,
+      );
+    }
+
     for (const previousNode of sourceNodes.slice(1)) {
       this.renderBasicCurvedConnection(
         previousNode,
         destinationNodes[0],
         collapseMidPointX,
         svgElements,
+        sourceNodes.length > 1
+          ? previousNode.isSkipped
+          : destinationNodes[0].isSkipped,
       );
     }
 
@@ -126,6 +155,9 @@ export class GraphConnections extends Component {
         destNode,
         expandMidPointX,
         svgElements,
+        destinationNodes.length > 1
+          ? destNode.isSkipped
+          : sourceNodes[0].isSkipped,
       );
     }
   }
@@ -169,7 +201,7 @@ export class GraphConnections extends Component {
 
     leftNode = skippedNodes[0];
     for (rightNode of skippedNodes.slice(1)) {
-      this.renderHorizontalConnection(leftNode, rightNode, svgElements);
+      this.renderHorizontalConnection(leftNode, rightNode, svgElements, true);
       leftNode = rightNode;
     }
 
@@ -399,6 +431,7 @@ export class GraphConnections extends Component {
     leftNode: ConnectionEdge,
     rightNode: ConnectionEdge,
     svgElements: SVGChildren,
+    skipped = false,
   ) {
     const leftNodeRadius = this.getNodeRadius(leftNode, "left");
     const rightNodeRadius = this.getNodeRadius(rightNode, "right");
@@ -411,7 +444,7 @@ export class GraphConnections extends Component {
 
     svgElements.push(
       <line
-        {...this.getConnectorStroke(leftNode.isSkipped || rightNode.isSkipped)}
+        {...this.getConnectorStroke(skipped)}
         key={key}
         x1={x1}
         y1={y}
@@ -431,8 +464,10 @@ export class GraphConnections extends Component {
     rightNode: ConnectionEdge,
     midPointX: number,
     svgElements: SVGChildren,
+    skipped = false,
+    curveRadius?: number,
   ) {
-    const { curveRadius } = this.props.layout;
+    curveRadius = curveRadius ?? this.props.layout.curveRadius;
     const leftNodeRadius = this.getNodeRadius(leftNode, "left");
     const rightNodeRadius = this.getNodeRadius(rightNode, "right");
 
@@ -461,11 +496,69 @@ export class GraphConnections extends Component {
 
     svgElements.push(
       <path
-        {...this.getConnectorStroke(leftNode.isSkipped || rightNode.isSkipped)}
+        {...this.getConnectorStroke(skipped)}
         key={key}
         d={pathData}
         fill="none"
       />,
+    );
+  }
+
+  /**
+   * Enclose all the parallel skipped connections, using the same horizontal start/end points and a smaller curve radius.
+   */
+  private renderAllChildrenSkippedConnection(
+    node: ConnectionEdge,
+    svgElements: SVGChildren,
+  ) {
+    const { nodeSpacingH, nodeSpacingV, curveRadius } = this.props.layout;
+    const smallerCurveRadius = curveRadius - nodeStrokeWidth;
+
+    const leftTop: ConnectionEdge = {
+      x: node.x - nodeSpacingH,
+      y: node.y,
+      key: `skipped_left_top_${node.key}`,
+      isPlaceholder: true,
+      isHidden: true,
+    };
+    const leftBottom: ConnectionEdge = {
+      x: node.x,
+      y: node.y + node.height! - nodeSpacingV / 2,
+      key: `skipped_left_bottom_${node.key}`,
+      isPlaceholder: true,
+      isHidden: true,
+    };
+    const rightBottom: ConnectionEdge = {
+      x: node.x,
+      y: node.y + node.height! - nodeSpacingV / 2,
+      key: `skipped_right_bottom_${node.key}`,
+      isPlaceholder: true,
+      isHidden: true,
+    };
+    const rightTop: ConnectionEdge = {
+      x: node.x + node.width!,
+      y: node.y,
+      key: `skipped_righ_top_${node.key}`,
+      isPlaceholder: true,
+      isHidden: true,
+    };
+    const leftMidX = leftTop.x + nodeSpacingH / 2;
+    const rightMidX = rightTop.x - nodeSpacingH / 2;
+    this.renderBasicCurvedConnection(
+      leftTop,
+      leftBottom,
+      leftMidX,
+      svgElements,
+      false,
+      smallerCurveRadius,
+    );
+    this.renderBasicCurvedConnection(
+      rightBottom,
+      rightTop,
+      rightMidX,
+      svgElements,
+      false,
+      smallerCurveRadius,
     );
   }
 
@@ -487,11 +580,11 @@ export class GraphConnections extends Component {
     const cv = verticalDirection * curveRadius;
 
     return (
-      ` l ${w1} 0` + // first horizontal line
+      (y1 > y2 ? ` l ${w1} 0` : ` m ${w1} 0`) + // first horizontal line
       ` c ${curveRadius} 0 ${curveRadius} ${cv} ${curveRadius} ${cv}` + // turn
       ` l 0 ${v}` + // vertical line
       ` c 0 ${cv} ${curveRadius} ${cv} ${curveRadius} ${cv}` + // turn again
-      ` l ${w2} 0` // second horizontal line
+      (y1 < y2 ? ` l ${w2} 0` : "") // second horizontal line
     );
   }
 

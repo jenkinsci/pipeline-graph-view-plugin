@@ -1,0 +1,28 @@
+// Used by test snapshots in NestedPipelineGraphLayout.spec.ts, see comment there.
+import org.jenkinsci.plugins.pipeline.modeldefinition.Utils
+
+stage("Wrapper") {
+    stage("one") {
+        parallel(
+            'nested 1': {},
+            'nested 2': {},
+        )
+    }
+    stage("two") {
+        parallel(
+            'Skipped 1': {
+                stage("Skipped 1") {
+                    Utils.markStageSkippedForConditional(STAGE_NAME)
+                }
+            },
+            'Skipped 2': {
+                stage("Skipped 2") {
+                    Utils.markStageSkippedForConditional(STAGE_NAME)
+                }
+            },
+        )
+    }
+}
+stage("Next") {
+    echo "next"
+}

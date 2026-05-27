@@ -44,7 +44,9 @@ export class GraphConnections extends Component {
     const { sourceNodes, destinationNodes, skippedNodes, hasBranchLabels } =
       connection;
 
-    if (skippedNodes.length === 0) {
+    if (sourceNodes.length === 1 && sourceNodes[0].allChildrenSkipped) {
+      this.renderAllChildrenSkippedConnection(sourceNodes[0], svgElements);
+    } else if (skippedNodes.length === 0) {
       // Nothing too complicated, use the original connection drawing code
       this.renderBasicConnections(
         sourceNodes,
@@ -463,8 +465,9 @@ export class GraphConnections extends Component {
     midPointX: number,
     svgElements: SVGChildren,
     skipped = false,
+    curveRadius?: number,
   ) {
-    const { curveRadius } = this.props.layout;
+    curveRadius = curveRadius ?? this.props.layout.curveRadius;
     const leftNodeRadius = this.getNodeRadius(leftNode, "left");
     const rightNodeRadius = this.getNodeRadius(rightNode, "right");
 
@@ -498,6 +501,64 @@ export class GraphConnections extends Component {
         d={pathData}
         fill="none"
       />,
+    );
+  }
+
+  /**
+   * Enclose all the parallel skipped connections, using the same horizontal start/end points and a smaller curve radius.
+   */
+  private renderAllChildrenSkippedConnection(
+    node: ConnectionEdge,
+    svgElements: SVGChildren,
+  ) {
+    const { nodeSpacingH, nodeSpacingV, curveRadius } = this.props.layout;
+    const smallerCurveRadius = curveRadius - nodeStrokeWidth;
+
+    const leftTop: ConnectionEdge = {
+      x: node.x - nodeSpacingH,
+      y: node.y,
+      key: `skipped_left_top_${node.key}`,
+      isPlaceholder: true,
+      isHidden: true,
+    };
+    const leftBottom: ConnectionEdge = {
+      x: node.x,
+      y: node.y + node.height! - nodeSpacingV / 2,
+      key: `skipped_left_bottom_${node.key}`,
+      isPlaceholder: true,
+      isHidden: true,
+    };
+    const rightBottom: ConnectionEdge = {
+      x: node.x,
+      y: node.y + node.height! - nodeSpacingV / 2,
+      key: `skipped_right_bottom_${node.key}`,
+      isPlaceholder: true,
+      isHidden: true,
+    };
+    const rightTop: ConnectionEdge = {
+      x: node.x + node.width!,
+      y: node.y,
+      key: `skipped_righ_top_${node.key}`,
+      isPlaceholder: true,
+      isHidden: true,
+    };
+    const leftMidX = leftTop.x + nodeSpacingH / 2;
+    const rightMidX = rightTop.x - nodeSpacingH / 2;
+    this.renderBasicCurvedConnection(
+      leftTop,
+      leftBottom,
+      leftMidX,
+      svgElements,
+      false,
+      smallerCurveRadius,
+    );
+    this.renderBasicCurvedConnection(
+      rightBottom,
+      rightTop,
+      rightMidX,
+      svgElements,
+      false,
+      smallerCurveRadius,
     );
   }
 

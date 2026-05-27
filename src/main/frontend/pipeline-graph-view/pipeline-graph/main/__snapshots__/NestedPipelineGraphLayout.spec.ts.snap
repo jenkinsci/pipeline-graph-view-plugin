@@ -347,7 +347,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
       "destinationNodes": [
         {
           "key": "n_6",
-          "type": "stage",
           "x": 133,
           "y": 16,
         },
@@ -358,7 +357,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
         {
           "isPlaceholder": true,
           "key": "start-node",
-          "type": "start",
           "x": 35,
           "y": 16,
         },
@@ -368,7 +366,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
       "destinationNodes": [
         {
           "key": "n_16",
-          "type": "stage",
           "x": 273,
           "y": 16,
         },
@@ -378,7 +375,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
       "sourceNodes": [
         {
           "key": "n_6",
-          "type": "stage",
           "x": 133,
           "y": 16,
         },
@@ -388,7 +384,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
       "destinationNodes": [
         {
           "key": "n_17",
-          "type": "stage",
           "x": 413,
           "y": 16,
         },
@@ -398,7 +393,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
       "sourceNodes": [
         {
           "key": "n_16",
-          "type": "stage",
           "x": 273,
           "y": 16,
         },
@@ -408,7 +402,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
       "destinationNodes": [
         {
           "key": "n_26",
-          "type": "stage",
           "x": 553,
           "y": 16,
         },
@@ -418,7 +411,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
       "sourceNodes": [
         {
           "key": "n_17",
-          "type": "stage",
           "x": 413,
           "y": 16,
         },
@@ -428,7 +420,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
       "destinationNodes": [
         {
           "key": "n_42",
-          "type": "stage",
           "x": 693,
           "y": 16,
         },
@@ -438,7 +429,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
       "sourceNodes": [
         {
           "key": "n_26",
-          "type": "stage",
           "x": 553,
           "y": 16,
         },
@@ -448,7 +438,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
       "destinationNodes": [
         {
           "key": "n_54",
-          "type": "stage",
           "x": 833,
           "y": 16,
         },
@@ -458,7 +447,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
       "sourceNodes": [
         {
           "key": "n_42",
-          "type": "stage",
           "x": 693,
           "y": 16,
         },
@@ -469,7 +457,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
         {
           "isPlaceholder": true,
           "key": "end-node",
-          "type": "end",
           "x": 931,
           "y": 16,
         },
@@ -479,7 +466,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
       "sourceNodes": [
         {
           "key": "n_54",
-          "type": "stage",
           "x": 833,
           "y": 16,
         },
@@ -1438,7 +1424,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
       "destinationNodes": [
         {
           "key": "n_6",
-          "type": "stage",
           "x": 133,
           "y": 38,
         },
@@ -1449,7 +1434,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
         {
           "isPlaceholder": true,
           "key": "start-node",
-          "type": "start",
           "x": 35,
           "y": 38,
         },
@@ -1458,24 +1442,18 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
     {
       "destinationNodes": [
         {
-          "isParallel": true,
           "key": "n_16",
-          "type": "stage",
           "x": 413,
           "y": 38,
         },
         {
-          "isParallel": true,
           "key": "n_17",
-          "type": "stage",
           "x": 413,
           "y": 108,
         },
         {
           "isHidden": true,
-          "isParallel": true,
           "key": "n_18",
-          "type": "stage",
           "x": 413,
           "y": 178,
         },
@@ -1485,7 +1463,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
       "sourceNodes": [
         {
           "key": "n_6",
-          "type": "stage",
           "x": 133,
           "y": 38,
         },
@@ -1495,7 +1472,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
       "destinationNodes": [
         {
           "key": "n_26",
-          "type": "stage",
           "x": 413,
           "y": 178,
         },
@@ -1505,9 +1481,7 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
       "sourceNodes": [
         {
           "isHidden": true,
-          "isParallel": true,
           "key": "n_18",
-          "type": "stage",
           "x": 413,
           "y": 178,
         },
@@ -1517,7 +1491,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
       "destinationNodes": [
         {
           "key": "n_42",
-          "type": "stage",
           "x": 553,
           "y": 178,
         },
@@ -1527,7 +1500,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
       "sourceNodes": [
         {
           "key": "n_26",
-          "type": "stage",
           "x": 413,
           "y": 178,
         },
@@ -1538,7 +1510,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
         {
           "isPlaceholder": true,
           "key": "end-node",
-          "type": "end",
           "x": 791,
           "y": 38,
         },
@@ -1548,29 +1519,23 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > complexParallelSmokes.j
         {
           "isSkipped": true,
           "key": "n_54",
-          "type": "stage",
           "x": 693,
           "y": 38,
         },
       ],
       "sourceNodes": [
         {
-          "isParallel": true,
           "key": "n_16",
-          "type": "stage",
           "x": 413,
           "y": 38,
         },
         {
-          "isParallel": true,
           "key": "n_17",
-          "type": "stage",
           "x": 413,
           "y": 108,
         },
         {
           "key": "n_42",
-          "type": "stage",
           "x": 553,
           "y": 178,
         },
@@ -2223,7 +2188,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
       "destinationNodes": [
         {
           "key": "n_6",
-          "type": "stage",
           "x": 133,
           "y": 16,
         },
@@ -2234,7 +2198,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
         {
           "isPlaceholder": true,
           "key": "start-node",
-          "type": "start",
           "x": 35,
           "y": 16,
         },
@@ -2244,7 +2207,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
       "destinationNodes": [
         {
           "key": "n_9",
-          "type": "stage",
           "x": 273,
           "y": 16,
         },
@@ -2254,7 +2216,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
       "sourceNodes": [
         {
           "key": "n_6",
-          "type": "stage",
           "x": 133,
           "y": 16,
         },
@@ -2264,7 +2225,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
       "destinationNodes": [
         {
           "key": "n_10",
-          "type": "stage",
           "x": 413,
           "y": 16,
         },
@@ -2274,7 +2234,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
       "sourceNodes": [
         {
           "key": "n_9",
-          "type": "stage",
           "x": 273,
           "y": 16,
         },
@@ -2284,7 +2243,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
       "destinationNodes": [
         {
           "key": "n_18",
-          "type": "stage",
           "x": 553,
           "y": 16,
         },
@@ -2294,7 +2252,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
       "sourceNodes": [
         {
           "key": "n_10",
-          "type": "stage",
           "x": 413,
           "y": 16,
         },
@@ -2304,7 +2261,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
       "destinationNodes": [
         {
           "key": "n_19",
-          "type": "stage",
           "x": 693,
           "y": 16,
         },
@@ -2314,7 +2270,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
       "sourceNodes": [
         {
           "key": "n_18",
-          "type": "stage",
           "x": 553,
           "y": 16,
         },
@@ -2324,7 +2279,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
       "destinationNodes": [
         {
           "key": "n_31",
-          "type": "stage",
           "x": 833,
           "y": 16,
         },
@@ -2334,7 +2288,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
       "sourceNodes": [
         {
           "key": "n_19",
-          "type": "stage",
           "x": 693,
           "y": 16,
         },
@@ -2344,7 +2297,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
       "destinationNodes": [
         {
           "key": "n_32",
-          "type": "stage",
           "x": 973,
           "y": 16,
         },
@@ -2354,7 +2306,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
       "sourceNodes": [
         {
           "key": "n_31",
-          "type": "stage",
           "x": 833,
           "y": 16,
         },
@@ -2365,7 +2316,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
         {
           "isPlaceholder": true,
           "key": "end-node",
-          "type": "end",
           "x": 1071,
           "y": 16,
         },
@@ -2375,7 +2325,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
       "sourceNodes": [
         {
           "key": "n_32",
-          "type": "stage",
           "x": 973,
           "y": 16,
         },
@@ -3611,16 +3560,12 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
     {
       "destinationNodes": [
         {
-          "isParallel": true,
           "key": "n_9",
-          "type": "stage",
           "x": 133,
           "y": 60,
         },
         {
-          "isParallel": true,
           "key": "n_10",
-          "type": "stage",
           "x": 133,
           "y": 130,
         },
@@ -3631,7 +3576,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
         {
           "isPlaceholder": true,
           "key": "start-node",
-          "type": "start",
           "x": 35,
           "y": 60,
         },
@@ -3640,16 +3584,12 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
     {
       "destinationNodes": [
         {
-          "isParallel": true,
           "key": "n_18",
-          "type": "stage",
           "x": 273,
           "y": 60,
         },
         {
-          "isParallel": true,
           "key": "n_19",
-          "type": "stage",
           "x": 273,
           "y": 130,
         },
@@ -3658,16 +3598,12 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
       "skippedNodes": [],
       "sourceNodes": [
         {
-          "isParallel": true,
           "key": "n_9",
-          "type": "stage",
           "x": 133,
           "y": 60,
         },
         {
-          "isParallel": true,
           "key": "n_10",
-          "type": "stage",
           "x": 133,
           "y": 130,
         },
@@ -3676,16 +3612,12 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
     {
       "destinationNodes": [
         {
-          "isParallel": true,
           "key": "n_31",
-          "type": "stage",
           "x": 413,
           "y": 60,
         },
         {
-          "isParallel": true,
           "key": "n_32",
-          "type": "stage",
           "x": 413,
           "y": 130,
         },
@@ -3694,16 +3626,12 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
       "skippedNodes": [],
       "sourceNodes": [
         {
-          "isParallel": true,
           "key": "n_18",
-          "type": "stage",
           "x": 273,
           "y": 60,
         },
         {
-          "isParallel": true,
           "key": "n_19",
-          "type": "stage",
           "x": 273,
           "y": 130,
         },
@@ -3714,7 +3642,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
         {
           "isPlaceholder": true,
           "key": "end-node",
-          "type": "end",
           "x": 511,
           "y": 60,
         },
@@ -3723,16 +3650,12 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh771_non_wrapped_paral
       "skippedNodes": [],
       "sourceNodes": [
         {
-          "isParallel": true,
           "key": "n_31",
-          "type": "stage",
           "x": 413,
           "y": 60,
         },
         {
-          "isParallel": true,
           "key": "n_32",
-          "type": "stage",
           "x": 413,
           "y": 130,
         },
@@ -4754,7 +4677,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "destinationNodes": [
         {
           "key": "n_6",
-          "type": "stage",
           "x": 133,
           "y": 16,
         },
@@ -4765,7 +4687,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
         {
           "isPlaceholder": true,
           "key": "start-node",
-          "type": "start",
           "x": 35,
           "y": 16,
         },
@@ -4775,7 +4696,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "destinationNodes": [
         {
           "key": "n_17",
-          "type": "stage",
           "x": 273,
           "y": 16,
         },
@@ -4785,7 +4705,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "sourceNodes": [
         {
           "key": "n_6",
-          "type": "stage",
           "x": 133,
           "y": 16,
         },
@@ -4795,7 +4714,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "destinationNodes": [
         {
           "key": "n_18",
-          "type": "stage",
           "x": 413,
           "y": 16,
         },
@@ -4805,7 +4723,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "sourceNodes": [
         {
           "key": "n_17",
-          "type": "stage",
           "x": 273,
           "y": 16,
         },
@@ -4815,7 +4732,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "destinationNodes": [
         {
           "key": "n_35",
-          "type": "stage",
           "x": 553,
           "y": 16,
         },
@@ -4825,7 +4741,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "sourceNodes": [
         {
           "key": "n_18",
-          "type": "stage",
           "x": 413,
           "y": 16,
         },
@@ -4835,7 +4750,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "destinationNodes": [
         {
           "key": "n_60",
-          "type": "stage",
           "x": 693,
           "y": 16,
         },
@@ -4845,7 +4759,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "sourceNodes": [
         {
           "key": "n_35",
-          "type": "stage",
           "x": 553,
           "y": 16,
         },
@@ -4855,7 +4768,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "destinationNodes": [
         {
           "key": "n_76",
-          "type": "stage",
           "x": 833,
           "y": 16,
         },
@@ -4865,7 +4777,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "sourceNodes": [
         {
           "key": "n_60",
-          "type": "stage",
           "x": 693,
           "y": 16,
         },
@@ -4875,7 +4786,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "destinationNodes": [
         {
           "key": "n_84",
-          "type": "stage",
           "x": 973,
           "y": 16,
         },
@@ -4885,7 +4795,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "sourceNodes": [
         {
           "key": "n_76",
-          "type": "stage",
           "x": 833,
           "y": 16,
         },
@@ -4895,7 +4804,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "destinationNodes": [
         {
           "key": "n_37",
-          "type": "stage",
           "x": 1113,
           "y": 16,
         },
@@ -4905,7 +4813,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "sourceNodes": [
         {
           "key": "n_84",
-          "type": "stage",
           "x": 973,
           "y": 16,
         },
@@ -4915,7 +4822,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "destinationNodes": [
         {
           "key": "n_55",
-          "type": "stage",
           "x": 1253,
           "y": 16,
         },
@@ -4925,7 +4831,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "sourceNodes": [
         {
           "key": "n_37",
-          "type": "stage",
           "x": 1113,
           "y": 16,
         },
@@ -4935,7 +4840,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "destinationNodes": [
         {
           "key": "n_39",
-          "type": "stage",
           "x": 1393,
           "y": 16,
         },
@@ -4945,7 +4849,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "sourceNodes": [
         {
           "key": "n_55",
-          "type": "stage",
           "x": 1253,
           "y": 16,
         },
@@ -4955,7 +4858,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "destinationNodes": [
         {
           "key": "n_57",
-          "type": "stage",
           "x": 1533,
           "y": 16,
         },
@@ -4965,7 +4867,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "sourceNodes": [
         {
           "key": "n_39",
-          "type": "stage",
           "x": 1393,
           "y": 16,
         },
@@ -4975,7 +4876,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "destinationNodes": [
         {
           "key": "n_71",
-          "type": "stage",
           "x": 1673,
           "y": 16,
         },
@@ -4985,7 +4885,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "sourceNodes": [
         {
           "key": "n_57",
-          "type": "stage",
           "x": 1533,
           "y": 16,
         },
@@ -4996,7 +4895,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
         {
           "isPlaceholder": true,
           "key": "counter-node",
-          "type": "counter",
           "x": 1813,
           "y": 16,
         },
@@ -5006,7 +4904,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "sourceNodes": [
         {
           "key": "n_71",
-          "type": "stage",
           "x": 1673,
           "y": 16,
         },
@@ -5017,7 +4914,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
         {
           "isPlaceholder": true,
           "key": "end-node",
-          "type": "end",
           "x": 1911,
           "y": 16,
         },
@@ -5028,7 +4924,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
         {
           "isPlaceholder": true,
           "key": "counter-node",
-          "type": "counter",
           "x": 1813,
           "y": 16,
         },
@@ -7856,7 +7751,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "destinationNodes": [
         {
           "key": "n_6",
-          "type": "stage",
           "x": 133,
           "y": 38,
         },
@@ -7867,7 +7761,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
         {
           "isPlaceholder": true,
           "key": "start-node",
-          "type": "start",
           "x": 35,
           "y": 38,
         },
@@ -7876,43 +7769,33 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
     {
       "destinationNodes": [
         {
-          "isParallel": true,
           "key": "n_17",
-          "type": "stage",
           "x": 553,
           "y": 38,
         },
         {
-          "isParallel": true,
           "isSkipped": true,
           "key": "n_18",
-          "type": "stage",
           "x": 553,
           "y": 108,
         },
         {
           "isHidden": true,
-          "isParallel": true,
           "key": "n_19",
-          "type": "stage",
           "x": 413,
           "y": 200,
         },
         {
           "firstChildIsSkipped": true,
           "isHidden": true,
-          "isParallel": true,
           "key": "n_20",
-          "type": "stage",
           "x": 413,
           "y": 292,
         },
         {
           "firstChildIsSkipped": true,
           "isHidden": true,
-          "isParallel": true,
           "key": "n_21",
-          "type": "stage",
           "x": 413,
           "y": 384,
         },
@@ -7922,7 +7805,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "sourceNodes": [
         {
           "key": "n_6",
-          "type": "stage",
           "x": 133,
           "y": 38,
         },
@@ -7932,7 +7814,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "destinationNodes": [
         {
           "key": "n_35",
-          "type": "stage",
           "x": 413,
           "y": 200,
         },
@@ -7942,9 +7823,7 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "sourceNodes": [
         {
           "isHidden": true,
-          "isParallel": true,
           "key": "n_19",
-          "type": "stage",
           "x": 413,
           "y": 200,
         },
@@ -7954,7 +7833,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "destinationNodes": [
         {
           "key": "n_60",
-          "type": "stage",
           "x": 553,
           "y": 200,
         },
@@ -7964,7 +7842,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "sourceNodes": [
         {
           "key": "n_35",
-          "type": "stage",
           "x": 413,
           "y": 200,
         },
@@ -7976,7 +7853,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
           "isHidden": true,
           "isPlaceholder": true,
           "key": "stage_end_n_19",
-          "type": "stage-end",
           "x": 903,
           "y": 200,
         },
@@ -7986,14 +7862,12 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
         {
           "isSkipped": true,
           "key": "n_76",
-          "type": "stage",
           "x": 693,
           "y": 200,
         },
         {
           "isSkipped": true,
           "key": "n_84",
-          "type": "stage",
           "x": 833,
           "y": 200,
         },
@@ -8001,7 +7875,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "sourceNodes": [
         {
           "key": "n_60",
-          "type": "stage",
           "x": 553,
           "y": 200,
         },
@@ -8011,7 +7884,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "destinationNodes": [
         {
           "key": "n_55",
-          "type": "stage",
           "x": 693,
           "y": 292,
         },
@@ -8021,7 +7893,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
         {
           "isSkipped": true,
           "key": "n_37",
-          "type": "stage",
           "x": 553,
           "y": 292,
         },
@@ -8030,9 +7901,7 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
         {
           "firstChildIsSkipped": true,
           "isHidden": true,
-          "isParallel": true,
           "key": "n_20",
-          "type": "stage",
           "x": 413,
           "y": 292,
         },
@@ -8042,7 +7911,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "destinationNodes": [
         {
           "key": "n_57",
-          "type": "stage",
           "x": 553,
           "y": 384,
         },
@@ -8052,7 +7920,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
         {
           "isSkipped": true,
           "key": "n_39",
-          "type": "stage",
           "x": 413,
           "y": 384,
         },
@@ -8061,9 +7928,7 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
         {
           "firstChildIsSkipped": true,
           "isHidden": true,
-          "isParallel": true,
           "key": "n_21",
-          "type": "stage",
           "x": 413,
           "y": 384,
         },
@@ -8073,7 +7938,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "destinationNodes": [
         {
           "key": "n_71",
-          "type": "stage",
           "x": 693,
           "y": 384,
         },
@@ -8083,7 +7947,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "sourceNodes": [
         {
           "key": "n_57",
-          "type": "stage",
           "x": 553,
           "y": 384,
         },
@@ -8093,7 +7956,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "destinationNodes": [
         {
           "key": "n_86",
-          "type": "stage",
           "x": 833,
           "y": 384,
         },
@@ -8103,7 +7965,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "sourceNodes": [
         {
           "key": "n_71",
-          "type": "stage",
           "x": 693,
           "y": 384,
         },
@@ -8112,25 +7973,19 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
     {
       "destinationNodes": [
         {
-          "isParallel": true,
           "isSkipped": true,
           "key": "n_137",
-          "type": "stage",
           "x": 1463,
           "y": 38,
         },
         {
-          "isParallel": true,
           "key": "n_138",
-          "type": "stage",
           "x": 1463,
           "y": 108,
         },
         {
           "isHidden": true,
-          "isParallel": true,
           "key": "n_139",
-          "type": "stage",
           "x": 1463,
           "y": 178,
         },
@@ -8140,31 +7995,25 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
         {
           "isSkipped": true,
           "key": "n_103",
-          "type": "stage",
           "x": 1043,
           "y": 38,
         },
         {
           "isSkipped": true,
           "key": "n_118",
-          "type": "stage",
           "x": 1183,
           "y": 38,
         },
       ],
       "sourceNodes": [
         {
-          "isParallel": true,
           "key": "n_17",
-          "type": "stage",
           "x": 553,
           "y": 38,
         },
         {
-          "isParallel": true,
           "isSkipped": true,
           "key": "n_18",
-          "type": "stage",
           "x": 553,
           "y": 108,
         },
@@ -8172,19 +8021,16 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
           "isHidden": true,
           "isPlaceholder": true,
           "key": "stage_end_n_19",
-          "type": "stage-end",
           "x": 903,
           "y": 200,
         },
         {
           "key": "n_55",
-          "type": "stage",
           "x": 693,
           "y": 292,
         },
         {
           "key": "n_86",
-          "type": "stage",
           "x": 833,
           "y": 384,
         },
@@ -8194,7 +8040,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "destinationNodes": [
         {
           "key": "n_149",
-          "type": "stage",
           "x": 1463,
           "y": 178,
         },
@@ -8204,9 +8049,7 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "sourceNodes": [
         {
           "isHidden": true,
-          "isParallel": true,
           "key": "n_139",
-          "type": "stage",
           "x": 1463,
           "y": 178,
         },
@@ -8216,7 +8059,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "destinationNodes": [
         {
           "key": "n_160",
-          "type": "stage",
           "x": 1603,
           "y": 178,
         },
@@ -8226,7 +8068,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "sourceNodes": [
         {
           "key": "n_149",
-          "type": "stage",
           "x": 1463,
           "y": 178,
         },
@@ -8237,7 +8078,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
         {
           "isPlaceholder": true,
           "key": "end-node",
-          "type": "end",
           "x": 1701,
           "y": 38,
         },
@@ -8246,23 +8086,18 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_complexSmokes.je
       "skippedNodes": [],
       "sourceNodes": [
         {
-          "isParallel": true,
           "isSkipped": true,
           "key": "n_137",
-          "type": "stage",
           "x": 1463,
           "y": 38,
         },
         {
-          "isParallel": true,
           "key": "n_138",
-          "type": "stage",
           "x": 1463,
           "y": 108,
         },
         {
           "key": "n_160",
-          "type": "stage",
           "x": 1603,
           "y": 178,
         },
@@ -9558,7 +9393,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "destinationNodes": [
         {
           "key": "n_10",
-          "type": "stage",
           "x": 133,
           "y": 16,
         },
@@ -9569,7 +9403,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
         {
           "isPlaceholder": true,
           "key": "start-node",
-          "type": "start",
           "x": 35,
           "y": 16,
         },
@@ -9579,7 +9412,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "destinationNodes": [
         {
           "key": "n_16",
-          "type": "stage",
           "x": 273,
           "y": 16,
         },
@@ -9589,7 +9421,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "sourceNodes": [
         {
           "key": "n_10",
-          "type": "stage",
           "x": 133,
           "y": 16,
         },
@@ -9599,7 +9430,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "destinationNodes": [
         {
           "key": "n_33",
-          "type": "stage",
           "x": 413,
           "y": 16,
         },
@@ -9609,7 +9439,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "sourceNodes": [
         {
           "key": "n_16",
-          "type": "stage",
           "x": 273,
           "y": 16,
         },
@@ -9619,7 +9448,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "destinationNodes": [
         {
           "key": "n_34",
-          "type": "stage",
           "x": 553,
           "y": 16,
         },
@@ -9629,7 +9457,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "sourceNodes": [
         {
           "key": "n_33",
-          "type": "stage",
           "x": 413,
           "y": 16,
         },
@@ -9639,7 +9466,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "destinationNodes": [
         {
           "key": "n_17",
-          "type": "stage",
           "x": 693,
           "y": 16,
         },
@@ -9649,7 +9475,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "sourceNodes": [
         {
           "key": "n_34",
-          "type": "stage",
           "x": 553,
           "y": 16,
         },
@@ -9659,7 +9484,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "destinationNodes": [
         {
           "key": "n_12",
-          "type": "stage",
           "x": 833,
           "y": 16,
         },
@@ -9669,7 +9493,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "sourceNodes": [
         {
           "key": "n_17",
-          "type": "stage",
           "x": 693,
           "y": 16,
         },
@@ -9679,7 +9502,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "destinationNodes": [
         {
           "key": "n_21",
-          "type": "stage",
           "x": 973,
           "y": 16,
         },
@@ -9689,7 +9511,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "sourceNodes": [
         {
           "key": "n_12",
-          "type": "stage",
           "x": 833,
           "y": 16,
         },
@@ -9699,7 +9520,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "destinationNodes": [
         {
           "key": "n_28",
-          "type": "stage",
           "x": 1113,
           "y": 16,
         },
@@ -9709,7 +9529,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "sourceNodes": [
         {
           "key": "n_21",
-          "type": "stage",
           "x": 973,
           "y": 16,
         },
@@ -9719,7 +9538,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "destinationNodes": [
         {
           "key": "n_55",
-          "type": "stage",
           "x": 1253,
           "y": 16,
         },
@@ -9729,7 +9547,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "sourceNodes": [
         {
           "key": "n_28",
-          "type": "stage",
           "x": 1113,
           "y": 16,
         },
@@ -9739,7 +9556,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "destinationNodes": [
         {
           "key": "n_60",
-          "type": "stage",
           "x": 1393,
           "y": 16,
         },
@@ -9749,7 +9565,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "sourceNodes": [
         {
           "key": "n_55",
-          "type": "stage",
           "x": 1253,
           "y": 16,
         },
@@ -9759,7 +9574,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "destinationNodes": [
         {
           "key": "n_61",
-          "type": "stage",
           "x": 1533,
           "y": 16,
         },
@@ -9769,7 +9583,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "sourceNodes": [
         {
           "key": "n_60",
-          "type": "stage",
           "x": 1393,
           "y": 16,
         },
@@ -9779,7 +9592,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "destinationNodes": [
         {
           "key": "n_22",
-          "type": "stage",
           "x": 1673,
           "y": 16,
         },
@@ -9789,7 +9601,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "sourceNodes": [
         {
           "key": "n_61",
-          "type": "stage",
           "x": 1533,
           "y": 16,
         },
@@ -9800,7 +9611,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
         {
           "isPlaceholder": true,
           "key": "end-node",
-          "type": "end",
           "x": 1771,
           "y": 16,
         },
@@ -9810,7 +9620,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "sourceNodes": [
         {
           "key": "n_22",
-          "type": "stage",
           "x": 1673,
           "y": 16,
         },
@@ -12815,17 +12624,13 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "destinationNodes": [
         {
           "isHidden": true,
-          "isParallel": true,
           "key": "n_7",
-          "type": "stage",
           "x": 273,
           "y": 82,
         },
         {
           "isHidden": true,
-          "isParallel": true,
           "key": "n_8",
-          "type": "stage",
           "x": 273,
           "y": 336,
         },
@@ -12836,7 +12641,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
         {
           "isPlaceholder": true,
           "key": "start-node",
-          "type": "start",
           "x": 35,
           "y": 82,
         },
@@ -12846,16 +12650,12 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "destinationNodes": [
         {
           "isHidden": true,
-          "isParallel": true,
           "key": "n_-16",
-          "type": "stage",
           "x": 273,
           "y": 82,
         },
         {
-          "isParallel": true,
           "key": "n_17",
-          "type": "stage",
           "x": 273,
           "y": 222,
         },
@@ -12865,9 +12665,7 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "sourceNodes": [
         {
           "isHidden": true,
-          "isParallel": true,
           "key": "n_7",
-          "type": "stage",
           "x": 273,
           "y": 82,
         },
@@ -12876,16 +12674,12 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
     {
       "destinationNodes": [
         {
-          "isParallel": true,
           "key": "n_33",
-          "type": "stage",
           "x": 413,
           "y": 82,
         },
         {
-          "isParallel": true,
           "key": "n_34",
-          "type": "stage",
           "x": 413,
           "y": 152,
         },
@@ -12895,9 +12689,7 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "sourceNodes": [
         {
           "isHidden": true,
-          "isParallel": true,
           "key": "n_-16",
-          "type": "stage",
           "x": 273,
           "y": 82,
         },
@@ -12909,7 +12701,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
           "isHidden": true,
           "isPlaceholder": true,
           "key": "stage_end_n_-16",
-          "type": "stage-end",
           "x": 483,
           "y": 82,
         },
@@ -12918,16 +12709,12 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "skippedNodes": [],
       "sourceNodes": [
         {
-          "isParallel": true,
           "key": "n_33",
-          "type": "stage",
           "x": 413,
           "y": 82,
         },
         {
-          "isParallel": true,
           "key": "n_34",
-          "type": "stage",
           "x": 413,
           "y": 152,
         },
@@ -12939,7 +12726,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
           "isHidden": true,
           "isPlaceholder": true,
           "key": "stage_end_n_7",
-          "type": "stage-end",
           "x": 553,
           "y": 82,
         },
@@ -12951,14 +12737,11 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
           "isHidden": true,
           "isPlaceholder": true,
           "key": "stage_end_n_-16",
-          "type": "stage-end",
           "x": 483,
           "y": 82,
         },
         {
-          "isParallel": true,
           "key": "n_17",
-          "type": "stage",
           "x": 273,
           "y": 222,
         },
@@ -12968,16 +12751,12 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "destinationNodes": [
         {
           "isHidden": true,
-          "isParallel": true,
           "key": "n_21",
-          "type": "stage",
           "x": 413,
           "y": 336,
         },
         {
-          "isParallel": true,
           "key": "n_22",
-          "type": "stage",
           "x": 413,
           "y": 476,
         },
@@ -12987,9 +12766,7 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "sourceNodes": [
         {
           "isHidden": true,
-          "isParallel": true,
           "key": "n_8",
-          "type": "stage",
           "x": 273,
           "y": 336,
         },
@@ -12999,7 +12776,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "destinationNodes": [
         {
           "key": "n_28",
-          "type": "stage",
           "x": 413,
           "y": 336,
         },
@@ -13009,9 +12785,7 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "sourceNodes": [
         {
           "isHidden": true,
-          "isParallel": true,
           "key": "n_21",
-          "type": "stage",
           "x": 413,
           "y": 336,
         },
@@ -13020,16 +12794,12 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
     {
       "destinationNodes": [
         {
-          "isParallel": true,
           "key": "n_60",
-          "type": "stage",
           "x": 553,
           "y": 336,
         },
         {
-          "isParallel": true,
           "key": "n_61",
-          "type": "stage",
           "x": 553,
           "y": 406,
         },
@@ -13039,7 +12809,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "sourceNodes": [
         {
           "key": "n_28",
-          "type": "stage",
           "x": 413,
           "y": 336,
         },
@@ -13051,7 +12820,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
           "isHidden": true,
           "isPlaceholder": true,
           "key": "stage_end_n_21",
-          "type": "stage-end",
           "x": 623,
           "y": 336,
         },
@@ -13060,16 +12828,12 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
       "skippedNodes": [],
       "sourceNodes": [
         {
-          "isParallel": true,
           "key": "n_60",
-          "type": "stage",
           "x": 553,
           "y": 336,
         },
         {
-          "isParallel": true,
           "key": "n_61",
-          "type": "stage",
           "x": 553,
           "y": 406,
         },
@@ -13081,7 +12845,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
           "isHidden": true,
           "isPlaceholder": true,
           "key": "stage_end_n_8",
-          "type": "stage-end",
           "x": 693,
           "y": 336,
         },
@@ -13093,14 +12856,11 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
           "isHidden": true,
           "isPlaceholder": true,
           "key": "stage_end_n_21",
-          "type": "stage-end",
           "x": 623,
           "y": 336,
         },
         {
-          "isParallel": true,
           "key": "n_22",
-          "type": "stage",
           "x": 413,
           "y": 476,
         },
@@ -13111,7 +12871,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
         {
           "isPlaceholder": true,
           "key": "end-node",
-          "type": "end",
           "x": 791,
           "y": 82,
         },
@@ -13123,7 +12882,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
           "isHidden": true,
           "isPlaceholder": true,
           "key": "stage_end_n_7",
-          "type": "stage-end",
           "x": 553,
           "y": 82,
         },
@@ -13131,7 +12889,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_nestedParallel.j
           "isHidden": true,
           "isPlaceholder": true,
           "key": "stage_end_n_8",
-          "type": "stage-end",
           "x": 693,
           "y": 336,
         },
@@ -14219,7 +13976,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_12",
-          "type": "stage",
           "x": 133,
           "y": 16,
         },
@@ -14230,7 +13986,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
         {
           "isPlaceholder": true,
           "key": "start-node",
-          "type": "start",
           "x": 35,
           "y": 16,
         },
@@ -14240,7 +13995,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_26",
-          "type": "stage",
           "x": 273,
           "y": 16,
         },
@@ -14250,7 +14004,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "key": "n_12",
-          "type": "stage",
           "x": 133,
           "y": 16,
         },
@@ -14260,7 +14013,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_35",
-          "type": "stage",
           "x": 413,
           "y": 16,
         },
@@ -14270,7 +14022,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "key": "n_26",
-          "type": "stage",
           "x": 273,
           "y": 16,
         },
@@ -14280,7 +14031,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_36",
-          "type": "stage",
           "x": 553,
           "y": 16,
         },
@@ -14290,7 +14040,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "key": "n_35",
-          "type": "stage",
           "x": 413,
           "y": 16,
         },
@@ -14300,7 +14049,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_37",
-          "type": "stage",
           "x": 693,
           "y": 16,
         },
@@ -14310,7 +14058,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "key": "n_36",
-          "type": "stage",
           "x": 553,
           "y": 16,
         },
@@ -14320,7 +14067,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_67",
-          "type": "stage",
           "x": 833,
           "y": 16,
         },
@@ -14330,7 +14076,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "key": "n_37",
-          "type": "stage",
           "x": 693,
           "y": 16,
         },
@@ -14340,7 +14085,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_72",
-          "type": "stage",
           "x": 973,
           "y": 16,
         },
@@ -14350,7 +14094,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "key": "n_67",
-          "type": "stage",
           "x": 833,
           "y": 16,
         },
@@ -14360,7 +14103,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_73",
-          "type": "stage",
           "x": 1113,
           "y": 16,
         },
@@ -14370,7 +14112,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "key": "n_72",
-          "type": "stage",
           "x": 973,
           "y": 16,
         },
@@ -14380,7 +14121,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_99",
-          "type": "stage",
           "x": 1253,
           "y": 16,
         },
@@ -14390,7 +14130,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "key": "n_73",
-          "type": "stage",
           "x": 1113,
           "y": 16,
         },
@@ -14400,7 +14139,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_14",
-          "type": "stage",
           "x": 1393,
           "y": 16,
         },
@@ -14410,7 +14148,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "key": "n_99",
-          "type": "stage",
           "x": 1253,
           "y": 16,
         },
@@ -14420,7 +14157,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_28",
-          "type": "stage",
           "x": 1533,
           "y": 16,
         },
@@ -14430,7 +14166,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "key": "n_14",
-          "type": "stage",
           "x": 1393,
           "y": 16,
         },
@@ -14440,7 +14175,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_51",
-          "type": "stage",
           "x": 1673,
           "y": 16,
         },
@@ -14450,7 +14184,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "key": "n_28",
-          "type": "stage",
           "x": 1533,
           "y": 16,
         },
@@ -14461,7 +14194,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
         {
           "isPlaceholder": true,
           "key": "counter-node",
-          "type": "counter",
           "x": 1813,
           "y": 16,
         },
@@ -14471,7 +14203,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "key": "n_51",
-          "type": "stage",
           "x": 1673,
           "y": 16,
         },
@@ -14482,7 +14213,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
         {
           "isPlaceholder": true,
           "key": "end-node",
-          "type": "end",
           "x": 1911,
           "y": 16,
         },
@@ -14493,7 +14223,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
         {
           "isPlaceholder": true,
           "key": "counter-node",
-          "type": "counter",
           "x": 1813,
           "y": 16,
         },
@@ -17730,25 +17459,19 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "isHidden": true,
-          "isParallel": true,
           "key": "n_8",
-          "type": "stage",
           "x": 273,
           "y": 60,
         },
         {
           "isHidden": true,
-          "isParallel": true,
           "key": "n_9",
-          "type": "stage",
           "x": 273,
           "y": 292,
         },
         {
           "isHidden": true,
-          "isParallel": true,
           "key": "n_10",
-          "type": "stage",
           "x": 273,
           "y": 432,
         },
@@ -17759,7 +17482,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
         {
           "isPlaceholder": true,
           "key": "start-node",
-          "type": "start",
           "x": 35,
           "y": 60,
         },
@@ -17769,7 +17491,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_12",
-          "type": "stage",
           "x": 413,
           "y": 60,
         },
@@ -17779,9 +17500,7 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "isHidden": true,
-          "isParallel": true,
           "key": "n_8",
-          "type": "stage",
           "x": 273,
           "y": 60,
         },
@@ -17790,23 +17509,17 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
     {
       "destinationNodes": [
         {
-          "isParallel": true,
           "key": "n_35",
-          "type": "stage",
           "x": 553,
           "y": 60,
         },
         {
-          "isParallel": true,
           "key": "n_36",
-          "type": "stage",
           "x": 553,
           "y": 130,
         },
         {
-          "isParallel": true,
           "key": "n_37",
-          "type": "stage",
           "x": 553,
           "y": 200,
         },
@@ -17816,7 +17529,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "key": "n_12",
-          "type": "stage",
           "x": 413,
           "y": 60,
         },
@@ -17825,16 +17537,12 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
     {
       "destinationNodes": [
         {
-          "isParallel": true,
           "key": "n_72",
-          "type": "stage",
           "x": 693,
           "y": 60,
         },
         {
-          "isParallel": true,
           "key": "n_73",
-          "type": "stage",
           "x": 693,
           "y": 130,
         },
@@ -17843,23 +17551,17 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "skippedNodes": [],
       "sourceNodes": [
         {
-          "isParallel": true,
           "key": "n_35",
-          "type": "stage",
           "x": 553,
           "y": 60,
         },
         {
-          "isParallel": true,
           "key": "n_36",
-          "type": "stage",
           "x": 553,
           "y": 130,
         },
         {
-          "isParallel": true,
           "key": "n_37",
-          "type": "stage",
           "x": 553,
           "y": 200,
         },
@@ -17869,7 +17571,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_99",
-          "type": "stage",
           "x": 833,
           "y": 60,
         },
@@ -17878,16 +17579,12 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "skippedNodes": [],
       "sourceNodes": [
         {
-          "isParallel": true,
           "key": "n_72",
-          "type": "stage",
           "x": 693,
           "y": 60,
         },
         {
-          "isParallel": true,
           "key": "n_73",
-          "type": "stage",
           "x": 693,
           "y": 130,
         },
@@ -17897,7 +17594,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_14",
-          "type": "stage",
           "x": 413,
           "y": 292,
         },
@@ -17907,9 +17603,7 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "isHidden": true,
-          "isParallel": true,
           "key": "n_9",
-          "type": "stage",
           "x": 273,
           "y": 292,
         },
@@ -17919,7 +17613,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_28",
-          "type": "stage",
           "x": 553,
           "y": 292,
         },
@@ -17929,7 +17622,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "key": "n_14",
-          "type": "stage",
           "x": 413,
           "y": 292,
         },
@@ -17938,16 +17630,12 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
     {
       "destinationNodes": [
         {
-          "isParallel": true,
           "key": "n_51",
-          "type": "stage",
           "x": 693,
           "y": 292,
         },
         {
-          "isParallel": true,
           "key": "n_52",
-          "type": "stage",
           "x": 693,
           "y": 362,
         },
@@ -17957,7 +17645,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "key": "n_28",
-          "type": "stage",
           "x": 553,
           "y": 292,
         },
@@ -17967,7 +17654,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_85",
-          "type": "stage",
           "x": 833,
           "y": 292,
         },
@@ -17976,16 +17662,12 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "skippedNodes": [],
       "sourceNodes": [
         {
-          "isParallel": true,
           "key": "n_51",
-          "type": "stage",
           "x": 693,
           "y": 292,
         },
         {
-          "isParallel": true,
           "key": "n_52",
-          "type": "stage",
           "x": 693,
           "y": 362,
         },
@@ -17995,7 +17677,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_16",
-          "type": "stage",
           "x": 273,
           "y": 432,
         },
@@ -18005,9 +17686,7 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "isHidden": true,
-          "isParallel": true,
           "key": "n_10",
-          "type": "stage",
           "x": 273,
           "y": 432,
         },
@@ -18017,7 +17696,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_31",
-          "type": "stage",
           "x": 413,
           "y": 432,
         },
@@ -18027,7 +17705,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "key": "n_16",
-          "type": "stage",
           "x": 273,
           "y": 432,
         },
@@ -18037,7 +17714,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_57",
-          "type": "stage",
           "x": 553,
           "y": 432,
         },
@@ -18047,7 +17723,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "key": "n_31",
-          "type": "stage",
           "x": 413,
           "y": 432,
         },
@@ -18057,7 +17732,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_76",
-          "type": "stage",
           "x": 693,
           "y": 432,
         },
@@ -18067,7 +17741,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "key": "n_57",
-          "type": "stage",
           "x": 553,
           "y": 432,
         },
@@ -18077,7 +17750,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_92",
-          "type": "stage",
           "x": 833,
           "y": 432,
         },
@@ -18087,7 +17759,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "key": "n_76",
-          "type": "stage",
           "x": 693,
           "y": 432,
         },
@@ -18097,7 +17768,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_104",
-          "type": "stage",
           "x": 973,
           "y": 432,
         },
@@ -18107,7 +17777,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "key": "n_92",
-          "type": "stage",
           "x": 833,
           "y": 432,
         },
@@ -18117,7 +17786,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "destinationNodes": [
         {
           "key": "n_111",
-          "type": "stage",
           "x": 1113,
           "y": 432,
         },
@@ -18127,7 +17795,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "key": "n_104",
-          "type": "stage",
           "x": 973,
           "y": 432,
         },
@@ -18138,7 +17805,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
         {
           "isPlaceholder": true,
           "key": "end-node",
-          "type": "end",
           "x": 1211,
           "y": 60,
         },
@@ -18148,19 +17814,16 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1155_smokeTest.jenkin
       "sourceNodes": [
         {
           "key": "n_99",
-          "type": "stage",
           "x": 833,
           "y": 60,
         },
         {
           "key": "n_85",
-          "type": "stage",
           "x": 833,
           "y": 292,
         },
         {
           "key": "n_111",
-          "type": "stage",
           "x": 1113,
           "y": 432,
         },
@@ -19195,7 +18858,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_1st_skip
       "destinationNodes": [
         {
           "key": "n_4",
-          "type": "stage",
           "x": 133,
           "y": 16,
         },
@@ -19206,7 +18868,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_1st_skip
         {
           "isPlaceholder": true,
           "key": "start-node",
-          "type": "start",
           "x": 35,
           "y": 16,
         },
@@ -19216,7 +18877,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_1st_skip
       "destinationNodes": [
         {
           "key": "n_6",
-          "type": "stage",
           "x": 273,
           "y": 16,
         },
@@ -19226,7 +18886,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_1st_skip
       "sourceNodes": [
         {
           "key": "n_4",
-          "type": "stage",
           "x": 133,
           "y": 16,
         },
@@ -19236,7 +18895,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_1st_skip
       "destinationNodes": [
         {
           "key": "n_10",
-          "type": "stage",
           "x": 413,
           "y": 16,
         },
@@ -19246,7 +18904,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_1st_skip
       "sourceNodes": [
         {
           "key": "n_6",
-          "type": "stage",
           "x": 273,
           "y": 16,
         },
@@ -19256,7 +18913,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_1st_skip
       "destinationNodes": [
         {
           "key": "n_17",
-          "type": "stage",
           "x": 553,
           "y": 16,
         },
@@ -19266,7 +18922,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_1st_skip
       "sourceNodes": [
         {
           "key": "n_10",
-          "type": "stage",
           "x": 413,
           "y": 16,
         },
@@ -19277,7 +18932,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_1st_skip
         {
           "isPlaceholder": true,
           "key": "end-node",
-          "type": "end",
           "x": 651,
           "y": 16,
         },
@@ -19287,7 +18941,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_1st_skip
       "sourceNodes": [
         {
           "key": "n_17",
-          "type": "stage",
           "x": 553,
           "y": 16,
         },
@@ -19855,7 +19508,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_1st_skip
           "firstChildIsSkipped": true,
           "isHidden": true,
           "key": "n_4",
-          "type": "stage",
           "x": 133,
           "y": 60,
         },
@@ -19866,7 +19518,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_1st_skip
         {
           "isPlaceholder": true,
           "key": "start-node",
-          "type": "start",
           "x": 35,
           "y": 60,
         },
@@ -19876,7 +19527,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_1st_skip
       "destinationNodes": [
         {
           "key": "n_10",
-          "type": "stage",
           "x": 273,
           "y": 60,
         },
@@ -19886,7 +19536,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_1st_skip
         {
           "isSkipped": true,
           "key": "n_6",
-          "type": "stage",
           "x": 133,
           "y": 60,
         },
@@ -19896,7 +19545,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_1st_skip
           "firstChildIsSkipped": true,
           "isHidden": true,
           "key": "n_4",
-          "type": "stage",
           "x": 133,
           "y": 60,
         },
@@ -19906,7 +19554,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_1st_skip
       "destinationNodes": [
         {
           "key": "n_17",
-          "type": "stage",
           "x": 413,
           "y": 60,
         },
@@ -19916,7 +19563,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_1st_skip
       "sourceNodes": [
         {
           "key": "n_10",
-          "type": "stage",
           "x": 273,
           "y": 60,
         },
@@ -19927,7 +19573,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_1st_skip
         {
           "isPlaceholder": true,
           "key": "end-node",
-          "type": "end",
           "x": 511,
           "y": 60,
         },
@@ -19937,7 +19582,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_1st_skip
       "sourceNodes": [
         {
           "key": "n_17",
-          "type": "stage",
           "x": 413,
           "y": 60,
         },
@@ -20342,7 +19986,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_2nd_skip
       "destinationNodes": [
         {
           "key": "n_4",
-          "type": "stage",
           "x": 133,
           "y": 16,
         },
@@ -20353,7 +19996,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_2nd_skip
         {
           "isPlaceholder": true,
           "key": "start-node",
-          "type": "start",
           "x": 35,
           "y": 16,
         },
@@ -20363,7 +20005,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_2nd_skip
       "destinationNodes": [
         {
           "key": "n_6",
-          "type": "stage",
           "x": 273,
           "y": 16,
         },
@@ -20373,7 +20014,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_2nd_skip
       "sourceNodes": [
         {
           "key": "n_4",
-          "type": "stage",
           "x": 133,
           "y": 16,
         },
@@ -20383,7 +20023,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_2nd_skip
       "destinationNodes": [
         {
           "key": "n_11",
-          "type": "stage",
           "x": 413,
           "y": 16,
         },
@@ -20393,7 +20032,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_2nd_skip
       "sourceNodes": [
         {
           "key": "n_6",
-          "type": "stage",
           "x": 273,
           "y": 16,
         },
@@ -20403,7 +20041,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_2nd_skip
       "destinationNodes": [
         {
           "key": "n_17",
-          "type": "stage",
           "x": 553,
           "y": 16,
         },
@@ -20413,7 +20050,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_2nd_skip
       "sourceNodes": [
         {
           "key": "n_11",
-          "type": "stage",
           "x": 413,
           "y": 16,
         },
@@ -20424,7 +20060,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_2nd_skip
         {
           "isPlaceholder": true,
           "key": "end-node",
-          "type": "end",
           "x": 651,
           "y": 16,
         },
@@ -20434,7 +20069,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_2nd_skip
       "sourceNodes": [
         {
           "key": "n_17",
-          "type": "stage",
           "x": 553,
           "y": 16,
         },
@@ -20998,7 +20632,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_2nd_skip
       "destinationNodes": [
         {
           "key": "n_6",
-          "type": "stage",
           "x": 133,
           "y": 60,
         },
@@ -21009,7 +20642,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_2nd_skip
         {
           "isPlaceholder": true,
           "key": "start-node",
-          "type": "start",
           "x": 35,
           "y": 60,
         },
@@ -21019,7 +20651,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_2nd_skip
       "destinationNodes": [
         {
           "key": "n_17",
-          "type": "stage",
           "x": 413,
           "y": 60,
         },
@@ -21029,7 +20660,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_2nd_skip
         {
           "isSkipped": true,
           "key": "n_11",
-          "type": "stage",
           "x": 273,
           "y": 60,
         },
@@ -21037,7 +20667,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_2nd_skip
       "sourceNodes": [
         {
           "key": "n_6",
-          "type": "stage",
           "x": 133,
           "y": 60,
         },
@@ -21048,7 +20677,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_2nd_skip
         {
           "isPlaceholder": true,
           "key": "end-node",
-          "type": "end",
           "x": 511,
           "y": 60,
         },
@@ -21058,7 +20686,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_2nd_skip
       "sourceNodes": [
         {
           "key": "n_17",
-          "type": "stage",
           "x": 413,
           "y": 60,
         },
@@ -21463,7 +21090,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_all_skip
       "destinationNodes": [
         {
           "key": "n_4",
-          "type": "stage",
           "x": 133,
           "y": 16,
         },
@@ -21474,7 +21100,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_all_skip
         {
           "isPlaceholder": true,
           "key": "start-node",
-          "type": "start",
           "x": 35,
           "y": 16,
         },
@@ -21484,7 +21109,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_all_skip
       "destinationNodes": [
         {
           "key": "n_6",
-          "type": "stage",
           "x": 273,
           "y": 16,
         },
@@ -21494,7 +21118,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_all_skip
       "sourceNodes": [
         {
           "key": "n_4",
-          "type": "stage",
           "x": 133,
           "y": 16,
         },
@@ -21504,7 +21127,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_all_skip
       "destinationNodes": [
         {
           "key": "n_10",
-          "type": "stage",
           "x": 413,
           "y": 16,
         },
@@ -21514,7 +21136,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_all_skip
       "sourceNodes": [
         {
           "key": "n_6",
-          "type": "stage",
           "x": 273,
           "y": 16,
         },
@@ -21524,7 +21145,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_all_skip
       "destinationNodes": [
         {
           "key": "n_16",
-          "type": "stage",
           "x": 553,
           "y": 16,
         },
@@ -21534,7 +21154,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_all_skip
       "sourceNodes": [
         {
           "key": "n_10",
-          "type": "stage",
           "x": 413,
           "y": 16,
         },
@@ -21545,7 +21164,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_all_skip
         {
           "isPlaceholder": true,
           "key": "end-node",
-          "type": "end",
           "x": 651,
           "y": 16,
         },
@@ -21555,7 +21173,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_all_skip
       "sourceNodes": [
         {
           "key": "n_16",
-          "type": "stage",
           "x": 553,
           "y": 16,
         },
@@ -22142,7 +21759,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_all_skip
           "firstChildIsSkipped": true,
           "isHidden": true,
           "key": "n_4",
-          "type": "stage",
           "x": 133,
           "y": 60,
         },
@@ -22153,7 +21769,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_all_skip
         {
           "isPlaceholder": true,
           "key": "start-node",
-          "type": "start",
           "x": 35,
           "y": 60,
         },
@@ -22163,7 +21778,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_all_skip
       "destinationNodes": [
         {
           "key": "n_16",
-          "type": "stage",
           "x": 413,
           "y": 60,
         },
@@ -22173,14 +21787,12 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_all_skip
         {
           "isSkipped": true,
           "key": "n_6",
-          "type": "stage",
           "x": 133,
           "y": 60,
         },
         {
           "isSkipped": true,
           "key": "n_10",
-          "type": "stage",
           "x": 273,
           "y": 60,
         },
@@ -22190,7 +21802,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_all_skip
           "firstChildIsSkipped": true,
           "isHidden": true,
           "key": "n_4",
-          "type": "stage",
           "x": 133,
           "y": 60,
         },
@@ -22201,7 +21812,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_all_skip
         {
           "isPlaceholder": true,
           "key": "end-node",
-          "type": "end",
           "x": 511,
           "y": 60,
         },
@@ -22211,7 +21821,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > gh1286_wrapped_all_skip
       "sourceNodes": [
         {
           "key": "n_16",
-          "type": "stage",
           "x": 413,
           "y": 60,
         },
@@ -22832,7 +22441,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > selective collapse > sh
       "destinationNodes": [
         {
           "key": "n_6",
-          "type": "stage",
           "x": 133,
           "y": 38,
         },
@@ -22843,7 +22451,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > selective collapse > sh
         {
           "isPlaceholder": true,
           "key": "start-node",
-          "type": "start",
           "x": 35,
           "y": 38,
         },
@@ -22852,23 +22459,17 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > selective collapse > sh
     {
       "destinationNodes": [
         {
-          "isParallel": true,
           "key": "n_16",
-          "type": "stage",
           "x": 273,
           "y": 38,
         },
         {
-          "isParallel": true,
           "key": "n_17",
-          "type": "stage",
           "x": 273,
           "y": 108,
         },
         {
-          "isParallel": true,
           "key": "n_18",
-          "type": "stage",
           "x": 273,
           "y": 178,
         },
@@ -22878,7 +22479,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > selective collapse > sh
       "sourceNodes": [
         {
           "key": "n_6",
-          "type": "stage",
           "x": 133,
           "y": 38,
         },
@@ -22889,7 +22489,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > selective collapse > sh
         {
           "isPlaceholder": true,
           "key": "end-node",
-          "type": "end",
           "x": 511,
           "y": 38,
         },
@@ -22899,30 +22498,23 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > selective collapse > sh
         {
           "isSkipped": true,
           "key": "n_54",
-          "type": "stage",
           "x": 413,
           "y": 38,
         },
       ],
       "sourceNodes": [
         {
-          "isParallel": true,
           "key": "n_16",
-          "type": "stage",
           "x": 273,
           "y": 38,
         },
         {
-          "isParallel": true,
           "key": "n_17",
-          "type": "stage",
           "x": 273,
           "y": 108,
         },
         {
-          "isParallel": true,
           "key": "n_18",
-          "type": "stage",
           "x": 273,
           "y": 178,
         },
@@ -23409,7 +23001,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > selective collapse > sh
       "destinationNodes": [
         {
           "key": "n_6",
-          "type": "stage",
           "x": 133,
           "y": 38,
         },
@@ -23420,7 +23011,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > selective collapse > sh
         {
           "isPlaceholder": true,
           "key": "start-node",
-          "type": "start",
           "x": 35,
           "y": 38,
         },
@@ -23430,7 +23020,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > selective collapse > sh
       "destinationNodes": [
         {
           "key": "n_12",
-          "type": "stage",
           "x": 273,
           "y": 38,
         },
@@ -23440,7 +23029,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > selective collapse > sh
       "sourceNodes": [
         {
           "key": "n_6",
-          "type": "stage",
           "x": 133,
           "y": 38,
         },
@@ -23451,7 +23039,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > selective collapse > sh
         {
           "isPlaceholder": true,
           "key": "end-node",
-          "type": "end",
           "x": 511,
           "y": 38,
         },
@@ -23461,7 +23048,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > selective collapse > sh
         {
           "isSkipped": true,
           "key": "n_54",
-          "type": "stage",
           "x": 413,
           "y": 38,
         },
@@ -23469,7 +23055,6 @@ exports[`NestedPipelineGraphLayout > nestedGraphLayout > selective collapse > sh
       "sourceNodes": [
         {
           "key": "n_12",
-          "type": "stage",
           "x": 273,
           "y": 38,
         },

@@ -11,7 +11,7 @@ type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should
 
 // Generate a react key for a connection
 function connectorKey(leftNode: ConnectionEdge, rightNode: ConnectionEdge) {
-  return "c_" + leftNode.key + "_to_" + rightNode.key;
+  return `c_${leftNode.key}_${leftNode.x}_${leftNode.y}_to_${rightNode.key}_${rightNode.x}_${rightNode.y}`;
 }
 
 interface Props {
@@ -538,7 +538,7 @@ export class GraphConnections extends Component {
     const rightTop: ConnectionEdge = {
       x: node.x + node.width!,
       y: node.y,
-      key: `skipped_righ_top_${node.key}`,
+      key: `skipped_right_top_${node.key}`,
       isPlaceholder: true,
       isHidden: true,
     };

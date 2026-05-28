@@ -1,5 +1,6 @@
 import "./BuildFlow.scss";
 
+import Tippy from "@tippyjs/react";
 import {
   FunctionComponent,
   useCallback,
@@ -17,6 +18,8 @@ import {
   useTransformEffect,
 } from "react-zoom-pan-pinch";
 
+import { DefaultDropdownProps } from "../../../common/components/dropdown.tsx";
+import StatusIcon from "../../../common/components/status-icon.tsx";
 import Tooltip from "../../../common/components/tooltip.tsx";
 import {
   LocalizedMessageKey,
@@ -26,6 +29,27 @@ import {
   BuildFlowNodeModel,
   BuildFlowResponseModel,
 } from "../model/BuildFlowModel.ts";
+import {
+  IconBarChart,
+  IconChevronDown,
+  IconChevronRight,
+  IconChevronUp,
+  IconClose,
+  IconDocumentText,
+  IconEllipsisVertical,
+  IconExpand,
+  IconFitToView,
+  IconGitMerge,
+  IconGrid,
+  IconMinus,
+  IconPlus,
+  IconPricetag,
+  IconRefreshCircle,
+  IconSwapHorizontal,
+  IconTime,
+  IconTrailSign,
+  ToggleButton,
+} from "./BuildFlowIcons.tsx";
 import {
   computeFlatLayout,
   computeLayout,
@@ -45,6 +69,7 @@ import {
   shouldShowHeading,
   statusClass,
   statusColor,
+  toResult,
 } from "./BuildFlowUtils.ts";
 
 // --- Component-specific constants ---
@@ -157,6 +182,11 @@ const BuildFlowNodeCard: FunctionComponent<{
   showFullNames: boolean;
   showDescription: boolean;
   showBuildHistory: boolean;
+  index: number;
+  isFirstMount: boolean;
+  isDimmed: boolean;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
 }> = ({
   layout,
   rootUrl,
@@ -166,6 +196,11 @@ const BuildFlowNodeCard: FunctionComponent<{
   showFullNames,
   showDescription,
   showBuildHistory,
+  index,
+  isFirstMount,
+  isDimmed,
+  onMouseEnter,
+  onMouseLeave,
 }) => {
   const { node, x, y } = layout;
   const classes = [
@@ -178,13 +213,43 @@ const BuildFlowNodeCard: FunctionComponent<{
 
   const href = node.url ? `${rootUrl}/${node.url}` : undefined;
   const name = showFullNames ? node.jobFullName : node.jobName;
+  const ariaLabel = `${node.jobName} #${node.buildNumber} - ${formatStatus(node.status)}`;
 
   return (
-    <foreignObject x={x} y={y} width={nodeWidth} height={NODE_HEIGHT}>
-      <a className={classes} href={href} title={node.displayName}>
-        <span className="pgv-build-flow__node-name">{name}</span>
+    <foreignObject
+      x={x}
+      y={y}
+      width={nodeWidth}
+      height={NODE_HEIGHT}
+      style={{
+        opacity: isDimmed ? 0.25 : 1,
+        transition: "opacity var(--standard-transition, 0.2s)",
+        pointerEvents: isDimmed ? "none" : undefined,
+      }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
+      <a
+        className={classes}
+        href={href}
+        title={node.displayName}
+        aria-label={ariaLabel}
+        style={
+          isFirstMount
+            ? { animationDelay: `${Math.min(index * 30, 500)}ms` }
+            : undefined
+        }
+      >
+        <div className="pgv-build-flow__node-header">
+          <StatusIcon status={toResult(node.status)} />
+          <span className="pgv-build-flow__node-name">{name}</span>
+          {showBuildNumber && (
+            <span className="pgv-build-flow__node-build-num">
+              #{node.buildNumber}
+            </span>
+          )}
+        </div>
         <span className="pgv-build-flow__node-meta">
-          {showBuildNumber && <span>#{node.buildNumber}</span>}
           {showDuration && node.durationMs != null && (
             <span>{formatDuration(node.durationMs)}</span>
           )}
@@ -215,7 +280,19 @@ const BuildFlowEdge: FunctionComponent<{
   sourceStatus: string;
   direction: LayoutDirection;
   nodeWidth: number;
-}> = ({ from, to, sourceStatus, direction, nodeWidth }) => {
+  isDimmed: boolean;
+  isFirstMount: boolean;
+  index: number;
+}> = ({
+  from,
+  to,
+  sourceStatus,
+  direction,
+  nodeWidth,
+  isDimmed,
+  isFirstMount,
+  index,
+}) => {
   let x1: number, y1: number, x2: number, y2: number;
 
   if (direction === "LTR") {
@@ -247,7 +324,17 @@ const BuildFlowEdge: FunctionComponent<{
       : "pgv-build-flow__edge";
 
   return (
-    <g className={edgeClass}>
+    <g
+      className={edgeClass}
+      aria-hidden="true"
+      style={{
+        opacity: isDimmed ? 0.15 : undefined,
+        transition: "opacity var(--standard-transition, 0.2s)",
+        ...(isFirstMount
+          ? { animationDelay: `${Math.min(index * 30 + 150, 600)}ms` }
+          : {}),
+      }}
+    >
       <path
         d={path}
         fill="none"
@@ -273,7 +360,6 @@ function ZoomControls({
   const handleTransformEffect = useCallback(
     (ref: ReactZoomPanPinchContextState) => {
       setScale(ref.state.scale);
-      // Consider "transformed" if scale differs OR position is non-default
       const s = ref.state;
       const scaleDiff = Math.abs(s.scale - initialScale) > 0.01;
       const positionDiff =
@@ -292,16 +378,7 @@ function ZoomControls({
           onClick={() => zoomIn()}
           disabled={scale >= MAX_SCALE}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <path
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="32"
-              d="M256 112v288M400 256H112"
-            />
-          </svg>
+          {IconPlus}
         </button>
       </Tooltip>
       <Tooltip content={"Zoom out"}>
@@ -310,16 +387,7 @@ function ZoomControls({
           onClick={() => zoomOut()}
           disabled={scale <= minScale}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <path
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="32"
-              d="M400 256H112"
-            />
-          </svg>
+          {IconMinus}
         </button>
       </Tooltip>
       <Tooltip content={"Fit to view"}>
@@ -328,24 +396,7 @@ function ZoomControls({
           onClick={() => centerView(initialScale)}
           disabled={!isTransformed}
         >
-          <svg className="ionicon" viewBox="0 0 512 512">
-            <path
-              d="M320 146s24.36-12-64-12a160 160 0 10160 160"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeMiterlimit="10"
-              strokeWidth="32"
-            />
-            <path
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="32"
-              d="M256 58l80 80-80 80"
-            />
-          </svg>
+          {IconFitToView}
         </button>
       </Tooltip>
     </div>
@@ -377,11 +428,81 @@ interface ToggleControlsProps {
   setAutoRefresh: (v: boolean) => void;
 }
 
-const ToggleControls: FunctionComponent<ToggleControlsProps> = ({
+/** Primary toggles: always visible in left group */
+const PrimaryToggleControls: FunctionComponent<
+  Pick<
+    ToggleControlsProps,
+    | "showUpstream"
+    | "setShowUpstream"
+    | "showDownstream"
+    | "setShowDownstream"
+    | "showBuildHistory"
+    | "setShowBuildHistory"
+    | "autoRefresh"
+    | "setAutoRefresh"
+  >
+> = ({
   showUpstream,
   setShowUpstream,
   showDownstream,
   setShowDownstream,
+  showBuildHistory,
+  setShowBuildHistory,
+  autoRefresh,
+  setAutoRefresh,
+}) => {
+  return (
+    <>
+      <ToggleButton
+        icon={IconChevronUp}
+        label=""
+        active={showUpstream}
+        onToggle={() => setShowUpstream(!showUpstream)}
+        tooltip={showUpstream ? "Hide upstream" : "Show upstream"}
+      />
+      <ToggleButton
+        icon={IconChevronDown}
+        label=""
+        active={showDownstream}
+        onToggle={() => setShowDownstream(!showDownstream)}
+        tooltip={showDownstream ? "Hide downstream" : "Show downstream"}
+      />
+      <ToggleButton
+        icon={IconBarChart}
+        label=""
+        active={showBuildHistory}
+        onToggle={() => setShowBuildHistory(!showBuildHistory)}
+        tooltip={showBuildHistory ? "Hide build history" : "Show build history"}
+      />
+      <ToggleButton
+        icon={IconRefreshCircle}
+        label=""
+        active={autoRefresh}
+        onToggle={() => setAutoRefresh(!autoRefresh)}
+        tooltip={autoRefresh ? "Disable auto-refresh" : "Enable auto-refresh"}
+      />
+    </>
+  );
+};
+
+/** Secondary toggles: behind overflow menu */
+const OverflowMenu: FunctionComponent<
+  Pick<
+    ToggleControlsProps,
+    | "layoutDirection"
+    | "setLayoutDirection"
+    | "showDuration"
+    | "setShowDuration"
+    | "showBuildNumber"
+    | "setShowBuildNumber"
+    | "showFullNames"
+    | "setShowFullNames"
+    | "showDescription"
+    | "setShowDescription"
+    | "flattenGraph"
+    | "setFlattenGraph"
+  >
+> = ({
   layoutDirection,
   setLayoutDirection,
   showDuration,
@@ -392,397 +513,83 @@ const ToggleControls: FunctionComponent<ToggleControlsProps> = ({
   setShowFullNames,
   showDescription,
   setShowDescription,
-  showBuildHistory,
-  setShowBuildHistory,
   flattenGraph,
   setFlattenGraph,
-  autoRefresh,
-  setAutoRefresh,
 }) => {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   return (
-    <div
-      className="pgv-build-flow__controls pgv-build-flow__toggle-controls"
-      role="toolbar"
-      aria-label="Build flow display options"
+    <Tippy
+      visible={menuOpen}
+      onClickOutside={() => setMenuOpen(false)}
+      {...DefaultDropdownProps}
+      placement="auto-start"
+      content={
+        <div
+          className="pgv-build-flow__overflow-menu"
+          role="menu"
+          aria-label="Additional display options"
+        >
+          <ToggleButton
+            icon={IconTime}
+            label="Show duration"
+            active={showDuration}
+            onToggle={() => setShowDuration(!showDuration)}
+          />
+          <ToggleButton
+            icon={IconPricetag}
+            label="Show build number"
+            active={showBuildNumber}
+            onToggle={() => setShowBuildNumber(!showBuildNumber)}
+          />
+          <ToggleButton
+            icon={IconTrailSign}
+            label="Show full names"
+            active={showFullNames}
+            onToggle={() => setShowFullNames(!showFullNames)}
+          />
+          <ToggleButton
+            icon={IconDocumentText}
+            label="Show description"
+            active={showDescription}
+            onToggle={() => setShowDescription(!showDescription)}
+          />
+          <button
+            className="jenkins-button jenkins-button--tertiary"
+            onClick={() =>
+              setLayoutDirection(layoutDirection === "LTR" ? "TTB" : "LTR")
+            }
+            role="menuitem"
+          >
+            <span
+              style={{
+                display: "contents",
+                transform:
+                  layoutDirection === "TTB" ? "rotate(90deg)" : undefined,
+              }}
+            >
+              {IconSwapHorizontal}
+            </span>
+            {layoutDirection === "LTR" ? "Top-to-bottom" : "Left-to-right"}
+          </button>
+          <ToggleButton
+            icon={flattenGraph ? IconGitMerge : IconGrid}
+            label={flattenGraph ? "Show graph" : "Flatten to grid"}
+            active={flattenGraph}
+            onToggle={() => setFlattenGraph(!flattenGraph)}
+          />
+        </div>
+      }
     >
-      <Tooltip content={showUpstream ? "Hide upstream" : "Show upstream"}>
-        <button
-          className={`jenkins-button jenkins-button--tertiary${showUpstream ? " pgv-build-flow__toggle--active" : ""}`}
-          onClick={() => setShowUpstream(!showUpstream)}
-          aria-label="Toggle upstream builds"
-          aria-pressed={showUpstream}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <path
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="48"
-              d="M112 328l144-144 144 144"
-            />
-          </svg>
-        </button>
-      </Tooltip>
-      <Tooltip content={showDownstream ? "Hide downstream" : "Show downstream"}>
-        <button
-          className={`jenkins-button jenkins-button--tertiary${showDownstream ? " pgv-build-flow__toggle--active" : ""}`}
-          onClick={() => setShowDownstream(!showDownstream)}
-          aria-label="Toggle downstream builds"
-          aria-pressed={showDownstream}
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <path
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="48"
-              d="M112 184l144 144 144-144"
-            />
-          </svg>
-        </button>
-      </Tooltip>
-      <Tooltip
-        content={
-          layoutDirection === "LTR"
-            ? "Switch to top-to-bottom"
-            : "Switch to left-to-right"
-        }
+      <button
+        className="jenkins-button jenkins-button--tertiary"
+        onClick={() => setMenuOpen(!menuOpen)}
+        aria-label="More options"
+        aria-expanded={menuOpen}
       >
-        <button
-          className={"jenkins-button jenkins-button--tertiary"}
-          style={{
-            transform: layoutDirection === "TTB" ? "rotate(90deg)" : undefined,
-          }}
-          onClick={() =>
-            setLayoutDirection(layoutDirection === "LTR" ? "TTB" : "LTR")
-          }
-          aria-label="Toggle layout direction"
-        >
-          {/* swap-horizontal-outline */}
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <path
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="32"
-              d="M304 48l112 112-112 112M398 160H96M208 464L96 352l112-112M114 352h302"
-            />
-          </svg>
-        </button>
-      </Tooltip>
-      <Tooltip content={showDuration ? "Hide time" : "Show time"}>
-        <button
-          className={`jenkins-button jenkins-button--tertiary${showDuration ? " pgv-build-flow__toggle--active" : ""}`}
-          onClick={() => setShowDuration(!showDuration)}
-          aria-label="Toggle duration"
-          aria-pressed={showDuration}
-        >
-          {/* time-outline */}
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <path
-              d="M256 64C150 64 64 150 64 256s86 192 192 192 192-86 192-192S362 64 256 64z"
-              fill="none"
-              stroke="currentColor"
-              strokeMiterlimit="10"
-              strokeWidth="32"
-            />
-            <path
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="32"
-              d="M256 128v144h96"
-            />
-          </svg>
-        </button>
-      </Tooltip>
-      <Tooltip
-        content={showBuildNumber ? "Hide build number" : "Show build number"}
-      >
-        <button
-          className={`jenkins-button jenkins-button--tertiary${showBuildNumber ? " pgv-build-flow__toggle--active" : ""}`}
-          onClick={() => setShowBuildNumber(!showBuildNumber)}
-          aria-label="Toggle build number"
-          aria-pressed={showBuildNumber}
-        >
-          {/* pricetag-outline - clean tag/label icon */}
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <path
-              d="M435.25 48h-122.9a14.46 14.46 0 00-10.2 4.2L56.45 297.9a28.85 28.85 0 000 40.7l117 117a28.85 28.85 0 0040.7 0L459.75 210a14.46 14.46 0 004.2-10.2v-123a28.66 28.66 0 00-28.7-28.8z"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="32"
-            />
-            <path
-              d="M384 160a32 32 0 1132-32 32 32 0 01-32 32z"
-              fill="currentColor"
-            />
-          </svg>
-        </button>
-      </Tooltip>
-      <Tooltip content={showFullNames ? "Show short names" : "Show full names"}>
-        <button
-          className={`jenkins-button jenkins-button--tertiary${showFullNames ? " pgv-build-flow__toggle--active" : ""}`}
-          onClick={() => setShowFullNames(!showFullNames)}
-          aria-label="Toggle full names"
-          aria-pressed={showFullNames}
-        >
-          {/* trail-sign-outline - signpost for path/full name */}
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <path
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="32"
-              d="M256 400v64M256 208v64M256 48v32M416 208H102.63a16 16 0 01-11.32-4.69L32 144l59.31-59.31A16 16 0 01102.63 80H416a16 16 0 0116 16v96a16 16 0 01-16 16zM96 400h313.37a16 16 0 0011.32-4.69L480 336l-59.31-59.31a16 16 0 00-11.32-4.69H96a16 16 0 00-16 16v96a16 16 0 0016 16z"
-            />
-          </svg>
-        </button>
-      </Tooltip>
-      <Tooltip
-        content={showDescription ? "Hide description" : "Show description"}
-      >
-        <button
-          className={`jenkins-button jenkins-button--tertiary${showDescription ? " pgv-build-flow__toggle--active" : ""}`}
-          onClick={() => setShowDescription(!showDescription)}
-          aria-label="Toggle description"
-          aria-pressed={showDescription}
-        >
-          {/* document-text-outline */}
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <path
-              d="M416 221.25V416a48 48 0 01-48 48H144a48 48 0 01-48-48V96a48 48 0 0148-48h98.75a32 32 0 0122.62 9.37l141.26 141.26a32 32 0 019.37 22.62z"
-              fill="none"
-              stroke="currentColor"
-              strokeLinejoin="round"
-              strokeWidth="32"
-            />
-            <path
-              d="M256 56v120a32 32 0 0032 32h120M176 288h160M176 368h160"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="32"
-            />
-          </svg>
-        </button>
-      </Tooltip>
-      <Tooltip
-        content={showBuildHistory ? "Hide build history" : "Show build history"}
-      >
-        <button
-          className={`jenkins-button jenkins-button--tertiary${showBuildHistory ? " pgv-build-flow__toggle--active" : ""}`}
-          onClick={() => setShowBuildHistory(!showBuildHistory)}
-          aria-label="Toggle build history"
-          aria-pressed={showBuildHistory}
-        >
-          {/* bar-chart-outline */}
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <path
-              d="M32 32v432a16 16 0 0016 16h432"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="32"
-            />
-            <rect
-              x="96"
-              y="224"
-              width="80"
-              height="192"
-              rx="8"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="32"
-            />
-            <rect
-              x="224"
-              y="128"
-              width="80"
-              height="288"
-              rx="8"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="32"
-            />
-            <rect
-              x="352"
-              y="288"
-              width="80"
-              height="128"
-              rx="8"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="32"
-            />
-          </svg>
-        </button>
-      </Tooltip>
-      <Tooltip content={flattenGraph ? "Show graph layout" : "Flatten to grid"}>
-        <button
-          className={`jenkins-button jenkins-button--tertiary${flattenGraph ? " pgv-build-flow__toggle--active" : ""}`}
-          onClick={() => setFlattenGraph(!flattenGraph)}
-          aria-label="Toggle flatten graph"
-          aria-pressed={flattenGraph}
-        >
-          {flattenGraph ? (
-            /* git-network-outline - show graph */
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-              <circle
-                cx="128"
-                cy="96"
-                r="48"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="32"
-              />
-              <circle
-                cx="256"
-                cy="416"
-                r="48"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="32"
-              />
-              <path
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="32"
-                d="M256 256v112"
-              />
-              <circle
-                cx="384"
-                cy="96"
-                r="48"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="32"
-              />
-              <path
-                d="M128 144c0 74.67 68.92 112 128 112M384 144c0 74.67-68.92 112-128 112"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="32"
-              />
-            </svg>
-          ) : (
-            /* grid-outline - flatten to grid */
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-              <rect
-                x="48"
-                y="48"
-                width="176"
-                height="176"
-                rx="20"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="32"
-              />
-              <rect
-                x="288"
-                y="48"
-                width="176"
-                height="176"
-                rx="20"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="32"
-              />
-              <rect
-                x="48"
-                y="288"
-                width="176"
-                height="176"
-                rx="20"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="32"
-              />
-              <rect
-                x="288"
-                y="288"
-                width="176"
-                height="176"
-                rx="20"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="32"
-              />
-            </svg>
-          )}
-        </button>
-      </Tooltip>
-      <Tooltip
-        content={autoRefresh ? "Disable auto-refresh" : "Enable auto-refresh"}
-      >
-        <button
-          className={`jenkins-button jenkins-button--tertiary${autoRefresh ? " pgv-build-flow__toggle--active" : ""}`}
-          onClick={() => setAutoRefresh(!autoRefresh)}
-          aria-label="Toggle auto-refresh"
-          aria-pressed={autoRefresh}
-        >
-          {/* refresh-circle-outline */}
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <path
-              d="M288 193s12.18-6-32-6a80 80 0 1080 80"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeMiterlimit="10"
-              strokeWidth="28"
-            />
-            <path
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="28"
-              d="M256 149l40 40-40 40"
-            />
-            <path
-              d="M256 64C150 64 64 150 64 256s86 192 192 192 192-86 192-192S362 64 256 64z"
-              fill="none"
-              stroke="currentColor"
-              strokeMiterlimit="10"
-              strokeWidth="32"
-            />
-          </svg>
-        </button>
-      </Tooltip>
-    </div>
+        {IconEllipsisVertical}
+      </button>
+    </Tippy>
   );
 };
 
@@ -799,6 +606,8 @@ export const BuildFlow: FunctionComponent = () => {
   const [containerWidth, setContainerWidth] = useState(0);
   const [containerHeight, setContainerHeight] = useState(0);
   const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const isFirstMountRef = useRef(true);
+  const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
 
   // Track container size via ResizeObserver (like Stages)
   useEffect(() => {
@@ -911,9 +720,28 @@ export const BuildFlow: FunctionComponent = () => {
     if (!ref) return;
     const scale = Math.max(initialScale, 0.5);
     // setTimeout ensures TransformWrapper is fully mounted and measured
-    const timer = setTimeout(() => ref.centerView(scale), 50);
+    const timer = setTimeout(() => {
+      ref.centerView(scale);
+      isFirstMountRef.current = false;
+    }, 50);
     return () => clearTimeout(timer);
   }, [containerWidth, containerHeight, svgWidth, svgHeight, initialScale]);
+
+  // Focus path: compute highlighted node set from hovered node
+  const highlightedIds = useMemo(() => {
+    if (!hoveredNodeId || prefs.flattenGraph || !data) return null;
+    const set = new Set<string>([hoveredNodeId]);
+    for (const edge of data.edges) {
+      if (edge.from === hoveredNodeId) set.add(edge.to);
+      if (edge.to === hoveredNodeId) set.add(edge.from);
+    }
+    return set;
+  }, [hoveredNodeId, data, prefs.flattenGraph]);
+
+  // Clear hovered node when data changes (auto-refresh)
+  useEffect(() => {
+    setHoveredNodeId(null);
+  }, [data]);
 
   if (loading) {
     return (
@@ -979,16 +807,7 @@ export const BuildFlow: FunctionComponent = () => {
           href="build-flow"
         >
           {messages.format(LocalizedMessageKey.buildFlowTitle)}
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <path
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="48"
-              d="M184 112l144 144-144 144"
-            />
-          </svg>
+          {IconChevronRight}
         </a>
       )}
       {(showHeading || isExpanded) && (
@@ -998,33 +817,7 @@ export const BuildFlow: FunctionComponent = () => {
               className={"jenkins-button jenkins-button--tertiary"}
               onClick={() => setIsExpanded(!isExpanded)}
             >
-              {isExpanded ? (
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                  <path
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="32"
-                    d="M368 368L144 144M368 144L144 368"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M10 4H15C15.5523 4 16 4.44772 16 5V10M10 16H5C4.44772 16 4 15.5523 4 15V10"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              )}
+              {isExpanded ? IconClose : IconExpand}
             </button>
           </Tooltip>
         </div>
@@ -1038,28 +831,38 @@ export const BuildFlow: FunctionComponent = () => {
         ref={transformRef}
       >
         <ZoomControls initialScale={initialScale} minScale={minScale} />
-        <ToggleControls
-          showUpstream={prefs.showUpstream}
-          setShowUpstream={(v) => updatePref("showUpstream", v)}
-          showDownstream={prefs.showDownstream}
-          setShowDownstream={(v) => updatePref("showDownstream", v)}
-          layoutDirection={prefs.layoutDirection}
-          setLayoutDirection={(v) => updatePref("layoutDirection", v)}
-          showDuration={prefs.showDuration}
-          setShowDuration={(v) => updatePref("showDuration", v)}
-          showBuildNumber={prefs.showBuildNumber}
-          setShowBuildNumber={(v) => updatePref("showBuildNumber", v)}
-          showFullNames={prefs.showFullNames}
-          setShowFullNames={(v) => updatePref("showFullNames", v)}
-          showDescription={prefs.showDescription}
-          setShowDescription={(v) => updatePref("showDescription", v)}
-          showBuildHistory={prefs.showBuildHistory}
-          setShowBuildHistory={(v) => updatePref("showBuildHistory", v)}
-          flattenGraph={prefs.flattenGraph}
-          setFlattenGraph={(v) => updatePref("flattenGraph", v)}
-          autoRefresh={prefs.autoRefresh}
-          setAutoRefresh={(v) => updatePref("autoRefresh", v)}
-        />
+        <div
+          className="pgv-build-flow__controls pgv-build-flow__controls-bar"
+          role="toolbar"
+          aria-label="Build flow display options"
+        >
+          <div className="pgv-build-flow__controls-left">
+            <PrimaryToggleControls
+              showUpstream={prefs.showUpstream}
+              setShowUpstream={(v) => updatePref("showUpstream", v)}
+              showDownstream={prefs.showDownstream}
+              setShowDownstream={(v) => updatePref("showDownstream", v)}
+              showBuildHistory={prefs.showBuildHistory}
+              setShowBuildHistory={(v) => updatePref("showBuildHistory", v)}
+              autoRefresh={prefs.autoRefresh}
+              setAutoRefresh={(v) => updatePref("autoRefresh", v)}
+            />
+            <OverflowMenu
+              layoutDirection={prefs.layoutDirection}
+              setLayoutDirection={(v) => updatePref("layoutDirection", v)}
+              showDuration={prefs.showDuration}
+              setShowDuration={(v) => updatePref("showDuration", v)}
+              showBuildNumber={prefs.showBuildNumber}
+              setShowBuildNumber={(v) => updatePref("showBuildNumber", v)}
+              showFullNames={prefs.showFullNames}
+              setShowFullNames={(v) => updatePref("showFullNames", v)}
+              showDescription={prefs.showDescription}
+              setShowDescription={(v) => updatePref("showDescription", v)}
+              flattenGraph={prefs.flattenGraph}
+              setFlattenGraph={(v) => updatePref("flattenGraph", v)}
+            />
+          </div>
+        </div>
         <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
           <svg
             className="pgv-build-flow__svg"
@@ -1070,10 +873,15 @@ export const BuildFlow: FunctionComponent = () => {
             aria-label={`Build flow graph with ${data.nodes.length} builds`}
           >
             {!prefs.flattenGraph &&
-              data.edges.map((edge) => {
+              data.edges.map((edge, i) => {
                 const from = nodeById.get(edge.from);
                 const to = nodeById.get(edge.to);
                 if (!from || !to) return null;
+                const edgeDimmed =
+                  highlightedIds != null &&
+                  !(
+                    highlightedIds.has(edge.from) && highlightedIds.has(edge.to)
+                  );
                 return (
                   <BuildFlowEdge
                     key={`${edge.from}->${edge.to}`}
@@ -1082,10 +890,13 @@ export const BuildFlow: FunctionComponent = () => {
                     sourceStatus={from.node.status}
                     direction={prefs.layoutDirection}
                     nodeWidth={nodeWidth}
+                    isDimmed={edgeDimmed}
+                    isFirstMount={isFirstMountRef.current}
+                    index={i}
                   />
                 );
               })}
-            {layoutNodes.map((ln) => (
+            {layoutNodes.map((ln, i) => (
               <BuildFlowNodeCard
                 key={ln.node.id}
                 layout={ln}
@@ -1096,6 +907,13 @@ export const BuildFlow: FunctionComponent = () => {
                 showFullNames={prefs.showFullNames}
                 showDescription={prefs.showDescription}
                 showBuildHistory={prefs.showBuildHistory}
+                index={i}
+                isFirstMount={isFirstMountRef.current}
+                isDimmed={
+                  highlightedIds != null && !highlightedIds.has(ln.node.id)
+                }
+                onMouseEnter={() => setHoveredNodeId(ln.node.id)}
+                onMouseLeave={() => setHoveredNodeId(null)}
               />
             ))}
           </svg>

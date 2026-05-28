@@ -1,6 +1,19 @@
+@use "../../../common/styles/card-heading" as *;
+@use "../../../common/styles/card-controls" as *;
+
 // On the overview page, make the card take at least half the viewport width
 #pgv-build-flow-root[data-show-heading="true"] {
   min-width: calc(50vw - 3rem);
+  // margin-bottom: 1rem;
+}
+
+$icon-inline-offset: calc(1.125rem + 0.375rem);
+
+@mixin status-stripe($color, $bg: true) {
+  border-left-color: $color;
+  @if $bg {
+    background: color-mix(in srgb, $color 4%, var(--card-background));
+  }
 }
 
 .pgv-build-flow {
@@ -19,6 +32,7 @@
     position: fixed;
     inset: 0;
     background: var(--background);
+    border: none;
     border-radius: 0;
     height: unset;
     overflow: visible;
@@ -37,8 +51,14 @@
   &__loading,
   &__error,
   &__empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 120px;
     padding: 1rem;
     color: var(--text-color-secondary);
+    font-size: var(--font-size-sm);
   }
 
   &__error {
@@ -51,8 +71,8 @@
   }
 
   &__edge {
-    opacity: 0.7;
-    transition: opacity 0.2s;
+    animation: pgv-edge-enter 0.3s ease-out both;
+    transition: opacity var(--standard-transition);
 
     &--in-progress path {
       stroke-dasharray: 8 4;
@@ -77,116 +97,146 @@
   &__node {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
     width: 100%;
     height: 100%;
-    padding: 0.375rem 0.5rem;
-    border: 2px solid var(--text-color-secondary);
+    padding: 0.5rem 0.625rem;
+    border: var(--card-border-width, 1px) solid var(--card-border-color);
+    border-left: 3px solid var(--text-color-secondary);
     border-radius: var(--form-input-border-radius, 4px);
-    background: var(--background);
+    background: var(--card-background);
     text-decoration: none;
     color: var(--text-color);
     transition:
-      border-color 0.2s,
-      box-shadow 0.2s;
+      border-color var(--standard-transition),
+      box-shadow var(--standard-transition),
+      background var(--standard-transition);
     box-sizing: border-box;
     cursor: pointer;
     gap: 0.125rem;
     overflow: hidden;
+    animation: pgv-node-enter 0.3s ease-out both;
 
     &:hover {
-      border-color: var(--text-color);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 2px 8px
+        color-mix(in srgb, var(--text-color) 12%, transparent);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 0.2rem var(--focus-input-border, var(--accent-color));
+    }
+
+    &:active {
+      box-shadow: 0 1px 4px
+        color-mix(in srgb, var(--text-color) 8%, transparent);
     }
 
     &--current {
-      border-width: 3px;
-      border-style: dashed;
-      border-color: var(--accent-color);
+      border: 2px dashed var(--accent-color);
+      border-left-width: 3px;
     }
 
     &--success {
-      border-color: var(--success-color);
+      @include status-stripe(var(--success-color));
     }
 
     &--failure {
-      border-color: var(--error-color);
+      @include status-stripe(var(--error-color));
     }
 
     &--unstable {
-      border-color: var(--warning-color);
+      @include status-stripe(var(--warning-color));
     }
 
     &--aborted {
-      border-color: var(--text-color-secondary);
+      @include status-stripe(var(--text-color-secondary), $bg: false);
     }
 
     &--in-progress {
-      border-color: var(--build-color);
-      animation: pgv-pulse 2s ease-in-out infinite;
+      @include status-stripe(var(--build-color));
     }
 
     &--queued {
-      border-style: dotted;
-      border-color: var(--text-color-secondary);
+      @include status-stripe(var(--text-color-secondary), $bg: false);
+      opacity: 0.7;
     }
 
     &--not-built {
-      border-style: dashed;
-      border-color: var(--text-color-secondary);
+      @include status-stripe(var(--text-color-secondary), $bg: false);
+      opacity: 0.7;
     }
+  }
+
+  &__node-header {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-width: 0;
+  }
+
+  .pgv-status-icon {
+    width: 1.125rem;
+    height: 1.125rem;
   }
 
   &__node-name {
     font-weight: var(--font-bold-weight, 600);
-    font-size: var(--font-size-xs, 0.75rem);
-    text-align: center;
+    font-size: var(--font-size-xs);
+    text-align: left;
     overflow: hidden;
-    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__node-build-num {
+    font-size: var(--font-size-xs);
+    color: var(--text-color-secondary);
+    flex-shrink: 0;
     white-space: nowrap;
-    max-width: 100%;
-    width: 100%;
-    padding: 0 0.25rem;
-    box-sizing: border-box;
   }
 
   &__node-meta {
     display: flex;
-    gap: 0.25rem;
-    font-size: 0.625rem;
+    gap: 0.375rem;
+    font-size: var(--font-size-xs);
     color: var(--text-color-secondary);
+    padding-left: $icon-inline-offset;
   }
 
   &__node-desc {
-    font-size: 0.5625rem;
+    font-size: 0.6875rem;
     color: var(--text-color-secondary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 140px;
+    max-width: 100%;
+    padding-left: $icon-inline-offset;
   }
 
   &__node-history {
     display: flex;
     gap: 2px;
-    margin-top: 1px;
+    margin-top: 2px;
+    padding-left: $icon-inline-offset;
   }
 
   &__history-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 2px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
     display: inline-block;
     cursor: pointer;
     transition:
-      transform 0.15s,
-      opacity 0.15s;
+      transform var(--standard-transition),
+      opacity var(--standard-transition);
     text-decoration: none;
 
     &:hover {
-      transform: scale(1.4);
-      opacity: 0.8;
+      transform: scale(1.5);
+      opacity: 0.85;
     }
   }
 
@@ -210,37 +260,50 @@
   }
 
   &__heading {
-    padding: 0 0.55rem;
-    bottom: unset !important;
-    right: unset !important;
-    line-height: 2rem;
-    font-weight: var(--font-bold-weight);
-    font-size: var(--font-size-sm);
-    gap: 0.375rem;
-    color: var(--text-color-secondary);
-    text-decoration: none !important;
-
-    &[href] {
-      color: var(--text-color) !important;
-    }
-
-    svg {
-      width: 0.875rem;
-      height: 0.875rem;
-      color: var(--text-color-secondary);
-      transition: color var(--standard-transition);
-      margin-right: -0.25rem;
-    }
-
-    &:hover svg {
-      color: var(--text-color);
-    }
+    @include card-heading;
   }
 
   &__toggle-controls {
     top: unset !important;
     right: unset !important;
     gap: 0;
+  }
+
+  &__controls-bar {
+    top: unset !important;
+    right: unset !important;
+    left: unset !important;
+    gap: 0;
+  }
+
+  &__controls-left {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+
+  &__overflow-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 200px;
+    max-height: min(320px, 50vh);
+    overflow-y: auto;
+
+    .jenkins-button {
+      justify-content: flex-start;
+      gap: 0.5rem;
+      padding: 0.375rem 0.5rem;
+      font-size: var(--font-size-xs);
+      width: 100%;
+      border-radius: 0.25rem;
+
+      svg {
+        width: 1rem;
+        height: 1rem;
+        flex-shrink: 0;
+      }
+    }
   }
 
   &__toggle--active {
@@ -253,47 +316,10 @@
   .pgw-fullscreen-controls,
   .pgw-zoom-controls,
   .pgv-build-flow__toggle-controls {
-    .jenkins-button {
-      --button-background: transparent;
-      --button-background--hover: transparent;
-      --button-background--active: transparent;
-      --button-box-shadow--focus: transparent;
-
-      min-height: 2rem;
-      padding: 0.5rem;
-      border-radius: 0.35rem;
-      color: inherit !important;
-
-      &::before {
-        border: none;
-      }
-
-      svg {
-        width: 1rem;
-        height: 1rem;
-        transition: color var(--standard-transition);
-      }
-
-      &:not(:disabled) {
-        &:hover,
-        &:active {
-          svg {
-            color: var(--text-color);
-          }
-        }
-      }
-    }
+    @include card-control-buttons;
   }
 
-  .pgw-fullscreen-controls {
-    left: unset !important;
-    bottom: unset !important;
-  }
-
-  .pgw-zoom-controls {
-    left: unset !important;
-    top: unset !important;
-  }
+  @include card-control-positions;
 }
 
 // Fullscreen overlay
@@ -301,13 +327,76 @@
   z-index: 1001;
 }
 
-@keyframes pgv-pulse {
-  0%,
-  100% {
-    opacity: 1;
+// --- Reduced motion ---
+@media (prefers-reduced-motion: reduce) {
+  .pgv-build-flow__node {
+    animation: none !important;
   }
-  50% {
-    opacity: 0.6;
+
+  .pgv-build-flow__edge {
+    animation: none !important;
+  }
+
+  .pgv-build-flow__edge--in-progress path {
+    animation: none;
+  }
+}
+
+// --- High contrast ---
+@media (prefers-contrast: more) {
+  .pgv-build-flow__node {
+    background: var(--card-background) !important;
+    border-width: 2px !important;
+    border-left-width: 4px !important;
+  }
+
+  .pgv-build-flow__edge path {
+    stroke-width: 3;
+  }
+
+  .pgv-build-flow__history-dot {
+    border: 1px solid var(--text-color);
+  }
+}
+
+// --- Forced colors (Windows High Contrast) ---
+@media (forced-colors: active) {
+  .pgv-build-flow__node {
+    border: 2px solid ButtonText;
+    background: Canvas;
+    color: CanvasText;
+
+    &--current {
+      border-color: Highlight;
+    }
+  }
+
+  .pgv-build-flow__edge path {
+    stroke: ButtonText;
+  }
+
+  .pgv-build-flow__history-dot {
+    forced-color-adjust: none;
+  }
+}
+
+@keyframes pgv-node-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pgv-edge-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 

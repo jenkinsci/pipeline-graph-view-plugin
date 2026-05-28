@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { resultDotColor, statusClass, statusColor } from "./BuildFlowUtils.ts";
+import {
+  resultDotColor,
+  statusClass,
+  statusColor,
+  toResult,
+} from "./BuildFlowUtils.ts";
 
 describe("statusClass", () => {
   it("maps known statuses", () => {
@@ -44,5 +49,22 @@ describe("resultDotColor", () => {
   it("defaults to secondary text color for aborted/unknown", () => {
     expect(resultDotColor("ABORTED")).toBe("var(--text-color-secondary)");
     expect(resultDotColor("")).toBe("var(--text-color-secondary)");
+  });
+});
+
+describe("toResult", () => {
+  it("maps Build Flow statuses to Result enum values", () => {
+    expect(toResult("SUCCESS")).toBe("success");
+    expect(toResult("FAILURE")).toBe("failure");
+    expect(toResult("UNSTABLE")).toBe("unstable");
+    expect(toResult("ABORTED")).toBe("aborted");
+    expect(toResult("IN_PROGRESS")).toBe("running");
+    expect(toResult("QUEUED")).toBe("queued");
+    expect(toResult("NOT_BUILT")).toBe("not_built");
+  });
+
+  it("defaults to unknown for unrecognized statuses", () => {
+    expect(toResult("SOMETHING_ELSE")).toBe("unknown");
+    expect(toResult("")).toBe("unknown");
   });
 });

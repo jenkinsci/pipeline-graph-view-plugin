@@ -1,12 +1,9 @@
 import { createRoot } from "react-dom/client";
 
 import App from "./app.tsx";
+import { getRootElement } from "./build-flow/main/BuildFlowUtils.ts";
 
-// Support multiple mount points: full page, summary widget, job widget
-const rootElement =
-  document.getElementById("pgv-build-flow-root") ||
-  document.getElementById("pgv-build-flow-summary") ||
-  document.getElementById("pgv-build-flow-job");
+const rootElement = getRootElement();
 
 if (rootElement) {
   const root = createRoot(rootElement);

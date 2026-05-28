@@ -3,6 +3,8 @@
  * Extracted from BuildFlow.tsx for testability and DRY.
  */
 
+import { Result } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
+
 // --- DOM context ---
 
 const ELEMENT_IDS = [
@@ -17,6 +19,11 @@ function getElement(): HTMLElement | null {
     if (el) return el;
   }
   return null;
+}
+
+/** Returns the first matching mount-point element for the Build Flow view. */
+export function getRootElement(): HTMLElement | null {
+  return getElement();
 }
 
 export function getBaseUrl(): string {
@@ -50,6 +57,20 @@ export function statusClass(status: string): string {
   return STATUS_CLASSES[status] || "pgv-build-flow__node--not-built";
 }
 
+const STATUS_TO_RESULT: Record<string, Result> = {
+  SUCCESS: Result.success,
+  FAILURE: Result.failure,
+  UNSTABLE: Result.unstable,
+  ABORTED: Result.aborted,
+  IN_PROGRESS: Result.running,
+  QUEUED: Result.queued,
+  NOT_BUILT: Result.not_built,
+};
+
+export function toResult(status: string): Result {
+  return STATUS_TO_RESULT[status] || Result.unknown;
+}
+
 const STATUS_COLORS: Record<string, string> = {
   SUCCESS: "var(--success-color)",
   FAILURE: "var(--error-color)",
@@ -61,12 +82,7 @@ export function statusColor(status: string): string {
   return STATUS_COLORS[status] || "var(--text-color-secondary)";
 }
 
-const RESULT_DOT_COLORS: Record<string, string> = {
-  SUCCESS: "var(--success-color)",
-  FAILURE: "var(--error-color)",
-  UNSTABLE: "var(--warning-color)",
-};
-
 export function resultDotColor(result: string): string {
-  return RESULT_DOT_COLORS[result] || "var(--text-color-secondary)";
+  // Same palette as statusColor, but IN_PROGRESS gets the default (secondary)
+  return STATUS_COLORS[result] || "var(--text-color-secondary)";
 }

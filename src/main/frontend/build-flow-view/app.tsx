@@ -6,12 +6,10 @@ import {
   ResourceBundleName,
 } from "../common/i18n/index.ts";
 import { BuildFlow } from "./build-flow/main/BuildFlow.tsx";
+import { getRootElement } from "./build-flow/main/BuildFlowUtils.ts";
 
 const App: FunctionComponent = () => {
-  const rootElement =
-    document.getElementById("pgv-build-flow-root") ||
-    document.getElementById("pgv-build-flow-summary") ||
-    document.getElementById("pgv-build-flow-job");
+  const rootElement = getRootElement();
   const locale = rootElement?.dataset.userLocale ?? "en";
 
   return (

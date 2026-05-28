@@ -11,7 +11,7 @@ import {
 // --- Layout constants ---
 export const NODE_WIDTH_MIN = 140;
 export const NODE_WIDTH_MAX = 320;
-export const NODE_HEIGHT = 64;
+export const NODE_HEIGHT = 72;
 export const COLUMN_GAP = 60;
 export const ROW_GAP = 24;
 export const PADDING = 12;

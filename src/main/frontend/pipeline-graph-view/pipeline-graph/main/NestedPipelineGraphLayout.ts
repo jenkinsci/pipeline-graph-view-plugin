@@ -263,6 +263,8 @@ function buildGraphNested(
       childNode.shiftX += layout.nodeSpacingH;
       childNode.width += layout.nodeSpacingH;
     }
+    childNode.allChildrenSkipped =
+      childNode.hasParallel && !childNode.children.some((c) => !c.isSkipped);
     node.children.push(childNode);
   }
   if (node.hasParallel) {
@@ -375,6 +377,15 @@ function computeTailNodes(
     return [node];
   }
   if (node.hasParallel) {
+    if (node.allChildrenSkipped) {
+      // Special case: a regular connection will be added around all the children.
+      connections.push({
+        sourceNodes: [node],
+        destinationNodes: [],
+        skippedNodes: [],
+        hasBranchLabels: false,
+      });
+    }
     return node.children.flatMap((child) =>
       computeTailNodes(connections, child),
     );
@@ -388,7 +399,7 @@ function computeTailNodes(
     ignoreSkipped?: boolean,
   ) => {
     for (const node of tailNodes) {
-      if (ignoreSkipped || !node.isSkipped) {
+      if (ignoreSkipped || !node.isSkipped || node.isParallel) {
         sourceNodes.add(node);
       } else {
         skippedNodes.add(node);
@@ -398,7 +409,7 @@ function computeTailNodes(
     const destinationNodes = destination.hasParallel
       ? destination.children
       : [destination];
-    if (!destinationNodes.some((n) => !n.isSkipped)) {
+    if (!destinationNodes.some((n) => !n.isSkipped || n.isParallel)) {
       for (const node of destinationNodes) skippedNodes.add(node);
       return;
     }
@@ -583,6 +594,7 @@ function printDebugInfo(
 }
 
 export function removeFalseOptionalGraphNodeFlags(node: GraphNode) {
+  if (!node.allChildrenSkipped) delete node.allChildrenSkipped;
   if (!node.firstChildIsSkipped) delete node.firstChildIsSkipped;
   if (!node.hasBigLabel) delete node.hasBigLabel;
   if (!node.hasBranchLabel) delete node.hasBranchLabel;

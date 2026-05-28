@@ -131,6 +131,18 @@ describe("NestedPipelineGraphLayout", () => {
       });
     });
 
+    describe("gh1286_wrapped_two_parallel_last_all_skipped.jenkinsfile", () => {
+      const raw =
+        '[{"name":"Wrapper","state":"success","id":"4","type":"STAGE","children":[{"name":"one","state":"success","id":"6","type":"STAGE","children":[{"name":"nested 1","state":"success","id":"9","type":"PARALLEL","children":[]},{"name":"nested 2","state":"success","id":"10","type":"PARALLEL","children":[]}]},{"name":"two","state":"success","id":"17","type":"STAGE","children":[{"name":"Skipped 1","state":"skipped","id":"20","type":"PARALLEL","children":[]},{"name":"Skipped 2","state":"skipped","id":"21","type":"PARALLEL","children":[]}]}]},{"name":"Next","state":"success","id":"38","type":"STAGE","children":[]}]';
+
+      it("should render layout", () => {
+        shouldMatchSnapshot(raw, false);
+      });
+      it("should render collapsed layout", () => {
+        shouldMatchSnapshot(raw, true);
+      });
+    });
+
     describe("selective collapse", () => {
       const raw =
         '[{"name":"Non-Parallel Stage","state":"success","id":"6","type":"STAGE","children":[]},{"name":"Parallel Stage","state":"success","id":"12","type":"STAGE","children":[{"name":"Branch A","state":"success","id":"16","type":"PARALLEL","children":[]},{"name":"Branch B","state":"success","id":"17","type":"PARALLEL","children":[]},{"name":"Branch C","state":"success","id":"18","type":"PARALLEL","children":[{"name":"Nested 1","state":"success","id":"26","type":"STAGE","children":[]},{"name":"Nested 2","state":"success","id":"42","type":"STAGE","children":[]}]}]},{"name":"Skipped stage","state":"skipped","id":"54","type":"STAGE","children":[]}]';
@@ -155,12 +167,10 @@ function leanEdge(full: ConnectionEdge): ConnectionEdge {
     x: full.x,
     y: full.y,
     key: full.key,
-    type: full.type,
   };
   // Cherry-pick truthy fields that are relevant for connections.
   if (full.firstChildIsSkipped) lean.firstChildIsSkipped = true;
   if (full.isHidden) lean.isHidden = true;
-  if (full.isParallel) lean.isParallel = true;
   if (full.isPlaceholder) lean.isPlaceholder = true;
   if (full.isSkipped) lean.isSkipped = true;
   return lean;

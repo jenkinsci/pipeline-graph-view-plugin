@@ -107,6 +107,7 @@ export type GraphNode = {
   width: number;
   shiftY: number;
   height: number;
+  allChildrenSkipped?: boolean;
   isHidden?: boolean;
   isParallel?: boolean;
   isSkipped?: boolean;
@@ -131,12 +132,14 @@ export interface ConnectionEdge {
   x: number;
   y: number;
   key: string;
-  type: NodeInfo["type"];
   firstChildIsSkipped?: boolean;
   isHidden?: boolean;
-  isParallel?: boolean;
   isPlaceholder?: boolean;
   isSkipped?: boolean;
+
+  allChildrenSkipped?: boolean;
+  height?: number;
+  width?: number;
 }
 
 export interface CompositeConnection {

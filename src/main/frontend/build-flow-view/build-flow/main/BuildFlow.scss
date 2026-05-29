@@ -23,7 +23,7 @@ $icon-inline-offset: calc(1.125rem + 0.375rem);
 
   // Full-page view: fill available space
   &--full-page {
-    height: calc(100vh - 300px);
+    height: 100%;
     min-height: 300px;
   }
 
@@ -71,7 +71,7 @@ $icon-inline-offset: calc(1.125rem + 0.375rem);
   }
 
   &__edge {
-    animation: pgv-edge-enter 0.3s ease-out both;
+    animation: pgv-edge-enter 0.3s ease-out backwards;
     transition: opacity var(--standard-transition);
 
     &--in-progress path {

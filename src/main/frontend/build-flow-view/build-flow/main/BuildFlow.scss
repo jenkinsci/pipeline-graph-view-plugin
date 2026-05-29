@@ -132,8 +132,13 @@ $icon-inline-offset: calc(1.125rem + 0.375rem);
     }
 
     &--current {
-      border: 2px dashed var(--accent-color);
-      border-left-width: 3px;
+      border-color: var(--accent-color);
+      border-left-color: var(--accent-color);
+      background: color-mix(
+        in srgb,
+        var(--accent-color) 6%,
+        var(--card-background)
+      );
     }
 
     &--success {

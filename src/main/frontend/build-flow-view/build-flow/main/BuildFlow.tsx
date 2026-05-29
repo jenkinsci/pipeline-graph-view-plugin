@@ -41,6 +41,7 @@ import {
   IconFitToView,
   IconGitMerge,
   IconGrid,
+  IconLocate,
   IconMinus,
   IconPlus,
   IconPricetag,
@@ -62,6 +63,7 @@ import {
   NODE_WIDTH_MIN,
 } from "./BuildFlowLayout.ts";
 import {
+  computeFullPath,
   getBaseUrl,
   getRootUrl,
   isFullPageContext,
@@ -93,6 +95,7 @@ interface BuildFlowPrefs {
   showBuildHistory: boolean;
   flattenGraph: boolean;
   autoRefresh: boolean;
+  focusCurrentFlow: boolean;
 }
 
 const DEFAULT_PREFS: BuildFlowPrefs = {
@@ -106,6 +109,7 @@ const DEFAULT_PREFS: BuildFlowPrefs = {
   showBuildHistory: false,
   flattenGraph: false,
   autoRefresh: true,
+  focusCurrentFlow: false,
 };
 
 function loadPrefs(): BuildFlowPrefs {
@@ -426,6 +430,8 @@ interface ToggleControlsProps {
   setFlattenGraph: (v: boolean) => void;
   autoRefresh: boolean;
   setAutoRefresh: (v: boolean) => void;
+  focusCurrentFlow: boolean;
+  setFocusCurrentFlow: (v: boolean) => void;
 }
 
 /** Primary toggles: always visible in left group */
@@ -440,6 +446,8 @@ const PrimaryToggleControls: FunctionComponent<
     | "setShowBuildHistory"
     | "autoRefresh"
     | "setAutoRefresh"
+    | "focusCurrentFlow"
+    | "setFocusCurrentFlow"
   >
 > = ({
   showUpstream,
@@ -450,6 +458,8 @@ const PrimaryToggleControls: FunctionComponent<
   setShowBuildHistory,
   autoRefresh,
   setAutoRefresh,
+  focusCurrentFlow,
+  setFocusCurrentFlow,
 }) => {
   return (
     <>
@@ -466,6 +476,15 @@ const PrimaryToggleControls: FunctionComponent<
         active={showDownstream}
         onToggle={() => setShowDownstream(!showDownstream)}
         tooltip={showDownstream ? "Hide downstream" : "Show downstream"}
+      />
+      <ToggleButton
+        icon={IconLocate}
+        label=""
+        active={focusCurrentFlow}
+        onToggle={() => setFocusCurrentFlow(!focusCurrentFlow)}
+        tooltip={
+          focusCurrentFlow ? "Show full graph" : "Focus current build's flow"
+        }
       />
       <ToggleButton
         icon={IconBarChart}
@@ -727,6 +746,14 @@ export const BuildFlow: FunctionComponent = () => {
     return () => clearTimeout(timer);
   }, [containerWidth, containerHeight, svgWidth, svgHeight, initialScale]);
 
+  // Focus current flow: full transitive path through the current build
+  const focusedPathIds = useMemo(() => {
+    if (!prefs.focusCurrentFlow || prefs.flattenGraph || !data) return null;
+    const currentNode = data.nodes.find((n) => n.isCurrentBuild);
+    if (!currentNode) return null;
+    return computeFullPath(currentNode.id, data.edges);
+  }, [prefs.focusCurrentFlow, prefs.flattenGraph, data]);
+
   // Focus path: compute highlighted node set from hovered node
   const highlightedIds = useMemo(() => {
     if (!hoveredNodeId || prefs.flattenGraph || !data) return null;
@@ -775,6 +802,7 @@ export const BuildFlow: FunctionComponent = () => {
 
   const { layoutNodes, width, height } = layout;
   const nodeById = new Map(layoutNodes.map((ln) => [ln.node.id, ln]));
+  const activeSet = highlightedIds ?? focusedPathIds;
 
   const isFullPage = isFullPageContext();
   const containerClasses = [
@@ -846,6 +874,8 @@ export const BuildFlow: FunctionComponent = () => {
               setShowBuildHistory={(v) => updatePref("showBuildHistory", v)}
               autoRefresh={prefs.autoRefresh}
               setAutoRefresh={(v) => updatePref("autoRefresh", v)}
+              focusCurrentFlow={prefs.focusCurrentFlow}
+              setFocusCurrentFlow={(v) => updatePref("focusCurrentFlow", v)}
             />
             <OverflowMenu
               layoutDirection={prefs.layoutDirection}
@@ -878,10 +908,8 @@ export const BuildFlow: FunctionComponent = () => {
                 const to = nodeById.get(edge.to);
                 if (!from || !to) return null;
                 const edgeDimmed =
-                  highlightedIds != null &&
-                  !(
-                    highlightedIds.has(edge.from) && highlightedIds.has(edge.to)
-                  );
+                  activeSet != null &&
+                  !(activeSet.has(edge.from) && activeSet.has(edge.to));
                 return (
                   <BuildFlowEdge
                     key={`${edge.from}->${edge.to}`}
@@ -909,9 +937,7 @@ export const BuildFlow: FunctionComponent = () => {
                 showBuildHistory={prefs.showBuildHistory}
                 index={i}
                 isFirstMount={isFirstMountRef.current}
-                isDimmed={
-                  highlightedIds != null && !highlightedIds.has(ln.node.id)
-                }
+                isDimmed={activeSet != null && !activeSet.has(ln.node.id)}
                 onMouseEnter={() => setHoveredNodeId(ln.node.id)}
                 onMouseLeave={() => setHoveredNodeId(null)}
               />

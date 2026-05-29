@@ -86,3 +86,47 @@ export function resultDotColor(result: string): string {
   // Same palette as statusColor, but IN_PROGRESS gets the default (secondary)
   return STATUS_COLORS[result] || "var(--text-color-secondary)";
 }
+
+// --- Focus path (transitive closure) ---
+
+interface Edge {
+  from: string;
+  to: string;
+}
+
+/**
+ * Computes the full upstream + downstream path through a given node.
+ * Returns a Set of all node IDs reachable from `nodeId` by traversing
+ * edges in both directions (BFS).
+ */
+export function computeFullPath(nodeId: string, edges: Edge[]): Set<string> {
+  // Build adjacency lists for both directions
+  const downstream = new Map<string, string[]>();
+  const upstream = new Map<string, string[]>();
+  for (const e of edges) {
+    if (!downstream.has(e.from)) downstream.set(e.from, []);
+    downstream.get(e.from)!.push(e.to);
+    if (!upstream.has(e.to)) upstream.set(e.to, []);
+    upstream.get(e.to)!.push(e.from);
+  }
+
+  const result = new Set<string>([nodeId]);
+
+  function bfs(adj: Map<string, string[]>) {
+    const queue: string[] = [nodeId];
+    while (queue.length > 0) {
+      const current = queue.shift()!;
+      for (const next of adj.get(current) ?? []) {
+        if (!result.has(next)) {
+          result.add(next);
+          queue.push(next);
+        }
+      }
+    }
+  }
+
+  bfs(downstream);
+  bfs(upstream);
+
+  return result;
+}

@@ -222,6 +222,20 @@ export const IconExpand = (
   </svg>
 );
 
+export const IconLocate = (
+  <svg {...ion}>
+    <path
+      d="M256 64C150 64 64 150 64 256s86 192 192 192 192-86 192-192S362 64 256 64z"
+      fill="none"
+      stroke="currentColor"
+      strokeMiterlimit="10"
+      strokeWidth="32"
+    />
+    <path {...s} d="M256 96v32M256 384v32M400 256h32M80 256h32" />
+    <circle cx="256" cy="256" r="80" {...s} />
+  </svg>
+);
+
 // --- Reusable toggle button helper ---
 
 export function ToggleButton({

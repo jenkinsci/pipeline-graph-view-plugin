@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { BuildFlowEdgeModel } from "../model/BuildFlowModel";
+import { computeFullPath } from "./BuildFlowUtils";
 
 /**
  * Pure function matching the useMemo logic in BuildFlow.tsx for focus path.
@@ -90,5 +91,79 @@ describe("Focus path highlighting", () => {
     const edgeAD =
       highlighted != null && !(highlighted.has("A") && highlighted.has("D"));
     expect(edgeAD).toBe(true);
+  });
+});
+
+describe("computeFullPath - transitive focus", () => {
+  // Linear chain: A -> B -> C -> D
+  const linearEdges: BuildFlowEdgeModel[] = [
+    { from: "A", to: "B" },
+    { from: "B", to: "C" },
+    { from: "C", to: "D" },
+  ];
+
+  it("traverses the full chain from a middle node", () => {
+    const result = computeFullPath("B", linearEdges);
+    expect(result.has("A")).toBe(true);
+    expect(result.has("B")).toBe(true);
+    expect(result.has("C")).toBe(true);
+    expect(result.has("D")).toBe(true);
+    expect(result.size).toBe(4);
+  });
+
+  it("traverses upstream from a leaf node", () => {
+    const result = computeFullPath("D", linearEdges);
+    expect(result.size).toBe(4);
+    expect(result.has("A")).toBe(true);
+  });
+
+  it("traverses downstream from a root node", () => {
+    const result = computeFullPath("A", linearEdges);
+    expect(result.size).toBe(4);
+    expect(result.has("D")).toBe(true);
+  });
+
+  // Diamond: A -> B, A -> C, B -> D, C -> D
+  const diamondEdges: BuildFlowEdgeModel[] = [
+    { from: "A", to: "B" },
+    { from: "A", to: "C" },
+    { from: "B", to: "D" },
+    { from: "C", to: "D" },
+  ];
+
+  it("includes all paths through a diamond from the root", () => {
+    const result = computeFullPath("A", diamondEdges);
+    expect(result.size).toBe(4);
+  });
+
+  it("includes only the flow through a branch node, not parallel branches", () => {
+    const result = computeFullPath("B", diamondEdges);
+    // B's flow: A -> B -> D (C is a parallel branch not through B)
+    expect(result.size).toBe(3);
+    expect(result.has("A")).toBe(true);
+    expect(result.has("B")).toBe(true);
+    expect(result.has("D")).toBe(true);
+    expect(result.has("C")).toBe(false);
+  });
+
+  // Disconnected: A -> B, C -> D (two separate chains)
+  const disconnectedEdges: BuildFlowEdgeModel[] = [
+    { from: "A", to: "B" },
+    { from: "C", to: "D" },
+  ];
+
+  it("only includes the connected component", () => {
+    const result = computeFullPath("A", disconnectedEdges);
+    expect(result.size).toBe(2);
+    expect(result.has("A")).toBe(true);
+    expect(result.has("B")).toBe(true);
+    expect(result.has("C")).toBe(false);
+    expect(result.has("D")).toBe(false);
+  });
+
+  it("handles an isolated node with no edges", () => {
+    const result = computeFullPath("Z", disconnectedEdges);
+    expect(result.size).toBe(1);
+    expect(result.has("Z")).toBe(true);
   });
 });

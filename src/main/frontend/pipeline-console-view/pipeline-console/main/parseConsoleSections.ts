@@ -38,6 +38,15 @@ const ANSI_RE = /\x1b\[[0-9;]*[a-zA-Z]/g;
 // progressiveHtml returns HTML; AnsiColor plugin wraps ANSI codes in <span> tags.
 const HTML_TAG_RE = /<[^>]*>/g;
 
+// Timestamp prefix pattern for the Timestamper plugin.
+// After HTML tags are stripped, timestamps remain as plain text. The plugin
+// emits BOTH a visible clock time AND a hidden ISO timestamp per line:
+//   "<b>01:08:06</b> <span style="display:none">[2026-05-29T19:38:06.669Z]</span> "
+// After HTML stripping: "01:08:06 [2026-05-29T19:38:06.669Z] "
+// The trailing + allows matching multiple consecutive timestamp prefixes.
+const TIMESTAMP_PREFIX_RE =
+  /^(?:\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?[A-Z]*[+-]?\d{0,4}\]\s+|(?:\d{4}[-/]\d{2}[-/]\d{2}\s+)?\d{1,2}:\d{2}(?::\d{2})?(?:\.\d+)?\s+)+/;
+
 // Start markers: ##[group]Title or ::group::Title
 const GROUP_START_RE = /^(?:##\[group\]|::group::)\s*(.*)$/;
 
@@ -50,7 +59,11 @@ const GROUP_END_RE = /^(?:##\[endgroup\]|::endgroup::)\s*$/;
  * in the output nodes.
  */
 function stripForDetection(line: string): string {
-  return line.replace(ANSI_RE, "").replace(HTML_TAG_RE, "").trimStart();
+  return line
+    .replace(ANSI_RE, "")
+    .replace(HTML_TAG_RE, "")
+    .replace(TIMESTAMP_PREFIX_RE, "")
+    .trimStart();
 }
 
 // Pattern matching the group-start marker itself (no capture).
@@ -67,28 +80,22 @@ const GROUP_MARKER_RE = /##\[group\]|::group::/;
  */
 export function parseConsoleSections(lines: string[]): ConsoleSectionNode[] {
   const root: ConsoleSectionNode[] = [];
-  // Stack of open groups.
-  const stack: { group: ConsoleSectionGroup }[] = [];
-
-  function current(): ConsoleSectionNode[] {
-    return stack.length > 0 ? stack[stack.length - 1].group.children : root;
-  }
+  const stack: ConsoleSectionGroup[] = [];
+  const target = () => stack.at(-1)?.children ?? root;
 
   for (let i = 0; i < lines.length; i++) {
     const raw = lines[i];
     const stripped = stripForDetection(raw);
 
-    // Reject lines that look like shell trace of the echo command.
-    // e.g. "+ echo ##[group]Build" should not be treated as a marker.
+    // Reject shell trace lines (e.g. "+ echo ##[group]Build").
     if (stripped.startsWith("+ ")) {
-      current().push({ kind: "line", index: i, content: raw });
+      target().push({ kind: "line", index: i, content: raw });
       continue;
     }
 
     const startMatch = GROUP_START_RE.exec(stripped);
     if (startMatch) {
-      // Strip the marker from the raw line, preserving surrounding HTML/ANSI
-      // so the title renderer can show colors from the AnsiColor plugin.
+      // Preserve surrounding HTML/ANSI for colored title rendering.
       const title = raw.replace(GROUP_MARKER_RE, "").trim() || "Section";
       const group: ConsoleSectionGroup = {
         kind: "group",
@@ -97,27 +104,23 @@ export function parseConsoleSections(lines: string[]): ConsoleSectionNode[] {
         endIndex: -1,
         children: [],
       };
-      current().push(group);
-      stack.push({ group });
+      target().push(group);
+      stack.push(group);
       continue;
     }
 
     if (GROUP_END_RE.test(stripped)) {
       if (stack.length > 0) {
-        stack[stack.length - 1].group.endIndex = i;
-        stack.pop();
-      }
-      // If no open group, ignore the stray endgroup marker (treat as normal line).
-      else {
-        current().push({ kind: "line", index: i, content: raw });
+        stack.pop()!.endIndex = i;
+      } else {
+        target().push({ kind: "line", index: i, content: raw });
       }
       continue;
     }
 
-    current().push({ kind: "line", index: i, content: raw });
+    target().push({ kind: "line", index: i, content: raw });
   }
 
-  // Unclosed groups keep endIndex = -1 (still streaming).
   return root;
 }
 
@@ -178,15 +181,30 @@ export function applyRulesToSections(
   const result: ConsoleSectionNode[] = [];
   let activeRule: CompiledSectionRule | null = null;
   let activeGroup: ConsoleSectionGroup | null = null;
+  const emit = (n: ConsoleSectionNode) =>
+    activeGroup ? activeGroup.children.push(n) : result.push(n);
+
+  function openGroup(title: string, index: number, rule: CompiledSectionRule) {
+    activeGroup = {
+      kind: "group",
+      title,
+      startIndex: index,
+      endIndex: -1,
+      children: [],
+    };
+    activeRule = rule;
+  }
+
+  function closeGroup(endIndex: number) {
+    activeGroup!.endIndex = endIndex;
+    result.push(activeGroup!);
+    activeGroup = null;
+    activeRule = null;
+  }
 
   for (const node of nodes) {
-    // Only process flat lines; pass groups through unchanged.
     if (node.kind === "group") {
-      if (activeGroup) {
-        activeGroup.children.push(node);
-      } else {
-        result.push(node);
-      }
+      emit(node);
       continue;
     }
 
@@ -194,57 +212,30 @@ export function applyRulesToSections(
 
     // Check if current line ends an active rule-based group.
     if (activeRule && activeGroup && activeRule.endPattern.test(stripped)) {
-      // The end-line starts a new section of the same rule (e.g. next Maven phase).
-      const startMatch = matchAnyRule(stripped, rules);
-      if (startMatch) {
-        activeGroup.endIndex = node.index;
-        result.push(activeGroup);
-        activeGroup = {
-          kind: "group",
-          title: startMatch.title,
-          startIndex: node.index,
-          endIndex: -1,
-          children: [],
-        };
-        activeRule = startMatch.rule;
-        continue;
+      closeGroup(node.index);
+      // The end-line may also start a new section (e.g. next Maven phase).
+      const m = matchAnyRule(stripped, rules);
+      if (m) {
+        openGroup(m.title, node.index, m.rule);
+      } else {
+        result.push(node);
       }
-      activeGroup.endIndex = node.index;
-      result.push(activeGroup);
-      activeGroup = null;
-      activeRule = null;
-      result.push(node);
       continue;
     }
 
     // Check if a new rule-based group starts.
     if (!activeRule) {
-      const startMatch = matchAnyRule(stripped, rules);
-      if (startMatch) {
-        activeGroup = {
-          kind: "group",
-          title: startMatch.title,
-          startIndex: node.index,
-          endIndex: -1,
-          children: [],
-        };
-        activeRule = startMatch.rule;
+      const m = matchAnyRule(stripped, rules);
+      if (m) {
+        openGroup(m.title, node.index, m.rule);
         continue;
       }
     }
 
-    if (activeGroup) {
-      activeGroup.children.push(node);
-    } else {
-      result.push(node);
-    }
+    emit(node);
   }
 
-  // Close any unclosed rule-based group.
-  if (activeGroup) {
-    result.push(activeGroup);
-  }
-
+  if (activeGroup) result.push(activeGroup);
   return result;
 }
 
@@ -285,7 +276,6 @@ export function applyAnnotatorBoundaries(
 ): ConsoleSectionNode[] {
   if (boundaries.length === 0) return nodes;
 
-  // Build a set of line indices for quick lookup.
   const startMap = new Map<number, string>();
   const endSet = new Set<number>();
   for (const b of boundaries) {
@@ -298,22 +288,18 @@ export function applyAnnotatorBoundaries(
 
   const result: ConsoleSectionNode[] = [];
   let activeGroup: ConsoleSectionGroup | null = null;
+  const emit = (n: ConsoleSectionNode) =>
+    activeGroup ? activeGroup.children.push(n) : result.push(n);
 
   for (const node of nodes) {
-    // Pass existing groups through unchanged.
     if (node.kind === "group") {
-      if (activeGroup) {
-        activeGroup.children.push(node);
-      } else {
-        result.push(node);
-      }
+      emit(node);
       continue;
     }
 
     const lineIdx = node.index;
 
-    // Check end before start so a boundary that closes and opens
-    // on the same line works correctly.
+    // Check end before start so same-line close+open works.
     if (activeGroup && endSet.has(lineIdx)) {
       activeGroup.endIndex = lineIdx;
       result.push(activeGroup);
@@ -333,17 +319,9 @@ export function applyAnnotatorBoundaries(
       continue;
     }
 
-    if (activeGroup) {
-      activeGroup.children.push(node);
-    } else {
-      result.push(node);
-    }
+    emit(node);
   }
 
-  // Close any unclosed annotator group.
-  if (activeGroup) {
-    result.push(activeGroup);
-  }
-
+  if (activeGroup) result.push(activeGroup);
   return result;
 }

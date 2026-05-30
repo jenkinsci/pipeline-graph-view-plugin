@@ -240,6 +240,68 @@ describe("parseConsoleSections", () => {
     });
   });
 
+  describe("Timestamper plugin compatibility", () => {
+    it.each([
+      [
+        "plain HH:MM:SS with ##[group]",
+        "11:18:37 ##[group]Compile",
+        "11:18:37 content",
+        "11:18:37 ##[endgroup]",
+      ],
+      [
+        "plain HH:MM:SS with ::group::",
+        "09:05:12 ::group::Docker Build",
+        "09:05:12 Step 1/3 : FROM node",
+        "09:05:13 ::endgroup::",
+      ],
+      [
+        "full date+time prefix",
+        "2026-05-30 11:18:37 ##[group]Build",
+        "2026-05-30 11:18:37 compiling...",
+        "2026-05-30 11:18:38 ##[endgroup]",
+      ],
+      [
+        "timestamp with milliseconds",
+        "11:18:37.456 ##[group]Tests",
+        "11:18:37.500 running...",
+        "11:18:38.001 ##[endgroup]",
+      ],
+      [
+        "HTML-wrapped timestamp",
+        '<span class="timestamp"><b>11:18:37</b> </span>##[group]Build',
+        '<span class="timestamp"><b>11:18:37</b> </span>compiling...',
+        '<span class="timestamp"><b>11:18:37</b> </span>##[endgroup]',
+      ],
+      [
+        "bracketed ISO format",
+        "[2026-05-30T11:18:37.456Z] ##[group]Deploy",
+        "[2026-05-30T11:18:37.456Z] deploying...",
+        "[2026-05-30T11:18:38.001Z] ##[endgroup]",
+      ],
+      [
+        "bracketed ISO with timezone offset",
+        "[2026-05-30T11:18:37.456+0530] ::group::Build",
+        "[2026-05-30T11:18:37.500+0530] compiling...",
+        "[2026-05-30T11:18:38.001+0530] ::endgroup::",
+      ],
+      [
+        "real Timestamper: visible clock + hidden ISO (dual prefix)",
+        '<span class="timestamp"><b>01:08:06</b> </span><span style="display: none">[2026-05-29T19:38:06.669Z]</span> ##[group]Compile All Modules',
+        '<span class="timestamp"><b>01:08:06</b> </span><span style="display: none">[2026-05-29T19:38:06.669Z]</span> Starting compilation...',
+        '<span class="timestamp"><b>01:08:06</b> </span><span style="display: none">[2026-05-29T19:38:06.669Z]</span> ##[endgroup]',
+      ],
+    ])(
+      "detects markers with %s",
+      (_label, startLine, contentLine, endLine) => {
+        const result = parseConsoleSections([startLine, contentLine, endLine]);
+        expect(result).toHaveLength(1);
+        const group = result[0] as ConsoleSectionGroup;
+        expect(group.kind).toBe("group");
+        expect(group.children).toHaveLength(1);
+      },
+    );
+  });
+
   describe("nesting", () => {
     it("supports nested groups", () => {
       const lines = [

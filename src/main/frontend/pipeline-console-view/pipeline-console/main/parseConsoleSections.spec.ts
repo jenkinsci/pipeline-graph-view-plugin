@@ -290,16 +290,13 @@ describe("parseConsoleSections", () => {
         '<span class="timestamp"><b>01:08:06</b> </span><span style="display: none">[2026-05-29T19:38:06.669Z]</span> Starting compilation...',
         '<span class="timestamp"><b>01:08:06</b> </span><span style="display: none">[2026-05-29T19:38:06.669Z]</span> ##[endgroup]',
       ],
-    ])(
-      "detects markers with %s",
-      (_label, startLine, contentLine, endLine) => {
-        const result = parseConsoleSections([startLine, contentLine, endLine]);
-        expect(result).toHaveLength(1);
-        const group = result[0] as ConsoleSectionGroup;
-        expect(group.kind).toBe("group");
-        expect(group.children).toHaveLength(1);
-      },
-    );
+    ])("detects markers with %s", (_label, startLine, contentLine, endLine) => {
+      const result = parseConsoleSections([startLine, contentLine, endLine]);
+      expect(result).toHaveLength(1);
+      const group = result[0] as ConsoleSectionGroup;
+      expect(group.kind).toBe("group");
+      expect(group.children).toHaveLength(1);
+    });
   });
 
   describe("nesting", () => {

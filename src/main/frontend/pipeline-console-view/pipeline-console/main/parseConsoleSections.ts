@@ -81,7 +81,7 @@ const GROUP_MARKER_RE = /##\[group\]|::group::/;
 export function parseConsoleSections(lines: string[]): ConsoleSectionNode[] {
   const root: ConsoleSectionNode[] = [];
   const stack: ConsoleSectionGroup[] = [];
-  const target = () => stack.at(-1)?.children ?? root;
+  const target = () => stack[stack.length - 1]?.children ?? root;
 
   for (let i = 0; i < lines.length; i++) {
     const raw = lines[i];
@@ -211,7 +211,8 @@ export function applyRulesToSections(
     const stripped = stripForDetection(node.content);
 
     // Check if current line ends an active rule-based group.
-    if (activeRule && activeGroup && activeRule.endPattern.test(stripped)) {
+    const currentRule = activeRule as CompiledSectionRule | null;
+    if (currentRule && activeGroup && currentRule.endPattern.test(stripped)) {
       closeGroup(node.index);
       // The end-line may also start a new section (e.g. next Maven phase).
       const m = matchAnyRule(stripped, rules);

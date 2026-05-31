@@ -109,6 +109,7 @@ export type GraphNode = {
   height: number;
   allChildrenSkipped?: boolean;
   isHidden?: boolean;
+  isNestedParallel?: boolean;
   isParallel?: boolean;
   isSkipped?: boolean;
   firstChildIsSkipped?: boolean;

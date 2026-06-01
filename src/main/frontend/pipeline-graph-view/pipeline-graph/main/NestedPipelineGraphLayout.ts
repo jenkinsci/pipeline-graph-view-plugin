@@ -218,7 +218,7 @@ function buildGraphNested(
       };
       hasParallel = false;
     }
-    const isChainedParallel =
+    const isNestedParallel =
       isParallel &&
       stage.children.length > 0 &&
       stage.children[0].children.length > 0 &&
@@ -232,8 +232,8 @@ function buildGraphNested(
       isParallel &&
       hasChildren &&
       // Do not add a branch label on the parent of a nested parallel. Instead, show a big label on the nested parallel block.
-      !isChainedParallel;
-    const isHidden = hasBranchLabel || hasChildren || isChainedParallel;
+      !isNestedParallel;
+    const isHidden = hasBranchLabel || hasChildren || isNestedParallel;
     const hasBigLabel =
       hasParallel ||
       (stage.type === "STAGE" && hasChildren && !hasBranchLabel) ||
@@ -242,6 +242,7 @@ function buildGraphNested(
     const hasSmallLabel = !isHidden && !hasBigLabel;
     const childNode: GraphNode = {
       ...makeNodeForStage(stage, layout),
+      isNestedParallel,
       isParallel,
       isSkipped,
       isHidden,
@@ -253,19 +254,24 @@ function buildGraphNested(
     };
     buildGraphNested(childNode, stage.children, layout, isLast);
     if (hasBigLabel) childNode.shiftY += layout.labelOffsetV;
-    if (
-      isChainedParallel ||
-      (childNode.hasParallel &&
-        childNode.children.some((c) => c.hasBranchLabel))
-    ) {
-      // - Nested parallel children, avoid collapsing curves.
-      // - Any child has branch label, make space for branch label.
-      childNode.shiftX += layout.nodeSpacingH;
-      childNode.width += layout.nodeSpacingH;
-    }
     childNode.allChildrenSkipped =
       childNode.hasParallel && !childNode.children.some((c) => !c.isSkipped);
     node.children.push(childNode);
+  }
+  // Two phased approach as we need to detect if any sibling has a branch label -> node will need to make space.
+  const anyChildHasBranchLabel =
+    node.hasParallel && node.children.some((c) => c.hasBranchLabel);
+  for (const childNode of node.children) {
+    if (
+      (childNode.isNestedParallel && !anyChildHasBranchLabel) ||
+      (childNode.hasParallel &&
+        childNode.children.some((c) => c.hasBranchLabel))
+    ) {
+      // - Nested parallel children (unless a sibling already added spacing on the parent), avoid collapsing curves.
+      // - Any of its children has branch label, make space for branch labels.
+      childNode.shiftX += layout.nodeSpacingH;
+      childNode.width += layout.nodeSpacingH;
+    }
   }
   if (node.hasParallel) {
     // Move shiftY from first parallel child up one level.
@@ -603,6 +609,7 @@ export function removeFalseOptionalGraphNodeFlags(node: GraphNode) {
   if (!node.hasStageEnd) delete node.hasStageEnd;
   if (!node.hasTiming) delete node.hasTiming;
   if (!node.isHidden) delete node.isHidden;
+  if (!node.isNestedParallel) delete node.isNestedParallel;
   if (!node.isParallel) delete node.isParallel;
   if (!node.isSkipped) delete node.isSkipped;
 

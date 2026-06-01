@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:pgv="/components">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:pgv="/components" xmlns:st="jelly:stapler">
     <pgv:temporary-wrapper>
         <link rel="stylesheet" href="${resURL}/plugin/pipeline-graph-view/js/style.css" type="text/css" />
 
@@ -30,5 +30,6 @@
                        data-user-locale="${request2.getLocale().toLanguageTag()}"/>
         <script src="${rootURL}/plugin/pipeline-graph-view/js/build.js" type="module"/>
         <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/pipeline-console-view-bundle.js" type="module"/>
+        <st:adjunct includes="org.jenkinsci.plugins.workflow.support.steps.input.DialogHyperlinkNote.script" />
     </pgv:temporary-wrapper>
 </j:jelly>

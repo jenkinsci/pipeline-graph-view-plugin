@@ -387,6 +387,82 @@ public class PipelineConsoleViewAction extends Tab {
     }
 
     @GET
+    @WebMethod(name = "consoleSectionRules")
+    public void getConsoleSectionRules(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+        run.checkPermission(Item.READ);
+        rsp.setStatus(200);
+        rsp.setContentType("application/json;charset=UTF-8");
+        rsp.setHeader("Cache-Control", "private, max-age=300");
+
+        List<JSONObject> rules = new ArrayList<>();
+        for (ConsoleSectionRule rule : ConsoleSectionRule.all()) {
+            JSONObject obj = new JSONObject();
+            obj.put("id", rule.getId());
+            obj.put("displayName", rule.getDisplayName());
+            obj.put("startPattern", rule.getStartPattern());
+            obj.put("endPattern", rule.getEndPattern());
+            obj.put("enabledByDefault", rule.isEnabledByDefault());
+            rules.add(obj);
+        }
+        net.sf.json.JSONArray.fromObject(rules).write(rsp.getWriter());
+    }
+
+    @GET
+    @WebMethod(name = "consoleSectionBoundaries")
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @SuppressFBWarnings(
+            value = "RV_RETURN_VALUE_IGNORED",
+            justification = "writeLogTo return value not needed; we only care about the buffered output")
+    public void getConsoleSectionBoundaries(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+        run.checkPermission(Item.READ);
+        String nodeId = req.getParameter("nodeId");
+        if (nodeId == null) {
+            rsp.setStatus(400);
+            rsp.setContentType("application/json;charset=UTF-8");
+            rsp.getWriter().write("[]");
+            return;
+        }
+
+        AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
+        if (logText == null) {
+            rsp.setStatus(200);
+            rsp.setContentType("application/json;charset=UTF-8");
+            rsp.setHeader("Cache-Control", "private, no-store");
+            rsp.getWriter().write("[]");
+            return;
+        }
+
+        // Stream log directly through the processor line-by-line to avoid
+        // buffering the entire log in memory.
+        ConsoleSectionProcessor processor = new ConsoleSectionProcessor(
+                ConsoleSectionAnnotator.all().stream().toList());
+        ConsoleSectionProcessor.LineProcessingOutputStream out = processor.createOutputStream();
+        logText.writeLogTo(0L, out);
+        out.close();
+        List<ConsoleSectionProcessor.BoundaryEvent> events = out.getEvents();
+
+        rsp.setStatus(200);
+        rsp.setContentType("application/json;charset=UTF-8");
+        if (logText.isComplete()) {
+            rsp.setHeader("Cache-Control", "private, max-age=300");
+        } else {
+            rsp.setHeader("Cache-Control", "private, no-store");
+        }
+
+        List<JSONObject> jsonEvents = new ArrayList<>();
+        for (ConsoleSectionProcessor.BoundaryEvent event : events) {
+            JSONObject obj = new JSONObject();
+            obj.put("lineIndex", event.getLineIndex());
+            obj.put("type", event.getType());
+            if (event.getTitle() != null) {
+                obj.put("title", event.getTitle());
+            }
+            jsonEvents.add(obj);
+        }
+        net.sf.json.JSONArray.fromObject(jsonEvents).write(rsp.getWriter());
+    }
+
+    @GET
     @WebMethod(name = "tree")
     public void getTree(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         run.checkPermission(Item.READ);

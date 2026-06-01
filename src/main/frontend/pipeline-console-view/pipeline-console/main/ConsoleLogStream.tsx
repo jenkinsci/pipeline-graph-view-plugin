@@ -1,7 +1,21 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import "./console-section.scss";
 
-import { BuildStep } from "../../../common/RestClient.tsx";
-import { ConsoleLine } from "./ConsoleLine.tsx";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+
+import {
+  BuildStep,
+  ConsoleSectionBoundary,
+  getConsoleSectionBoundaries,
+  getConsoleSectionRules,
+} from "../../../common/RestClient.tsx";
+import { ConsoleSectionNodeRenderer } from "./ConsoleSection.tsx";
+import {
+  applyAnnotatorBoundaries,
+  applyRulesToSections,
+  CompiledSectionRule,
+  compileSectionRules,
+  parseConsoleSections,
+} from "./parseConsoleSections.ts";
 import {
   POLL_INTERVAL,
   Result,
@@ -89,17 +103,65 @@ export default function ConsoleLogStream({
     setScrollToLogLine(false);
   }, [scrollToLogLine, stepId, logBuffer.lines]);
 
+  const [sectionRules, setSectionRules] = useState<CompiledSectionRule[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    getConsoleSectionRules(currentRunPath)
+      .then((data) => {
+        if (!cancelled) {
+          setSectionRules(compileSectionRules(data));
+        }
+        return data;
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [currentRunPath]);
+
+  const [boundaries, setBoundaries] = useState<ConsoleSectionBoundary[]>([]);
+  const logComplete = logBuffer.stopTailing ?? false;
+  useEffect(() => {
+    let cancelled = false;
+    getConsoleSectionBoundaries(currentRunPath, stepId)
+      .then((data) => {
+        if (!cancelled) {
+          setBoundaries(data);
+        }
+        return data;
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [currentRunPath, stepId, logComplete]);
+
+  const sectionTree = useMemo(
+    () =>
+      applyAnnotatorBoundaries(
+        applyRulesToSections(
+          parseConsoleSections(logBuffer.lines),
+          sectionRules,
+        ),
+        boundaries,
+      ),
+    [logBuffer.lines, sectionRules, boundaries],
+  );
+
   return (
     <div
       role="log"
       ref={logRef}
       style={{ scrollMarginBlockEnd: "var(--section-padding)" }}
     >
-      {logBuffer.lines.map((content, index) => (
-        <ConsoleLine
-          key={index}
-          lineNumber={String(index)}
-          content={content}
+      {sectionTree.map((node) => (
+        <ConsoleSectionNodeRenderer
+          key={
+            node.kind === "line"
+              ? `line-${node.index}`
+              : `section-${node.startIndex}`
+          }
+          node={node}
           stepId={stepId}
           startByte={logBuffer.startByte}
           stopTailingLogs={stopTailingLogs}

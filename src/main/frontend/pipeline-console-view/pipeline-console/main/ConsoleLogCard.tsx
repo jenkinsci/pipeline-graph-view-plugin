@@ -56,6 +56,8 @@ export default function ConsoleLogCard({
 
   const messages = useMessages();
 
+  const lineCount = stepBuffers.get(step.id)?.lines?.length ?? 0;
+
   const inputStep = step.inputStep;
   if (inputStep && !inputStep.parameters) {
     return <InputStep step={step} />;
@@ -107,6 +109,11 @@ export default function ConsoleLogCard({
           </div>
 
           <div className="pgv-step-detail-header__actions">
+            {lineCount > 0 && (
+              <span className="pgv-step-detail-header__line-count">
+                {lineCount} {lineCount === 1 ? "line" : "lines"}
+              </span>
+            )}
             <span
               style={{
                 color: "var(--text-color-secondary)",

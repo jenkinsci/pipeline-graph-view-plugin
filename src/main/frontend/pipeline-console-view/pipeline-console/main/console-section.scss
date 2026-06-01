@@ -1,0 +1,67 @@
+.pgv-console-section {
+  border-left: 2px solid
+    color-mix(in srgb, var(--text-color-secondary) 20%, transparent);
+  margin-left: 0.25rem;
+  padding-left: 0.5rem;
+  margin-block: 2px;
+
+  &[open] > .pgv-console-section__summary {
+    margin-bottom: 2px;
+  }
+}
+
+.pgv-console-section__summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  padding: 2px 0.25rem;
+  border-radius: 0.25rem;
+  user-select: none;
+  list-style: none;
+
+  &::-webkit-details-marker {
+    display: none;
+  }
+
+  &:hover {
+    background-color: color-mix(
+      in srgb,
+      var(--text-color-secondary) 5%,
+      transparent
+    );
+  }
+}
+
+.pgv-console-section__chevron {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex-shrink: 0;
+  color: var(--text-color-secondary);
+  transition: var(--standard-transition);
+
+  * {
+    stroke-width: 48px;
+  }
+
+  details[open] > summary > & {
+    rotate: 90deg;
+  }
+}
+
+.pgv-console-section__title {
+  display: inline;
+  font-weight: var(--font-bold-weight);
+  color: var(--text-color);
+}
+
+.pgv-console-section__count {
+  color: var(--text-color-secondary);
+  font-size: var(--font-size-xs);
+  opacity: 0.75;
+}
+
+.pgv-console-section__body {
+  /* No extra padding needed; lines have their own styling. */
+}

@@ -21,6 +21,7 @@ export default defineConfig({
           "src/main/frontend/pipeline-graph-view/index.tsx",
         "multi-pipeline-graph-view":
           "src/main/frontend/multi-pipeline-graph-view/index.tsx",
+        "build-flow-view": "src/main/frontend/build-flow-view/index.tsx",
       },
       output: {
         entryFileNames: "[name]-bundle.js",

@@ -1,0 +1,412 @@
+@use "../../../common/styles/card-heading" as *;
+@use "../../../common/styles/card-controls" as *;
+
+// On the overview page, make the card take at least half the viewport width
+#pgv-build-flow-root[data-show-heading="true"] {
+  min-width: calc(50vw - 3rem);
+  // margin-bottom: 1rem;
+}
+
+$icon-inline-offset: calc(1.125rem + 0.375rem);
+
+@mixin status-stripe($color, $bg: true) {
+  border-left-color: $color;
+  @if $bg {
+    background: color-mix(in srgb, $color 4%, var(--card-background));
+  }
+}
+
+.pgv-build-flow {
+  position: relative;
+  height: 350px;
+  overflow: hidden;
+
+  // Full-page view: fill available space
+  &--full-page {
+    height: 100%;
+    min-height: 300px;
+  }
+
+  &--expanded {
+    z-index: 30000;
+    position: fixed;
+    inset: 0;
+    background: var(--background);
+    border: none;
+    border-radius: 0;
+    height: unset;
+    overflow: visible;
+
+    .pgv-build-flow__controls {
+      margin: 1rem;
+      color: var(--text-color);
+    }
+
+    .jenkins-button svg {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
+  }
+
+  &__loading,
+  &__error,
+  &__empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 120px;
+    padding: 1rem;
+    color: var(--text-color-secondary);
+    font-size: var(--font-size-sm);
+  }
+
+  &__error {
+    color: var(--error-color);
+  }
+
+  &__svg {
+    display: block;
+    max-width: 100%;
+  }
+
+  &__edge {
+    animation: pgv-edge-enter 0.3s ease-out backwards;
+    transition: opacity var(--standard-transition);
+
+    &--in-progress path {
+      stroke-dasharray: 8 4;
+      animation: pgv-edge-pulse 1s linear infinite;
+    }
+  }
+
+  &__truncated {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--form-input-border-radius, 4px);
+    background: var(--warning-bg-color, #fff3cd);
+    color: var(--warning-color, #856404);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    z-index: 5;
+  }
+
+  &__node {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    padding: 0.5rem 0.625rem;
+    border: var(--card-border-width, 1px) solid var(--card-border-color);
+    border-left: 3px solid var(--text-color-secondary);
+    border-radius: var(--form-input-border-radius, 4px);
+    background: var(--card-background);
+    text-decoration: none;
+    color: var(--text-color);
+    transition:
+      border-color var(--standard-transition),
+      box-shadow var(--standard-transition),
+      background var(--standard-transition);
+    box-sizing: border-box;
+    cursor: pointer;
+    gap: 0.125rem;
+    overflow: hidden;
+    animation: pgv-node-enter 0.3s ease-out both;
+
+    &:hover {
+      box-shadow: 0 2px 8px
+        color-mix(in srgb, var(--text-color) 12%, transparent);
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 0.2rem var(--focus-input-border, var(--accent-color));
+    }
+
+    &:active {
+      box-shadow: 0 1px 4px
+        color-mix(in srgb, var(--text-color) 8%, transparent);
+    }
+
+    &--current {
+      border-color: var(--accent-color);
+      border-left-color: var(--accent-color);
+      background: color-mix(
+        in srgb,
+        var(--accent-color) 6%,
+        var(--card-background)
+      );
+    }
+
+    &--success {
+      @include status-stripe(var(--success-color));
+    }
+
+    &--failure {
+      @include status-stripe(var(--error-color));
+    }
+
+    &--unstable {
+      @include status-stripe(var(--warning-color));
+    }
+
+    &--aborted {
+      @include status-stripe(var(--text-color-secondary), $bg: false);
+    }
+
+    &--in-progress {
+      @include status-stripe(var(--build-color));
+    }
+
+    &--queued {
+      @include status-stripe(var(--text-color-secondary), $bg: false);
+      opacity: 0.7;
+    }
+
+    &--not-built {
+      @include status-stripe(var(--text-color-secondary), $bg: false);
+      opacity: 0.7;
+    }
+  }
+
+  &__node-header {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    min-width: 0;
+  }
+
+  .pgv-status-icon {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+
+  &__node-name {
+    font-weight: var(--font-bold-weight, 600);
+    font-size: var(--font-size-xs);
+    text-align: left;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__node-build-num {
+    font-size: var(--font-size-xs);
+    color: var(--text-color-secondary);
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  &__node-meta {
+    display: flex;
+    gap: 0.375rem;
+    font-size: var(--font-size-xs);
+    color: var(--text-color-secondary);
+    padding-left: $icon-inline-offset;
+  }
+
+  &__node-desc {
+    font-size: 0.6875rem;
+    color: var(--text-color-secondary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    padding-left: $icon-inline-offset;
+  }
+
+  &__node-history {
+    display: flex;
+    gap: 2px;
+    margin-top: 2px;
+    padding-left: $icon-inline-offset;
+  }
+
+  &__history-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+    cursor: pointer;
+    transition:
+      transform var(--standard-transition),
+      opacity var(--standard-transition);
+    text-decoration: none;
+
+    &:hover {
+      transform: scale(1.5);
+      opacity: 0.85;
+    }
+  }
+
+  // --- Controls (matches pgv-stages-graph__controls pattern) ---
+  &__controls {
+    position: absolute;
+    inset: 0.1875rem;
+    display: flex;
+    z-index: 1;
+    backdrop-filter: blur(10px);
+    border-radius: 0.45rem;
+    align-items: center;
+    color: var(--text-color-secondary);
+    background: color-mix(
+      in srgb,
+      var(--card-background, var(--background)) 80%,
+      transparent
+    );
+    border: var(--jenkins-border-width, 1px) solid transparent;
+    background-clip: padding-box;
+  }
+
+  &__heading {
+    @include card-heading;
+  }
+
+  &__toggle-controls {
+    top: unset !important;
+    right: unset !important;
+    gap: 0;
+  }
+
+  &__controls-bar {
+    top: unset !important;
+    right: unset !important;
+    left: unset !important;
+    gap: 0;
+  }
+
+  &__controls-left {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+
+  &__overflow-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    min-width: 200px;
+    max-height: min(320px, 50vh);
+    overflow-y: auto;
+
+    .jenkins-button {
+      justify-content: flex-start;
+      gap: 0.5rem;
+      padding: 0.375rem 0.5rem;
+      font-size: var(--font-size-xs);
+      width: 100%;
+      border-radius: 0.25rem;
+
+      svg {
+        width: 1rem;
+        height: 1rem;
+        flex-shrink: 0;
+      }
+    }
+  }
+
+  &__toggle--active {
+    color: var(--accent-color) !important;
+  }
+}
+
+// Reuse same button styling as Stages card
+.pgv-build-flow {
+  .pgw-fullscreen-controls,
+  .pgw-zoom-controls,
+  .pgv-build-flow__toggle-controls {
+    @include card-control-buttons;
+  }
+
+  @include card-control-positions;
+}
+
+// Fullscreen overlay
+#page-body:has(.pgv-build-flow--expanded) {
+  z-index: 1001;
+}
+
+// --- Reduced motion ---
+@media (prefers-reduced-motion: reduce) {
+  .pgv-build-flow__node {
+    animation: none !important;
+  }
+
+  .pgv-build-flow__edge {
+    animation: none !important;
+  }
+
+  .pgv-build-flow__edge--in-progress path {
+    animation: none;
+  }
+}
+
+// --- High contrast ---
+@media (prefers-contrast: more) {
+  .pgv-build-flow__node {
+    background: var(--card-background) !important;
+    border-width: 2px !important;
+    border-left-width: 4px !important;
+  }
+
+  .pgv-build-flow__edge path {
+    stroke-width: 3;
+  }
+
+  .pgv-build-flow__history-dot {
+    border: 1px solid var(--text-color);
+  }
+}
+
+// --- Forced colors (Windows High Contrast) ---
+@media (forced-colors: active) {
+  .pgv-build-flow__node {
+    border: 2px solid ButtonText;
+    background: Canvas;
+    color: CanvasText;
+
+    &--current {
+      border-color: Highlight;
+    }
+  }
+
+  .pgv-build-flow__edge path {
+    stroke: ButtonText;
+  }
+
+  .pgv-build-flow__history-dot {
+    forced-color-adjust: none;
+  }
+}
+
+@keyframes pgv-node-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pgv-edge-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pgv-edge-pulse {
+  to {
+    stroke-dashoffset: -12;
+  }
+}

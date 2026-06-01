@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <l:userExperimentalFlag var="newBuildPage" flagClassName="jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag" />
+
+  <j:choose>
+    <j:when test="${newBuildPage}">
+      <l:run-subpage>
+        <l:app-bar title="${%Build Flow}">
+          <l:details-bar it="${it.run}" />
+        </l:app-bar>
+        <div class="jenkins-card" id="pgv-build-flow-root"
+             data-build-url="${it.run.url}"
+             data-root-url="${rootURL}"
+             data-full-page="true"
+             data-user-locale="${request2.getLocale().toLanguageTag()}" />
+        <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/build-flow-view-bundle.js" type="module"/>
+      </l:run-subpage>
+    </j:when>
+    <j:otherwise>
+      <l:layout title="${%Build Flow} [${it.run.fullDisplayName}]" type="one-column">
+        <l:main-panel>
+          <l:app-bar title="${%Build Flow}" />
+          <div class="jenkins-card" id="pgv-build-flow-root"
+               data-build-url="${it.run.url}"
+               data-root-url="${rootURL}"
+               data-full-page="true"
+               data-user-locale="${request2.getLocale().toLanguageTag()}" />
+          <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/build-flow-view-bundle.js" type="module"/>
+        </l:main-panel>
+      </l:layout>
+    </j:otherwise>
+  </j:choose>
+</j:jelly>

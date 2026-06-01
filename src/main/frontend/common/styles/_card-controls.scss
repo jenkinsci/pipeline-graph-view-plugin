@@ -1,0 +1,46 @@
+/// Shared button styling for zoom/fullscreen/toggle control bars.
+/// Apply inside the container selector that wraps .pgw-zoom-controls, etc.
+@mixin card-control-buttons {
+  .jenkins-button {
+    --button-background: transparent;
+    --button-background--hover: transparent;
+    --button-background--active: transparent;
+    --button-box-shadow--focus: transparent;
+
+    min-height: 2rem;
+    padding: 0.5rem;
+    border-radius: 0.35rem;
+    color: inherit !important;
+
+    &::before {
+      border: none;
+    }
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+      transition: color var(--standard-transition);
+    }
+
+    &:not(:disabled) {
+      &:hover,
+      &:active {
+        svg {
+          color: var(--text-color);
+        }
+      }
+    }
+  }
+}
+
+@mixin card-control-positions {
+  .pgw-fullscreen-controls {
+    left: unset !important;
+    bottom: unset !important;
+  }
+
+  .pgw-zoom-controls {
+    left: unset !important;
+    top: unset !important;
+  }
+}

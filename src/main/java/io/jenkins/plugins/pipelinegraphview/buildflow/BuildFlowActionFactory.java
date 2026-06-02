@@ -9,15 +9,11 @@ import java.util.Collections;
 import jenkins.model.TransientActionFactory;
 
 /**
- * Registers {@link BuildFlowAction} on {@link Run} instances that have upstream or downstream builds.
- * Uses a ThreadLocal reentrance guard to prevent StackOverflow: hasUpstreamOrDownstream() calls
- * run.getAction() which triggers transient action resolution which re-calls this factory.
- * The guard breaks the recursion by returning empty on re-entry.
+ * Registers {@link BuildFlowAction} on every {@link Run} to provide the build-flow API endpoint.
+ * The Build Flow UI is integrated into the Stages tab; no separate tab capsule is shown.
  */
-@Extension(ordinal = Integer.MAX_VALUE - 10)
+@Extension
 public class BuildFlowActionFactory extends TransientActionFactory<Run> {
-
-    private static final ThreadLocal<Boolean> CREATING = ThreadLocal.withInitial(() -> false);
 
     @Override
     public Class<Run> type() {
@@ -27,17 +23,6 @@ public class BuildFlowActionFactory extends TransientActionFactory<Run> {
     @NonNull
     @Override
     public Collection<? extends Action> createFor(@NonNull Run target) {
-        if (CREATING.get()) {
-            return Collections.emptyList();
-        }
-        CREATING.set(true);
-        try {
-            if (BuildFlowGraph.hasUpstreamOrDownstream(target)) {
-                return Collections.singleton(new BuildFlowAction(target));
-            }
-            return Collections.emptyList();
-        } finally {
-            CREATING.set(false);
-        }
+        return Collections.singleton(new BuildFlowAction(target));
     }
 }

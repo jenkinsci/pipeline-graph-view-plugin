@@ -16,14 +16,14 @@ public record BuildFlowResponse(
         boolean isTruncated) {
 
     /** Writes this response as JSON with appropriate cache headers. */
-    void writeTo(@NonNull StaplerResponse2 rsp) throws IOException {
-        rsp.setStatus(200);
-        rsp.setContentType("application/json;charset=UTF-8");
+    void writeTo(@NonNull StaplerResponse2 response) throws IOException {
+        response.setStatus(200);
+        response.setContentType("application/json;charset=UTF-8");
         if (!isAnyBuildOngoing) {
-            rsp.setHeader("Cache-Control", "private, max-age=60");
+            response.setHeader("Cache-Control", "private, max-age=60");
         } else {
-            rsp.setHeader("Cache-Control", "private, no-store");
+            response.setHeader("Cache-Control", "private, no-store");
         }
-        PipelineJsonWriter.write(this, rsp.getOutputStream());
+        PipelineJsonWriter.write(this, response.getOutputStream());
     }
 }

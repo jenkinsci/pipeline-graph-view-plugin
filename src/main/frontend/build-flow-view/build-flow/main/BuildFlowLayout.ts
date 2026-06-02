@@ -13,12 +13,12 @@ export const NODE_WIDTH_MIN = 140;
 export const NODE_WIDTH_MAX = 320;
 export const NODE_HEIGHT = 72;
 export const COLUMN_GAP = 60;
-export const ROW_GAP = 24;
+const ROW_GAP = 24;
 export const PADDING = 12;
-export const CHAR_WIDTH_APPROX = 7;
-export const FLAT_CONTAINER_WIDTH = 800;
-export const FLAT_COL_GAP = 16;
-export const FLAT_ROW_GAP = 12;
+const CHAR_WIDTH_APPROX = 7;
+const FLAT_CONTAINER_WIDTH = 800;
+const FLAT_COL_GAP = 16;
+const FLAT_ROW_GAP = 12;
 
 export type LayoutDirection = "LTR" | "TTB";
 
@@ -30,7 +30,7 @@ export interface LayoutNode {
   y: number;
 }
 
-export interface LayoutResult {
+interface LayoutResult {
   layoutNodes: LayoutNode[];
   width: number;
   height: number;
@@ -41,12 +41,12 @@ export function computeNodeWidth(
   nodes: BuildFlowNodeModel[],
   showFullNames: boolean,
 ): number {
-  let maxLen = 0;
+  let maxLength = 0;
   for (const n of nodes) {
     const name = showFullNames ? n.jobFullName : n.jobName;
-    if (name.length > maxLen) maxLen = name.length;
+    if (name.length > maxLength) maxLength = name.length;
   }
-  const computed = maxLen * CHAR_WIDTH_APPROX + 32;
+  const computed = maxLength * CHAR_WIDTH_APPROX + 32;
   return Math.min(NODE_WIDTH_MAX, Math.max(NODE_WIDTH_MIN, computed));
 }
 
@@ -103,37 +103,37 @@ export function computeLayout(
     parents.get(e.to)?.push(e.from);
   }
 
-  const col = new Map<string, number>();
+  const columnAssignment = new Map<string, number>();
   const visited = new Set<string>();
 
-  function assignCol(id: string): number {
-    if (col.has(id)) return col.get(id)!;
+  function assignColumn(id: string): number {
+    if (columnAssignment.has(id)) return columnAssignment.get(id)!;
     if (visited.has(id)) return 0;
     visited.add(id);
     const parentIds = parents.get(id) || [];
-    const maxParentCol =
+    const maxParentColumn =
       parentIds.length === 0
         ? -1
-        : Math.max(...parentIds.map((p) => assignCol(p)));
-    const c = maxParentCol + 1;
-    col.set(id, c);
-    return c;
+        : Math.max(...parentIds.map((p) => assignColumn(p)));
+    const column = maxParentColumn + 1;
+    columnAssignment.set(id, column);
+    return column;
   }
 
-  for (const n of nodes) assignCol(n.id);
+  for (const n of nodes) assignColumn(n.id);
 
   const columns = new Map<number, string[]>();
   for (const n of nodes) {
-    const c = col.get(n.id)!;
+    const c = columnAssignment.get(n.id)!;
     if (!columns.has(c)) columns.set(c, []);
     columns.get(c)!.push(n.id);
   }
 
-  const maxCol = Math.max(...columns.keys());
+  const maxColumn = Math.max(...columns.keys());
   const maxRows = Math.max(...[...columns.values()].map((ids) => ids.length));
 
   const layoutNodes: LayoutNode[] = [];
-  for (let c = 0; c <= maxCol; c++) {
+  for (let c = 0; c <= maxColumn; c++) {
     const ids = columns.get(c) || [];
     const count = ids.length;
     ids.forEach((id, row) => {
@@ -157,11 +157,12 @@ export function computeLayout(
 
   let width: number, height: number;
   if (direction === "LTR") {
-    width = PADDING * 2 + (maxCol + 1) * nodeWidth + maxCol * COLUMN_GAP;
+    width = PADDING * 2 + (maxColumn + 1) * nodeWidth + maxColumn * COLUMN_GAP;
     height = PADDING * 2 + maxRows * NODE_HEIGHT + (maxRows - 1) * ROW_GAP;
   } else {
     width = PADDING * 2 + maxRows * nodeWidth + (maxRows - 1) * COLUMN_GAP;
-    height = PADDING * 2 + (maxCol + 1) * NODE_HEIGHT + maxCol * COLUMN_GAP;
+    height =
+      PADDING * 2 + (maxColumn + 1) * NODE_HEIGHT + maxColumn * COLUMN_GAP;
   }
 
   return { layoutNodes, width, height };
@@ -174,8 +175,10 @@ export function formatDuration(ms: number): string {
   const seconds = Math.floor(ms / 1000);
   if (seconds < 60) return `${seconds}s`;
   const minutes = Math.floor(seconds / 60);
-  const remainSec = seconds % 60;
-  return remainSec > 0 ? `${minutes}m ${remainSec}s` : `${minutes}m`;
+  const remainingSeconds = seconds % 60;
+  return remainingSeconds > 0
+    ? `${minutes}m ${remainingSeconds}s`
+    : `${minutes}m`;
 }
 
 export function formatStatus(status: string): string {

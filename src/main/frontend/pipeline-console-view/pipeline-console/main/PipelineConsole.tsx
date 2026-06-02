@@ -2,6 +2,7 @@ import "./pipeline-console.scss";
 import "../../../pipeline-graph-view/app.scss";
 import "../../../pipeline-graph-view/pipeline-graph/styles/main.scss";
 
+import { BuildFlow } from "../../../build-flow-view/build-flow/main/BuildFlow.tsx";
 import Dropdown from "../../../common/components/dropdown.tsx";
 import DropdownPortal from "../../../common/components/dropdown-portal.tsx";
 import {
@@ -27,8 +28,12 @@ export default function PipelineConsole() {
   const rootElement = document.getElementById("console-pipeline-root");
   const currentRunPath = rootElement?.dataset.currentRunPath!;
   const previousRunPath = rootElement?.dataset.previousRunPath;
+  const hasBuildFlow = rootElement?.dataset.hasBuildFlow === "true";
+  const rootUrl = rootElement?.dataset.rootUrl || "";
+  const buildUrl = rootElement?.dataset.buildUrl || "";
 
-  const { stageViewPosition, mainViewVisibility } = useLayoutPreferences();
+  const { stageViewPosition, mainViewVisibility, setBuildFlowHeight } =
+    useLayoutPreferences();
   const {
     complete,
     tailLogs,
@@ -56,6 +61,85 @@ export default function PipelineConsole() {
 
   const { canConfigure } = useUserPermissions();
 
+  const showGraph =
+    mainViewVisibility === "all" ||
+    mainViewVisibility === "graphAndStages" ||
+    mainViewVisibility === "graphOnly";
+  const showStages =
+    mainViewVisibility === "all" ||
+    mainViewVisibility === "graphAndStages" ||
+    mainViewVisibility === "stagesOnly";
+  const showBuildFlowPane =
+    hasBuildFlow && mainViewVisibility === "all" && !isOnlyPlaceholderNode;
+
+  const stagesContent = (
+    <SplitView storageKey="stages">
+      {showStages && !isOnlyPlaceholderNode && (
+        <div key="tree-view" id="tree-view-pane" className="pgv-sticky-sidebar">
+          {loading ? (
+            <div className={"pgv-skeleton-column"}>
+              <Skeleton height={2.625} />
+              <Skeleton height={20} />
+            </div>
+          ) : (
+            <DataTreeView
+              currentRunPath={currentRunPath}
+              onNodeSelect={handleStageSelect}
+              selected={openStage?.id}
+              stages={stages}
+            />
+          )}
+        </div>
+      )}
+
+      <div key="stage-view" id="stage-view-pane">
+        {loading ? (
+          <div className={"pgv-skeleton-column"}>
+            <Skeleton height={2.625} />
+            <Skeleton height={20} />
+          </div>
+        ) : (
+          <StageView
+            tailLogs={tailLogs}
+            scrollToTail={scrollToTail}
+            stopTailingLogs={stopTailingLogs}
+            stage={openStage}
+            steps={openStageSteps}
+            stepBuffers={stepBuffers}
+            expandedSteps={expandedSteps}
+            onStepToggle={onStepToggle}
+            fetchLogText={fetchLogText}
+            fetchExceptionText={fetchExceptionText}
+            currentRunPath={currentRunPath}
+          />
+        )}
+      </div>
+    </SplitView>
+  );
+
+  const graphContent = (
+    <SplitView
+      direction={stageViewPosition === "top" ? "vertical" : "horizontal"}
+      storageKey="graph"
+    >
+      {!isOnlyPlaceholderNode &&
+        showGraph &&
+        (loading ? (
+          <Skeleton />
+        ) : (
+          <Stages
+            stages={stages}
+            selectedStage={openStage || undefined}
+            stageViewPosition={stageViewPosition}
+            onStageSelect={handleStageSelect}
+            currentRunPath={currentRunPath}
+          />
+        ))}
+
+      {stagesContent}
+    </SplitView>
+  );
+
   return (
     <>
       <DropdownPortal
@@ -70,7 +154,10 @@ export default function PipelineConsole() {
           icon={SETTINGS}
           items={[
             showSplitView ? (
-              <StagesCustomization key="visibility-select" />
+              <StagesCustomization
+                key="visibility-select"
+                showBuildFlow={hasBuildFlow}
+              />
             ) : (
               <></>
             ),
@@ -97,75 +184,35 @@ export default function PipelineConsole() {
         />
       </DropdownPortal>
 
-      {showSplitView && (
-        <SplitView
-          direction={stageViewPosition === "top" ? "vertical" : "horizontal"}
-          storageKey="graph"
-        >
-          {!isOnlyPlaceholderNode &&
-            (mainViewVisibility === "both" ||
-              mainViewVisibility === "graphOnly") &&
-            (loading ? (
-              <Skeleton />
-            ) : (
-              <Stages
-                stages={stages}
-                selectedStage={openStage || undefined}
-                stageViewPosition={stageViewPosition}
-                onStageSelect={handleStageSelect}
-                currentRunPath={currentRunPath}
-              />
-            ))}
+      {hasBuildFlow &&
+        showSplitView &&
+        mainViewVisibility === "buildFlowOnly" && (
+          <BuildFlow buildUrl={buildUrl} rootUrlOverride={rootUrl} />
+        )}
 
-          <SplitView storageKey="stages">
-            {(mainViewVisibility === "both" ||
-              mainViewVisibility === "stagesOnly") &&
-              !isOnlyPlaceholderNode && (
-                <div
-                  key="tree-view"
-                  id="tree-view-pane"
-                  className="pgv-sticky-sidebar"
-                >
-                  {loading ? (
-                    <div className={"pgv-skeleton-column"}>
-                      <Skeleton height={2.625} />
-                      <Skeleton height={20} />
-                    </div>
-                  ) : (
-                    <DataTreeView
-                      currentRunPath={currentRunPath}
-                      onNodeSelect={handleStageSelect}
-                      selected={openStage?.id}
-                      stages={stages}
-                    />
-                  )}
-                </div>
-              )}
-
-            <div key="stage-view" id="stage-view-pane">
-              {loading ? (
-                <div className={"pgv-skeleton-column"}>
-                  <Skeleton height={2.625} />
-                  <Skeleton height={20} />
-                </div>
-              ) : (
-                <StageView
-                  tailLogs={tailLogs}
-                  scrollToTail={scrollToTail}
-                  stopTailingLogs={stopTailingLogs}
-                  stage={openStage}
-                  steps={openStageSteps}
-                  stepBuffers={stepBuffers}
-                  expandedSteps={expandedSteps}
-                  onStepToggle={onStepToggle}
-                  fetchLogText={fetchLogText}
-                  fetchExceptionText={fetchExceptionText}
-                  currentRunPath={currentRunPath}
+      {showSplitView && mainViewVisibility !== "buildFlowOnly" && (
+        <>
+          {showBuildFlowPane ? (
+            <SplitView
+              direction="vertical"
+              storageKey="buildFlow"
+              collapsible
+              collapseLabel="Build Flow"
+            >
+              <div className="pgv-build-flow-card">
+                <BuildFlow
+                  buildUrl={buildUrl}
+                  rootUrlOverride={rootUrl}
+                  onNaturalHeight={setBuildFlowHeight}
                 />
-              )}
-            </div>
-          </SplitView>
-        </SplitView>
+              </div>
+
+              {graphContent}
+            </SplitView>
+          ) : (
+            graphContent
+          )}
+        </>
       )}
 
       {!loading && onlyQueuedPlaceholder && (

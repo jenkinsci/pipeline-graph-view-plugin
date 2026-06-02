@@ -8,7 +8,11 @@ import {
   useLayoutPreferences,
 } from "../providers/user-preference-provider.tsx";
 
-export default function StagesCustomization() {
+export default function StagesCustomization({
+  showBuildFlow = true,
+}: {
+  showBuildFlow?: boolean;
+}) {
   const {
     mainViewVisibility,
     setMainViewVisibility,
@@ -43,18 +47,35 @@ export default function StagesCustomization() {
         </div>
         Views
         <span>
-          {mainViewVisibility === MainViewVisibility.BOTH && "Graph and stages"}
+          {mainViewVisibility === MainViewVisibility.GRAPH_AND_STAGES &&
+            "Graph and Stages"}
+          {mainViewVisibility === MainViewVisibility.ALL &&
+            "Graph, Stages and Build Flow"}
           {mainViewVisibility === MainViewVisibility.GRAPH_ONLY && "Graph"}
           {mainViewVisibility === MainViewVisibility.STAGES_ONLY && "Stages"}
+          {mainViewVisibility === MainViewVisibility.BUILD_FLOW_ONLY &&
+            "Build Flow"}
         </span>
         <select
           id="main-view-visibility"
           value={mainViewVisibility}
           onChange={handleViewChange}
         >
-          <option value={MainViewVisibility.BOTH}>Graph and stages</option>
+          <option value={MainViewVisibility.GRAPH_AND_STAGES}>
+            Graph and Stages
+          </option>
+          {showBuildFlow && (
+            <option value={MainViewVisibility.ALL}>
+              Graph, Stages and Build Flow
+            </option>
+          )}
           <option value={MainViewVisibility.GRAPH_ONLY}>Graph</option>
           <option value={MainViewVisibility.STAGES_ONLY}>Stages</option>
+          {showBuildFlow && (
+            <option value={MainViewVisibility.BUILD_FLOW_ONLY}>
+              Build Flow
+            </option>
+          )}
         </select>
       </label>
 
@@ -120,7 +141,10 @@ export default function StagesCustomization() {
           id="stage-view-position"
           value={stageViewPosition}
           onChange={handlePositionChange}
-          disabled={mainViewVisibility === MainViewVisibility.STAGES_ONLY}
+          disabled={
+            mainViewVisibility === MainViewVisibility.STAGES_ONLY ||
+            mainViewVisibility === MainViewVisibility.BUILD_FLOW_ONLY
+          }
         >
           <option value={StageViewPosition.TOP}>Top</option>
           <option value={StageViewPosition.LEFT}>Left</option>
@@ -138,7 +162,7 @@ function ViewIcon({
   mainViewVisibility: MainViewVisibility;
   stageViewPosition: StageViewPosition;
 }) {
-  if (mainViewVisibility === "both" && stageViewPosition === "top") {
+  if (mainViewVisibility === "all" && stageViewPosition === "top") {
     return (
       <svg
         width="512px"
@@ -161,7 +185,7 @@ function ViewIcon({
     );
   }
 
-  if (mainViewVisibility === "both" && stageViewPosition === "left") {
+  if (mainViewVisibility === "all" && stageViewPosition === "left") {
     return (
       <svg
         width="512px"

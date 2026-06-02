@@ -15,8 +15,8 @@ const ELEMENT_IDS = [
 
 function getElement(): HTMLElement | null {
   for (const id of ELEMENT_IDS) {
-    const el = document.getElementById(id);
-    if (el) return el;
+    const element = document.getElementById(id);
+    if (element) return element;
   }
   return null;
 }
@@ -112,11 +112,11 @@ export function computeFullPath(nodeId: string, edges: Edge[]): Set<string> {
 
   const result = new Set<string>([nodeId]);
 
-  function bfs(adj: Map<string, string[]>) {
+  function bfs(adjacencyMap: Map<string, string[]>) {
     const queue: string[] = [nodeId];
     while (queue.length > 0) {
       const current = queue.shift()!;
-      for (const next of adj.get(current) ?? []) {
+      for (const next of adjacencyMap.get(current) ?? []) {
         if (!result.has(next)) {
           result.add(next);
           queue.push(next);
@@ -129,4 +129,22 @@ export function computeFullPath(nodeId: string, edges: Edge[]): Set<string> {
   bfs(upstream);
 
   return result;
+}
+
+/**
+ * Computes the set of node IDs that should be highlighted when hovering a node.
+ * Returns null if no node is hovered or the graph is flattened (no edges shown).
+ */
+export function computeHighlightedIds(
+  hoveredNodeId: string | null,
+  edges: Edge[],
+  flattenGraph: boolean,
+): Set<string> | null {
+  if (!hoveredNodeId || flattenGraph) return null;
+  const set = new Set<string>([hoveredNodeId]);
+  for (const edge of edges) {
+    if (edge.from === hoveredNodeId) set.add(edge.to);
+    if (edge.to === hoveredNodeId) set.add(edge.from);
+  }
+  return set;
 }

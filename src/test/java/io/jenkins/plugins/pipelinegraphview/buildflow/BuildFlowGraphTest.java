@@ -120,13 +120,13 @@ class BuildFlowGraphTest {
     }
 
     @Test
-    void recentResults_returnsUpToFiveHistoryItems() throws Exception {
-        // Create the job once, then run it 3 times
+    void recentResults_returnsUpToSixHistoryItems() throws Exception {
+        // Create the job once, then run it 8 times to exceed the cap of 6 (current + 5 previous)
         org.jenkinsci.plugins.workflow.job.WorkflowJob job =
                 TestUtils.createJob(j, "multi-run", "helloWorldScriptedPipeline.jenkinsfile");
-        j.assertBuildStatus(Result.SUCCESS, job.scheduleBuild2(0));
-        j.assertBuildStatus(Result.SUCCESS, job.scheduleBuild2(0));
-        j.assertBuildStatus(Result.SUCCESS, job.scheduleBuild2(0));
+        for (int i = 0; i < 8; i++) {
+            j.assertBuildStatus(Result.SUCCESS, job.scheduleBuild2(0));
+        }
 
         WorkflowRun lastRun = job.getLastBuild();
 
@@ -134,7 +134,7 @@ class BuildFlowGraphTest {
         BuildFlowResponse response = graph.build();
 
         BuildFlowNode node = response.nodes().get(0);
-        assertThat(node.recentResults(), hasSize(3)); // current + 2 previous builds
+        assertThat(node.recentResults(), hasSize(6)); // current + 5 previous (capped)
         assertThat(node.recentResults(), everyItem(is("SUCCESS")));
     }
 }

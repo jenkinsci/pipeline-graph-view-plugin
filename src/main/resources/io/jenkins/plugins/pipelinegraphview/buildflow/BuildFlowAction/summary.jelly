@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core">
-  <j:if test="${it.shouldDisplayBuildFlow()}">
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <l:userExperimentalFlag var="newBuildPage" flagClassName="jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag" />
+
+  <j:if test="${!newBuildPage and it.shouldDisplayBuildFlow()}">
     <!-- workaround floatingBox elements overlapping -->
     <div class="clearfix" />
     <div class="jenkins-card"

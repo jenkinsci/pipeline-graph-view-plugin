@@ -1,25 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { BuildFlowEdgeModel } from "../model/BuildFlowModel";
-import { computeFullPath } from "./BuildFlowUtils";
-
-/**
- * Pure function matching the useMemo logic in BuildFlow.tsx for focus path.
- * Extracted here for testability.
- */
-function computeHighlightedIds(
-  hoveredNodeId: string | null,
-  edges: BuildFlowEdgeModel[],
-  flattenGraph: boolean,
-): Set<string> | null {
-  if (!hoveredNodeId || flattenGraph) return null;
-  const set = new Set<string>([hoveredNodeId]);
-  for (const edge of edges) {
-    if (edge.from === hoveredNodeId) set.add(edge.to);
-    if (edge.to === hoveredNodeId) set.add(edge.from);
-  }
-  return set;
-}
+import { computeFullPath, computeHighlightedIds } from "./BuildFlowUtils";
 
 describe("Focus path highlighting", () => {
   const edges: BuildFlowEdgeModel[] = [

@@ -233,6 +233,15 @@ public class PipelineConsoleViewAction extends Tab {
         return PipelineGraphViewConfiguration.get().isShowGraphOnBuildPage();
     }
 
+    public boolean isShowBuildFlowOnJobPage() {
+        return PipelineGraphViewConfiguration.get().isShowBuildFlowOnJobPage();
+    }
+
+    public boolean hasBuildFlow() {
+        return isShowBuildFlowOnJobPage()
+                && io.jenkins.plugins.pipelinegraphview.buildflow.BuildFlowGraph.hasUpstreamOrDownstream(run);
+    }
+
     public boolean isBuildable() {
         return run.getParent().isBuildable();
     }

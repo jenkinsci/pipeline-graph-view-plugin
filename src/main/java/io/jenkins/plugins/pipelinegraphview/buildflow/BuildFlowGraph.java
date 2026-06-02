@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import jenkins.model.Jenkins;
+import jenkins.model.lazy.LazyBuildMixIn;
 import org.jenkinsci.plugins.workflow.support.steps.build.DownstreamBuildAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -197,9 +198,9 @@ public class BuildFlowGraph {
         List<Run<?, ?>> result = new ArrayList<>();
         DownstreamBuildAction action = run.getAction(DownstreamBuildAction.class);
         if (action != null) {
-            for (DownstreamBuildAction.DownstreamBuild db : action.getDownstreamBuilds()) {
+            for (DownstreamBuildAction.DownstreamBuild downstreamBuild : action.getDownstreamBuilds()) {
                 try {
-                    Run<?, ?> downstream = db.getBuild();
+                    Run<?, ?> downstream = downstreamBuild.getBuild();
                     if (downstream != null) {
                         result.add(downstream);
                     }
@@ -251,34 +252,41 @@ public class BuildFlowGraph {
         if (run.isBuilding()) {
             return "IN_PROGRESS";
         }
+
         Result result = run.getResult();
         if (result == null) {
             return "IN_PROGRESS";
         }
-        if (result.equals(Result.SUCCESS)) {
-            return "SUCCESS";
-        }
-        if (result.equals(Result.FAILURE)) {
-            return "FAILURE";
-        }
-        if (result.equals(Result.UNSTABLE)) {
-            return "UNSTABLE";
-        }
-        if (result.equals(Result.ABORTED)) {
-            return "ABORTED";
-        }
-        return "NOT_BUILT";
+
+        return switch (result.toString()) {
+            case "SUCCESS", "FAILURE", "UNSTABLE", "ABORTED" -> result.toString();
+            default -> "NOT_BUILT";
+        };
     }
 
     private static List<String> getRecentResults(@NonNull Run<?, ?> run) {
         List<String> results = new ArrayList<>(6);
         // Include the current build's result as the most recent entry
         results.add(mapStatus(run));
-        Run<?, ?> previous = run.getPreviousBuild();
+
+        // Avoid loading previous builds into memory if they aren't already there.
+        // Pattern from JUnit plugin's AbstractTestResultAction.
+        Set<Integer> loadedBuilds = null;
+        if (run.getParent() instanceof LazyBuildMixIn.LazyLoadingJob<?, ?> lazyJob) {
+            loadedBuilds =
+                    lazyJob.getLazyBuildMixIn()._getRuns().getLoadedBuilds().keySet();
+        }
+
+        Run<?, ?> previousBuild = run;
         int count = 0;
-        while (previous != null && count < 5) {
-            results.add(mapStatus(previous));
-            previous = previous.getPreviousBuild();
+        while (count < 5) {
+            previousBuild = loadedBuilds == null || loadedBuilds.contains(previousBuild.getNumber() - 1)
+                    ? previousBuild.getPreviousBuild()
+                    : null;
+            if (previousBuild == null) {
+                break;
+            }
+            results.add(mapStatus(previousBuild));
             count++;
         }
         return results;

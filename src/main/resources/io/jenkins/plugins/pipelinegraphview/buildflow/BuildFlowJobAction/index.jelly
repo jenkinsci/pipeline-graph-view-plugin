@@ -17,7 +17,7 @@
         </j:when>
         <j:otherwise>
           <div class="jenkins-!-margin-top-2">
-            <p>No builds yet.</p>
+            <p>${%No builds yet.}</p>
           </div>
         </j:otherwise>
       </j:choose>

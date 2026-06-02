@@ -44,6 +44,8 @@ vi.mock("../../../common/user/user-preferences-provider.tsx", () => ({
     setShowNames: () => {},
     showDurations: true,
     setShowDurations: () => {},
+    showBuildFlow: true,
+    setShowBuildFlow: () => {},
   }),
 }));
 
@@ -103,7 +105,7 @@ beforeEach(() => {
 
   (useLayoutPreferences as any).mockReturnValue({
     stageViewPosition: "top",
-    mainViewVisibility: "both",
+    mainViewVisibility: "all",
     setStageViewPosition: () => {},
     setMainViewVisibility: () => {},
     stageViewWidth: 0,

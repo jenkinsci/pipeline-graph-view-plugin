@@ -17,6 +17,7 @@ public class PipelineGraphViewConfiguration extends GlobalConfiguration {
     private boolean showStageNames;
     private boolean showStageDurations;
     private boolean showGraphOnBuildPage;
+    private boolean showBuildFlowOnJobPage = true;
 
     public PipelineGraphViewConfiguration() {
         load();
@@ -59,6 +60,16 @@ public class PipelineGraphViewConfiguration extends GlobalConfiguration {
     @DataBoundSetter
     public void setShowGraphOnBuildPage(boolean showGraphOnBuildPage) {
         this.showGraphOnBuildPage = showGraphOnBuildPage;
+        save();
+    }
+
+    public boolean isShowBuildFlowOnJobPage() {
+        return showBuildFlowOnJobPage;
+    }
+
+    @DataBoundSetter
+    public void setShowBuildFlowOnJobPage(boolean showBuildFlowOnJobPage) {
+        this.showBuildFlowOnJobPage = showBuildFlowOnJobPage;
         save();
     }
 

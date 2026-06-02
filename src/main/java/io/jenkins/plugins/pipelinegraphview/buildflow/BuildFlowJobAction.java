@@ -5,6 +5,8 @@ import hudson.model.Action;
 import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.Run;
+import io.jenkins.plugins.pipelinegraphview.Messages;
+import io.jenkins.plugins.pipelinegraphview.PipelineGraphViewConfiguration;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
 import org.kohsuke.stapler.StaplerRequest2;
@@ -29,7 +31,7 @@ public class BuildFlowJobAction implements Action {
 
     @Override
     public String getDisplayName() {
-        return "Build Flow";
+        return Messages.buildFlow_title();
     }
 
     @Override
@@ -54,25 +56,28 @@ public class BuildFlowJobAction implements Action {
     }
 
     public boolean shouldDisplay() {
+        if (!PipelineGraphViewConfiguration.get().isShowBuildFlowOnJobPage()) {
+            return false;
+        }
         Run<?, ?> latest = job.getLastBuild();
         return latest != null && BuildFlowGraph.hasUpstreamOrDownstream(latest);
     }
 
     @GET
     @WebMethod(name = "api")
-    public void getApi(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
+    public void getApi(StaplerRequest2 request, StaplerResponse2 response) throws IOException, ServletException {
         job.checkPermission(Item.READ);
 
         Run<?, ?> latest = job.getLastBuild();
         if (latest == null) {
-            new BuildFlowResponse(java.util.List.of(), java.util.List.of(), false, false).writeTo(rsp);
+            new BuildFlowResponse(java.util.List.of(), java.util.List.of(), false, false).writeTo(response);
             return;
         }
 
-        boolean showUpstream = !"false".equals(req.getParameter("showUpstream"));
-        boolean showDownstream = !"false".equals(req.getParameter("showDownstream"));
+        boolean showUpstream = !"false".equals(request.getParameter("showUpstream"));
+        boolean showDownstream = !"false".equals(request.getParameter("showDownstream"));
         BuildFlowGraph graph = new BuildFlowGraph(latest, showUpstream, showDownstream);
-        BuildFlowResponse response = graph.build();
-        response.writeTo(rsp);
+        BuildFlowResponse buildFlowResponse = graph.build();
+        buildFlowResponse.writeTo(response);
     }
 }

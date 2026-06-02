@@ -13,9 +13,11 @@ export enum StageViewPosition {
 }
 
 export enum MainViewVisibility {
-  BOTH = "both",
+  GRAPH_AND_STAGES = "graphAndStages",
+  ALL = "all",
   STAGES_ONLY = "stagesOnly",
   GRAPH_ONLY = "graphOnly",
+  BUILD_FLOW_ONLY = "buildFlowOnly",
 }
 
 // TYPES
@@ -25,11 +27,15 @@ interface LayoutPreferences {
   treeViewWidth: number;
   stageViewWidth: number;
   stageViewHeight: number;
+  buildFlowHeight: number;
+  buildFlowCollapsed: boolean;
   setStageViewPosition: (position: StageViewPosition) => void;
   setMainViewVisibility: (visibility: MainViewVisibility) => void;
   setTreeViewWidth: (width: number) => void;
   setStageViewWidth: (width: number) => void;
   setStageViewHeight: (height: number) => void;
+  setBuildFlowHeight: (height: number) => void;
+  setBuildFlowCollapsed: (collapsed: boolean) => void;
   /**
    * Returns true if the current window width is less than the mobile breakpoint.
    * Used for disabling customization options in favor of a mobile-friendly layout.
@@ -51,6 +57,7 @@ const LS_KEYS = {
   treeViewWidth: "layout.treeViewWidth",
   stageViewWidth: "layout.stageViewWidth",
   stageViewHeight: "layout.stageViewHeight",
+  buildFlowCollapsed: "layout.buildFlowCollapsed",
 };
 
 // HELPER
@@ -61,6 +68,9 @@ const loadFromLocalStorage = <T,>(key: string, fallback: T): T => {
     if (value !== null) {
       if (typeof fallback === "number") {
         return Number(value) as T;
+      }
+      if (typeof fallback === "boolean") {
+        return (value === "true") as unknown as T;
       }
       return value as unknown as T;
     }
@@ -88,7 +98,7 @@ export const LayoutPreferencesProvider = ({
     );
   const [persistedMainViewVisibility, setMainViewVisibilityState] =
     useState<MainViewVisibility>(
-      loadFromLocalStorage(LS_KEYS.mainViewVisibility, MainViewVisibility.BOTH),
+      loadFromLocalStorage(LS_KEYS.mainViewVisibility, MainViewVisibility.ALL),
     );
 
   const [treeViewWidth, setTreeViewWidthState] = useState<number>(
@@ -99,6 +109,10 @@ export const LayoutPreferencesProvider = ({
   );
   const [stageViewHeight, setStageViewHeightState] = useState<number>(
     loadFromLocalStorage(LS_KEYS.stageViewHeight, 250),
+  );
+  const [buildFlowHeight, setBuildFlowHeightState] = useState<number>(0);
+  const [buildFlowCollapsed, setBuildFlowCollapsedState] = useState<boolean>(
+    loadFromLocalStorage(LS_KEYS.buildFlowCollapsed, false),
   );
 
   // Handle responsive override
@@ -150,6 +164,13 @@ export const LayoutPreferencesProvider = ({
     );
   }, [stageViewHeight]);
 
+  useEffect(() => {
+    window.localStorage.setItem(
+      LS_KEYS.buildFlowCollapsed,
+      buildFlowCollapsed.toString(),
+    );
+  }, [buildFlowCollapsed]);
+
   // Update window width on resize
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -165,6 +186,10 @@ export const LayoutPreferencesProvider = ({
   const setStageViewWidth = (width: number) => setStageViewWidthState(width);
   const setStageViewHeight = (height: number) =>
     setStageViewHeightState(height);
+  const setBuildFlowHeight = (height: number) =>
+    setBuildFlowHeightState(height);
+  const setBuildFlowCollapsed = (collapsed: boolean) =>
+    setBuildFlowCollapsedState(collapsed);
 
   return (
     <LayoutPreferencesContext.Provider
@@ -174,11 +199,15 @@ export const LayoutPreferencesProvider = ({
         treeViewWidth,
         stageViewWidth,
         stageViewHeight,
+        buildFlowHeight,
+        buildFlowCollapsed,
         setStageViewPosition,
         setMainViewVisibility,
         setTreeViewWidth,
         setStageViewWidth,
         setStageViewHeight,
+        setBuildFlowHeight,
+        setBuildFlowCollapsed,
         isMobile,
       }}
     >

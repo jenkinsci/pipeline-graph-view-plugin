@@ -17,16 +17,18 @@ const {
 
 vi.mock("../providers/user-preference-provider.tsx", () => ({
   useLayoutPreferences: mockUseLayoutPreferences.mockReturnValue({
-    mainViewVisibility: "both",
+    mainViewVisibility: "graphAndStages",
     setMainViewVisibility: mockSetMainViewVisibility,
     stageViewPosition: "top",
     setStageViewPosition: mockSetStageViewPosition,
     isMobile: false,
   }),
   MainViewVisibility: {
-    BOTH: "both",
+    GRAPH_AND_STAGES: "graphAndStages",
+    ALL: "all",
     GRAPH_ONLY: "graphOnly",
     STAGES_ONLY: "stagesOnly",
+    BUILD_FLOW_ONLY: "buildFlowOnly",
   },
   StageViewPosition: {
     TOP: "top",
@@ -45,7 +47,7 @@ describe("StagesCustomization", () => {
   it("should show current values", () => {
     render(<StagesCustomization />);
 
-    expect(screen.getAllByText("Graph and stages").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Graph and Stages").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Top").length).toBeGreaterThan(0);
   });
 
@@ -71,7 +73,7 @@ describe("StagesCustomization", () => {
 
   it("should return null on mobile", () => {
     mockUseLayoutPreferences.mockReturnValueOnce({
-      mainViewVisibility: "both",
+      mainViewVisibility: "all",
       setMainViewVisibility: vi.fn(),
       stageViewPosition: "top",
       setStageViewPosition: vi.fn(),

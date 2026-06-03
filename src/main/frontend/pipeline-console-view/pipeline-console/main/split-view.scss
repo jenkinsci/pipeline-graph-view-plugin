@@ -3,6 +3,7 @@
   display: grid;
   gap: var(--section-padding);
   animation: fade-in 0.1s ease-in-out both;
+  padding-bottom: calc(var(--section-padding) + 0.325rem);
 }
 
 @keyframes fade-in {

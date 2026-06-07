@@ -27,6 +27,7 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -147,7 +148,7 @@ public class PipelineConsoleViewAction extends Tab {
                 logText.writeLogTo(0L, rsp.getOutputStream());
             }
             if (exceptionText != null) {
-                rsp.getOutputStream().write(exceptionText.getBytes());
+                rsp.getOutputStream().write(exceptionText.getBytes(StandardCharsets.UTF_8));
             }
             return;
         }
@@ -167,7 +168,7 @@ public class PipelineConsoleViewAction extends Tab {
                     exceptionText += "\n";
                 }
                 foundLogs = true;
-                rsp.getOutputStream().write(exceptionText.getBytes());
+                rsp.getOutputStream().write(exceptionText.getBytes(StandardCharsets.UTF_8));
             }
         }
         if (!foundLogs) {

@@ -40,7 +40,8 @@ class PipelineConsoleViewActionTest {
 
     void shouldHaveConsoleText(JenkinsRule j, WorkflowRun run, String nodeId, String expectedText) throws IOException {
         try (var c = j.createWebClient()) {
-            WebRequest req = new WebRequest(UrlUtils.toUrlSafe(j.getURL() + run.getUrl() + "stages/log?nodeId=" + nodeId));
+            WebRequest req =
+                    new WebRequest(UrlUtils.toUrlSafe(j.getURL() + run.getUrl() + "stages/log?nodeId=" + nodeId));
             WebResponse rsp = c.loadWebResponse(req);
             assertThat(rsp.getContentAsString(), equalTo(expectedText));
         }
@@ -49,8 +50,8 @@ class PipelineConsoleViewActionTest {
     @Issue("GH#947")
     @Test
     void getConsoleTextWithScriptError(JenkinsRule j) throws Exception {
-        WorkflowRun run =
-            TestUtils.createAndRunJob(j, "gh947_stage_mixed_result", "gh947_stage_mixed_result.jenkinsfile", Result.FAILURE);
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j, "gh947_stage_mixed_result", "gh947_stage_mixed_result.jenkinsfile", Result.FAILURE);
 
         PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
         String stageId = TestUtils.getNodesByDisplayName(run, "A").get(0).getId();

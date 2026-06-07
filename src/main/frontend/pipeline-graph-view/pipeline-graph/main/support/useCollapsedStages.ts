@@ -2,23 +2,83 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Result, StageInfo } from "../PipelineGraphModel.tsx";
 
+const KEY_PREFIX = "pgv.collapsedStages.";
+const EXPIRE_MS = 14 * 24 * 60 * 60 * 1000;
+const MAX_ENTRIES = 1_000;
+
+type StoredCollapsedStages = number[] | { lastUsed: string; ids: number[] };
+
 function loadFromStorage(key: string): Set<number> {
   try {
     const stored = window.localStorage.getItem(key);
     if (stored) {
-      return new Set(JSON.parse(stored) as number[]);
+      const parsed = JSON.parse(stored) as StoredCollapsedStages;
+      const ids = new Set(Array.isArray(parsed) ? parsed : parsed.ids);
+      saveToStorage(key, ids); // Bump the last used timestamp.
+      return ids;
     }
-  } catch {
-    // ignore
+  } catch (err) {
+    try {
+      // Bad record. Perform best-effort cleanup.
+      window.localStorage.removeItem(key);
+    } catch {}
   }
   return new Set();
 }
 
 function saveToStorage(key: string, ids: Set<number>) {
   try {
-    window.localStorage.setItem(key, JSON.stringify([...ids]));
+    if (ids.size === 0) {
+      window.localStorage.removeItem(key);
+      return;
+    }
+    window.localStorage.setItem(
+      key,
+      JSON.stringify({ lastUsed: new Date().toISOString(), ids: [...ids] }),
+    );
   } catch {
     // ignore
+  }
+}
+
+function garbageCollectLocalStorage() {
+  try {
+    window.localStorage.key(0);
+  } catch {
+    // Local storage access failed, likely due to browser restrictions (expected).
+    // Perform this check here so that we can log unexpected errors below.
+    return;
+  }
+  try {
+    const keys = Object.keys(window.localStorage).filter((key) =>
+      key.startsWith(KEY_PREFIX),
+    );
+    const cutOff = new Date(new Date().getTime() - EXPIRE_MS).toISOString();
+    if (keys.length > MAX_ENTRIES) {
+      // Retain at most MAX_ENTRIES entries in localStorage. Discard the rest.
+      for (const key of keys.splice(0, keys.length - MAX_ENTRIES)) {
+        window.localStorage.removeItem(key);
+      }
+    }
+    for (const key of keys) {
+      const raw = window.localStorage.getItem(key);
+      if (!raw) {
+        window.localStorage.removeItem(key);
+        continue;
+      }
+      const parsed = JSON.parse(raw) as StoredCollapsedStages;
+      if (Array.isArray(parsed)) {
+        // Old schema. We don't know when this record was created. Use the current timestamp. It will expire eventually.
+        saveToStorage(key, new Set(parsed));
+      } else if (parsed.lastUsed < cutOff) {
+        window.localStorage.removeItem(key);
+      }
+    }
+  } catch (err) {
+    console.warn(
+      "Error during garbage collection for collapsed stages in localStorage:",
+      err,
+    );
   }
 }
 
@@ -142,13 +202,18 @@ function findCollapsedAncestors(
 }
 
 export function useCollapsedStages(
-  storageKey: string,
+  currentRunPath: string,
   stages: StageInfo[],
   selectedStageId?: number,
 ) {
+  const storageKey = KEY_PREFIX + currentRunPath;
   const [collapsedStageIds, setCollapsedStageIds] = useState<Set<number>>(() =>
     loadFromStorage(storageKey),
   );
+
+  useEffect(() => {
+    garbageCollectLocalStorage();
+  }, []);
 
   const toggleCollapseStage = useCallback(
     (stageId: number) => {

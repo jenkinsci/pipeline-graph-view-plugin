@@ -39,11 +39,7 @@ export default function Stages({
     expandAll,
     hasCollapsibleStages,
     effectiveStages,
-  } = useCollapsedStages(
-    "pgv.collapsedStages." + currentRunPath,
-    stages,
-    selectedStage?.id,
-  );
+  } = useCollapsedStages(currentRunPath, stages, selectedStage?.id);
 
   const handleStageSelect = useCallback(
     (nodeId: string) => {

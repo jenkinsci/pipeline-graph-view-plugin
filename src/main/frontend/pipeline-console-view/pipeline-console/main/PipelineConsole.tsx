@@ -48,11 +48,13 @@ export default function PipelineConsole() {
   } = useStepsPoller({ currentRunPath, previousRunPath });
 
   const isOnlyPlaceholderNode = stages.length === 1 && stages[0].placeholder;
-  const onlyQueuedPlaceholder =
-    isOnlyPlaceholderNode && stages[0].state === Result.queued;
-
+  const isBeforePipelineStart =
+    isOnlyPlaceholderNode &&
+    (stages[0].state === Result.queued ||
+      stages[0].state === Result.failure ||
+      stages[0].state === Result.aborted);
   const showSplitView =
-    loading || (!loading && stages.length > 0 && !onlyQueuedPlaceholder);
+    loading || (!loading && stages.length > 0 && !isBeforePipelineStart);
 
   const { canConfigure } = useUserPermissions();
 
@@ -168,7 +170,7 @@ export default function PipelineConsole() {
         </SplitView>
       )}
 
-      {!loading && onlyQueuedPlaceholder && (
+      {!loading && isBeforePipelineStart && (
         <>
           <StageDetails stage={stages[0]} />
           <NoStageStepsFallback

@@ -141,8 +141,14 @@ public class PipelineConsoleViewAction extends Tab {
         logger.debug("getConsoleText was passed node id '{}'.", nodeId);
         // This will be a step, so return its log output.
         AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
-        if (logText != null) {
-            logText.writeLogTo(0L, rsp.getOutputStream());
+        String exceptionText = getNodeExceptionText(nodeId);
+        if (logText != null || exceptionText != null) {
+            if (logText != null) {
+                logText.writeLogTo(0L, rsp.getOutputStream());
+            }
+            if (exceptionText != null) {
+                rsp.getOutputStream().write(exceptionText.getBytes());
+            }
             return;
         }
 
@@ -154,6 +160,14 @@ public class PipelineConsoleViewAction extends Tab {
             if (logText != null) {
                 foundLogs = true;
                 logText.writeLogTo(0L, rsp.getOutputStream());
+            }
+            exceptionText = getNodeExceptionText(step.id);
+            if (exceptionText != null) {
+                if (!exceptionText.endsWith("\n")) {
+                    exceptionText += "\n";
+                }
+                foundLogs = true;
+                rsp.getOutputStream().write(exceptionText.getBytes());
             }
         }
         if (!foundLogs) {

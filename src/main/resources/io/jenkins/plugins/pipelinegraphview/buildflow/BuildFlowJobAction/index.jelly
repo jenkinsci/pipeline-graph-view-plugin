@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <l:layout title="${%Build Flow} [${it.job.displayName}]" type="one-column">
+    <l:main-panel>
+      <l:app-bar title="${%Build Flow}" />
+      <j:set var="latestBuild" value="${it.latestBuild}" />
+      <j:choose>
+        <j:when test="${latestBuild != null}">
+          <div class="jenkins-card" id="pgv-build-flow-root"
+               data-build-url="${latestBuild.url}"
+               data-root-url="${rootURL}"
+               data-full-page="true"
+               data-user-locale="${request2.getLocale().toLanguageTag()}" />
+          <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/build-flow-view-bundle.js" type="module"/>
+        </j:when>
+        <j:otherwise>
+          <div class="jenkins-!-margin-top-2">
+            <p>${%No builds yet.}</p>
+          </div>
+        </j:otherwise>
+      </j:choose>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

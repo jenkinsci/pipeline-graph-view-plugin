@@ -5,11 +5,14 @@ interface PipelineGraphViewPreferences {
   setShowNames: (val: boolean) => void;
   showDurations: boolean;
   setShowDurations: (val: boolean) => void;
+  showBuildFlow: boolean;
+  setShowBuildFlow: (val: boolean) => void;
 }
 
 const defaultPreferences = {
   showNames: false,
   showDurations: false,
+  showBuildFlow: true,
 };
 
 const UserPreferencesContext = createContext<
@@ -17,6 +20,9 @@ const UserPreferencesContext = createContext<
 >(undefined);
 
 const makeKey = (setting: string) => `pgv-graph-view.${setting}`;
+
+export const BUILD_FLOW_LS_KEY = makeKey("showBuildFlow");
+export const BUILD_FLOW_CHANGED_EVENT = "pgv-show-build-flow-changed";
 
 const parsePreferenceValue = <T,>(
   value: string | undefined,
@@ -75,6 +81,9 @@ export const UserPreferencesProvider = ({
       ),
     ),
   );
+  const [showBuildFlow, setShowBuildFlow] = useState<boolean>(
+    loadFromLocalStorage(BUILD_FLOW_LS_KEY, defaultPreferences.showBuildFlow),
+  );
 
   const persistShowNames = (val: boolean) => {
     window.localStorage.setItem(stageNamesKey, String(val));
@@ -86,6 +95,14 @@ export const UserPreferencesProvider = ({
     setShowDurations(val);
   };
 
+  const persistShowBuildFlow = (val: boolean) => {
+    window.localStorage.setItem(BUILD_FLOW_LS_KEY, String(val));
+    setShowBuildFlow(val);
+    document.dispatchEvent(
+      new CustomEvent(BUILD_FLOW_CHANGED_EVENT, { detail: val }),
+    );
+  };
+
   return (
     <UserPreferencesContext.Provider
       value={{
@@ -93,6 +110,8 @@ export const UserPreferencesProvider = ({
         setShowNames: persistShowNames,
         showDurations,
         setShowDurations: persistShowDurations,
+        showBuildFlow,
+        setShowBuildFlow: persistShowBuildFlow,
       }}
     >
       {children}

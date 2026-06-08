@@ -18,4 +18,9 @@
       <f:checkbox field="showGraphOnBuildPage" title="${%pipelineGraphShowOnPage}" />
     </f:entry>
   </f:section>
+  <f:section title="${%buildFlow}">
+    <f:entry>
+      <f:checkbox field="showBuildFlowOnJobPage" title="${%buildFlowShowOnPage}" />
+    </f:entry>
+  </f:section>
 </j:jelly>

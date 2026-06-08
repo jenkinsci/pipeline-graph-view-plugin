@@ -20,6 +20,7 @@ This plugin adds a visual representation of Jenkins pipelines, showing each stag
 - [Collapse and expand individual stages](./docs/per-stage-collapse.md) with parallel branches or nested children
 - Quickly access details of each step and its results
 - Hide specific steps from view using the `hideFromView` Pipeline DSL step
+- **Build Flow** - a zoomable, pannable DAG visualization with build history dots, inspired by the YABV plugin
 - Designed for better readability and faster troubleshooting
 
 ## Getting started
@@ -32,13 +33,19 @@ Hidden steps are not displayed by default in the Pipeline Overview, but can be t
 
 ## Screenshots
 
-Basic pipeline:
+### Basic pipeline
 
 ![Different statuses](./docs/images/different-statuses.png)
 
-Semi-complex pipeline:
+### Semi-complex pipeline
 
 ![Semi complex pipeline](./docs/images/semi-complex-pipeline.png)
+
+### Build Flow
+
+The Build Flow view provides a zoomable, pannable DAG visualization of upstream/downstream build relationships. See the [full documentation](./docs/build-flow.md) for details.
+
+![Build Flow Simple](./docs/images/build-flow-simple.png)
 
 ## Video
 

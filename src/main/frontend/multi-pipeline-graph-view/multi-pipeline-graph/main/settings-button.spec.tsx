@@ -36,6 +36,7 @@ describe("SettingsButton", () => {
 
     expect(screen.getByText("Show stage names")).toBeInTheDocument();
     expect(screen.getByText("Show stage duration")).toBeInTheDocument();
+    expect(screen.getByText("Show Build Flow")).toBeInTheDocument();
   });
 
   it("should update preferences when toggling checkboxes", () => {
@@ -52,5 +53,10 @@ describe("SettingsButton", () => {
     const showDurationsCheckbox = screen.getByLabelText("Show stage duration");
     fireEvent.click(showDurationsCheckbox);
     expect(showDurationsCheckbox).toBeChecked();
+
+    const showBuildFlowCheckbox = screen.getByLabelText("Show Build Flow");
+    expect(showBuildFlowCheckbox).toBeChecked();
+    fireEvent.click(showBuildFlowCheckbox);
+    expect(showBuildFlowCheckbox).not.toBeChecked();
   });
 });

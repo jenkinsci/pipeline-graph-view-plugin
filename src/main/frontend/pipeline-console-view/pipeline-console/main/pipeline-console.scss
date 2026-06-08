@@ -190,3 +190,15 @@
   flex-direction: column;
   gap: 0.75rem;
 }
+
+.pgv-build-flow-card {
+  height: 100%;
+  overflow: hidden;
+  background: var(--card-background);
+  border: var(--card-border-width) solid var(--card-border-color);
+  border-radius: var(--form-input-border-radius);
+
+  .pgv-build-flow {
+    height: 100%;
+  }
+}

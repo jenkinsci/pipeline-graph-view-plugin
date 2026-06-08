@@ -50,9 +50,10 @@ export default function PipelineConsole() {
   const isOnlyPlaceholderNode = stages.length === 1 && stages[0].placeholder;
   const isBeforePipelineStart =
     isOnlyPlaceholderNode &&
+    // We are waiting for the pipeline to start...
     (stages[0].state === Result.queued ||
-      stages[0].state === Result.failure ||
-      stages[0].state === Result.aborted);
+      // Stopped early. We will never reach the actual pipeline start.
+      complete);
   const showSplitView =
     loading || (!loading && stages.length > 0 && !isBeforePipelineStart);
 

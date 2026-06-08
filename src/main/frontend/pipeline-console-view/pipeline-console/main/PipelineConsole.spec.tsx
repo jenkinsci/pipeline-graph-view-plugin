@@ -160,6 +160,47 @@ describe("PipelineConsole — queued placeholder fallback", () => {
     ).toBeInTheDocument();
   });
 
+  it("renders StageDetails + NoStageStepsFallback when completed early", async () => {
+    (useStepsPoller as any).mockReturnValue({
+      complete: true,
+      tailLogs: false,
+      scrollToTail: () => {},
+      startTailingLogs: () => {},
+      stopTailingLogs: () => {},
+      openStage: { ...placeholderStage, state: Result.aborted },
+      openStageSteps: [],
+      stepBuffers: new Map(),
+      expandedSteps: [],
+      stages: [{ ...placeholderStage, state: Result.aborted }],
+      handleStageSelect: () => {},
+      onStepToggle: () => {},
+      fetchLogText: async () => ({ lines: [], startByte: 0, endByte: 0 }),
+      fetchExceptionText: async () => ({ lines: [], startByte: 0, endByte: 0 }),
+      loading: false,
+    });
+
+    await act(async () => {
+      render(
+        <FilterProvider>
+          <PipelineConsole />
+        </FilterProvider>,
+      );
+    });
+
+    expect(
+      screen.getAllByText(/Waiting for next available executor on/).length,
+    ).toBeGreaterThan(0);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(/Obtained Jenkinsfile from git/),
+      ).toBeInTheDocument(),
+    );
+    expect(
+      screen.getByText(/Still waiting to schedule task/),
+    ).toBeInTheDocument();
+  });
+
   it("renders the structured graph when the placeholder is no longer queued", async () => {
     (useStepsPoller as any).mockReturnValue({
       complete: false,

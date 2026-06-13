@@ -9,6 +9,7 @@ import {
   useTransformEffect,
 } from "react-zoom-pan-pinch";
 
+import { COLLAPSE, EXPAND } from "../../../../common/components/symbols.tsx";
 import Tooltip from "../../../../common/components/tooltip.tsx";
 import {
   I18NContext,
@@ -258,29 +259,7 @@ function ZoomControls({
             className={"jenkins-button jenkins-button--tertiary"}
             onClick={collapsedStageIds.size > 0 ? onExpandAll : onCollapseAll}
           >
-            {collapsedStageIds.size > 0 ? (
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                <path
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="32"
-                  d="M136 208l120-104 120 104M136 304l120 104 120-104"
-                />
-              </svg>
-            ) : (
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-                <path
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="32"
-                  d="M136 104l120 104 120-104M136 408l120-104 120 104"
-                />
-              </svg>
-            )}
+            {collapsedStageIds.size > 0 ? EXPAND : COLLAPSE}
           </button>
         </Tooltip>
       )}

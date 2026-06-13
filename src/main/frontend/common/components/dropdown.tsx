@@ -14,6 +14,28 @@ export default function Dropdown({
   icon,
 }: DropdownProps) {
   const [visible, setVisible] = useState(false);
+  return (
+    <DynamicDropdown
+      visible={visible}
+      setVisible={setVisible}
+      items={items}
+      tooltip={tooltip}
+      disabled={disabled}
+      className={className}
+      icon={icon}
+    />
+  );
+}
+
+export function DynamicDropdown({
+  visible,
+  setVisible,
+  items,
+  tooltip = "More actions",
+  disabled,
+  className,
+  icon,
+}: DynamicDropdownProps) {
   const show = () => setVisible(true);
   const hide = () => setVisible(false);
 
@@ -99,6 +121,11 @@ interface DropdownProps {
   disabled?: boolean;
   className?: string;
   icon?: ReactNode;
+}
+
+interface DynamicDropdownProps extends DropdownProps {
+  visible: boolean;
+  setVisible: (visible: boolean) => void;
 }
 
 interface DropdownItem {

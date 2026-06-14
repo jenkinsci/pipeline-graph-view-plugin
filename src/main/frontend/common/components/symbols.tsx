@@ -55,3 +55,29 @@ export const SETTINGS = (
     />
   </svg>
 );
+
+export const EXPAND = (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <path
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="32"
+      d="M136 208l120-104 120 104M136 304l120 104 120-104"
+    />
+  </svg>
+);
+
+export const COLLAPSE = (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <path
+      fill="none"
+      stroke="currentColor"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="32"
+      d="M136 104l120 104 120-104M136 408l120-104 120 104"
+    />
+  </svg>
+);

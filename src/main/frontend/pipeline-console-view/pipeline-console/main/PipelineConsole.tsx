@@ -39,6 +39,8 @@ export default function PipelineConsole() {
     openStageSteps,
     stepBuffers,
     expandedSteps,
+    expandAllForStage,
+    collapseAllForStage,
     stages,
     handleStageSelect,
     onStepToggle,
@@ -160,6 +162,8 @@ export default function PipelineConsole() {
                   steps={openStageSteps}
                   stepBuffers={stepBuffers}
                   expandedSteps={expandedSteps}
+                  expandAllForStage={expandAllForStage}
+                  collapseAllForStage={collapseAllForStage}
                   onStepToggle={onStepToggle}
                   fetchLogText={fetchLogText}
                   fetchExceptionText={fetchExceptionText}
@@ -173,7 +177,13 @@ export default function PipelineConsole() {
 
       {!loading && isBeforePipelineStart && (
         <>
-          <StageDetails stage={stages[0]} />
+          <StageDetails
+            stage={stages[0]}
+            steps={openStageSteps}
+            expandedSteps={expandedSteps}
+            expandAllForStage={expandAllForStage}
+            collapseAllForStage={collapseAllForStage}
+          />
           <NoStageStepsFallback
             currentRunPath={currentRunPath}
             tailLogs={tailLogs}

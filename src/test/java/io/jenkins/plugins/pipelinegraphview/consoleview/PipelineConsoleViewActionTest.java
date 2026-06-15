@@ -16,6 +16,7 @@ import org.htmlunit.html.HtmlPage;
 import org.htmlunit.util.UrlUtils;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.jupiter.api.Test;
+import org.kohsuke.stapler.HttpResponse;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
@@ -93,5 +94,22 @@ class PipelineConsoleViewActionTest {
             assertThat(root, notNullValue());
             assertThat(root.getAttribute("data-current-run-path"), endsWith("/" + run.getNumber() + "/"));
         }
+    }
+
+    @Test
+    void doRerunReturnsErrorWhenReplayActionIsNull(JenkinsRule j) throws Exception {
+        // Create a pipeline run.
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "hello_world_scripted", "simpleError.jenkinsfile", Result.FAILURE);
+
+        // Remove the ReplayAction so that run.getAction(ReplayAction.class) returns null.
+        run.removeActions(org.jenkinsci.plugins.workflow.cps.replay.ReplayAction.class);
+
+        PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
+        // Before the fix, this would throw a NullPointerException.
+        // After the fix, it should return an error JSON response.
+        HttpResponse response = consoleAction.doRerun();
+
+        assertThat(response, notNullValue());
     }
 }

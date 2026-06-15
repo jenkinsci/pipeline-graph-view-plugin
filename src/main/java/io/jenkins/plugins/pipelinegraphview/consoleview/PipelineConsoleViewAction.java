@@ -309,6 +309,9 @@ public class PipelineConsoleViewAction extends Tab {
             return HttpResponses.errorJSON(Messages.scheduled_failure());
         }
         ReplayAction replayAction = run.getAction(ReplayAction.class);
+        if (replayAction == null) {
+            return HttpResponses.errorJSON(Messages.scheduled_failure());
+        }
         Queue.Item item = replayAction.run2(replayAction.getOriginalScript(), replayAction.getOriginalLoadedScripts());
 
         if (item == null) {

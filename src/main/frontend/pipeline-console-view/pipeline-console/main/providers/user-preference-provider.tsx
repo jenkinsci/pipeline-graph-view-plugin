@@ -54,10 +54,20 @@ const LS_KEYS = {
 };
 
 // HELPER
-const loadFromLocalStorage = <T,>(key: string, fallback: T): T => {
+const loadFromLocalStorage = <T,>(
+  key: string,
+  normalizedParentJobPath: string,
+  fallback: T,
+): T => {
   if (typeof window === "undefined") return fallback;
   try {
-    const value = window.localStorage.getItem(key);
+    let value = window.localStorage.getItem(
+      `${key}/${normalizedParentJobPath}`,
+    );
+    if (value === null) {
+      // Fallback to previous shared key, which also serves as local default form the last job that updated it.
+      value = window.localStorage.getItem(key);
+    }
     if (value !== null) {
       if (typeof fallback === "number") {
         return Number(value) as T;
@@ -70,12 +80,28 @@ const loadFromLocalStorage = <T,>(key: string, fallback: T): T => {
   return fallback;
 };
 
+const storeInLocalStorage = (
+  key: string,
+  normalizedParentJobPath: string,
+  value: string,
+) => {
+  try {
+    window.localStorage.setItem(`${key}/${normalizedParentJobPath}`, value);
+    // Provide default for any other job without a specific value.
+    window.localStorage.setItem(key, value);
+  } catch (e) {
+    console.error(`Error storing localStorage key "${key}"`, e);
+  }
+};
+
 const MOBILE_BREAKPOINT = 700;
 
 // PROVIDER
 export const LayoutPreferencesProvider = ({
+  normalizedParentJobPath,
   children,
 }: {
+  normalizedParentJobPath: string;
   children: ReactNode;
 }) => {
   const [windowWidth, setWindowWidth] = useState<number>(
@@ -84,21 +110,29 @@ export const LayoutPreferencesProvider = ({
 
   const [persistedStageViewPosition, setStageViewPositionState] =
     useState<StageViewPosition>(
-      loadFromLocalStorage(LS_KEYS.stageViewPosition, StageViewPosition.TOP),
+      loadFromLocalStorage(
+        LS_KEYS.stageViewPosition,
+        normalizedParentJobPath,
+        StageViewPosition.TOP,
+      ),
     );
   const [persistedMainViewVisibility, setMainViewVisibilityState] =
     useState<MainViewVisibility>(
-      loadFromLocalStorage(LS_KEYS.mainViewVisibility, MainViewVisibility.BOTH),
+      loadFromLocalStorage(
+        LS_KEYS.mainViewVisibility,
+        normalizedParentJobPath,
+        MainViewVisibility.BOTH,
+      ),
     );
 
   const [treeViewWidth, setTreeViewWidthState] = useState<number>(
-    loadFromLocalStorage(LS_KEYS.treeViewWidth, 300),
+    loadFromLocalStorage(LS_KEYS.treeViewWidth, normalizedParentJobPath, 300),
   );
   const [stageViewWidth, setStageViewWidthState] = useState<number>(
-    loadFromLocalStorage(LS_KEYS.stageViewWidth, 600),
+    loadFromLocalStorage(LS_KEYS.stageViewWidth, normalizedParentJobPath, 600),
   );
   const [stageViewHeight, setStageViewHeightState] = useState<number>(
-    loadFromLocalStorage(LS_KEYS.stageViewHeight, 250),
+    loadFromLocalStorage(LS_KEYS.stageViewHeight, normalizedParentJobPath, 250),
   );
 
   // Handle responsive override
@@ -113,42 +147,47 @@ export const LayoutPreferencesProvider = ({
   // Save to localStorage only when not in mobile mode
   useEffect(() => {
     if (!isMobile) {
-      window.localStorage.setItem(
+      storeInLocalStorage(
         LS_KEYS.stageViewPosition,
+        normalizedParentJobPath,
         persistedStageViewPosition,
       );
     }
-  }, [persistedStageViewPosition, isMobile]);
+  }, [persistedStageViewPosition, isMobile, normalizedParentJobPath]);
 
   useEffect(() => {
     if (!isMobile) {
-      window.localStorage.setItem(
+      storeInLocalStorage(
         LS_KEYS.mainViewVisibility,
+        normalizedParentJobPath,
         persistedMainViewVisibility,
       );
     }
-  }, [persistedMainViewVisibility, isMobile]);
+  }, [persistedMainViewVisibility, isMobile, normalizedParentJobPath]);
 
   useEffect(() => {
-    window.localStorage.setItem(
+    storeInLocalStorage(
       LS_KEYS.treeViewWidth,
+      normalizedParentJobPath,
       treeViewWidth.toString(),
     );
-  }, [treeViewWidth]);
+  }, [treeViewWidth, normalizedParentJobPath]);
 
   useEffect(() => {
-    window.localStorage.setItem(
+    storeInLocalStorage(
       LS_KEYS.stageViewWidth,
+      normalizedParentJobPath,
       stageViewWidth.toString(),
     );
-  }, [stageViewWidth]);
+  }, [stageViewWidth, normalizedParentJobPath]);
 
   useEffect(() => {
-    window.localStorage.setItem(
+    storeInLocalStorage(
       LS_KEYS.stageViewHeight,
+      normalizedParentJobPath,
       stageViewHeight.toString(),
     );
-  }, [stageViewHeight]);
+  }, [stageViewHeight, normalizedParentJobPath]);
 
   // Update window width on resize
   useEffect(() => {

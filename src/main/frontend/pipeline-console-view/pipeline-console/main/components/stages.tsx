@@ -29,7 +29,7 @@ export default function Stages({
   stageViewPosition,
   onStageSelect,
   onRunPage,
-  currentRunPath,
+  normalizedParentJobPath,
 }: StagesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -40,7 +40,7 @@ export default function Stages({
     expandAll,
     hasCollapsibleStages,
     effectiveStages,
-  } = useCollapsedStages(currentRunPath, stages, selectedStage?.id);
+  } = useCollapsedStages(normalizedParentJobPath, stages, selectedStage?.id);
 
   const handleStageSelect = useCallback(
     (nodeId: string) => {
@@ -154,7 +154,7 @@ interface StagesProps {
   stageViewPosition: StageViewPosition;
   onStageSelect?: (nodeId: string) => void;
   onRunPage?: boolean;
-  currentRunPath: string;
+  normalizedParentJobPath: string;
 }
 
 interface ZoomControlsProps {

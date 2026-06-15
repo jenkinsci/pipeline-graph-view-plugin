@@ -108,6 +108,7 @@ class PipelineConsoleViewActionTest {
         PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
         // Before the fix, this would throw a NullPointerException.
         // After the fix, it should return an error JSON response.
+        //retry
         HttpResponse response = consoleAction.doRerun();
 
         assertThat(response, notNullValue());

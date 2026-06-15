@@ -27,6 +27,7 @@ export default function PipelineConsole() {
   const rootElement = document.getElementById("console-pipeline-root");
   const currentRunPath = rootElement?.dataset.currentRunPath!;
   const previousRunPath = rootElement?.dataset.previousRunPath;
+  const normalizedParentJobPath = rootElement?.dataset.normalizedParentJobPath!;
 
   const { stageViewPosition, mainViewVisibility } = useLayoutPreferences();
   const {
@@ -118,7 +119,7 @@ export default function PipelineConsole() {
                 selectedStage={openStage || undefined}
                 stageViewPosition={stageViewPosition}
                 onStageSelect={handleStageSelect}
-                currentRunPath={currentRunPath}
+                normalizedParentJobPath={normalizedParentJobPath}
               />
             ))}
 

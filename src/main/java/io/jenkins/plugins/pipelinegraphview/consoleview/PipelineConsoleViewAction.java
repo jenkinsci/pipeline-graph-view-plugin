@@ -401,6 +401,14 @@ public class PipelineConsoleViewAction extends Tab {
         return getBuildNumber(run.getNextBuild());
     }
 
+    public String getNormalizedParentJobPath() {
+        boolean isMultiBranch =
+                run.getParent().getProperty("org.jenkinsci.plugins.workflow.multibranch.BranchJobProperty") != null;
+        return isMultiBranch
+                ? run.getParent().getParent().getUrl()
+                : run.getParent().getUrl();
+    }
+
     @GET
     @WebMethod(name = "tree")
     public void getTree(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {

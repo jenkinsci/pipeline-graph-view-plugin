@@ -86,7 +86,7 @@ beforeEach(() => {
   document.body.innerHTML =
     "<header></header>" +
     '<div class="jenkins-app-bar"></div>' +
-    '<div id="console-pipeline-root" data-current-run-path="/jenkins/job/x/1/"></div>' +
+    '<div id="console-pipeline-root" data-current-run-path="/jenkins/job/x/1/" data-normalized-parent-job-path="/jenkins/job/x/"></div>' +
     '<div id="console-pipeline-overflow-root"></div>';
 
   if (!(globalThis as any).IntersectionObserver) {

@@ -9,6 +9,7 @@ import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import java.io.IOException;
 import java.util.List;
+import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
 import org.htmlunit.html.DomElement;
@@ -16,7 +17,6 @@ import org.htmlunit.html.HtmlPage;
 import org.htmlunit.util.UrlUtils;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.jupiter.api.Test;
-import org.kohsuke.stapler.HttpResponse;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
@@ -104,13 +104,13 @@ class PipelineConsoleViewActionTest {
 
         // Remove the ReplayAction so that run.getAction(ReplayAction.class) returns null.
         run.removeActions(org.jenkinsci.plugins.workflow.cps.replay.ReplayAction.class);
-
-        PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
-        // Before the fix, this would throw a NullPointerException.
-        // After the fix, it should return an error JSON response.
-        //retry
-        HttpResponse response = consoleAction.doRerun();
-
-        assertThat(response, notNullValue());
+        try (var c = j.createWebClient()) {
+            c.setThrowExceptionOnFailingStatusCode(false);
+            WebRequest req = new WebRequest(UrlUtils.toUrlSafe(j.getURL() + run.getUrl() + "stages/rerun"), HttpMethod.POST);
+            WebResponse rsp = c.loadWebResponse(req);
+            // Before the fix, this would throw a NullPointerException (500 error).
+            // After the fix, it should return an error JSON response (200 with error message).
+            assertThat(rsp.getContentAsString(), containsString("Could not schedule a build"));
+        }
     }
 }

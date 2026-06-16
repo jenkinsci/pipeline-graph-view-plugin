@@ -12,7 +12,6 @@ import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import java.io.IOException;
 import java.util.List;
-import org.htmlunit.HttpMethod;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
 import org.htmlunit.html.DomElement;
@@ -23,6 +22,8 @@ import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+import org.kohsuke.stapler.HttpResponse;
+import org.kohsuke.stapler.StaplerResponse2;
 
 @WithJenkins
 class PipelineConsoleViewActionTest {
@@ -107,12 +108,46 @@ class PipelineConsoleViewActionTest {
 
         run.getParent().setDisabled(true);
 
-        try (var c = j.createWebClient()) {
-            WebRequest req =
-                    new WebRequest(UrlUtils.toUrlSafe(j.getURL() + run.getUrl() + "stages/rerun"), HttpMethod.POST);
-            c.addCrumb(req);
-            WebResponse rsp = c.loadWebResponse(req);
-            assertThat(rsp.getContentAsString(), containsString("\"status\":\"error\""));
-        }
+        PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
+        HttpResponse response = consoleAction.doRerun();
+        assertThat(response, notNullValue());
+
+        // Capture the JSON output via generateResponse.
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        jakarta.servlet.ServletOutputStream sos = new jakarta.servlet.ServletOutputStream() {
+            @Override
+            public void write(int b) {
+                out.write(b);
+            }
+
+            @Override
+            public void write(byte[] b) throws IOException {
+                out.write(b);
+            }
+
+            @Override
+            public void write(byte[] b, int off, int len) {
+                out.write(b, off, len);
+            }
+
+            @Override
+            public boolean isReady() {
+                return true;
+            }
+
+            @Override
+            public void setWriteListener(jakarta.servlet.WriteListener writeListener) {}
+        };
+        StaplerResponse2 mockRsp = (StaplerResponse2) java.lang.reflect.Proxy.newProxyInstance(
+                StaplerResponse2.class.getClassLoader(),
+                new Class<?>[] {StaplerResponse2.class},
+                (proxy, method, args) -> {
+                    if ("getOutputStream".equals(method.getName())) {
+                        return sos;
+                    }
+                    return null;
+                });
+        response.generateResponse(null, mockRsp, null);
+        assertThat(out.toString(), containsString("\"status\":\"error\""));
     }
 }

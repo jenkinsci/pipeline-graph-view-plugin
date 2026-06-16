@@ -107,6 +107,6 @@ class PipelineConsoleViewActionTest {
 
         PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
         HttpResponse response = consoleAction.doRerun();
-        assertThat(response, notNullValue());
+        assertThat(response, instanceOf(org.kohsuke.stapler.json.JsonHttpResponse.class));
     }
 }

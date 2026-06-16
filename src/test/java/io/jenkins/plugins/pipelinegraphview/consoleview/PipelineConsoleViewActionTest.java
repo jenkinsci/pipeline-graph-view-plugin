@@ -110,7 +110,7 @@ class PipelineConsoleViewActionTest {
         HttpResponse response = consoleAction.doRerun();
         assertThat(response, notNullValue());
 
-        // Verifi if the response contains an error status.
+        // Verify if the response contains an error status.
         java.lang.reflect.Method getJson = response.getClass().getDeclaredMethod("getJsonObject");
         getJson.setAccessible(true);
         net.sf.json.JSONObject json = (net.sf.json.JSONObject) getJson.invoke(response);

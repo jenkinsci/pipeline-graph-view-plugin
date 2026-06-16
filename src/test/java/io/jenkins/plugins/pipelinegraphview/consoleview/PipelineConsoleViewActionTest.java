@@ -1,14 +1,12 @@
 package io.jenkins.plugins.pipelinegraphview.consoleview;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-
-import hudson.model.Result;
-import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
-import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
-import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import java.io.IOException;
 import java.util.List;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
 import org.htmlunit.html.DomElement;
@@ -20,6 +18,11 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import org.kohsuke.stapler.HttpResponse;
+
+import hudson.model.Result;
+import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
+import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
+import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 
 @WithJenkins
 class PipelineConsoleViewActionTest {
@@ -97,16 +100,23 @@ class PipelineConsoleViewActionTest {
     }
 
     @Test
-    void doRerunReturnsErrorWhenReplayActionIsNull(JenkinsRule j) throws Exception {
+    void doRerunReturnsErrorWhenJobIsNotBuildable(JenkinsRule j) throws Exception {
         // Create a pipeline run.
         WorkflowRun run =
                 TestUtils.createAndRunJob(j, "hello_world_scripted", "simpleError.jenkinsfile", Result.FAILURE);
 
-        // Remove the ReplayAction so that run.getAction(ReplayAction.class) returns null.
-        run.removeActions(org.jenkinsci.plugins.workflow.cps.replay.ReplayAction.class);
+        
+        run.getParent().setDisabled(true);
 
         PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
         HttpResponse response = consoleAction.doRerun();
-        assertThat(response, instanceOf(org.kohsuke.stapler.json.JsonHttpResponse.class));
+        assertThat(response, notNullValue());
+
+        // Verifi if the response contains an error status.
+        java.lang.reflect.Method getJson = response.getClass().getDeclaredMethod("getJsonObject");
+        getJson.setAccessible(true);
+        net.sf.json.JSONObject json = (net.sf.json.JSONObject) getJson.invoke(response);
+        assertThat(json.getString("status"), equalTo("error"));
     }
 }
+

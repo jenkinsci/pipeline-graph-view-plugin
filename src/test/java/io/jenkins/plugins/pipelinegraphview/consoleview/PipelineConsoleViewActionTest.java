@@ -108,8 +108,7 @@ class PipelineConsoleViewActionTest {
         try (var c = j.createWebClient()) {
             c.getOptions().setThrowExceptionOnFailingStatusCode(false);
             WebRequest request = new WebRequest(
-                    UrlUtils.toUrlSafe(j.getURL() + run.getUrl() + "stages/rerun"),
-                    org.htmlunit.HttpMethod.POST);
+                    UrlUtils.toUrlSafe(j.getURL() + run.getUrl() + "stages/rerun"), org.htmlunit.HttpMethod.POST);
             WebResponse rsp = c.loadWebResponse(request);
             // Before the fix this threw a NullPointerException (HTTP 500).
             // After the fix, errorJSON() returns HTTP 200 with an error JSON body.

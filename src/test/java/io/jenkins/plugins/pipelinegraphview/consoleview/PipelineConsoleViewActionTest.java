@@ -107,7 +107,7 @@ class PipelineConsoleViewActionTest {
 
         run.getParent().setDisabled(true);
 
-       
+        // Call doRerun() directly and verify it returns an error response instead of throwing NPE.
         PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
         HttpResponse response = consoleAction.doRerun();
         assertThat(response, notNullValue());

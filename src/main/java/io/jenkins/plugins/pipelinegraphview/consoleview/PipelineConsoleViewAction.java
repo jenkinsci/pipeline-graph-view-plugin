@@ -301,6 +301,7 @@ public class PipelineConsoleViewAction extends Tab {
      * Handles the rerun request using ReplayAction feature
      */
     @RequirePOST
+    @WebMethod(name = "rerun")
     @JavaScriptMethod
     public HttpResponse doRerun() {
         run.checkPermission(Item.BUILD);

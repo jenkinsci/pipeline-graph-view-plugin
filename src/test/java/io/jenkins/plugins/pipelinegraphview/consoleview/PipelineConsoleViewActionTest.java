@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
-import org.kohsuke.stapler.HttpResponse;
 
 @WithJenkins
 class PipelineConsoleViewActionTest {
@@ -104,8 +103,17 @@ class PipelineConsoleViewActionTest {
                 TestUtils.createAndRunJob(j, "hello_world_scripted", "simpleError.jenkinsfile", Result.FAILURE);
 
         run.getParent().setDisabled(true);
-        PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
-        HttpResponse response = consoleAction.doRerun();
-        assertThat(response, notNullValue());
+        j.jenkins.setCrumbIssuer(null);
+
+        try (var c = j.createWebClient()) {
+            c.getOptions().setThrowExceptionOnFailingStatusCode(false);
+            WebRequest request = new WebRequest(
+                    UrlUtils.toUrlSafe(j.getURL() + run.getUrl() + "stages/rerun"),
+                    org.htmlunit.HttpMethod.POST);
+            WebResponse rsp = c.loadWebResponse(request);
+            // Before the fix this threw a NullPointerException (HTTP 500).
+            // After the fix, errorJSON() returns HTTP 200 with an error JSON body.
+            assertThat(rsp.getStatusCode(), equalTo(200));
+        }
     }
 }

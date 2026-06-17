@@ -104,9 +104,6 @@ class PipelineConsoleViewActionTest {
                 TestUtils.createAndRunJob(j, "hello_world_scripted", "simpleError.jenkinsfile", Result.FAILURE);
 
         run.getParent().setDisabled(true);
-
-        // Before the fix, doRerun() threw a NullPointerException.
-        // After the fix, it returns an error HttpResponse.
         PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
         HttpResponse response = consoleAction.doRerun();
         assertThat(response, notNullValue());

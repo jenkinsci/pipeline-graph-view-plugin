@@ -58,6 +58,7 @@ export interface StageInfo {
 
   skeleton?: boolean;
   pauseLiveTotal?: boolean;
+  collapsedChildCount?: number; // Set when this stage's children were collapsed away
 }
 
 interface BaseNodeInfo {
@@ -76,6 +77,7 @@ export interface StageNodeInfo extends BaseNodeInfo {
   isPlaceholder: false;
 
   // -- Unique
+  type: "stage";
   stage: StageInfo;
   seqContainerName?: string; // Used within a parallel branch to denote the name of the container of the parallel sequential stages
 }
@@ -85,10 +87,39 @@ export interface PlaceholderNodeInfo extends BaseNodeInfo {
   isPlaceholder: true;
 
   // -- Unique
-  type: "start" | "end" | "counter";
+  type: "start" | "end" | "root" | "stage-end";
 }
 
-export type NodeInfo = StageNodeInfo | PlaceholderNodeInfo;
+export interface CounterNodeInfo extends BaseNodeInfo {
+  // -- Marker
+  isPlaceholder: true;
+
+  // -- Unique
+  type: "counter";
+  stages: StageInfo[];
+}
+
+export type NodeInfo = StageNodeInfo | PlaceholderNodeInfo | CounterNodeInfo;
+
+export type GraphNode = {
+  children: GraphNode[];
+  shiftX: number;
+  width: number;
+  shiftY: number;
+  height: number;
+  allChildrenSkipped?: boolean;
+  isHidden?: boolean;
+  isNestedParallel?: boolean;
+  isParallel?: boolean;
+  isSkipped?: boolean;
+  firstChildIsSkipped?: boolean;
+  hasBigLabel?: boolean;
+  hasBranchLabel?: boolean;
+  hasParallel?: boolean;
+  hasSmallLabel?: boolean;
+  hasTiming?: boolean;
+  hasStageEnd?: boolean;
+} & NodeInfo;
 
 export interface NodeColumn {
   topStage?: StageInfo; // Top-most stage for this column, which will have no rendered nodes if it's parallel
@@ -98,10 +129,24 @@ export interface NodeColumn {
   startX: number; // Where to put the branch labels, or if none, the center of the left-most node(s)
 }
 
+export interface ConnectionEdge {
+  x: number;
+  y: number;
+  key: string;
+  firstChildIsSkipped?: boolean;
+  isHidden?: boolean;
+  isPlaceholder?: boolean;
+  isSkipped?: boolean;
+
+  allChildrenSkipped?: boolean;
+  height?: number;
+  width?: number;
+}
+
 export interface CompositeConnection {
-  sourceNodes: Array<NodeInfo>;
-  destinationNodes: Array<NodeInfo>;
-  skippedNodes: Array<NodeInfo>;
+  sourceNodes: Array<ConnectionEdge>;
+  destinationNodes: Array<ConnectionEdge>;
+  skippedNodes: Array<ConnectionEdge>;
   hasBranchLabels: boolean;
 }
 
@@ -120,7 +165,8 @@ export type LayoutInfo = typeof defaultLayout;
  * The result of the graph layout algorithm
  */
 export interface PositionedGraph {
-  nodeColumns: Array<NodeColumn>;
+  nodes: Array<NodeInfo>;
+  allNodes: Array<GraphNode>;
   connections: Array<CompositeConnection>;
   bigLabels: Array<NodeLabelInfo>;
   timings: Array<NodeLabelInfo>;
@@ -129,3 +175,23 @@ export interface PositionedGraph {
   measuredWidth: number;
   measuredHeight: number;
 }
+
+export function isFlagEnabled(flag: string, defaultValue: boolean = false) {
+  const isEnabled = (v: string | null) =>
+    ["yes", "1", "true", "enabled"].includes(v?.toLowerCase() ?? "");
+
+  try {
+    const search = new URLSearchParams(window.location.search);
+    if (search.has(flag)) return isEnabled(search.get(flag));
+  } catch {}
+  try {
+    // LocalStorage access can throw, gracefully access the key.
+    const v = window.localStorage.getItem(flag);
+    if (v !== null) return isEnabled(v);
+  } catch {}
+  return defaultValue;
+}
+
+export const nestedLayout = () => isFlagEnabled("nestedLayout", true);
+// Optionally turn on debugging for the graph. Once the nested layout is stable, we could use a constant to let tree-shaking remove debug code in production bundles.
+export const debugPipelineGraph = () => isFlagEnabled("debugPipelineGraph");

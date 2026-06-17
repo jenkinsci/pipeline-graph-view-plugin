@@ -18,6 +18,12 @@ export interface InputStep {
   parameters: boolean;
 }
 
+export interface BuildStep {
+  classicUrl: string;
+  pipelineViewUrl: string;
+  displayName: string;
+}
+
 export interface AllStepsData {
   steps: StepInfo[];
   runIsComplete: boolean;
@@ -32,6 +38,7 @@ export interface StepInfo {
   title: string;
   state: Result;
   inputStep?: InputStep;
+  buildStep?: BuildStep;
   id: string;
   type: string;
   stageId: string;

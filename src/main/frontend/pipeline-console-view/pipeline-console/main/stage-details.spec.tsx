@@ -12,9 +12,18 @@ import StageDetails from "./stage-details.tsx";
 
 (globalThis as any).TextEncoder = TextEncoder;
 
+const defaultArgs = {
+  steps: [],
+  expandedSteps: [],
+  expandAllForStage: () => {},
+  collapseAllForStage: () => {},
+};
+
 describe("StageDetails", () => {
   it("renders null when stage is null", () => {
-    const { container } = render(<StageDetails stage={null} />);
+    const { container } = render(
+      <StageDetails {...defaultArgs} stage={null} />,
+    );
 
     expect(container.firstChild).toBeNull();
   });
@@ -22,7 +31,7 @@ describe("StageDetails", () => {
   it("renders stage name and status color class", () => {
     render(
       <FilterProvider>
-        <StageDetails stage={mockStage} />
+        <StageDetails {...defaultArgs} stage={mockStage} />
       </FilterProvider>,
     );
 
@@ -37,7 +46,10 @@ describe("StageDetails", () => {
   it("shows running bar if stage is running", () => {
     render(
       <FilterProvider>
-        <StageDetails stage={{ ...mockStage, state: Result.running }} />
+        <StageDetails
+          {...defaultArgs}
+          stage={{ ...mockStage, state: Result.running }}
+        />
       </FilterProvider>,
     );
 
@@ -50,7 +62,10 @@ describe("StageDetails", () => {
   it("does not show pause time if pauseDurationMillis is 0", () => {
     render(
       <FilterProvider>
-        <StageDetails stage={{ ...mockStage, pauseDurationMillis: 0 }} />
+        <StageDetails
+          {...defaultArgs}
+          stage={{ ...mockStage, pauseDurationMillis: 0 }}
+        />
       </FilterProvider>,
     );
 
@@ -60,7 +75,10 @@ describe("StageDetails", () => {
   it("disables dropdown if stage is synthetic", () => {
     render(
       <FilterProvider>
-        <StageDetails stage={{ ...mockStage, synthetic: true }} />
+        <StageDetails
+          {...defaultArgs}
+          stage={{ ...mockStage, synthetic: true }}
+        />
       </FilterProvider>,
     );
 
@@ -71,7 +89,7 @@ describe("StageDetails", () => {
   it("displays total duration", () => {
     render(
       <FilterProvider>
-        <StageDetails stage={{ ...mockStage }} />
+        <StageDetails {...defaultArgs} stage={{ ...mockStage }} />
       </FilterProvider>,
     );
 
@@ -84,6 +102,7 @@ describe("StageDetails", () => {
     render(
       <FilterProvider>
         <StageDetails
+          {...defaultArgs}
           stage={{ ...mockStage, startTimeMillis: Date.now() - 60_000 }}
         />
       </FilterProvider>,
@@ -96,6 +115,7 @@ describe("StageDetails", () => {
     render(
       <FilterProvider>
         <StageDetails
+          {...defaultArgs}
           stage={{
             ...mockStage,
             state: Result.queued,
@@ -115,6 +135,7 @@ describe("StageDetails", () => {
     render(
       <FilterProvider>
         <StageDetails
+          {...defaultArgs}
           stage={{
             ...mockStage,
             state: Result.running,

@@ -1,0 +1,17 @@
+import hudson.model.Result
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil
+import org.jenkinsci.plugins.workflow.actions.WarningAction
+import org.jenkinsci.plugins.workflow.graph.FlowNode
+
+void setStageResult(Result result) {
+    FlowNode stageNode = getContext(FlowNode.class).getEnclosingBlocks().find { PipelineNodeUtil.isStage(it) }
+    if (stageNode) {
+        stageNode.addOrReplaceAction(new WarningAction(result));
+    }
+}
+
+stage("unstable-stage") {
+    echo("foo")
+    setStageResult(Result.UNSTABLE)
+    semaphore "wait"
+}

@@ -27,6 +27,7 @@ export default function PipelineConsole() {
   const rootElement = document.getElementById("console-pipeline-root");
   const currentRunPath = rootElement?.dataset.currentRunPath!;
   const previousRunPath = rootElement?.dataset.previousRunPath;
+  const normalizedParentJobPath = rootElement?.dataset.normalizedParentJobPath!;
 
   const { stageViewPosition, mainViewVisibility } = useLayoutPreferences();
   const {
@@ -39,6 +40,8 @@ export default function PipelineConsole() {
     openStageSteps,
     stepBuffers,
     expandedSteps,
+    expandAllForStage,
+    collapseAllForStage,
     stages,
     handleStageSelect,
     onStepToggle,
@@ -48,11 +51,14 @@ export default function PipelineConsole() {
   } = useStepsPoller({ currentRunPath, previousRunPath });
 
   const isOnlyPlaceholderNode = stages.length === 1 && stages[0].placeholder;
-  const onlyQueuedPlaceholder =
-    isOnlyPlaceholderNode && stages[0].state === Result.queued;
-
+  const isBeforePipelineStart =
+    isOnlyPlaceholderNode &&
+    // We are waiting for the pipeline to start...
+    (stages[0].state === Result.queued ||
+      // Stopped early. We will never reach the actual pipeline start.
+      complete);
   const showSplitView =
-    loading || (!loading && stages.length > 0 && !onlyQueuedPlaceholder);
+    loading || (!loading && stages.length > 0 && !isBeforePipelineStart);
 
   const { canConfigure } = useUserPermissions();
 
@@ -113,6 +119,7 @@ export default function PipelineConsole() {
                 selectedStage={openStage || undefined}
                 stageViewPosition={stageViewPosition}
                 onStageSelect={handleStageSelect}
+                normalizedParentJobPath={normalizedParentJobPath}
               />
             ))}
 
@@ -156,6 +163,8 @@ export default function PipelineConsole() {
                   steps={openStageSteps}
                   stepBuffers={stepBuffers}
                   expandedSteps={expandedSteps}
+                  expandAllForStage={expandAllForStage}
+                  collapseAllForStage={collapseAllForStage}
                   onStepToggle={onStepToggle}
                   fetchLogText={fetchLogText}
                   fetchExceptionText={fetchExceptionText}
@@ -167,9 +176,15 @@ export default function PipelineConsole() {
         </SplitView>
       )}
 
-      {!loading && onlyQueuedPlaceholder && (
+      {!loading && isBeforePipelineStart && (
         <>
-          <StageDetails stage={stages[0]} />
+          <StageDetails
+            stage={stages[0]}
+            steps={openStageSteps}
+            expandedSteps={expandedSteps}
+            expandAllForStage={expandAllForStage}
+            collapseAllForStage={collapseAllForStage}
+          />
           <NoStageStepsFallback
             currentRunPath={currentRunPath}
             tailLogs={tailLogs}

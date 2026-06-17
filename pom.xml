@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>6.2153.vcf31911d10c4</version>
+    <version>6.2189.v695a_c41f5249</version>
     <relativePath />
   </parent>
 
@@ -35,8 +35,8 @@
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
     <jenkins.baseline>2.528</jenkins.baseline>
     <jenkins.version>2.534</jenkins.version>
-    <node.version>24.15.0</node.version>
-    <npm.version>11.13.0</npm.version>
+    <node.version>24.16.0</node.version>
+    <npm.version>11.17.0</npm.version>
     <spotless.check.skip>false</spotless.check.skip>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
   </properties>
@@ -47,7 +47,7 @@
         <!-- Pick up common dependencies for the selected LTS line: https://github.com/jenkinsci/bom#usage -->
         <groupId>io.jenkins.tools.bom</groupId>
         <artifactId>bom-${jenkins.baseline}.x</artifactId>
-        <version>6398.v1d26a_dd495e2</version>
+        <version>6585.va_085f4d47c41</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -92,6 +92,10 @@
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>pipeline-build-step</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>pipeline-input-step</artifactId>
       <!-- TODO https://github.com/jenkinsci/pipeline-input-step-plugin/pull/258 -->
       <version>557.v22b_f440f1a_f2</version>
@@ -115,7 +119,7 @@
     <dependency>
       <groupId>com.microsoft.playwright</groupId>
       <artifactId>playwright</artifactId>
-      <version>1.59.0</version>
+      <version>1.60.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -138,11 +142,6 @@
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>pipeline-build-step</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

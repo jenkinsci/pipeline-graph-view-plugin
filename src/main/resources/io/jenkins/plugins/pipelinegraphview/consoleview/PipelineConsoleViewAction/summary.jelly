@@ -5,6 +5,7 @@
     <!-- workaround floatingBox elements overlapping -->
     <div class="clearfix" />
     <div id="graph"
+         data-normalized-parent-job-path="${it.normalizedParentJobPath}"
          data-current-run-path="${rootURL + '/' + it.buildUrl}"
          data-previous-run-path="${it.previousBuildUrl != null ? rootURL + '/' + it.previousBuildUrl : null}" />
     <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/pipeline-graph-view-bundle.js" type="module"/>

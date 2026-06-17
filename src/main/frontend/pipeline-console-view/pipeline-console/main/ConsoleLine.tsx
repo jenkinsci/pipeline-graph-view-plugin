@@ -1,6 +1,7 @@
 import linkifyHtml from "linkify-html";
 import { memo } from "react";
 
+import { BuildStep } from "../../../common/RestClient.tsx";
 import { linkifyJsOptions } from "../../../common/utils/linkify-js.ts";
 import { makeReactChildren, tokenizeANSIString } from "./Ansi.tsx";
 
@@ -11,12 +12,22 @@ export interface ConsoleLineProps {
   stepId: string;
   startByte: number;
   currentRunPath: string;
+  buildStep?: BuildStep;
 }
 
 // Console output line
 export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
   const baseURL = `${props.currentRunPath}stages/?start-byte=${props.startByte}&selected-node=${props.stepId}`;
   const id = `log-${props.stepId}-${props.lineNumber}`;
+  let content = props.content;
+  const buildStep = props.buildStep;
+  if (buildStep) {
+    const classicUrl = buildStep.classicUrl;
+    const pipelineViewUrl = buildStep.pipelineViewUrl;
+    if (classicUrl && pipelineViewUrl) {
+      content = content.replace(classicUrl, pipelineViewUrl);
+    }
+  }
   return (
     <pre
       style={{ background: "none", border: "none" }}
@@ -45,7 +56,7 @@ export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
         </a>
         <div className="console-text">
           {makeReactChildren(
-            tokenizeANSIString(linkifyHtml(props.content, linkifyJsOptions)),
+            tokenizeANSIString(linkifyHtml(content, linkifyJsOptions)),
             id,
           )}
         </div>

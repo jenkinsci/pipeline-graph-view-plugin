@@ -27,6 +27,7 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -141,8 +142,14 @@ public class PipelineConsoleViewAction extends Tab {
         logger.debug("getConsoleText was passed node id '{}'.", nodeId);
         // This will be a step, so return its log output.
         AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
-        if (logText != null) {
-            logText.writeLogTo(0L, rsp.getOutputStream());
+        String exceptionText = getNodeExceptionText(nodeId);
+        if (logText != null || exceptionText != null) {
+            if (logText != null) {
+                logText.writeLogTo(0L, rsp.getOutputStream());
+            }
+            if (exceptionText != null) {
+                rsp.getOutputStream().write(exceptionText.getBytes(StandardCharsets.UTF_8));
+            }
             return;
         }
 
@@ -154,6 +161,14 @@ public class PipelineConsoleViewAction extends Tab {
             if (logText != null) {
                 foundLogs = true;
                 logText.writeLogTo(0L, rsp.getOutputStream());
+            }
+            exceptionText = getNodeExceptionText(step.id);
+            if (exceptionText != null) {
+                if (!exceptionText.endsWith("\n")) {
+                    exceptionText += "\n";
+                }
+                foundLogs = true;
+                rsp.getOutputStream().write(exceptionText.getBytes(StandardCharsets.UTF_8));
             }
         }
         if (!foundLogs) {
@@ -384,6 +399,14 @@ public class PipelineConsoleViewAction extends Tab {
 
     public String getNextBuildNumber() {
         return getBuildNumber(run.getNextBuild());
+    }
+
+    public String getNormalizedParentJobPath() {
+        boolean isMultiBranch =
+                run.getParent().getProperty("org.jenkinsci.plugins.workflow.multibranch.BranchJobProperty") != null;
+        return isMultiBranch
+                ? run.getParent().getParent().getUrl()
+                : run.getParent().getUrl();
     }
 
     @GET

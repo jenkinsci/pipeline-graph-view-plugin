@@ -451,6 +451,19 @@ export function useStepsPoller({
     [stopTailingLogs],
   );
 
+  const expandAllForStage = useCallback((steps: StepInfo[]) => {
+    setExpandedSteps((prev) => {
+      return Array.from(new Set(prev.concat(steps.map((step) => step.id))));
+    });
+  }, []);
+
+  const collapseAllForStage = useCallback((steps: StepInfo[]) => {
+    setExpandedSteps((prev) => {
+      const ids = new Set(steps.map((step) => step.id));
+      return prev.filter((id) => !ids.has(id));
+    });
+  }, []);
+
   const openStageSteps = useMemo(() => {
     return steps.filter((step) => step.stageId === openStageId);
   }, [steps, openStageId]);
@@ -471,6 +484,8 @@ export function useStepsPoller({
     scrollToTail,
     startTailingLogs,
     stopTailingLogs,
+    expandAllForStage,
+    collapseAllForStage,
   };
 }
 

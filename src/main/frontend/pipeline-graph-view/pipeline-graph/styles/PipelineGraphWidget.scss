@@ -123,12 +123,22 @@
 
 .PWGx-pipeline-connector-skipped {
   stroke: variables.$graph-connector-grey;
-  stroke-opacity: 0.25;
+  stroke-opacity: 0.75;
+  stroke-dasharray: 4 4;
 }
 
 .PWGx-pipeline-small-label {
   font-size: 0.75rem;
   transition: translate var(--standard-transition);
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+
+  .TruncatingLabel {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
 
   &--selected {
     translate: 0 2px;
@@ -139,10 +149,62 @@
   font-weight: var(--font-bold-weight);
   font-size: 0.8125rem;
   transition: translate var(--standard-transition);
-  -webkit-line-clamp: 1 !important;
+  text-align: center;
+
+  .TruncatingLabel {
+    -webkit-line-clamp: 1 !important;
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+  }
 
   &--selected {
     translate: 0 -2px;
+  }
+}
+
+.PWGx-pipeline-big-label-content {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+
+  .TruncatingLabel {
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+}
+
+.PWGx-pipeline-collapse-badge {
+  flex: 0 0 auto;
+  font-size: var(--font-size-xs);
+  font-weight: normal;
+  color: var(--text-color-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--standard-transition);
+
+  &:hover {
+    color: var(--text-color);
+  }
+}
+
+.PWGx-pipeline-collapse-chevron {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-left: 0.2rem;
+  vertical-align: baseline;
+  transform: rotate(0deg);
+  transition: transform var(--standard-transition);
+
+  &--expanded {
+    transform: rotate(90deg);
+  }
+
+  * {
+    stroke-width: 64px;
   }
 }
 
@@ -153,4 +215,5 @@
 .PWGx-pipeline-big-label.pgv-graph-node--skeleton {
   color: var(--text-color-secondary);
   font-weight: normal;
+  pointer-events: none;
 }

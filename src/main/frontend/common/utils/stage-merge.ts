@@ -1,4 +1,7 @@
-import { StageInfo } from "../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
+import {
+  Result,
+  StageInfo,
+} from "../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 
 export const mergeStageInfos = (
   skeletons: StageInfo[],
@@ -14,10 +17,9 @@ export const mergeStageInfos = (
       totalDurationMillis: incomingItem.totalDurationMillis,
       previousTotalDurationMillis: match?.totalDurationMillis,
       skeleton: false,
-      children: mergeStageInfos(
-        match?.children ?? [],
-        incomingItem.children ?? [],
-      ),
+      children: isCompletedStage(incomingItem)
+        ? incomingItem.children
+        : mergeStageInfos(match?.children ?? [], incomingItem.children ?? []),
     };
   });
 
@@ -46,6 +48,20 @@ export const mergeStageInfos = (
 
   return [...merged, ...futureSkeletons];
 };
+
+function isCompletedStage(stage: StageInfo): boolean {
+  switch (stage.state) {
+    case Result.success:
+    case Result.failure:
+    case Result.unstable:
+    case Result.aborted:
+    case Result.not_built:
+    case Result.skipped:
+      return true;
+    default:
+      return false;
+  }
+}
 
 const markSkeleton = (stages: StageInfo[]): StageInfo[] =>
   stages.map((s) => ({

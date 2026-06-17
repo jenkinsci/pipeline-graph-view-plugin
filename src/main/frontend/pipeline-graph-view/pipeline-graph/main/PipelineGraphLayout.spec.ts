@@ -2,11 +2,7 @@ import { describe, expect } from "vitest";
 
 import { DEFAULT_LOCALE } from "../../../common/i18n/index.ts";
 import { defaultMessages } from "../../../common/i18n/messages.ts";
-import {
-  CounterNodeInfo,
-  createNodeColumns,
-  layoutGraph,
-} from "./PipelineGraphLayout.ts";
+import { createNodeColumns, layoutGraph } from "./PipelineGraphLayout.ts";
 import {
   LayoutInfo,
   Result,
@@ -440,46 +436,41 @@ describe("PipelineGraphLayout", () => {
         );
 
       const counterFor = (graph: ReturnType<typeof callLayout>) => {
-        const counterColumn = graph.nodeColumns.find(
-          (column) => column.rows[0][0].key === "counter-node",
-        );
-        return counterColumn
-          ? (counterColumn.rows[0][0] as CounterNodeInfo)
-          : undefined;
+        return graph.nodes.find((node) => node.type === "counter");
       };
 
       it("uses the default threshold of 13 when no override is provided", () => {
         const graph = callLayout(25, true);
 
-        expect(graph.nodeColumns.length).toBe(16);
-        expect(counterFor(graph)?.stages.length).toBe(12);
+        expect(graph.nodes.length).toBe(15);
+        expect(counterFor(graph)?.stages.length).toBe(13);
       });
 
       it("respects an explicit lower maxColumns override", () => {
         const graph = callLayout(25, true, 5);
 
-        expect(graph.nodeColumns.length).toBe(8);
-        expect(counterFor(graph)?.stages.length).toBe(20);
+        expect(graph.nodes.length).toBe(7);
+        expect(counterFor(graph)?.stages.length).toBe(21);
       });
 
       it("respects an explicit higher maxColumns override", () => {
         const graph = callLayout(25, true, 20);
 
-        expect(graph.nodeColumns.length).toBe(23);
-        expect(counterFor(graph)?.stages.length).toBe(5);
+        expect(graph.nodes.length).toBe(22);
+        expect(counterFor(graph)?.stages.length).toBe(6);
       });
 
       it("omits the counter when maxColumns exceeds the stage count", () => {
         const graph = callLayout(25, true, 30);
 
-        expect(graph.nodeColumns.length).toBe(27);
+        expect(graph.nodes.length).toBe(27);
         expect(counterFor(graph)).toBeUndefined();
       });
 
       it("ignores maxColumns when collapsed is false", () => {
         const graph = callLayout(25, false, 5);
 
-        expect(graph.nodeColumns.length).toBe(27);
+        expect(graph.nodes.length).toBe(27);
         expect(counterFor(graph)).toBeUndefined();
       });
     });

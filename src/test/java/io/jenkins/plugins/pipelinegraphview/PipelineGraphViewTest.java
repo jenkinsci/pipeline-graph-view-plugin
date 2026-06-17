@@ -13,6 +13,7 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.test.steps.SemaphoreStep;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
@@ -22,6 +23,11 @@ class PipelineGraphViewTest {
     // Code generation can be generated against local using to give an idea of what commands to use
     // mvn exec:java -e -D exec.mainClass="com.microsoft.playwright.CLI" -Dexec.classpathScope=test -Dexec.args="codegen
     // http://localhost:8080/jenkins
+
+    @BeforeEach
+    void setUp(Page p) {
+        p.context().addInitScript("window.localStorage.setItem('nestedLayout', 'false')");
+    }
 
     @Test
     void smokeTest(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
@@ -41,7 +47,7 @@ class PipelineGraphViewTest {
                 .goTo()
                 .hasBuilds(1)
                 .nthBuild(0)
-                .hasStages(5, "Checkout", "Test", "A1", "A2", "Build")
+                .hasStages(4, "Checkout", "Test", "A1", "A2" /* counter */)
                 .goToBuild()
                 .hasStagesInGraph(4, /*A*/ "Checkout", "Test", /*B*/ "Build", "Parallel")
                 .goToPipelineOverview()

@@ -8,6 +8,9 @@ work
 # frontend build output
 src/main/webapp/js/bundles
 
+# frontend coverage output
+src/main/frontend/coverage
+
 # IntelliJ IDEA project files
 *.iml
 *.iws

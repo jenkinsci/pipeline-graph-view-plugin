@@ -32,6 +32,7 @@ class PipelineJsonWriterTest {
                 "Print Message",
                 "2",
                 null,
+                null,
                 new TimingInfo(0, 0, 1_700_000_000_000L),
                 Map.of());
         PipelineStep completed = new PipelineStep(
@@ -41,6 +42,7 @@ class PipelineJsonWriterTest {
                 "STEP",
                 "Shell Script",
                 "2",
+                null,
                 null,
                 new TimingInfo(1500, 0, 1_700_000_000_500L),
                 hiddenFlag);
@@ -52,14 +54,26 @@ class PipelineJsonWriterTest {
                 "",
                 "2",
                 new PipelineInputStep("Deploy to prod?", "Cancel", "input-1", "Proceed", true),
+                null,
+                new TimingInfo(0, 200, 1_700_000_001_000L),
+                Map.of());
+        PipelineStep withBuild = new PipelineStep(
+                "5",
+                "build 'example'",
+                PipelineState.UNKNOWN,
+                "STEP",
+                "",
+                "2",
+                null,
+                new PipelineBuildStep("job/example/1/", "job/example/1/stages", "example #1"),
                 new TimingInfo(0, 200, 1_700_000_001_000L),
                 Map.of());
 
-        JSONObject json = serialize(new PipelineStepList(List.of(running, completed, withInput), false));
+        JSONObject json = serialize(new PipelineStepList(List.of(running, completed, withInput, withBuild), false));
         assertThat(json.getBoolean("runIsComplete"), is(false));
 
         JSONArray steps = json.getJSONArray("steps");
-        assertThat(steps.size(), is(3));
+        assertThat(steps.size(), is(4));
 
         JSONObject first = steps.getJSONObject(0);
         assertThat(first.getString("id"), is("3"));
@@ -79,6 +93,12 @@ class PipelineJsonWriterTest {
         JSONObject input = third.getJSONObject("inputStep");
         assertThat(input.getString("message"), is("Deploy to prod?"));
         assertThat(input.getBoolean("parameters"), is(true));
+
+        JSONObject fourth = steps.getJSONObject(3);
+        JSONObject build = fourth.getJSONObject("buildStep");
+        assertThat(build.getString("classicUrl"), is("job/example/1/"));
+        assertThat(build.getString("pipelineViewUrl"), is("job/example/1/stages"));
+        assertThat(build.getString("displayName"), is("example #1"));
     }
 
     @Test

@@ -96,6 +96,12 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
         return target.getUrl();
     }
 
+    public String getNormalizedParentJobPath() {
+        boolean isMultiBranch =
+                target.getProperty("org.jenkinsci.plugins.workflow.multibranch.BranchJobProperty") != null;
+        return isMultiBranch ? target.getParent().getUrl() : target.getUrl();
+    }
+
     @Override
     public String getIconFileName() {
         return null;

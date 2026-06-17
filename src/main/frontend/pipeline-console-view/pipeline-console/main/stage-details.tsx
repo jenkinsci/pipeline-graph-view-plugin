@@ -1,13 +1,19 @@
 import "./stage-details.scss";
 
-import Dropdown from "../../../common/components/dropdown.tsx";
-import Filter from "../../../common/components/filter.tsx";
+import { useState } from "react";
+
+import { DynamicDropdown } from "../../../common/components/dropdown.tsx";
 import {
   resultToColor,
   StageStatusIcon,
 } from "../../../common/components/status-icon.tsx";
-import { DOCUMENT } from "../../../common/components/symbols.tsx";
+import {
+  COLLAPSE,
+  DOCUMENT,
+  EXPAND,
+} from "../../../common/components/symbols.tsx";
 import Tooltip from "../../../common/components/tooltip.tsx";
+import { StepInfo } from "../../../common/RestClient.tsx";
 import LiveTotal from "../../../common/utils/live-total.tsx";
 import { exact, Paused, Started } from "../../../common/utils/timings.tsx";
 import {
@@ -16,7 +22,14 @@ import {
 } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import StageNodeLink from "./StageNodeLink.tsx";
 
-export default function StageDetails({ stage }: StageDetailsProps) {
+export default function StageDetails({
+  stage,
+  steps,
+  expandedSteps,
+  expandAllForStage,
+  collapseAllForStage,
+}: StageDetailsProps) {
+  const [dropdownVisible, setDropdownVisible] = useState(false);
   if (!stage) {
     return null;
   }
@@ -136,10 +149,9 @@ export default function StageDetails({ stage }: StageDetailsProps) {
         )}
         <StageNodeLink agent={stage.agent} />
         <li>
-          <Filter />
-        </li>
-        <li>
-          <Dropdown
+          <DynamicDropdown
+            visible={dropdownVisible}
+            setVisible={setDropdownVisible}
             className={"jenkins-button--tertiary"}
             disabled={stage.synthetic && !stage.placeholder}
             items={[
@@ -174,6 +186,40 @@ export default function StageDetails({ stage }: StageDetailsProps) {
                 href: `log?nodeId=${stage.id}`,
                 download: `${stage.name}.txt`,
               },
+              <button
+                key="expand-all-steps"
+                className={"jenkins-dropdown__item"}
+                disabled={!steps.some((s) => !expandedSteps.includes(s.id))}
+                onClick={() => {
+                  expandAllForStage(steps);
+                  setDropdownVisible(false);
+                }}
+              >
+                <div
+                  className="jenkins-dropdown__item__icon"
+                  style={{ rotate: "90deg" }}
+                >
+                  {EXPAND}
+                </div>
+                Expand all steps
+              </button>,
+              <button
+                key="collapse-all-steps"
+                className={"jenkins-dropdown__item"}
+                disabled={!steps.some((s) => expandedSteps.includes(s.id))}
+                onClick={() => {
+                  collapseAllForStage(steps);
+                  setDropdownVisible(false);
+                }}
+              >
+                <div
+                  className="jenkins-dropdown__item__icon"
+                  style={{ rotate: "90deg" }}
+                >
+                  {COLLAPSE}
+                </div>
+                Collapse all steps
+              </button>,
             ]}
           />
         </li>
@@ -184,4 +230,8 @@ export default function StageDetails({ stage }: StageDetailsProps) {
 
 interface StageDetailsProps {
   stage: StageInfo | null;
+  steps: Array<StepInfo>;
+  expandedSteps: string[];
+  expandAllForStage: (steps: StepInfo[]) => void;
+  collapseAllForStage: (steps: StepInfo[]) => void;
 }

@@ -1,4 +1,5 @@
 import {
+  CSSProperties,
   useCallback,
   useContext,
   useEffect,
@@ -11,12 +12,20 @@ import { Context as TransformContext } from "react-zoom-pan-pinch";
 
 import { I18NContext } from "../../../common/i18n/index.ts";
 import { useUserPreferences } from "../../../common/user/user-preferences-provider.tsx";
+import { nestedGraphLayout } from "./NestedPipelineGraphLayout.ts";
 import {
   DEFAULT_MAX_COLUMNS_WHEN_COLLAPSED,
   layoutGraph,
 } from "./PipelineGraphLayout";
-import { defaultLayout, LayoutInfo, StageInfo } from "./PipelineGraphModel.tsx";
+import {
+  debugPipelineGraph,
+  defaultLayout,
+  LayoutInfo,
+  nestedLayout,
+  StageInfo,
+} from "./PipelineGraphModel.tsx";
 import { GraphConnections } from "./support/connections.tsx";
+import { DebugOutline } from "./support/DebugOutline.tsx";
 import {
   BigLabel,
   SequentialContainerLabel,
@@ -42,6 +51,10 @@ export function PipelineGraph({
   selectedStage,
   collapsed,
   onStageSelect,
+  collapsedStageIds,
+  onToggleCollapse,
+  setMinScale,
+  setInitialScale,
 }: Props) {
   const fullLayout = useMemo(() => {
     return {
@@ -64,9 +77,14 @@ export function PipelineGraph({
 
     const apply = (width: number) => {
       if (width <= 0) return;
+      const reservedSpace =
+        fullLayout.nodeSpacingH / 2 + // before start
+        fullLayout.nodeSpacingH * 0.7 + // start node with reduced spacing
+        -fullLayout.nodeSpacingH * 0.3 + // reduced spacing to end node
+        fullLayout.nodeSpacingH / 2; // after end;
       const next = Math.max(
         MIN_COLUMNS_WHEN_COLLAPSED,
-        Math.floor(width / fullLayout.nodeSpacingH) - 2,
+        Math.floor((width - reservedSpace) / fullLayout.nodeSpacingH),
       );
       setMaxColumnsWhenCollapsed((prev) => (prev === next ? prev : next));
     };
@@ -83,7 +101,8 @@ export function PipelineGraph({
   }, [collapsed, fullLayout.nodeSpacingH]);
 
   const {
-    nodeColumns,
+    nodes,
+    allNodes,
     connections,
     bigLabels,
     timings,
@@ -91,27 +110,36 @@ export function PipelineGraph({
     branchLabels,
     measuredWidth,
     measuredHeight,
-  } = useMemo(
-    () =>
-      layoutGraph(
+  } = useMemo(() => {
+    if (nestedLayout()) {
+      return nestedGraphLayout(
         stages,
         fullLayout,
         collapsed ?? false,
         messages,
-        showNames,
+        showNames || !collapsed,
         showDurations,
         maxColumnsWhenCollapsed,
-      ),
-    [
+      );
+    }
+    return layoutGraph(
       stages,
       fullLayout,
-      collapsed,
+      collapsed ?? false,
       messages,
       showNames,
       showDurations,
       maxColumnsWhenCollapsed,
-    ],
-  );
+    );
+  }, [
+    stages,
+    fullLayout,
+    collapsed,
+    messages,
+    showNames,
+    showDurations,
+    maxColumnsWhenCollapsed,
+  ]);
 
   const stageIsSelected = useCallback(
     (stage?: StageInfo): boolean => {
@@ -120,15 +148,50 @@ export function PipelineGraph({
     [selectedStage],
   );
 
-  const nodes = useMemo(
-    () => nodeColumns.flatMap((column) => column.rows.flatMap((row) => row)),
-    [nodeColumns],
-  );
+  const transform = useContext(TransformContext);
+  const [transformWidth, setTransformWidth] = useState<number>(0);
+  useEffect(() => {
+    if (!transform?.wrapperComponent) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setTransformWidth(entry.contentRect.width);
+      }
+    });
+    observer.observe(transform.wrapperComponent);
+    return () => observer.disconnect();
+  }, [transform?.wrapperComponent]);
+
+  const [fitToWidth, setFitToWidth] = useState(true);
+  useEffect(() => {
+    if (!setMinScale || !setInitialScale || !transform) return;
+    const initialScale = Math.min(1, transformWidth / measuredWidth);
+    const minScale = initialScale * 0.75;
+    setMinScale(minScale);
+    setInitialScale(initialScale);
+    if (fitToWidth) {
+      // Don't scale too small by default.
+      const autoScale = Math.max(initialScale, 0.5);
+      const centerOffset = Math.max(0, (transformWidth - measuredWidth) / 2);
+      if (
+        transform.state.scale !== autoScale ||
+        transform.state.positionX !== centerOffset
+      ) {
+        transform.setState(autoScale, centerOffset, 0);
+      }
+      return transform.onChange(() => setFitToWidth(false));
+    }
+  }, [
+    transform,
+    transformWidth,
+    fitToWidth,
+    measuredWidth,
+    setMinScale,
+    setInitialScale,
+  ]);
 
   // When inside a TransformWrapper, only mount the nodes/labels intersecting
   // the visible region. Mounting thousands of absolute-positioned divs forces
   // a synchronous layout flush that blocks the main thread for seconds.
-  const transform = useContext(TransformContext);
   const virtualize = transform != null;
   const [viewport, setViewport] = useState<Viewport | null>(null);
   const cachedViewport = useRef<Viewport | null>(null);
@@ -227,10 +290,13 @@ export function PipelineGraph({
     [branchLabels, isInViewport],
   );
 
-  const outerDivStyle = {
-    position: "relative" as const,
-    overflow: "visible" as const,
+  const outerDivStyle: CSSProperties = {
+    position: "relative",
+    overflow: "visible",
   };
+  if (debugPipelineGraph()) {
+    outerDivStyle.border = "1px dashed red";
+  }
 
   return (
     <div ref={containerRef} className="PWGx-PipelineGraph-container">
@@ -240,9 +306,14 @@ export function PipelineGraph({
 
           <SelectionHighlight
             layout={fullLayout}
-            nodeColumns={nodeColumns}
+            nodes={nodes}
             isStageSelected={stageIsSelected}
           />
+
+          {debugPipelineGraph() &&
+            allNodes.map((node) => (
+              <DebugOutline node={node} layout={fullLayout} key={node.id} />
+            ))}
         </svg>
 
         {visibleNodes.map((node) => (
@@ -264,6 +335,10 @@ export function PipelineGraph({
             layout={fullLayout}
             measuredHeight={measuredHeight}
             isSelected={selectedStage?.id === label.stage?.id}
+            isCollapsed={
+              label.stage ? collapsedStageIds.has(label.stage.id) : false
+            }
+            onToggleCollapse={onToggleCollapse}
           />
         ))}
 
@@ -283,6 +358,10 @@ export function PipelineGraph({
             details={label}
             layout={fullLayout}
             isSelected={selectedStage?.id === label.stage?.id}
+            isCollapsed={
+              label.stage ? collapsedStageIds.has(label.stage.id) : false
+            }
+            onToggleCollapse={onToggleCollapse}
           />
         ))}
 
@@ -291,6 +370,10 @@ export function PipelineGraph({
             key={label.key}
             details={label}
             layout={fullLayout}
+            isCollapsed={
+              label.stage ? collapsedStageIds.has(label.stage.id) : false
+            }
+            onToggleCollapse={onToggleCollapse}
           />
         ))}
       </div>
@@ -304,4 +387,8 @@ interface Props {
   selectedStage?: StageInfo;
   collapsed?: boolean;
   onStageSelect?: (nodeId: string) => void;
+  collapsedStageIds: Set<number>;
+  onToggleCollapse: (stageId: number) => void;
+  setMinScale?: (value: number) => void;
+  setInitialScale?: (value: number) => void;
 }

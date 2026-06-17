@@ -5,6 +5,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.Action;
 import hudson.model.Result;
+import hudson.model.Run;
 import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import io.jenkins.plugins.pipelinegraphview.steps.HideFromViewStep;
@@ -88,6 +89,7 @@ public class FlowNodeWrapper {
     public final NodeType type;
     private final String displayName;
     private final InputStep inputStep;
+    private final Run<?, ?> downstreamBuildRun;
     private final WorkflowRun run;
     private String causeOfFailure;
 
@@ -101,7 +103,7 @@ public class FlowNodeWrapper {
             @NonNull NodeRunStatus status,
             @NonNull TimingInfo timingInfo,
             @NonNull WorkflowRun run) {
-        this(node, status, timingInfo, null, run, null);
+        this(node, status, timingInfo, null, null, run, null);
     }
 
     public FlowNodeWrapper(
@@ -110,7 +112,17 @@ public class FlowNodeWrapper {
             @NonNull TimingInfo timingInfo,
             @Nullable InputStep inputStep,
             @NonNull WorkflowRun run) {
-        this(node, status, timingInfo, inputStep, run, null);
+        this(node, status, timingInfo, inputStep, null, run, null);
+    }
+
+    public FlowNodeWrapper(
+            @NonNull FlowNode node,
+            @NonNull NodeRunStatus status,
+            @NonNull TimingInfo timingInfo,
+            @Nullable InputStep inputStep,
+            @Nullable Run<?, ?> downstreamBuildRun,
+            @NonNull WorkflowRun run) {
+        this(node, status, timingInfo, inputStep, downstreamBuildRun, run, null);
     }
 
     public FlowNodeWrapper(
@@ -120,12 +132,24 @@ public class FlowNodeWrapper {
             @Nullable InputStep inputStep,
             @NonNull WorkflowRun run,
             @Nullable NodeType type) {
+        this(node, status, timingInfo, inputStep, null, run, type);
+    }
+
+    public FlowNodeWrapper(
+            @NonNull FlowNode node,
+            @NonNull NodeRunStatus status,
+            @NonNull TimingInfo timingInfo,
+            @Nullable InputStep inputStep,
+            @Nullable Run<?, ?> downstreamBuildRun,
+            @NonNull WorkflowRun run,
+            @Nullable NodeType type) {
         this.node = node;
         this.status = status;
         this.timingInfo = timingInfo;
         this.type = type == null ? getNodeType(node) : type;
         this.displayName = PipelineNodeUtil.getDisplayName(node);
         this.inputStep = inputStep;
+        this.downstreamBuildRun = downstreamBuildRun;
         this.run = run;
     }
 
@@ -291,6 +315,10 @@ public class FlowNodeWrapper {
 
     public @CheckForNull InputStep getInputStep() {
         return inputStep;
+    }
+
+    public @CheckForNull Run<?, ?> getDownstreamBuildRun() {
+        return downstreamBuildRun;
     }
 
     @Override

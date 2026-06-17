@@ -13,6 +13,7 @@ export default function App() {
   const rootElement = document.getElementById("graph");
   const currentRunPath = rootElement?.dataset.currentRunPath!;
   const previousRunPath = rootElement?.dataset.previousRunPath;
+  const normalizedParentJobPath = rootElement?.dataset.normalizedParentJobPath!;
   const { run, loading } = useRunPoller({
     currentRunPath,
     previousRunPath,
@@ -70,6 +71,7 @@ export default function App() {
           stages={run.stages}
           stageViewPosition={StageViewPosition.TOP}
           onRunPage
+          normalizedParentJobPath={normalizedParentJobPath}
         />
       )}
     </UserPreferencesProvider>

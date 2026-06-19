@@ -35,6 +35,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.Tab;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.pipeline.modeldefinition.actions.RestartDeclarativePipelineAction;
+import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
 import org.jenkinsci.plugins.workflow.cps.replay.ReplayAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
@@ -368,6 +369,67 @@ public class PipelineConsoleViewAction extends Tab {
         String message =
                 Result.ABORTED.equals(run.getResult()) ? Messages.run_alreadyCancelled() : Messages.run_isFinished();
         return HttpResponses.errorJSON(message);
+    }
+
+    /**
+     * Handles the pause/resume request.
+     */
+    @RequirePOST
+    @JavaScriptMethod
+    public HttpResponse doPause() {
+        run.checkPermission(getCancelPermission());
+
+        FlowExecution execution = run.getExecution();
+        if (execution == null) {
+            return HttpResponses.errorJSON("No execution found");
+        }
+
+        if (!run.isBuilding()) {
+            return HttpResponses.errorJSON(Messages.run_isFinished());
+        }
+
+        // Pause/resume is specific to CpsFlowExecution
+        if (execution instanceof CpsFlowExecution) {
+            CpsFlowExecution cpsExecution = (CpsFlowExecution) execution;
+
+            try {
+                boolean currentlyPaused = cpsExecution.isPaused();
+                cpsExecution.pause(!currentlyPaused);
+
+                JSONObject obj = new JSONObject();
+                obj.put("paused", !currentlyPaused);
+                return HttpResponses.okJSON(obj);
+            } catch (IOException e) {
+                String pauseFailedMessage = Messages.run_pauseFailed();
+                logger.error(pauseFailedMessage, e);
+                return HttpResponses.errorJSON(pauseFailedMessage + ": " + e.getMessage());
+            }
+        }
+
+        return HttpResponses.errorJSON(Messages.run_noPauseSupport());
+    }
+
+    /**
+     * Returns the current pause state of the pipeline.
+     */
+    @GET
+    @WebMethod(name = "pauseState")
+    public HttpResponse getPauseState(StaplerRequest2 req, StaplerResponse2 rsp) {
+        run.checkPermission(Item.READ);
+
+        FlowExecution execution = run.getExecution();
+        JSONObject obj = new JSONObject();
+
+        if (execution instanceof CpsFlowExecution) {
+            CpsFlowExecution cpsExecution = (CpsFlowExecution) execution;
+            obj.put("paused", cpsExecution.isPaused());
+            obj.put("building", run.isBuilding());
+        } else {
+            obj.put("paused", false);
+            obj.put("building", run.isBuilding());
+        }
+
+        return HttpResponses.okJSON(obj);
     }
 
     public String getFullProjectDisplayName() {

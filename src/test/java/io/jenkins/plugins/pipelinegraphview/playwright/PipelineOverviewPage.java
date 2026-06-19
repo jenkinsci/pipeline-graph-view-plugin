@@ -167,6 +167,22 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
         return this;
     }
 
+    public PipelineOverviewPage pause() {
+        Locator pauseButton = page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Pause"));
+        pauseButton.click();
+        // Wait for button to be hidden after pause
+        assertThat(pauseButton).isHidden();
+        return this;
+    }
+
+    public PipelineOverviewPage resume() {
+        Locator resumeButton = page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Resume"));
+        resumeButton.click();
+        // Wait for button to be hidden after resume
+        assertThat(resumeButton).isHidden();
+        return this;
+    }
+
     public PipelineOverviewPage rerun() {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Rerun"))
                 .click();

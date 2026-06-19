@@ -372,7 +372,7 @@ public class PipelineConsoleViewAction extends Tab {
     }
 
     /**
-     * Handles the pause/resume request.
+     * Handles the pause request.
      */
     @RequirePOST
     @JavaScriptMethod
@@ -388,21 +388,51 @@ public class PipelineConsoleViewAction extends Tab {
             return HttpResponses.errorJSON(Messages.run_isFinished());
         }
 
-        // Pause/resume is specific to CpsFlowExecution
+        // Pause is specific to CpsFlowExecution
         if (execution instanceof CpsFlowExecution) {
             CpsFlowExecution cpsExecution = (CpsFlowExecution) execution;
 
             try {
-                boolean currentlyPaused = cpsExecution.isPaused();
-                cpsExecution.pause(!currentlyPaused);
-
-                JSONObject obj = new JSONObject();
-                obj.put("paused", !currentlyPaused);
-                return HttpResponses.okJSON(obj);
+                cpsExecution.pause(true);
+                return HttpResponses.okJSON();
             } catch (IOException e) {
                 String pauseFailedMessage = Messages.run_pauseFailed();
                 logger.error(pauseFailedMessage, e);
                 return HttpResponses.errorJSON(pauseFailedMessage + ": " + e.getMessage());
+            }
+        }
+
+        return HttpResponses.errorJSON(Messages.run_noPauseSupport());
+    }
+
+    /**
+     * Handles the resume request.
+     */
+    @RequirePOST
+    @JavaScriptMethod
+    public HttpResponse doResume() {
+        run.checkPermission(getCancelPermission());
+
+        FlowExecution execution = run.getExecution();
+        if (execution == null) {
+            return HttpResponses.errorJSON("No execution found");
+        }
+
+        if (!run.isBuilding()) {
+            return HttpResponses.errorJSON(Messages.run_isFinished());
+        }
+
+        // Resume is specific to CpsFlowExecution
+        if (execution instanceof CpsFlowExecution) {
+            CpsFlowExecution cpsExecution = (CpsFlowExecution) execution;
+
+            try {
+                cpsExecution.pause(false);
+                return HttpResponses.okJSON();
+            } catch (IOException e) {
+                String resumeFailedMessage = Messages.run_resumeFailed();
+                logger.error(resumeFailedMessage, e);
+                return HttpResponses.errorJSON(resumeFailedMessage + ": " + e.getMessage());
             }
         }
 

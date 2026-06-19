@@ -106,3 +106,78 @@ if (cancelButton) {
   }
   setTimeout(updateCancelButton, 5000);
 }
+
+const pauseButton = document.getElementById("pgv-pause");
+const resumeButton = document.getElementById("pgv-resume");
+
+if (pauseButton && resumeButton) {
+  // Initial state fetch
+  updatePauseResumeButtons();
+
+  pauseButton.addEventListener("click", (event) => {
+    event.preventDefault();
+
+    const pauseAction = window[`${pauseButton.dataset.proxyName}`];
+    pauseAction.doPause(function (response) {
+      const result = response.responseJSON;
+      if (result.status === "ok") {
+        notificationBar.show(pauseButton.dataset.successMessage);
+        // Hide pause button, show resume button
+        pauseButton.style.display = "none";
+        resumeButton.style.display = "";
+      } else {
+        notificationBar.show(result.message, notificationBar.WARNING);
+      }
+    });
+  });
+
+  resumeButton.addEventListener("click", (event) => {
+    event.preventDefault();
+
+    const resumeAction = window[`${resumeButton.dataset.proxyName}`];
+    resumeAction.doResume(function (response) {
+      const result = response.responseJSON;
+      if (result.status === "ok") {
+        notificationBar.show(resumeButton.dataset.successMessage);
+        // Hide resume button, show pause button
+        resumeButton.style.display = "none";
+        pauseButton.style.display = "";
+      } else {
+        notificationBar.show(result.message, notificationBar.WARNING);
+      }
+    });
+  });
+
+  function updatePauseResumeButtons() {
+    fetch("pauseState")
+      .then((rsp) => rsp.json())
+      .then((result) => {
+        if (result.status === "ok") {
+          const isPaused = result.data.paused;
+          const isBuilding = result.data.building;
+
+          if (isBuilding) {
+            if (isPaused) {
+              // Show resume button, hide pause button
+              pauseButton.style.display = "none";
+              resumeButton.style.display = "";
+            } else {
+              // Show pause button, hide resume button
+              pauseButton.style.display = "";
+              resumeButton.style.display = "none";
+            }
+          } else {
+            // Hide both buttons when build is finished
+            pauseButton.style.display = "none";
+            resumeButton.style.display = "none";
+          }
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching pause state:", error);
+      });
+  }
+
+  // Poll pause state every 5 seconds (same interval as cancel button polling)
+  setInterval(updatePauseResumeButtons, 5000);
+}

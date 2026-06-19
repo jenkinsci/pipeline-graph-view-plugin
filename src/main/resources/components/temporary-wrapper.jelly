@@ -22,6 +22,27 @@
                     <j:set var="controls">
                         <j:if test="${it.buildInProgress}">
                             <l:hasPermission permission="${it.cancelPermission}">
+                                <j:set var="pauseProxyId" value="${h.generateId()}" />
+                                <st:bind value="${it}" var="pauseAction${pauseProxyId}"/>
+                                <button id="pgv-pause"
+                                        data-success-message="${%Build paused}"
+                                        data-proxy-name="pauseAction${pauseProxyId}"
+                                        class="jenkins-button jenkins-!-skipped-color">
+                                    <l:icon src="symbol-pause-circle-outline plugin-ionicons-api"/>
+                                    ${%Pause}
+                                </button>
+
+                                <j:set var="resumeProxyId" value="${h.generateId()}" />
+                                <st:bind value="${it}" var="resumeAction${resumeProxyId}"/>
+                                <button id="pgv-resume"
+                                        data-success-message="${%Build resumed}"
+                                        data-proxy-name="resumeAction${resumeProxyId}"
+                                        class="jenkins-button jenkins-!-accent-color"
+                                        style="display: none;">
+                                    <l:icon src="symbol-play-circle-outline plugin-ionicons-api"/>
+                                    ${%Resume}
+                                </button>
+
                                 <j:set var="proxyId" value="${h.generateId()}" />
                                 <st:bind value="${it}" var="cancelAction${proxyId}"/>
                                 <button id="pgv-cancel" data-confirm="${%Confirm(it.buildFullDisplayName)}"

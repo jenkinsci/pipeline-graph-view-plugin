@@ -172,6 +172,7 @@ if (pauseButton && resumeButton) {
             resumeButton.style.display = "none";
           }
         }
+        return null;
       })
       .catch((error) => {
         console.error("Error fetching pause state:", error);

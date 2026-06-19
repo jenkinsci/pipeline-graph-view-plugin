@@ -95,7 +95,13 @@ if (cancelButton) {
           if (isBuilding === "true") {
             setTimeout(updateCancelButton, 5000);
           } else {
-            cancelButton.style.display = "none";
+            // Hide the entire split-button when build finishes
+            const splitButton = cancelButton.closest(".jenkins-split-button");
+            if (splitButton) {
+              splitButton.style.display = "none";
+            } else {
+              cancelButton.style.display = "none";
+            }
           }
         }
         return null;
@@ -107,78 +113,100 @@ if (cancelButton) {
   setTimeout(updateCancelButton, 5000);
 }
 
-const pauseButton = document.getElementById("pgv-pause");
-const resumeButton = document.getElementById("pgv-resume");
+// Use event delegation for pause/resume dropdown items
+document.addEventListener("click", function (event) {
+  const target = event.target.closest("#pgv-pause, #pgv-resume");
+  if (!target) return;
 
-if (pauseButton && resumeButton) {
-  // Initial state fetch
-  updatePauseResumeButtons();
+  event.preventDefault();
 
-  pauseButton.addEventListener("click", (event) => {
-    event.preventDefault();
+  const proxyName = target.dataset.proxyName;
+  if (!proxyName) return;
 
-    const pauseAction = window[`${pauseButton.dataset.proxyName}`];
-    pauseAction.doPause(function (response) {
-      const result = response.responseJSON;
-      if (result.status === "ok") {
-        notificationBar.show(pauseButton.dataset.successMessage);
-        // Hide pause button, show resume button
-        pauseButton.style.display = "none";
-        resumeButton.style.display = "";
-      } else {
-        notificationBar.show(result.message, notificationBar.WARNING);
-      }
-    });
-  });
-
-  resumeButton.addEventListener("click", (event) => {
-    event.preventDefault();
-
-    const resumeAction = window[`${resumeButton.dataset.proxyName}`];
-    resumeAction.doResume(function (response) {
-      const result = response.responseJSON;
-      if (result.status === "ok") {
-        notificationBar.show(resumeButton.dataset.successMessage);
-        // Hide resume button, show pause button
-        resumeButton.style.display = "none";
-        pauseButton.style.display = "";
-      } else {
-        notificationBar.show(result.message, notificationBar.WARNING);
-      }
-    });
-  });
-
-  function updatePauseResumeButtons() {
-    fetch("pauseState")
-      .then((rsp) => rsp.json())
-      .then((result) => {
-        if (result.status === "ok") {
-          const isPaused = result.data.paused;
-          const isBuilding = result.data.building;
-
-          if (isBuilding) {
-            if (isPaused) {
-              // Show resume button, hide pause button
-              pauseButton.style.display = "none";
-              resumeButton.style.display = "";
-            } else {
-              // Show pause button, hide resume button
-              pauseButton.style.display = "";
-              resumeButton.style.display = "none";
-            }
-          } else {
-            // Hide both buttons when build is finished
-            pauseButton.style.display = "none";
-            resumeButton.style.display = "none";
-          }
-        }
-        return null;
-      })
-      .catch((error) => {
-        console.error("Error fetching pause state:", error);
-      });
+  const actionProxy = window[proxyName];
+  if (!actionProxy) {
+    console.error("Failed to execute action: proxy not found");
+    return;
   }
 
-  // Poll pause state every 5 seconds (same interval as cancel button polling)
-  setInterval(updatePauseResumeButtons, 5000);
+  if (target.id === "pgv-pause") {
+    if (typeof actionProxy.doPause !== "function") {
+      console.error("Failed to pause: method not found");
+      return;
+    }
+
+    actionProxy.doPause(function (response) {
+      const result = response.responseJSON;
+      if (result.status === "ok") {
+        notificationBar.show(target.dataset.successMessage);
+        // Hide pause, show resume
+        const pauseItem = document.getElementById("pgv-pause");
+        const resumeItem = document.getElementById("pgv-resume");
+        if (pauseItem) pauseItem.style.display = "none";
+        if (resumeItem) resumeItem.style.display = "";
+      } else {
+        notificationBar.show(result.message, notificationBar.WARNING);
+      }
+    });
+  } else if (target.id === "pgv-resume") {
+    if (typeof actionProxy.doResume !== "function") {
+      console.error("Failed to resume: method not found");
+      return;
+    }
+
+    actionProxy.doResume(function (response) {
+      const result = response.responseJSON;
+      if (result.status === "ok") {
+        notificationBar.show(target.dataset.successMessage);
+        // Hide resume, show pause
+        const pauseItem = document.getElementById("pgv-pause");
+        const resumeItem = document.getElementById("pgv-resume");
+        if (resumeItem) resumeItem.style.display = "none";
+        if (pauseItem) pauseItem.style.display = "";
+      } else {
+        notificationBar.show(result.message, notificationBar.WARNING);
+      }
+    });
+  }
+});
+
+// Poll pause state every 5 seconds to update visibility
+function updatePauseResumeMenuItems() {
+  const pauseMenuItem = document.getElementById("pgv-pause");
+  const resumeMenuItem = document.getElementById("pgv-resume");
+
+  if (!pauseMenuItem || !resumeMenuItem) {
+    return; // Elements not in DOM yet
+  }
+
+  fetch("pauseState")
+    .then((rsp) => rsp.json())
+    .then((result) => {
+      if (result.status === "ok") {
+        const isPaused = result.data.paused;
+        const isBuilding = result.data.building;
+
+        if (isBuilding) {
+          if (isPaused) {
+            pauseMenuItem.style.display = "none";
+            resumeMenuItem.style.display = "";
+          } else {
+            pauseMenuItem.style.display = "";
+            resumeMenuItem.style.display = "none";
+          }
+        } else {
+          pauseMenuItem.style.display = "none";
+          resumeMenuItem.style.display = "none";
+        }
+      }
+      return null;
+    })
+    .catch((error) => {
+      console.error("Error fetching pause state:", error);
+    });
 }
+
+// Start polling
+setInterval(updatePauseResumeMenuItems, 5000);
+// Initial update
+setTimeout(updatePauseResumeMenuItems, 500);

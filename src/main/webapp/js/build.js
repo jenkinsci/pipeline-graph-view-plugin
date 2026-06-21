@@ -170,13 +170,10 @@ document.addEventListener("click", function (event) {
   }
 });
 
-function updatePauseResumeMenuItems() {
+function updatePauseElements() {
+  const pausedBanner = document.getElementById("pgv-paused-banner");
   const pauseMenuItem = document.getElementById("pgv-pause");
   const resumeMenuItem = document.getElementById("pgv-resume");
-
-  if (!pauseMenuItem || !resumeMenuItem) {
-    return; // Elements not in DOM yet
-  }
 
   fetch("pauseState")
     .then((rsp) => {
@@ -194,15 +191,31 @@ function updatePauseResumeMenuItems() {
 
         if (isBuilding) {
           if (isPaused) {
-            pauseMenuItem.style.display = "none";
-            resumeMenuItem.style.display = "";
+            pausedBanner.style.display = "";
+            if (pauseMenuItem) {
+              pauseMenuItem.style.display = "none";
+            }
+            if (resumeMenuItem) {
+              resumeMenuItem.style.display = "";
+            }
           } else {
-            pauseMenuItem.style.display = "";
-            resumeMenuItem.style.display = "none";
+            pausedBanner.style.display = "none";
+            if (pauseMenuItem) {
+              pauseMenuItem.style.display = "";
+            }
+            if (resumeMenuItem) {
+              resumeMenuItem.style.display = "none";
+            }
           }
-          // Poll pause state again in 1s
-          setTimeout(updatePauseResumeMenuItems(), 1000);
+          
+          let updateInterval = 5000;
+          // update more frequently when the pause/resume menu items are visible
+          if (pauseMenuItem || resumeMenuItem) {
+            updateInterval = 1000;
+          }
+          setTimeout(updatePauseElements(), updateInterval);
         } else {
+          pausedBanner.style.display = "none";
           pauseMenuItem.style.display = "none";
           resumeMenuItem.style.display = "none";
         }
@@ -214,23 +227,4 @@ function updatePauseResumeMenuItems() {
     });
 }
 
-const cancelSplitButton = document.getElementById("pgv-cancel-split-button");
-if (cancelSplitButton) {
-  // Create an observer to watch for DOM additions under the cancel split button
-  new MutationObserver((mutationsList, observer) => {
-    for (const mutation of mutationsList) {
-      if (mutation.type === "childList") {
-        // Check if pause/resume menu items were added to the DOM
-        const pauseMenuItem = document.getElementById("pgv-pause");
-        const resumeMenuItem = document.getElementById("pgv-resume");
-        if (pauseMenuItem || resumeMenuItem) {
-          // Start updating the pause/resume menu items
-          updatePauseResumeMenuItems();
-        }
-      }
-    }
-  }).observe(cancelSplitButton, {
-    childList: true,
-    subtree: true,
-  });
-}
+updatePauseElements()

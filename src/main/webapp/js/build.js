@@ -180,8 +180,15 @@ function updatePauseResumeMenuItems() {
   }
 
   fetch("pauseState")
-    .then((rsp) => rsp.json())
-    .then((result) => {
+    .then((rsp) => {
+      if (!rsp.ok) {
+        throw new Error(
+          `Failed to fetch pause state: ${rsp.status} - ${rsp.statusText}`,
+        );
+      }
+      return rsp.json();
+    })
+    .then((result ) => {
       if (result.status === "ok") {
         const isPaused = result.data.paused;
         const isBuilding = result.data.building;

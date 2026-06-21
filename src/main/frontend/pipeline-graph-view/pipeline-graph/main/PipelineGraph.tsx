@@ -42,6 +42,7 @@ interface Viewport {
 }
 
 const VIEWPORT_MARGIN = 300;
+const GRAPH_PADDING = 20;
 
 const MIN_COLUMNS_WHEN_COLLAPSED = 5;
 
@@ -55,6 +56,7 @@ export function PipelineGraph({
   onToggleCollapse,
   setMinScale,
   setInitialScale,
+  setDefaultTransform,
 }: Props) {
   const fullLayout = useMemo(() => {
     return {
@@ -149,12 +151,20 @@ export function PipelineGraph({
   );
 
   const transform = useContext(TransformContext);
-  const [transformWidth, setTransformWidth] = useState<number>(0);
+  const [transformViewport, setTransformViewport] = useState({
+    width: 0,
+    height: 0,
+  });
   useEffect(() => {
     if (!transform?.wrapperComponent) return;
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        setTransformWidth(entry.contentRect.width);
+        const { width, height } = entry.contentRect;
+        setTransformViewport((prev) =>
+          prev.width === width && prev.height === height
+            ? prev
+            : { width, height },
+        );
       }
     });
     observer.observe(transform.wrapperComponent);
@@ -164,29 +174,57 @@ export function PipelineGraph({
   const [fitToWidth, setFitToWidth] = useState(true);
   useEffect(() => {
     if (!setMinScale || !setInitialScale || !transform) return;
-    const initialScale = Math.min(1, transformWidth / measuredWidth);
+    const { width: transformWidth, height: transformHeight } =
+      transformViewport;
+    if (
+      transformWidth <= 0 ||
+      transformHeight <= 0 ||
+      measuredWidth <= 0 ||
+      measuredHeight <= 0
+    ) {
+      return;
+    }
+
+    const paddedMeasuredWidth = measuredWidth + GRAPH_PADDING * 2;
+    const paddedMeasuredHeight = measuredHeight + GRAPH_PADDING * 2;
+    const initialScale = Math.min(1, transformWidth / paddedMeasuredWidth);
     const minScale = initialScale * 0.75;
+    const autoScale = Math.max(initialScale, 0.5);
+    const centerOffsetX = Math.max(
+      0,
+      (transformWidth - paddedMeasuredWidth * autoScale) / 2,
+    );
+    const centerOffsetY = Math.max(
+      0,
+      (transformHeight - paddedMeasuredHeight * autoScale) / 2,
+    );
     setMinScale(minScale);
     setInitialScale(initialScale);
+    setDefaultTransform?.({
+      scale: autoScale,
+      positionX: centerOffsetX,
+      positionY: centerOffsetY,
+    });
     if (fitToWidth) {
       // Don't scale too small by default.
-      const autoScale = Math.max(initialScale, 0.5);
-      const centerOffset = Math.max(0, (transformWidth - measuredWidth) / 2);
       if (
         transform.state.scale !== autoScale ||
-        transform.state.positionX !== centerOffset
+        transform.state.positionX !== centerOffsetX ||
+        transform.state.positionY !== centerOffsetY
       ) {
-        transform.setState(autoScale, centerOffset, 0);
+        transform.setState(autoScale, centerOffsetX, centerOffsetY);
       }
       return transform.onChange(() => setFitToWidth(false));
     }
   }, [
     transform,
-    transformWidth,
+    transformViewport,
     fitToWidth,
     measuredWidth,
+    measuredHeight,
     setMinScale,
     setInitialScale,
+    setDefaultTransform,
   ]);
 
   // When inside a TransformWrapper, only mount the nodes/labels intersecting
@@ -293,6 +331,7 @@ export function PipelineGraph({
   const outerDivStyle: CSSProperties = {
     position: "relative",
     overflow: "visible",
+    margin: GRAPH_PADDING,
   };
   if (debugPipelineGraph()) {
     outerDivStyle.border = "1px dashed red";
@@ -391,4 +430,9 @@ interface Props {
   onToggleCollapse: (stageId: number) => void;
   setMinScale?: (value: number) => void;
   setInitialScale?: (value: number) => void;
+  setDefaultTransform?: (value: {
+    scale: number;
+    positionX: number;
+    positionY: number;
+  }) => void;
 }

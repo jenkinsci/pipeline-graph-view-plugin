@@ -1,8 +1,5 @@
 .pgv-stages-graph {
   position: relative;
-  background: var(--card-background);
-  border: var(--card-border-width) solid var(--card-border-color);
-  border-radius: var(--form-input-border-radius);
   overflow: hidden;
   height: 100%;
 
@@ -25,8 +22,7 @@
     position: fixed;
     inset: 0 !important;
     z-index: 30000;
-    border-radius: 0;
-    border: none;
+    background: var(--card-background);
     height: unset;
     max-height: unset;
 
@@ -92,13 +88,4 @@
   background: color-mix(in srgb, var(--card-background) 80%, transparent);
   border: var(--jenkins-border-width) solid transparent;
   background-clip: padding-box;
-}
-
-// Space for "Stages" overlay
-.pvg-stages-graph--spacing-top {
-  padding-top: 26px;
-}
-// Spacing for "Expand" button
-.pvg-stages-graph--spacing-right {
-  padding-right: 26px;
 }

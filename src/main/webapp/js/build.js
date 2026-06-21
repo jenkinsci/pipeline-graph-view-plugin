@@ -170,7 +170,6 @@ document.addEventListener("click", function (event) {
   }
 });
 
-// Poll pause state every 5 seconds to update visibility
 function updatePauseResumeMenuItems() {
   const pauseMenuItem = document.getElementById("pgv-pause");
   const resumeMenuItem = document.getElementById("pgv-resume");
@@ -188,7 +187,7 @@ function updatePauseResumeMenuItems() {
       }
       return rsp.json();
     })
-    .then((result ) => {
+    .then((result) => {
       if (result.status === "ok") {
         const isPaused = result.data.paused;
         const isBuilding = result.data.building;
@@ -201,6 +200,8 @@ function updatePauseResumeMenuItems() {
             pauseMenuItem.style.display = "";
             resumeMenuItem.style.display = "none";
           }
+          // Poll pause state again in 1s
+          setTimeout(updatePauseResumeMenuItems(), 1000);
         } else {
           pauseMenuItem.style.display = "none";
           resumeMenuItem.style.display = "none";
@@ -213,7 +214,23 @@ function updatePauseResumeMenuItems() {
     });
 }
 
-// Start polling
-setInterval(updatePauseResumeMenuItems, 5000);
-// Initial update
-setTimeout(updatePauseResumeMenuItems, 500);
+const cancelSplitButton = document.getElementById("pgv-cancel-split-button");
+if (cancelSplitButton) {
+  // Create an observer to watch for DOM additions under the cancel split button
+  new MutationObserver((mutationsList, observer) => {
+    for (const mutation of mutationsList) {
+      if (mutation.type === "childList") {
+        // Check if pause/resume menu items were added to the DOM
+        const pauseMenuItem = document.getElementById("pgv-pause");
+        const resumeMenuItem = document.getElementById("pgv-resume");
+        if (pauseMenuItem || resumeMenuItem) {
+          // Start updating the pause/resume menu items
+          updatePauseResumeMenuItems();
+        }
+      }
+    }
+  }).observe(cancelSplitButton, {
+    childList: true,
+    subtree: true,
+  });
+}

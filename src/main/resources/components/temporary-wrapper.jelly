@@ -28,7 +28,7 @@
                                 <st:bind value="${it}" var="pauseAction${pauseProxyId}"/>
                                 <j:set var="resumeProxyId" value="${h.generateId()}" />
                                 <st:bind value="${it}" var="resumeAction${resumeProxyId}"/>
-                                <div class="jenkins-split-button">
+                                <div id="pgv-cancel-split-button" class="jenkins-split-button">
                                     <button id="pgv-cancel" data-confirm="${%Confirm(it.buildFullDisplayName)}"
                                             data-success-message="${%Build cancelled}"
                                             data-proxy-name="cancelAction${cancelProxyId}"
@@ -76,7 +76,7 @@
                             <l:hasPermission permission="${it.permission}">
                                 <j:set var="rerunProxyId" value="${h.generateId()}" />
                                 <st:bind value="${it}" var="rerunAction${rerunProxyId}"/>
-                                <div class="jenkins-split-button">
+                                <div id="pgv-rerun-split-button" class="jenkins-split-button">
                                     <button id="pgv-rerun"
                                             data-proxy-name="rerunAction${rerunProxyId}"
                                             class="jenkins-button jenkins-!-build-color">

@@ -1,6 +1,12 @@
 import "./stages.scss";
 
-import { useCallback, useContext, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useContext,
+  useState,
+} from "react";
 import {
   ReactZoomPanPinchContextState,
   TransformComponent,
@@ -42,6 +48,8 @@ export default function Stages({
   onStageSelect,
   onRunPage,
   normalizedParentJobPath,
+  setAutoStageViewHeight,
+  setDefaultStageViewHeight,
 }: StagesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -62,6 +70,7 @@ export default function Stages({
     [onStageSelect],
   );
 
+  const [centerGraph, setCenterGraph] = useState(true);
   const [initialScale, setInitialScale] = useState(1);
   const [minScale, setMinScale] = useState(0.75);
   const [defaultTransform, setDefaultTransform] = useState<GraphTransform>({
@@ -146,6 +155,7 @@ export default function Stages({
           hasCollapsibleStages={hasCollapsibleStages}
           onCollapseAll={collapseAll}
           onExpandAll={expandAll}
+          setCenterGraph={setCenterGraph}
         />
 
         <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
@@ -158,6 +168,10 @@ export default function Stages({
             setInitialScale={setInitialScale}
             setMinScale={setMinScale}
             setDefaultTransform={setDefaultTransform}
+            setAutoStageViewHeight={setAutoStageViewHeight}
+            setDefaultStageViewHeight={setDefaultStageViewHeight}
+            centerGraph={centerGraph}
+            setCenterGraph={setCenterGraph}
             {...(onStageSelect && { onStageSelect: handleStageSelect })}
           />
         </TransformComponent>
@@ -174,6 +188,8 @@ interface StagesProps {
   onStageSelect?: (nodeId: string) => void;
   onRunPage?: boolean;
   normalizedParentJobPath: string;
+  setAutoStageViewHeight: Dispatch<SetStateAction<number>>;
+  setDefaultStageViewHeight: Dispatch<SetStateAction<number>>;
 }
 
 interface ZoomControlsProps {
@@ -183,6 +199,7 @@ interface ZoomControlsProps {
   hasCollapsibleStages: boolean;
   onCollapseAll: () => void;
   onExpandAll: () => void;
+  setCenterGraph: Dispatch<SetStateAction<boolean>>;
 }
 
 function ZoomControls({
@@ -192,8 +209,9 @@ function ZoomControls({
   hasCollapsibleStages,
   onCollapseAll,
   onExpandAll,
+  setCenterGraph,
 }: ZoomControlsProps) {
-  const { zoomIn, zoomOut, setTransform } = useControls();
+  const { zoomIn, zoomOut } = useControls();
   const messages = useContext(I18NContext);
   const [transform, setTransformState] = useState(defaultTransform);
   const handleTransformEffect = useCallback(
@@ -254,13 +272,7 @@ function ZoomControls({
       <Tooltip content={"Reset"}>
         <button
           className={"jenkins-button jenkins-button--tertiary"}
-          onClick={() =>
-            setTransform(
-              defaultTransform.positionX,
-              defaultTransform.positionY,
-              defaultTransform.scale,
-            )
-          }
+          onClick={() => setCenterGraph(true)}
           disabled={isAtDefaultTransform}
         >
           <svg className="ionicon" viewBox="0 0 512 512">

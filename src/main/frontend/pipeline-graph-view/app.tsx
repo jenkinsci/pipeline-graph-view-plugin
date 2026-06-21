@@ -2,6 +2,8 @@ import "./app.scss";
 import "./pipeline-graph/styles/main.scss";
 import "../pipeline-console-view/pipeline-console/main/console-log-card.scss";
 
+import { useState } from "react";
+
 import useRunPoller from "../common/tree-api.ts";
 import { UserPreferencesProvider } from "../common/user/user-preferences-provider.tsx";
 import Stages from "../pipeline-console-view/pipeline-console/main/components/stages.tsx";
@@ -28,6 +30,10 @@ export default function App() {
     currentRunPath,
     previousRunPath,
   });
+
+  const [autoStageViewHeight, setAutoStageViewHeight] = useState(0);
+  const [defaultStageViewHeight, setDefaultStageViewHeight] = useState(0);
+  const height = autoStageViewHeight || defaultStageViewHeight;
 
   const onlyQueuedPlaceholder =
     run.stages.length === 1 &&
@@ -77,13 +83,17 @@ export default function App() {
       )}
 
       {run.stages.length > 0 && !onlyQueuedPlaceholder && (
-        <Stages
-          layout={buildLayout}
-          stages={run.stages}
-          stageViewPosition={StageViewPosition.TOP}
-          onRunPage
-          normalizedParentJobPath={normalizedParentJobPath}
-        />
+        <div style={height ? { height } : {}}>
+          <Stages
+            layout={buildLayout}
+            stages={run.stages}
+            stageViewPosition={StageViewPosition.TOP}
+            onRunPage
+            normalizedParentJobPath={normalizedParentJobPath}
+            setAutoStageViewHeight={setAutoStageViewHeight}
+            setDefaultStageViewHeight={setDefaultStageViewHeight}
+          />
+        </div>
       )}
     </UserPreferencesProvider>
   );

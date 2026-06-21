@@ -10,13 +10,15 @@ import {
 } from "react";
 
 import { classNames } from "../../../common/utils/classnames.ts";
+import { defaultLayout } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import { useLayoutPreferences } from "./providers/user-preference-provider.tsx";
 
 export default function SplitView(props: SplitViewNewProps) {
   const {
     setTreeViewWidth,
     setStageViewWidth,
-    setStageViewHeight,
+    setPersistedStageViewHeight,
+    defaultStageViewHeight,
     treeViewWidth,
     stageViewWidth,
     stageViewHeight,
@@ -55,9 +57,17 @@ export default function SplitView(props: SplitViewNewProps) {
         ? e.clientY - getContainerOffset()
         : e.clientX - getContainerOffset();
 
+    const maxZoom = 3;
     const clampedSize = Math.max(
-      direction === "vertical" ? 100 : 200,
-      Math.min(newSize, 1500),
+      direction === "vertical"
+        ? Math.min(defaultStageViewHeight, defaultLayout.nodeSpacingH)
+        : 200,
+      Math.min(
+        newSize,
+        storageKey === "graph" && direction === "vertical"
+          ? defaultStageViewHeight * maxZoom
+          : 1500,
+      ),
     );
 
     // Update context sizes
@@ -65,7 +75,7 @@ export default function SplitView(props: SplitViewNewProps) {
       setTreeViewWidth(clampedSize);
     } else if (storageKey === "graph") {
       if (direction === "vertical") {
-        setStageViewHeight(clampedSize);
+        setPersistedStageViewHeight(clampedSize);
       } else {
         setStageViewWidth(clampedSize);
       }
@@ -77,7 +87,7 @@ export default function SplitView(props: SplitViewNewProps) {
       setTreeViewWidth(300);
     } else if (storageKey === "graph") {
       if (direction === "vertical") {
-        setStageViewHeight(250);
+        setPersistedStageViewHeight(0);
       } else {
         setStageViewWidth(600);
       }

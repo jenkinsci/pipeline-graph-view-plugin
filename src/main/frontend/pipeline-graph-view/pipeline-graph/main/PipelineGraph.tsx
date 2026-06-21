@@ -1,5 +1,7 @@
 import {
   CSSProperties,
+  Dispatch,
+  SetStateAction,
   useCallback,
   useContext,
   useEffect,
@@ -56,6 +58,10 @@ export function PipelineGraph({
   setMinScale,
   setInitialScale,
   setDefaultTransform,
+  setAutoStageViewHeight,
+  setDefaultStageViewHeight,
+  centerGraph,
+  setCenterGraph,
 }: Props) {
   const fullLayout = useMemo(() => {
     return {
@@ -179,7 +185,6 @@ export function PipelineGraph({
     return () => observer.disconnect();
   }, [transform?.wrapperComponent]);
 
-  const [fitToWidth, setFitToWidth] = useState(true);
   useEffect(() => {
     if (!setMinScale || !setInitialScale || !transform) return;
     const { width: transformWidth, height: transformHeight } =
@@ -211,8 +216,14 @@ export function PipelineGraph({
       positionX: centerOffsetX,
       positionY: centerOffsetY,
     });
-    if (fitToWidth) {
+    setDefaultStageViewHeight?.(measuredHeight);
+    if (centerGraph) {
       // Don't scale too small by default.
+      const autoHeight = Math.max(
+        Math.min(measuredHeight, fullLayout.nodeSpacingH),
+        measuredHeight * autoScale,
+      );
+      setAutoStageViewHeight?.(autoHeight);
       if (
         transform.state.scale !== autoScale ||
         transform.state.positionX !== centerOffsetX ||
@@ -220,17 +231,24 @@ export function PipelineGraph({
       ) {
         transform.setState(autoScale, centerOffsetX, centerOffsetY);
       }
-      return transform.onChange(() => setFitToWidth(false));
+      return transform.onChange(() => {
+        setCenterGraph?.(false);
+        setAutoStageViewHeight?.(0);
+      });
     }
   }, [
     transform,
     transformViewport,
-    fitToWidth,
+    centerGraph,
+    setCenterGraph,
+    fullLayout.nodeSpacingH,
     measuredWidth,
     measuredHeight,
     setMinScale,
     setInitialScale,
     setDefaultTransform,
+    setAutoStageViewHeight,
+    setDefaultStageViewHeight,
   ]);
 
   // When inside a TransformWrapper, only mount the nodes/labels intersecting
@@ -441,4 +459,8 @@ interface Props {
     positionX: number;
     positionY: number;
   }) => void;
+  setAutoStageViewHeight?: Dispatch<SetStateAction<number>>;
+  setDefaultStageViewHeight?: Dispatch<SetStateAction<number>>;
+  centerGraph?: boolean;
+  setCenterGraph?: Dispatch<SetStateAction<boolean>>;
 }

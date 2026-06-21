@@ -114,13 +114,15 @@ export default function PipelineConsole() {
             (loading ? (
               <Skeleton />
             ) : (
-              <Stages
-                stages={stages}
-                selectedStage={openStage || undefined}
-                stageViewPosition={stageViewPosition}
-                onStageSelect={handleStageSelect}
-                normalizedParentJobPath={normalizedParentJobPath}
-              />
+              <div className={"jenkins-card"}>
+                <Stages
+                  stages={stages}
+                  selectedStage={openStage || undefined}
+                  stageViewPosition={stageViewPosition}
+                  onStageSelect={handleStageSelect}
+                  normalizedParentJobPath={normalizedParentJobPath}
+                />
+              </div>
             ))}
 
           <SplitView storageKey="stages">

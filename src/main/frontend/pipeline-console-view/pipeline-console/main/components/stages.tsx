@@ -58,8 +58,6 @@ export default function Stages({
       className={classNames("pgv-stages-graph", {
         "pgv-stages-graph--left": stageViewPosition === StageViewPosition.LEFT,
         "pgv-stages-graph--dialog": isExpanded,
-        "pvg-stages-graph--spacing-top": onRunPage,
-        "pvg-stages-graph--spacing-right": !onRunPage && !isExpanded,
       })}
     >
       {onRunPage && (

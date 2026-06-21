@@ -92,7 +92,8 @@ class PipelineGraphViewPauseTest {
         SemaphoreStep.success("wait/1", null);
         j.assertBuildStatus(Result.SUCCESS, j.waitForCompletion(run));
 
-        // Verify entire cancel split-button is hidden
+        // Verify entire cancel split-button is hidden along with the pause menu item
         assertThat(cancelButton).isHidden();
+        assertThat(pauseMenuItem).isHidden();
     }
 }

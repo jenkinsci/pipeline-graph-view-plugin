@@ -1,6 +1,5 @@
 :root {
-  // can be removed and `--header-height` used directly when jenkins baseline is 2.507
-  --pgv-header-height: var(--header-height, 45.5938px);
+  --pgv-header-height: 58px;
   --ansi-0: var(--black);
   --ansi-1: var(--red);
   --ansi-2: var(--green);
@@ -17,6 +16,11 @@
   --ansi-13: oklch(from var(--ansi-5) calc(l * 1.125) calc(c * 1.25) h);
   --ansi-14: oklch(from var(--ansi-6) calc(l * 1.125) calc(c * 1.25) h);
   --ansi-15: oklch(from var(--ansi-7) calc(l * 1.25) c h);
+}
+
+// To remove when app-build-bar is default
+body:not(:has(.app-build-bar)) {
+  --pgv-header-height: calc(var(--section-padding) * -1);
 }
 
 .ansi-fg-0 {

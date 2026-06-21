@@ -71,6 +71,7 @@ export default function Stages({
       className={classNames("pgv-stages-graph", {
         "pgv-stages-graph--left": stageViewPosition === StageViewPosition.LEFT,
         "pgv-stages-graph--dialog": isExpanded,
+        "jenkins-card": !onRunPage,
       })}
     >
       {onRunPage && (

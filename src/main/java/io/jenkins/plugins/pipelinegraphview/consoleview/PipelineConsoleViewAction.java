@@ -301,6 +301,7 @@ public class PipelineConsoleViewAction extends Tab {
      * Handles the rerun request using ReplayAction feature
      */
     @RequirePOST
+    @WebMethod(name = "rerun")
     @JavaScriptMethod
     public HttpResponse doRerun() {
         run.checkPermission(Item.BUILD);
@@ -309,6 +310,9 @@ public class PipelineConsoleViewAction extends Tab {
             return HttpResponses.errorJSON(Messages.scheduled_failure());
         }
         ReplayAction replayAction = run.getAction(ReplayAction.class);
+        if (replayAction == null) {
+            return HttpResponses.errorJSON(Messages.scheduled_failure());
+        }
         Queue.Item item = replayAction.run2(replayAction.getOriginalScript(), replayAction.getOriginalLoadedScripts());
 
         if (item == null) {

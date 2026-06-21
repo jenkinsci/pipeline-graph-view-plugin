@@ -207,7 +207,7 @@ function updatePauseElements() {
               resumeMenuItem.style.display = "none";
             }
           }
-          
+
           let updateInterval = 5000;
           // update more frequently when the pause/resume menu items are visible
           if (pauseMenuItem || resumeMenuItem) {
@@ -227,4 +227,4 @@ function updatePauseElements() {
     });
 }
 
-updatePauseElements()
+updatePauseElements();

@@ -72,8 +72,10 @@ export function nestedGraphLayout(
   root.y = root.shiftY + layout.nodeRadius;
   root.width =
     root.shiftX + sumGraphNodeProp(root, "width") - startEndReducedSpacing;
-  const measuredWidth = root.width;
-  const measuredHeight = root.y + root.height;
+  root.x += layout.graphSpacingLeft;
+  root.y += layout.graphSpacingTop;
+  const measuredWidth = root.x + root.width + layout.graphSpacingRight;
+  const measuredHeight = root.y + root.height + layout.graphSpacingBottom;
 
   computePositions(root, 0, layout);
   const connections = computeConnections(root);

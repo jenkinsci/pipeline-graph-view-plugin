@@ -17,7 +17,10 @@ import {
 } from "../../../../common/i18n/index.ts";
 import { classNames } from "../../../../common/utils/classnames.ts";
 import { PipelineGraph } from "../../../../pipeline-graph-view/pipeline-graph/main/PipelineGraph.tsx";
-import { StageInfo } from "../../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
+import {
+  LayoutInfo,
+  StageInfo,
+} from "../../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import { useCollapsedStages } from "../../../../pipeline-graph-view/pipeline-graph/main/support/useCollapsedStages.ts";
 import { StageViewPosition } from "../providers/user-preference-provider.tsx";
 
@@ -32,6 +35,7 @@ interface GraphTransform {
 }
 
 export default function Stages({
+  layout,
   stages,
   selectedStage,
   stageViewPosition,
@@ -146,6 +150,7 @@ export default function Stages({
 
         <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }}>
           <PipelineGraph
+            layout={layout}
             stages={effectiveStages}
             selectedStage={selectedStage}
             collapsedStageIds={collapsedStageIds}
@@ -162,6 +167,7 @@ export default function Stages({
 }
 
 interface StagesProps {
+  layout: Partial<LayoutInfo>;
   stages: StageInfo[];
   selectedStage?: StageInfo;
   stageViewPosition: StageViewPosition;

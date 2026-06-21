@@ -23,6 +23,10 @@ export const defaultLayout = {
   labelOffsetV: 22,
   smallLabelOffsetV: 15,
   ypStart: 55,
+  graphSpacingTop: 0,
+  graphSpacingRight: 0,
+  graphSpacingBottom: 0,
+  graphSpacingLeft: 0,
 };
 
 // Typedefs

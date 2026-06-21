@@ -1,6 +1,6 @@
 import "./single-run.scss";
 
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 
 import StatusIcon from "../../../common/components/status-icon.tsx";
 import {
@@ -44,8 +44,10 @@ export default function SingleRun({
 
   const { showNames, showDurations } = useUserPreferences();
 
-  function getLayout() {
-    const layout: LayoutInfo = { ...defaultLayout };
+  const layout: LayoutInfo = useMemo(() => {
+    const layout: LayoutInfo = {
+      ...defaultLayout,
+    };
 
     if (!showNames && !showDurations) {
       layout.nodeSpacingH = 45;
@@ -63,7 +65,7 @@ export default function SingleRun({
     }
 
     return layout;
-  }
+  }, [showDurations, showNames]);
 
   const { effectiveStages, collapsedStageIds, toggleCollapseStage } =
     useCollapsedStages(normalizedParentJobPath, runInfo.stages);
@@ -82,7 +84,7 @@ export default function SingleRun({
       </div>
       <PipelineGraph
         stages={effectiveStages}
-        layout={getLayout()}
+        layout={layout}
         collapsed
         collapsedStageIds={collapsedStageIds}
         onToggleCollapse={toggleCollapseStage}

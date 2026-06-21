@@ -20,6 +20,10 @@ const layout: LayoutInfo = {
   labelOffsetV: 20,
   smallLabelOffsetV: 15,
   ypStart: 55,
+  graphSpacingTop: 0,
+  graphSpacingRight: 0,
+  graphSpacingBottom: 0,
+  graphSpacingLeft: 0,
 };
 
 function makeStage(overrides: Partial<StageInfo> = {}): StageInfo {

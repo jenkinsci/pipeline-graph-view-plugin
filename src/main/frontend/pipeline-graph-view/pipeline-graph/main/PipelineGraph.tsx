@@ -79,10 +79,14 @@ export function PipelineGraph({
     const apply = (width: number) => {
       if (width <= 0) return;
       const reservedSpace =
-        fullLayout.nodeSpacingH / 2 + // before start
+        // before start
+        fullLayout.graphSpacingLeft +
+        fullLayout.nodeSpacingH / 2 +
         fullLayout.nodeSpacingH * 0.7 + // start node with reduced spacing
         -fullLayout.nodeSpacingH * 0.3 + // reduced spacing to end node
-        fullLayout.nodeSpacingH / 2; // after end;
+        // after end
+        fullLayout.nodeSpacingH / 2 +
+        fullLayout.graphSpacingRight;
       const next = Math.max(
         MIN_COLUMNS_WHEN_COLLAPSED,
         Math.floor((width - reservedSpace) / fullLayout.nodeSpacingH),
@@ -99,7 +103,12 @@ export function PipelineGraph({
     });
     observer.observe(node);
     return () => observer.disconnect();
-  }, [collapsed, fullLayout.nodeSpacingH]);
+  }, [
+    collapsed,
+    fullLayout.graphSpacingLeft,
+    fullLayout.graphSpacingRight,
+    fullLayout.nodeSpacingH,
+  ]);
 
   const {
     nodes,
@@ -328,6 +337,7 @@ export function PipelineGraph({
   const outerDivStyle: CSSProperties = {
     position: "relative",
     overflow: "visible",
+    boxSizing: "unset",
   };
   if (debugPipelineGraph()) {
     outerDivStyle.border = "1px dashed red";

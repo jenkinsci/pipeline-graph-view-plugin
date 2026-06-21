@@ -379,13 +379,13 @@ public class PipelineConsoleViewAction extends Tab {
     public HttpResponse doPause() {
         run.checkPermission(getCancelPermission());
 
+        if (!run.isBuilding()) {
+            return HttpResponses.errorJSON(Messages.run_isFinished());
+        }
+
         FlowExecution execution = run.getExecution();
         if (execution == null) {
             return HttpResponses.errorJSON("No execution found");
-        }
-
-        if (!run.isBuilding()) {
-            return HttpResponses.errorJSON(Messages.run_isFinished());
         }
 
         // Pause is specific to CpsFlowExecution
@@ -413,13 +413,13 @@ public class PipelineConsoleViewAction extends Tab {
     public HttpResponse doResume() {
         run.checkPermission(getCancelPermission());
 
+        if (!run.isBuilding()) {
+            return HttpResponses.errorJSON(Messages.run_isFinished());
+        }
+
         FlowExecution execution = run.getExecution();
         if (execution == null) {
             return HttpResponses.errorJSON("No execution found");
-        }
-
-        if (!run.isBuilding()) {
-            return HttpResponses.errorJSON(Messages.run_isFinished());
         }
 
         // Resume is specific to CpsFlowExecution

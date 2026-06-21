@@ -22,6 +22,14 @@ import { useCollapsedStages } from "../../../../pipeline-graph-view/pipeline-gra
 import { StageViewPosition } from "../providers/user-preference-provider.tsx";
 
 const MAX_SCALE = 3;
+const SCALE_TOLERANCE = 0.001;
+const POSITION_TOLERANCE = 1;
+
+interface GraphTransform {
+  scale: number;
+  positionX: number;
+  positionY: number;
+}
 
 export default function Stages({
   stages,
@@ -52,7 +60,11 @@ export default function Stages({
 
   const [initialScale, setInitialScale] = useState(1);
   const [minScale, setMinScale] = useState(0.75);
-  const defaultScale = Math.max(initialScale, 0.5);
+  const [defaultTransform, setDefaultTransform] = useState<GraphTransform>({
+    scale: 1,
+    positionX: 0,
+    positionY: 0,
+  });
 
   return (
     <div
@@ -123,7 +135,7 @@ export default function Stages({
         wheel={{ activationKeys: isExpanded ? [] : ["Control"] }}
       >
         <ZoomControls
-          defaultScale={defaultScale}
+          defaultTransform={defaultTransform}
           minScale={minScale}
           collapsedStageIds={collapsedStageIds}
           hasCollapsibleStages={hasCollapsibleStages}
@@ -139,6 +151,7 @@ export default function Stages({
             onToggleCollapse={toggleCollapseStage}
             setInitialScale={setInitialScale}
             setMinScale={setMinScale}
+            setDefaultTransform={setDefaultTransform}
             {...(onStageSelect && { onStageSelect: handleStageSelect })}
           />
         </TransformComponent>
@@ -157,7 +170,7 @@ interface StagesProps {
 }
 
 interface ZoomControlsProps {
-  defaultScale: number;
+  defaultTransform: GraphTransform;
   minScale: number;
   collapsedStageIds: Set<number>;
   hasCollapsibleStages: boolean;
@@ -166,21 +179,32 @@ interface ZoomControlsProps {
 }
 
 function ZoomControls({
-  defaultScale,
+  defaultTransform,
   minScale,
   collapsedStageIds,
   hasCollapsibleStages,
   onCollapseAll,
   onExpandAll,
 }: ZoomControlsProps) {
-  const { zoomIn, zoomOut, centerView } = useControls();
+  const { zoomIn, zoomOut, setTransform } = useControls();
   const messages = useContext(I18NContext);
-  const [scale, setScale] = useState(defaultScale);
+  const [transform, setTransformState] = useState(defaultTransform);
   const handleTransformEffect = useCallback(
-    (ref: ReactZoomPanPinchContextState) => setScale(ref.state.scale),
+    (ref: ReactZoomPanPinchContextState) =>
+      setTransformState({
+        scale: ref.state.scale,
+        positionX: ref.state.positionX,
+        positionY: ref.state.positionY,
+      }),
     [],
   );
   useTransformEffect(handleTransformEffect);
+  const isAtDefaultTransform =
+    Math.abs(transform.scale - defaultTransform.scale) < SCALE_TOLERANCE &&
+    Math.abs(transform.positionX - defaultTransform.positionX) <
+      POSITION_TOLERANCE &&
+    Math.abs(transform.positionY - defaultTransform.positionY) <
+      POSITION_TOLERANCE;
 
   return (
     <div className="pgv-stages-graph__controls pgw-zoom-controls">
@@ -188,7 +212,7 @@ function ZoomControls({
         <button
           className={"jenkins-button jenkins-button--tertiary"}
           onClick={() => zoomIn()}
-          disabled={scale >= MAX_SCALE}
+          disabled={transform.scale >= MAX_SCALE}
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
             <path
@@ -206,7 +230,7 @@ function ZoomControls({
         <button
           className={"jenkins-button jenkins-button--tertiary"}
           onClick={() => zoomOut()}
-          disabled={scale <= minScale}
+          disabled={transform.scale <= minScale}
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
             <path
@@ -223,8 +247,14 @@ function ZoomControls({
       <Tooltip content={"Reset"}>
         <button
           className={"jenkins-button jenkins-button--tertiary"}
-          onClick={() => centerView(defaultScale)}
-          disabled={scale === defaultScale}
+          onClick={() =>
+            setTransform(
+              defaultTransform.positionX,
+              defaultTransform.positionY,
+              defaultTransform.scale,
+            )
+          }
+          disabled={isAtDefaultTransform}
         >
           <svg className="ionicon" viewBox="0 0 512 512">
             <path

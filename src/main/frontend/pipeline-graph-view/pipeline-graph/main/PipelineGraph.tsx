@@ -55,6 +55,7 @@ export function PipelineGraph({
   onToggleCollapse,
   setMinScale,
   setInitialScale,
+  setDefaultTransform,
 }: Props) {
   const fullLayout = useMemo(() => {
     return {
@@ -185,13 +186,18 @@ export function PipelineGraph({
 
     const initialScale = Math.min(1, transformWidth / measuredWidth);
     const minScale = initialScale * 0.75;
+    const autoScale = Math.max(initialScale, 0.5);
+    const centerOffsetX = (transformWidth - measuredWidth * autoScale) / 2;
+    const centerOffsetY = (transformHeight - measuredHeight * autoScale) / 2;
     setMinScale(minScale);
     setInitialScale(initialScale);
+    setDefaultTransform?.({
+      scale: autoScale,
+      positionX: centerOffsetX,
+      positionY: centerOffsetY,
+    });
     if (fitToWidth) {
       // Don't scale too small by default.
-      const autoScale = Math.max(initialScale, 0.5);
-      const centerOffsetX = (transformWidth - measuredWidth * autoScale) / 2;
-      const centerOffsetY = (transformHeight - measuredHeight * autoScale) / 2;
       if (
         transform.state.scale !== autoScale ||
         transform.state.positionX !== centerOffsetX ||
@@ -209,6 +215,7 @@ export function PipelineGraph({
     measuredHeight,
     setMinScale,
     setInitialScale,
+    setDefaultTransform,
   ]);
 
   // When inside a TransformWrapper, only mount the nodes/labels intersecting
@@ -413,4 +420,9 @@ interface Props {
   onToggleCollapse: (stageId: number) => void;
   setMinScale?: (value: number) => void;
   setInitialScale?: (value: number) => void;
+  setDefaultTransform?: (value: {
+    scale: number;
+    positionX: number;
+    positionY: number;
+  }) => void;
 }

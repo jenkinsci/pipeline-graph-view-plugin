@@ -52,6 +52,7 @@ export default function Stages({
 
   const [initialScale, setInitialScale] = useState(1);
   const [minScale, setMinScale] = useState(0.75);
+  const defaultScale = Math.max(initialScale, 0.5);
 
   return (
     <div
@@ -122,7 +123,7 @@ export default function Stages({
         wheel={{ activationKeys: isExpanded ? [] : ["Control"] }}
       >
         <ZoomControls
-          initialScale={initialScale}
+          defaultScale={defaultScale}
           minScale={minScale}
           collapsedStageIds={collapsedStageIds}
           hasCollapsibleStages={hasCollapsibleStages}
@@ -156,7 +157,7 @@ interface StagesProps {
 }
 
 interface ZoomControlsProps {
-  initialScale: number;
+  defaultScale: number;
   minScale: number;
   collapsedStageIds: Set<number>;
   hasCollapsibleStages: boolean;
@@ -165,7 +166,7 @@ interface ZoomControlsProps {
 }
 
 function ZoomControls({
-  initialScale,
+  defaultScale,
   minScale,
   collapsedStageIds,
   hasCollapsibleStages,
@@ -174,7 +175,7 @@ function ZoomControls({
 }: ZoomControlsProps) {
   const { zoomIn, zoomOut, centerView } = useControls();
   const messages = useContext(I18NContext);
-  const [scale, setScale] = useState(initialScale);
+  const [scale, setScale] = useState(defaultScale);
   const handleTransformEffect = useCallback(
     (ref: ReactZoomPanPinchContextState) => setScale(ref.state.scale),
     [],
@@ -222,8 +223,8 @@ function ZoomControls({
       <Tooltip content={"Reset"}>
         <button
           className={"jenkins-button jenkins-button--tertiary"}
-          onClick={() => centerView(initialScale)}
-          disabled={scale === initialScale}
+          onClick={() => centerView(defaultScale)}
+          disabled={scale === defaultScale}
         >
           <svg className="ionicon" viewBox="0 0 512 512">
             <path

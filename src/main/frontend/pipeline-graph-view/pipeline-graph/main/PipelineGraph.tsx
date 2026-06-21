@@ -149,12 +149,20 @@ export function PipelineGraph({
   );
 
   const transform = useContext(TransformContext);
-  const [transformWidth, setTransformWidth] = useState<number>(0);
+  const [transformViewport, setTransformViewport] = useState({
+    width: 0,
+    height: 0,
+  });
   useEffect(() => {
     if (!transform?.wrapperComponent) return;
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        setTransformWidth(entry.contentRect.width);
+        const { width, height } = entry.contentRect;
+        setTransformViewport((prev) =>
+          prev.width === width && prev.height === height
+            ? prev
+            : { width, height },
+        );
       }
     });
     observer.observe(transform.wrapperComponent);
@@ -164,6 +172,17 @@ export function PipelineGraph({
   const [fitToWidth, setFitToWidth] = useState(true);
   useEffect(() => {
     if (!setMinScale || !setInitialScale || !transform) return;
+    const { width: transformWidth, height: transformHeight } =
+      transformViewport;
+    if (
+      transformWidth <= 0 ||
+      transformHeight <= 0 ||
+      measuredWidth <= 0 ||
+      measuredHeight <= 0
+    ) {
+      return;
+    }
+
     const initialScale = Math.min(1, transformWidth / measuredWidth);
     const minScale = initialScale * 0.75;
     setMinScale(minScale);
@@ -171,20 +190,23 @@ export function PipelineGraph({
     if (fitToWidth) {
       // Don't scale too small by default.
       const autoScale = Math.max(initialScale, 0.5);
-      const centerOffset = Math.max(0, (transformWidth - measuredWidth) / 2);
+      const centerOffsetX = (transformWidth - measuredWidth * autoScale) / 2;
+      const centerOffsetY = (transformHeight - measuredHeight * autoScale) / 2;
       if (
         transform.state.scale !== autoScale ||
-        transform.state.positionX !== centerOffset
+        transform.state.positionX !== centerOffsetX ||
+        transform.state.positionY !== centerOffsetY
       ) {
-        transform.setState(autoScale, centerOffset, 0);
+        transform.setState(autoScale, centerOffsetX, centerOffsetY);
       }
       return transform.onChange(() => setFitToWidth(false));
     }
   }, [
     transform,
-    transformWidth,
+    transformViewport,
     fitToWidth,
     measuredWidth,
+    measuredHeight,
     setMinScale,
     setInitialScale,
   ]);

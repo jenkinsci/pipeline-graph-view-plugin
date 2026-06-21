@@ -132,7 +132,7 @@
                         <div id="console-pipeline-overflow-root"/>
                     </j:set>
 
-                    <div id="pgv-paused-banner" class="jenkins-alert jenkins-alert-warning">
+                    <div id="pgv-paused-banner" class="jenkins-alert jenkins-alert-warning" style="display: none;">
                         ${%Build Execution is Paused}
                     </div>
 

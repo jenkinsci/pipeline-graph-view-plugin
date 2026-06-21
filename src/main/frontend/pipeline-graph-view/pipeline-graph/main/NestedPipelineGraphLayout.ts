@@ -253,6 +253,7 @@ function buildGraphNested(
       firstChildIsSkipped,
     };
     buildGraphNested(childNode, stage.children, layout, isLast);
+    if (isParallel && idx > 0) childNode.shiftY += layout.labelOffsetV;
     if (hasBigLabel) childNode.shiftY += layout.labelOffsetV;
     childNode.allChildrenSkipped =
       childNode.hasParallel && !childNode.children.some((c) => !c.isSkipped);
@@ -521,7 +522,7 @@ function baseGraphNode(layout: LayoutInfo, hasBigLabel?: boolean) {
     shiftX: 0,
     shiftY: 0,
     width: layout.nodeSpacingH,
-    height: layout.nodeSpacingV,
+    height: layout.nodeSpacingV - layout.labelOffsetV,
     ...(hasBigLabel ? { shiftY: layout.labelOffsetV, hasBigLabel: true } : {}),
   };
 }

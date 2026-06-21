@@ -61,8 +61,6 @@ export default function SingleRun({
       // Do not reserve space for small label.
       layout.nodeSpacingV -= layout.labelOffsetV + 15;
     }
-    // Do not reserve space for big label on next row.
-    layout.nodeSpacingV -= layout.labelOffsetV;
 
     return layout;
   }

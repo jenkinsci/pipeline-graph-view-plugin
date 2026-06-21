@@ -42,7 +42,7 @@ interface Viewport {
 }
 
 const VIEWPORT_MARGIN = 300;
-const GRAPH_PADDING = 16;
+const GRAPH_PADDING = 20;
 
 const MIN_COLUMNS_WHEN_COLLAPSED = 5;
 
@@ -190,10 +190,14 @@ export function PipelineGraph({
     const initialScale = Math.min(1, transformWidth / paddedMeasuredWidth);
     const minScale = initialScale * 0.75;
     const autoScale = Math.max(initialScale, 0.5);
-    const centerOffsetX =
-      (transformWidth - paddedMeasuredWidth * autoScale) / 2;
-    const centerOffsetY =
-      (transformHeight - paddedMeasuredHeight * autoScale) / 2;
+    const centerOffsetX = Math.max(
+      0,
+      (transformWidth - paddedMeasuredWidth * autoScale) / 2,
+    );
+    const centerOffsetY = Math.max(
+      0,
+      (transformHeight - paddedMeasuredHeight * autoScale) / 2,
+    );
     setMinScale(minScale);
     setInitialScale(initialScale);
     setDefaultTransform?.({

@@ -95,7 +95,13 @@ if (cancelButton) {
           if (isBuilding === "true") {
             setTimeout(updateCancelButton, 5000);
           } else {
-            cancelButton.style.display = "none";
+            // Hide the entire split-button when build finishes
+            const splitButton = cancelButton.closest(".jenkins-split-button");
+            if (splitButton) {
+              splitButton.style.display = "none";
+            } else {
+              cancelButton.style.display = "none";
+            }
           }
         }
         return null;
@@ -106,3 +112,119 @@ if (cancelButton) {
   }
   setTimeout(updateCancelButton, 5000);
 }
+
+// Use event delegation for pause/resume dropdown items
+document.addEventListener("click", function (event) {
+  const target = event.target.closest("#pgv-pause, #pgv-resume");
+  if (!target) return;
+
+  event.preventDefault();
+
+  const proxyName = target.dataset.proxyName;
+  if (!proxyName) return;
+
+  const actionProxy = window[proxyName];
+  if (!actionProxy) {
+    console.error("Failed to execute action: proxy not found");
+    return;
+  }
+
+  if (target.id === "pgv-pause") {
+    if (typeof actionProxy.doPause !== "function") {
+      console.error("Failed to pause: method not found");
+      return;
+    }
+
+    actionProxy.doPause(function (response) {
+      const result = response.responseJSON;
+      if (result.status === "ok") {
+        notificationBar.show(target.dataset.successMessage);
+        // Hide pause, show resume
+        const pauseItem = document.getElementById("pgv-pause");
+        const resumeItem = document.getElementById("pgv-resume");
+        if (pauseItem) pauseItem.style.display = "none";
+        if (resumeItem) resumeItem.style.display = "";
+      } else {
+        notificationBar.show(result.message, notificationBar.WARNING);
+      }
+    });
+  } else if (target.id === "pgv-resume") {
+    if (typeof actionProxy.doResume !== "function") {
+      console.error("Failed to resume: method not found");
+      return;
+    }
+
+    actionProxy.doResume(function (response) {
+      const result = response.responseJSON;
+      if (result.status === "ok") {
+        notificationBar.show(target.dataset.successMessage);
+        // Hide resume, show pause
+        const pauseItem = document.getElementById("pgv-pause");
+        const resumeItem = document.getElementById("pgv-resume");
+        if (resumeItem) resumeItem.style.display = "none";
+        if (pauseItem) pauseItem.style.display = "";
+      } else {
+        notificationBar.show(result.message, notificationBar.WARNING);
+      }
+    });
+  }
+});
+
+function updatePauseElements() {
+  const pausedBanner = document.getElementById("pgv-paused-banner");
+  const pauseMenuItem = document.getElementById("pgv-pause");
+  const resumeMenuItem = document.getElementById("pgv-resume");
+
+  fetch("pauseState")
+    .then((rsp) => {
+      if (!rsp.ok) {
+        throw new Error(
+          `Failed to fetch pause state: ${rsp.status} - ${rsp.statusText}`,
+        );
+      }
+      return rsp.json();
+    })
+    .then((result) => {
+      if (result.status === "ok") {
+        const isPaused = result.data.paused;
+        const isBuilding = result.data.building;
+
+        if (isBuilding) {
+          if (isPaused) {
+            pausedBanner.style.display = "";
+            if (pauseMenuItem) {
+              pauseMenuItem.style.display = "none";
+            }
+            if (resumeMenuItem) {
+              resumeMenuItem.style.display = "";
+            }
+          } else {
+            pausedBanner.style.display = "none";
+            if (pauseMenuItem) {
+              pauseMenuItem.style.display = "";
+            }
+            if (resumeMenuItem) {
+              resumeMenuItem.style.display = "none";
+            }
+          }
+
+          let updateInterval = 5000;
+          // update more frequently when the pause/resume menu items are visible
+          if (pauseMenuItem || resumeMenuItem) {
+            updateInterval = 1000;
+          }
+          setTimeout(updatePauseElements(), updateInterval);
+        } else {
+          pausedBanner.style.display = "none";
+          pauseMenuItem.style.display = "none";
+          resumeMenuItem.style.display = "none";
+        }
+      }
+      return null;
+    })
+    .catch((error) => {
+      console.error("Error fetching pause state:", error);
+    });
+}
+
+updatePauseElements();

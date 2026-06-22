@@ -132,10 +132,6 @@
                         <div id="console-pipeline-overflow-root"/>
                     </j:set>
 
-                    <div id="pgv-paused-banner" class="jenkins-alert jenkins-alert-warning" style="display: none;">
-                        ${%Build Execution is Paused}
-                    </div>
-
                     <t:buildCaption controls="${controls}">
                         <j:if test="${it.previousBuildNumber!=null}">
                             <a href="../../${it.previousBuildNumber}/stages" class="jenkins-button jenkins-button--tertiary app-details__prev_next" tooltip="${%Previous Build}">
@@ -167,6 +163,10 @@
                             </j:forEach>
                         </l:details-bar>
                     </div>
+
+                  <div id="pgv-paused-banner" class="jenkins-alert jenkins-alert-warning" style="display: none;">
+                    ${%Build Execution is Paused}
+                  </div>
 
                     <j:if test="${!empty(it.run.description)}">
                         <div class="pgv-description">

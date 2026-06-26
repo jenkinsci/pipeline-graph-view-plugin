@@ -139,11 +139,6 @@ document.addEventListener("click", function (event) {
       const result = response.responseJSON;
       if (result.status === "ok") {
         notificationBar.show(target.dataset.successMessage);
-        // Hide pause, show resume
-        const pauseItem = document.getElementById("pgv-pause");
-        const resumeItem = document.getElementById("pgv-resume");
-        if (pauseItem) pauseItem.style.display = "none";
-        if (resumeItem) resumeItem.style.display = "";
       } else {
         notificationBar.show(result.message, notificationBar.WARNING);
       }
@@ -158,11 +153,6 @@ document.addEventListener("click", function (event) {
       const result = response.responseJSON;
       if (result.status === "ok") {
         notificationBar.show(target.dataset.successMessage);
-        // Hide resume, show pause
-        const pauseItem = document.getElementById("pgv-pause");
-        const resumeItem = document.getElementById("pgv-resume");
-        if (resumeItem) resumeItem.style.display = "none";
-        if (pauseItem) pauseItem.style.display = "";
       } else {
         notificationBar.show(result.message, notificationBar.WARNING);
       }

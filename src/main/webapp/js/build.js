@@ -230,8 +230,7 @@ if (cancelSplitButton) {
     if (menuItemsExist && !isPauseResumeMenuOpen) {
       isPauseResumeMenuOpen = true;
       setTimeout(() => updatePauseElements(false), 0);
-    }
-    else if (!menuItemsExist && isPauseResumeMenuOpen) {
+    } else if (!menuItemsExist && isPauseResumeMenuOpen) {
       isPauseResumeMenuOpen = false;
     }
   });

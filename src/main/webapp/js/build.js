@@ -213,7 +213,7 @@ function updatePauseElements() {
           if (pauseMenuItem || resumeMenuItem) {
             updateInterval = 1000;
           }
-          setTimeout(updatePauseElements(), updateInterval);
+          setTimeout(updatePauseElements, updateInterval);
         } else {
           pausedBanner.style.display = "none";
           pauseMenuItem.style.display = "none";

@@ -170,7 +170,7 @@ document.addEventListener("click", function (event) {
   }
 });
 
-function updatePauseElements() {
+function updatePauseElements(enablePolling = false) {
   const pausedBanner = document.getElementById("pgv-paused-banner");
   const pauseMenuItem = document.getElementById("pgv-pause");
   const resumeMenuItem = document.getElementById("pgv-resume");
@@ -208,12 +208,9 @@ function updatePauseElements() {
             }
           }
 
-          let updateInterval = 5000;
-          // update more frequently when the pause/resume menu items are visible
-          if (pauseMenuItem || resumeMenuItem) {
-            updateInterval = 1000;
+          if (enablePolling) {
+            setTimeout(() => updatePauseElements(true), 1000);
           }
-          setTimeout(updatePauseElements, updateInterval);
         } else {
           pausedBanner.style.display = "none";
           pauseMenuItem.style.display = "none";
@@ -227,4 +224,23 @@ function updatePauseElements() {
     });
 }
 
-updatePauseElements();
+const cancelSplitButton = document.getElementById("pgv-cancel-split-button");
+if (cancelSplitButton) {
+  // Create an observer to update the pause/resume menu items when they become visible
+  new MutationObserver((mutationsList, observer) => {
+    for (const mutation of mutationsList) {
+      if (mutation.type === "childList") {
+        const pauseMenuItem = document.getElementById("pgv-pause");
+        const resumeMenuItem = document.getElementById("pgv-resume");
+        if (pauseMenuItem || resumeMenuItem) {
+          updatePauseElements(false);
+        }
+      }
+    }
+  }).observe(cancelSplitButton, {
+    childList: true,
+    subtree: true,
+  });
+}
+
+updatePauseElements(true);

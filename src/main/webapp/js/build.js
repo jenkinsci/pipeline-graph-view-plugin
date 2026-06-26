@@ -213,8 +213,12 @@ function updatePauseElements(enablePolling = false) {
           }
         } else {
           pausedBanner.style.display = "none";
-          pauseMenuItem.style.display = "none";
-          resumeMenuItem.style.display = "none";
+          if (pauseMenuItem) {
+            pauseMenuItem.style.display = "none";
+          }
+          if (resumeMenuItem) {
+            resumeMenuItem.style.display = "none";
+          }
         }
       }
       return null;

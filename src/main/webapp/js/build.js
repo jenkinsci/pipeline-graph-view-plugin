@@ -230,11 +230,19 @@ function updatePauseElements(enablePolling = false) {
 
 const cancelSplitButton = document.getElementById("pgv-cancel-split-button");
 if (cancelSplitButton) {
+  let isPauseResumeMenuOpen = false;
+
   const pauseResumeMenuOpenObserver = new MutationObserver(() => {
     const pauseMenuItem = document.getElementById("pgv-pause");
     const resumeMenuItem = document.getElementById("pgv-resume");
-    if (pauseMenuItem || resumeMenuItem) {
+    const menuItemsExist = pauseMenuItem || resumeMenuItem;
+
+    if (menuItemsExist && !isPauseResumeMenuOpen) {
+      isPauseResumeMenuOpen = true;
       setTimeout(() => updatePauseElements(false), 0);
+    }
+    else if (!menuItemsExist && isPauseResumeMenuOpen) {
+      isPauseResumeMenuOpen = false;
     }
   });
 

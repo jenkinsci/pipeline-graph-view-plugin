@@ -226,21 +226,30 @@ function updatePauseElements(enablePolling = false) {
 
 const cancelSplitButton = document.getElementById("pgv-cancel-split-button");
 if (cancelSplitButton) {
-  // Create an observer to update the pause/resume menu items when they become visible
-  new MutationObserver((mutationsList, observer) => {
-    for (const mutation of mutationsList) {
-      if (mutation.type === "childList") {
-        const pauseMenuItem = document.getElementById("pgv-pause");
-        const resumeMenuItem = document.getElementById("pgv-resume");
-        if (pauseMenuItem || resumeMenuItem) {
-          updatePauseElements(false);
-        }
-      }
+  const pauseResumeMenuOpenObserver = new MutationObserver(() => {
+    const pauseMenuItem = document.getElementById("pgv-pause");
+    const resumeMenuItem = document.getElementById("pgv-resume");
+    if (pauseMenuItem || resumeMenuItem) {
+      setTimeout(() => updatePauseElements(false), 0);
     }
-  }).observe(cancelSplitButton, {
+  });
+
+  pauseResumeMenuOpenObserver.observe(cancelSplitButton, {
     childList: true,
     subtree: true,
   });
+
+  const cancelButtonHiddenObserver = new MutationObserver(() => {
+    if (!cancelSplitButton || cancelSplitButton.style.display === "none") {
+      pauseResumeMenuOpenObserver.disconnect();
+      cancelButtonHiddenObserver.disconnect();
+    }
+  });
+
+  cancelButtonHiddenObserver.observe(cancelSplitButton, {
+    attributes: true,
+    attributeFilter: ["style"],
+  });
 }
 
-updatePauseElements(true);
+setTimeout(() => updatePauseElements(true), 0);

@@ -284,7 +284,7 @@ export function makeReactChildren(
             className={classNames.join(" ")}
             dangerouslySetInnerHTML={{ __html: codeOrString }}
             key={`${key}-${i}`}
-          />
+          />,
         );
       }
     } else if (codeOrString.isSelectGraphicRendition) {

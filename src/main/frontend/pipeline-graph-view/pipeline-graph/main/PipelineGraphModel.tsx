@@ -16,7 +16,7 @@ export const defaultLayout = {
   nodeSpacingH: 140,
   parallelSpacingH: 140,
   nodeSpacingV: 70,
-  nodeRadius: 12,
+  nodeRadius: 14,
   terminalRadius: 10,
   curveRadius: 15,
   connectorStrokeWidth: 2,

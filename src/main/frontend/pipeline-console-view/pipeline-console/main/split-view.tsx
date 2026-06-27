@@ -25,29 +25,17 @@ export default function SplitView(props: SplitViewNewProps) {
   const { direction = "horizontal", storageKey } = props;
   const [isDragging, setIsDragging] = useState(false);
 
-  const isVertical = direction === "vertical";
-
-  const initialSize = (() => {
+  const panelSize = (() => {
     if (storageKey === "stages") return treeViewWidth;
     if (storageKey === "graph") {
-      return isVertical ? stageViewHeight : stageViewWidth;
+      if (direction === "vertical") {
+        return stageViewHeight;
+      } else {
+        return stageViewWidth;
+      }
     }
     return 300; // fallback
   })();
-
-  useEffect(() => {
-    const newSize = (() => {
-      if (storageKey === "stages") return treeViewWidth;
-      if (storageKey === "graph") {
-        return direction === "vertical" ? stageViewHeight : stageViewWidth;
-      }
-      return 300;
-    })();
-
-    setPanelSize(newSize);
-  }, [direction, treeViewWidth, stageViewWidth, stageViewHeight, storageKey]);
-
-  const [panelSize, setPanelSize] = useState<number>(initialSize);
 
   const dividerRef = useRef<HTMLDivElement>(null);
 
@@ -71,7 +59,6 @@ export default function SplitView(props: SplitViewNewProps) {
       direction === "vertical" ? 100 : 200,
       Math.min(newSize, 1500),
     );
-    setPanelSize(clampedSize);
 
     // Update context sizes
     if (storageKey === "stages") {
@@ -86,21 +73,13 @@ export default function SplitView(props: SplitViewNewProps) {
   };
 
   const handleDoubleClick = () => {
-    const resetSize = (() => {
-      if (storageKey === "stages") return 300;
-      if (storageKey === "graph") return isVertical ? 250 : 600;
-      return 300;
-    })();
-
-    setPanelSize(resetSize);
-
     if (storageKey === "stages") {
-      setTreeViewWidth(resetSize);
+      setTreeViewWidth(300);
     } else if (storageKey === "graph") {
       if (direction === "vertical") {
-        setStageViewHeight(resetSize);
+        setStageViewHeight(250);
       } else {
-        setStageViewWidth(resetSize);
+        setStageViewWidth(600);
       }
     }
   };

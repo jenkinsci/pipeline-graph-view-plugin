@@ -42,7 +42,6 @@ interface Viewport {
 }
 
 const VIEWPORT_MARGIN = 300;
-const GRAPH_PADDING = 20;
 
 const MIN_COLUMNS_WHEN_COLLAPSED = 5;
 
@@ -185,18 +184,16 @@ export function PipelineGraph({
       return;
     }
 
-    const paddedMeasuredWidth = measuredWidth + GRAPH_PADDING * 2;
-    const paddedMeasuredHeight = measuredHeight + GRAPH_PADDING * 2;
-    const initialScale = Math.min(1, transformWidth / paddedMeasuredWidth);
+    const initialScale = Math.min(1, transformWidth / measuredWidth);
     const minScale = initialScale * 0.75;
     const autoScale = Math.max(initialScale, 0.5);
     const centerOffsetX = Math.max(
       0,
-      (transformWidth - paddedMeasuredWidth * autoScale) / 2,
+      (transformWidth - measuredWidth * autoScale) / 2,
     );
     const centerOffsetY = Math.max(
       0,
-      (transformHeight - paddedMeasuredHeight * autoScale) / 2,
+      (transformHeight - measuredHeight * autoScale) / 2,
     );
     setMinScale(minScale);
     setInitialScale(initialScale);
@@ -331,7 +328,6 @@ export function PipelineGraph({
   const outerDivStyle: CSSProperties = {
     position: "relative",
     overflow: "visible",
-    margin: GRAPH_PADDING,
   };
   if (debugPipelineGraph()) {
     outerDivStyle.border = "1px dashed red";

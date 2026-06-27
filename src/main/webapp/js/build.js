@@ -253,4 +253,7 @@ if (cancelSplitButton) {
   });
 }
 
-setTimeout(() => updatePauseElements(true), 0);
+const isPipelineOverview = document.getElementById("console-pipeline-root") !== null;
+if (isPipelineOverview) {
+  setTimeout(() => updatePauseElements(true), 0);
+}

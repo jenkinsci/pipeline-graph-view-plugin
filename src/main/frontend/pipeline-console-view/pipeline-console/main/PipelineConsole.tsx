@@ -10,7 +10,10 @@ import {
   SETTINGS,
 } from "../../../common/components/symbols.tsx";
 import { useUserPermissions } from "../../../common/user/user-permission-provider.tsx";
-import { Result } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
+import {
+  LayoutInfo,
+  Result,
+} from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import Skeleton from "./components/skeleton.tsx";
 import Stages from "./components/stages.tsx";
 import StagesCustomization from "./components/stages-customization.tsx";
@@ -23,13 +26,25 @@ import SplitView from "./split-view.tsx";
 import StageDetails from "./stage-details.tsx";
 import StageView from "./StageView.tsx";
 
+const stagesLayout: Partial<LayoutInfo> = {
+  graphSpacingTop: 34, // spacing for expand button
+  graphSpacingRight: 18, // spacing for expand button
+  graphSpacingBottom: 18, // spacing for zoom buttons
+  graphSpacingLeft: 18, // align with right spacing
+};
+
 export default function PipelineConsole() {
   const rootElement = document.getElementById("console-pipeline-root");
   const currentRunPath = rootElement?.dataset.currentRunPath!;
   const previousRunPath = rootElement?.dataset.previousRunPath;
   const normalizedParentJobPath = rootElement?.dataset.normalizedParentJobPath!;
 
-  const { stageViewPosition, mainViewVisibility } = useLayoutPreferences();
+  const {
+    stageViewPosition,
+    mainViewVisibility,
+    setAutoStageViewHeight,
+    setDefaultStageViewHeight,
+  } = useLayoutPreferences();
   const {
     complete,
     tailLogs,
@@ -115,11 +130,14 @@ export default function PipelineConsole() {
               <Skeleton />
             ) : (
               <Stages
+                layout={stagesLayout}
                 stages={stages}
                 selectedStage={openStage || undefined}
                 stageViewPosition={stageViewPosition}
                 onStageSelect={handleStageSelect}
                 normalizedParentJobPath={normalizedParentJobPath}
+                setAutoStageViewHeight={setAutoStageViewHeight}
+                setDefaultStageViewHeight={setDefaultStageViewHeight}
               />
             ))}
 

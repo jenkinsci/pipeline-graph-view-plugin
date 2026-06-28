@@ -1,0 +1,319 @@
+pipeline {
+    agent any
+    stages {
+        // ── Phase 1: Structural auto-grouping ──────────────────────
+        // Line count display in step header. Many-line steps show count.
+        // Short steps show fewer lines. Step card expand/collapse is
+        // controlled by clicking the step header.
+
+        stage('[P1] Build - 60 lines') {
+            steps {
+                echo 'Building...'
+                sh '''#!/bin/bash
+                    for i in $(seq 1 60); do
+                        echo "Build output line $i: compiling module-$i..."
+                    done
+                '''
+            }
+        }
+
+        stage('[P1] Lint - 1 line') {
+            steps { echo 'Linting... all clean.' }
+        }
+
+        // ── Phase 2: Marker detection ──────────────────────────────
+        // Tests ##[group]/##[endgroup] and ::group::/::endgroup:: syntax.
+        // Sections inside a step collapse/expand independently.
+
+        stage('[P2] Unit Tests - markers') {
+            steps {
+                echo 'Running unit tests...'
+                sh '''#!/bin/bash
+                    echo "##[group]Test Suite: core"
+                    for i in $(seq 1 20); do
+                        echo "  TEST $i: test_core_$i ... PASSED"
+                    done
+                    echo "##[endgroup]"
+
+                    echo "##[group]Test Suite: api"
+                    for i in $(seq 1 20); do
+                        echo "  TEST $i: test_api_$i ... PASSED"
+                    done
+                    echo "##[endgroup]"
+
+                    echo "40 tests passed, 0 failed"
+                '''
+            }
+        }
+
+        stage('[P2] npm install - ##[group]') {
+            steps {
+                echo 'Starting dependency installation...'
+                sh '''#!/bin/bash
+                    echo "##[group]npm install"
+                    echo "added 1245 packages in 32s"
+                    echo "npm warn deprecated glob@7.2.3: Glob versions prior to v9 are no longer supported"
+                    echo "npm warn deprecated inflight@1.0.6: This module is not supported"
+                    echo "127 packages are looking for funding"
+                    echo "##[endgroup]"
+                '''
+            }
+        }
+
+        stage('[P2] pip install - ::group::') {
+            steps {
+                sh '''#!/bin/bash
+                    echo "::group::pip install"
+                    echo "Collecting flask==2.3.2"
+                    echo "  Downloading Flask-2.3.2-py3-none-any.whl (96 kB)"
+                    echo "Collecting requests>=2.28"
+                    echo "  Downloading requests-2.31.0-py3-none-any.whl (62 kB)"
+                    echo "Installing collected packages: flask, requests"
+                    echo "Successfully installed flask-2.3.2 requests-2.31.0"
+                    echo "::endgroup::"
+                '''
+            }
+        }
+
+        stage('[P2] Nested Sections') {
+            steps {
+                sh '''#!/bin/bash
+                    echo "##[group]Compile All Modules"
+                    echo "Starting compilation..."
+                    echo "##[group]Module: core"
+                    echo "Compiling core/src/main/java..."
+                    echo "42 source files compiled"
+                    echo "##[endgroup]"
+                    echo "##[group]Module: api"
+                    echo "Compiling api/src/main/java..."
+                    echo "18 source files compiled"
+                    echo "##[endgroup]"
+                    echo "##[group]Module: web"
+                    echo "Compiling web/src/main/java..."
+                    echo "7 source files compiled"
+                    echo "##[endgroup]"
+                    echo "All modules compiled successfully."
+                    echo "##[endgroup]"
+                '''
+            }
+        }
+
+        stage('[P2] Edge - shell trace') {
+            steps {
+                sh '''
+                    set -x
+                    echo "##[group]This should be a real marker"
+                    echo "The set -x trace above (+ echo ...) must be ignored"
+                    echo "##[endgroup]"
+                    set +x
+                '''
+            }
+        }
+
+        stage('[P2] Edge - ANSI colors') {
+            steps {
+                sh '''#!/bin/bash
+                    echo -e "\033[32m##[group]Green Section\033[0m"
+                    echo "This section marker has green ANSI wrapping"
+                    echo -e "\033[32m##[endgroup]\033[0m"
+
+                    echo -e "##[group]\033[1;34mBold Blue Title\033[0m"
+                    echo "Title has bold blue ANSI after the marker"
+                    echo "##[endgroup]"
+
+                    echo -e "##[group]\033[33mYellow\033[0m \033[1;31mRed\033[0m"
+                    echo "Mixed ANSI colors within a single title"
+                    echo "##[endgroup]"
+                '''
+            }
+        }
+
+        stage('[P2] Edge - mixed syntax') {
+            steps {
+                sh '''#!/bin/bash
+                    echo "##[group]Mixed Open"
+                    echo "Opened with ## syntax, closed with :: syntax"
+                    echo "::endgroup::"
+                '''
+            }
+        }
+
+        stage('[P2] Edge - stray endgroup') {
+            steps {
+                sh '''#!/bin/bash
+                    echo "Some normal output"
+                    echo "##[endgroup]"
+                    echo "More normal output"
+                '''
+            }
+        }
+
+        stage('[P2] Edge - unclosed group') {
+            steps {
+                sh '''#!/bin/bash
+                    echo "##[group]Unclosed Section"
+                    echo "This group never closes in this step"
+                    echo "It should render open by default"
+                '''
+            }
+        }
+
+        // ── Phase 3: ConsoleSectionRule extension point ──────────
+        // No built-in rules shipped. Plugin maintainers contribute
+        // their own rules via @Extension on ConsoleSectionRule.
+        // The extension point + API endpoint + frontend wiring are
+        // all in place; stages here are placeholders until a plugin
+        // registers a rule.
+
+        // ── Phase 4: Combined / interaction testing ────────────────
+        // Markers wrapping different kinds of output.
+
+        stage('[P4] Markers + Maven output') {
+            steps {
+                sh '''#!/bin/bash
+                    echo "##[group]Full Build Pipeline"
+                    echo "[INFO] --- maven-compiler-plugin:3.8.1:compile ---"
+                    echo "[INFO] Compiling sources..."
+                    echo "[INFO] --- maven-surefire-plugin:2.22.2:test ---"
+                    echo "[INFO] Running tests..."
+                    echo "[INFO] -------------------------------------------------------"
+                    echo "##[endgroup]"
+                '''
+            }
+        }
+
+        stage('[P4] Markers + Docker') {
+            steps {
+                sh '''#!/bin/bash
+                    echo "::group::Docker Image Build"
+                    echo "Step 1/8 : FROM node:18-alpine"
+                    echo "Step 2/8 : WORKDIR /app"
+                    echo "Step 3/8 : COPY package*.json ./"
+                    echo "Step 4/8 : RUN npm ci --production"
+                    echo "Step 5/8 : COPY . ."
+                    echo "Step 6/8 : RUN npm run build"
+                    echo "Step 7/8 : EXPOSE 3000"
+                    echo "Step 8/8 : CMD [\\"node\\", \\"server.js\\"]"
+                    echo "Successfully built abc123def456"
+                    echo "::endgroup::"
+                '''
+            }
+        }
+
+        stage('[P4] Sequential marker groups') {
+            steps {
+                sh '''#!/bin/bash
+                    echo "##[group]API Tests"
+                    for i in $(seq 1 15); do
+                        echo "  PASS: test_api_endpoint_$i ($(( RANDOM % 200 + 50 ))ms)"
+                    done
+                    echo "##[endgroup]"
+
+                    echo "##[group]E2E Tests"
+                    for i in $(seq 1 10); do
+                        echo "  PASS: test_e2e_flow_$i ($(( RANDOM % 3000 + 1000 ))ms)"
+                    done
+                    echo "##[endgroup]"
+
+                    echo "##[group]Load Test Results"
+                    echo "Requests/sec: 2,450"
+                    echo "Avg latency:  12ms"
+                    echo "P95 latency:  45ms"
+                    echo "P99 latency:  120ms"
+                    echo "Error rate:   0.01%"
+                    echo "##[endgroup]"
+                '''
+            }
+        }
+
+        stage('[P4] Deploy with markers') {
+            steps {
+                sh '''#!/bin/bash
+                    echo "::group::Deploying to staging"
+                    echo "Connecting to staging-cluster..."
+                    echo "Applying kubernetes manifests..."
+                    echo "deployment.apps/web-app configured"
+                    echo "service/web-app unchanged"
+                    echo "ingress.networking.k8s.io/web-app configured"
+                    echo "Waiting for rollout..."
+                    echo "deployment \\"web-app\\" successfully rolled out"
+                    echo "::endgroup::"
+                '''
+            }
+        }
+
+        stage('[P4] Package with markers') {
+            steps {
+                sh '''#!/bin/bash
+                    echo "##[group]Create Distribution Archive"
+                    for i in $(seq 1 20); do
+                        echo "Adding file: dist/module-$i.js ($(( RANDOM % 500 + 10 ))KB)"
+                    done
+                    echo "Archive size: 4.2MB"
+                    echo "##[endgroup]"
+                '''
+            }
+        }
+
+        // ── Phase 1: Parallel stages (structural grouping) ────────
+        stage('[P1] Check All Services') {
+            parallel {
+                stage('Check service-1') { steps { echo 'Checking service-1' } }
+                stage('Check service-2') { steps { echo 'Checking service-2' } }
+                stage('Check service-3') { steps { echo 'Checking service-3' } }
+                stage('Check service-4') { steps { echo 'Checking service-4' } }
+                stage('Check service-5') { steps { echo 'Checking service-5' } }
+                stage('Check service-6') { steps { echo 'Checking service-6' } }
+                stage('Check service-7') { steps { echo 'Checking service-7' } }
+                stage('Check service-8') { steps { echo 'Checking service-8' } }
+                stage('Check service-9') { steps { echo 'Checking service-9' } }
+                stage('Check service-10') { steps { echo 'Checking service-10' } }
+                stage('Check service-11') { steps { echo 'Checking service-11' } }
+                stage('Check service-12') { steps { echo 'Checking service-12' } }
+                stage('Check service-13') { steps { echo 'Checking service-13' } }
+                stage('Check service-14') { steps { echo 'Checking service-14' } }
+                stage('Check service-15') { steps { echo 'Checking service-15' } }
+                stage('Check service-16') { steps { echo 'Checking service-16' } }
+                stage('Check service-17') { steps { echo 'Checking service-17' } }
+                stage('Check service-18') { steps { echo 'Checking service-18' } }
+                stage('Check service-19') { steps { echo 'Checking service-19' } }
+                stage('Check service-20') { steps { echo 'Checking service-20' } }
+                stage('Check service-21') { steps { echo 'Checking service-21' } }
+                stage('Check service-22') { steps { echo 'Checking service-22' } }
+                stage('Check service-23') { steps { echo 'Checking service-23' } }
+                stage('Check service-24') { steps { echo 'Checking service-24' } }
+                stage('Check service-25') { steps { echo 'Checking service-25' } }
+                stage('Check service-26') { steps { echo 'Checking service-26' } }
+                stage('Check service-27') { steps { echo 'Checking service-27' } }
+                stage('Check service-28') { steps { echo 'Checking service-28' } }
+                stage('Check service-29') { steps { echo 'Checking service-29' } }
+                stage('Check service-30') { steps { echo 'Checking service-30' } }
+                stage('Check service-31') { steps { echo 'Checking service-31' } }
+                stage('Check service-32') { steps { echo 'Checking service-32' } }
+                stage('Check service-33') { steps { echo 'Checking service-33' } }
+                stage('Check service-34') { steps { echo 'Checking service-34' } }
+                stage('Check service-35') { steps { echo 'Checking service-35' } }
+                stage('Check service-36') { steps { echo 'Checking service-36' } }
+                stage('Check service-37') { steps { echo 'Checking service-37' } }
+                stage('Check service-38') { steps { echo 'Checking service-38' } }
+                stage('Check service-39') { steps { echo 'Checking service-39' } }
+                stage('Check service-40') { steps { echo 'Checking service-40' } }
+                stage('Check service-41') { steps { echo 'Checking service-41' } }
+                stage('Check service-42') { steps { echo 'Checking service-42' } }
+                stage('Check service-43') { steps { echo 'Checking service-43' } }
+                stage('Check service-44') { steps { echo 'Checking service-44' } }
+                stage('Check service-45') { steps { echo 'Checking service-45' } }
+                stage('Check service-46') { steps { echo 'Checking service-46' } }
+                stage('Check service-47') { steps { echo 'Checking service-47' } }
+                stage('Check service-48') { steps { echo 'Checking service-48' } }
+                stage('Check service-49') { steps { echo 'Checking service-49' } }
+                stage('Check service-50') { steps { echo 'Checking service-50' } }
+                stage('Check service-51') { steps { echo 'Checking service-51' } }
+                stage('Check service-52') { steps { echo 'Checking service-52' } }
+                stage('Check service-53') { steps { echo 'Checking service-53' } }
+                stage('Check service-54') { steps { echo 'Checking service-54' } }
+                stage('Check service-55') { steps { echo 'Checking service-55' } }
+            }
+        }
+    }
+}

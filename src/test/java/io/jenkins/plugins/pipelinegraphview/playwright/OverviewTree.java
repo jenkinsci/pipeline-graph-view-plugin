@@ -102,10 +102,6 @@ class OverviewTree {
     }
 
     public void clickProceed() {
-        this.page.getByText("Proceed").click();
-    }
-
-    public void clickInputWithParameters() {
-        this.page.getByText("Input requested").click();
+        this.page.locator(".pgv-input-step").getByText("Proceed").click();
     }
 }

@@ -1,7 +1,9 @@
 package io.jenkins.plugins.pipelinegraphview.consoleview;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
@@ -92,6 +94,25 @@ class PipelineConsoleViewActionTest {
             DomElement root = page.getElementById("console-pipeline-root");
             assertThat(root, notNullValue());
             assertThat(root.getAttribute("data-current-run-path"), endsWith("/" + run.getNumber() + "/"));
+        }
+    }
+
+    @Test
+    void doRerunReturnsErrorWhenJobIsNotBuildable(JenkinsRule j) throws Exception {
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "hello_world_scripted", "simpleError.jenkinsfile", Result.FAILURE);
+
+        run.getParent().setDisabled(true);
+        j.jenkins.setCrumbIssuer(null);
+
+        try (var c = j.createWebClient()) {
+            c.getOptions().setThrowExceptionOnFailingStatusCode(false);
+            WebRequest request = new WebRequest(
+                    UrlUtils.toUrlSafe(j.getURL() + run.getUrl() + "stages/rerun"), org.htmlunit.HttpMethod.POST);
+            WebResponse rsp = c.loadWebResponse(request);
+            // Before the fix this threw a NullPointerException (HTTP 500).
+            // After the fix, errorJSON() returns HTTP 200 with an error JSON body.
+            assertThat(rsp.getStatusCode(), equalTo(200));
         }
     }
 }

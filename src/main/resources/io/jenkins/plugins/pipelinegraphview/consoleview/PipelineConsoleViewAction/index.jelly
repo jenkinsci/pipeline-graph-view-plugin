@@ -11,6 +11,10 @@
             </l:details-bar>
         </l:app-bar>
 
+      <div id="pgv-paused-banner" class="jenkins-alert jenkins-alert-warning" style="display: none;">
+        ${%Build Execution is Paused}
+      </div>
+
         <j:if test="${!empty(it.run.description)}">
             <div class="pgv-description">
                 <l:icon src="symbol-information-circle-outline plugin-ionicons-api" />

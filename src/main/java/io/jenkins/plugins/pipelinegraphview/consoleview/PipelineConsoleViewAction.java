@@ -35,6 +35,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.Tab;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.pipeline.modeldefinition.actions.RestartDeclarativePipelineAction;
+import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
 import org.jenkinsci.plugins.workflow.cps.replay.ReplayAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
@@ -301,6 +302,7 @@ public class PipelineConsoleViewAction extends Tab {
      * Handles the rerun request using ReplayAction feature
      */
     @RequirePOST
+    @WebMethod(name = "rerun")
     @JavaScriptMethod
     public HttpResponse doRerun() {
         run.checkPermission(Item.BUILD);
@@ -309,6 +311,9 @@ public class PipelineConsoleViewAction extends Tab {
             return HttpResponses.errorJSON(Messages.scheduled_failure());
         }
         ReplayAction replayAction = run.getAction(ReplayAction.class);
+        if (replayAction == null) {
+            return HttpResponses.errorJSON(Messages.scheduled_failure());
+        }
         Queue.Item item = replayAction.run2(replayAction.getOriginalScript(), replayAction.getOriginalLoadedScripts());
 
         if (item == null) {
@@ -368,6 +373,97 @@ public class PipelineConsoleViewAction extends Tab {
         String message =
                 Result.ABORTED.equals(run.getResult()) ? Messages.run_alreadyCancelled() : Messages.run_isFinished();
         return HttpResponses.errorJSON(message);
+    }
+
+    /**
+     * Handles the pause request.
+     */
+    @RequirePOST
+    @JavaScriptMethod
+    public HttpResponse doPause() {
+        run.checkPermission(getCancelPermission());
+
+        if (!run.isBuilding()) {
+            return HttpResponses.errorJSON(Messages.run_isFinished());
+        }
+
+        FlowExecution execution = run.getExecution();
+        if (execution == null) {
+            return HttpResponses.errorJSON("No execution found");
+        }
+
+        // Pause is specific to CpsFlowExecution
+        if (execution instanceof CpsFlowExecution) {
+            CpsFlowExecution cpsExecution = (CpsFlowExecution) execution;
+
+            try {
+                cpsExecution.pause(true);
+                return HttpResponses.okJSON();
+            } catch (IOException e) {
+                String pauseFailedMessage = Messages.run_pauseFailed();
+                logger.error(pauseFailedMessage, e);
+                return HttpResponses.errorJSON(pauseFailedMessage + ": " + e.getMessage());
+            }
+        }
+
+        return HttpResponses.errorJSON(Messages.run_noPauseSupport());
+    }
+
+    /**
+     * Handles the resume request.
+     */
+    @RequirePOST
+    @JavaScriptMethod
+    public HttpResponse doResume() {
+        run.checkPermission(getCancelPermission());
+
+        if (!run.isBuilding()) {
+            return HttpResponses.errorJSON(Messages.run_isFinished());
+        }
+
+        FlowExecution execution = run.getExecution();
+        if (execution == null) {
+            return HttpResponses.errorJSON("No execution found");
+        }
+
+        // Resume is specific to CpsFlowExecution
+        if (execution instanceof CpsFlowExecution) {
+            CpsFlowExecution cpsExecution = (CpsFlowExecution) execution;
+
+            try {
+                cpsExecution.pause(false);
+                return HttpResponses.okJSON();
+            } catch (IOException e) {
+                String resumeFailedMessage = Messages.run_resumeFailed();
+                logger.error(resumeFailedMessage, e);
+                return HttpResponses.errorJSON(resumeFailedMessage + ": " + e.getMessage());
+            }
+        }
+
+        return HttpResponses.errorJSON(Messages.run_noPauseSupport());
+    }
+
+    /**
+     * Returns the current pause state of the pipeline.
+     */
+    @GET
+    @WebMethod(name = "pauseState")
+    public HttpResponse getPauseState(StaplerRequest2 req, StaplerResponse2 rsp) {
+        run.checkPermission(Item.READ);
+
+        FlowExecution execution = run.getExecution();
+        JSONObject obj = new JSONObject();
+
+        if (execution instanceof CpsFlowExecution) {
+            CpsFlowExecution cpsExecution = (CpsFlowExecution) execution;
+            obj.put("paused", cpsExecution.isPaused());
+            obj.put("building", run.isBuilding());
+        } else {
+            obj.put("paused", false);
+            obj.put("building", run.isBuilding());
+        }
+
+        return HttpResponses.okJSON(obj);
     }
 
     public String getFullProjectDisplayName() {

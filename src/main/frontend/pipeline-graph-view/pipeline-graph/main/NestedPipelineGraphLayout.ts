@@ -69,11 +69,13 @@ export function nestedGraphLayout(
     key: "end-node",
     id: -3,
   });
-  root.y = root.shiftY + layout.nodeRadius + 4;
+  root.y = root.shiftY + layout.nodeRadius;
   root.width =
     root.shiftX + sumGraphNodeProp(root, "width") - startEndReducedSpacing;
-  const measuredWidth = root.width;
-  const measuredHeight = root.y + root.height;
+  root.x += layout.graphSpacingLeft;
+  root.y += layout.graphSpacingTop;
+  const measuredWidth = root.x + root.width + layout.graphSpacingRight;
+  const measuredHeight = root.y + root.height + layout.graphSpacingBottom;
 
   computePositions(root, 0, layout);
   const connections = computeConnections(root);
@@ -253,6 +255,7 @@ function buildGraphNested(
       firstChildIsSkipped,
     };
     buildGraphNested(childNode, stage.children, layout, isLast);
+    if (isParallel && idx > 0) childNode.shiftY += layout.labelOffsetV;
     if (hasBigLabel) childNode.shiftY += layout.labelOffsetV;
     childNode.allChildrenSkipped =
       childNode.hasParallel && !childNode.children.some((c) => !c.isSkipped);
@@ -521,7 +524,7 @@ function baseGraphNode(layout: LayoutInfo, hasBigLabel?: boolean) {
     shiftX: 0,
     shiftY: 0,
     width: layout.nodeSpacingH,
-    height: layout.nodeSpacingV,
+    height: layout.nodeSpacingV - layout.labelOffsetV,
     ...(hasBigLabel ? { shiftY: layout.labelOffsetV, hasBigLabel: true } : {}),
   };
 }

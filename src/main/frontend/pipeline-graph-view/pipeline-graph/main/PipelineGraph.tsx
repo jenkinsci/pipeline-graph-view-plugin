@@ -1,5 +1,7 @@
 import {
   CSSProperties,
+  Dispatch,
+  SetStateAction,
   useCallback,
   useContext,
   useEffect,
@@ -55,6 +57,11 @@ export function PipelineGraph({
   onToggleCollapse,
   setMinScale,
   setInitialScale,
+  setDefaultTransform,
+  setAutoStageViewHeight,
+  setDefaultStageViewHeight,
+  centerGraph,
+  setCenterGraph,
 }: Props) {
   const fullLayout = useMemo(() => {
     return {
@@ -78,10 +85,14 @@ export function PipelineGraph({
     const apply = (width: number) => {
       if (width <= 0) return;
       const reservedSpace =
-        fullLayout.nodeSpacingH / 2 + // before start
+        // before start
+        fullLayout.graphSpacingLeft +
+        fullLayout.nodeSpacingH / 2 +
         fullLayout.nodeSpacingH * 0.7 + // start node with reduced spacing
         -fullLayout.nodeSpacingH * 0.3 + // reduced spacing to end node
-        fullLayout.nodeSpacingH / 2; // after end;
+        // after end
+        fullLayout.nodeSpacingH / 2 +
+        fullLayout.graphSpacingRight;
       const next = Math.max(
         MIN_COLUMNS_WHEN_COLLAPSED,
         Math.floor((width - reservedSpace) / fullLayout.nodeSpacingH),
@@ -98,7 +109,12 @@ export function PipelineGraph({
     });
     observer.observe(node);
     return () => observer.disconnect();
-  }, [collapsed, fullLayout.nodeSpacingH]);
+  }, [
+    collapsed,
+    fullLayout.graphSpacingLeft,
+    fullLayout.graphSpacingRight,
+    fullLayout.nodeSpacingH,
+  ]);
 
   const {
     nodes,
@@ -149,44 +165,90 @@ export function PipelineGraph({
   );
 
   const transform = useContext(TransformContext);
-  const [transformWidth, setTransformWidth] = useState<number>(0);
+  const [transformViewport, setTransformViewport] = useState({
+    width: 0,
+    height: 0,
+  });
   useEffect(() => {
     if (!transform?.wrapperComponent) return;
     const observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
-        setTransformWidth(entry.contentRect.width);
+        const { width, height } = entry.contentRect;
+        setTransformViewport((prev) =>
+          prev.width === width && prev.height === height
+            ? prev
+            : { width, height },
+        );
       }
     });
     observer.observe(transform.wrapperComponent);
     return () => observer.disconnect();
   }, [transform?.wrapperComponent]);
 
-  const [fitToWidth, setFitToWidth] = useState(true);
   useEffect(() => {
     if (!setMinScale || !setInitialScale || !transform) return;
+    const { width: transformWidth, height: transformHeight } =
+      transformViewport;
+    if (
+      transformWidth <= 0 ||
+      transformHeight <= 0 ||
+      measuredWidth <= 0 ||
+      measuredHeight <= 0
+    ) {
+      return;
+    }
+
     const initialScale = Math.min(1, transformWidth / measuredWidth);
     const minScale = initialScale * 0.75;
+    const autoScale = Math.max(initialScale, 0.5);
+    const centerOffsetX = Math.max(
+      0,
+      (transformWidth - measuredWidth * autoScale) / 2,
+    );
+    const centerOffsetY = Math.max(
+      0,
+      (transformHeight - measuredHeight * autoScale) / 2,
+    );
     setMinScale(minScale);
     setInitialScale(initialScale);
-    if (fitToWidth) {
+    setDefaultTransform?.({
+      scale: autoScale,
+      positionX: centerOffsetX,
+      positionY: centerOffsetY,
+    });
+    setDefaultStageViewHeight?.(measuredHeight);
+    if (centerGraph) {
       // Don't scale too small by default.
-      const autoScale = Math.max(initialScale, 0.5);
-      const centerOffset = Math.max(0, (transformWidth - measuredWidth) / 2);
+      const autoHeight = Math.max(
+        Math.min(measuredHeight, fullLayout.nodeSpacingH),
+        measuredHeight * autoScale,
+      );
+      setAutoStageViewHeight?.(autoHeight);
       if (
         transform.state.scale !== autoScale ||
-        transform.state.positionX !== centerOffset
+        transform.state.positionX !== centerOffsetX ||
+        transform.state.positionY !== centerOffsetY
       ) {
-        transform.setState(autoScale, centerOffset, 0);
+        transform.setState(autoScale, centerOffsetX, centerOffsetY);
       }
-      return transform.onChange(() => setFitToWidth(false));
+      return transform.onChange(() => {
+        setCenterGraph?.(false);
+        setAutoStageViewHeight?.(0);
+      });
     }
   }, [
     transform,
-    transformWidth,
-    fitToWidth,
+    transformViewport,
+    centerGraph,
+    setCenterGraph,
+    fullLayout.nodeSpacingH,
     measuredWidth,
+    measuredHeight,
     setMinScale,
     setInitialScale,
+    setDefaultTransform,
+    setAutoStageViewHeight,
+    setDefaultStageViewHeight,
   ]);
 
   // When inside a TransformWrapper, only mount the nodes/labels intersecting
@@ -293,6 +355,7 @@ export function PipelineGraph({
   const outerDivStyle: CSSProperties = {
     position: "relative",
     overflow: "visible",
+    boxSizing: "unset",
   };
   if (debugPipelineGraph()) {
     outerDivStyle.border = "1px dashed red";
@@ -391,4 +454,13 @@ interface Props {
   onToggleCollapse: (stageId: number) => void;
   setMinScale?: (value: number) => void;
   setInitialScale?: (value: number) => void;
+  setDefaultTransform?: (value: {
+    scale: number;
+    positionX: number;
+    positionY: number;
+  }) => void;
+  setAutoStageViewHeight?: Dispatch<SetStateAction<number>>;
+  setDefaultStageViewHeight?: Dispatch<SetStateAction<number>>;
+  centerGraph?: boolean;
+  setCenterGraph?: Dispatch<SetStateAction<boolean>>;
 }

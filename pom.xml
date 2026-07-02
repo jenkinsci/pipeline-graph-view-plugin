@@ -35,7 +35,7 @@
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
     <jenkins.baseline>2.528</jenkins.baseline>
     <jenkins.version>2.534</jenkins.version>
-    <node.version>24.16.0</node.version>
+    <node.version>24.17.0</node.version>
     <npm.version>11.17.0</npm.version>
     <spotless.check.skip>false</spotless.check.skip>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
@@ -47,7 +47,7 @@
         <!-- Pick up common dependencies for the selected LTS line: https://github.com/jenkinsci/bom#usage -->
         <groupId>io.jenkins.tools.bom</groupId>
         <artifactId>bom-${jenkins.baseline}.x</artifactId>
-        <version>6585.va_085f4d47c41</version>
+        <version>6607.v3ed3d8ddfed8</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -85,10 +85,6 @@
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>junit</artifactId>
       <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>metrics</artifactId>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>

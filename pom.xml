@@ -47,7 +47,7 @@
         <!-- Pick up common dependencies for the selected LTS line: https://github.com/jenkinsci/bom#usage -->
         <groupId>io.jenkins.tools.bom</groupId>
         <artifactId>bom-${jenkins.baseline}.x</artifactId>
-        <version>6607.v3ed3d8ddfed8</version>
+        <version>6667.v64d86185fd17</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -93,7 +93,6 @@
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>pipeline-input-step</artifactId>
-      <version>560.v56198a_642157</version>
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins.workflow</groupId>

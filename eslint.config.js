@@ -61,6 +61,7 @@ export default [
     languageOptions: {
       globals: {
         dialog: "readonly",
+        MutationObserver: "readonly",
         notificationBar: "readonly",
       },
     },

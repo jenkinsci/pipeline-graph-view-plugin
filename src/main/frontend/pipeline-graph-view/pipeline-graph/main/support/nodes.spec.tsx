@@ -24,6 +24,10 @@ describe("Counter node with 50+ parallel stages", () => {
     labelOffsetV: 20,
     smallLabelOffsetV: 15,
     ypStart: 55,
+    graphSpacingTop: 0,
+    graphSpacingRight: 0,
+    graphSpacingBottom: 0,
+    graphSpacingLeft: 0,
   };
 
   const baseStage: StageInfo = {

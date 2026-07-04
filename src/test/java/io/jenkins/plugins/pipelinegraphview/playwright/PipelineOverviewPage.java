@@ -120,10 +120,9 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
         return this;
     }
 
-    public InputPage clickInputWithParameters() {
-        tree.clickInputWithParameters();
-
-        return new InputPage(page, jobUrl).waitForLoaded();
+    public InputDialog openInputDialog() {
+        page.locator(".input-step-dialog-opener").first().click();
+        return new InputDialog(page).waitForLoaded();
     }
 
     public PipelineOverviewPage clickProceed() {

@@ -16,13 +16,17 @@ export const defaultLayout = {
   nodeSpacingH: 140,
   parallelSpacingH: 140,
   nodeSpacingV: 70,
-  nodeRadius: 12,
+  nodeRadius: 14,
   terminalRadius: 10,
   curveRadius: 15,
   connectorStrokeWidth: 2,
   labelOffsetV: 22,
   smallLabelOffsetV: 15,
   ypStart: 55,
+  graphSpacingTop: 0,
+  graphSpacingRight: 0,
+  graphSpacingBottom: 0,
+  graphSpacingLeft: 0,
 };
 
 // Typedefs

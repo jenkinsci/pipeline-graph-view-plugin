@@ -1,5 +1,7 @@
 import {
   CSSProperties,
+  Dispatch,
+  SetStateAction,
   useCallback,
   useContext,
   useEffect,
@@ -42,7 +44,6 @@ interface Viewport {
 }
 
 const VIEWPORT_MARGIN = 300;
-const GRAPH_PADDING = 20;
 
 const MIN_COLUMNS_WHEN_COLLAPSED = 5;
 
@@ -57,6 +58,10 @@ export function PipelineGraph({
   setMinScale,
   setInitialScale,
   setDefaultTransform,
+  setAutoStageViewHeight,
+  setDefaultStageViewHeight,
+  centerGraph,
+  setCenterGraph,
 }: Props) {
   const fullLayout = useMemo(() => {
     return {
@@ -80,10 +85,14 @@ export function PipelineGraph({
     const apply = (width: number) => {
       if (width <= 0) return;
       const reservedSpace =
-        fullLayout.nodeSpacingH / 2 + // before start
+        // before start
+        fullLayout.graphSpacingLeft +
+        fullLayout.nodeSpacingH / 2 +
         fullLayout.nodeSpacingH * 0.7 + // start node with reduced spacing
         -fullLayout.nodeSpacingH * 0.3 + // reduced spacing to end node
-        fullLayout.nodeSpacingH / 2; // after end;
+        // after end
+        fullLayout.nodeSpacingH / 2 +
+        fullLayout.graphSpacingRight;
       const next = Math.max(
         MIN_COLUMNS_WHEN_COLLAPSED,
         Math.floor((width - reservedSpace) / fullLayout.nodeSpacingH),
@@ -100,7 +109,12 @@ export function PipelineGraph({
     });
     observer.observe(node);
     return () => observer.disconnect();
-  }, [collapsed, fullLayout.nodeSpacingH]);
+  }, [
+    collapsed,
+    fullLayout.graphSpacingLeft,
+    fullLayout.graphSpacingRight,
+    fullLayout.nodeSpacingH,
+  ]);
 
   const {
     nodes,
@@ -171,7 +185,6 @@ export function PipelineGraph({
     return () => observer.disconnect();
   }, [transform?.wrapperComponent]);
 
-  const [fitToWidth, setFitToWidth] = useState(true);
   useEffect(() => {
     if (!setMinScale || !setInitialScale || !transform) return;
     const { width: transformWidth, height: transformHeight } =
@@ -185,18 +198,16 @@ export function PipelineGraph({
       return;
     }
 
-    const paddedMeasuredWidth = measuredWidth + GRAPH_PADDING * 2;
-    const paddedMeasuredHeight = measuredHeight + GRAPH_PADDING * 2;
-    const initialScale = Math.min(1, transformWidth / paddedMeasuredWidth);
+    const initialScale = Math.min(1, transformWidth / measuredWidth);
     const minScale = initialScale * 0.75;
     const autoScale = Math.max(initialScale, 0.5);
     const centerOffsetX = Math.max(
       0,
-      (transformWidth - paddedMeasuredWidth * autoScale) / 2,
+      (transformWidth - measuredWidth * autoScale) / 2,
     );
     const centerOffsetY = Math.max(
       0,
-      (transformHeight - paddedMeasuredHeight * autoScale) / 2,
+      (transformHeight - measuredHeight * autoScale) / 2,
     );
     setMinScale(minScale);
     setInitialScale(initialScale);
@@ -205,8 +216,14 @@ export function PipelineGraph({
       positionX: centerOffsetX,
       positionY: centerOffsetY,
     });
-    if (fitToWidth) {
+    setDefaultStageViewHeight?.(measuredHeight);
+    if (centerGraph) {
       // Don't scale too small by default.
+      const autoHeight = Math.max(
+        Math.min(measuredHeight, fullLayout.nodeSpacingH),
+        measuredHeight * autoScale,
+      );
+      setAutoStageViewHeight?.(autoHeight);
       if (
         transform.state.scale !== autoScale ||
         transform.state.positionX !== centerOffsetX ||
@@ -214,17 +231,24 @@ export function PipelineGraph({
       ) {
         transform.setState(autoScale, centerOffsetX, centerOffsetY);
       }
-      return transform.onChange(() => setFitToWidth(false));
+      return transform.onChange(() => {
+        setCenterGraph?.(false);
+        setAutoStageViewHeight?.(0);
+      });
     }
   }, [
     transform,
     transformViewport,
-    fitToWidth,
+    centerGraph,
+    setCenterGraph,
+    fullLayout.nodeSpacingH,
     measuredWidth,
     measuredHeight,
     setMinScale,
     setInitialScale,
     setDefaultTransform,
+    setAutoStageViewHeight,
+    setDefaultStageViewHeight,
   ]);
 
   // When inside a TransformWrapper, only mount the nodes/labels intersecting
@@ -331,7 +355,7 @@ export function PipelineGraph({
   const outerDivStyle: CSSProperties = {
     position: "relative",
     overflow: "visible",
-    margin: GRAPH_PADDING,
+    boxSizing: "unset",
   };
   if (debugPipelineGraph()) {
     outerDivStyle.border = "1px dashed red";
@@ -435,4 +459,8 @@ interface Props {
     positionX: number;
     positionY: number;
   }) => void;
+  setAutoStageViewHeight?: Dispatch<SetStateAction<number>>;
+  setDefaultStageViewHeight?: Dispatch<SetStateAction<number>>;
+  centerGraph?: boolean;
+  setCenterGraph?: Dispatch<SetStateAction<boolean>>;
 }

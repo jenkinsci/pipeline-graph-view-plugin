@@ -139,11 +139,6 @@ document.addEventListener("click", function (event) {
       const result = response.responseJSON;
       if (result.status === "ok") {
         notificationBar.show(target.dataset.successMessage);
-        // Hide pause, show resume
-        const pauseItem = document.getElementById("pgv-pause");
-        const resumeItem = document.getElementById("pgv-resume");
-        if (pauseItem) pauseItem.style.display = "none";
-        if (resumeItem) resumeItem.style.display = "";
       } else {
         notificationBar.show(result.message, notificationBar.WARNING);
       }
@@ -158,11 +153,6 @@ document.addEventListener("click", function (event) {
       const result = response.responseJSON;
       if (result.status === "ok") {
         notificationBar.show(target.dataset.successMessage);
-        // Hide resume, show pause
-        const pauseItem = document.getElementById("pgv-pause");
-        const resumeItem = document.getElementById("pgv-resume");
-        if (resumeItem) resumeItem.style.display = "none";
-        if (pauseItem) pauseItem.style.display = "";
       } else {
         notificationBar.show(result.message, notificationBar.WARNING);
       }
@@ -170,7 +160,7 @@ document.addEventListener("click", function (event) {
   }
 });
 
-function updatePauseElements() {
+function updatePauseElements(enablePolling = false) {
   const pausedBanner = document.getElementById("pgv-paused-banner");
   const pauseMenuItem = document.getElementById("pgv-pause");
   const resumeMenuItem = document.getElementById("pgv-resume");
@@ -208,16 +198,17 @@ function updatePauseElements() {
             }
           }
 
-          let updateInterval = 5000;
-          // update more frequently when the pause/resume menu items are visible
-          if (pauseMenuItem || resumeMenuItem) {
-            updateInterval = 1000;
+          if (enablePolling) {
+            setTimeout(() => updatePauseElements(true), 1000);
           }
-          setTimeout(updatePauseElements(), updateInterval);
         } else {
           pausedBanner.style.display = "none";
-          pauseMenuItem.style.display = "none";
-          resumeMenuItem.style.display = "none";
+          if (pauseMenuItem) {
+            pauseMenuItem.style.display = "none";
+          }
+          if (resumeMenuItem) {
+            resumeMenuItem.style.display = "none";
+          }
         }
       }
       return null;
@@ -227,4 +218,43 @@ function updatePauseElements() {
     });
 }
 
-updatePauseElements();
+const cancelSplitButton = document.getElementById("pgv-cancel-split-button");
+if (cancelSplitButton) {
+  let isPauseResumeMenuOpen = false;
+
+  const pauseResumeMenuOpenObserver = new MutationObserver(() => {
+    const pauseMenuItem = document.getElementById("pgv-pause");
+    const resumeMenuItem = document.getElementById("pgv-resume");
+    const menuItemsExist = pauseMenuItem || resumeMenuItem;
+
+    if (menuItemsExist && !isPauseResumeMenuOpen) {
+      isPauseResumeMenuOpen = true;
+      setTimeout(() => updatePauseElements(false), 0);
+    } else if (!menuItemsExist && isPauseResumeMenuOpen) {
+      isPauseResumeMenuOpen = false;
+    }
+  });
+
+  pauseResumeMenuOpenObserver.observe(cancelSplitButton, {
+    childList: true,
+    subtree: true,
+  });
+
+  const cancelButtonHiddenObserver = new MutationObserver(() => {
+    if (!cancelSplitButton || cancelSplitButton.style.display === "none") {
+      pauseResumeMenuOpenObserver.disconnect();
+      cancelButtonHiddenObserver.disconnect();
+    }
+  });
+
+  cancelButtonHiddenObserver.observe(cancelSplitButton, {
+    attributes: true,
+    attributeFilter: ["style"],
+  });
+}
+
+const isPipelineOverview =
+  document.getElementById("console-pipeline-root") !== null;
+if (isPipelineOverview) {
+  setTimeout(() => updatePauseElements(true), 0);
+}

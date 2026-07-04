@@ -73,7 +73,7 @@ export default function SingleRun({
   return (
     <div className="pgv-single-run">
       <div>
-        <a href={currentJobPath + run.id} className="pgv-user-specified-text">
+        <a href={currentRunPath} className="pgv-user-specified-text">
           <StatusIcon status={run.result} />
           {run.displayName}
           <span>
@@ -83,6 +83,7 @@ export default function SingleRun({
         </a>
       </div>
       <PipelineGraph
+        currentRunPath={currentRunPath}
         stages={effectiveStages}
         layout={layout}
         collapsed

@@ -1,0 +1,17 @@
+targets = ["target-1", "target-2", "taget-3"]
+
+def currentTarget() {
+    return targets[0]
+}
+
+pipeline {
+    agent any
+
+    stages {
+        stage("Minimal Test Case") {
+            steps {
+                echo currentTarget()
+            }
+        }
+    }
+}

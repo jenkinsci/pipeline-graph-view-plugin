@@ -468,6 +468,8 @@ export function useStepsPoller({
     return steps.filter((step) => step.stageId === openStageId);
   }, [steps, openStageId]);
 
+  const showEarlyConsoleText = openStageId === "-1";
+
   return {
     openStage,
     openStageSteps,
@@ -486,6 +488,7 @@ export function useStepsPoller({
     stopTailingLogs,
     expandAllForStage,
     collapseAllForStage,
+    showEarlyConsoleText,
   };
 }
 

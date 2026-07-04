@@ -379,6 +379,7 @@ describe("PipelineGraphLayout", () => {
 
     it("should not generate small labels for top stage columns with no children", () => {
       const graph = layoutGraph(
+        "job/name/1/",
         [
           makeStage(6, "Non-Parallel Stage"),
           makeStage(11, "Parallel Stage", [
@@ -430,6 +431,7 @@ describe("PipelineGraphLayout", () => {
         maxColumns?: number,
       ) =>
         layoutGraph(
+          "job/name/1/",
           manyStages(count),
           layout,
           collapsed,

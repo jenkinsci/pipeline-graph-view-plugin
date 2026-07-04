@@ -84,6 +84,21 @@ function NodeImpl({ node, collapsed, onStageSelect, isSelected }: NodeProps) {
         }}
         className="PWGx-pipeline-node"
       >
+        {node.type === "start" && node.url && (
+          <a
+            href={node.url}
+            onClick={(e) => {
+              if (onStageSelect) {
+                e.preventDefault();
+                history.replaceState({}, "", e.currentTarget.href);
+
+                onStageSelect(String(node.id));
+              }
+            }}
+          >
+            <span className="jenkins-visually-hidden">{node.name}</span>
+          </a>
+        )}
         <span className={"PWGx-pipeline-node-terminal"} />
       </div>
     );

@@ -90,6 +90,8 @@ export interface PlaceholderNodeInfo extends BaseNodeInfo {
   // -- Marker
   isPlaceholder: true;
 
+  url?: string;
+
   // -- Unique
   type: "start" | "end" | "root" | "stage-end";
 }

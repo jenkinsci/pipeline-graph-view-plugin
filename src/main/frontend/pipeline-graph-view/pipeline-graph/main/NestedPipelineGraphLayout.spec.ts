@@ -198,6 +198,7 @@ function trimNodeInfoOnLabel(label: NodeLabelInfo) {
 function shouldMatchSnapshot(raw: string, collapsed: boolean) {
   const stages = JSON.parse(raw) as StageInfo[];
   const graph = nestedGraphLayout(
+    "job/name/1/",
     stages,
     defaultLayout,
     collapsed,
@@ -215,6 +216,7 @@ function shouldMatchSelectiveSnapshot(raw: string, collapsedIds: Set<number>) {
     collapsedIds,
   );
   const graph = nestedGraphLayout(
+    "job/name/1/",
     stages,
     defaultLayout,
     false,

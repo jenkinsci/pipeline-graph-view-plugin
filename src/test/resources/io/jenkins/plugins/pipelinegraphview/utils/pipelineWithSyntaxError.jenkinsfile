@@ -1,5 +1,6 @@
 pipeline {
   stages {
+    // The pipeline fails as no stage is included below here.
     script {
       echo '1'
     }

@@ -69,9 +69,8 @@ public class PipelineGraphApi {
         FlowExecution execution = run.getExecution();
         if (execution == null) {
             // If we don't have an execution - e.g. if the Pipeline has a syntax error -
-            // then return an
-            // empty graph.
-            return new PipelineGraph(new ArrayList<>(), false);
+            // then return an empty graph.
+            return new PipelineGraph(new ArrayList<>(), true);
         }
         // Look up completed state before computing tree.
         boolean complete = execution.isComplete();

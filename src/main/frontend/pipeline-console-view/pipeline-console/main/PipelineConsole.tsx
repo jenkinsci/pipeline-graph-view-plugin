@@ -18,6 +18,7 @@ import Skeleton from "./components/skeleton.tsx";
 import Stages from "./components/stages.tsx";
 import StagesCustomization from "./components/stages-customization.tsx";
 import DataTreeView from "./DataTreeView.tsx";
+import { EarlyConsoleText } from "./EarlyConsoleText.tsx";
 import { useStepsPoller } from "./hooks/use-steps-poller.ts";
 import { NoStageStepsFallback } from "./NoStageStepsFallback.tsx";
 import { useLayoutPreferences } from "./providers/user-preference-provider.tsx";
@@ -51,6 +52,7 @@ export default function PipelineConsole() {
     scrollToTail,
     startTailingLogs,
     stopTailingLogs,
+    showEarlyConsoleText,
     openStage,
     openStageSteps,
     stepBuffers,
@@ -132,6 +134,7 @@ export default function PipelineConsole() {
               <Stages
                 layout={stagesLayout}
                 stages={stages}
+                currentRunPath={currentRunPath}
                 selectedStage={openStage || undefined}
                 stageViewPosition={stageViewPosition}
                 onStageSelect={handleStageSelect}
@@ -172,6 +175,12 @@ export default function PipelineConsole() {
                   <Skeleton height={2.625} />
                   <Skeleton height={20} />
                 </div>
+              ) : showEarlyConsoleText ? (
+                <EarlyConsoleText
+                  currentRunPath={currentRunPath}
+                  tailLogs={tailLogs}
+                  scrollToTail={scrollToTail}
+                />
               ) : (
                 <StageView
                   tailLogs={tailLogs}

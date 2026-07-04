@@ -159,6 +159,17 @@ export async function getConsoleBuildOutput(
   }
 }
 
+export async function getEarlyConsoleText(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(`${url}stages/earlyConsoleText`);
+    if (!response.ok) throw response.statusText;
+    return await response.text();
+  } catch (e) {
+    console.error(`Caught error when fetching early console: '${e}'`);
+    return null;
+  }
+}
+
 export async function getResourceBundle(
   resource: string,
 ): Promise<ResourceBundle | undefined> {

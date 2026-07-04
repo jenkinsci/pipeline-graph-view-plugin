@@ -87,6 +87,7 @@ export default function App() {
           <Stages
             layout={buildLayout}
             stages={run.stages}
+            currentRunPath={currentRunPath}
             stageViewPosition={StageViewPosition.TOP}
             onRunPage
             normalizedParentJobPath={normalizedParentJobPath}

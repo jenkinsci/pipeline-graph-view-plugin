@@ -1,0 +1,10 @@
+pipeline {
+    agent any
+    stages {
+        stage('Confirm') {
+            steps {
+                input message: 'Step failed - what next?', parameters: [choice(name: 'action', choices: ['retry', 'continue', 'abort'])]
+            }
+        }
+    }
+}

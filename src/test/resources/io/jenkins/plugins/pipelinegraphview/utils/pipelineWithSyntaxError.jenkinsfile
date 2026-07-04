@@ -1,1 +1,7 @@
-shouldNotCompile
+pipeline {
+  stages {
+    script {
+      echo '1'
+    }
+  }
+}

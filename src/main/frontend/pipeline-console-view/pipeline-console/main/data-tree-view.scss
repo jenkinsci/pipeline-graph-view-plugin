@@ -12,7 +12,7 @@ $pgv-item-padding-inline: 0.7rem;
     position: absolute;
     inset: 0;
     background: var(--card-background);
-    border: var(--card-border-width) solid var(--card-border-color);
+    border: var(--jenkins-border);
     border-radius: var(--form-input-border-radius);
     box-shadow: var(--form-input-glow);
     transition: var(--standard-transition);

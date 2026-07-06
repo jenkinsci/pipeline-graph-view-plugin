@@ -16,7 +16,8 @@
     position: absolute;
     inset: 0;
     background: oklch(from var(--bg-color) l c h / 0.075);
-    border: var(--jenkins-border-width) solid var(--jenkins-border-color--inherit-subtle);
+    border: var(--jenkins-border-width) solid
+      var(--jenkins-border-color--inherit-subtle);
     border-radius: inherit;
     transition: var(--standard-transition);
     pointer-events: none;

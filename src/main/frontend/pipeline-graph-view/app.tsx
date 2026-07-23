@@ -2,12 +2,24 @@ import "./app.scss";
 import "./pipeline-graph/styles/main.scss";
 import "../pipeline-console-view/pipeline-console/main/console-log-card.scss";
 
+import { useState } from "react";
+
 import useRunPoller from "../common/tree-api.ts";
 import { UserPreferencesProvider } from "../common/user/user-preferences-provider.tsx";
 import Stages from "../pipeline-console-view/pipeline-console/main/components/stages.tsx";
 import { NoStageStepsFallback } from "../pipeline-console-view/pipeline-console/main/NoStageStepsFallback.tsx";
 import { StageViewPosition } from "../pipeline-console-view/pipeline-console/main/providers/user-preference-provider.tsx";
-import { Result } from "./pipeline-graph/main/PipelineGraphModel.tsx";
+import {
+  LayoutInfo,
+  Result,
+} from "./pipeline-graph/main/PipelineGraphModel.tsx";
+
+const buildLayout: Partial<LayoutInfo> = {
+  graphSpacingTop: 3 + 1 + 32, // spacing for "Stages" button (top+border+a)
+  graphSpacingRight: 18, // spacing for expand button
+  graphSpacingBottom: 18, // spacing for zoom buttons
+  graphSpacingLeft: 18, // align with right spacing
+};
 
 export default function App() {
   const rootElement = document.getElementById("graph");
@@ -19,10 +31,14 @@ export default function App() {
     previousRunPath,
   });
 
+  const [autoStageViewHeight, setAutoStageViewHeight] = useState(0);
+  const [defaultStageViewHeight, setDefaultStageViewHeight] = useState(0);
+  const height = autoStageViewHeight || defaultStageViewHeight;
+
   const onlyQueuedPlaceholder =
     run.stages.length === 1 &&
     run.stages[0].placeholder === true &&
-    run.stages[0].state === Result.queued;
+    (run.stages[0].state === Result.queued || run.complete);
   const showBuildConsoleFallback =
     !loading && (run.stages.length === 0 || onlyQueuedPlaceholder);
 
@@ -67,12 +83,18 @@ export default function App() {
       )}
 
       {run.stages.length > 0 && !onlyQueuedPlaceholder && (
-        <Stages
-          stages={run.stages}
-          stageViewPosition={StageViewPosition.TOP}
-          onRunPage
-          normalizedParentJobPath={normalizedParentJobPath}
-        />
+        <div style={height ? { height } : {}}>
+          <Stages
+            layout={buildLayout}
+            stages={run.stages}
+            currentRunPath={currentRunPath}
+            stageViewPosition={StageViewPosition.TOP}
+            onRunPage
+            normalizedParentJobPath={normalizedParentJobPath}
+            setAutoStageViewHeight={setAutoStageViewHeight}
+            setDefaultStageViewHeight={setDefaultStageViewHeight}
+          />
+        </div>
       )}
     </UserPreferencesProvider>
   );

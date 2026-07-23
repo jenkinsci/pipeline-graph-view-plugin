@@ -1,6 +1,6 @@
 import "./single-run.scss";
 
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 
 import StatusIcon from "../../../common/components/status-icon.tsx";
 import {
@@ -44,8 +44,10 @@ export default function SingleRun({
 
   const { showNames, showDurations } = useUserPreferences();
 
-  function getLayout() {
-    const layout: LayoutInfo = { ...defaultLayout };
+  const layout: LayoutInfo = useMemo(() => {
+    const layout: LayoutInfo = {
+      ...defaultLayout,
+    };
 
     if (!showNames && !showDurations) {
       layout.nodeSpacingH = 45;
@@ -61,11 +63,9 @@ export default function SingleRun({
       // Do not reserve space for small label.
       layout.nodeSpacingV -= layout.labelOffsetV + 15;
     }
-    // Do not reserve space for big label on next row.
-    layout.nodeSpacingV -= layout.labelOffsetV;
 
     return layout;
-  }
+  }, [showDurations, showNames]);
 
   const { effectiveStages, collapsedStageIds, toggleCollapseStage } =
     useCollapsedStages(normalizedParentJobPath, runInfo.stages);
@@ -73,7 +73,7 @@ export default function SingleRun({
   return (
     <div className="pgv-single-run">
       <div>
-        <a href={currentJobPath + run.id} className="pgv-user-specified-text">
+        <a href={currentRunPath} className="pgv-user-specified-text">
           <StatusIcon status={run.result} />
           {run.displayName}
           <span>
@@ -83,8 +83,9 @@ export default function SingleRun({
         </a>
       </div>
       <PipelineGraph
+        currentRunPath={currentRunPath}
         stages={effectiveStages}
-        layout={getLayout()}
+        layout={layout}
         collapsed
         collapsedStageIds={collapsedStageIds}
         onToggleCollapse={toggleCollapseStage}

@@ -365,6 +365,10 @@ describe("PipelineGraphLayout", () => {
       labelOffsetV: 22,
       smallLabelOffsetV: 15,
       ypStart: 55,
+      graphSpacingTop: 0,
+      graphSpacingRight: 0,
+      graphSpacingBottom: 0,
+      graphSpacingLeft: 0,
     };
 
     const makeSmallLabel = (stageName: string) => {
@@ -375,6 +379,7 @@ describe("PipelineGraphLayout", () => {
 
     it("should not generate small labels for top stage columns with no children", () => {
       const graph = layoutGraph(
+        "job/name/1/",
         [
           makeStage(6, "Non-Parallel Stage"),
           makeStage(11, "Parallel Stage", [
@@ -426,6 +431,7 @@ describe("PipelineGraphLayout", () => {
         maxColumns?: number,
       ) =>
         layoutGraph(
+          "job/name/1/",
           manyStages(count),
           layout,
           collapsed,

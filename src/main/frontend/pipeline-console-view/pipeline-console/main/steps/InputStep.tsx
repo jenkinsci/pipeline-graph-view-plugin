@@ -1,20 +1,13 @@
 import StatusIcon from "../../../../common/components/status-icon.tsx";
 import { StepInfo } from "../../../../common/RestClient.tsx";
-
-declare global {
-  interface Window {
-    crumb: Crumb;
-  }
-
-  interface Crumb {
-    wrap: (headers: Record<string, string>) => Record<string, string>;
-  }
-}
+import { openInputStepDialog } from "./inputStepDialog.ts";
 
 export default function InputStep({ step }: { step: StepInfo }) {
   const inputStep = step.inputStep!;
-  function handler(id: string, action: string) {
-    fetch(`../input/${id}/${action}`, {
+  const baseUrl = `../input/${inputStep.id}/`;
+
+  function post(action: string) {
+    fetch(baseUrl + action, {
       method: "POST",
       headers: window.crumb.wrap({}),
     })
@@ -29,13 +22,8 @@ export default function InputStep({ step }: { step: StepInfo }) {
       });
   }
 
-  const ok = () => {
-    return handler(inputStep.id, "proceedEmpty");
-  };
-
-  const abort = () => {
-    return handler(inputStep.id, "abort");
-  };
+  const openDialog = () =>
+    openInputStepDialog(baseUrl, { message: inputStep.message });
 
   return (
     <div className="pgv-input-step">
@@ -43,21 +31,32 @@ export default function InputStep({ step }: { step: StepInfo }) {
         <StatusIcon status={step.state} />
         <span>{inputStep.message}</span>
       </div>
-      <div
-        className={
-          "jenkins-buttons-row jenkins-buttons-row--equal-width pgv-input-step__controls"
-        }
-      >
-        <button
-          onClick={ok}
-          className={"jenkins-button jenkins-button--primary"}
+      {inputStep.parameters ? (
+        <div className="pgv-input-step__controls">
+          <button
+            onClick={openDialog}
+            className="jenkins-button jenkins-button--primary input-step-dialog-opener"
+          >
+            {inputStep.ok}
+          </button>
+        </div>
+      ) : (
+        <div
+          className={
+            "jenkins-buttons-row jenkins-buttons-row--equal-width pgv-input-step__controls"
+          }
         >
-          {inputStep.ok}
-        </button>
-        <button onClick={abort} className={"jenkins-button"}>
-          {inputStep.cancel}
-        </button>
-      </div>
+          <button
+            onClick={() => post("proceedEmpty")}
+            className={"jenkins-button jenkins-button--primary"}
+          >
+            {inputStep.ok}
+          </button>
+          <button onClick={() => post("abort")} className={"jenkins-button"}>
+            {inputStep.cancel}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

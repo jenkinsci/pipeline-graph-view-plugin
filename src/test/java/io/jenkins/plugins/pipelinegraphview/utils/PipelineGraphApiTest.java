@@ -372,14 +372,27 @@ class PipelineGraphApiTest {
     }
 
     @Test
+    void pipelineWithEarlyFailure() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j, "pipelineWithEarlyFailure", "pipelineWithEarlyFailure.jenkinsfile", Result.FAILURE);
+
+        assertThat(run.getExecution(), notNullValue());
+        PipelineGraph tree = new PipelineGraphApi(run).createTree();
+        assertThat(tree.complete, equalTo(true));
+        String stagesString = TestUtils.collectStagesAsString(tree.stages, TestUtils::nodeNameAndStatus);
+
+        assertThat(stagesString, equalTo("%s{failure}".formatted(Messages.FlowNodeWrapper_noStage())));
+    }
+
+    @Test
     void pipelineWithSyntaxError() throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "pipelineWithSyntaxError", "pipelineWithSyntaxError.jenkinsfile", Result.FAILURE);
 
-        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
-        String stagesString = TestUtils.collectStagesAsString(stages, TestUtils::nodeNameAndStatus);
-
-        assertThat(stagesString, equalTo("%s{failure}".formatted(Messages.FlowNodeWrapper_noStage())));
+        assertThat(run.getExecution(), nullValue());
+        PipelineGraph tree = new PipelineGraphApi(run).createTree();
+        assertThat(tree.complete, equalTo(true));
+        assertThat(tree.stages, empty());
     }
 
     @Test

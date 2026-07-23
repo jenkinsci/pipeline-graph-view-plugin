@@ -16,23 +16,23 @@ export const defaultLayout = {
   nodeSpacingH: 140,
   parallelSpacingH: 140,
   nodeSpacingV: 70,
-  nodeRadius: 12,
+  nodeRadius: 14,
   terminalRadius: 10,
   curveRadius: 15,
   connectorStrokeWidth: 2,
   labelOffsetV: 22,
   smallLabelOffsetV: 15,
   ypStart: 55,
+  graphSpacingTop: 0,
+  graphSpacingRight: 0,
+  graphSpacingBottom: 0,
+  graphSpacingLeft: 0,
 };
 
 // Typedefs
 
 export type StageType =
-  | "STAGE"
-  | "PARALLEL"
-  | "PARALLEL_BLOCK"
-  | "STEP"
-  | "PIPELINE_START";
+  "STAGE" | "PARALLEL" | "PARALLEL_BLOCK" | "STEP" | "PIPELINE_START";
 
 /**
  * StageInfo is the input, in the form of an Array<StageInfo> of the top-level stages of a pipeline
@@ -85,6 +85,8 @@ export interface StageNodeInfo extends BaseNodeInfo {
 export interface PlaceholderNodeInfo extends BaseNodeInfo {
   // -- Marker
   isPlaceholder: true;
+
+  url?: string;
 
   // -- Unique
   type: "start" | "end" | "root" | "stage-end";

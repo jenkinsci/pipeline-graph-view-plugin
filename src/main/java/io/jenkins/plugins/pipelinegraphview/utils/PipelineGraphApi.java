@@ -68,9 +68,13 @@ public class PipelineGraphApi {
             @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
         FlowExecution execution = run.getExecution();
         if (execution == null) {
-            // If we don't have an execution - e.g. if the Pipeline has a syntax error -
-            // then return an empty graph.
-            return new PipelineGraph(new ArrayList<>(), true);
+            // No execution either means the run finished without one (e.g. a syntax error),
+            // where the empty graph is final, or the run is still initialising (e.g. checking
+            // out the Jenkinsfile) and the execution doesn't exist yet. Only the former may be
+            // marked complete: complete=true responses are served with immutable cache headers
+            // and stop frontend polling, so marking an initialising run complete freezes its
+            // view empty forever.
+            return new PipelineGraph(new ArrayList<>(), !run.isBuilding());
         }
         // Look up completed state before computing tree.
         boolean complete = execution.isComplete();

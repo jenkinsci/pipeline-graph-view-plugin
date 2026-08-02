@@ -256,7 +256,7 @@ const ConsoleLogBody = memo(function ConsoleLogBody({
   };
 
   return (
-    <div style={{ paddingTop: "0.5rem" }}>
+    <div style={{ paddingTop: "0.375rem" }}>
       {getTruncatedLogWarning()}
       <Suspense>
         <ConsoleLogStream

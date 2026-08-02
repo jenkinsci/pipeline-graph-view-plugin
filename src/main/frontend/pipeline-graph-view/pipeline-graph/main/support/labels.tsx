@@ -317,7 +317,7 @@ function SequentialContainerLabelImpl({
     position: "absolute",
     maxWidth: layout.nodeSpacingH,
     background: "var(--card-background)",
-    fontSize: "0.8125rem",
+    fontSize: "0.875rem",
     fontWeight: "var(--font-bold-weight)",
     padding: "0 5px",
     whiteSpace: "nowrap",

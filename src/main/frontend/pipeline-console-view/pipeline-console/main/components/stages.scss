@@ -11,10 +11,7 @@
     );
     max-height: calc(
       100vh -
-        (
-          var(--header-height) + var(--section-padding) +
-            var(--section-padding)
-        )
+        (var(--header-height) + var(--section-padding) + var(--section-padding))
     );
   }
 

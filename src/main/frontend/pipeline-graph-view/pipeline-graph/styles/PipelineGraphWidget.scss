@@ -71,7 +71,7 @@
 
     &:focus-visible {
       &::after {
-        box-shadow: 0 0 0 0.2rem var(--text-color) !important;
+        box-shadow: 0 0 0 0.25rem var(--text-color) !important;
       }
     }
   }
@@ -147,7 +147,7 @@
 
 .PWGx-pipeline-big-label {
   font-weight: var(--font-bold-weight);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   transition: translate var(--standard-transition);
   text-align: center;
 
@@ -194,7 +194,7 @@
   display: inline-block;
   width: 0.5rem;
   height: 0.5rem;
-  margin-left: 0.2rem;
+  margin-left: 0.25rem;
   vertical-align: baseline;
   transform: rotate(0deg);
   transition: transform var(--standard-transition);

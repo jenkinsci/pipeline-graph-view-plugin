@@ -17,6 +17,7 @@ import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.ArtifactRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.ChangesRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.TestResultRunDetailsItem;
+import io.jenkins.plugins.pipelinegraphview.utils.EarlyConsoleText;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphViewCache;
@@ -120,6 +121,19 @@ public class PipelineConsoleViewAction extends Tab {
             rsp.setHeader("Cache-Control", "private, immutable, max-age=" + CACHE_AGE);
         } else {
             rsp.setHeader("Cache-Control", "private, no-store");
+        }
+    }
+
+    @WebMethod(name = "earlyConsoleText")
+    public void getEarlyConsoleText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+        run.checkPermission(Item.READ);
+        rsp.setContentType("text/html;charset=UTF-8");
+
+        EarlyConsoleText ect = new EarlyConsoleText(run);
+        boolean anyLogs = ect.writeHtmlTo(rsp.getOutputStream());
+        if (!anyLogs) {
+            rsp.getWriter().write("No early console text found.");
+            rsp.setStatus(404);
         }
     }
 

@@ -38,10 +38,10 @@
     "linkifyjs": "^4.3.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-zoom-pan-pinch": "4.0.3"
+    "react-zoom-pan-pinch": "4.0.4"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^16.3.0",
     "@types/node": "^24.0.0",
     "@types/react": "^19.1.2",
@@ -50,8 +50,8 @@
     "eslint": "^9.25.1",
     "eslint-formatter-checkstyle": "^9.0.0",
     "eslint-plugin-react-hooks": "^7.0.0",
-    "eslint-plugin-simple-import-sort": "^13.0.0",
-    "jsdom": "^29.0.0",
+    "eslint-plugin-simple-import-sort": "^14.0.0",
+    "jsdom": "^30.0.0",
     "neostandard": "^0.13.0",
     "prettier": "^3.5.3",
     "sass-embedded": "^1.87.0",

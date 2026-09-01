@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>6.2189.v695a_c41f5249</version>
+    <version>6.2221.va_045130417c9</version>
     <relativePath />
   </parent>
 
@@ -33,10 +33,10 @@
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/pipeline-graph-view-plugin</gitHubRepo>
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
-    <jenkins.baseline>2.541</jenkins.baseline>
+    <jenkins.baseline>2.555</jenkins.baseline>
     <jenkins.version>${jenkins.baseline}.3</jenkins.version>
-    <node.version>24.17.0</node.version>
-    <npm.version>11.17.0</npm.version>
+    <node.version>24.20.0</node.version>
+    <npm.version>12.0.2</npm.version>
     <spotless.check.skip>false</spotless.check.skip>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
   </properties>
@@ -47,7 +47,7 @@
         <!-- Pick up common dependencies for the selected LTS line: https://github.com/jenkinsci/bom#usage -->
         <groupId>io.jenkins.tools.bom</groupId>
         <artifactId>bom-${jenkins.baseline}.x</artifactId>
-        <version>6667.v64d86185fd17</version>
+        <version>6931.vea_a_b_c6fd017d</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -113,7 +113,7 @@
     <dependency>
       <groupId>com.microsoft.playwright</groupId>
       <artifactId>playwright</artifactId>
-      <version>1.60.0</version>
+      <version>1.62.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>

@@ -58,24 +58,26 @@ export default function ConsoleLogStream({
     return () => clearInterval(interval);
   }, [fetchMore, fetchLogText, stepId, updateLogBufferIfChanged]);
 
+  const logPrefix = "#log-";
   const [scrollToLogLine, setScrollToLogLine] = useState<boolean>(
-    window.location.hash.startsWith("#log-"),
+    window.location.hash.startsWith(logPrefix),
   );
   useEffect(() => {
     if (!scrollToLogLine) return;
     let hash = window.location.hash;
-    if (!hash.startsWith("#log-")) return;
-    let [stepIdPart, lineNumberPart] = hash.slice(5).split("-");
-    if (lineNumberPart && stepIdPart !== stepId) {
+    if (!hash.startsWith(logPrefix)) return;
+    const lastIdx = hash.lastIndexOf("-");
+    let stepIdPart = hash.slice(logPrefix.length, lastIdx);
+    const lineNumberPart = hash.slice(lastIdx + 1);
+    if (stepIdPart && stepIdPart !== stepId) {
       // The log line belongs to another step.
       setScrollToLogLine(false);
       return;
     }
-    if (!lineNumberPart) {
+    if (!stepIdPart) {
       // Backwards compatibility for links without a stepId in the hash.
-      lineNumberPart = stepIdPart;
       stepIdPart = stepId;
-      hash = `#log-${stepIdPart}-${lineNumberPart}`;
+      hash = `${logPrefix}${stepIdPart}-${lineNumberPart}`;
       location.hash = hash;
     }
     const element = document.getElementById(hash.slice(1));

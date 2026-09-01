@@ -25,6 +25,7 @@ export const DEFAULT_MAX_COLUMNS_WHEN_COLLAPSED = 13;
  *  5. Measure the extent of the graph
  */
 export function layoutGraph(
+  currentRunPath: string,
   newStages: Array<StageInfo>,
   layout: LayoutInfo,
   collapsed: boolean,
@@ -43,6 +44,7 @@ export function layoutGraph(
     isPlaceholder: true,
     key: "start-node",
     type: "start",
+    url: `${currentRunPath}stages/?selected-node=-1`,
   };
 
   const endNode: NodeInfo = {

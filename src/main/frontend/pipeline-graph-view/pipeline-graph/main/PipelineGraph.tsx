@@ -62,6 +62,7 @@ export function PipelineGraph({
   setDefaultStageViewHeight,
   centerGraph,
   setCenterGraph,
+  currentRunPath,
 }: Props) {
   const fullLayout = useMemo(() => {
     return {
@@ -129,6 +130,7 @@ export function PipelineGraph({
   } = useMemo(() => {
     if (nestedLayout()) {
       return nestedGraphLayout(
+        currentRunPath,
         stages,
         fullLayout,
         collapsed ?? false,
@@ -139,6 +141,7 @@ export function PipelineGraph({
       );
     }
     return layoutGraph(
+      currentRunPath,
       stages,
       fullLayout,
       collapsed ?? false,
@@ -148,6 +151,7 @@ export function PipelineGraph({
       maxColumnsWhenCollapsed,
     );
   }, [
+    currentRunPath,
     stages,
     fullLayout,
     collapsed,
@@ -463,4 +467,5 @@ interface Props {
   setDefaultStageViewHeight?: Dispatch<SetStateAction<number>>;
   centerGraph?: boolean;
   setCenterGraph?: Dispatch<SetStateAction<boolean>>;
+  currentRunPath: string;
 }

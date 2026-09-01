@@ -14,6 +14,7 @@ import {
 export const DEFAULT_MAX_COLUMNS_WHEN_COLLAPSED = 13;
 
 export function nestedGraphLayout(
+  currentRunPath: string,
   stages: Array<StageInfo>,
   layout: LayoutInfo,
   collapsed: boolean,
@@ -42,6 +43,7 @@ export function nestedGraphLayout(
         name: messages.format(LocalizedMessageKey.start),
         key: "start-node",
         id: -1,
+        url: `${currentRunPath}stages/?selected-node=-1`,
       },
     ],
   };

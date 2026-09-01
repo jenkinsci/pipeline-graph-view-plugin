@@ -53,6 +53,7 @@ describe("Counter node with 50+ parallel stages", () => {
 
   const buildGraphWithManyStages = (stageCount: number, maxColumns: number) =>
     layoutGraph(
+      "job/name/1/",
       Array.from({ length: stageCount }, (_, i) =>
         makeStage(i + 1, `Stage ${i + 1}`),
       ),

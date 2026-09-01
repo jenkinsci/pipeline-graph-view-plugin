@@ -38,7 +38,7 @@ export default function App() {
   const onlyQueuedPlaceholder =
     run.stages.length === 1 &&
     run.stages[0].placeholder === true &&
-    run.stages[0].state === Result.queued;
+    (run.stages[0].state === Result.queued || run.complete);
   const showBuildConsoleFallback =
     !loading && (run.stages.length === 0 || onlyQueuedPlaceholder);
 
@@ -87,6 +87,7 @@ export default function App() {
           <Stages
             layout={buildLayout}
             stages={run.stages}
+            currentRunPath={currentRunPath}
             stageViewPosition={StageViewPosition.TOP}
             onRunPage
             normalizedParentJobPath={normalizedParentJobPath}

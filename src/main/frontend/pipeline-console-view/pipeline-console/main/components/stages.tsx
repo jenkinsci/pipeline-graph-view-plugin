@@ -50,6 +50,7 @@ export default function Stages({
   normalizedParentJobPath,
   setAutoStageViewHeight,
   setDefaultStageViewHeight,
+  currentRunPath,
 }: StagesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -163,6 +164,7 @@ export default function Stages({
             layout={layout}
             stages={effectiveStages}
             selectedStage={selectedStage}
+            currentRunPath={currentRunPath}
             collapsedStageIds={collapsedStageIds}
             onToggleCollapse={toggleCollapseStage}
             setInitialScale={setInitialScale}
@@ -190,6 +192,7 @@ interface StagesProps {
   normalizedParentJobPath: string;
   setAutoStageViewHeight: Dispatch<SetStateAction<number>>;
   setDefaultStageViewHeight: Dispatch<SetStateAction<number>>;
+  currentRunPath: string;
 }
 
 interface ZoomControlsProps {

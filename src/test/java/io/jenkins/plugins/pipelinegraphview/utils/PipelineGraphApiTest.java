@@ -5,8 +5,10 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
+import hudson.model.Action;
 import hudson.model.Queue;
 import hudson.model.Result;
+import hudson.model.TaskListener;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.slaves.DumbSlave;
@@ -17,9 +19,14 @@ import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeTreeScanner;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
+import org.jenkinsci.plugins.workflow.flow.FlowDefinition;
+import org.jenkinsci.plugins.workflow.flow.FlowExecution;
+import org.jenkinsci.plugins.workflow.flow.FlowExecutionOwner;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.test.steps.SemaphoreStep;
@@ -393,6 +400,42 @@ class PipelineGraphApiTest {
         PipelineGraph tree = new PipelineGraphApi(run).createTree();
         assertThat(tree.complete, equalTo(true));
         assertThat(tree.stages, empty());
+    }
+
+    @Issue("GH#1382")
+    @Test
+    void initialisingRunWithoutExecutionIsNotComplete() throws Exception {
+        WorkflowJob job = j.createProject(WorkflowJob.class, "initialisingRun");
+        BlockingFlowDefinition definition = new BlockingFlowDefinition();
+        job.setDefinition(definition);
+
+        QueueTaskFuture<WorkflowRun> future = job.scheduleBuild2(0);
+        assertThat(future, notNullValue());
+        WorkflowRun run = future.waitForStart();
+        definition.creating.await(30, TimeUnit.SECONDS);
+        assertThat(run.getExecution(), nullValue());
+        assertThat(run.isBuilding(), equalTo(true));
+
+        PipelineGraph tree = new PipelineGraphApi(run).createTree();
+        assertThat(tree.complete, equalTo(false));
+        assertThat(tree.stages, empty());
+
+        definition.release.countDown();
+        j.assertBuildStatusSuccess(j.waitForCompletion(run));
+        assertThat(new PipelineGraphApi(run).createTree().complete, equalTo(true));
+    }
+
+    private static class BlockingFlowDefinition extends FlowDefinition {
+        final CountDownLatch creating = new CountDownLatch(1);
+        final CountDownLatch release = new CountDownLatch(1);
+
+        @Override
+        public FlowExecution create(FlowExecutionOwner owner, TaskListener listener, List<? extends Action> actions)
+                throws Exception {
+            creating.countDown();
+            release.await();
+            return new CpsFlowDefinition("echo 'done'", true).create(owner, listener, actions);
+        }
     }
 
     @Test

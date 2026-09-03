@@ -400,6 +400,9 @@ components:
         placeholder:
           type: boolean
           description: Whether this is a placeholder stage
+        defaultCollapsed:
+          type: boolean
+          description: Whether this stage is collapsed by default
         agent:
           types:
             - string
@@ -620,6 +623,7 @@ components:
               isSequential: false
               synthetic: false
               placeholder: false
+              defaultCollapsed: false
               agent: "linux"
               url: "/job/my-pipeline/1/stages/?selected-node=6"
 

@@ -31,32 +31,23 @@ export default function InputStep({ step }: { step: StepInfo }) {
         <StatusIcon status={step.state} />
         <span>{inputStep.message}</span>
       </div>
-      {inputStep.parameters ? (
-        <div className="pgv-input-step__controls">
-          <button
-            onClick={openDialog}
-            className="jenkins-button jenkins-button--primary input-step-dialog-opener"
-          >
-            {inputStep.ok}
-          </button>
-        </div>
-      ) : (
-        <div
+      <div className="jenkins-buttons-row jenkins-buttons-row--equal-width pgv-input-step__controls">
+        <button
+          onClick={
+            inputStep.parameters ? openDialog : () => post("proceedEmpty")
+          }
           className={
-            "jenkins-buttons-row jenkins-buttons-row--equal-width pgv-input-step__controls"
+            inputStep.parameters
+              ? "jenkins-button jenkins-button--primary input-step-dialog-opener"
+              : "jenkins-button jenkins-button--primary"
           }
         >
-          <button
-            onClick={() => post("proceedEmpty")}
-            className={"jenkins-button jenkins-button--primary"}
-          >
-            {inputStep.ok}
-          </button>
-          <button onClick={() => post("abort")} className={"jenkins-button"}>
-            {inputStep.cancel}
-          </button>
-        </div>
-      )}
+          {inputStep.ok}
+        </button>
+        <button onClick={() => post("abort")} className={"jenkins-button"}>
+          {inputStep.cancel}
+        </button>
+      </div>
     </div>
   );
 }

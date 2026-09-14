@@ -134,6 +134,24 @@ export function collectParentStageIds(stages: StageInfo[]): Set<number> {
   return ids;
 }
 
+export function collectDefaultCollapsedStageIds(
+  stages: StageInfo[],
+): Set<number> {
+  const ids = new Set<number>();
+  function walk(list: StageInfo[]) {
+    for (const stage of list) {
+      if (stage.children.length > 0) {
+        if (stage.defaultCollapsed) {
+          ids.add(stage.id);
+        }
+        walk(stage.children);
+      }
+    }
+  }
+  walk(stages);
+  return ids;
+}
+
 /**
  * Walk the original (uncollapsed) stage tree and return the IDs of any
  * collapsed ancestors of the stage with the given id (plus the target
@@ -176,9 +194,33 @@ export function useCollapsedStages(
   selectedStageId?: number,
 ) {
   const storageKey = `pgv.collapsedStages/${normalizedParentJobPath}`;
-  const [collapsedStageIds, setCollapsedStageIds] = useState<Set<number>>(() =>
-    loadFromStorage(storageKey),
+  const expandedDefaultsStorageKey = `pgv.expandedDefaultStages/${normalizedParentJobPath}`;
+
+  const [storedCollapsedStageIds, setStoredCollapsedStageIds] = useState<
+    Set<number>
+  >(() => loadFromStorage(storageKey));
+  const [expandedDefaultStageIds, setExpandedDefaultStageIds] = useState<
+    Set<number>
+  >(() => loadFromStorage(expandedDefaultsStorageKey));
+
+  const defaultCollapsedStageIds = useMemo(
+    () => collectDefaultCollapsedStageIds(stages),
+    [stages],
   );
+
+  const collapsedStageIds = useMemo(() => {
+    const ids = new Set(storedCollapsedStageIds);
+    for (const id of defaultCollapsedStageIds) {
+      if (!expandedDefaultStageIds.has(id)) {
+        ids.add(id);
+      }
+    }
+    return ids;
+  }, [
+    storedCollapsedStageIds,
+    defaultCollapsedStageIds,
+    expandedDefaultStageIds,
+  ]);
 
   useEffect(() => {
     garbageCollectLocalStorage();
@@ -186,7 +228,34 @@ export function useCollapsedStages(
 
   const toggleCollapseStage = useCallback(
     (stageId: number) => {
-      setCollapsedStageIds((prev) => {
+      const isCollapsed = collapsedStageIds.has(stageId);
+      const isDefaultCollapsed = defaultCollapsedStageIds.has(stageId);
+
+      if (isDefaultCollapsed) {
+        setExpandedDefaultStageIds((prev) => {
+          const next = new Set(prev);
+          if (isCollapsed) {
+            next.add(stageId);
+          } else {
+            next.delete(stageId);
+          }
+          saveToStorage(expandedDefaultsStorageKey, next);
+          return next;
+        });
+
+        if (isCollapsed) {
+          setStoredCollapsedStageIds((prev) => {
+            if (!prev.has(stageId)) return prev;
+            const next = new Set(prev);
+            next.delete(stageId);
+            saveToStorage(storageKey, next);
+            return next;
+          });
+        }
+        return;
+      }
+
+      setStoredCollapsedStageIds((prev) => {
         const next = new Set(prev);
         if (next.has(stageId)) {
           next.delete(stageId);
@@ -197,24 +266,33 @@ export function useCollapsedStages(
         return next;
       });
     },
-    [storageKey],
-  );
-
-  const setCollapsedIds = useCallback(
-    (ids: Set<number>) => {
-      setCollapsedStageIds(ids);
-      saveToStorage(storageKey, ids);
-    },
-    [storageKey],
+    [
+      collapsedStageIds,
+      defaultCollapsedStageIds,
+      expandedDefaultsStorageKey,
+      storageKey,
+    ],
   );
 
   const collapseAll = useCallback(() => {
-    setCollapsedIds(collectParentStageIds(stages));
-  }, [stages, setCollapsedIds]);
+    const ids = collectParentStageIds(stages);
+    setStoredCollapsedStageIds(ids);
+    saveToStorage(storageKey, ids);
+
+    const expanded = new Set<number>();
+    setExpandedDefaultStageIds(expanded);
+    saveToStorage(expandedDefaultsStorageKey, expanded);
+  }, [stages, storageKey, expandedDefaultsStorageKey]);
 
   const expandAll = useCallback(() => {
-    setCollapsedIds(new Set());
-  }, [setCollapsedIds]);
+    const collapsed = new Set<number>();
+    setStoredCollapsedStageIds(collapsed);
+    saveToStorage(storageKey, collapsed);
+
+    const expanded = new Set(defaultCollapsedStageIds);
+    setExpandedDefaultStageIds(expanded);
+    saveToStorage(expandedDefaultsStorageKey, expanded);
+  }, [defaultCollapsedStageIds, storageKey, expandedDefaultsStorageKey]);
 
   const hasCollapsibleStages = useMemo(
     () => collectParentStageIds(stages).size > 0,
@@ -239,12 +317,23 @@ export function useCollapsedStages(
       collapsedStageIds,
     );
     if (ancestors.length === 0) return;
-    setCollapsedStageIds((prev) => {
+    setStoredCollapsedStageIds((prev) => {
       const next = new Set(prev);
       for (const id of ancestors) {
         next.delete(id);
       }
       saveToStorage(storageKey, next);
+      return next;
+    });
+
+    setExpandedDefaultStageIds((prev) => {
+      const next = new Set(prev);
+      for (const id of ancestors) {
+        if (defaultCollapsedStageIds.has(id)) {
+          next.add(id);
+        }
+      }
+      saveToStorage(expandedDefaultsStorageKey, next);
       return next;
     });
   }, [selectedStageId]); // eslint-disable-line react-hooks/exhaustive-deps -- only react to selection changes

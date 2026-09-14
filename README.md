@@ -71,6 +71,22 @@ pipeline {
 }
 ```
 
+### Collapsing Stages by Default
+
+In Scripted Pipelines, you can mark a stage as initially collapsed by wrapping it with the `collapseByDefault` step:
+
+```groovy
+collapseByDefault {
+    stage('Tests') {
+        parallel tests
+    }
+}
+```
+
+The setting applies only to stages directly enclosed by the `collapseByDefault` block. Nested stages are unaffected unless they are wrapped in their own `collapseByDefault` block.
+
+Users can still expand or collapse the stage manually. Their choice is preserved across page reloads for the current build, while each new build starts from the pipeline-defined defaults again.
+
 ## REST API
 
 The REST API documentation can be found [here](https://editor-next.swagger.io/?url=https://raw.githubusercontent.com/jenkinsci/pipeline-graph-view-plugin/refs/heads/main/openapi.yaml).

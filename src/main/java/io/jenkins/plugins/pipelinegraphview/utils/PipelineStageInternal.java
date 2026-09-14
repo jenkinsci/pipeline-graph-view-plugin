@@ -23,6 +23,7 @@ class PipelineStageInternal {
     private String causeOfBlockage;
     private PipelineStepBuilderApi builder;
     private InputAction inputAction;
+    private boolean defaultCollapsed;
 
     public PipelineStageInternal(
             String id,
@@ -32,6 +33,7 @@ class PipelineStageInternal {
             FlowNodeWrapper.NodeType type,
             String title,
             boolean synthetic,
+            boolean defaultCollapsed,
             TimingInfo times,
             String agent,
             String causeOfBlockage) {
@@ -42,6 +44,7 @@ class PipelineStageInternal {
         this.type = type;
         this.title = title;
         this.synthetic = synthetic;
+        this.defaultCollapsed = defaultCollapsed;
         this.timingInfo = times;
         this.agent = agent;
         this.causeOfBlockage = causeOfBlockage;
@@ -190,6 +193,7 @@ class PipelineStageInternal {
                 sequential,
                 synthetic,
                 synthetic && name.equals(Messages.FlowNodeWrapper_noStage()),
+                defaultCollapsed,
                 timingInfo,
                 agent,
                 runUrl,

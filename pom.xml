@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>6.2221.va_045130417c9</version>
+    <version>6.2236.v12dd4c483242</version>
     <relativePath />
   </parent>
 
@@ -47,7 +47,7 @@
         <!-- Pick up common dependencies for the selected LTS line: https://github.com/jenkinsci/bom#usage -->
         <groupId>io.jenkins.tools.bom</groupId>
         <artifactId>bom-${jenkins.baseline}.x</artifactId>
-        <version>7020.vf38cb_40380d1</version>
+        <version>7046.v43536164769c</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -113,7 +113,7 @@
     <dependency>
       <groupId>com.microsoft.playwright</groupId>
       <artifactId>playwright</artifactId>
-      <version>1.62.0</version>
+      <version>1.63.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>

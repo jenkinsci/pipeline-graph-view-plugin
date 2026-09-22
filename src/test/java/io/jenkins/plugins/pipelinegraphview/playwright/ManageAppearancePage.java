@@ -56,7 +56,11 @@ public class ManageAppearancePage extends JenkinsPage<ManageAppearancePage> {
         Locator button = page.getByRole(
                 AriaRole.BUTTON, new Page.GetByRoleOptions().setExact(true).setName("Save"));
         assertThat(button).isEnabled();
-        button.click();
-        isAtUrl(this.manageUrl);
+        // Depending on the Jenkins version, saving redirects to either /manage/ or back to /manage/appearance/.
+        // TODO - manageUrl can be removed after baseline is higher than 2.583
+        page.waitForResponse(
+                response -> response.request().isNavigationRequest()
+                        && (response.url().equals(manageUrl) || response.url().equals(pageUrl)),
+                button::click);
     }
 }

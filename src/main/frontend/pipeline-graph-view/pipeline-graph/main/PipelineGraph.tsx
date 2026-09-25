@@ -29,6 +29,10 @@ import {
 import { GraphConnections } from "./support/connections.tsx";
 import { DebugOutline } from "./support/DebugOutline.tsx";
 import {
+  computeDefaultTransform,
+  findFocusX,
+} from "./support/defaultTransform.ts";
+import {
   BigLabel,
   SequentialContainerLabel,
   SmallLabel,
@@ -168,6 +172,8 @@ export function PipelineGraph({
     [selectedStage],
   );
 
+  const focusX = useMemo(() => findFocusX(nodes), [nodes]);
+
   const transform = useContext(TransformContext);
   const [transformViewport, setTransformViewport] = useState({
     width: 0,
@@ -202,16 +208,18 @@ export function PipelineGraph({
       return;
     }
 
-    const initialScale = Math.min(1, transformWidth / measuredWidth);
-    const minScale = initialScale * 0.75;
-    const autoScale = Math.max(initialScale, 0.5);
-    const centerOffsetX = Math.max(
-      0,
-      (transformWidth - measuredWidth * autoScale) / 2,
-    );
-    const centerOffsetY = Math.max(
-      0,
-      (transformHeight - measuredHeight * autoScale) / 2,
+    const {
+      initialScale,
+      minScale,
+      scale: autoScale,
+      positionX: centerOffsetX,
+      positionY: centerOffsetY,
+    } = computeDefaultTransform(
+      transformWidth,
+      transformHeight,
+      measuredWidth,
+      measuredHeight,
+      focusX,
     );
     setMinScale(minScale);
     setInitialScale(initialScale);
@@ -248,6 +256,7 @@ export function PipelineGraph({
     fullLayout.nodeSpacingH,
     measuredWidth,
     measuredHeight,
+    focusX,
     setMinScale,
     setInitialScale,
     setDefaultTransform,

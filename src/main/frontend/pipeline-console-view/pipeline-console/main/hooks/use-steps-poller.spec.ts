@@ -397,6 +397,26 @@ describe("incremental log fetching", function () {
         clickMoreStartByte: TAIL_CONSOLE_LOG,
         fetchStartByte: 8,
         fetchConsoleAnnotator: "3",
+        // No new output: the server sends no annotator state.
+        logData: {
+          text: "",
+          startByte: 8,
+          endByte: 8,
+          nodeIsActive: true,
+        },
+        result: {
+          startByte: 0,
+          lines: ["0", "1", "2", "3"],
+          endByte: 8,
+          consoleAnnotator: "3",
+          hasTrailingNewLine: true,
+        },
+      },
+      {
+        clickMoreStartByte: TAIL_CONSOLE_LOG,
+        fetchStartByte: 8,
+        fetchConsoleAnnotator: "3",
+        // Only an unterminated line so far: no text, but a fresh annotator.
         logData: {
           text: "",
           startByte: 8,

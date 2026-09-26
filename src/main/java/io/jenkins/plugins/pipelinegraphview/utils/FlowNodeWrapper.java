@@ -8,6 +8,7 @@ import hudson.model.Result;
 import hudson.model.Run;
 import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
+import io.jenkins.plugins.pipelinegraphview.steps.CollapseByDefaultStep;
 import io.jenkins.plugins.pipelinegraphview.steps.HideFromViewStep;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.BlueRun.BlueRunResult;
@@ -441,6 +442,28 @@ public class FlowNodeWrapper {
 
     public boolean isUnhandledException() {
         return PipelineNodeUtil.isUnhandledException(node);
+    }
+
+    public boolean isCollapsedByDefault() {
+        if (!PipelineNodeUtil.isStage(this.node)) {
+            return false;
+        }
+
+        for (BlockStartNode block : this.node.iterateEnclosingBlocks()) {
+            if (PipelineNodeUtil.isStage(block)) {
+                return false;
+            }
+
+            if (!(block instanceof StepStartNode stepStartNode)) {
+                continue;
+            }
+
+            StepDescriptor descriptor = stepStartNode.getDescriptor();
+            if (descriptor != null && CollapseByDefaultStep.class.getName().equals(descriptor.getId())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

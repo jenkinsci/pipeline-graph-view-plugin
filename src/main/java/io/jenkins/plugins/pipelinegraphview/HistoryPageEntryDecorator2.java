@@ -45,7 +45,7 @@ public class HistoryPageEntryDecorator2 extends HistoryPageEntryDecorator {
     private static final JsonConfig historyPageJsonConfig = new JsonConfig();
 
     static {
-        PipelineGraph.PipelineGraphJsonProcessor.configure(historyPageJsonConfig);
+//        PipelineGraph.PipelineGraphJsonProcessor.configure(historyPageJsonConfig);
         historyPageJsonConfig.registerJsonBeanProcessor(
                 PipelineStage.class, new HistoryPagePipelineStageJsonProcessor());
     }

@@ -24,6 +24,9 @@
 
 package io.jenkins.plugins.pipelinegraphview;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import hudson.Extension;
 import hudson.model.Item;
 import hudson.widgets.HistoryWidget;
@@ -32,23 +35,20 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStage;
 import jenkins.model.HistoricalBuild;
 import jenkins.widgets.HistoryPageEntryDecorator;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
-import net.sf.json.processors.JsonBeanProcessor;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jspecify.annotations.NonNull;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 @Extension(ordinal = Integer.MAX_VALUE)
 public class HistoryPageEntryDecorator2 extends HistoryPageEntryDecorator {
-    private static final JsonConfig historyPageJsonConfig = new JsonConfig();
-
-    static {
-//        PipelineGraph.PipelineGraphJsonProcessor.configure(historyPageJsonConfig);
-        historyPageJsonConfig.registerJsonBeanProcessor(
-                PipelineStage.class, new HistoryPagePipelineStageJsonProcessor());
-    }
+    private static final ObjectMapper MAPPER = JsonMapper.builder()
+            .changeDefaultPropertyInclusion(inc -> inc.withValueInclusion(JsonInclude.Include.NON_NULL))
+            .changeDefaultVisibility(v -> v.withFieldVisibility(JsonAutoDetect.Visibility.ANY))
+            .addMixIn(PipelineStage.class, HistoryPagePipelineStageMixIn.class)
+            .build();
 
     private String json;
 
@@ -62,13 +62,13 @@ public class HistoryPageEntryDecorator2 extends HistoryPageEntryDecorator {
 
         // TODO - Do this without returning children
         PipelineGraph tree = new PipelineGraphApi(run).createTree();
-        json = toHistoryPageJson(tree).toString(2);
+        json = toHistoryPageJson(tree);
 
         return true;
     }
 
-    static JSONObject toHistoryPageJson(PipelineGraph tree) {
-        return JSONObject.fromObject(tree, historyPageJsonConfig);
+    static String toHistoryPageJson(PipelineGraph tree) {
+        return MAPPER.writeValueAsString(tree);
     }
 
     @Restricted(NoExternalUse.class)
@@ -76,21 +76,6 @@ public class HistoryPageEntryDecorator2 extends HistoryPageEntryDecorator {
         return json;
     }
 
-    private static final class HistoryPagePipelineStageJsonProcessor implements JsonBeanProcessor {
-        @Override
-        public JSONObject processBean(Object bean, JsonConfig config) {
-            if (!(bean instanceof PipelineStage stage)) {
-                return null;
-            }
-
-            JSONObject json = new JSONObject();
-            json.element("id", stage.getId());
-            json.element("name", stage.getName());
-            json.element("state", stage.getState(), config);
-            json.element("startTimeMillis", stage.getStartTimeMillis());
-            json.element("totalDurationMillis", stage.getTotalDurationMillis());
-            json.element("url", stage.getUrl());
-            return json;
-        }
-    }
+    @JsonIncludeProperties({"id", "name", "state", "startTimeMillis", "totalDurationMillis", "url"})
+    private abstract static class HistoryPagePipelineStageMixIn {}
 }

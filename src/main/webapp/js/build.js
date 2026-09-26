@@ -95,7 +95,13 @@ if (cancelButton) {
           if (isBuilding === "true") {
             setTimeout(updateCancelButton, 5000);
           } else {
-            cancelButton.style.display = "none";
+            // Hide the entire split-button when build finishes
+            const splitButton = cancelButton.closest(".jenkins-split-button");
+            if (splitButton) {
+              splitButton.style.display = "none";
+            } else {
+              cancelButton.style.display = "none";
+            }
           }
         }
         return null;
@@ -105,4 +111,150 @@ if (cancelButton) {
       });
   }
   setTimeout(updateCancelButton, 5000);
+}
+
+// Use event delegation for pause/resume dropdown items
+document.addEventListener("click", function (event) {
+  const target = event.target.closest("#pgv-pause, #pgv-resume");
+  if (!target) return;
+
+  event.preventDefault();
+
+  const proxyName = target.dataset.proxyName;
+  if (!proxyName) return;
+
+  const actionProxy = window[proxyName];
+  if (!actionProxy) {
+    console.error("Failed to execute action: proxy not found");
+    return;
+  }
+
+  if (target.id === "pgv-pause") {
+    if (typeof actionProxy.doPause !== "function") {
+      console.error("Failed to pause: method not found");
+      return;
+    }
+
+    actionProxy.doPause(function (response) {
+      const result = response.responseJSON;
+      if (result.status === "ok") {
+        notificationBar.show(target.dataset.successMessage);
+      } else {
+        notificationBar.show(result.message, notificationBar.WARNING);
+      }
+    });
+  } else if (target.id === "pgv-resume") {
+    if (typeof actionProxy.doResume !== "function") {
+      console.error("Failed to resume: method not found");
+      return;
+    }
+
+    actionProxy.doResume(function (response) {
+      const result = response.responseJSON;
+      if (result.status === "ok") {
+        notificationBar.show(target.dataset.successMessage);
+      } else {
+        notificationBar.show(result.message, notificationBar.WARNING);
+      }
+    });
+  }
+});
+
+function updatePauseElements(enablePolling = false) {
+  const pausedBanner = document.getElementById("pgv-paused-banner");
+  const pauseMenuItem = document.getElementById("pgv-pause");
+  const resumeMenuItem = document.getElementById("pgv-resume");
+
+  fetch("pauseState")
+    .then((rsp) => {
+      if (!rsp.ok) {
+        throw new Error(
+          `Failed to fetch pause state: ${rsp.status} - ${rsp.statusText}`,
+        );
+      }
+      return rsp.json();
+    })
+    .then((result) => {
+      if (result.status === "ok") {
+        const isPaused = result.data.paused;
+        const isBuilding = result.data.building;
+
+        if (isBuilding) {
+          if (isPaused) {
+            pausedBanner.style.display = "";
+            if (pauseMenuItem) {
+              pauseMenuItem.style.display = "none";
+            }
+            if (resumeMenuItem) {
+              resumeMenuItem.style.display = "";
+            }
+          } else {
+            pausedBanner.style.display = "none";
+            if (pauseMenuItem) {
+              pauseMenuItem.style.display = "";
+            }
+            if (resumeMenuItem) {
+              resumeMenuItem.style.display = "none";
+            }
+          }
+
+          if (enablePolling) {
+            setTimeout(() => updatePauseElements(true), 1000);
+          }
+        } else {
+          pausedBanner.style.display = "none";
+          if (pauseMenuItem) {
+            pauseMenuItem.style.display = "none";
+          }
+          if (resumeMenuItem) {
+            resumeMenuItem.style.display = "none";
+          }
+        }
+      }
+      return null;
+    })
+    .catch((error) => {
+      console.error("Error fetching pause state:", error);
+    });
+}
+
+const cancelSplitButton = document.getElementById("pgv-cancel-split-button");
+if (cancelSplitButton) {
+  let isPauseResumeMenuOpen = false;
+
+  const pauseResumeMenuOpenObserver = new MutationObserver(() => {
+    const pauseMenuItem = document.getElementById("pgv-pause");
+    const resumeMenuItem = document.getElementById("pgv-resume");
+    const menuItemsExist = pauseMenuItem || resumeMenuItem;
+
+    if (menuItemsExist && !isPauseResumeMenuOpen) {
+      isPauseResumeMenuOpen = true;
+      setTimeout(() => updatePauseElements(false), 0);
+    } else if (!menuItemsExist && isPauseResumeMenuOpen) {
+      isPauseResumeMenuOpen = false;
+    }
+  });
+
+  pauseResumeMenuOpenObserver.observe(cancelSplitButton, {
+    childList: true,
+    subtree: true,
+  });
+
+  const cancelButtonHiddenObserver = new MutationObserver(() => {
+    if (!cancelSplitButton || cancelSplitButton.style.display === "none") {
+      pauseResumeMenuOpenObserver.disconnect();
+      cancelButtonHiddenObserver.disconnect();
+    }
+  });
+
+  cancelButtonHiddenObserver.observe(cancelSplitButton, {
+    attributes: true,
+    attributeFilter: ["style"],
+  });
+}
+
+const isPipelineOverview =
+  document.getElementById("console-pipeline-root") !== null;
+if (isPipelineOverview) {
+  setTimeout(() => updatePauseElements(true), 0);
 }

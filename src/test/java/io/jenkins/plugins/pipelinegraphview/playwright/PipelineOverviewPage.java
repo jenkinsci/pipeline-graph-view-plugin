@@ -120,10 +120,9 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
         return this;
     }
 
-    public InputPage clickInputWithParameters() {
-        tree.clickInputWithParameters();
-
-        return new InputPage(page, jobUrl).waitForLoaded();
+    public InputDialog openInputDialog() {
+        page.locator(".input-step-dialog-opener").first().click();
+        return new InputDialog(page).waitForLoaded();
     }
 
     public PipelineOverviewPage clickProceed() {
@@ -167,6 +166,24 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
         return this;
     }
 
+    public PipelineOverviewPage pause() {
+        // Click the pause menu item in the cancel overflow dropdown
+        Locator pauseMenuItem = page.locator("#pgv-pause");
+        pauseMenuItem.click();
+        // Wait for the menu item to be hidden after pause
+        assertThat(pauseMenuItem).isHidden();
+        return this;
+    }
+
+    public PipelineOverviewPage resume() {
+        // Click the resume menu item in the cancel overflow dropdown
+        Locator resumeMenuItem = page.locator("#pgv-resume");
+        resumeMenuItem.click();
+        // Wait for the menu item to be hidden after resume
+        assertThat(resumeMenuItem).isHidden();
+        return this;
+    }
+
     public PipelineOverviewPage rerun() {
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Rerun"))
                 .click();
@@ -196,6 +213,11 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
 
     public PipelineOverviewPage scrollToText(String text) {
         logs.scrollToText(text);
+        return this;
+    }
+
+    public PipelineOverviewPage buildStepLinkHasStagesSuffix() {
+        logs.buildStepLinkHasStagesSuffix();
         return this;
     }
 }

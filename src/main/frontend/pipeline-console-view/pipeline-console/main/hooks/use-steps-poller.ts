@@ -17,6 +17,7 @@ import {
 } from "../PipelineConsoleModel.tsx";
 
 async function updateStepBuffer(
+  url: string,
   stepBuffer: StepLogBufferInfo,
   stepId: string,
   startByte: number,
@@ -47,6 +48,7 @@ async function updateStepBuffer(
   }
   stepBuffer.lastFetched = performance.now();
   const response = await getConsoleTextOffset(
+    url,
     stepId,
     startByte,
     consoleAnnotator,
@@ -162,14 +164,21 @@ async function fetchStepLogDetail(
   return stepBuffer;
 }
 
-export function useStepsPoller(props: RunPollerProps) {
+export function useStepsPoller({
+  currentRunPath,
+  previousRunPath,
+}: RunPollerProps) {
   const { run, loading } = useRunPoller({
-    currentRunPath: props.currentRunPath,
-    previousRunPath: props.previousRunPath,
+    currentRunPath,
+    previousRunPath,
   });
+  const fetchRunSteps = useCallback(
+    () => getRunSteps(currentRunPath),
+    [currentRunPath],
+  );
   const {
     data: { steps, runIsComplete },
-  } = usePolling<AllStepsData>(getRunSteps, POLL_INTERVAL, "runIsComplete", {
+  } = usePolling<AllStepsData>(fetchRunSteps, POLL_INTERVAL, "runIsComplete", {
     steps: [],
     runIsComplete: false,
   });
@@ -187,7 +196,16 @@ export function useStepsPoller(props: RunPollerProps) {
       }
       return null;
     };
-    return openStageId ? findStage(run.stages) : null;
+    if (openStageId) {
+      return findStage(run.stages);
+    }
+    // Default-select the only stage when there's nothing else to show — e.g. a
+    // queued `node('label') { }` placeholder hasn't produced any steps yet, so
+    // without this StageDetails would render nothing for the entire pipeline.
+    if (run.stages.length === 1 && run.stages[0].placeholder) {
+      return run.stages[0];
+    }
+    return null;
   }, [run.stages, openStageId]);
   const [expandedSteps, setExpandedSteps] = useState<string[]>([]);
   const collapsedSteps = useRef(new Set<string>());
@@ -280,27 +298,35 @@ export function useStepsPoller(props: RunPollerProps) {
   );
 
   const stepBuffersRef = useRef(new Map<string, StepLogBufferInfo>());
-  const fetchLogText = useCallback((stepId: string, startByte: number) => {
-    return fetchStepLogDetail(
-      stepBuffersRef.current,
-      stepId,
-      "pending",
-      (stepBuffer) => updateStepBuffer(stepBuffer, stepId, startByte),
-    );
-  }, []);
+  const fetchLogText = useCallback(
+    (stepId: string, startByte: number) =>
+      fetchStepLogDetail(
+        stepBuffersRef.current,
+        stepId,
+        "pending",
+        (stepBuffer) =>
+          updateStepBuffer(currentRunPath, stepBuffer, stepId, startByte),
+      ),
+    [currentRunPath],
+  );
 
-  const fetchExceptionText = useCallback((stepId: string) => {
-    return fetchStepLogDetail(
-      stepBuffersRef.current,
-      stepId,
-      "pendingExceptionText",
-      async (stepBuffer: StepLogBufferInfo) => {
-        if (stepBuffer.exceptionText?.length) return; // Already fetched
-        stepBuffer.exceptionText = await getExceptionText(stepId);
-        stepBuffer.lines = stepBuffer.lines.concat(stepBuffer.exceptionText);
-      },
-    );
-  }, []);
+  const fetchExceptionText = useCallback(
+    (stepId: string) =>
+      fetchStepLogDetail(
+        stepBuffersRef.current,
+        stepId,
+        "pendingExceptionText",
+        async (stepBuffer: StepLogBufferInfo) => {
+          if (stepBuffer.exceptionText?.length) return; // Already fetched
+          stepBuffer.exceptionText = await getExceptionText(
+            currentRunPath,
+            stepId,
+          );
+          stepBuffer.lines = stepBuffer.lines.concat(stepBuffer.exceptionText);
+        },
+      ),
+    [currentRunPath],
+  );
 
   const expandLastStageStep = useCallback(
     (steps: StepInfo[], stageId: string) => {
@@ -318,15 +344,20 @@ export function useStepsPoller(props: RunPollerProps) {
 
   const parsedURLParams = useRef(false);
   useEffect(() => {
-    if (parsedURLParams.current || steps.length === 0) return;
-    parsedURLParams.current = true;
+    if (parsedURLParams.current) return;
     const params = new URLSearchParams(document.location.search.substring(1));
     let selected = params.get("selected-node");
-    if (!selected) return;
-    stopTailingLogs();
+    if (!selected) {
+      if (steps.length > 0 || run.stages.length > 0) {
+        parsedURLParams.current = true;
+      }
+      return;
+    }
 
     const step = steps.find((s) => s.id === selected);
     if (step) {
+      parsedURLParams.current = true;
+      stopTailingLogs();
       selected = step.stageId;
       scrollToStepOnce.current = step.id;
       setExpandedSteps([step.id]);
@@ -339,12 +370,37 @@ export function useStepsPoller(props: RunPollerProps) {
           endByte: startByte,
         });
       }
-    } else {
-      expandLastStageStep(steps, selected);
+      setOpenStageId(selected);
+      return;
     }
 
-    setOpenStageId(selected);
-  }, [steps, expandLastStageStep, stopTailingLogs]);
+    if (steps.length > 0) {
+      // Steps have arrived but `selected` matches none — assume it's a stage ID.
+      parsedURLParams.current = true;
+      stopTailingLogs();
+      expandLastStageStep(steps, selected);
+      setOpenStageId(selected);
+      return;
+    }
+
+    // No steps yet (e.g. queued stage) — only honour the URL if `selected`
+    // matches a known stage. Otherwise wait for steps to arrive.
+    const findStage = (stages: StageInfo[]): StageInfo | undefined => {
+      for (const stage of stages) {
+        if (String(stage.id) === selected) return stage;
+        if (stage.children?.length) {
+          const child = findStage(stage.children);
+          if (child) return child;
+        }
+      }
+      return undefined;
+    };
+    if (findStage(run.stages)) {
+      parsedURLParams.current = true;
+      stopTailingLogs();
+      setOpenStageId(selected);
+    }
+  }, [steps, run.stages, expandLastStageStep, stopTailingLogs]);
 
   useEffect(() => {
     let defaultStep;
@@ -376,11 +432,7 @@ export function useStepsPoller(props: RunPollerProps) {
     if (!nodeId) return;
 
     setTailStage(nodeId);
-    setOpenStageId((openStageId) => {
-      if (nodeId === openStageId) return openStageId; // skip if already selected
-      history.replaceState({}, "", `?selected-node=` + nodeId);
-      return nodeId;
-    });
+    setOpenStageId(nodeId);
   }, []);
 
   const onStepToggle = useCallback(
@@ -399,9 +451,24 @@ export function useStepsPoller(props: RunPollerProps) {
     [stopTailingLogs],
   );
 
+  const expandAllForStage = useCallback((steps: StepInfo[]) => {
+    setExpandedSteps((prev) => {
+      return Array.from(new Set(prev.concat(steps.map((step) => step.id))));
+    });
+  }, []);
+
+  const collapseAllForStage = useCallback((steps: StepInfo[]) => {
+    setExpandedSteps((prev) => {
+      const ids = new Set(steps.map((step) => step.id));
+      return prev.filter((id) => !ids.has(id));
+    });
+  }, []);
+
   const openStageSteps = useMemo(() => {
     return steps.filter((step) => step.stageId === openStageId);
   }, [steps, openStageId]);
+
+  const showEarlyConsoleText = openStageId === "-1";
 
   return {
     openStage,
@@ -419,6 +486,9 @@ export function useStepsPoller(props: RunPollerProps) {
     scrollToTail,
     startTailingLogs,
     stopTailingLogs,
+    expandAllForStage,
+    collapseAllForStage,
+    showEarlyConsoleText,
   };
 }
 

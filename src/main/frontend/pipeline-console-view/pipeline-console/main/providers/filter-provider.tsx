@@ -17,6 +17,8 @@ const FilterContext = createContext<FilterContextType | undefined>(undefined);
 
 const defaultStatuses: Result[] = [
   Result.running,
+  Result.queued,
+  Result.paused,
   Result.success,
   Result.failure,
   Result.unstable,

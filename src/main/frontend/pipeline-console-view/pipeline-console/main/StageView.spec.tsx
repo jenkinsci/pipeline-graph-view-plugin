@@ -47,6 +47,7 @@ describe("StageView", () => {
       render(
         <FilterProvider>
           <StageView
+            currentRunPath="/jenkins/job/name/1/"
             tailLogs={false}
             scrollToTail={() => {}}
             stopTailingLogs={() => {}}
@@ -57,6 +58,8 @@ describe("StageView", () => {
             onStepToggle={vi.fn()}
             fetchLogText={async () => mockBuffer}
             fetchExceptionText={async () => mockBuffer}
+            expandAllForStage={() => {}}
+            collapseAllForStage={() => {}}
           />
         </FilterProvider>,
       );

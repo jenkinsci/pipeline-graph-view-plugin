@@ -1,0 +1,86 @@
+// A medium-sized pipeline exercising sequential stages, flat parallel, nested
+// parallel, and wide branch counts. Useful when you want to see the Pipeline
+// Overview render a non-trivial graph without waiting on a stress test.
+//
+// Shape: ~70 user-visible stages, a few hundred FlowNodes. Runs in a minute or
+// two. Tune the sleep values and branch counts for bigger or smaller graphs.
+
+def runStage(String name, int sleepSeconds) {
+    stage(name) {
+        echo "enter: ${name}"
+        sleep sleepSeconds
+        writeFile file: "out/${name.replaceAll('[^A-Za-z0-9]', '_')}.txt", text: name
+        echo "exit: ${name}"
+    }
+}
+
+node {
+    runStage('Checkout', 2)
+    runStage('Install dependencies', 3)
+    runStage('Lint', 2)
+    runStage('Format check', 2)
+    runStage('Static analysis', 2)
+
+    stage('Build matrix') {
+        def matrix = [:]
+        ['linux', 'macos', 'windows', 'freebsd', 'illumos', 'aix'].each { os ->
+            matrix["Build ${os}"] = {
+                runStage("${os}: fetch", 1)
+                runStage("${os}: compile", 3)
+                runStage("${os}: unit tests", 2)
+                runStage("${os}: package", 1)
+            }
+        }
+        parallel matrix
+    }
+
+    stage('Integration') {
+        parallel(
+            'api': {
+                parallel(
+                    'api: smoke':      { runStage('api smoke', 2) },
+                    'api: contract':   { runStage('api contract', 3) },
+                    'api: regression': { runStage('api regression', 4) },
+                )
+            },
+            'browser': {
+                parallel(
+                    'browser: chrome':  { runStage('chrome', 3) },
+                    'browser: firefox': { runStage('firefox', 3) },
+                    'browser: safari':  { runStage('safari', 3) },
+                    'browser: edge':    { runStage('edge', 3) },
+                )
+            },
+            'perf': {
+                runStage('perf: baseline', 2)
+                runStage('perf: load', 4)
+                runStage('perf: stress', 5)
+            },
+            'security': {
+                runStage('dep audit', 2)
+                runStage('sast', 3)
+                runStage('dast', 4)
+            },
+        )
+    }
+
+    stage('Publish artifacts') {
+        def publishers = [:]
+        // C-style loop: (1..8).each would push an IntRange through a parallel
+        // closure, which is not CPS-serialisable and fails at checkpoint.
+        for (int i = 1; i <= 8; i++) {
+            def idx = i
+            publishers["Publish region ${idx}"] = {
+                runStage("upload region ${idx}", 1)
+                runStage("verify region ${idx}", 1)
+            }
+        }
+        parallel publishers
+    }
+
+    runStage('Release notes', 1)
+    runStage('Changelog', 2)
+    runStage('Tag', 2)
+    runStage('Announce', 1)
+    runStage('Cleanup', 1)
+}

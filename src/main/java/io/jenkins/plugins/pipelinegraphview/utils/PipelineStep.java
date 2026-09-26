@@ -1,13 +1,19 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import java.util.Map;
-import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
 
 public class PipelineStep extends AbstractPipelineNode {
     final String stageId;
-    private final PipelineInputStep inputStep;
+
+    // Parsed form of {@link #stageId} for sort comparisons.
+    @JsonIgnore
+    final int stageIdAsInt;
+
+    final PipelineInputStep inputStep;
+    final PipelineBuildStep buildStep;
     private final Map<String, Object> flags;
 
     public PipelineStep(
@@ -18,39 +24,40 @@ public class PipelineStep extends AbstractPipelineNode {
             String title,
             String stageId,
             PipelineInputStep inputStep,
+            PipelineBuildStep buildStep,
             TimingInfo timingInfo,
             Map<String, Object> flags) {
-        super(id, name, state, type, title, timingInfo);
+        super(id, name, state, type, title, timingInfo, null);
         this.stageId = stageId;
+        this.stageIdAsInt = Integer.parseInt(stageId);
         this.inputStep = inputStep;
+        this.buildStep = buildStep;
+        this.flags = flags;
+    }
+
+    @JsonCreator
+    PipelineStep(
+            String id,
+            String name,
+            PipelineState state,
+            String type,
+            String title,
+            long pauseDurationMillis,
+            Long totalDurationMillis,
+            long startTimeMillis,
+            String stageId,
+            PipelineInputStep inputStep,
+            PipelineBuildStep buildStep,
+            Map<String, Object> flags) {
+        super(id, name, state, type, title, pauseDurationMillis, totalDurationMillis, startTimeMillis, null);
+        this.stageId = stageId;
+        this.stageIdAsInt = Integer.parseInt(stageId);
+        this.inputStep = inputStep;
+        this.buildStep = buildStep;
         this.flags = flags;
     }
 
     public Map<String, Object> getFlags() {
         return flags;
-    }
-
-    public static class PipelineStepJsonProcessor extends AbstractPipelineNodeJsonProcessor {
-
-        public static void configure(JsonConfig config) {
-            baseConfigure(config);
-            config.registerJsonBeanProcessor(PipelineStep.class, new PipelineStepJsonProcessor());
-            PipelineInputStep.PipelineInputStepJsonProcessor.configure(config);
-        }
-
-        @Override
-        public JSONObject processBean(Object bean, JsonConfig jsonConfig) {
-            if (!(bean instanceof PipelineStep step)) {
-                return null;
-            }
-            JSONObject json = create(step, jsonConfig);
-
-            json.element("stageId", step.stageId);
-            if (step.inputStep != null) {
-                json.element("inputStep", step.inputStep, jsonConfig);
-            }
-            json.element("flags", step.flags);
-            return json;
-        }
     }
 }

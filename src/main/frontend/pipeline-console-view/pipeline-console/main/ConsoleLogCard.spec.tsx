@@ -13,14 +13,16 @@ import {
 } from "./PipelineConsoleModel.tsx";
 
 vi.mock("./ConsoleLogStream.tsx", () => {
-  return vi.fn((props: ConsoleLogStreamProps) => {
-    return (
-      <div>
-        <div>SimpleConsoleLogStream...</div>
-        <div>Hello, world!</div>
-      </div>
-    );
-  });
+  return {
+    default: vi.fn((props: ConsoleLogStreamProps) => {
+      return (
+        <div>
+          <div>SimpleConsoleLogStream...</div>
+          <div>Hello, world!</div>
+        </div>
+      );
+    }),
+  };
 });
 
 describe("ConsoleLogCard", () => {
@@ -52,6 +54,7 @@ describe("ConsoleLogCard", () => {
     tailLogs: true,
     scrollToTail: () => {},
     stopTailingLogs: () => {},
+    currentRunPath: "/jenkins/job/name/1/",
   } as ConsoleLogCardProps;
   beforeEach(function () {
     (DefaultTestProps.fetchLogText as Mock).mockReset();

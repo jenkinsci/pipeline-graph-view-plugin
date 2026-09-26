@@ -1,0 +1,57 @@
+// Stress-test pipeline that produces roughly 300,000 FlowNodes across three
+// bulk parallel phases, with short sleep windows between them so you can poll
+// the REST API and watch latency as the graph grows.
+//
+// Give Jenkins at least 2 GB heap before running — each FlowNode retains a few
+// KB, and GC thrash will muddy any measurement you take from it.
+//
+// Knobs (multiplicative):
+//   BRANCHES           - parallel branches per phase (default 50)
+//   STAGES_PER_SECTION - sequential stages inside each branch per phase (default 20)
+//   STEPS_PER_STAGE    - echo steps per stage (default 100)
+//   Defaults yield 3 * 50 * 20 * 100 = 300,000 echo FlowNodes, plus ~6,000
+//   stage/parallel wrapping nodes.
+//
+// Runtime is dominated by CPS step-evaluation (a few ms per echo), so the
+// defaults take 30–45 minutes on a typical controller. Drop STEPS_PER_STAGE
+// for faster iteration while keeping the structural shape.
+
+BRANCHES = 50
+STAGES_PER_SECTION = 20
+STEPS_PER_STAGE = 100
+
+def bulkSection(int branches, int stagesPerBranch, int stepsPerStage, String label) {
+    def work = [:]
+    for (int i = 0; i < branches; i++) {
+        def idx = i
+        work["${label}-b${idx}"] = {
+            for (int j = 0; j < stagesPerBranch; j++) {
+                stage("${label}-b${idx}-s${j}") {
+                    for (int k = 0; k < stepsPerStage; k++) {
+                        echo "."
+                    }
+                }
+            }
+        }
+    }
+    parallel work
+}
+
+node {
+    stage('Warmup') {
+        echo "BRANCHES=${BRANCHES} STAGES_PER_SECTION=${STAGES_PER_SECTION} STEPS_PER_STAGE=${STEPS_PER_STAGE}"
+        echo "Expected echo nodes: ~${3 * BRANCHES * STAGES_PER_SECTION * STEPS_PER_STAGE}"
+    }
+
+    stage('Settle (tiny graph)') { sleep 30 }
+    stage('Bulk 1/3') { bulkSection(BRANCHES, STAGES_PER_SECTION, STEPS_PER_STAGE, 's1') }
+
+    stage('Settle (~100k nodes)') { sleep 30 }
+    stage('Bulk 2/3') { bulkSection(BRANCHES, STAGES_PER_SECTION, STEPS_PER_STAGE, 's2') }
+
+    stage('Settle (~200k nodes)') { sleep 30 }
+    stage('Bulk 3/3') { bulkSection(BRANCHES, STAGES_PER_SECTION, STEPS_PER_STAGE, 's3') }
+
+    stage('Settle (~300k nodes, still building)') { sleep 30 }
+    stage('Settle (completed)') { sleep 60 }
+}

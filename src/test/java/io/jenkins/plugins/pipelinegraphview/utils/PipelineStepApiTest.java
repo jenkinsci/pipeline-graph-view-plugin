@@ -2,12 +2,14 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
@@ -482,14 +484,27 @@ class PipelineStepApiTest {
     }
 
     @Test
+    void pipelineWithEarlyFailure() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j, "pipelineWithEarlyFailure", "pipelineWithEarlyFailure.jenkinsfile", Result.FAILURE);
+
+        assertThat(run.getExecution(), notNullValue());
+        PipelineStepList stepList = new PipelineStepApi(run).getAllSteps();
+        assertThat(stepList.runIsComplete, equalTo(true));
+        String stepsString = TestUtils.collectStepsAsString(stepList.steps, TestUtils::nodeNameAndStatus);
+
+        assertThat(stepsString, equalTo("Pipeline error{failure}"));
+    }
+
+    @Test
     void pipelineWithSyntaxError() throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "pipelineWithSyntaxError", "pipelineWithSyntaxError.jenkinsfile", Result.FAILURE);
 
-        List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().steps;
-        String stepsString = TestUtils.collectStepsAsString(steps, TestUtils::nodeNameAndStatus);
-
-        assertThat(stepsString, equalTo("Pipeline error{failure}"));
+        assertThat(run.getExecution(), nullValue());
+        PipelineStepList stepList = new PipelineStepApi(run).getAllSteps();
+        assertThat(stepList.runIsComplete, equalTo(true));
+        assertThat(stepList.steps, empty());
     }
 
     @Test

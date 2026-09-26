@@ -17,8 +17,8 @@ h1 {
   }
 
   svg {
-    width: 1.175rem !important;
-    height: 1.175rem !important;
+    width: 1.125rem !important;
+    height: 1.125rem !important;
   }
 }
 
@@ -43,7 +43,7 @@ h1 {
   & > div {
     text-box: trim-both;
     line-height: 1.66;
-    margin-top: 0.0625rem;
+    margin-top: 0.125rem;
   }
 }
 

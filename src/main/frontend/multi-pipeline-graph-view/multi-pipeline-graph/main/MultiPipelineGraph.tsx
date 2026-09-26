@@ -15,6 +15,7 @@ export const MultiPipelineGraph = () => {
 
   const rootElement = document.getElementById("multiple-pipeline-root");
   const currentJobPath = rootElement!.dataset.currentJobPath!;
+  const normalizedParentJobPath = rootElement!.dataset.normalizedParentJobPath!;
 
   useEffect(() => {
     if (!poll) {
@@ -64,6 +65,7 @@ export const MultiPipelineGraph = () => {
                 key={run.id}
                 run={run}
                 currentJobPath={currentJobPath}
+                normalizedParentJobPath={normalizedParentJobPath}
               />
             ))}
           </div>

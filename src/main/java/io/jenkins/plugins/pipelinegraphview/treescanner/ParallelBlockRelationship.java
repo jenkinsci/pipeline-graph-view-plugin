@@ -164,9 +164,11 @@ public class ParallelBlockRelationship extends NodeRelationship {
         }
         boolean skippedStage = PipelineNodeUtil.isSkippedStage(branchStartNode);
 
-        WarningAction warningAction = branchStartNode.getPersistentAction(WarningAction.class);
-        if (warningAction != null) {
-            return new NodeRunStatus(GenericStatus.fromResult(warningAction.getResult()), skippedStage);
+        if (!PipelineNodeUtil.isActive(branchStartNode)) {
+            WarningAction warningAction = branchStartNode.getPersistentAction(WarningAction.class);
+            if (warningAction != null) {
+                return new NodeRunStatus(GenericStatus.fromResult(warningAction.getResult()), skippedStage);
+            }
         }
 
         return new NodeRunStatus(this.branchStatuses.get(getBranchName(branchStartNode)), skippedStage);

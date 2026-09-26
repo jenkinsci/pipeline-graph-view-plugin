@@ -1,14 +1,18 @@
 package io.jenkins.plugins.pipelinegraphview.treescanner;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphBuilderApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepBuilderApi;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
+import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +38,24 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
         treeScanner = new PipelineNodeTreeScanner(run);
     }
 
+    /** Builds the adapter over a pre-collected node set rather than walking the execution. */
+    public PipelineNodeGraphAdapter(WorkflowRun run, Collection<FlowNode> preCollectedNodes) {
+        this(run, preCollectedNodes, null, null);
+    }
+
+    /**
+     * Builds the adapter over a pre-collected node set plus pre-computed snapshot data.
+     * Supply {@code enclosingIdsByNodeId} to read ancestry from the map instead of FlowNode
+     * storage, and {@code activeNodeIds} to use the set for per-node liveness checks.
+     */
+    public PipelineNodeGraphAdapter(
+            WorkflowRun run,
+            Collection<FlowNode> preCollectedNodes,
+            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId,
+            @CheckForNull Set<String> activeNodeIds) {
+        treeScanner = new PipelineNodeTreeScanner(run, preCollectedNodes, enclosingIdsByNodeId, activeNodeIds);
+    }
+
     private final Object pipelineLock = new Object();
     private final Object stepLock = new Object();
     private final Object remapLock = new Object();
@@ -46,21 +68,25 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
             if (this.nodesToRemap != null) {
                 return this.nodesToRemap;
             }
+            Map<String, Integer> childrenCount = new HashMap<>();
+            for (FlowNodeWrapper node : pipelineNodesList) {
+                for (FlowNodeWrapper parent : node.getParents()) {
+                    int prev = childrenCount.getOrDefault(parent.getId(), 0);
+                    childrenCount.put(parent.getId(), prev + 1);
+                }
+            }
             // Get a map of nodes to remap. The first id is the node to map from, the second
-            // is the node to
-            // map to.
-            // Most of the logic here is to recreate old behavior - it might not be to
-            // everyone's liking.
+            // is the node to map to.
+            // Most of the logic here is to recreate old behavior - it might not be to everyone's liking.
             Map<String, String> nodesToRemap = new HashMap<>();
             for (int i = pipelineNodesList.size() - 1; i >= 0; i--) {
                 FlowNodeWrapper node = pipelineNodesList.get(i);
                 for (FlowNodeWrapper parent : node.getParents()) {
-                    // Parallel Start Nodes that have a Stage with the same name as a parent will be
-                    // mapped to that
-                    // parent stage
-                    // id.
+                    // Parallel Start Nodes that have a Stage as the parent and are the only child will be mapped to
+                    // that parent.
                     if (node.getType() == FlowNodeWrapper.NodeType.PARALLEL_BLOCK
-                            && parent.getType() == FlowNodeWrapper.NodeType.STAGE) {
+                            && parent.getType() == FlowNodeWrapper.NodeType.STAGE
+                            && childrenCount.get(parent.getId()) == 1) {
                         if (isDebugEnabled) {
                             logger.debug(
                                     "getNodesToRemap => Found Parallel block {id: {}, name: {}, type: {}} that has a Stage {id: {}, name: {}, type: {}} as a parent. Adding to remap list.",
@@ -76,10 +102,10 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
                         continue;
                     }
                     // If the node has a parent which is a parallel branch, with the same name and
-                    // has only one child (this node)
-                    // then remap child nodes to that parent. This removes some superfluous stages
-                    // in parallel branches.
+                    // has only one child (this node) then remap child nodes to that parent.
+                    // This removes some superfluous stages in parallel branches.
                     if (parent.getType() == FlowNodeWrapper.NodeType.PARALLEL
+                            && childrenCount.get(parent.getId()) == 1
                             && node.getDisplayName().equals(parent.getDisplayName())) {
                         if (isDebugEnabled) {
                             logger.debug(

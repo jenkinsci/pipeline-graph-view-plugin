@@ -9,7 +9,13 @@ import StageSteps from "./stage-steps.tsx";
 export default function StageView(props: StageViewProps) {
   return (
     <>
-      <StageDetails stage={props.stage} />
+      <StageDetails
+        stage={props.stage}
+        steps={props.steps}
+        expandedSteps={props.expandedSteps}
+        expandAllForStage={props.expandAllForStage}
+        collapseAllForStage={props.collapseAllForStage}
+      />
       <StageSteps
         stage={props.stage}
         steps={props.steps}
@@ -21,6 +27,7 @@ export default function StageView(props: StageViewProps) {
         stopTailingLogs={props.stopTailingLogs}
         fetchLogText={props.fetchLogText}
         fetchExceptionText={props.fetchExceptionText}
+        currentRunPath={props.currentRunPath}
       />
     </>
   );
@@ -31,6 +38,8 @@ export interface StageViewProps {
   steps: Array<StepInfo>;
   stepBuffers: Map<string, StepLogBufferInfo>;
   expandedSteps: string[];
+  expandAllForStage: (steps: StepInfo[]) => void;
+  collapseAllForStage: (steps: StepInfo[]) => void;
   onStepToggle: (nodeId: string) => void;
   fetchLogText: (
     stepId: string,
@@ -40,4 +49,5 @@ export interface StageViewProps {
   tailLogs: boolean;
   scrollToTail: (stepId: string, element: HTMLDivElement) => void;
   stopTailingLogs: () => void;
+  currentRunPath: string;
 }

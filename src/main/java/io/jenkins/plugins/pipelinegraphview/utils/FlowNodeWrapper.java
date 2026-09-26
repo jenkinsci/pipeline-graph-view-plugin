@@ -5,6 +5,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import hudson.model.Action;
 import hudson.model.Result;
+import hudson.model.Run;
 import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import io.jenkins.plugins.pipelinegraphview.steps.HideFromViewStep;
@@ -88,10 +89,11 @@ public class FlowNodeWrapper {
     public final NodeType type;
     private final String displayName;
     private final InputStep inputStep;
+    private final Run<?, ?> downstreamBuildRun;
     private final WorkflowRun run;
     private String causeOfFailure;
 
-    private List<FlowNodeWrapper> parents = new ArrayList<>();
+    private final List<FlowNodeWrapper> parents = new ArrayList<>();
 
     private ErrorAction blockErrorAction;
     private Collection<Action> pipelineActions;
@@ -101,7 +103,7 @@ public class FlowNodeWrapper {
             @NonNull NodeRunStatus status,
             @NonNull TimingInfo timingInfo,
             @NonNull WorkflowRun run) {
-        this(node, status, timingInfo, null, run, null);
+        this(node, status, timingInfo, null, null, run, null);
     }
 
     public FlowNodeWrapper(
@@ -110,7 +112,17 @@ public class FlowNodeWrapper {
             @NonNull TimingInfo timingInfo,
             @Nullable InputStep inputStep,
             @NonNull WorkflowRun run) {
-        this(node, status, timingInfo, inputStep, run, null);
+        this(node, status, timingInfo, inputStep, null, run, null);
+    }
+
+    public FlowNodeWrapper(
+            @NonNull FlowNode node,
+            @NonNull NodeRunStatus status,
+            @NonNull TimingInfo timingInfo,
+            @Nullable InputStep inputStep,
+            @Nullable Run<?, ?> downstreamBuildRun,
+            @NonNull WorkflowRun run) {
+        this(node, status, timingInfo, inputStep, downstreamBuildRun, run, null);
     }
 
     public FlowNodeWrapper(
@@ -120,12 +132,24 @@ public class FlowNodeWrapper {
             @Nullable InputStep inputStep,
             @NonNull WorkflowRun run,
             @Nullable NodeType type) {
+        this(node, status, timingInfo, inputStep, null, run, type);
+    }
+
+    public FlowNodeWrapper(
+            @NonNull FlowNode node,
+            @NonNull NodeRunStatus status,
+            @NonNull TimingInfo timingInfo,
+            @Nullable InputStep inputStep,
+            @Nullable Run<?, ?> downstreamBuildRun,
+            @NonNull WorkflowRun run,
+            @Nullable NodeType type) {
         this.node = node;
         this.status = status;
         this.timingInfo = timingInfo;
         this.type = type == null ? getNodeType(node) : type;
         this.displayName = PipelineNodeUtil.getDisplayName(node);
         this.inputStep = inputStep;
+        this.downstreamBuildRun = downstreamBuildRun;
         this.run = run;
     }
 
@@ -147,6 +171,23 @@ public class FlowNodeWrapper {
             return labelAction.getDisplayName();
         }
         return null;
+    }
+
+    /**
+     * Returns the human-readable reason an agent allocation under this stage is blocked
+     * (e.g. "Waiting for next available executor on 'linux'"), or {@code null} if no
+     * agent step under this stage is currently queued.
+     *
+     * <p>Checked even when {@link #getStatus()} doesn't report {@link BlueRunState#QUEUED}:
+     * for declarative parallel branches, the chunked status computation can report
+     * {@code IN_PROGRESS} while a child {@code agent {...}} block is actually queued. The
+     * presence of a non-null cause is the source of truth that the stage is queued.
+     */
+    public @CheckForNull String getCauseOfBlockage() {
+        if (getStatus().state == BlueRunState.FINISHED) {
+            return null;
+        }
+        return PipelineNodeUtil.getCauseOfBlockage(node);
     }
 
     private static NodeType getNodeType(FlowNode node) {
@@ -191,6 +232,20 @@ public class FlowNodeWrapper {
 
     public @NonNull String getId() {
         return node.getId();
+    }
+
+    /** Lazily-parsed numeric form of {@link #getId()} for sort comparisons. */
+    private int cachedIdInt = Integer.MIN_VALUE;
+
+    public int getIdAsInt() {
+        // Benign race: two threads may both parse and store, but they store the same value —
+        // int stores are atomic and the write is idempotent, so no synchronisation needed.
+        int v = cachedIdInt;
+        if (v == Integer.MIN_VALUE) {
+            v = Integer.parseInt(node.getId());
+            cachedIdInt = v;
+        }
+        return v;
     }
 
     public @NonNull FlowNode getNode() {
@@ -260,6 +315,10 @@ public class FlowNodeWrapper {
 
     public @CheckForNull InputStep getInputStep() {
         return inputStep;
+    }
+
+    public @CheckForNull Run<?, ?> getDownstreamBuildRun() {
+        return downstreamBuildRun;
     }
 
     @Override
@@ -417,31 +476,36 @@ public class FlowNodeWrapper {
 
         @Override
         public int compare(FlowNodeWrapper a, FlowNodeWrapper b) {
-            return FlowNodeWrapper.compareIds(a.getId(), b.getId());
-        }
-    }
-
-    public static class FlowNodeComparator implements Comparator<FlowNode>, Serializable {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public int compare(FlowNode a, FlowNode b) {
-            return FlowNodeWrapper.compareIds(a.getId(), b.getId());
-        }
-    }
-
-    public static class NodeIdComparator implements Comparator<String>, Serializable {
-        private static final long serialVersionUID = 1L;
-
-        @Override
-        public int compare(String a, String b) {
-            return FlowNodeWrapper.compareIds(a, b);
+            return Integer.compare(a.getIdAsInt(), b.getIdAsInt());
         }
     }
 
     public static int compareIds(String ida, String idb) {
         return Integer.compare(Integer.parseInt(ida), Integer.parseInt(idb));
     }
+
+    /**
+     * Sorts {@code nodes} by the integer value of their {@link FlowNode#getId()}. Parses each
+     * ID exactly once via decorate-sort-undecorate.
+     */
+    public static List<FlowNode> sortByFlowNodeId(Collection<FlowNode> nodes, boolean descending) {
+        List<KeyedFlowNode> decorated = new ArrayList<>(nodes.size());
+        for (FlowNode node : nodes) {
+            decorated.add(new KeyedFlowNode(Integer.parseInt(node.getId()), node));
+        }
+        Comparator<KeyedFlowNode> cmp = Comparator.comparingInt(KeyedFlowNode::key);
+        if (descending) {
+            cmp = cmp.reversed();
+        }
+        decorated.sort(cmp);
+        List<FlowNode> out = new ArrayList<>(decorated.size());
+        for (KeyedFlowNode k : decorated) {
+            out.add(k.node());
+        }
+        return out;
+    }
+
+    private record KeyedFlowNode(int key, FlowNode node) {}
 
     // Useful for dumping node maps to console. These can then be viewed in dor or
     // online via:

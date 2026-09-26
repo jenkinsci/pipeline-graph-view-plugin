@@ -20,6 +20,7 @@ class PipelineStageInternal {
     private boolean synthetic;
     private TimingInfo timingInfo;
     private String agent;
+    private String causeOfBlockage;
     private PipelineStepBuilderApi builder;
     private InputAction inputAction;
 
@@ -32,7 +33,8 @@ class PipelineStageInternal {
             String title,
             boolean synthetic,
             TimingInfo times,
-            String agent) {
+            String agent,
+            String causeOfBlockage) {
         this.id = id;
         this.name = name;
         this.parents = parents;
@@ -42,6 +44,7 @@ class PipelineStageInternal {
         this.synthetic = synthetic;
         this.timingInfo = times;
         this.agent = agent;
+        this.causeOfBlockage = causeOfBlockage;
     }
 
     public boolean isSequential() {
@@ -163,7 +166,17 @@ class PipelineStageInternal {
 
     public PipelineStage toPipelineStage(List<PipelineStage> children, String runUrl) {
         boolean waitingForInput = isWaitingForInput(children);
-        PipelineState effectiveState = waitingForInput ? PipelineState.PAUSED : state;
+        PipelineState effectiveState;
+        if (waitingForInput) {
+            effectiveState = PipelineState.PAUSED;
+        } else if (causeOfBlockage != null && state.isInProgress()) {
+            // The chunked status compute can report IN_PROGRESS for a declarative parallel
+            // branch whose agent allocation is actually queued; the presence of a cause of
+            // blockage is the authoritative signal that the stage is waiting for an executor.
+            effectiveState = PipelineState.QUEUED;
+        } else {
+            effectiveState = state;
+        }
 
         return new PipelineStage(
                 id,
@@ -179,6 +192,7 @@ class PipelineStageInternal {
                 synthetic && name.equals(Messages.FlowNodeWrapper_noStage()),
                 timingInfo,
                 agent,
-                runUrl);
+                runUrl,
+                causeOfBlockage);
     }
 }

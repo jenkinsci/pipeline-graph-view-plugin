@@ -14,6 +14,7 @@
     <l:card title="${%Stages}" expandable="multi-pipeline-graph" controls="${controls}">
       <div id="multiple-pipeline-root"
            data-current-job-path="${rootURL + '/' + it.jobUrl}"
+           data-normalized-parent-job-path="${it.normalizedParentJobPath}"
            data-user-locale="${request2.getLocale().toLanguageTag()}" />
     </l:card>
     <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/multi-pipeline-graph-view-bundle.js" type="module"/>

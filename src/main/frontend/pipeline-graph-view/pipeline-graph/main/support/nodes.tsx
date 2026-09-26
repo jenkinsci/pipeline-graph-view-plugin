@@ -1,6 +1,6 @@
 import "./nodes.scss";
 
-import { CSSProperties, ReactElement } from "react";
+import { CSSProperties, memo, ReactElement } from "react";
 
 import {
   resultToColor,
@@ -9,13 +9,7 @@ import {
 import Tooltip from "../../../../common/components/tooltip.tsx";
 import { classNames } from "../../../../common/utils/classnames.ts";
 import LiveTotal from "../../../../common/utils/live-total.tsx";
-import { CounterNodeInfo } from "../PipelineGraphLayout.ts";
-import {
-  LayoutInfo,
-  NodeColumn,
-  NodeInfo,
-  StageInfo,
-} from "../PipelineGraphModel.tsx";
+import { LayoutInfo, NodeInfo, StageInfo } from "../PipelineGraphModel.tsx";
 
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck
 
@@ -29,24 +23,16 @@ interface NodeProps {
   isSelected: boolean;
 }
 
-/**
- * Generate the SVG elements to represent a node.
- */
-export function Node({
-  node,
-  collapsed,
-  onStageSelect,
-  isSelected,
-}: NodeProps) {
+export const Node = memo(NodeImpl);
+
+function NodeImpl({ node, collapsed, onStageSelect, isSelected }: NodeProps) {
   const key = node.key;
 
   if (node.isPlaceholder) {
     if (node.type === "counter") {
-      const mappedNode = node as CounterNodeInfo;
-
       const tooltip = (
         <ol className="pgv-node__counter-tooltip">
-          {mappedNode.stages.map((stage) => (
+          {node.stages.map((stage) => (
             <li key={stage.id}>
               <a
                 className={"jenkins-button jenkins-button--tertiary"}
@@ -80,7 +66,7 @@ export function Node({
             className={"PWGx-pipeline-node"}
           >
             <span className={"PWGx-pipeline-node-counter"}>
-              {mappedNode.stages.length}
+              {node.stages.length}
             </span>
           </div>
         </Tooltip>
@@ -98,6 +84,21 @@ export function Node({
         }}
         className="PWGx-pipeline-node"
       >
+        {node.type === "start" && node.url && (
+          <a
+            href={node.url}
+            onClick={(e) => {
+              if (onStageSelect) {
+                e.preventDefault();
+                history.replaceState({}, "", e.currentTarget.href);
+
+                onStageSelect(String(node.id));
+              }
+            }}
+          >
+            <span className="jenkins-visually-hidden">{node.name}</span>
+          </a>
+        )}
         <span className={"PWGx-pipeline-node-terminal"} />
       </div>
     );
@@ -109,10 +110,7 @@ export function Node({
     <StageStatusIcon key={`icon-${node.id}`} stage={node.stage} />,
   );
 
-  const clickable =
-    !node.isPlaceholder &&
-    node.stage?.state !== "skipped" &&
-    !node.stage.skeleton;
+  const clickable = !node.isPlaceholder && !node.stage.skeleton;
 
   // Most of the nodes are in shared code, so they're rendered at 0,0. We transform with a <g> to position them
   const groupProps = {
@@ -133,6 +131,9 @@ export function Node({
     ),
   };
 
+  const causeOfBlockage =
+    node.stage.state === "queued" ? node.stage.causeOfBlockage : undefined;
+
   let tooltip: ReactElement;
   if (collapsed) {
     tooltip = (
@@ -145,6 +146,7 @@ export function Node({
             paused={node.stage.pauseLiveTotal}
           />
         </div>
+        {causeOfBlockage && <div>{causeOfBlockage}</div>}
       </div>
     );
   } else {
@@ -155,6 +157,7 @@ export function Node({
           start={node.stage.startTimeMillis}
           paused={node.stage.pauseLiveTotal}
         />
+        {causeOfBlockage && <div>{causeOfBlockage}</div>}
       </div>
     );
   }
@@ -169,6 +172,8 @@ export function Node({
             onClick={(e) => {
               if (onStageSelect) {
                 e.preventDefault();
+                history.replaceState({}, "", e.currentTarget.href);
+
                 onStageSelect(String(node.stage.id));
               }
             }}
@@ -183,7 +188,7 @@ export function Node({
 
 interface SelectionHighlightProps {
   layout: LayoutInfo;
-  nodeColumns: Array<NodeColumn>;
+  nodes: Array<NodeInfo>;
   isStageSelected: (stage: StageInfo) => boolean;
 }
 
@@ -192,7 +197,7 @@ interface SelectionHighlightProps {
  */
 export function SelectionHighlight({
   layout,
-  nodeColumns,
+  nodes,
   isStageSelected,
 }: SelectionHighlightProps) {
   const { nodeRadius, connectorStrokeWidth } = layout;
@@ -201,13 +206,9 @@ export function SelectionHighlight({
   );
 
   const selectedNode: NodeInfo | undefined = (() => {
-    for (const column of nodeColumns) {
-      for (const row of column.rows) {
-        for (const node of row) {
-          if (!node.isPlaceholder && isStageSelected(node.stage)) {
-            return node;
-          }
-        }
+    for (const node of nodes) {
+      if (!node.isPlaceholder && isStageSelected(node.stage)) {
+        return node;
       }
     }
     return undefined;

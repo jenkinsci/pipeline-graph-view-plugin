@@ -28,8 +28,25 @@ class PipelineConsoleViewInputTest {
                 .nthBuild(0)
                 .goToBuild()
                 .goToPipelineOverview()
-                .clickInputWithParameters()
+                .openInputDialog()
                 .enterText("Hi there!")
+                .proceed();
+        j.assertBuildStatus(Result.SUCCESS, j.waitForCompletion(run));
+    }
+
+    @Test
+    @ConfiguredWithCode("../configure-appearance.yml")
+    void inputWithChoiceSucceeds(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJobNoWait(j, "input-with-choice", "input-with-choice.jenkinsfile")
+                .waitForStart();
+        new PipelineJobPage(p, run.getParent())
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .goToBuild()
+                .goToPipelineOverview()
+                .openInputDialog()
+                .selectChoice("continue")
                 .proceed();
         j.assertBuildStatus(Result.SUCCESS, j.waitForCompletion(run));
     }

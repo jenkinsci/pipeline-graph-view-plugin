@@ -1,10 +1,14 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import static jenkins.test.RunMatchers.*;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
+import hudson.model.Action;
+import hudson.model.Queue;
 import hudson.model.Result;
+import hudson.model.TaskListener;
 import hudson.model.labels.LabelAtom;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.slaves.DumbSlave;
@@ -15,8 +19,14 @@ import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeTreeScanner;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
+import org.jenkinsci.plugins.workflow.flow.FlowDefinition;
+import org.jenkinsci.plugins.workflow.flow.FlowExecution;
+import org.jenkinsci.plugins.workflow.flow.FlowExecutionOwner;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.test.steps.SemaphoreStep;
@@ -369,14 +379,63 @@ class PipelineGraphApiTest {
     }
 
     @Test
+    void pipelineWithEarlyFailure() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j, "pipelineWithEarlyFailure", "pipelineWithEarlyFailure.jenkinsfile", Result.FAILURE);
+
+        assertThat(run.getExecution(), notNullValue());
+        PipelineGraph tree = new PipelineGraphApi(run).createTree();
+        assertThat(tree.complete, equalTo(true));
+        String stagesString = TestUtils.collectStagesAsString(tree.stages, TestUtils::nodeNameAndStatus);
+
+        assertThat(stagesString, equalTo("%s{failure}".formatted(Messages.FlowNodeWrapper_noStage())));
+    }
+
+    @Test
     void pipelineWithSyntaxError() throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "pipelineWithSyntaxError", "pipelineWithSyntaxError.jenkinsfile", Result.FAILURE);
 
-        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
-        String stagesString = TestUtils.collectStagesAsString(stages, TestUtils::nodeNameAndStatus);
+        assertThat(run.getExecution(), nullValue());
+        PipelineGraph tree = new PipelineGraphApi(run).createTree();
+        assertThat(tree.complete, equalTo(true));
+        assertThat(tree.stages, empty());
+    }
 
-        assertThat(stagesString, equalTo("%s{failure}".formatted(Messages.FlowNodeWrapper_noStage())));
+    @Issue("GH#1382")
+    @Test
+    void initialisingRunWithoutExecutionIsNotComplete() throws Exception {
+        WorkflowJob job = j.createProject(WorkflowJob.class, "initialisingRun");
+        BlockingFlowDefinition definition = new BlockingFlowDefinition();
+        job.setDefinition(definition);
+
+        QueueTaskFuture<WorkflowRun> future = job.scheduleBuild2(0);
+        assertThat(future, notNullValue());
+        WorkflowRun run = future.waitForStart();
+        definition.creating.await(30, TimeUnit.SECONDS);
+        assertThat(run.getExecution(), nullValue());
+        assertThat(run.isBuilding(), equalTo(true));
+
+        PipelineGraph tree = new PipelineGraphApi(run).createTree();
+        assertThat(tree.complete, equalTo(false));
+        assertThat(tree.stages, empty());
+
+        definition.release.countDown();
+        j.assertBuildStatusSuccess(j.waitForCompletion(run));
+        assertThat(new PipelineGraphApi(run).createTree().complete, equalTo(true));
+    }
+
+    private static class BlockingFlowDefinition extends FlowDefinition {
+        final CountDownLatch creating = new CountDownLatch(1);
+        final CountDownLatch release = new CountDownLatch(1);
+
+        @Override
+        public FlowExecution create(FlowExecutionOwner owner, TaskListener listener, List<? extends Action> actions)
+                throws Exception {
+            creating.countDown();
+            release.await();
+            return new CpsFlowDefinition("echo 'done'", true).create(owner, listener, actions);
+        }
     }
 
     @Test
@@ -568,5 +627,164 @@ class PipelineGraphApiTest {
         j.waitForCompletion(run);
 
         assertThat(run.getResult(), equalTo(Result.SUCCESS));
+    }
+
+    @Issue("GH#486")
+    @Test
+    void queuedStageReportsCauseOfBlockage() throws Exception {
+        WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "queuedCauseOfBlockage");
+        job.setDefinition(new CpsFlowDefinition("""
+                pipeline {
+                  agent none
+                  stages {
+                    stage('Build') {
+                      parallel {
+                        stage('Linux') {
+                          agent { label 'linux-never-exists' }
+                          steps { echo 'unreachable' }
+                        }
+                        stage('Windows') {
+                          agent { label 'windows-never-exists' }
+                          steps { echo 'unreachable' }
+                        }
+                      }
+                    }
+                  }
+                }
+                """, true));
+
+        WorkflowRun run = job.scheduleBuild2(0).waitForStart();
+        try {
+            j.waitForMessage("Still waiting to schedule task", run);
+
+            List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
+            PipelineStage build = stages.stream()
+                    .filter(s -> "Build".equals(s.name))
+                    .findFirst()
+                    .orElseThrow();
+
+            for (PipelineStage branch : build.children) {
+                assertThat(branch.name, anyOf(equalTo("Linux"), equalTo("Windows")));
+                assertThat(
+                        "Branch %s should be queued".formatted(branch.name),
+                        branch.state,
+                        equalTo(PipelineState.QUEUED));
+                assertThat(
+                        "Branch %s should report a cause of blockage".formatted(branch.name),
+                        branch.getCauseOfBlockage(),
+                        notNullValue());
+                assertThat(
+                        branch.getCauseOfBlockage(),
+                        anyOf(containsString("linux-never-exists"), containsString("windows-never-exists")));
+            }
+        } finally {
+            for (Queue.Item item : Queue.getInstance().getItems()) {
+                Queue.getInstance().cancel(item);
+            }
+            run.doStop();
+            await().until(() -> run, completed());
+        }
+    }
+
+    @Issue("GH#771")
+    @Test
+    void wrapParallelStagesInParallelBlock771() throws Exception {
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "gh771", "gh771_non_wrapped_parallel.jenkinsfile", Result.SUCCESS);
+
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
+
+        assertThat(stages.size(), equalTo(2));
+        // One
+        PipelineStage one = stages.get(0);
+        assertThat(one.type, equalTo("STAGE"));
+        assertThat(one.name, equalTo("one"));
+
+        // One -> 1st parallel
+        List<PipelineStage> childrenOne = one.children;
+        assertThat(childrenOne.size(), equalTo(2));
+        assertThat(childrenOne.get(0).type, equalTo("PARALLEL_BLOCK"));
+        List<PipelineStage> childrenOne1 = childrenOne.get(0).children;
+        assertThat(childrenOne1.get(0).name, equalTo("branch 1.1"));
+        assertThat(childrenOne1.get(1).name, equalTo("branch 1.2"));
+
+        // One -> 2nd parallel
+        assertThat(childrenOne.get(1).type, equalTo("PARALLEL_BLOCK"));
+        List<PipelineStage> childrenOne2 = childrenOne.get(1).children;
+        assertThat(childrenOne2.get(0).name, equalTo("branch 2.1"));
+        assertThat(childrenOne2.get(1).name, equalTo("branch 2.2"));
+
+        // Two
+        PipelineStage two = stages.get(1);
+        assertThat(two.type, equalTo("STAGE"));
+        assertThat(two.name, equalTo("two"));
+
+        // Two -> 1st parallel
+        List<PipelineStage> childrenTwo = two.children;
+        assertThat(childrenTwo.size(), equalTo(2));
+        assertThat(childrenTwo.get(0).name, equalTo("branch 3.1"));
+        assertThat(childrenTwo.get(1).name, equalTo("branch 3.2"));
+    }
+
+    @Issue("GH#1168")
+    @Test
+    void wrapParallelStagesInParallelBlock1168() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(j, "gh1168", "gh1168_mixed.jenkinsfile", Result.SUCCESS);
+
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
+
+        assertThat(stages.size(), equalTo(1));
+        // top-level
+        PipelineStage topLevel = stages.get(0);
+        assertThat(topLevel.type, equalTo("STAGE"));
+        assertThat(topLevel.name, equalTo("top-level"));
+        assertThat(topLevel.children.size(), equalTo(2));
+
+        // config
+        PipelineStage config = topLevel.children.get(0);
+        assertThat(config.type, equalTo("STAGE"));
+        assertThat(config.name, equalTo("config"));
+        assertThat(config.children.size(), equalTo(0));
+
+        // actual parallel
+        PipelineStage parallelBlock = topLevel.children.get(1);
+        assertThat(parallelBlock.type, equalTo("PARALLEL_BLOCK"));
+        assertThat(parallelBlock.children.size(), equalTo(2));
+
+        // stage 1
+        PipelineStage stage1 = parallelBlock.children.get(0);
+        assertThat(stage1.type, equalTo("PARALLEL"));
+        assertThat(stage1.name, equalTo("stage 1"));
+
+        // stage 2
+        PipelineStage stage2 = parallelBlock.children.get(1);
+        assertThat(stage2.type, equalTo("PARALLEL"));
+        assertThat(stage2.name, equalTo("stage 2"));
+    }
+
+    @Issue("GH#1296")
+    @Test
+    void runningUnstableStageInProgress() throws Exception {
+        QueueTaskFuture<WorkflowRun> futureRun = TestUtils.createAndRunJobNoWait(
+                j, "githubIssue1296", "gh1296_unstableStageInProgress.jenkinsfile", false);
+        WorkflowRun run = futureRun.waitForStart();
+
+        SemaphoreStep.waitForStart("wait/1", run);
+        PipelineGraphApi api = new PipelineGraphApi(run);
+        List<PipelineStage> stages = api.createTree().stages;
+
+        String stagesStringRunning = TestUtils.collectStagesAsString(
+                stages, (PipelineStage stage) -> String.format("{%s,%s}", stage.name, stage.state));
+        assertThat(stagesStringRunning, equalTo("{unstable-stage,running}"));
+
+        SemaphoreStep.success("wait/1", null);
+        // Wait for Pipeline to end (terminating it means end nodes might not be
+        // created).
+        j.waitForCompletion(run);
+
+        stages = api.createTree().stages;
+        String stagesStringFinished = TestUtils.collectStagesAsString(
+                stages, (PipelineStage stage) -> String.format("{%s,%s}", stage.name, stage.state));
+        assertThat(stagesStringFinished, equalTo("{unstable-stage,unstable}"));
     }
 }

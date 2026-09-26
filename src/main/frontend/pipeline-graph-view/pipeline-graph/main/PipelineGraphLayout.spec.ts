@@ -22,7 +22,7 @@ describe("PipelineGraphLayout", () => {
     startTimeMillis: 0,
     totalDurationMillis: 0,
     agent: "built-in",
-    url: "?selected-node=0",
+    url: "/?selected-node=0",
   };
 
   const makeStage = (
@@ -365,6 +365,10 @@ describe("PipelineGraphLayout", () => {
       labelOffsetV: 22,
       smallLabelOffsetV: 15,
       ypStart: 55,
+      graphSpacingTop: 0,
+      graphSpacingRight: 0,
+      graphSpacingBottom: 0,
+      graphSpacingLeft: 0,
     };
 
     const makeSmallLabel = (stageName: string) => {
@@ -375,6 +379,7 @@ describe("PipelineGraphLayout", () => {
 
     it("should not generate small labels for top stage columns with no children", () => {
       const graph = layoutGraph(
+        "job/name/1/",
         [
           makeStage(6, "Non-Parallel Stage"),
           makeStage(11, "Parallel Stage", [
@@ -412,6 +417,68 @@ describe("PipelineGraphLayout", () => {
         makeSmallLabel("Nested 1 - P2"),
         makeSmallLabel("Nested 2 - P2"),
       ]);
+    });
+
+    describe("collapsed", () => {
+      const manyStages = (count: number): StageInfo[] =>
+        Array.from({ length: count }, (_, i) =>
+          makeStage(i + 1, `Stage ${i + 1}`),
+        );
+
+      const callLayout = (
+        count: number,
+        collapsed: boolean,
+        maxColumns?: number,
+      ) =>
+        layoutGraph(
+          "job/name/1/",
+          manyStages(count),
+          layout,
+          collapsed,
+          defaultMessages(DEFAULT_LOCALE),
+          false,
+          false,
+          maxColumns,
+        );
+
+      const counterFor = (graph: ReturnType<typeof callLayout>) => {
+        return graph.nodes.find((node) => node.type === "counter");
+      };
+
+      it("uses the default threshold of 13 when no override is provided", () => {
+        const graph = callLayout(25, true);
+
+        expect(graph.nodes.length).toBe(15);
+        expect(counterFor(graph)?.stages.length).toBe(13);
+      });
+
+      it("respects an explicit lower maxColumns override", () => {
+        const graph = callLayout(25, true, 5);
+
+        expect(graph.nodes.length).toBe(7);
+        expect(counterFor(graph)?.stages.length).toBe(21);
+      });
+
+      it("respects an explicit higher maxColumns override", () => {
+        const graph = callLayout(25, true, 20);
+
+        expect(graph.nodes.length).toBe(22);
+        expect(counterFor(graph)?.stages.length).toBe(6);
+      });
+
+      it("omits the counter when maxColumns exceeds the stage count", () => {
+        const graph = callLayout(25, true, 30);
+
+        expect(graph.nodes.length).toBe(27);
+        expect(counterFor(graph)).toBeUndefined();
+      });
+
+      it("ignores maxColumns when collapsed is false", () => {
+        const graph = callLayout(25, false, 5);
+
+        expect(graph.nodes.length).toBe(27);
+        expect(counterFor(graph)).toBeUndefined();
+      });
     });
   });
 });

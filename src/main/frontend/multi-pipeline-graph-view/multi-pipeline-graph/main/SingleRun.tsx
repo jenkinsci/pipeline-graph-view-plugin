@@ -1,6 +1,6 @@
 import "./single-run.scss";
 
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 
 import StatusIcon from "../../../common/components/status-icon.tsx";
 import {
@@ -15,12 +15,16 @@ import {
   defaultLayout,
   LayoutInfo,
 } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
+import { useCollapsedStages } from "../../../pipeline-graph-view/pipeline-graph/main/support/useCollapsedStages.ts";
 import { RunInfo } from "./MultiPipelineGraphModel.ts";
 
-export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
-  const { run: runInfo } = useRunPoller({
-    currentRunPath: currentJobPath + run.id + "/",
-  });
+export default function SingleRun({
+  run,
+  currentJobPath,
+  normalizedParentJobPath,
+}: SingleRunProps) {
+  const currentRunPath = currentJobPath + run.id + "/";
+  const { run: runInfo } = useRunPoller({ currentRunPath });
 
   function Changes() {
     const messages = useContext(I18NContext);
@@ -40,8 +44,10 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
 
   const { showNames, showDurations } = useUserPreferences();
 
-  function getLayout() {
-    const layout: LayoutInfo = { ...defaultLayout };
+  const layout: LayoutInfo = useMemo(() => {
+    const layout: LayoutInfo = {
+      ...defaultLayout,
+    };
 
     if (!showNames && !showDurations) {
       layout.nodeSpacingH = 45;
@@ -49,17 +55,25 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
       layout.nodeSpacingH = 90;
     }
 
-    return layout;
-  }
+    if (!showNames) {
+      // Do not reserve space for big label.
+      layout.ypStart -= layout.labelOffsetV + 16;
+    }
+    if (!showDurations) {
+      // Do not reserve space for small label.
+      layout.nodeSpacingV -= layout.labelOffsetV + 15;
+    }
 
-  function getCompactLayout() {
-    return !showNames && !showDurations ? "pgv-single-run--compact" : "";
-  }
+    return layout;
+  }, [showDurations, showNames]);
+
+  const { effectiveStages, collapsedStageIds, toggleCollapseStage } =
+    useCollapsedStages(normalizedParentJobPath, runInfo.stages);
 
   return (
-    <div className={`pgv-single-run ${getCompactLayout()}`}>
+    <div className="pgv-single-run">
       <div>
-        <a href={currentJobPath + run.id} className="pgv-user-specified-text">
+        <a href={currentRunPath} className="pgv-user-specified-text">
           <StatusIcon status={run.result} />
           {run.displayName}
           <span>
@@ -68,7 +82,14 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
           </span>
         </a>
       </div>
-      <PipelineGraph stages={runInfo.stages} layout={getLayout()} collapsed />
+      <PipelineGraph
+        currentRunPath={currentRunPath}
+        stages={effectiveStages}
+        layout={layout}
+        collapsed
+        collapsedStageIds={collapsedStageIds}
+        onToggleCollapse={toggleCollapseStage}
+      />
     </div>
   );
 }
@@ -76,4 +97,5 @@ export default function SingleRun({ run, currentJobPath }: SingleRunProps) {
 interface SingleRunProps {
   run: RunInfo;
   currentJobPath: string;
+  normalizedParentJobPath: string;
 }

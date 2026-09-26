@@ -1,17 +1,37 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  CSSProperties,
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { Context as TransformContext } from "react-zoom-pan-pinch";
 
 import { I18NContext } from "../../../common/i18n/index.ts";
 import { useUserPreferences } from "../../../common/user/user-preferences-provider.tsx";
-import { layoutGraph } from "./PipelineGraphLayout";
+import { nestedGraphLayout } from "./NestedPipelineGraphLayout.ts";
 import {
-  CompositeConnection,
+  DEFAULT_MAX_COLUMNS_WHEN_COLLAPSED,
+  layoutGraph,
+} from "./PipelineGraphLayout";
+import {
+  debugPipelineGraph,
   defaultLayout,
   LayoutInfo,
-  NodeColumn,
-  NodeLabelInfo,
+  nestedLayout,
   StageInfo,
 } from "./PipelineGraphModel.tsx";
 import { GraphConnections } from "./support/connections.tsx";
+import { DebugOutline } from "./support/DebugOutline.tsx";
+import {
+  computeDefaultTransform,
+  findFocusX,
+} from "./support/defaultTransform.ts";
 import {
   BigLabel,
   SequentialContainerLabel,
@@ -20,21 +40,34 @@ import {
 } from "./support/labels.tsx";
 import { Node, SelectionHighlight } from "./support/nodes.tsx";
 
+interface Viewport {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+const VIEWPORT_MARGIN = 300;
+
+const MIN_COLUMNS_WHEN_COLLAPSED = 5;
+
 export function PipelineGraph({
   stages = [],
   layout,
   selectedStage,
   collapsed,
   onStageSelect,
+  collapsedStageIds,
+  onToggleCollapse,
+  setMinScale,
+  setInitialScale,
+  setDefaultTransform,
+  setAutoStageViewHeight,
+  setDefaultStageViewHeight,
+  centerGraph,
+  setCenterGraph,
+  currentRunPath,
 }: Props) {
-  const [nodeColumns, setNodeColumns] = useState<NodeColumn[]>([]);
-  const [connections, setConnections] = useState<CompositeConnection[]>([]);
-  const [bigLabels, setBigLabels] = useState<NodeLabelInfo[]>([]);
-  const [timings, setTimings] = useState<NodeLabelInfo[]>([]);
-  const [smallLabels, setSmallLabels] = useState<NodeLabelInfo[]>([]);
-  const [branchLabels, setBranchLabels] = useState<NodeLabelInfo[]>([]);
-  const [measuredWidth, setMeasuredWidth] = useState<number>(0);
-  const [measuredHeight, setMeasuredHeight] = useState<number>(0);
   const fullLayout = useMemo(() => {
     return {
       ...defaultLayout,
@@ -45,24 +78,92 @@ export function PipelineGraph({
 
   const messages = useContext(I18NContext);
 
-  useEffect(() => {
-    const newLayout = layoutGraph(
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [maxColumnsWhenCollapsed, setMaxColumnsWhenCollapsed] =
+    useState<number>(DEFAULT_MAX_COLUMNS_WHEN_COLLAPSED);
+
+  useLayoutEffect(() => {
+    if (!collapsed) return;
+    const node = containerRef.current;
+    if (!node) return;
+
+    const apply = (width: number) => {
+      if (width <= 0) return;
+      const reservedSpace =
+        // before start
+        fullLayout.graphSpacingLeft +
+        fullLayout.nodeSpacingH / 2 +
+        fullLayout.nodeSpacingH * 0.7 + // start node with reduced spacing
+        -fullLayout.nodeSpacingH * 0.3 + // reduced spacing to end node
+        // after end
+        fullLayout.nodeSpacingH / 2 +
+        fullLayout.graphSpacingRight;
+      const next = Math.max(
+        MIN_COLUMNS_WHEN_COLLAPSED,
+        Math.floor((width - reservedSpace) / fullLayout.nodeSpacingH),
+      );
+      setMaxColumnsWhenCollapsed((prev) => (prev === next ? prev : next));
+    };
+
+    apply(node.getBoundingClientRect().width);
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        apply(entry.contentRect.width);
+      }
+    });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [
+    collapsed,
+    fullLayout.graphSpacingLeft,
+    fullLayout.graphSpacingRight,
+    fullLayout.nodeSpacingH,
+  ]);
+
+  const {
+    nodes,
+    allNodes,
+    connections,
+    bigLabels,
+    timings,
+    smallLabels,
+    branchLabels,
+    measuredWidth,
+    measuredHeight,
+  } = useMemo(() => {
+    if (nestedLayout()) {
+      return nestedGraphLayout(
+        currentRunPath,
+        stages,
+        fullLayout,
+        collapsed ?? false,
+        messages,
+        showNames || !collapsed,
+        showDurations,
+        maxColumnsWhenCollapsed,
+      );
+    }
+    return layoutGraph(
+      currentRunPath,
       stages,
       fullLayout,
       collapsed ?? false,
       messages,
       showNames,
       showDurations,
+      maxColumnsWhenCollapsed,
     );
-    setNodeColumns(newLayout.nodeColumns);
-    setConnections(newLayout.connections);
-    setBigLabels(newLayout.bigLabels);
-    setSmallLabels(newLayout.smallLabels);
-    setTimings(newLayout.timings);
-    setBranchLabels(newLayout.branchLabels);
-    setMeasuredWidth(newLayout.measuredWidth);
-    setMeasuredHeight(newLayout.measuredHeight);
-  }, [stages, fullLayout, collapsed, messages, showNames, showDurations]);
+  }, [
+    currentRunPath,
+    stages,
+    fullLayout,
+    collapsed,
+    messages,
+    showNames,
+    showDurations,
+    maxColumnsWhenCollapsed,
+  ]);
 
   const stageIsSelected = useCallback(
     (stage?: StageInfo): boolean => {
@@ -71,29 +172,227 @@ export function PipelineGraph({
     [selectedStage],
   );
 
-  const nodes = nodeColumns.flatMap((column) => {
-    return column.rows.flatMap((row) => row);
-  });
+  const focusX = useMemo(() => findFocusX(nodes), [nodes]);
 
-  const outerDivStyle = {
-    position: "relative" as const,
-    overflow: "visible" as const,
+  const transform = useContext(TransformContext);
+  const [transformViewport, setTransformViewport] = useState({
+    width: 0,
+    height: 0,
+  });
+  useEffect(() => {
+    if (!transform?.wrapperComponent) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        setTransformViewport((prev) =>
+          prev.width === width && prev.height === height
+            ? prev
+            : { width, height },
+        );
+      }
+    });
+    observer.observe(transform.wrapperComponent);
+    return () => observer.disconnect();
+  }, [transform?.wrapperComponent]);
+
+  useEffect(() => {
+    if (!setMinScale || !setInitialScale || !transform) return;
+    const { width: transformWidth, height: transformHeight } =
+      transformViewport;
+    if (
+      transformWidth <= 0 ||
+      transformHeight <= 0 ||
+      measuredWidth <= 0 ||
+      measuredHeight <= 0
+    ) {
+      return;
+    }
+
+    const {
+      initialScale,
+      minScale,
+      scale: autoScale,
+      positionX: centerOffsetX,
+      positionY: centerOffsetY,
+    } = computeDefaultTransform(
+      transformWidth,
+      transformHeight,
+      measuredWidth,
+      measuredHeight,
+      focusX,
+    );
+    setMinScale(minScale);
+    setInitialScale(initialScale);
+    setDefaultTransform?.({
+      scale: autoScale,
+      positionX: centerOffsetX,
+      positionY: centerOffsetY,
+    });
+    setDefaultStageViewHeight?.(measuredHeight);
+    if (centerGraph) {
+      // Don't scale too small by default.
+      const autoHeight = Math.max(
+        Math.min(measuredHeight, fullLayout.nodeSpacingH),
+        measuredHeight * autoScale,
+      );
+      setAutoStageViewHeight?.(autoHeight);
+      if (
+        transform.state.scale !== autoScale ||
+        transform.state.positionX !== centerOffsetX ||
+        transform.state.positionY !== centerOffsetY
+      ) {
+        transform.setState(autoScale, centerOffsetX, centerOffsetY);
+      }
+      return transform.onChange(() => {
+        setCenterGraph?.(false);
+        setAutoStageViewHeight?.(0);
+      });
+    }
+  }, [
+    transform,
+    transformViewport,
+    centerGraph,
+    setCenterGraph,
+    fullLayout.nodeSpacingH,
+    measuredWidth,
+    measuredHeight,
+    focusX,
+    setMinScale,
+    setInitialScale,
+    setDefaultTransform,
+    setAutoStageViewHeight,
+    setDefaultStageViewHeight,
+  ]);
+
+  // When inside a TransformWrapper, only mount the nodes/labels intersecting
+  // the visible region. Mounting thousands of absolute-positioned divs forces
+  // a synchronous layout flush that blocks the main thread for seconds.
+  const virtualize = transform != null;
+  const [viewport, setViewport] = useState<Viewport | null>(null);
+  const cachedViewport = useRef<Viewport | null>(null);
+
+  useEffect(() => {
+    if (!transform) return;
+    let raf = 0;
+    const compute = () => {
+      raf = 0;
+      const wrapper = transform.wrapperComponent;
+      if (!wrapper) return;
+      const { positionX, positionY, scale } = transform.state;
+      const next: Viewport = {
+        x: -positionX / scale,
+        y: -positionY / scale,
+        w: wrapper.offsetWidth / scale,
+        h: wrapper.offsetHeight / scale,
+      };
+      const prev = cachedViewport.current;
+      if (
+        prev &&
+        Math.abs(prev.x - next.x) < 50 &&
+        Math.abs(prev.y - next.y) < 50 &&
+        Math.abs(prev.w - next.w) < 50 &&
+        Math.abs(prev.h - next.h) < 50
+      ) {
+        return;
+      }
+      cachedViewport.current = next;
+      setViewport(next);
+    };
+    const schedule = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(compute);
+    };
+    schedule();
+    const unsubChange = transform.onChange(schedule);
+    const unsubInit = transform.wrapperComponent
+      ? undefined
+      : transform.onInit(() => schedule());
+    const observer = new ResizeObserver(schedule);
+    const observed = transform.wrapperComponent;
+    if (observed) observer.observe(observed);
+    const unsubInitObserve = transform.wrapperComponent
+      ? undefined
+      : transform.onInit((ctx) => {
+          if (ctx.instance.wrapperComponent) {
+            observer.observe(ctx.instance.wrapperComponent);
+          }
+        });
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+      unsubChange();
+      unsubInit?.();
+      unsubInitObserve?.();
+      observer.disconnect();
+    };
+  }, [transform]);
+
+  const isInViewport = useCallback(
+    (x: number, y: number): boolean => {
+      if (!virtualize) return true;
+      if (!viewport) return false;
+      return (
+        x >= viewport.x - VIEWPORT_MARGIN &&
+        x <= viewport.x + viewport.w + VIEWPORT_MARGIN &&
+        y >= viewport.y - VIEWPORT_MARGIN &&
+        y <= viewport.y + viewport.h + VIEWPORT_MARGIN
+      );
+    },
+    [viewport, virtualize],
+  );
+
+  const selectedStageId = selectedStage?.id;
+  const visibleNodes = useMemo(() => {
+    const filtered = nodes.filter((n) => isInViewport(n.x, n.y));
+    if (!virtualize || selectedStageId == null) return filtered;
+    if (
+      filtered.some((n) => !n.isPlaceholder && n.stage?.id === selectedStageId)
+    ) {
+      return filtered;
+    }
+    const sel = nodes.find(
+      (n) => !n.isPlaceholder && n.stage?.id === selectedStageId,
+    );
+    return sel ? [...filtered, sel] : filtered;
+  }, [nodes, isInViewport, virtualize, selectedStageId]);
+
+  const visibleSmallLabels = useMemo(
+    () => smallLabels.filter((l) => isInViewport(l.x, l.y)),
+    [smallLabels, isInViewport],
+  );
+
+  const visibleBranchLabels = useMemo(
+    () => branchLabels.filter((l) => isInViewport(l.x, l.y)),
+    [branchLabels, isInViewport],
+  );
+
+  const outerDivStyle: CSSProperties = {
+    position: "relative",
+    overflow: "visible",
+    boxSizing: "unset",
   };
+  if (debugPipelineGraph()) {
+    outerDivStyle.border = "1px dashed red";
+  }
 
   return (
-    <div className="PWGx-PipelineGraph-container">
+    <div ref={containerRef} className="PWGx-PipelineGraph-container">
       <div style={outerDivStyle} className="PWGx-PipelineGraph">
         <svg width={measuredWidth} height={measuredHeight}>
           <GraphConnections connections={connections} layout={fullLayout} />
 
           <SelectionHighlight
             layout={fullLayout}
-            nodeColumns={nodeColumns}
+            nodes={nodes}
             isStageSelected={stageIsSelected}
           />
+
+          {debugPipelineGraph() &&
+            allNodes.map((node) => (
+              <DebugOutline node={node} layout={fullLayout} key={node.id} />
+            ))}
         </svg>
 
-        {nodes.map((node) => (
+        {visibleNodes.map((node) => (
           <Node
             key={node.id}
             node={node}
@@ -112,6 +411,10 @@ export function PipelineGraph({
             layout={fullLayout}
             measuredHeight={measuredHeight}
             isSelected={selectedStage?.id === label.stage?.id}
+            isCollapsed={
+              label.stage ? collapsedStageIds.has(label.stage.id) : false
+            }
+            onToggleCollapse={onToggleCollapse}
           />
         ))}
 
@@ -125,20 +428,28 @@ export function PipelineGraph({
           />
         ))}
 
-        {smallLabels.map((label) => (
+        {visibleSmallLabels.map((label) => (
           <SmallLabel
             key={label.key}
             details={label}
             layout={fullLayout}
             isSelected={selectedStage?.id === label.stage?.id}
+            isCollapsed={
+              label.stage ? collapsedStageIds.has(label.stage.id) : false
+            }
+            onToggleCollapse={onToggleCollapse}
           />
         ))}
 
-        {branchLabels.map((label) => (
+        {visibleBranchLabels.map((label) => (
           <SequentialContainerLabel
             key={label.key}
             details={label}
             layout={fullLayout}
+            isCollapsed={
+              label.stage ? collapsedStageIds.has(label.stage.id) : false
+            }
+            onToggleCollapse={onToggleCollapse}
           />
         ))}
       </div>
@@ -152,4 +463,18 @@ interface Props {
   selectedStage?: StageInfo;
   collapsed?: boolean;
   onStageSelect?: (nodeId: string) => void;
+  collapsedStageIds: Set<number>;
+  onToggleCollapse: (stageId: number) => void;
+  setMinScale?: (value: number) => void;
+  setInitialScale?: (value: number) => void;
+  setDefaultTransform?: (value: {
+    scale: number;
+    positionX: number;
+    positionY: number;
+  }) => void;
+  setAutoStageViewHeight?: Dispatch<SetStateAction<number>>;
+  setDefaultStageViewHeight?: Dispatch<SetStateAction<number>>;
+  centerGraph?: boolean;
+  setCenterGraph?: Dispatch<SetStateAction<boolean>>;
+  currentRunPath: string;
 }

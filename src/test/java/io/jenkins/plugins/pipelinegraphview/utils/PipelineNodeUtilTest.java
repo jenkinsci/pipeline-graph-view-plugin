@@ -1,14 +1,20 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import static jenkins.test.RunMatchers.completed;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import hudson.model.Queue;
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import java.util.List;
+import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
+import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
@@ -93,5 +99,36 @@ class PipelineNodeUtilTest {
         assertFalse(PipelineNodeUtil.isStep(branchB2Node));
         assertFalse(PipelineNodeUtil.isStage(branchB2Node));
         assertTrue(PipelineNodeUtil.isParallelBranch(branchB2Node));
+    }
+
+    @Issue("GH#486")
+    @Test
+    void getCauseOfBlockageReportsExecutorWait(JenkinsRule j) throws Exception {
+        // The label "no-such-agent" matches no executor, so the node step blocks on the queue.
+        WorkflowJob job = j.jenkins.createProject(WorkflowJob.class, "queuedExecutorWait");
+        job.setDefinition(new CpsFlowDefinition("""
+                stage('Build') {
+                  node('no-such-agent') {
+                    echo 'never reached'
+                  }
+                }
+                """, true));
+
+        WorkflowRun run = job.scheduleBuild2(0).waitForStart();
+        try {
+            j.waitForMessage("Still waiting to schedule task", run);
+
+            FlowNode stage = TestUtils.getNodesByDisplayName(run, "Build").get(0);
+            String cause = PipelineNodeUtil.getCauseOfBlockage(stage);
+
+            assertNotNull(cause, "Expected a non-null cause of blockage for a queued stage");
+            assertThat(cause, containsString("no-such-agent"));
+        } finally {
+            for (Queue.Item item : Queue.getInstance().getItems()) {
+                Queue.getInstance().cancel(item);
+            }
+            run.doStop();
+            await().until(() -> run, completed());
+        }
     }
 }

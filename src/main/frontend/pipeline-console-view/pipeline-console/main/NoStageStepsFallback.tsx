@@ -8,8 +8,8 @@ import { Result } from "../../../pipeline-graph-view/pipeline-graph/main/Pipelin
 
 const ConsoleLogStream = lazy(() => import("./ConsoleLogStream.tsx"));
 
-async function fetchData(): Promise<StepLogBufferInfo> {
-  const consoleBuildOutput = await getConsoleBuildOutput();
+async function fetchData(url: string): Promise<StepLogBufferInfo> {
+  const consoleBuildOutput = await getConsoleBuildOutput(url);
 
   return {
     lines: consoleBuildOutput?.split("\n") ?? [],
@@ -19,6 +19,7 @@ async function fetchData(): Promise<StepLogBufferInfo> {
 }
 
 interface NoStageStepsFallbackProps {
+  currentRunPath: string;
   tailLogs: boolean;
   scrollToTail: (stepId: string, element: HTMLDivElement) => void;
 }
@@ -31,13 +32,13 @@ export function NoStageStepsFallback(props: NoStageStepsFallbackProps) {
   });
 
   useEffect(() => {
-    fetchData()
+    fetchData(props.currentRunPath)
       .then((data) => {
         setLogBuffer(data);
         return data;
       })
       .catch((err) => console.log(err));
-  }, []);
+  }, [props.currentRunPath]);
 
   return (
     <div className={"pgv-stage-steps"}>
@@ -51,6 +52,7 @@ export function NoStageStepsFallback(props: NoStageStepsFallbackProps) {
           stepId={""}
           stepState={Result.success}
           fetchExceptionText={async () => logBuffer}
+          currentRunPath={props.currentRunPath}
         />
       </div>
     </div>

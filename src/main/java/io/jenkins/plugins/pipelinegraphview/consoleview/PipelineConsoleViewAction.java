@@ -17,22 +17,26 @@ import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.ArtifactRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.ChangesRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.TestResultRunDetailsItem;
+import io.jenkins.plugins.pipelinegraphview.utils.EarlyConsoleText;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphViewCache;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineJsonWriter;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStep;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
 import jenkins.model.Tab;
 import net.sf.json.JSONObject;
-import net.sf.json.JsonConfig;
 import org.jenkinsci.plugins.pipeline.modeldefinition.actions.RestartDeclarativePipelineAction;
+import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
 import org.jenkinsci.plugins.workflow.cps.replay.ReplayAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
@@ -52,13 +56,6 @@ public class PipelineConsoleViewAction extends Tab {
     public static final int CACHE_AGE = (int) TimeUnit.DAYS.toSeconds(1);
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineConsoleViewAction.class);
-    public static final JsonConfig jsonConfig = new JsonConfig();
-
-    static {
-        PipelineStepList.PipelineStepListJsonProcessor.configure(jsonConfig);
-        PipelineGraph.PipelineGraphJsonProcessor.configure(jsonConfig);
-    }
-
     private final PipelineGraphApi graphApi;
     private final WorkflowRun run;
     private final PipelineStepApi stepApi;
@@ -84,22 +81,18 @@ public class PipelineConsoleViewAction extends Tab {
     // running).
     @GET
     @WebMethod(name = "steps")
-    public HttpResponse getSteps(StaplerRequest2 req) {
+    public void getSteps(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         run.checkPermission(Item.READ);
         String nodeId = req.getParameter("nodeId");
-        if (nodeId != null) {
-            return HttpResponses.okJSON(getSteps(nodeId));
-        } else {
-            return HttpResponses.errorJSON("Error getting console text");
+        if (nodeId == null) {
+            HttpResponses.errorJSON("Error getting console text").generateResponse(req, rsp, null);
+            return;
         }
-    }
-
-    private JSONObject getSteps(String nodeId) {
         logger.debug("getSteps was passed nodeId '{}'.", nodeId);
         PipelineStepList steps = stepApi.getSteps(nodeId);
-        JSONObject json = JSONObject.fromObject(steps, jsonConfig);
-        logger.debug("Steps for {}: '{}'.", nodeId, json);
-        return json;
+        rsp.setStatus(200);
+        rsp.setContentType("application/json;charset=UTF-8");
+        PipelineJsonWriter.write(steps, rsp.getOutputStream());
     }
 
     // Return all steps to:
@@ -109,14 +102,17 @@ public class PipelineConsoleViewAction extends Tab {
     @WebMethod(name = "allSteps")
     public void getAllSteps(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         run.checkPermission(Item.READ);
-        PipelineStepList steps = stepApi.getAllSteps();
-        JSONObject json = JSONObject.fromObject(steps, jsonConfig);
-        logger.debug("Steps: '{}'.", json);
-        HttpResponse response = HttpResponses.okJSON(json);
-
         rsp.setStatus(200);
+        rsp.setContentType("application/json;charset=UTF-8");
+        // Speculative: a cache hit always implies the run was complete when persisted.
+        // Overwritten below if we fall through to the compute path.
+        setCache(rsp, true);
+        if (PipelineGraphViewCache.get().tryServeAllSteps(run, rsp.getOutputStream())) {
+            return;
+        }
+        PipelineStepList steps = stepApi.getAllSteps();
         setCache(rsp, steps.runIsComplete);
-        response.generateResponse(req, rsp, null);
+        PipelineJsonWriter.write(steps, rsp.getOutputStream());
     }
 
     private void setCache(StaplerResponse2 rsp, boolean complete) {
@@ -124,6 +120,19 @@ public class PipelineConsoleViewAction extends Tab {
             rsp.setHeader("Cache-Control", "private, immutable, max-age=" + CACHE_AGE);
         } else {
             rsp.setHeader("Cache-Control", "private, no-store");
+        }
+    }
+
+    @WebMethod(name = "earlyConsoleText")
+    public void getEarlyConsoleText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+        run.checkPermission(Item.READ);
+        rsp.setContentType("text/html;charset=UTF-8");
+
+        EarlyConsoleText ect = new EarlyConsoleText(run);
+        boolean anyLogs = ect.writeHtmlTo(rsp.getOutputStream());
+        if (!anyLogs) {
+            rsp.getWriter().write("No early console text found.");
+            rsp.setStatus(404);
         }
     }
 
@@ -147,8 +156,14 @@ public class PipelineConsoleViewAction extends Tab {
         logger.debug("getConsoleText was passed node id '{}'.", nodeId);
         // This will be a step, so return its log output.
         AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
-        if (logText != null) {
-            logText.writeLogTo(0L, rsp.getOutputStream());
+        String exceptionText = getNodeExceptionText(nodeId);
+        if (logText != null || exceptionText != null) {
+            if (logText != null) {
+                logText.writeLogTo(0L, rsp.getOutputStream());
+            }
+            if (exceptionText != null) {
+                rsp.getOutputStream().write(exceptionText.getBytes(StandardCharsets.UTF_8));
+            }
             return;
         }
 
@@ -160,6 +175,14 @@ public class PipelineConsoleViewAction extends Tab {
             if (logText != null) {
                 foundLogs = true;
                 logText.writeLogTo(0L, rsp.getOutputStream());
+            }
+            exceptionText = getNodeExceptionText(step.id);
+            if (exceptionText != null) {
+                if (!exceptionText.endsWith("\n")) {
+                    exceptionText += "\n";
+                }
+                foundLogs = true;
+                rsp.getOutputStream().write(exceptionText.getBytes(StandardCharsets.UTF_8));
             }
         }
         if (!foundLogs) {
@@ -176,6 +199,7 @@ public class PipelineConsoleViewAction extends Tab {
                     "Doesn't seem to matter in practice, docs aren't clear on how to handle and most places ignore it")
     public void getBuildConsole(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
         run.checkPermission(Item.READ);
+        rsp.setContentType("text/html;charset=UTF-8");
         run.getLogText().writeHtmlTo(0L, rsp.getWriter());
     }
 
@@ -291,6 +315,7 @@ public class PipelineConsoleViewAction extends Tab {
      * Handles the rerun request using ReplayAction feature
      */
     @RequirePOST
+    @WebMethod(name = "rerun")
     @JavaScriptMethod
     public HttpResponse doRerun() {
         run.checkPermission(Item.BUILD);
@@ -299,6 +324,9 @@ public class PipelineConsoleViewAction extends Tab {
             return HttpResponses.errorJSON(Messages.scheduled_failure());
         }
         ReplayAction replayAction = run.getAction(ReplayAction.class);
+        if (replayAction == null) {
+            return HttpResponses.errorJSON(Messages.scheduled_failure());
+        }
         Queue.Item item = replayAction.run2(replayAction.getOriginalScript(), replayAction.getOriginalLoadedScripts());
 
         if (item == null) {
@@ -360,6 +388,97 @@ public class PipelineConsoleViewAction extends Tab {
         return HttpResponses.errorJSON(message);
     }
 
+    /**
+     * Handles the pause request.
+     */
+    @RequirePOST
+    @JavaScriptMethod
+    public HttpResponse doPause() {
+        run.checkPermission(getCancelPermission());
+
+        if (!run.isBuilding()) {
+            return HttpResponses.errorJSON(Messages.run_isFinished());
+        }
+
+        FlowExecution execution = run.getExecution();
+        if (execution == null) {
+            return HttpResponses.errorJSON("No execution found");
+        }
+
+        // Pause is specific to CpsFlowExecution
+        if (execution instanceof CpsFlowExecution) {
+            CpsFlowExecution cpsExecution = (CpsFlowExecution) execution;
+
+            try {
+                cpsExecution.pause(true);
+                return HttpResponses.okJSON();
+            } catch (IOException e) {
+                String pauseFailedMessage = Messages.run_pauseFailed();
+                logger.error(pauseFailedMessage, e);
+                return HttpResponses.errorJSON(pauseFailedMessage + ": " + e.getMessage());
+            }
+        }
+
+        return HttpResponses.errorJSON(Messages.run_noPauseSupport());
+    }
+
+    /**
+     * Handles the resume request.
+     */
+    @RequirePOST
+    @JavaScriptMethod
+    public HttpResponse doResume() {
+        run.checkPermission(getCancelPermission());
+
+        if (!run.isBuilding()) {
+            return HttpResponses.errorJSON(Messages.run_isFinished());
+        }
+
+        FlowExecution execution = run.getExecution();
+        if (execution == null) {
+            return HttpResponses.errorJSON("No execution found");
+        }
+
+        // Resume is specific to CpsFlowExecution
+        if (execution instanceof CpsFlowExecution) {
+            CpsFlowExecution cpsExecution = (CpsFlowExecution) execution;
+
+            try {
+                cpsExecution.pause(false);
+                return HttpResponses.okJSON();
+            } catch (IOException e) {
+                String resumeFailedMessage = Messages.run_resumeFailed();
+                logger.error(resumeFailedMessage, e);
+                return HttpResponses.errorJSON(resumeFailedMessage + ": " + e.getMessage());
+            }
+        }
+
+        return HttpResponses.errorJSON(Messages.run_noPauseSupport());
+    }
+
+    /**
+     * Returns the current pause state of the pipeline.
+     */
+    @GET
+    @WebMethod(name = "pauseState")
+    public HttpResponse getPauseState(StaplerRequest2 req, StaplerResponse2 rsp) {
+        run.checkPermission(Item.READ);
+
+        FlowExecution execution = run.getExecution();
+        JSONObject obj = new JSONObject();
+
+        if (execution instanceof CpsFlowExecution) {
+            CpsFlowExecution cpsExecution = (CpsFlowExecution) execution;
+            obj.put("paused", cpsExecution.isPaused());
+            obj.put("building", run.isBuilding());
+        } else {
+            obj.put("paused", false);
+            obj.put("building", run.isBuilding());
+        }
+
+        return HttpResponses.okJSON(obj);
+    }
+
     public String getFullProjectDisplayName() {
         return run.getParent().getFullDisplayName();
     }
@@ -372,7 +491,7 @@ public class PipelineConsoleViewAction extends Tab {
     }
 
     public String getBuildUrl() {
-        return run.getUrl();
+        return run.getParent().getUrl() + run.getNumber() + "/";
     }
 
     public String getPreviousBuildNumber() {
@@ -381,24 +500,37 @@ public class PipelineConsoleViewAction extends Tab {
 
     public String getPreviousBuildUrl() {
         WorkflowRun previousBuild = run.getPreviousBuild();
-        return previousBuild == null ? null : previousBuild.getUrl();
+        if (previousBuild == null) {
+            return null;
+        }
+        return run.getParent().getUrl() + previousBuild.getNumber() + "/";
     }
 
     public String getNextBuildNumber() {
         return getBuildNumber(run.getNextBuild());
     }
 
+    public String getNormalizedParentJobPath() {
+        boolean isMultiBranch =
+                run.getParent().getProperty("org.jenkinsci.plugins.workflow.multibranch.BranchJobProperty") != null;
+        return isMultiBranch
+                ? run.getParent().getParent().getUrl()
+                : run.getParent().getUrl();
+    }
+
     @GET
     @WebMethod(name = "tree")
     public void getTree(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {
         run.checkPermission(Item.READ);
-
-        PipelineGraph tree = graphApi.createTree();
-        HttpResponse response = HttpResponses.okJSON(JSONObject.fromObject(tree, jsonConfig));
-
         rsp.setStatus(200);
+        rsp.setContentType("application/json;charset=UTF-8");
+        setCache(rsp, true);
+        if (PipelineGraphViewCache.get().tryServeTree(run, rsp.getOutputStream())) {
+            return;
+        }
+        PipelineGraph tree = graphApi.createTree();
         setCache(rsp, tree.complete);
-        response.generateResponse(req, rsp, null);
+        PipelineJsonWriter.write(tree, rsp.getOutputStream());
     }
 
     // Icon related methods these may appear as unused but are used by /lib/hudson/buildCaption.jelly

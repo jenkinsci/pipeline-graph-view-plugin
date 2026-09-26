@@ -42,6 +42,25 @@ describe("mergeStageInfos", () => {
     expect(child.state).toBe(Result.running);
   });
 
+  it("adopts children of completed stages", () => {
+    const skeletons = [
+      stage("Parent", {
+        state: Result.success,
+        children: [stage("Child", { skeleton: true })],
+      }),
+    ];
+    const incoming = [
+      stage("Parent", {
+        state: Result.skipped,
+        children: [],
+      }),
+    ];
+
+    const [parent] = mergeStageInfos(skeletons, incoming);
+    expect(parent.state).toBe(Result.skipped);
+    expect(parent.children.length).toBe(0);
+  });
+
   it("drops skeletons if new stages differ", () => {
     const skeletons = [
       stage("Start"),

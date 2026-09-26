@@ -7,16 +7,6 @@
     border-bottom: none;
   }
 
-  &--compact {
-    .PWGx-PipelineGraph-container {
-      height: 36px;
-
-      & > div {
-        margin-top: -36px;
-      }
-    }
-  }
-
   .pgv-user-specified-text {
     display: grid;
     grid-template-columns: auto 1fr;

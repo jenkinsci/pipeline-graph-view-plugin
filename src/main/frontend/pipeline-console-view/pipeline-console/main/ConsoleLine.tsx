@@ -1,5 +1,5 @@
-import linkifyHtml from "linkify-html";
 import DOMPurify from "dompurify";
+import linkifyHtml from "linkify-html";
 import { memo } from "react";
 
 import { BuildStep } from "../../../common/RestClient.tsx";
@@ -61,7 +61,7 @@ export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
               DOMPurify.sanitize(linkifyHtml(content, linkifyJsOptions), {
                 ALLOWED_TAGS: ["a"],
                 ALLOWED_ATTR: ["href", "rel"],
-                ALLOWED_URI_REGEXP: /^https?:\/\//i,
+                ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/(?![/\\]))/i,
               }),
             ),
             id,

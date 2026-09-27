@@ -54,6 +54,10 @@
   font-size: 12px;
   font-variant-numeric: tabular-nums;
 
+  svg * {
+    stroke-width: 50px;
+  }
+
   &:first-of-type {
     border-top-left-radius: var(--pgv-tag-radius-outer);
     border-bottom-left-radius: var(--pgv-tag-radius-outer);

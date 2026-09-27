@@ -26,7 +26,9 @@ package io.jenkins.plugins.pipelinegraphview;
 
 import hudson.Extension;
 import hudson.model.Run;
+import hudson.tasks.junit.CaseResult;
 import hudson.tasks.test.AbstractTestResultAction;
+import hudson.tasks.test.TestResult;
 import hudson.widgets.HistoryWidget;
 import jenkins.model.HistoricalBuild;
 import jenkins.model.Jenkins;
@@ -46,6 +48,10 @@ public class HistoryPageEntryDecorator3 extends HistoryPageEntryDecorator {
     private int totalCount;
 
     private int passCount;
+
+    private int regressionCount;
+
+    private int fixedCount;
 
     @Override
     public boolean isApplicable(@NonNull HistoryWidget<?, ?> widget, @NonNull HistoricalBuild build) {
@@ -68,8 +74,43 @@ public class HistoryPageEntryDecorator3 extends HistoryPageEntryDecorator {
         this.skipCount = action.getSkipCount();
         this.totalCount = action.getTotalCount();
         this.passCount = action.getTotalCount() - action.getFailCount() - action.getSkipCount();
+        this.regressionCount = countRegressions(action);
+        this.fixedCount = countFixed(action);
 
         return true;
+    }
+
+    /**
+     * Tests failing in this build that passed in the previous one.
+     */
+    private static int countRegressions(AbstractTestResultAction<?> action) {
+        int count = 0;
+        for (TestResult test : action.getFailedTests()) {
+            if (test instanceof CaseResult caseResult && caseResult.getStatus() == CaseResult.Status.REGRESSION) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Tests that failed in the previous build and pass in this one. Walks the previous build's
+     * failures rather than this build's passes, as there are far fewer of them.
+     */
+    private static int countFixed(AbstractTestResultAction<?> action) {
+        AbstractTestResultAction<?> previous = action.getPreviousResult();
+        if (previous == null || !(action.getResult() instanceof TestResult current)) {
+            return 0;
+        }
+
+        int count = 0;
+        for (TestResult test : previous.getFailedTests()) {
+            TestResult now = current.findCorrespondingResult(test.getId());
+            if (now != null && now.isPassed()) {
+                count++;
+            }
+        }
+        return count;
     }
 
     @SuppressWarnings("unused")
@@ -90,5 +131,15 @@ public class HistoryPageEntryDecorator3 extends HistoryPageEntryDecorator {
     @SuppressWarnings("unused")
     public int getPassCount() {
         return passCount;
+    }
+
+    @SuppressWarnings("unused")
+    public int getRegressionCount() {
+        return regressionCount;
+    }
+
+    @SuppressWarnings("unused")
+    public int getFixedCount() {
+        return fixedCount;
     }
 }

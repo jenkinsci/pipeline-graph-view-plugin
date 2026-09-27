@@ -32,8 +32,25 @@
                 <local:tag count="${d.skipCount}" label="skipped" color="var(--text-color-secondary)"
                            path="M400 256H112" />
             </div>
-            <div class="jenkins-!-text-color-secondary" style="font-size: 12px;">
+            <!-- Change since the previous build, only shown when something changed -->
+            <div class="jenkins-!-text-color-secondary" style="font-size: 12px; font-variant-numeric: tabular-nums;">
                 ${d.totalCount} ${d.totalCount == 1 ? 'test' : 'tests'}
+                <j:if test="${d.regressionCount > 0}">
+                    ·
+                    <span style="color: var(--error-color);"
+                          tooltip="Failing now, passed in the previous build"
+                          data-tooltip-append-to-parent="true">
+                        ${d.regressionCount} ${d.regressionCount == 1 ? 'regression' : 'regressions'}
+                    </span>
+                </j:if>
+                <j:if test="${d.fixedCount > 0}">
+                    ·
+                    <span style="color: var(--success-color);"
+                          tooltip="Passing now, failed in the previous build"
+                          data-tooltip-append-to-parent="true">
+                        ${d.fixedCount} fixed
+                    </span>
+                </j:if>
             </div>
         </a>
     </j:if>

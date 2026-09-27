@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?jelly escape-by-default='true'?>
-<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:local="local">
+<j:jelly xmlns:j="jelly:core" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:local="local">
     <!-- A pill styled like the pipeline status icons: tinted fill, faint border, coloured glyph. Hidden when empty. -->
     <d:taglib uri="local">
         <d:tag name="tag">
@@ -37,16 +37,18 @@
                  style="display: flex; gap: 0.5rem; font-size: 12px; font-variant-numeric: tabular-nums;">
                 <span>${d.totalCount} ${d.totalCount == 1 ? 'test' : 'tests'}</span>
                 <j:if test="${d.regressionCount > 0}">
-                    <span style="color: var(--error-color);"
+                    <span style="display: inline-flex; align-items: center; gap: 0.2rem;"
                           tooltip="Failing now, passed in the previous build"
                           data-tooltip-append-to-parent="true">
+                        <l:icon src="symbol-trending-down-outline plugin-ionicons-api" style="width: 12px; height: 12px; flex-shrink: 0;" />
                         ${d.regressionCount} ${d.regressionCount == 1 ? 'regression' : 'regressions'}
                     </span>
                 </j:if>
                 <j:if test="${d.fixedCount > 0}">
-                    <span style="color: var(--success-color);"
+                    <span style="display: inline-flex; align-items: center; gap: 0.2rem;"
                           tooltip="Passing now, failed in the previous build"
                           data-tooltip-append-to-parent="true">
+                        <l:icon src="symbol-trending-up-outline plugin-ionicons-api" style="width: 12px; height: 12px; flex-shrink: 0;" />
                         ${d.fixedCount} fixed
                     </span>
                 </j:if>

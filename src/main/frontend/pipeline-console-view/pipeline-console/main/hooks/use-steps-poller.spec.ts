@@ -416,7 +416,7 @@ describe("incremental log fetching", function () {
         clickMoreStartByte: TAIL_CONSOLE_LOG,
         fetchStartByte: 8,
         fetchConsoleAnnotator: "3",
-        // Only an unterminated line so far: no text, but a fresh annotator.
+        // Only an unterminated line so far: no text, so the annotator it carries is not taken.
         logData: {
           text: "",
           startByte: 8,
@@ -428,14 +428,14 @@ describe("incremental log fetching", function () {
           startByte: 0,
           lines: ["0", "1", "2", "3"],
           endByte: 8,
-          consoleAnnotator: "empty",
+          consoleAnnotator: "3",
           hasTrailingNewLine: true,
         },
       },
       {
         clickMoreStartByte: TAIL_CONSOLE_LOG,
         fetchStartByte: 8,
-        fetchConsoleAnnotator: "empty",
+        fetchConsoleAnnotator: "3",
         logData: {
           text: "4\n",
           startByte: 8,

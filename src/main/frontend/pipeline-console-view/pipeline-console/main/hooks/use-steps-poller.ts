@@ -89,8 +89,8 @@ async function updateStepBuffer(
   }
 
   stepBuffer.endByte = response.endByte;
-  // The server omits the annotator when there is no new output; keep the current one.
-  if (response.consoleAnnotator !== undefined) {
+  // Nothing new was rendered, so keep the current annotator.
+  if (startByte !== response.endByte) {
     stepBuffer.consoleAnnotator = response.consoleAnnotator;
   }
   if (response.text) {

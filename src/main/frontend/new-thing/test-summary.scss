@@ -1,0 +1,92 @@
+// Test summary shown on build history rows, rendered by HistoryPageEntryDecorator3/entry.jelly
+.pgv-test-summary {
+  display: inline-flex;
+  flex-direction: column;
+
+  // Beat core's a:link / a:hover colour and underline
+  &,
+  &:link,
+  &:visited,
+  &:hover,
+  &:focus,
+  &:active {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  svg {
+    width: 12px;
+    height: 12px;
+    flex-shrink: 0;
+  }
+}
+
+.pgv-test-summary__tags {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+  min-height: 22px;
+  margin-bottom: 3px;
+}
+
+// A pill styled like the pipeline status icons: tinted fill, subtle border, coloured icon.
+// Adjacent tags read as one joined group: only the outer ends are fully round.
+// Uses *-of-type so the tooltip div Jenkins appends to the row does not count as a tag.
+.pgv-test-summary__tag {
+  // Outer ends are a full half-circle of the 22px height; joined inner corners stay tight
+  --pgv-tag-radius-outer: 11px;
+  --pgv-tag-radius-inner: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  height: 22px;
+  padding: 0 0.55rem 0 0.4rem;
+  border-radius: var(--pgv-tag-radius-inner);
+  box-sizing: border-box;
+  color: var(--pgv-tag-color);
+  // Tint over an opaque card base, so the tag doesn't change with whatever is behind it
+  background: color-mix(
+    in srgb,
+    var(--pgv-tag-color) calc(var(--status-background-opacity, 0.125) * 100%),
+    var(--card-background)
+  );
+  border: var(--jenkins-border--inherit-subtle);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+
+  &:first-of-type {
+    border-top-left-radius: var(--pgv-tag-radius-outer);
+    border-bottom-left-radius: var(--pgv-tag-radius-outer);
+  }
+
+  &:last-of-type {
+    border-top-right-radius: var(--pgv-tag-radius-outer);
+    border-bottom-right-radius: var(--pgv-tag-radius-outer);
+  }
+
+  &--failed {
+    --pgv-tag-color: var(--error-color);
+  }
+
+  &--passed {
+    --pgv-tag-color: var(--success-color);
+  }
+
+  &--skipped {
+    --pgv-tag-color: var(--text-color-secondary);
+  }
+}
+
+.pgv-test-summary__details {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-color-secondary);
+
+  & > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
+}

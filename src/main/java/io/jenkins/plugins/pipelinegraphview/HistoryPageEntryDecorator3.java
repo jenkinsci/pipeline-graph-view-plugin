@@ -81,13 +81,17 @@ public class HistoryPageEntryDecorator3 extends HistoryPageEntryDecorator {
     }
 
     /**
-     * Tests failing in this build that passed in the previous one.
+     * Tests failing in this build that passed in the previous one. Compares against the previous
+     * result directly, as {@link CaseResult#getStatus()} no longer reports {@code REGRESSION}.
      */
     private static int countRegressions(AbstractTestResultAction<?> action) {
         int count = 0;
         for (TestResult test : action.getFailedTests()) {
-            if (test instanceof CaseResult caseResult && caseResult.getStatus() == CaseResult.Status.REGRESSION) {
-                count++;
+            if (test instanceof CaseResult caseResult) {
+                CaseResult previous = caseResult.getPreviousResult();
+                if (previous != null && previous.isPassed()) {
+                    count++;
+                }
             }
         }
         return count;

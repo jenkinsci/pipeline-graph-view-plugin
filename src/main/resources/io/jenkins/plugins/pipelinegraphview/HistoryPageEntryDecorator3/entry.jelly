@@ -8,7 +8,7 @@
             <j:if test="${count > 0}">
                 <span tooltip="${count} ${label}"
                       data-tooltip-append-to-parent="true"
-                      style="display: inline-flex; align-items: center; gap: 0.3rem; height: 22px; padding: 0 0.55rem 0 0.4rem; border-radius: 999px; box-sizing: border-box; color: ${color}; background: color-mix(in srgb, ${color} calc(var(--status-background-opacity, 0.125) * 100%), transparent); border: 1px solid color-mix(in srgb, ${color} calc(var(--status-border-opacity, 0.25) * 100%), transparent); font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums;">
+                      style="display: inline-flex; align-items: center; gap: 0.3rem; height: 22px; padding: 0 0.55rem 0 0.4rem; border-radius: 999px; box-sizing: border-box; color: ${color}; background: color-mix(in srgb, ${color} calc(var(--status-background-opacity, 0.125) * 100%), transparent); border: var(--jenkins-border--inherit-subtle); font-size: 12px; font-variant-numeric: tabular-nums;">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" aria-hidden="true"
                          style="width: 12px; height: 12px; flex-shrink: 0;">
                         <path d="${path}" fill="none" stroke="currentColor" stroke-linecap="round"

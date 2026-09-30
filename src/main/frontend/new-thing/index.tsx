@@ -3,7 +3,6 @@ import { createRoot, Root } from "react-dom/client";
 import { RunStatus } from "../common/RestClient.tsx";
 import { UserPreferencesProvider } from "../common/user/user-preferences-provider.tsx";
 import RunSnippet from "./components/run-snippet.tsx";
-import "./test-summary.scss";
 
 const roots = new WeakMap<Element, Root>();
 const HOST_SELECTOR = '[data-type="pipeline-graph-host"]';

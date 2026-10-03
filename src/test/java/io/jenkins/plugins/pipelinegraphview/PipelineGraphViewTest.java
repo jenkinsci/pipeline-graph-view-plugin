@@ -1,5 +1,8 @@
 package io.jenkins.plugins.pipelinegraphview;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.junit.UsePlaywright;
 import hudson.model.Result;
@@ -16,9 +19,6 @@ import org.jenkinsci.plugins.workflow.test.steps.SemaphoreStep;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 
 @WithJenkinsConfiguredWithCode
 @UsePlaywright(PlaywrightConfig.class)
@@ -219,16 +219,16 @@ class PipelineGraphViewTest {
         String firstURL = run.getUrl();
 
         new PipelineJobPage(p, run.getParent())
-            .goTo()
-            .hasBuilds(1)
-            .nthBuild(0)
-            .goToBuild()
-            .goToPipelineOverview()
-            .hasStagesInGraph(2, "Caught1", "Runs1")
-            .stageIsVisibleInTree("Parallel1")
-            .stageIsVisibleInTree("Caught1")
-            .stageIsVisibleInTree("Runs1")
-            .stageIsSelected("Caught1");
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .goToBuild()
+                .goToPipelineOverview()
+                .hasStagesInGraph(2, "Caught1", "Runs1")
+                .stageIsVisibleInTree("Parallel1")
+                .stageIsVisibleInTree("Caught1")
+                .stageIsVisibleInTree("Runs1")
+                .stageIsSelected("Caught1");
 
         run.getParent().delete();
 
@@ -237,13 +237,13 @@ class PipelineGraphViewTest {
         assertThat(run.getUrl(), equalTo(firstURL)); // reused
 
         new PipelineJobPage(p, run.getParent())
-            .goTo()
-            .hasBuilds(1)
-            .nthBuild(0)
-            .goToBuild()
-            .goToPipelineOverview()
-            .hasStagesInGraph(1, "Stage")
-            .selectStageInGraph("Stage")
-            .stageHasSteps("Error signalError");
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .goToBuild()
+                .goToPipelineOverview()
+                .hasStagesInGraph(1, "Stage")
+                .selectStageInGraph("Stage")
+                .stageHasSteps("Error signalError");
     }
 }

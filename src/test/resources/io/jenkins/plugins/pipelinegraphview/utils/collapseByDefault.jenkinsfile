@@ -1,0 +1,31 @@
+stage('Normal parent') {
+    parallel(
+        'Normal A': {
+            stage('Normal child A') {
+                echo ''
+            }
+        },
+        'Normal B': {
+            stage('Normal child B') {
+                echo ''
+            }
+        },
+    )
+}
+
+collapseByDefault {
+    stage('Default parent') {
+        parallel(
+            'Default A': {
+                stage('Default child A') {
+                    echo ''
+                }
+            },
+            'Default B': {
+                stage('Default child B') {
+                    echo ''
+                }
+            },
+        )
+    }
+}

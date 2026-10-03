@@ -24,7 +24,11 @@ export default function SingleRun({
   normalizedParentJobPath,
 }: SingleRunProps) {
   const currentRunPath = currentJobPath + run.id + "/";
-  const { run: runInfo } = useRunPoller({ currentRunPath });
+  const currentRunStartTime = run.timestamp;
+  const { run: runInfo } = useRunPoller({
+    currentRunPath,
+    currentRunStartTime,
+  });
 
   function Changes() {
     const messages = useContext(I18NContext);

@@ -17,6 +17,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+
 @WithJenkinsConfiguredWithCode
 @UsePlaywright(PlaywrightConfig.class)
 class PipelineGraphViewTest {
@@ -203,5 +206,44 @@ class PipelineGraphViewTest {
                 .selectStageInGraph("Stage")
                 .stageHasSteps("Error signal")
                 .stepDoesNotContainText("Error signal", "null");
+    }
+
+    @Issue("GH#1313")
+    @Test
+    @ConfiguredWithCode("configure-appearance.yml")
+    void cacheBustOnRecreate(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
+        String name = "gh1313";
+
+        WorkflowRun run = TestUtils.createAndRunJob(j, name, "gh797_errorAndContinue.jenkinsfile", Result.SUCCESS);
+        assertThat(run.getNumber(), equalTo(1));
+        String firstURL = run.getUrl();
+
+        new PipelineJobPage(p, run.getParent())
+            .goTo()
+            .hasBuilds(1)
+            .nthBuild(0)
+            .goToBuild()
+            .goToPipelineOverview()
+            .hasStagesInGraph(2, "Caught1", "Runs1")
+            .stageIsVisibleInTree("Parallel1")
+            .stageIsVisibleInTree("Caught1")
+            .stageIsVisibleInTree("Runs1")
+            .stageIsSelected("Caught1");
+
+        run.getParent().delete();
+
+        run = TestUtils.createAndRunJob(j, name, "gh1169_errorWithMessage.jenkinsfile", Result.FAILURE);
+        assertThat(run.getNumber(), equalTo(1)); // reused
+        assertThat(run.getUrl(), equalTo(firstURL)); // reused
+
+        new PipelineJobPage(p, run.getParent())
+            .goTo()
+            .hasBuilds(1)
+            .nthBuild(0)
+            .goToBuild()
+            .goToPipelineOverview()
+            .hasStagesInGraph(1, "Stage")
+            .selectStageInGraph("Stage")
+            .stageHasSteps("Error signalError");
     }
 }

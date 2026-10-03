@@ -6,6 +6,8 @@
     <div class="clearfix" />
     <div id="graph"
          data-normalized-parent-job-path="${it.normalizedParentJobPath}"
+         data-current-run-start-time="${it.currentRunStartTime}"
+         data-preview-run-start-time="${it.previousRunStartTime}"
          data-current-run-path="${rootURL + '/' + it.buildUrl}"
          data-previous-run-path="${it.previousBuildUrl != null ? rootURL + '/' + it.previousBuildUrl : null}" />
     <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/pipeline-graph-view-bundle.js" type="module"/>

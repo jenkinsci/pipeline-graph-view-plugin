@@ -39,6 +39,12 @@ export default function PipelineConsole() {
   const currentRunPath = rootElement?.dataset.currentRunPath!;
   const previousRunPath = rootElement?.dataset.previousRunPath;
   const normalizedParentJobPath = rootElement?.dataset.normalizedParentJobPath!;
+  const currentRunStartTime = parseInt(
+    rootElement?.dataset.currentRunStartTime!,
+  );
+  const previousRunStartTime = parseInt(
+    rootElement?.dataset.previousRunStartTime || "0",
+  );
 
   const {
     stageViewPosition,
@@ -65,7 +71,12 @@ export default function PipelineConsole() {
     fetchLogText,
     fetchExceptionText,
     loading,
-  } = useStepsPoller({ currentRunPath, previousRunPath });
+  } = useStepsPoller({
+    currentRunPath,
+    previousRunPath,
+    currentRunStartTime,
+    previousRunStartTime,
+  });
 
   const isOnlyPlaceholderNode = stages.length === 1 && stages[0].placeholder;
   const isBeforePipelineStart =

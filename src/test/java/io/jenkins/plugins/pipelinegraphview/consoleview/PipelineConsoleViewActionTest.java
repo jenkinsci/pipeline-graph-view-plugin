@@ -97,6 +97,26 @@ class PipelineConsoleViewActionTest {
         }
     }
 
+    @Issue("GH#1313")
+    @Test
+    void exposesRunStartTimes(JenkinsRule j) throws Exception {
+        WorkflowRun first =
+                TestUtils.createAndRunJob(j, "hello_world_scripted", "simpleError.jenkinsfile", Result.FAILURE);
+        WorkflowRun second = j.buildAndAssertStatus(Result.FAILURE, first.getParent());
+
+        try (var c = j.createWebClient()) {
+            HtmlPage page = c.goTo(second.getUrl() + "stages");
+            DomElement root = page.getElementById("console-pipeline-root");
+            assertThat(root, notNullValue());
+            assertThat(
+                    root.getAttribute("data-current-run-start-time"),
+                    equalTo(String.valueOf(second.getStartTimeInMillis())));
+            assertThat(
+                    root.getAttribute("data-previous-run-start-time"),
+                    equalTo(String.valueOf(first.getStartTimeInMillis())));
+        }
+    }
+
     @Test
     void doRerunReturnsErrorWhenJobIsNotBuildable(JenkinsRule j) throws Exception {
         WorkflowRun run =

@@ -89,7 +89,10 @@ async function updateStepBuffer(
   }
 
   stepBuffer.endByte = response.endByte;
-  stepBuffer.consoleAnnotator = response.consoleAnnotator;
+  // Nothing new was rendered, so keep the current annotator.
+  if (startByte !== response.endByte) {
+    stepBuffer.consoleAnnotator = response.consoleAnnotator;
+  }
   if (response.text) {
     // Only overwrite when more text was available.
     stepBuffer.hasTrailingNewLine = hasTrailingNewLine;

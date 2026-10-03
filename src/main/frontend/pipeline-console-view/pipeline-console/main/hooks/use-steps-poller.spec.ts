@@ -61,7 +61,7 @@ afterEach(() => {
 
 it("selects default step if URL param is missing", async () => {
   const { result, unmount } = renderHook(() =>
-    useStepsPoller({ currentRunPath: "/run/1", previousRunPath: undefined }),
+    useStepsPoller({ currentRunPath: "/run/1", currentRunStartTime: 1337 }),
   );
 
   await waitFor(() => expect(result.current.expandedSteps).toContain("step-2"));
@@ -82,7 +82,7 @@ it("handles empty console log", async () => {
     endByte: 0,
   });
   const { result, unmount } = renderHook(() =>
-    useStepsPoller({ currentRunPath: "/run/1", previousRunPath: undefined }),
+    useStepsPoller({ currentRunPath: "/run/1", currentRunStartTime: 1337 }),
   );
 
   await act(() => result.current.fetchLogText("step-2", TAIL_CONSOLE_LOG));
@@ -107,7 +107,7 @@ it("handles empty console log lines before and after text", async () => {
     endByte: 0,
   });
   const { result, unmount } = renderHook(() =>
-    useStepsPoller({ currentRunPath: "/run/1", previousRunPath: undefined }),
+    useStepsPoller({ currentRunPath: "/run/1", currentRunStartTime: 1337 }),
   );
 
   await act(() => result.current.fetchLogText("step-2", TAIL_CONSOLE_LOG));
@@ -124,7 +124,7 @@ it("handles empty console log lines before and after text", async () => {
 
 it("appends the exception message", async () => {
   const { result, unmount } = renderHook(() =>
-    useStepsPoller({ currentRunPath: "/run/1", previousRunPath: undefined }),
+    useStepsPoller({ currentRunPath: "/run/1", currentRunStartTime: 1337 }),
   );
 
   await act(() => result.current.fetchLogText("step-2", TAIL_CONSOLE_LOG));
@@ -153,7 +153,7 @@ it("handles empty console log and exception message", async () => {
     endByte: 0,
   });
   const { result, unmount } = renderHook(() =>
-    useStepsPoller({ currentRunPath: "/run/1", previousRunPath: undefined }),
+    useStepsPoller({ currentRunPath: "/run/1", currentRunStartTime: 1337 }),
   );
 
   await act(() => result.current.fetchLogText("step-2", TAIL_CONSOLE_LOG));
@@ -178,7 +178,7 @@ it("handles empty console log and exception message", async () => {
 it("selects the step from URL on initial load", async () => {
   window.history.pushState({}, "", "/?selected-node=step-1&start-byte=0");
   const { result, unmount } = renderHook(() =>
-    useStepsPoller({ currentRunPath: "/run/1", previousRunPath: undefined }),
+    useStepsPoller({ currentRunPath: "/run/1", currentRunStartTime: 1337 }),
   );
 
   await waitFor(() => expect(result.current.expandedSteps).toContain("step-1"));
@@ -194,7 +194,7 @@ it("selects the step from URL on initial load", async () => {
 it("skips logs from URL on initial load", async () => {
   window.history.pushState({}, "", "/?selected-node=step-1&start-byte=42");
   const { result, unmount } = renderHook(() =>
-    useStepsPoller({ currentRunPath: "/run/1", previousRunPath: undefined }),
+    useStepsPoller({ currentRunPath: "/run/1", currentRunStartTime: 1337 }),
   );
 
   await waitFor(() => expect(result.current.expandedSteps).toContain("step-1"));
@@ -221,7 +221,7 @@ it("selected steps can be collapsed and remain collapsed", async () => {
   ];
   (model.getRunSteps as Mock).mockResolvedValue({ steps: currentSteps });
 
-  const props = { currentRunPath: "/run/1" };
+  const props = { currentRunPath: "/run/1", currentRunStartTime: 1337 };
   const { result, unmount } = renderHook(() => useStepsPoller(props));
   await waitFor(() => expect(result.current.expandedSteps).toContain("step-1"));
 
@@ -255,7 +255,7 @@ it("switches to next stage when current one finishes", async () => {
   );
 
   const { result, unmount } = renderHook(() =>
-    useStepsPoller({ currentRunPath: "/run/1" }),
+    useStepsPoller({ currentRunPath: "/run/1", currentRunStartTime: 1337 }),
   );
 
   await waitFor(() => expect(result.current.openStage?.id).toBe("stage-1"));
@@ -276,7 +276,7 @@ it("switches to next stage when current one finishes", async () => {
 
 it("expands and collapses step when toggled", async () => {
   const { result, unmount } = renderHook(() =>
-    useStepsPoller({ currentRunPath: "/run/1" }),
+    useStepsPoller({ currentRunPath: "/run/1", currentRunStartTime: 1337 }),
   );
 
   await waitFor(() => expect(result.current.expandedSteps).toContain("step-2"));
@@ -299,7 +299,7 @@ it("expanded steps remain expanded", async () => {
   ];
   (model.getRunSteps as Mock).mockResolvedValue({ steps: currentSteps });
 
-  const props = { currentRunPath: "/run/1" };
+  const props = { currentRunPath: "/run/1", currentRunStartTime: 1337 };
   const { result, unmount } = renderHook(() => useStepsPoller(props));
   await waitFor(() => expect(result.current.expandedSteps).toContain("step-1"));
 
@@ -673,7 +673,7 @@ describe("incremental log fetching", function () {
 
   for (const [name, evolutions] of Object.entries(scenarios)) {
     it(name, async function () {
-      const props = { currentRunPath: "/run/1" };
+      const props = { currentRunPath: "/run/1", currentRunStartTime: 1337 };
 
       const { result, unmount } = renderHook(() => useStepsPoller(props));
 

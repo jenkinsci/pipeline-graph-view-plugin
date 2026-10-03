@@ -167,14 +167,18 @@ async function fetchStepLogDetail(
 export function useStepsPoller({
   currentRunPath,
   previousRunPath,
+  currentRunStartTime,
+  previousRunStartTime,
 }: RunPollerProps) {
   const { run, loading } = useRunPoller({
     currentRunPath,
     previousRunPath,
+    currentRunStartTime,
+    previousRunStartTime,
   });
   const fetchRunSteps = useCallback(
-    () => getRunSteps(currentRunPath),
-    [currentRunPath],
+    () => getRunSteps(currentRunPath, currentRunStartTime),
+    [currentRunPath, currentRunStartTime],
   );
   const {
     data: { steps, runIsComplete },
@@ -495,4 +499,6 @@ export function useStepsPoller({
 interface RunPollerProps {
   currentRunPath: string;
   previousRunPath?: string;
+  currentRunStartTime: number;
+  previousRunStartTime?: number;
 }

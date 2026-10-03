@@ -11,6 +11,8 @@ import { usePolling } from "./utils/use-polling.ts";
 export default function useRunPoller({
   currentRunPath,
   previousRunPath,
+  currentRunStartTime,
+  previousRunStartTime,
   interval = 3000,
 }: RunPollerProps) {
   const previousRun = useRef<RunStatus>(null);
@@ -21,7 +23,10 @@ export default function useRunPoller({
       }
       if (!previousRun.current) {
         try {
-          previousRun.current = await getRunStatusFromPath(previousRunPath);
+          previousRun.current = await getRunStatusFromPath(
+            previousRunPath,
+            previousRunStartTime || 0,
+          );
         } catch (err) {
           console.error("Fetch previous run", err);
           return nextRun;
@@ -32,11 +37,11 @@ export default function useRunPoller({
         complete: false,
       };
     },
-    [previousRunPath],
+    [previousRunPath, previousRunStartTime],
   );
   const fetchCurrentRun = useCallback(
-    () => getRunStatusFromPath(currentRunPath),
-    [currentRunPath],
+    () => getRunStatusFromPath(currentRunPath, currentRunStartTime),
+    [currentRunPath, currentRunStartTime],
   );
   const { data: run, loading } = usePolling<RunStatus>(
     fetchCurrentRun,
@@ -56,4 +61,6 @@ interface RunPollerProps {
   currentRunPath: string;
   previousRunPath?: string;
   interval?: number;
+  currentRunStartTime: number;
+  previousRunStartTime?: number;
 }

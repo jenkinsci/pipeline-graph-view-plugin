@@ -59,8 +59,8 @@ export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
           {makeReactChildren(
             tokenizeANSIString(
               DOMPurify.sanitize(linkifyHtml(content, linkifyJsOptions), {
-                ALLOWED_TAGS: ["a"],
-                ALLOWED_ATTR: ["href", "rel"],
+                ALLOWED_TAGS: ["a", "span", "b"],
+                ALLOWED_ATTR: ["href", "rel", "class", "style"],
                 ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/(?![/\\]))/i,
               }),
             ),

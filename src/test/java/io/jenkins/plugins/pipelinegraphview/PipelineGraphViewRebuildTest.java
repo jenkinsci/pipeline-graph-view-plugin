@@ -90,6 +90,27 @@ class PipelineGraphViewRebuildTest {
         assertEquals(targetUrl, newUrl);
     }
 
+    @Issue("GH#1419")
+    @Test
+    @ConfiguredWithCode("configure-appearance.yml")
+    void rerunButtonRedirectsToParametersPageWhenPasswordParametersAreUsed(Page p, JenkinsConfiguredWithCodeRule j)
+            throws Exception {
+        WorkflowRun first = TestUtils.createAndRunJob(
+                j, "password_parameterized", "gh1419_passwordParameter.jenkinsfile", Result.SUCCESS);
+        // The first build only registers the parameter definitions, the second one gets the parameter values.
+        WorkflowRun run = j.buildAndAssertSuccess(first.getParent());
+
+        new PipelineJobPage(p, run.getParent())
+                .goTo()
+                .hasBuilds(2)
+                .nthBuild(0)
+                .goToBuild()
+                .goToPipelineOverview()
+                .rerun();
+
+        assertThat(p).hasURL(j.getURL() + run.getUrl() + "rebuild/parameterized");
+    }
+
     @Test
     @ConfiguredWithCode("configure-appearance.yml")
     void restartFromStageButtonRedirects(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {

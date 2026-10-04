@@ -13,7 +13,9 @@ export default function RunSnippet({
   run: RunStatus;
   currentRunPath: string;
 }) {
-  const items = collapseTopLevelStages(run.stages, 8);
+  const items = collapseTopLevelStages(run.stages, 12);
+  const total = run.stages.length;
+  const started = run.stages.filter((stage) => !stage.skeleton).length;
 
   return (
     <div>
@@ -33,6 +35,17 @@ export default function RunSnippet({
           }
 
           const e = item.stage;
+
+          // Placeholders come from the previous run, so there's no duration or stage to link to yet
+          if (e.skeleton) {
+            return (
+              <Tooltip content={e.name} key={e.id}>
+                <span>
+                  <StatusIcon status={e.state} skeleton />
+                </span>
+              </Tooltip>
+            );
+          }
 
           return (
             <Tooltip
@@ -60,7 +73,8 @@ export default function RunSnippet({
         className="jenkins-!-text-color-secondary"
         style={{ fontSize: "12px" }}
       >
-        {run.stages.length} stage{run.stages.length === 1 ? "" : "s"}
+        {started < total ? `${started} of ` : ""}
+        {total} stage{total === 1 ? "" : "s"}
       </div>
     </div>
   );

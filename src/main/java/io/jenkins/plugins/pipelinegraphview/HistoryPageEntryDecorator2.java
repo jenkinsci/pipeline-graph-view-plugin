@@ -37,10 +37,12 @@ import jenkins.model.HistoricalBuild;
 import jenkins.widgets.HistoryPageEntryDecorator;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 @Extension(ordinal = Integer.MAX_VALUE)
 public class HistoryPageEntryDecorator2 extends HistoryPageEntryDecorator {
@@ -50,8 +52,6 @@ public class HistoryPageEntryDecorator2 extends HistoryPageEntryDecorator {
             .addMixIn(PipelineStage.class, HistoryPagePipelineStageMixIn.class)
             .build();
 
-    private String json;
-
     @Override
     public boolean isApplicable(@NonNull HistoryWidget<?, ?> widget, @NonNull HistoricalBuild build) {
         if (!(build instanceof WorkflowRun run)) {
@@ -60,20 +60,29 @@ public class HistoryPageEntryDecorator2 extends HistoryPageEntryDecorator {
 
         run.checkPermission(Item.READ);
 
-        // TODO - Do this without returning children
-        PipelineGraph tree = new PipelineGraphApi(run).createTree();
-        json = toHistoryPageJson(tree);
-
         return true;
     }
 
-    static String toHistoryPageJson(PipelineGraph tree) {
-        return MAPPER.writeValueAsString(tree);
+    // The decorator is shared by every entry, so the JSON is built per entry rather than stored on the decorator
+    @Restricted(NoExternalUse.class)
+    public String getJson(@NonNull HistoricalBuild build) {
+        WorkflowRun run = (WorkflowRun) build;
+        // TODO - Do this without returning children
+        PipelineGraph tree = new PipelineGraphApi(run).createTree();
+        WorkflowRun previous = tree.complete ? null : run.getPreviousBuild();
+        return toHistoryPageJson(tree, previous == null ? null : new PipelineGraphApi(previous).createTree());
     }
 
-    @Restricted(NoExternalUse.class)
-    public String getJson() {
-        return json;
+    /**
+     * While a run is in progress, also includes the previous run's stages so the frontend can show
+     * the stages still to come as placeholders.
+     */
+    static String toHistoryPageJson(PipelineGraph tree, @Nullable PipelineGraph previous) {
+        ObjectNode json = MAPPER.valueToTree(tree);
+        if (previous != null) {
+            json.set("previousStages", MAPPER.<ObjectNode>valueToTree(previous).get("stages"));
+        }
+        return MAPPER.writeValueAsString(json);
     }
 
     @JsonIncludeProperties({"id", "name", "state", "startTimeMillis", "totalDurationMillis", "url"})

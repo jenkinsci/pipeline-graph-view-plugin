@@ -2,6 +2,8 @@ import { createRoot, Root } from "react-dom/client";
 
 import { RunStatus } from "../common/RestClient.tsx";
 import { UserPreferencesProvider } from "../common/user/user-preferences-provider.tsx";
+import { mergeStageInfos } from "../common/utils/stage-merge.ts";
+import { StageInfo } from "../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import RunSnippet from "./components/run-snippet.tsx";
 
 const roots = new WeakMap<Element, Root>();
@@ -15,15 +17,21 @@ function mountGraphHost(element: Element): void {
   const root = createRoot(element);
   roots.set(element, root);
 
-  const currentRunPath = (element as HTMLTemplateElement).dataset.currentRunPath!;
+  const currentRunPath = (element as HTMLTemplateElement).dataset
+    .currentRunPath!;
   const previousElement = element.previousElementSibling as HTMLTemplateElement;
   const json = JSON.parse(
     previousElement.content.textContent as string,
-  ) as RunStatus;
+  ) as RunStatus & { previousStages?: StageInfo[] };
+
+  // Only sent while the run is in progress, to show the stages still to come as placeholders
+  const run: RunStatus = json.previousStages
+    ? { ...json, stages: mergeStageInfos(json.previousStages, json.stages) }
+    : json;
 
   root.render(
     <UserPreferencesProvider>
-      <RunSnippet run={json} currentRunPath={currentRunPath} />
+      <RunSnippet run={run} currentRunPath={currentRunPath} />
     </UserPreferencesProvider>,
   );
 }

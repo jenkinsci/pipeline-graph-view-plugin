@@ -5,7 +5,7 @@
   min-height: 1.375rem;
   margin-bottom: 3px;
 
-  & > *{
+  & > * {
     transition: var(--standard-transition);
   }
 
@@ -22,20 +22,21 @@
     padding: 0 0.375rem;
   }
 
-  & > a {
+  & > a,
+  & > span {
     display: flex;
     align-items: center;
     justify-content: center;
-
-    &:hover {
-      translate: 0 -2px;
-    }
 
     svg {
       width: 1.375rem;
       height: 1.375rem;
       flex-shrink: 0;
     }
+  }
+
+  & > a:hover {
+    translate: 0 -2px;
   }
 
   &:hover {

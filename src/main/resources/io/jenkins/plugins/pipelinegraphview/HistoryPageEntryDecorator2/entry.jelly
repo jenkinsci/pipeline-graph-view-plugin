@@ -3,7 +3,7 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
     <template data-row-id="pipeline-graph-view">
-        ${it.decorator.json}
+        ${it.decorator.getJson(it.build)}
     </template>
     <div data-type="pipeline-graph-host"
          data-current-run-path="${rootURL + '/' + build.url + 'stages?selected-node='}" />

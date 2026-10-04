@@ -15,6 +15,8 @@ const FAILURE_STATES = new Set(["FAILED", "FAILURE", "ERROR", "ABORTED"]);
 
 const WARNING_STATES = new Set(["UNSTABLE", "WARNING", "WARN"]);
 
+const IN_PROGRESS_STATES = new Set(["RUNNING", "PAUSED", "QUEUED"]);
+
 function isFailureState(state: string): boolean {
   return FAILURE_STATES.has(state.toUpperCase());
 }
@@ -29,7 +31,15 @@ function getSpecialStageIndex(stages: StageInfo[]): number {
     return firstFailure;
   }
 
-  return stages.findIndex((stage) => isWarningState(stage.state));
+  const firstWarning = stages.findIndex((stage) => isWarningState(stage.state));
+  if (firstWarning !== -1) {
+    return firstWarning;
+  }
+
+  return stages.findIndex(
+    (stage) =>
+      !stage.skeleton && IN_PROGRESS_STATES.has(stage.state.toUpperCase()),
+  );
 }
 
 function uniqueSortedIndices(indices: number[], max: number): number[] {

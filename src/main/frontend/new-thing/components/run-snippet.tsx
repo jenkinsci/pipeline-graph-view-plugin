@@ -56,7 +56,12 @@ export default function RunSnippet({
           );
         })}
       </div>
-      <div className="jenkins-!-text-color-secondary" style={{ fontSize: "12px"}}>Stages</div>
+      <div
+        className="jenkins-!-text-color-secondary"
+        style={{ fontSize: "12px" }}
+      >
+        {run.stages.length} stage{run.stages.length === 1 ? "" : "s"}
+      </div>
     </div>
   );
 }

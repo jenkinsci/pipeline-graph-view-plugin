@@ -11,11 +11,13 @@ import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import java.io.IOException;
 import java.util.List;
+import net.sf.json.JSONObject;
 import org.htmlunit.WebRequest;
 import org.htmlunit.WebResponse;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.util.UrlUtils;
+import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
@@ -115,6 +117,33 @@ class PipelineConsoleViewActionTest {
                     root.getAttribute("data-previous-run-start-time"),
                     equalTo(String.valueOf(first.getStartTimeInMillis())));
         }
+    }
+
+    @Issue("GH#1419")
+    @Test
+    void doRerunRedirectsToParametersPageWhenPasswordParametersAreUsed(JenkinsRule j) throws Exception {
+        WorkflowRun first = TestUtils.createAndRunJob(
+                j, "password_parameterized", "gh1419_passwordParameter.jenkinsfile", Result.SUCCESS);
+        WorkflowJob job = first.getParent();
+        // The first build only registers the parameter definitions, the second one gets the parameter values.
+        WorkflowRun run = j.buildAndAssertSuccess(job);
+
+        j.jenkins.setCrumbIssuer(null);
+
+        try (var c = j.createWebClient()) {
+            WebRequest request = new WebRequest(
+                    UrlUtils.toUrlSafe(j.getURL() + run.getUrl() + "stages/rerun"), org.htmlunit.HttpMethod.POST);
+            WebResponse rsp = c.loadWebResponse(request);
+            assertThat(rsp.getStatusCode(), equalTo(200));
+
+            JSONObject json = JSONObject.fromObject(rsp.getContentAsString());
+            assertThat(json.getString("status"), equalTo("ok"));
+            assertThat(
+                    json.getJSONObject("data").getString("redirectUrl"),
+                    equalTo(run.getUrl() + "rebuild/parameterized"));
+        }
+        assertThat(j.jenkins.getQueue().isEmpty(), equalTo(true));
+        assertThat(job.getBuilds().size(), equalTo(2));
     }
 
     @Test

@@ -1,5 +1,7 @@
 import "./run-snippet.scss";
 
+import { RefObject, useLayoutEffect, useRef, useState } from "react";
+
 import StatusIcon from "../../common/components/status-icon.tsx";
 import Tooltip from "../../common/components/tooltip.tsx";
 import { RunStatus } from "../../common/RestClient.tsx";
@@ -13,13 +15,15 @@ export default function RunSnippet({
   run: RunStatus;
   currentRunPath: string;
 }) {
-  const items = collapseTopLevelStages(run.stages, 12);
+  const ref = useRef<HTMLDivElement>(null);
+  const maxVisible = useFittingSlots(ref, MAX_VISIBLE_STAGES);
+  const items = collapseTopLevelStages(run.stages, maxVisible);
   const total = run.stages.length;
   const started = run.stages.filter((stage) => !stage.skeleton).length;
 
   return (
     <div>
-      <div className="pgv-run-snippet">
+      <div className="pgv-run-snippet" ref={ref}>
         {items.map((item) => {
           if (item.kind === "collapsed") {
             return (
@@ -78,4 +82,42 @@ export default function RunSnippet({
       </div>
     </div>
   );
+}
+
+const MAX_VISIBLE_STAGES = 12;
+
+// Matches the icon size plus gap in run-snippet.scss
+const SLOT_WIDTH_REM = 1.375 + 0.125;
+
+/**
+ * How many icon slots fit in the element's width, up to `max`. The history column is narrower
+ * than `max` icons and clips its overflow, so the stages need to collapse to what fits instead.
+ */
+function useFittingSlots(
+  ref: RefObject<HTMLElement | null>,
+  max: number,
+): number {
+  const [slots, setSlots] = useState(max);
+
+  useLayoutEffect(() => {
+    const element = ref.current;
+    if (!element) {
+      return;
+    }
+
+    const measure = () => {
+      const rem = parseFloat(
+        getComputedStyle(document.documentElement).fontSize,
+      );
+      const fitting = Math.floor(element.clientWidth / (SLOT_WIDTH_REM * rem));
+      setSlots(Math.max(2, Math.min(max, fitting)));
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [ref, max]);
+
+  return slots;
 }

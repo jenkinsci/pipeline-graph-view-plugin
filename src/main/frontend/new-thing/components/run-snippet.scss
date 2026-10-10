@@ -45,3 +45,9 @@
     }
   }
 }
+
+// Fill the history column without growing past it, so the snippet can measure how many stages fit
+.pgv-run-snippet-host {
+  flex: 1;
+  min-width: 0;
+}

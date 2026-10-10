@@ -5,6 +5,6 @@
     <template data-row-id="pipeline-graph-view">
         ${it.decorator.getJson(it.build)}
     </template>
-    <div data-type="pipeline-graph-host"
+    <div data-type="pipeline-graph-host" class="pgv-run-snippet-host"
          data-current-run-path="${rootURL + '/' + build.url + 'stages?selected-node='}" />
 </j:jelly>

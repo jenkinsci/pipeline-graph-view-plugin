@@ -56,6 +56,7 @@ public class PipelineConsoleViewAction extends Tab {
     public static final int CACHE_AGE = (int) TimeUnit.DAYS.toSeconds(1);
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineConsoleViewAction.class);
+
     private final PipelineGraphApi graphApi;
     private final WorkflowRun run;
     private final PipelineStepApi stepApi;

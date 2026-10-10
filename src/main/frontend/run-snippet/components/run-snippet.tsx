@@ -56,7 +56,7 @@ export default function RunSnippet({
                         <button
                           key={stage.id}
                           type="button"
-                          className="jenkins-dropdown__item"
+                          className="jenkins-dropdown__item pgv-run-snippet__stage"
                           disabled
                         >
                           <div className="jenkins-dropdown__item__icon">
@@ -67,7 +67,7 @@ export default function RunSnippet({
                       ) : (
                         <a
                           key={stage.id}
-                          className="jenkins-dropdown__item"
+                          className="jenkins-dropdown__item pgv-run-snippet__stage"
                           href={currentRunPath + stage.id}
                         >
                           <div className="jenkins-dropdown__item__icon">

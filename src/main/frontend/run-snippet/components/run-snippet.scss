@@ -86,7 +86,14 @@
   }
 }
 
-// The dropdown is appended to the body, so this can't be nested under the snippet
+// The dropdown is appended to the body, so these can't be nested under the snippet
+
+// Status icons are the same size as in the snippet, as in the stage filter dropdown
+.pgv-run-snippet__stage svg {
+  width: 1.375rem;
+  height: 1.375rem;
+}
+
 .jenkins-dropdown__item .pgv-run-snippet__duration {
   padding-left: 0.5rem;
   margin-right: -1rem;

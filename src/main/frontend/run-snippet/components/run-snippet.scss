@@ -10,10 +10,31 @@
   }
 
   .pgv-run-snippet__empty {
-    width: 1.375rem;
-    height: 1.375rem;
-    border: var(--jenkins-border-width) dashed var(--jenkins-border-color);
-    border-radius: 50%;
+    display: contents;
+
+    & > div {
+      display: flex;
+      width: 1.375rem;
+      height: 1.375rem;
+      border: var(--jenkins-border-width) dashed var(--jenkins-border-color);
+      border-radius: 50%;
+      color: var(--jenkins-border-color);
+    }
+
+    svg {
+      width: 100%;
+      height: 100%;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 32px;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    ellipse {
+      fill: currentColor;
+      stroke: none;
+    }
   }
 
   .pgv-run-snippet__collapsed {

@@ -32,7 +32,7 @@ export default function RunSnippet({
   return (
     <div>
       <div className="pgv-run-snippet" ref={ref}>
-        {items.length === 0 && <div className="pgv-run-snippet__empty" />}
+        {items.length === 0 && <EmptySnippet />}
         {items.map((item) => {
           if (item.kind === "collapsed") {
             // Placeholders are only guesses at what's to come, so don't count those as running
@@ -185,6 +185,29 @@ function fitAboveReference(
       VIEWPORT_MARGIN_PX;
     box.style.maxHeight = `${Math.min(MAX_DROPDOWN_HEIGHT_PX, Math.max(0, space))}px`;
   }
+}
+
+function EmptySnippet() {
+  return (
+    <div className="pgv-run-snippet__empty">
+      <div>
+        <svg viewBox="0 0 512 512" aria-hidden="true">
+          <path d="M336 189L224 323L176 269.4" />
+        </svg>
+      </div>
+      <div>
+        <svg viewBox="0 0 512 512" aria-hidden="true">
+          <path d="M250.26 166.05L256 288l5.73-121.95a5.74 5.74 0 00-5.79-6h0a5.74 5.74 0 00-5.68 6z" />
+          <ellipse cx="256" cy="350" rx="26" ry="26" />
+        </svg>
+      </div>
+      <div>
+        <svg viewBox="0 0 512 512" aria-hidden="true">
+          <path d="M320 320L192 192M192 320l128-128" />
+        </svg>
+      </div>
+    </div>
+  );
 }
 
 // A kept stage with hidden stages either side takes 3 slots

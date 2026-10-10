@@ -16,7 +16,7 @@ export default function RunSnippet({
   currentRunPath: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const maxVisible = useFittingSlots(ref, MAX_VISIBLE_STAGES);
+  const maxVisible = useFittingSlots(ref);
   const items = collapseTopLevelStages(run.stages, maxVisible);
   const total = run.stages.length;
   const started = run.stages.filter((stage) => !stage.skeleton).length;
@@ -84,21 +84,18 @@ export default function RunSnippet({
   );
 }
 
-const MAX_VISIBLE_STAGES = 12;
-
 // Match the icon size and gap in run-snippet.scss
 const GAP_REM = 0.125;
 const SLOT_WIDTH_REM = 1.375 + GAP_REM;
 
 /**
- * How many icon slots fit in the element's width, up to `max`. The history column is narrower
- * than `max` icons and clips its overflow, so the stages need to collapse to what fits instead.
+ * How many icon slots fit in the element's width. The history column can be narrower than all
+ * the stages and clips its overflow, so the stages need to collapse to what fits instead. How wide
+ * the column can grow is left to the page.
  */
-function useFittingSlots(
-  ref: RefObject<HTMLElement | null>,
-  max: number,
-): number {
-  const [slots, setSlots] = useState(max);
+function useFittingSlots(ref: RefObject<HTMLElement | null>): number {
+  // Start with every stage, so the page sees how much room they'd take if given it
+  const [slots, setSlots] = useState(Infinity);
 
   useLayoutEffect(() => {
     const element = ref.current;
@@ -114,14 +111,14 @@ function useFittingSlots(
       const fitting = Math.floor(
         (element.clientWidth + GAP_REM * rem) / (SLOT_WIDTH_REM * rem),
       );
-      setSlots(Math.max(2, Math.min(max, fitting)));
+      setSlots(Math.max(2, fitting));
     };
 
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(element);
     return () => observer.disconnect();
-  }, [ref, max]);
+  }, [ref]);
 
   return slots;
 }

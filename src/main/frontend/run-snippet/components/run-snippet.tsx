@@ -39,6 +39,7 @@ export default function RunSnippet({
                 key={item.id}
                 {...DefaultDropdownProps}
                 trigger="mouseenter focus"
+                placement="top"
                 // Interactive tippies are put next to their reference by default, where the
                 // history column would clip them
                 appendTo={document.body}
@@ -68,6 +69,12 @@ export default function RunSnippet({
                             <StatusIcon status={stage.state} />
                           </div>
                           {stage.name}
+                          <span className="jenkins-dropdown__item__badge pgv-run-snippet__duration">
+                            <LiveTotal
+                              total={stage.totalDurationMillis}
+                              start={stage.startTimeMillis}
+                            />
+                          </span>
                         </a>
                       ),
                     )}

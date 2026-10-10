@@ -281,6 +281,11 @@ body {
   }
 }
 
+.jenkins-dropdown__item__badge {
+  margin-left: auto;
+  margin-right: -0.85rem;
+}
+
 .jenkins-dropdown__item__icon {
   display: inline-flex;
   align-items: center;

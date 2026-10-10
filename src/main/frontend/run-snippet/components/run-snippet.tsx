@@ -4,7 +4,9 @@ import Tippy, { TippyProps } from "@tippyjs/react";
 import { RefObject, useLayoutEffect, useRef, useState } from "react";
 
 import { DefaultDropdownProps } from "../../common/components/dropdown.tsx";
-import StatusIcon from "../../common/components/status-icon.tsx";
+import StatusIcon, {
+  StageStatusIcon,
+} from "../../common/components/status-icon.tsx";
 import Tooltip from "../../common/components/tooltip.tsx";
 import { RunStatus } from "../../common/RestClient.tsx";
 import LiveTotal from "../../common/utils/live-total.tsx";
@@ -76,7 +78,7 @@ export default function RunSnippet({
                           href={currentRunPath + stage.id}
                         >
                           <div className="jenkins-dropdown__item__icon">
-                            <StatusIcon status={stage.state} />
+                            <StageStatusIcon stage={stage} />
                           </div>
                           {stage.name}
                           <span className="jenkins-dropdown__item__badge pgv-run-snippet__duration">
@@ -138,7 +140,7 @@ export default function RunSnippet({
               key={e.id}
             >
               <a href={currentRunPath + e.id}>
-                <StatusIcon status={e.state} />
+                <StageStatusIcon stage={e} />
               </a>
             </Tooltip>
           );

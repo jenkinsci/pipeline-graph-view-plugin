@@ -120,6 +120,7 @@ export const Narrow: Story = {
 
 const TIMELINE_STAGES = 20;
 const TIMELINE_FAILED_STAGE = 3;
+const TIMELINE_STAGE_DURATION = 60_000;
 
 export const Timeline: Story = {
   render: () => <TimelineExample />,
@@ -131,8 +132,11 @@ export const Timeline: Story = {
  */
 function TimelineExample() {
   const [width, setWidth] = useState(300);
-  // How many stages have finished, the next one running, until they all have and the run's done
-  const [passed, setPassed] = useState(5);
+  // How far through the run it is, in stages: the whole part is how many have finished, the next
+  // one running, and the fraction how far through that one it is
+  const [timeline, setTimeline] = useState(5.5);
+  const passed = Math.floor(timeline);
+  const fraction = timeline - passed;
 
   const progress =
     passed === TIMELINE_STAGES
@@ -145,11 +149,20 @@ function TimelineExample() {
   // stage when collapsing, so the running stage can end up collapsed
   const run = {
     ...progress,
-    stages: progress.stages.map((stage, i) =>
-      i === TIMELINE_FAILED_STAGE && i < passed
-        ? { ...stage, state: Result.failure }
-        : stage,
-    ),
+    stages: progress.stages.map((stage, i) => {
+      if (i === TIMELINE_FAILED_STAGE && i < passed) {
+        return { ...stage, state: Result.failure };
+      }
+      // Progress is how long it's been running against how long it took last time
+      if (i === passed) {
+        return {
+          ...stage,
+          previousTotalDurationMillis: TIMELINE_STAGE_DURATION,
+          startTimeMillis: Date.now() - fraction * TIMELINE_STAGE_DURATION,
+        };
+      }
+      return stage;
+    }),
   };
 
   return (
@@ -191,13 +204,14 @@ function TimelineExample() {
           type="range"
           min={0}
           max={TIMELINE_STAGES}
-          value={passed}
-          onChange={(e) => setPassed(Number(e.target.value))}
+          step={0.05}
+          value={timeline}
+          onChange={(e) => setTimeline(Number(e.target.value))}
         />
         <span>
           {passed === TIMELINE_STAGES
             ? "Complete"
-            : `Stage ${passed + 1} running`}
+            : `Stage ${passed + 1}, ${Math.round(fraction * 100)}%`}
         </span>
       </div>
     </>

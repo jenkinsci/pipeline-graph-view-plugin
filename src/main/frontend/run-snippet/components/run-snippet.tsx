@@ -45,8 +45,7 @@ export default function RunSnippet({
                 {...DefaultDropdownProps}
                 trigger="mouseenter focus"
                 placement="top"
-                // Same gap as the stage tooltips, which use Tippy's default
-                offset={[0, 10]}
+                offset={[0, DROPDOWN_GAP_PX]}
                 // Always open upwards, scrolling if there isn't room, rather than flipping
                 popperOptions={{
                   modifiers: [{ name: "flip", enabled: false }],
@@ -164,6 +163,9 @@ const TOOLTIP_DELAY: [number, number] = [50, 0];
 // Keeps long lists of hidden stages compact, scrolling past this
 const MAX_DROPDOWN_HEIGHT_PX = 215;
 
+// Same gap between a dropdown and its badge as the stage tooltips, which use Tippy's default
+const DROPDOWN_GAP_PX = 10;
+
 // Space to leave between a dropdown and the top of the window
 const VIEWPORT_MARGIN_PX = 8;
 
@@ -177,7 +179,9 @@ function fitAboveReference(
   const box = instance.popper.querySelector<HTMLElement>(".tippy-box");
   if (box) {
     const space =
-      instance.reference.getBoundingClientRect().top - VIEWPORT_MARGIN_PX;
+      instance.reference.getBoundingClientRect().top -
+      DROPDOWN_GAP_PX -
+      VIEWPORT_MARGIN_PX;
     box.style.maxHeight = `${Math.min(MAX_DROPDOWN_HEIGHT_PX, Math.max(0, space))}px`;
   }
 }

@@ -107,7 +107,7 @@ export default function Filter({ disabled }: FilterProps) {
                 onClick={() => toggleStatus(item.status)}
               >
                 <div className="jenkins-dropdown__item__icon">
-                  <StatusIcon status={item.status} />
+                  <StatusIcon status={item.status} percentage={0} />
                 </div>
                 {item.text}
               </button>

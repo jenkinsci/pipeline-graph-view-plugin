@@ -4,6 +4,7 @@ import "../pipeline-console-view/pipeline-console/main/console-log-card.scss";
 
 import { useState } from "react";
 
+import { RunStatus } from "../common/RestClient.tsx";
 import useRunPoller from "../common/tree-api.ts";
 import { UserPreferencesProvider } from "../common/user/user-preferences-provider.tsx";
 import Stages from "../pipeline-console-view/pipeline-console/main/components/stages.tsx";
@@ -39,6 +40,27 @@ export default function App() {
     previousRunStartTime,
   });
 
+  return (
+    <RunStages
+      run={run}
+      loading={loading}
+      currentRunPath={currentRunPath}
+      normalizedParentJobPath={normalizedParentJobPath}
+    />
+  );
+}
+
+export function RunStages({
+  run,
+  loading,
+  currentRunPath,
+  normalizedParentJobPath,
+}: {
+  run: RunStatus;
+  loading: boolean;
+  currentRunPath: string;
+  normalizedParentJobPath: string;
+}) {
   const [autoStageViewHeight, setAutoStageViewHeight] = useState(0);
   const [defaultStageViewHeight, setDefaultStageViewHeight] = useState(0);
   const height = autoStageViewHeight || defaultStageViewHeight;
@@ -91,7 +113,7 @@ export default function App() {
       )}
 
       {run.stages.length > 0 && !onlyQueuedPlaceholder && (
-        <div style={height ? { height } : {}}>
+        <div style={{ height: height || undefined, flexGrow: 1 }}>
           <Stages
             layout={buildLayout}
             stages={run.stages}

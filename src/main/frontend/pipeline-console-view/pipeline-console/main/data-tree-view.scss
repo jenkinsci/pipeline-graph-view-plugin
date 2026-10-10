@@ -3,6 +3,10 @@ $pgv-item-padding-inline: 0.75rem;
 
 .pgw-filter-bar {
   margin-bottom: 0.75rem;
+
+  .jenkins-search {
+    --search-bar-height: 2.5rem;
+  }
 }
 
 .pgv-tree {

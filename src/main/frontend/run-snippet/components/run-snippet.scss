@@ -62,6 +62,11 @@
       border-color: currentColor;
       translate: 0 -2px;
     }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 0.2rem var(--text-color);
+    }
   }
 
   // A stage inside is running, so draw attention to where it went
@@ -93,8 +98,17 @@
     }
   }
 
-  & > a:hover {
-    translate: 0 -2px;
+  & > a {
+    border-radius: 50%;
+    outline: none;
+
+    &:hover {
+      translate: 0 -2px;
+    }
+
+    &:focus-visible {
+      box-shadow: 0 0 0 0.2rem var(--text-color);
+    }
   }
 
   &:hover {

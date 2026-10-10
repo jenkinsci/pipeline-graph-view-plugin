@@ -32,7 +32,7 @@ export default function DataTreeView({
 
   return (
     <div>
-      <div className={"pgw-filter-bar"}>
+      <div className="jenkins-search-container pgw-filter-bar">
         <div className="jenkins-search">
           <div className="jenkins-search__icon">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
@@ -64,8 +64,10 @@ export default function DataTreeView({
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+          <div className="jenkins-search__charms">
+            <Filter />
+          </div>
         </div>
-        <Filter />
       </div>
 
       {filteredStages.length === 0 && (

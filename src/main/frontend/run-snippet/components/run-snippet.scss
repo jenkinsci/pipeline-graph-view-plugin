@@ -87,7 +87,9 @@
 }
 
 // The dropdown is appended to the body, so this can't be nested under the snippet
-.pgv-run-snippet__duration {
+.jenkins-dropdown__item .pgv-run-snippet__duration {
+  padding-left: 0.5rem;
+  margin-right: -1rem;
   color: var(--text-color-secondary);
   font-variant-numeric: tabular-nums;
 }

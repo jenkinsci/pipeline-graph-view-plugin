@@ -1,6 +1,6 @@
 import "./run-snippet.scss";
 
-import Tippy from "@tippyjs/react";
+import Tippy, { TippyProps } from "@tippyjs/react";
 import { RefObject, useLayoutEffect, useRef, useState } from "react";
 
 import { DefaultDropdownProps } from "../../common/components/dropdown.tsx";
@@ -40,6 +40,11 @@ export default function RunSnippet({
                 {...DefaultDropdownProps}
                 trigger="mouseenter focus"
                 placement="top"
+                // Always open upwards, scrolling if there isn't room, rather than flipping
+                popperOptions={{
+                  modifiers: [{ name: "flip", enabled: false }],
+                }}
+                onShow={fitAboveReference}
                 // Interactive tippies are put next to their reference by default, where the
                 // history column would clip them
                 appendTo={document.body}
@@ -142,6 +147,24 @@ export default function RunSnippet({
       </div>
     </div>
   );
+}
+
+// Space to leave between a dropdown and the top of the window
+const VIEWPORT_MARGIN_PX = 8;
+
+/**
+ * Caps the dropdown's height to the space above its reference, so it scrolls rather than
+ * running off the top of the window. Its theme scrolls when it's taller than its max-height.
+ */
+function fitAboveReference(
+  instance: Parameters<NonNullable<TippyProps["onShow"]>>[0],
+) {
+  const box = instance.popper.querySelector<HTMLElement>(".tippy-box");
+  if (box) {
+    const space =
+      instance.reference.getBoundingClientRect().top - VIEWPORT_MARGIN_PX;
+    box.style.maxHeight = `min(60vh, ${Math.max(0, space)}px)`;
+  }
 }
 
 // A kept stage with hidden stages either side takes 3 slots

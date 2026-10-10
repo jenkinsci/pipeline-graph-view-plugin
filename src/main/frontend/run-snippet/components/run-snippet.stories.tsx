@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { ReactNode, useState } from "react";
 
 import {
   Result,
@@ -21,22 +22,10 @@ const meta: Meta<Args> = {
     currentRunPath: "#",
     width: 500,
   },
-  // Mirrors the build history column, which the snippet fills and fits its stages to. The
-  // outline marks its bounds without taking up any of its width, unlike a border.
   render: ({ width, ...props }) => (
-    <div
-      style={{
-        display: "flex",
-        width,
-        outline: "1px dashed var(--jenkins-border-color)",
-        outlineOffset: 6,
-        borderRadius: 9,
-      }}
-    >
-      <div className="pgv-run-snippet-host">
-        <RunSnippet {...props} />
-      </div>
-    </div>
+    <Column width={width}>
+      <RunSnippet {...props} />
+    </Column>
   ),
 };
 
@@ -128,6 +117,112 @@ export const Narrow: Story = {
     width: 120,
   },
 };
+
+const TIMELINE_STAGES = 20;
+const TIMELINE_FAILED_STAGE = 3;
+
+export const Timeline: Story = {
+  render: () => <TimelineExample />,
+};
+
+/**
+ * Lets the column's width and how far through the run it is be changed, to see how the snippet
+ * fits and collapses its stages as they do.
+ */
+function TimelineExample() {
+  const [width, setWidth] = useState(300);
+  // How many stages have finished, the next one running, until they all have and the run's done
+  const [passed, setPassed] = useState(5);
+
+  const progress =
+    passed === TIMELINE_STAGES
+      ? {
+          complete: true,
+          stages: states(Array(TIMELINE_STAGES).fill(Result.success)),
+        }
+      : inProgress(passed, TIMELINE_STAGES);
+  // Once it's run, a stage fails and the run carries on, which takes priority over the running
+  // stage when collapsing, so the running stage can end up collapsed
+  const run = {
+    ...progress,
+    stages: progress.stages.map((stage, i) =>
+      i === TIMELINE_FAILED_STAGE && i < passed
+        ? { ...stage, state: Result.failure }
+        : stage,
+    ),
+  };
+
+  return (
+    <>
+      <Column width={width}>
+        <RunSnippet run={run} currentRunPath="#" />
+      </Column>
+      <div
+        style={{
+          // Out of the way of the centered snippet, whatever its width
+          position: "fixed",
+          bottom: "2rem",
+          left: "2rem",
+          display: "grid",
+          // Fixed width values, so the sliders don't move as they change
+          gridTemplateColumns: "auto 160px 7rem",
+          alignItems: "center",
+          gap: "0.25rem 0.75rem",
+          fontSize: "0.75rem",
+          color: "var(--text-color-secondary)",
+          whiteSpace: "nowrap",
+          fontVariantNumeric: "tabular-nums",
+        }}
+      >
+        <label htmlFor="timeline-width">Width</label>
+        <input
+          id="timeline-width"
+          type="range"
+          // The snippet's min-width, below which the history column hides it
+          min={84}
+          max={600}
+          value={width}
+          onChange={(e) => setWidth(Number(e.target.value))}
+        />
+        <span>{width}px</span>
+        <label htmlFor="timeline-progress">Timeline</label>
+        <input
+          id="timeline-progress"
+          type="range"
+          min={0}
+          max={TIMELINE_STAGES}
+          value={passed}
+          onChange={(e) => setPassed(Number(e.target.value))}
+        />
+        <span>
+          {passed === TIMELINE_STAGES
+            ? "Complete"
+            : `Stage ${passed + 1} running`}
+        </span>
+      </div>
+    </>
+  );
+}
+
+/**
+ * Mirrors the build history column, which the snippet fills and fits its stages to. The outline
+ * marks its bounds without taking up any of its width, unlike a border.
+ */
+function Column({ width, children }: { width: number; children: ReactNode }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        width,
+        outline: "1px dashed var(--jenkins-border-color)",
+        outlineOffset: 6,
+        borderRadius: 9,
+      }}
+    >
+      <div className="pgv-run-snippet-host">{children}</div>
+    </div>
+  );
+}
 
 /**
  * A run part way through, with `done` stages passed, the next one running, and the rest

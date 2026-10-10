@@ -8,7 +8,10 @@ import StatusIcon from "../../common/components/status-icon.tsx";
 import Tooltip from "../../common/components/tooltip.tsx";
 import { RunStatus } from "../../common/RestClient.tsx";
 import LiveTotal from "../../common/utils/live-total.tsx";
-import { Result } from "../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
+import {
+  Result,
+  StageInfo,
+} from "../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import { collapseTopLevelStages } from "./utils.ts";
 
 export default function RunSnippet({
@@ -19,7 +22,7 @@ export default function RunSnippet({
   currentRunPath: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const maxVisible = useFittingSlots(ref);
+  const maxVisible = useFittingSlots(ref, run.stages);
   const items = collapseTopLevelStages(run.stages, maxVisible);
   const total = run.stages.length;
   const started = run.stages.filter((stage) => !stage.skeleton).length;
@@ -189,7 +192,10 @@ const SLOT_WIDTH_REM = 1.375 + GAP_REM;
  * the stages and clips its overflow, so the stages need to collapse to what fits instead. How wide
  * the column can grow is left to the page.
  */
-function useFittingSlots(ref: RefObject<HTMLElement | null>): number {
+function useFittingSlots(
+  ref: RefObject<HTMLElement | null>,
+  stages: StageInfo[],
+): number {
   // Start with every stage, so the page sees how much room they'd take if given it
   const [slots, setSlots] = useState(Infinity);
 
@@ -210,11 +216,13 @@ function useFittingSlots(ref: RefObject<HTMLElement | null>): number {
       setSlots(Math.max(MIN_SLOTS, fitting));
     };
 
+    // Measured afresh when the stages change too, as a slot dropped to fit one set of
+    // markers might not be needed for the next
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(element);
     return () => observer.disconnect();
-  }, [ref]);
+  }, [ref, stages]);
 
   // Slots assume every item is one icon wide, but collapsed markers can be wider, so if what's
   // rendered still overflows, try again with one fewer. The initial render is meant to show
@@ -229,7 +237,7 @@ function useFittingSlots(ref: RefObject<HTMLElement | null>): number {
     ) {
       setSlots(slots - 1);
     }
-  }, [ref, slots]);
+  }, [ref, slots, stages]);
 
   return slots;
 }

@@ -43,6 +43,15 @@ export const Succeeded: Story = {
   },
 };
 
+export const NoStages: Story = {
+  args: {
+    run: {
+      complete: false,
+      stages: [],
+    },
+  },
+};
+
 export const Failed: Story = {
   args: {
     run: {

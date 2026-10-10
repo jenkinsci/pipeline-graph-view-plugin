@@ -32,6 +32,7 @@ export default function RunSnippet({
   return (
     <div>
       <div className="pgv-run-snippet" ref={ref}>
+        {items.length === 0 && <div className="pgv-run-snippet__empty" />}
         {items.map((item) => {
           if (item.kind === "collapsed") {
             // Placeholders are only guesses at what's to come, so don't count those as running

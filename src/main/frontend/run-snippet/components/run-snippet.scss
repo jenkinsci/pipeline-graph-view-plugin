@@ -9,6 +9,13 @@
     transition: var(--standard-transition);
   }
 
+  .pgv-run-snippet__empty {
+    width: 1.375rem;
+    height: 1.375rem;
+    border: var(--jenkins-border-width) dashed var(--jenkins-border-color);
+    border-radius: 50%;
+  }
+
   .pgv-run-snippet__collapsed {
     appearance: none;
     display: flex;

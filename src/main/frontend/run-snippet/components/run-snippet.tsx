@@ -1,11 +1,14 @@
 import "./run-snippet.scss";
 
+import Tippy from "@tippyjs/react";
 import { RefObject, useLayoutEffect, useRef, useState } from "react";
 
+import { DefaultDropdownProps } from "../../common/components/dropdown.tsx";
 import StatusIcon from "../../common/components/status-icon.tsx";
 import Tooltip from "../../common/components/tooltip.tsx";
 import { RunStatus } from "../../common/RestClient.tsx";
 import LiveTotal from "../../common/utils/live-total.tsx";
+import { Result } from "../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import { collapseTopLevelStages } from "./utils.ts";
 
 export default function RunSnippet({
@@ -26,15 +29,65 @@ export default function RunSnippet({
       <div className="pgv-run-snippet" ref={ref}>
         {items.map((item) => {
           if (item.kind === "collapsed") {
+            // Placeholders are only guesses at what's to come, so don't count those as running
+            const running = item.stages.some(
+              (stage) => !stage.skeleton && stage.state === Result.running,
+            );
+
             return (
-              <Tooltip
+              <Tippy
                 key={item.id}
-                content={`${item.hiddenCount} hidden stage${item.hiddenCount === 1 ? "" : "s"}`}
+                {...DefaultDropdownProps}
+                trigger="mouseenter focus"
+                // Interactive tippies are put next to their reference by default, where the
+                // history column would clip them
+                appendTo={document.body}
+                content={
+                  <div className="jenkins-dropdown">
+                    {item.stages.map((stage) =>
+                      stage.skeleton ? (
+                        // Not started yet, so there's nothing to link to
+                        <button
+                          key={stage.id}
+                          type="button"
+                          className="jenkins-dropdown__item"
+                          disabled
+                        >
+                          <div className="jenkins-dropdown__item__icon">
+                            <StatusIcon status={stage.state} skeleton />
+                          </div>
+                          {stage.name}
+                        </button>
+                      ) : (
+                        <a
+                          key={stage.id}
+                          className="jenkins-dropdown__item"
+                          href={currentRunPath + stage.id}
+                        >
+                          <div className="jenkins-dropdown__item__icon">
+                            <StatusIcon status={stage.state} />
+                          </div>
+                          {stage.name}
+                        </a>
+                      ),
+                    )}
+                  </div>
+                }
               >
-                <div className="pgv-run-snippet__collapsed">
+                <button
+                  type="button"
+                  className={
+                    "pgv-run-snippet__collapsed" +
+                    (running ? " pgv-run-snippet__collapsed--running" : "")
+                  }
+                >
+                  {running && (
+                    // Pulses like the running status icon's dot
+                    <span className="pgv-run-snippet__collapsed__pulse" />
+                  )}
                   {item.hiddenCount}
-                </div>
-              </Tooltip>
+                </button>
+              </Tippy>
             );
           }
 
@@ -84,6 +137,9 @@ export default function RunSnippet({
   );
 }
 
+// A kept stage with hidden stages either side takes 3 slots
+const MIN_SLOTS = 3;
+
 // Match the icon size and gap in run-snippet.scss
 const GAP_REM = 0.125;
 const SLOT_WIDTH_REM = 1.375 + GAP_REM;
@@ -111,7 +167,7 @@ function useFittingSlots(ref: RefObject<HTMLElement | null>): number {
       const fitting = Math.floor(
         (element.clientWidth + GAP_REM * rem) / (SLOT_WIDTH_REM * rem),
       );
-      setSlots(Math.max(2, fitting));
+      setSlots(Math.max(MIN_SLOTS, fitting));
     };
 
     measure();
@@ -119,6 +175,21 @@ function useFittingSlots(ref: RefObject<HTMLElement | null>): number {
     observer.observe(element);
     return () => observer.disconnect();
   }, [ref]);
+
+  // Slots assume every item is one icon wide, but collapsed markers can be wider, so if what's
+  // rendered still overflows, try again with one fewer. The initial render is meant to show
+  // every stage, so it's left alone.
+  useLayoutEffect(() => {
+    const element = ref.current;
+    if (
+      element &&
+      Number.isFinite(slots) &&
+      slots > MIN_SLOTS &&
+      element.scrollWidth > element.clientWidth
+    ) {
+      setSlots(slots - 1);
+    }
+  }, [ref, slots]);
 
   return slots;
 }

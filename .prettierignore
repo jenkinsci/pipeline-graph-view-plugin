@@ -8,3 +8,4 @@
 /.mvn/*
 /Jenkinsfile
 /pom.xml
+/storybook-static

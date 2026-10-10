@@ -31,6 +31,40 @@ describe("collapseTopLevelStages", () => {
 
     expect(visible).toContain(7);
   });
+
+  it("counts collapsed markers towards the limit", () => {
+    // A failure in the middle splits the hidden stages into two runs, each with its own marker
+    const stages = Array.from({ length: 25 }, (_, i) =>
+      stage(i, i === 8 ? Result.failure : Result.success, false),
+    );
+
+    const items = collapseTopLevelStages(stages, 5);
+
+    expect(items).toHaveLength(5);
+    expect(items).toContainEqual({ kind: "stage", stage: stages[8] });
+  });
+
+  it("never renders more items than the limit", () => {
+    for (let special = 0; special < 25; special += 1) {
+      const stages = Array.from({ length: 25 }, (_, i) =>
+        stage(i, i === special ? Result.failure : Result.success, false),
+      );
+
+      for (let max = 3; max <= 25; max += 1) {
+        const items = collapseTopLevelStages(stages, max);
+        const hidden = items.reduce(
+          (sum, item) =>
+            sum + (item.kind === "collapsed" ? item.hiddenCount : 0),
+          0,
+        );
+        const shown = items.filter((item) => item.kind === "stage").length;
+
+        expect(items.length).toBeLessThanOrEqual(max);
+        expect(shown + hidden).toBe(25);
+        expect(items).toContainEqual({ kind: "stage", stage: stages[special] });
+      }
+    }
+  });
 });
 
 const stage = (id: number, state: Result, skeleton: boolean): StageInfo => ({

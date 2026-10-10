@@ -11,6 +11,9 @@ src/main/webapp/js/bundles
 # frontend coverage output
 src/main/frontend/coverage
 
+# storybook build output
+storybook-static
+
 # IntelliJ IDEA project files
 *.iml
 *.iws

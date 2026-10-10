@@ -44,8 +44,11 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
 
+/**
+ * Shows a run's stages in its build history entry.
+ */
 @Extension(ordinal = Integer.MAX_VALUE)
-public class HistoryPageEntryDecorator2 extends HistoryPageEntryDecorator {
+public class PipelineStagesEntryDecorator extends HistoryPageEntryDecorator {
     private static final ObjectMapper MAPPER = JsonMapper.builder()
             .changeDefaultPropertyInclusion(inc -> inc.withValueInclusion(JsonInclude.Include.NON_NULL))
             .changeDefaultVisibility(v -> v.withFieldVisibility(JsonAutoDetect.Visibility.ANY))

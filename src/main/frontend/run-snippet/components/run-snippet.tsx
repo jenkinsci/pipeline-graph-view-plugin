@@ -86,8 +86,9 @@ export default function RunSnippet({
 
 const MAX_VISIBLE_STAGES = 12;
 
-// Matches the icon size plus gap in run-snippet.scss
-const SLOT_WIDTH_REM = 1.375 + 0.125;
+// Match the icon size and gap in run-snippet.scss
+const GAP_REM = 0.125;
+const SLOT_WIDTH_REM = 1.375 + GAP_REM;
 
 /**
  * How many icon slots fit in the element's width, up to `max`. The history column is narrower
@@ -109,7 +110,10 @@ function useFittingSlots(
       const rem = parseFloat(
         getComputedStyle(document.documentElement).fontSize,
       );
-      const fitting = Math.floor(element.clientWidth / (SLOT_WIDTH_REM * rem));
+      // n icons only need n - 1 gaps, so count the missing trailing gap as space
+      const fitting = Math.floor(
+        (element.clientWidth + GAP_REM * rem) / (SLOT_WIDTH_REM * rem),
+      );
       setSlots(Math.max(2, Math.min(max, fitting)));
     };
 

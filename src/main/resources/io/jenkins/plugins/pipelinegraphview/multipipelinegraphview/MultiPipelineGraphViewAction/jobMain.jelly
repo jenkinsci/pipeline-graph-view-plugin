@@ -20,5 +20,5 @@
     <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/multi-pipeline-graph-view-bundle.js" type="module"/>
     <script src="${rootURL}/plugin/pipeline-graph-view/js/build.js" type="module"/>
   </j:if>
-  <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/new-thing-bundle.js" type="module"/>
+  <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/run-snippet-bundle.js" type="module"/>
 </j:jelly>

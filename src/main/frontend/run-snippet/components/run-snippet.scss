@@ -46,8 +46,9 @@
   }
 }
 
-// Fill the history column without growing past it, so the snippet can measure how many stages fit
+// Fill the history column without growing past it, so the snippet can measure how many stages fit.
+// The explicit min-width lets the column shrink down to two stages before it's hidden.
 .pgv-run-snippet-host {
   flex: 1;
-  min-width: 0;
+  min-width: 4rem;
 }

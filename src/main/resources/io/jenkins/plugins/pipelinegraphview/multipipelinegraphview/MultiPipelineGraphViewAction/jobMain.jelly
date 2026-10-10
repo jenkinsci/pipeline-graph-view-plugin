@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:f="/lib/form" xmlns:dd="/lib/layout/dropdowns">
-  <j:if test="${it.showGraphOnJobPage}">
+  <l:userExperimentalFlag var="newJobPage" flagClassName="jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag" />
+  <j:if test="${it.showGraphOnJobPage and !newJobPage}">
     <j:set var="controls">
         <div id="pgv-settings"/>
     </j:set>

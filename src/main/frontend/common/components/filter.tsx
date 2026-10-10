@@ -1,5 +1,3 @@
-import "./filter.scss";
-
 import Tippy from "@tippyjs/react";
 import { useState } from "react";
 
@@ -87,9 +85,8 @@ export default function Filter({ disabled }: FilterProps) {
               Filter
               {!allVisible && (
                 <button
-                  className={
-                    "jenkins-button jenkins-button--tertiary jenkins-!-accent-color pgv-reset-button"
-                  }
+                  type="button"
+                  className="jenkins-search__filter-reset"
                   onClick={resetStatuses}
                 >
                   Reset
@@ -101,21 +98,16 @@ export default function Filter({ disabled }: FilterProps) {
                 key={index}
                 className={classNames(
                   "jenkins-dropdown__item",
-                  "pgv-filter-button",
+                  "jenkins-search__filter-item",
                   {
-                    "pgv-filter-button--unchecked": !visibleStatuses.includes(
-                      item.status,
-                    ),
+                    "jenkins-search__filter-item--muted":
+                      !visibleStatuses.includes(item.status),
                   },
                 )}
                 onClick={() => toggleStatus(item.status)}
               >
                 <div className="jenkins-dropdown__item__icon">
-                  <StatusIcon
-                    status={item.status}
-                    skeleton={!visibleStatuses.includes(item.status)}
-                    percentage={0}
-                  />
+                  <StatusIcon status={item.status} percentage={0} />
                 </div>
                 {item.text}
               </button>
@@ -124,21 +116,11 @@ export default function Filter({ disabled }: FilterProps) {
             <div className="jenkins-dropdown__separator" />
 
             <button
-              className={classNames(
-                "jenkins-dropdown__item",
-                "pgv-filter-button",
-                {
-                  "pgv-filter-button--unchecked": !showHiddenSteps,
-                },
-              )}
+              className="jenkins-dropdown__item"
               onClick={() => setShowHiddenSteps(!showHiddenSteps)}
             >
               <div className="jenkins-dropdown__item__icon">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 512 512"
-                  style={{ width: "1.375rem", height: "1.375rem" }}
-                >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
                   <path
                     fill="none"
                     stroke="currentColor"
@@ -169,7 +151,7 @@ export default function Filter({ disabled }: FilterProps) {
                   )}
                 </svg>
               </div>
-              Show hidden steps
+              {showHiddenSteps ? "Hide hidden steps" : "Show hidden steps"}
             </button>
           </div>
         }

@@ -1,11 +1,6 @@
 .pgv-filter-button {
   transition: var(--standard-transition);
 
-  svg {
-    width: 1.375rem;
-    height: 1.375rem;
-  }
-
   &--unchecked {
     opacity: 0.75;
     color: var(--text-color-secondary) !important;

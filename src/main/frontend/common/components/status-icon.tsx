@@ -98,7 +98,8 @@ export default function StatusIcon({
         fill="none"
         stroke="var(--color)"
         strokeWidth={strokeWidth}
-        strokeLinecap="round"
+        // Round caps are always visible, so move to butt when no progress
+        strokeLinecap={percentage ? "round" : "butt"}
         strokeDasharray={circumference}
         strokeDashoffset={offset}
         style={{

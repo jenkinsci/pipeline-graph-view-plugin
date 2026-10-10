@@ -16,9 +16,10 @@
       display: flex;
       width: 1.375rem;
       height: 1.375rem;
-      border: var(--jenkins-border-width) dashed var(--jenkins-border-color);
+      border: var(--jenkins-border-width) dashed currentColor;
       border-radius: 50%;
-      color: var(--jenkins-border-color);
+      color: var(--text-color-secondary);
+      opacity: 0.5;
     }
 
     svg {

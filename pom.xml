@@ -34,7 +34,8 @@
     <gitHubRepo>jenkinsci/pipeline-graph-view-plugin</gitHubRepo>
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
     <jenkins.baseline>2.555</jenkins.baseline>
-    <jenkins.version>2.585</jenkins.version>
+    <!-- TODO: back to ${jenkins.baseline}.x once HistoryPageEntryDecorator is released in core -->
+    <jenkins.version>2.586-rc38858.0dda_b_6e98738</jenkins.version>
     <node.version>24.21.0</node.version>
     <npm.version>12.2.0</npm.version>
     <spotless.check.skip>false</spotless.check.skip>

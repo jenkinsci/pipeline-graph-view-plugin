@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core">
+    <template data-row-id="pipeline-graph-view">
+        ${it.decorator.getJson(it.build)}
+    </template>
+    <div data-type="pipeline-graph-host" class="pgv-run-snippet-host"
+         data-current-run-path="${rootURL + '/' + build.url + 'stages?selected-node='}" />
+</j:jelly>

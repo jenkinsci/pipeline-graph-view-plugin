@@ -19,7 +19,6 @@ export const Progress: StoryObj<typeof StatusIcon> = {
   render: () => <ProgressExample />,
 };
 
-// The size icons are shown at in the snippet and the stage filter
 const ACTUAL_SIZE = "1.375rem";
 
 function ProgressExample() {
@@ -27,7 +26,6 @@ function ProgressExample() {
   const [percentage, setPercentage] = useState(40);
   const [skeleton, setSkeleton] = useState(false);
 
-  // Part way through means it's running, otherwise it's whatever it finished (or will start) as
   const inProgress = percentage > 0 && percentage < 100;
 
   const icon = (
@@ -87,9 +85,6 @@ function ProgressExample() {
   );
 }
 
-/**
- * Sizes the icon like its containers do, outlined to show it fills them
- */
 function IconBox({ size, children }: { size: string; children: ReactNode }) {
   return (
     <div

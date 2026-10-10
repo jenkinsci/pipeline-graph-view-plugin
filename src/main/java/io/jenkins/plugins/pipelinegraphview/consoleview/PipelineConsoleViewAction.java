@@ -518,6 +518,18 @@ public class PipelineConsoleViewAction extends Tab {
                 : run.getParent().getUrl();
     }
 
+    public String getCurrentRunStartTime() {
+        return String.valueOf(run.getStartTimeInMillis());
+    }
+
+    public String getPreviousRunStartTime() {
+        WorkflowRun previousBuild = run.getPreviousBuild();
+        if (previousBuild == null) {
+            return null;
+        }
+        return String.valueOf(previousBuild.getStartTimeInMillis());
+    }
+
     @GET
     @WebMethod(name = "tree")
     public void getTree(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException, ServletException {

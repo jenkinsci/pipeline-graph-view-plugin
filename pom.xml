@@ -37,7 +37,7 @@
     <!-- TODO: back to ${jenkins.baseline}.x once HistoryPageEntryDecorator is released in core -->
     <jenkins.version>2.586-rc38858.0dda_b_6e98738</jenkins.version>
     <node.version>24.21.0</node.version>
-    <npm.version>12.0.2</npm.version>
+    <npm.version>12.2.0</npm.version>
     <spotless.check.skip>false</spotless.check.skip>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
   </properties>
@@ -48,7 +48,7 @@
         <!-- Pick up common dependencies for the selected LTS line: https://github.com/jenkinsci/bom#usage -->
         <groupId>io.jenkins.tools.bom</groupId>
         <artifactId>bom-${jenkins.baseline}.x</artifactId>
-        <version>7046.v43536164769c</version>
+        <version>7134.vc450c4b_83de0</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>

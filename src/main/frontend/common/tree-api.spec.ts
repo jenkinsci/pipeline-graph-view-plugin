@@ -41,6 +41,8 @@ describe("useRunPoller", function () {
         currentRunPath: "current",
         previousRunPath: "previous",
         interval: 10,
+        currentRunStartTime: 1337,
+        previousRunStartTime: 42,
       });
     });
     await waitFor(() =>
@@ -49,10 +51,12 @@ describe("useRunPoller", function () {
     expect(restClient.getRunStatusFromPath as Mock).toHaveBeenNthCalledWith(
       1,
       "current",
+      1337,
     );
     expect(restClient.getRunStatusFromPath as Mock).toHaveBeenNthCalledWith(
       2,
       "previous",
+      42,
     );
     // Only fetch current afterwards.
     await waitFor(() => {
@@ -60,6 +64,7 @@ describe("useRunPoller", function () {
         expect(restClient.getRunStatusFromPath as Mock).toHaveBeenNthCalledWith(
           i,
           "current",
+          1337,
         );
       }
     });
@@ -86,6 +91,7 @@ describe("useRunPoller", function () {
       return useRunPoller({
         currentRunPath: "current",
         previousRunPath: "previous",
+        currentRunStartTime: 1337,
       });
     });
     await waitFor(() =>
@@ -111,6 +117,7 @@ describe("useRunPoller", function () {
       return useRunPoller({
         currentRunPath: "current",
         previousRunPath: "previous",
+        currentRunStartTime: 1337,
       });
     });
     await waitFor(() =>
@@ -135,6 +142,7 @@ describe("useRunPoller", function () {
       return useRunPoller({
         currentRunPath: "current",
         interval: 100,
+        currentRunStartTime: 1337,
       });
     });
     await waitFor(() => {
@@ -156,6 +164,7 @@ describe("useRunPoller", function () {
       return useRunPoller({
         currentRunPath: "current",
         interval: 10,
+        currentRunStartTime: 1337,
       });
     });
     await waitFor(() => {
@@ -189,6 +198,7 @@ describe("useRunPoller", function () {
       return useRunPoller({
         currentRunPath: "current",
         interval: 10,
+        currentRunStartTime: 1337,
       });
     });
     const getCallCount = () =>

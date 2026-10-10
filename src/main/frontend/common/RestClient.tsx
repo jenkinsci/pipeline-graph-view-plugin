@@ -78,8 +78,23 @@ function fixStaleStageURL(stages: StageInfo[]) {
   }
 }
 
-export async function getRunStatusFromPath(url: string): Promise<RunStatus> {
-  const response = await fetch(`${url}stages/tree`);
+async function fetchWithCacheBust(
+  url: string,
+  after: number,
+): Promise<Response> {
+  let response = await fetch(url);
+  if (new Date(response.headers.get("date")!).getTime() < after) {
+    // "cache: reload" skips the cache lookup and populates the cache still.
+    response = await fetch(url, { cache: "reload" });
+  }
+  return response;
+}
+
+export async function getRunStatusFromPath(
+  url: string,
+  after: number,
+): Promise<RunStatus> {
+  const response = await fetchWithCacheBust(`${url}stages/tree`, after);
   if (!response.ok) {
     throw response.statusText;
   }
@@ -91,8 +106,11 @@ export async function getRunStatusFromPath(url: string): Promise<RunStatus> {
   return json.data;
 }
 
-export async function getRunSteps(url: string): Promise<AllStepsData> {
-  const response = await fetch(`${url}stages/allSteps`);
+export async function getRunSteps(
+  url: string,
+  after: number,
+): Promise<AllStepsData> {
+  const response = await fetchWithCacheBust(`${url}stages/allSteps`, after);
   if (!response.ok) throw response.statusText;
   const text = await response.text();
   const json = JSON.parse(text);

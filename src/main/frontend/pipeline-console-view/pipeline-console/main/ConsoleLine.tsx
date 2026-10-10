@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import linkifyHtml from "linkify-html";
 import { memo } from "react";
 
@@ -56,7 +57,13 @@ export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
         </a>
         <div className="console-text">
           {makeReactChildren(
-            tokenizeANSIString(linkifyHtml(content, linkifyJsOptions)),
+            tokenizeANSIString(
+              DOMPurify.sanitize(linkifyHtml(content, linkifyJsOptions), {
+                ALLOWED_TAGS: ["a", "span", "b"],
+                ALLOWED_ATTR: ["href", "rel", "class", "style"],
+                ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/(?![/\\]))/i,
+              }),
+            ),
             id,
           )}
         </div>

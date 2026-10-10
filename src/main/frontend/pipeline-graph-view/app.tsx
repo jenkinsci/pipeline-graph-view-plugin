@@ -26,9 +26,17 @@ export default function App() {
   const currentRunPath = rootElement?.dataset.currentRunPath!;
   const previousRunPath = rootElement?.dataset.previousRunPath;
   const normalizedParentJobPath = rootElement?.dataset.normalizedParentJobPath!;
+  const currentRunStartTime = parseInt(
+    rootElement?.dataset.currentRunStartTime!,
+  );
+  const previousRunStartTime = parseInt(
+    rootElement?.dataset.previousRunStartTime || "0",
+  );
   const { run, loading } = useRunPoller({
     currentRunPath,
     previousRunPath,
+    currentRunStartTime,
+    previousRunStartTime,
   });
 
   const [autoStageViewHeight, setAutoStageViewHeight] = useState(0);

@@ -12,10 +12,15 @@ import type { StorybookConfig } from "@storybook/react-vite";
  */
 function extractJenkinsStyles() {
   const pom = readFileSync(join(import.meta.dirname, "../pom.xml"), "utf8");
-  const version = pom.match(/<jenkins\.version>(.+?)<\/jenkins\.version>/)?.[1];
-  if (!version) {
-    throw new Error("Couldn't find <jenkins.version> in pom.xml");
-  }
+  const property = (name: string): string => {
+    const value = pom.match(new RegExp(`<${name}>(.+?)</${name}>`))?.[1];
+    if (!value) {
+      throw new Error(`Couldn't find <${name}> in pom.xml`);
+    }
+    // Resolve references to other properties, e.g. ${jenkins.baseline}.3
+    return value.replace(/\$\{(.+?)\}/g, (_, reference) => property(reference));
+  };
+  const version = property("jenkins.version");
 
   const outDir = join(import.meta.dirname, "jenkins");
   const versionFile = join(outDir, "version");

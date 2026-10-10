@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ReactNode, useState } from "react";
 
+import StoryControls from "../../common/components/story-controls.tsx";
 import {
   Result,
   StageInfo,
@@ -170,23 +171,7 @@ function TimelineExample() {
       <Column width={width}>
         <RunSnippet run={run} currentRunPath="#" />
       </Column>
-      <div
-        style={{
-          // Out of the way of the centered snippet, whatever its width
-          position: "fixed",
-          bottom: "2rem",
-          left: "2rem",
-          display: "grid",
-          // Fixed width values, so the sliders don't move as they change
-          gridTemplateColumns: "auto 160px 7rem",
-          alignItems: "center",
-          gap: "0.25rem 0.75rem",
-          fontSize: "0.75rem",
-          color: "var(--text-color-secondary)",
-          whiteSpace: "nowrap",
-          fontVariantNumeric: "tabular-nums",
-        }}
-      >
+      <StoryControls>
         <label htmlFor="timeline-width">Width</label>
         <input
           id="timeline-width"
@@ -213,7 +198,7 @@ function TimelineExample() {
             ? "Complete"
             : `Stage ${passed + 1}, ${Math.round(fraction * 100)}%`}
         </span>
-      </div>
+      </StoryControls>
     </>
   );
 }

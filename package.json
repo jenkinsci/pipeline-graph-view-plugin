@@ -8,7 +8,6 @@
     "build": "vite build --mode production",
     "build:dev": "vite build --mode production --watch",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "tsc:check": "tsc",

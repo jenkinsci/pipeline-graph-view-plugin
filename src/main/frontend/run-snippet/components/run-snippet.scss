@@ -26,9 +26,11 @@
     padding: 0 0.375rem;
     cursor: pointer;
 
+    // Lifts like the stage icons, and stays lifted while its dropdown is open
     &:hover,
     &[aria-expanded="true"] {
       border-color: currentColor;
+      translate: 0 -2px;
     }
   }
 

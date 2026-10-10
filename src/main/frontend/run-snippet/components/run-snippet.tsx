@@ -40,6 +40,8 @@ export default function RunSnippet({
                 {...DefaultDropdownProps}
                 trigger="mouseenter focus"
                 placement="top"
+                // Same gap as the stage tooltips, which use Tippy's default
+                offset={[0, 10]}
                 // Always open upwards, scrolling if there isn't room, rather than flipping
                 popperOptions={{
                   modifiers: [{ name: "flip", enabled: false }],
@@ -108,7 +110,7 @@ export default function RunSnippet({
           // Placeholders come from the previous run, so there's no duration or stage to link to yet
           if (e.skeleton) {
             return (
-              <Tooltip content={e.name} key={e.id}>
+              <Tooltip content={e.name} key={e.id} delay={TOOLTIP_DELAY}>
                 <span>
                   <StatusIcon status={e.state} skeleton />
                 </span>
@@ -118,6 +120,7 @@ export default function RunSnippet({
 
           return (
             <Tooltip
+              delay={TOOLTIP_DELAY}
               content={
                 <div style={{ textAlign: "center" }}>
                   <div>{e.name}</div>
@@ -149,11 +152,18 @@ export default function RunSnippet({
   );
 }
 
+// Wait briefly before showing a stage's tooltip, so they don't flash up while moving across
+// the snippet, but hide it straight away
+const TOOLTIP_DELAY: [number, number] = [50, 0];
+
+// Keeps long lists of hidden stages compact, scrolling past this
+const MAX_DROPDOWN_HEIGHT_PX = 215;
+
 // Space to leave between a dropdown and the top of the window
 const VIEWPORT_MARGIN_PX = 8;
 
 /**
- * Caps the dropdown's height to the space above its reference, so it scrolls rather than
+ * Caps the dropdown's height, and to the space above its reference so it scrolls rather than
  * running off the top of the window. Its theme scrolls when it's taller than its max-height.
  */
 function fitAboveReference(
@@ -163,7 +173,7 @@ function fitAboveReference(
   if (box) {
     const space =
       instance.reference.getBoundingClientRect().top - VIEWPORT_MARGIN_PX;
-    box.style.maxHeight = `min(60vh, ${Math.max(0, space)}px)`;
+    box.style.maxHeight = `${Math.min(MAX_DROPDOWN_HEIGHT_PX, Math.max(0, space))}px`;
   }
 }
 

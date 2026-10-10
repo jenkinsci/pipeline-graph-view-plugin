@@ -11,8 +11,8 @@ src/main/webapp/js/bundles
 # frontend coverage output
 src/main/frontend/coverage
 
-# storybook build output
-storybook-static
+# Jenkins core's styles, extracted for Storybook
+.storybook/jenkins
 
 # IntelliJ IDEA project files
 *.iml

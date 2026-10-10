@@ -1,4 +1,5 @@
-import "./jenkins-theme.css";
+// Extracted from Jenkins core by main.ts
+import "./jenkins/jsbundles/styles.css";
 
 import type { Preview } from "@storybook/react-vite";
 

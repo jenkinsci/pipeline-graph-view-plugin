@@ -28,9 +28,9 @@ const meta: Meta<Args> = {
       style={{
         display: "flex",
         width,
-        outline: "1px dashed gray",
+        outline: "1px dashed var(--jenkins-border-color)",
         outlineOffset: 6,
-        borderRadius: 6,
+        borderRadius: 9,
       }}
     >
       <div className="pgv-run-snippet-host">

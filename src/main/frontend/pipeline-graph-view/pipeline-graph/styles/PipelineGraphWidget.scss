@@ -9,8 +9,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 1.625rem;
+  height: 1.625rem;
   z-index: 0;
 
   &::before {
@@ -44,7 +44,7 @@
     &::after {
       content: "";
       position: absolute;
-      inset: 1px;
+      inset: 0;
       border-radius: 50%;
       z-index: -1;
       transition: var(--standard-transition);
@@ -83,8 +83,8 @@
   }
 
   svg {
-    width: 1.75rem;
-    height: 1.75rem;
+    width: 1.625rem;
+    height: 1.625rem;
   }
 
   &:has(.PWGx-pipeline-node-terminal) {

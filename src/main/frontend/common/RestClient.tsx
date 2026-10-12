@@ -68,7 +68,7 @@ export interface ConsoleLogData {
   startByte: number;
   endByte: number;
   nodeIsActive: boolean;
-  consoleAnnotator: string;
+  consoleAnnotator?: string;
 }
 
 function fixStaleStageURL(stages: StageInfo[]) {

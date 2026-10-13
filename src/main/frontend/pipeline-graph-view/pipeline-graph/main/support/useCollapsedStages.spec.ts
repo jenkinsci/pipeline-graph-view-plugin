@@ -1,7 +1,11 @@
+import { act, renderHook } from "@testing-library/react";
+
 import { Result, StageInfo } from "../PipelineGraphModel.tsx";
 import {
   collapseSelectiveStages,
+  collectDefaultCollapsedStageIds,
   collectParentStageIds,
+  useCollapsedStages,
 } from "./useCollapsedStages.ts";
 
 describe("collapseSelectiveStages", () => {
@@ -245,5 +249,133 @@ describe("collectParentStageIds", () => {
     ];
     const result = collectParentStageIds(stages);
     expect(result).toEqual(new Set([1, 2]));
+  });
+});
+
+describe("useCollapsedStages", () => {
+  const stages: StageInfo[] = [
+    {
+      name: "Default parent",
+      state: Result.success,
+      id: 1,
+      type: "STAGE",
+      defaultCollapsed: true,
+      children: [
+        {
+          name: "Default child",
+          state: Result.success,
+          id: 2,
+          type: "STAGE",
+          children: [],
+        } as unknown as StageInfo,
+      ],
+    } as unknown as StageInfo,
+    {
+      name: "Normal parent",
+      state: Result.success,
+      id: 3,
+      type: "STAGE",
+      children: [
+        {
+          name: "Normal child",
+          state: Result.success,
+          id: 4,
+          type: "STAGE",
+          children: [],
+        } as unknown as StageInfo,
+      ],
+    } as unknown as StageInfo,
+  ];
+
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
+  it("should collapse default-collapsed stages initially", () => {
+    const { result } = renderHook(() => useCollapsedStages("job/test", stages));
+
+    expect(result.current.collapsedStageIds).toEqual(new Set([1]));
+    expect(result.current.effectiveStages[0].children).toHaveLength(0);
+    expect(result.current.effectiveStages[1].children).toHaveLength(1);
+  });
+
+  it("should persist explicit expansion of a default-collapsed stage", () => {
+    const first = renderHook(() => useCollapsedStages("job/test", stages));
+
+    act(() => {
+      first.result.current.toggleCollapseStage(1);
+    });
+
+    expect(first.result.current.collapsedStageIds).toEqual(new Set());
+    first.unmount();
+
+    const second = renderHook(() => useCollapsedStages("job/test", stages));
+    expect(second.result.current.collapsedStageIds).toEqual(new Set());
+  });
+
+  it("should apply defaults again for a different build", () => {
+    const first = renderHook(() => useCollapsedStages("job/test/1", stages));
+
+    act(() => {
+      first.result.current.toggleCollapseStage(1);
+    });
+
+    expect(first.result.current.collapsedStageIds).toEqual(new Set());
+    first.unmount();
+
+    const second = renderHook(() => useCollapsedStages("job/test/2", stages));
+
+    expect(second.result.current.collapsedStageIds).toEqual(new Set([1]));
+  });
+
+  it("should persist expand all for default-collapsed stages", () => {
+    const first = renderHook(() => useCollapsedStages("job/test", stages));
+
+    act(() => {
+      first.result.current.expandAll();
+    });
+
+    first.unmount();
+
+    const second = renderHook(() => useCollapsedStages("job/test", stages));
+    expect(second.result.current.collapsedStageIds).toEqual(new Set());
+  });
+
+  it("should restore the default after explicitly collapsing it again", () => {
+    const first = renderHook(() => useCollapsedStages("job/test", stages));
+
+    act(() => {
+      first.result.current.toggleCollapseStage(1);
+    });
+    act(() => {
+      first.result.current.toggleCollapseStage(1);
+    });
+
+    first.unmount();
+
+    const second = renderHook(() => useCollapsedStages("job/test", stages));
+    expect(second.result.current.collapsedStageIds).toEqual(new Set([1]));
+  });
+});
+
+describe("collectDefaultCollapsedStageIds", () => {
+  it("should collect only collapsible stages marked as default collapsed", () => {
+    const stages: StageInfo[] = [
+      {
+        id: 1,
+        type: "STAGE",
+        defaultCollapsed: true,
+        children: [
+          {
+            id: 2,
+            type: "STAGE",
+            defaultCollapsed: false,
+            children: [],
+          } as unknown as StageInfo,
+        ],
+      } as unknown as StageInfo,
+    ];
+
+    expect(collectDefaultCollapsedStageIds(stages)).toEqual(new Set([1]));
   });
 });

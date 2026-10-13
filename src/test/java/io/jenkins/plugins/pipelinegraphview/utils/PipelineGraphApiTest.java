@@ -111,6 +111,24 @@ class PipelineGraphApiTest {
     }
 
     @Test
+    void createTree_collapseByDefault() throws Exception {
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "collapseByDefault", "collapseByDefault.jenkinsfile", Result.SUCCESS);
+
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
+        String stagesString = TestUtils.collectStagesAsString(
+                stages, stage -> String.format("%s{%s}", stage.name, stage.defaultCollapsed));
+
+        assertThat(
+                stagesString,
+                equalTo(
+                        String.join(
+                                "",
+                                "Normal parent{false}[Normal A{false}[Normal child A{false}],Normal B{false}[Normal child B{false}]],",
+                                "Default parent{true}[Default A{false}[Default child A{false}],Default B{false}[Default child B{false}]]")));
+    }
+
+    @Test
     @DisplayName("When no stage synthetic stage is used")
     void noStage() throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(j, "noStage", "noStage.jenkinsfile", Result.SUCCESS);

@@ -18,6 +18,7 @@ public class PipelineStage extends AbstractPipelineNode {
     private final boolean sequential;
 
     final boolean synthetic;
+    final boolean defaultCollapsed;
     private final boolean placeholder;
     final String agent;
     private final String url;
@@ -34,6 +35,7 @@ public class PipelineStage extends AbstractPipelineNode {
             boolean sequential,
             boolean synthetic,
             boolean placeholder,
+            boolean defaultCollapsed,
             TimingInfo timingInfo,
             String agent,
             String runUrl,
@@ -44,6 +46,7 @@ public class PipelineStage extends AbstractPipelineNode {
         this.nextSibling = nextSibling;
         this.sequential = sequential;
         this.synthetic = synthetic;
+        this.defaultCollapsed = defaultCollapsed;
         this.placeholder = placeholder;
         this.agent = agent;
         this.url = "/" + runUrl + URL_NAME + "/?selected-node=" + id;
@@ -62,6 +65,7 @@ public class PipelineStage extends AbstractPipelineNode {
             @JsonProperty("isSequential") boolean sequential,
             boolean synthetic,
             boolean placeholder,
+            boolean defaultCollapsed,
             long pauseDurationMillis,
             Long totalDurationMillis,
             long startTimeMillis,
@@ -74,6 +78,7 @@ public class PipelineStage extends AbstractPipelineNode {
         this.nextSibling = nextSibling;
         this.sequential = sequential;
         this.synthetic = synthetic;
+        this.defaultCollapsed = defaultCollapsed;
         this.placeholder = placeholder;
         this.agent = agent;
         this.url = url;

@@ -48,6 +48,7 @@ export interface StageInfo {
   isSequential?: boolean;
   placeholder?: boolean;
   synthetic?: boolean;
+  defaultCollapsed?: boolean;
   pauseDurationMillis: number;
   startTimeMillis: number;
   totalDurationMillis?: number; // will be null if the stage is still running

@@ -6,6 +6,14 @@ if (rerunButton) {
   rerunButton.addEventListener("click", (event) => {
     event.preventDefault();
 
+    function rootUrl() {
+      let root = document.querySelector("head").dataset.rooturl;
+      if (!root.endsWith("/")) {
+        root += "/";
+      }
+      return root;
+    }
+
     async function redirectToNextBuild(queueId) {
       while (true) {
         try {
@@ -18,11 +26,7 @@ if (rerunButton) {
           const { status, data, message } = await response.json();
           if (status === "ok") {
             if (data?.nextBuildUrl) {
-              let root = document.querySelector("head").dataset.rooturl;
-              if (!root.endsWith("/")) {
-                root += "/";
-              }
-              window.location = `${root}${data.nextBuildUrl}`;
+              window.location = `${rootUrl()}${data.nextBuildUrl}`;
               break;
             }
           } else {
@@ -37,8 +41,10 @@ if (rerunButton) {
 
     const rerunAction = window[`${rerunButton.dataset.proxyName}`];
     rerunAction.doRerun(async function (response) {
-      const { status, data, message } = response.responseJSON;
-      if (status === "ok") {
+      const { status, data, message } = response.responseJSON ?? {};
+      if (status === "ok" && data?.redirectUrl) {
+        window.location = `${rootUrl()}${data.redirectUrl}`;
+      } else if (status === "ok") {
         notificationBar.show(data.message, notificationBar.SUCCESS);
         await redirectToNextBuild(data.queueId);
       } else {

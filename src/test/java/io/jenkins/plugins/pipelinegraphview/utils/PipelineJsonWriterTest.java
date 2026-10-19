@@ -122,6 +122,7 @@ class PipelineJsonWriterTest {
                 true,
                 false,
                 false,
+                true,
                 new TimingInfo(500, 0, 1_700_000_002_000L),
                 "built-in",
                 "job/example/1/",
@@ -134,6 +135,7 @@ class PipelineJsonWriterTest {
         assertThat(s, is(notNullValue()));
         assertThat(s.getBoolean("isSequential"), is(true));
         assertThat(s.has("sequential"), is(false));
+        assertThat(s.getBoolean("defaultCollapsed"), is(true));
         assertThat(s.has("nextSibling"), is(false));
         assertThat(s.has("seqContainerName"), is(false));
         assertThat(s.getString("agent"), is("built-in"));

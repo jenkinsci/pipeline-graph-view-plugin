@@ -4,6 +4,7 @@ export function TruncatingLabel({
   children,
   style = {},
   className = "",
+  showTitle = true,
 }: TruncatingLabelProps) {
   const mergedStyle: CSSProperties = {
     display: "-webkit-box",
@@ -17,7 +18,7 @@ export function TruncatingLabel({
     <div
       style={mergedStyle}
       className={`TruncatingLabel ${className}`.trim()}
-      title={children}
+      title={showTitle ? children : undefined}
     >
       {children}
     </div>
@@ -28,4 +29,5 @@ interface TruncatingLabelProps {
   children: string;
   style?: CSSProperties;
   className?: string;
+  showTitle?: boolean;
 }

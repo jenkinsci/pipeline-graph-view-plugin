@@ -23,8 +23,13 @@ import org.jenkinsci.plugins.workflow.graph.FlowNode;
  * time: the execution's current heads plus every enclosing block start. Status resolution
  * reads liveness from this set.
  *
- * <p>{@code version} is a monotonic counter that bumps on every new flow node, so callers
- * can use it as a cache key for computed DTOs.
+ * <p>{@code pausedHeadIds} contains the IDs of the current heads that were paused (an
+ * {@code input} waiting for an answer) at snapshot time, or {@code null} if they couldn't be
+ * read.
+ *
+ * <p>{@code version} is a monotonic counter that bumps on every new flow node. A step pauses
+ * after its node became a head, which adds no node, so callers key computed DTOs on
+ * {@code version} and {@code pausedHeadIds} together.
  */
 public record LiveGraphSnapshot(
         List<FlowNode> nodes,
@@ -32,4 +37,5 @@ public record LiveGraphSnapshot(
         Map<String, List<String>> enclosingIdsByNodeId,
         Set<String> hideFromViewBlockStartIds,
         Set<String> activeNodeIds,
+        Set<String> pausedHeadIds,
         long version) {}

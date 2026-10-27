@@ -234,7 +234,7 @@ public class PipelineGraphApi {
                                     run, snapshot.nodes(), snapshot.enclosingIdsByNodeId(), snapshot.activeNodeIds()),
                             snapshot.workspaceNodes(),
                             snapshot.enclosingIdsByNodeId());
-                    LiveGraphRegistry.get().cacheGraph(run, snapshot.version(), computed);
+                    LiveGraphRegistry.get().cacheGraph(run, snapshot, computed);
                     return computed;
                 }
             }

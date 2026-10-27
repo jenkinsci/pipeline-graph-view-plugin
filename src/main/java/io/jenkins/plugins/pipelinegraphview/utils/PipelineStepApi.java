@@ -198,7 +198,7 @@ public class PipelineStepApi {
                             runIsComplete,
                             snapshot.hideFromViewBlockStartIds(),
                             snapshot.enclosingIdsByNodeId());
-                    LiveGraphRegistry.get().cacheAllSteps(run, snapshot.version(), computed);
+                    LiveGraphRegistry.get().cacheAllSteps(run, snapshot, computed);
                     return computed;
                 }
             }

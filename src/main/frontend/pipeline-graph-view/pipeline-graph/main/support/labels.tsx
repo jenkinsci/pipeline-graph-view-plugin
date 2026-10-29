@@ -1,5 +1,6 @@
 import { CSSProperties, memo, MouseEvent, useContext } from "react";
 
+import Tooltip from "../../../../common/components/tooltip.tsx";
 import {
   I18NContext,
   LocalizedMessageKey,
@@ -145,15 +146,32 @@ function BigLabelImpl({
 
   return (
     <div className={classNames.join(" ")} style={style} key={details.key}>
-      {childCount > 0 ? (
-        <div className="PWGx-pipeline-big-label-content">
-          <TruncatingLabel>{details.text}</TruncatingLabel>
-          <CollapseBadge
-            stage={details.stage}
-            isCollapsed={isCollapsed}
-            onToggleCollapse={onToggleCollapse}
-          />
-        </div>
+      {childCount > 0 && details.stage ? (
+        <Tooltip
+          content={
+            <div className="pgv-node-tooltip">
+              <div>{details.text}</div>
+              <div>
+                <LiveTotal
+                  total={details.stage.totalDurationMillis}
+                  start={details.stage.startTimeMillis}
+                  paused={details.stage.pauseLiveTotal}
+                />
+              </div>
+            </div>
+          }
+          interactive
+          appendTo={document.body}
+        >
+          <div className="PWGx-pipeline-big-label-content">
+            <TruncatingLabel showTitle={false}>{details.text}</TruncatingLabel>
+            <CollapseBadge
+              stage={details.stage}
+              isCollapsed={isCollapsed}
+              onToggleCollapse={onToggleCollapse}
+            />
+          </div>
+        </Tooltip>
       ) : (
         <TruncatingLabel>{details.text}</TruncatingLabel>
       )}

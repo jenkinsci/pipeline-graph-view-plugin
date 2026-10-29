@@ -36,8 +36,8 @@
     <jenkins.baseline>2.555</jenkins.baseline>
     <!-- TODO: back to ${jenkins.baseline}.x once HistoryPageEntryDecorator is released in core -->
     <jenkins.version>2.586-rc38858.0dda_b_6e98738</jenkins.version>
-    <node.version>24.21.0</node.version>
-    <npm.version>12.2.0</npm.version>
+    <node.version>24.22.1</node.version>
+    <npm.version>12.2.1</npm.version>
     <spotless.check.skip>false</spotless.check.skip>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
   </properties>
@@ -48,7 +48,7 @@
         <!-- Pick up common dependencies for the selected LTS line: https://github.com/jenkinsci/bom#usage -->
         <groupId>io.jenkins.tools.bom</groupId>
         <artifactId>bom-${jenkins.baseline}.x</artifactId>
-        <version>7134.vc450c4b_83de0</version>
+        <version>7237.v5071b_f4589f1</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -114,13 +114,13 @@
     <dependency>
       <groupId>com.microsoft.playwright</groupId>
       <artifactId>playwright</artifactId>
-      <version>1.63.0</version>
+      <version>1.64.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.sonyericsson.hudson.plugins.rebuild</groupId>
       <artifactId>rebuild</artifactId>
-      <version>338.va_0a_b_50e29397</version>
+      <version>344.v805899551b_13</version>
       <scope>test</scope>
     </dependency>
     <dependency>

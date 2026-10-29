@@ -67,6 +67,32 @@ function makeLabelInfo(
 }
 
 describe("BigLabel", () => {
+  it("shows name and total duration in tooltip for parallel stage label", () => {
+    const child1 = makeStage({ name: "Unit", id: 10 });
+    const child2 = makeStage({ name: "Integration", id: 11 });
+    const stage = makeStage({
+      children: [child1, child2],
+      totalDurationMillis: 5000,
+    });
+    render(
+      <BigLabel
+        details={makeLabelInfo(stage)}
+        layout={layout}
+        measuredHeight={200}
+        isSelected={false}
+        isCollapsed={false}
+      />,
+    );
+
+    fireEvent.mouseEnter(
+      document.querySelector(".PWGx-pipeline-big-label-content")!,
+    );
+
+    const tooltip = document.querySelector(".pgv-node-tooltip");
+    expect(tooltip).not.toBeNull();
+    expect(tooltip!.textContent).toContain("Build");
+    expect(tooltip!.textContent).toContain("5s");
+  });
   it("renders label text for leaf stage without badge", () => {
     const stage = makeStage();
     render(

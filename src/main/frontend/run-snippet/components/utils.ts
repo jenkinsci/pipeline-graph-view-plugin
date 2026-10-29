@@ -1,4 +1,5 @@
 import { StageInfo } from "../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
+import { convertLabelToTooltip } from "../../pipeline-graph-view/pipeline-graph/main/support/convertLabelToTooltip.tsx";
 
 type VisibleRunItem =
   | {
@@ -159,4 +160,103 @@ export function collapseTopLevelStages(
   }
 
   return toItems(stages, keep);
+}
+
+// Which of a matrix's configurations a stage's icon stands for, most noteworthy first
+const MATRIX_STATE_PRIORITY = [
+  "failure",
+  "aborted",
+  "unstable",
+  "running",
+  "paused",
+  "queued",
+  "success",
+  "not_built",
+  "skipped",
+  "unknown",
+];
+
+/**
+ * Replaces each declarative `matrix` with the stages it runs, so a matrix of Build and Test shows
+ * as those two stages rather than one icon for the lot. Each stands for that stage across every
+ * configuration: it takes the most noteworthy configuration's state and id, so it links there,
+ * and keeps every configuration's stage as its children, named after the configuration's axes.
+ */
+export function expandMatrixStages(stages: StageInfo[]): StageInfo[] {
+  return stages.flatMap((stage) => {
+    if (!isMatrix(stage)) {
+      return [stage];
+    }
+
+    const names = [
+      ...new Set(
+        stage.children.flatMap((branch) => branch.children.map((s) => s.name)),
+      ),
+    ];
+
+    return names.map((name) => {
+      const configurations = stage.children.flatMap((branch) =>
+        branch.children
+          .filter((s) => s.name === name)
+          .map((s) => ({ ...s, name: matrixLabel(branch.name) })),
+      );
+      const representative = [...configurations].sort(
+        (a, b) => statePriority(a.state) - statePriority(b.state),
+      )[0];
+      const start = Math.min(...configurations.map((s) => s.startTimeMillis));
+      const finished = configurations.every(
+        (s) => s.totalDurationMillis !== undefined,
+      );
+      const previous = configurations
+        .map((s) => s.previousTotalDurationMillis)
+        .filter((ms) => ms !== undefined);
+
+      return {
+        ...representative,
+        name,
+        title: name,
+        children: configurations,
+        synthetic: true,
+        startTimeMillis: start,
+        totalDurationMillis: finished
+          ? Math.max(
+              ...configurations.map(
+                (s) => s.startTimeMillis + (s.totalDurationMillis ?? 0),
+              ),
+            ) - start
+          : undefined,
+        previousTotalDurationMillis: previous.length
+          ? Math.max(...previous)
+          : undefined,
+        skeleton: configurations.every((s) => s.skeleton),
+      };
+    });
+  });
+}
+
+/**
+ * Whether the stage is a declarative `matrix`, whose branches are named after their axis values,
+ * e.g. "Matrix - PLATFORM = 'linux', BROWSER = 'firefox'".
+ */
+function isMatrix(stage: StageInfo): boolean {
+  return (
+    stage.children.length > 0 &&
+    stage.children.every(
+      (branch) =>
+        branch.type === "PARALLEL" && branch.name.startsWith("Matrix - "),
+    )
+  );
+}
+
+/** "Matrix - PLATFORM = 'linux', BROWSER = 'firefox'" to "linux, firefox" */
+function matrixLabel(branchName: string): string {
+  const axes = convertLabelToTooltip(branchName);
+  return typeof axes === "string"
+    ? axes
+    : axes.map((axis) => axis.value).join(", ");
+}
+
+function statePriority(state: string): number {
+  const index = MATRIX_STATE_PRIORITY.indexOf(state.toLowerCase());
+  return index === -1 ? MATRIX_STATE_PRIORITY.length : index;
 }

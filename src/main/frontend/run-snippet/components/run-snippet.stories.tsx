@@ -128,6 +128,74 @@ export const Narrow: Story = {
   },
 };
 
+// A declarative `matrix` runs as a single top-level stage, with a parallel branch for each
+// combination of its axes, each running the matrix's stages in sequence
+export const Matrix: Story = {
+  args: {
+    run: {
+      complete: true,
+      stages: [
+        {
+          ...states([Result.success])[0],
+          name: "BuildAndTest",
+          title: "BuildAndTest",
+          children: ["linux", "windows", "mac"]
+            .flatMap((platform) =>
+              ["firefox", "chrome", "safari", "edge"].map((browser) => ({
+                platform,
+                browser,
+              })),
+            )
+            .map(({ platform, browser }, i) => {
+              const name = `Matrix - PLATFORM = '${platform}', BROWSER = '${browser}'`;
+              return {
+                ...states([Result.success])[0],
+                name,
+                title: name,
+                type: "PARALLEL" as const,
+                id: 100 + i,
+                children: states([Result.success, Result.success]).map(
+                  (stage, j) => ({
+                    ...stage,
+                    name: j === 0 ? "Build" : "Test",
+                    title: j === 0 ? "Build" : "Test",
+                    id: 1000 + i * 2 + j,
+                  }),
+                ),
+              };
+            }),
+        },
+      ],
+    },
+  },
+};
+
+// One configuration's tests fail, which the Test stage shows and links to
+export const MatrixWithFailure: Story = {
+  args: {
+    run: {
+      complete: true,
+      stages: Matrix.args!.run!.stages.map((matrix) => ({
+        ...matrix,
+        state: Result.failure,
+        children: matrix.children.map((configuration, i) =>
+          i === 5
+            ? {
+                ...configuration,
+                state: Result.failure,
+                children: configuration.children.map((stage) =>
+                  stage.name === "Test"
+                    ? { ...stage, state: Result.failure }
+                    : stage,
+                ),
+              }
+            : configuration,
+        ),
+      })),
+    },
+  },
+};
+
 const TIMELINE_STAGES = 20;
 const TIMELINE_FAILED_STAGE = 3;
 const TIMELINE_STAGE_DURATION = 60_000;

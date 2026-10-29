@@ -2,7 +2,7 @@ import {
   Result,
   StageInfo,
 } from "../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
-import { collapseTopLevelStages } from "./utils.ts";
+import { collapseTopLevelStages, expandMatrixStages } from "./utils.ts";
 
 describe("collapseTopLevelStages", () => {
   it("keeps the running stage visible ahead of placeholders", () => {
@@ -64,6 +64,97 @@ describe("collapseTopLevelStages", () => {
         expect(items).toContainEqual({ kind: "stage", stage: stages[special] });
       }
     }
+  });
+});
+
+describe("expandMatrixStages", () => {
+  const configuration = (
+    id: number,
+    platform: string,
+    build: StageInfo,
+    test: StageInfo,
+  ): StageInfo => ({
+    ...stage(id, Result.success, false),
+    name: `Matrix - PLATFORM = '${platform}', BROWSER = 'chrome'`,
+    type: "PARALLEL",
+    children: [
+      { ...build, name: "Build" },
+      { ...test, name: "Test" },
+    ],
+  });
+
+  const matrix = (...configurations: StageInfo[]): StageInfo => ({
+    ...stage(1, Result.success, false),
+    name: "BuildAndTest",
+    children: configurations,
+  });
+
+  it("replaces a matrix with the stages it runs", () => {
+    const stages = expandMatrixStages([
+      stage(0, Result.success, false),
+      matrix(
+        configuration(
+          10,
+          "linux",
+          stage(11, Result.success, false),
+          stage(12, Result.success, false),
+        ),
+        configuration(
+          20,
+          "mac",
+          stage(21, Result.success, false),
+          stage(22, Result.success, false),
+        ),
+      ),
+      stage(2, Result.success, false),
+    ]);
+
+    expect(stages.map((s) => s.name)).toEqual([
+      "Stage 0",
+      "Build",
+      "Test",
+      "Stage 2",
+    ]);
+    expect(stages[1].children.map((s) => s.name)).toEqual([
+      "linux, chrome",
+      "mac, chrome",
+    ]);
+  });
+
+  it("takes the most noteworthy configuration's state and links to it", () => {
+    const [build, test] = expandMatrixStages([
+      matrix(
+        configuration(10, "linux", stage(11, Result.success, false), {
+          ...stage(12, Result.running, false),
+          totalDurationMillis: undefined,
+        }),
+        configuration(
+          20,
+          "mac",
+          stage(21, Result.failure, false),
+          stage(22, Result.skipped, false),
+        ),
+      ),
+    ]);
+
+    expect(build).toMatchObject({ state: Result.failure, id: 21 });
+    expect(test).toMatchObject({
+      state: Result.running,
+      id: 12,
+      totalDurationMillis: undefined,
+    });
+  });
+
+  it("leaves other parallel stages alone", () => {
+    const parallel: StageInfo = {
+      ...stage(1, Result.success, false),
+      children: [
+        { ...stage(2, Result.success, false), type: "PARALLEL" },
+        { ...stage(3, Result.success, false), type: "PARALLEL" },
+      ],
+    };
+
+    expect(expandMatrixStages([parallel])).toEqual([parallel]);
   });
 });
 

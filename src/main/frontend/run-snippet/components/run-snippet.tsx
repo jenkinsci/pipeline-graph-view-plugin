@@ -1,7 +1,14 @@
 import "./run-snippet.scss";
 
 import Tippy, { TippyProps } from "@tippyjs/react";
-import { RefObject, useLayoutEffect, useRef, useState } from "react";
+import {
+  ReactElement,
+  RefObject,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { DefaultDropdownProps } from "../../common/components/dropdown.tsx";
 import StatusIcon, {
@@ -14,7 +21,7 @@ import {
   Result,
   StageInfo,
 } from "../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
-import { collapseTopLevelStages } from "./utils.ts";
+import { collapseTopLevelStages, expandMatrixStages } from "./utils.ts";
 
 export default function RunSnippet({
   run,
@@ -24,10 +31,11 @@ export default function RunSnippet({
   currentRunPath: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const maxVisible = useFittingSlots(ref, run.stages);
-  const items = collapseTopLevelStages(run.stages, maxVisible);
-  const total = run.stages.length;
-  const started = run.stages.filter((stage) => !stage.skeleton).length;
+  const stages = useMemo(() => expandMatrixStages(run.stages), [run.stages]);
+  const maxVisible = useFittingSlots(ref, stages);
+  const items = collapseTopLevelStages(stages, maxVisible);
+  const total = stages.length;
+  const started = stages.filter((stage) => !stage.skeleton).length;
 
   return (
     <div>
@@ -41,57 +49,10 @@ export default function RunSnippet({
             );
 
             return (
-              <Tippy
+              <StagesDropdown
                 key={item.id}
-                {...DefaultDropdownProps}
-                trigger="mouseenter focus"
-                placement="top"
-                offset={[0, DROPDOWN_GAP_PX]}
-                // Always open upwards, scrolling if there isn't room, rather than flipping
-                popperOptions={{
-                  modifiers: [{ name: "flip", enabled: false }],
-                }}
-                onShow={fitAboveReference}
-                // Interactive tippies are put next to their reference by default, where the
-                // history column would clip them
-                appendTo={document.body}
-                content={
-                  <div className="jenkins-dropdown">
-                    {item.stages.map((stage) =>
-                      stage.skeleton ? (
-                        // Not started yet, so there's nothing to link to
-                        <button
-                          key={stage.id}
-                          type="button"
-                          className="jenkins-dropdown__item pgv-run-snippet__stage"
-                          disabled
-                        >
-                          <div className="jenkins-dropdown__item__icon">
-                            <StatusIcon status={stage.state} skeleton />
-                          </div>
-                          {stage.name}
-                        </button>
-                      ) : (
-                        <a
-                          key={stage.id}
-                          className="jenkins-dropdown__item pgv-run-snippet__stage"
-                          href={currentRunPath + stage.id}
-                        >
-                          <div className="jenkins-dropdown__item__icon">
-                            <StageStatusIcon stage={stage} />
-                          </div>
-                          {stage.name}
-                          <span className="jenkins-dropdown__item__badge pgv-run-snippet__duration">
-                            <LiveTotal
-                              total={stage.totalDurationMillis}
-                              start={stage.startTimeMillis}
-                            />
-                          </span>
-                        </a>
-                      ),
-                    )}
-                  </div>
-                }
+                stages={item.stages}
+                currentRunPath={currentRunPath}
               >
                 <button
                   type="button"
@@ -106,7 +67,7 @@ export default function RunSnippet({
                   )}
                   {item.hiddenCount}
                 </button>
-              </Tippy>
+              </StagesDropdown>
             );
           }
 
@@ -120,6 +81,22 @@ export default function RunSnippet({
                   <StatusIcon status={e.state} skeleton />
                 </span>
               </Tooltip>
+            );
+          }
+
+          // A matrix's stage, which lists how it went in each of the matrix's configurations
+          if (e.synthetic) {
+            return (
+              <StagesDropdown
+                key={e.id}
+                heading={e.name}
+                stages={e.children}
+                currentRunPath={currentRunPath}
+              >
+                <a href={currentRunPath + e.id}>
+                  <StageStatusIcon stage={e} />
+                </a>
+              </StagesDropdown>
             );
           }
 
@@ -154,6 +131,81 @@ export default function RunSnippet({
         {total} stage{total === 1 ? "" : "s"}
       </div>
     </div>
+  );
+}
+
+/**
+ * Lists the stages in a dropdown when hovering or focusing its child, linking to each one that's
+ * started.
+ */
+function StagesDropdown({
+  heading,
+  stages,
+  currentRunPath,
+  children,
+}: {
+  heading?: string;
+  stages: StageInfo[];
+  currentRunPath: string;
+  children: ReactElement;
+}) {
+  return (
+    <Tippy
+      {...DefaultDropdownProps}
+      trigger="mouseenter focus"
+      placement="top"
+      offset={[0, DROPDOWN_GAP_PX]}
+      // Always open upwards, scrolling if there isn't room, rather than flipping
+      popperOptions={{
+        modifiers: [{ name: "flip", enabled: false }],
+      }}
+      onShow={fitAboveReference}
+      // Interactive tippies are put next to their reference by default, where the
+      // history column would clip them
+      appendTo={document.body}
+      content={
+        <div className="jenkins-dropdown">
+          {heading && (
+            <div className="jenkins-dropdown__heading">{heading}</div>
+          )}
+          {stages.map((stage) =>
+            stage.skeleton ? (
+              // Not started yet, so there's nothing to link to
+              <button
+                key={stage.id}
+                type="button"
+                className="jenkins-dropdown__item pgv-run-snippet__stage"
+                disabled
+              >
+                <div className="jenkins-dropdown__item__icon">
+                  <StatusIcon status={stage.state} skeleton />
+                </div>
+                {stage.name}
+              </button>
+            ) : (
+              <a
+                key={stage.id}
+                className="jenkins-dropdown__item pgv-run-snippet__stage"
+                href={currentRunPath + stage.id}
+              >
+                <div className="jenkins-dropdown__item__icon">
+                  <StageStatusIcon stage={stage} />
+                </div>
+                {stage.name}
+                <span className="jenkins-dropdown__item__badge pgv-run-snippet__duration">
+                  <LiveTotal
+                    total={stage.totalDurationMillis}
+                    start={stage.startTimeMillis}
+                  />
+                </span>
+              </a>
+            ),
+          )}
+        </div>
+      }
+    >
+      {children}
+    </Tippy>
   );
 }
 

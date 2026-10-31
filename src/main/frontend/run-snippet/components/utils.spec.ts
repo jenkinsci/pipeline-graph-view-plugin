@@ -145,6 +145,64 @@ describe("expandMatrixStages", () => {
     });
   });
 
+  it("leaves stages without children alone", () => {
+    // The build history only sends children for a matrix
+    const { children: _, ...withoutChildren } = stage(0, Result.success, false);
+    const stages = [withoutChildren as StageInfo];
+
+    expect(expandMatrixStages(stages)).toEqual(stages);
+  });
+
+  it("doesn't let placeholders from the previous run speak for this one", () => {
+    const placeholder = {
+      ...stage(21, Result.failure, true),
+      startTimeMillis: 0,
+    };
+    const [build] = expandMatrixStages([
+      matrix(
+        configuration(
+          10,
+          "linux",
+          {
+            ...stage(11, Result.running, false),
+            startTimeMillis: 5000,
+            totalDurationMillis: undefined,
+          },
+          stage(12, Result.not_built, true),
+        ),
+        configuration(
+          20,
+          "mac",
+          placeholder,
+          stage(22, Result.not_built, true),
+        ),
+      ),
+    ]);
+
+    expect(build).toMatchObject({
+      state: Result.running,
+      id: 11,
+      startTimeMillis: 5000,
+      totalDurationMillis: undefined,
+      skeleton: false,
+    });
+  });
+
+  it("is a placeholder when no configuration has started", () => {
+    const [build] = expandMatrixStages([
+      matrix(
+        configuration(
+          10,
+          "linux",
+          stage(11, Result.success, true),
+          stage(12, Result.success, true),
+        ),
+      ),
+    ]);
+
+    expect(build.skeleton).toBe(true);
+  });
+
   it("leaves other parallel stages alone", () => {
     const parallel: StageInfo = {
       ...stage(1, Result.success, false),

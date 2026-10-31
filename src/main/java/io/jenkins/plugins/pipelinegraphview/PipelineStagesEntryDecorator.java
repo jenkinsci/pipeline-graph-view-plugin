@@ -33,6 +33,7 @@ import hudson.widgets.HistoryWidget;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStage;
+import java.util.List;
 import jenkins.model.HistoricalBuild;
 import jenkins.widgets.HistoryPageEntryDecorator;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -40,6 +41,7 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.node.ObjectNode;
@@ -81,13 +83,45 @@ public class PipelineStagesEntryDecorator extends HistoryPageEntryDecorator {
      * the stages still to come as placeholders.
      */
     static String toHistoryPageJson(PipelineGraph tree, @Nullable PipelineGraph previous) {
-        ObjectNode json = MAPPER.valueToTree(tree);
+        ObjectNode json = toHistoryPageNode(tree);
         if (previous != null) {
-            json.set("previousStages", MAPPER.<ObjectNode>valueToTree(previous).get("stages"));
+            json.set("previousStages", toHistoryPageNode(previous).get("stages"));
         }
         return MAPPER.writeValueAsString(json);
     }
 
-    @JsonIncludeProperties({"id", "name", "state", "startTimeMillis", "totalDurationMillis", "url"})
+    /**
+     * This is embedded in every build history entry, so a stage's children are only kept when the
+     * frontend needs them, which is to show a matrix as the stages it runs.
+     */
+    private static ObjectNode toHistoryPageNode(PipelineGraph tree) {
+        ObjectNode json = MAPPER.valueToTree(tree);
+        for (JsonNode stage : json.path("stages")) {
+            if (!isMatrix(stage)) {
+                ((ObjectNode) stage).remove(List.of("children", "type"));
+            }
+        }
+        return json;
+    }
+
+    /**
+     * Whether the stage is a declarative {@code matrix}, whose branches are named after their axis
+     * values, e.g. {@code Matrix - PLATFORM = 'linux', BROWSER = 'firefox'}.
+     */
+    private static boolean isMatrix(JsonNode stage) {
+        JsonNode children = stage.path("children");
+        if (children.isEmpty()) {
+            return false;
+        }
+        for (JsonNode branch : children) {
+            if (!"PARALLEL".equals(branch.path("type").asString())
+                    || !branch.path("name").asString().startsWith("Matrix - ")) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @JsonIncludeProperties({"id", "name", "state", "type", "children", "startTimeMillis", "totalDurationMillis", "url"})
     private abstract static class HistoryPagePipelineStageMixIn {}
 }

@@ -194,19 +194,28 @@ export function expandMatrixStages(stages: StageInfo[]): StageInfo[] {
       ),
     ];
 
+    // Nothing to show it as yet, such as when it hasn't reached its first stage
+    if (names.length === 0) {
+      return [stage];
+    }
+
     return names.map((name) => {
       const configurations = stage.children.flatMap((branch) =>
         branch.children
           .filter((s) => s.name === name)
           .map((s) => ({ ...s, name: matrixLabel(branch.name) })),
       );
-      const representative = [...configurations].sort(
+      // Placeholders only have the previous run's state and no start time, so they can't speak
+      // for this run unless none of its configurations have started
+      const started = configurations.filter((s) => !s.skeleton);
+      const current = started.length > 0 ? started : configurations;
+      const representative = [...current].sort(
         (a, b) => statePriority(a.state) - statePriority(b.state),
       )[0];
-      const start = Math.min(...configurations.map((s) => s.startTimeMillis));
-      const finished = configurations.every(
-        (s) => s.totalDurationMillis !== undefined,
-      );
+      const start = Math.min(...current.map((s) => s.startTimeMillis));
+      const finished =
+        started.length === configurations.length &&
+        current.every((s) => s.totalDurationMillis !== undefined);
       const previous = configurations
         .map((s) => s.previousTotalDurationMillis)
         .filter((ms) => ms !== undefined);
@@ -220,7 +229,7 @@ export function expandMatrixStages(stages: StageInfo[]): StageInfo[] {
         startTimeMillis: start,
         totalDurationMillis: finished
           ? Math.max(
-              ...configurations.map(
+              ...current.map(
                 (s) => s.startTimeMillis + (s.totalDurationMillis ?? 0),
               ),
             ) - start
@@ -228,7 +237,7 @@ export function expandMatrixStages(stages: StageInfo[]): StageInfo[] {
         previousTotalDurationMillis: previous.length
           ? Math.max(...previous)
           : undefined,
-        skeleton: configurations.every((s) => s.skeleton),
+        skeleton: started.length === 0,
       };
     });
   });
@@ -239,8 +248,9 @@ export function expandMatrixStages(stages: StageInfo[]): StageInfo[] {
  * e.g. "Matrix - PLATFORM = 'linux', BROWSER = 'firefox'".
  */
 function isMatrix(stage: StageInfo): boolean {
+  // The build history only sends children for a matrix
   return (
-    stage.children.length > 0 &&
+    stage.children?.length > 0 &&
     stage.children.every(
       (branch) =>
         branch.type === "PARALLEL" && branch.name.startsWith("Matrix - "),

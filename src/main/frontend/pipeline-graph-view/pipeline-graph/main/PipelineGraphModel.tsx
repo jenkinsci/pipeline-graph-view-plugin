@@ -194,6 +194,5 @@ export function isFlagEnabled(flag: string, defaultValue: boolean = false) {
   return defaultValue;
 }
 
-export const nestedLayout = () => isFlagEnabled("nestedLayout", true);
 // Optionally turn on debugging for the graph. Once the nested layout is stable, we could use a constant to let tree-shaking remove debug code in production bundles.
 export const debugPipelineGraph = () => isFlagEnabled("debugPipelineGraph");

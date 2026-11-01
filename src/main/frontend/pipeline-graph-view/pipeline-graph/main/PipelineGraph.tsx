@@ -14,16 +14,14 @@ import { Context as TransformContext } from "react-zoom-pan-pinch";
 
 import { I18NContext } from "../../../common/i18n/index.ts";
 import { useUserPreferences } from "../../../common/user/user-preferences-provider.tsx";
-import { nestedGraphLayout } from "./NestedPipelineGraphLayout.ts";
 import {
   DEFAULT_MAX_COLUMNS_WHEN_COLLAPSED,
-  layoutGraph,
-} from "./PipelineGraphLayout";
+  nestedGraphLayout,
+} from "./NestedPipelineGraphLayout.ts";
 import {
   debugPipelineGraph,
   defaultLayout,
   LayoutInfo,
-  nestedLayout,
   StageInfo,
 } from "./PipelineGraphModel.tsx";
 import { GraphConnections } from "./support/connections.tsx";
@@ -132,25 +130,13 @@ export function PipelineGraph({
     measuredWidth,
     measuredHeight,
   } = useMemo(() => {
-    if (nestedLayout()) {
-      return nestedGraphLayout(
-        currentRunPath,
-        stages,
-        fullLayout,
-        collapsed ?? false,
-        messages,
-        showNames || !collapsed,
-        showDurations,
-        maxColumnsWhenCollapsed,
-      );
-    }
-    return layoutGraph(
+    return nestedGraphLayout(
       currentRunPath,
       stages,
       fullLayout,
       collapsed ?? false,
       messages,
-      showNames,
+      showNames || !collapsed,
       showDurations,
       maxColumnsWhenCollapsed,
     );
@@ -370,7 +356,7 @@ export function PipelineGraph({
     overflow: "visible",
     boxSizing: "unset",
   };
-  if (debugPipelineGraph()) {
+  if (debugPipelineGraph) {
     outerDivStyle.border = "1px dashed red";
   }
 
@@ -386,7 +372,7 @@ export function PipelineGraph({
             isStageSelected={stageIsSelected}
           />
 
-          {debugPipelineGraph() &&
+          {debugPipelineGraph &&
             allNodes.map((node) => (
               <DebugOutline node={node} layout={fullLayout} key={node.id} />
             ))}

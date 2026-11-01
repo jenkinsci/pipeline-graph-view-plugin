@@ -88,10 +88,9 @@ export function nestedGraphLayout(
   const bigLabels = computeBigLabels(nodes, layout);
   const timings = computeTimingsLabels(nodes, layout);
 
-  const debug = debugPipelineGraph();
-  if (debug) printDebugInfo(stages, root, nodes, connections);
+  if (debugPipelineGraph) printDebugInfo(stages, root, nodes, connections);
   return {
-    nodes: debug ? nodes : visibleNodes,
+    nodes: debugPipelineGraph ? nodes : visibleNodes,
     allNodes: nodes,
     connections,
     smallLabels,

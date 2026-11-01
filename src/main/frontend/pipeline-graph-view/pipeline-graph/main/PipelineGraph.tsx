@@ -356,7 +356,7 @@ export function PipelineGraph({
     overflow: "visible",
     boxSizing: "unset",
   };
-  if (debugPipelineGraph()) {
+  if (debugPipelineGraph) {
     outerDivStyle.border = "1px dashed red";
   }
 
@@ -372,7 +372,7 @@ export function PipelineGraph({
             isStageSelected={stageIsSelected}
           />
 
-          {debugPipelineGraph() &&
+          {debugPipelineGraph &&
             allNodes.map((node) => (
               <DebugOutline node={node} layout={fullLayout} key={node.id} />
             ))}

@@ -1,0 +1,96 @@
+// Exercises collapsible console sections. Requires the AnsiColor and
+// Timestamper plugins; remove ansiColor/timestamps() to test without them.
+pipeline {
+    agent any
+    options { timestamps() }
+    stages {
+        stage('Markers') {
+            steps {
+                sh '''#!/bin/bash
+                    echo "before any section"
+                    echo "##[group]Short section"
+                    echo "one"
+                    echo "two"
+                    echo "##[endgroup]"
+
+                    echo "::group::Long section (starts collapsed)"
+                    for i in $(seq 1 40); do echo "long line $i"; done
+                    echo "::endgroup::"
+
+                    echo "##[group]"
+                    echo "untitled section"
+                    echo "##[endgroup]"
+
+                    echo "##[endgroup]"
+                    echo "after a stray endgroup"
+                '''
+            }
+        }
+        stage('Nested') {
+            steps {
+                sh '''#!/bin/bash
+                    echo "##[group]Outer"
+                    echo "outer line"
+                    echo "##[group]Inner"
+                    for i in $(seq 1 30); do echo "inner line $i"; done
+                    echo "##[endgroup]"
+                    echo "##[endgroup]"
+                '''
+            }
+        }
+        stage('Shell trace') {
+            steps {
+                sh '''
+                    set -x
+                    echo "##[group]Traced"
+                    echo "##[endgroup]"
+                '''
+            }
+        }
+        stage('Colours and HTML') {
+            steps {
+                ansiColor('xterm') {
+                    sh '''#!/bin/bash
+                        echo -e "\\033[32m##[group]Green title\\033[0m"
+                        echo "inside green"
+                        echo "##[endgroup]"
+                        echo "##[group]Escaped <b>not bold</b> & <img src=x onerror=alert(1)>"
+                        echo "inside escaped"
+                        echo "##[endgroup]"
+                    '''
+                }
+            }
+        }
+        stage('CRLF') {
+            steps {
+                sh '''#!/bin/bash
+                    printf '##[group]Windows line endings\\r\\n'
+                    printf 'crlf content\\r\\n'
+                    printf '##[endgroup]\\r\\n'
+                '''
+            }
+        }
+        stage('Streaming') {
+            steps {
+                sh '''#!/bin/bash
+                    echo "##[group]Slow section"
+                    for i in $(seq 1 15); do echo "tick $i"; sleep 1; done
+                    echo "##[endgroup]"
+                    echo "##[group]Never closed"
+                    echo "still open at the end"
+                '''
+            }
+        }
+        stage('Failure') {
+            steps {
+                sh '''#!/bin/bash
+                    echo "##[group]Failing tests"
+                    for i in $(seq 1 30); do echo "test $i ok"; done
+                    echo "test 31 FAILED"
+                    echo "##[endgroup]"
+                    exit 1
+                '''
+            }
+        }
+    }
+}

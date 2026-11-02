@@ -1,7 +1,17 @@
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import "./console-section.scss";
+
+import {
+  Fragment,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { BuildStep } from "../../../common/RestClient.tsx";
-import { ConsoleLine } from "./ConsoleLine.tsx";
+import { ConsoleSectionNodes } from "./ConsoleSection.tsx";
+import { ConsoleSectionParser } from "./parseConsoleSections.ts";
 import {
   POLL_INTERVAL,
   Result,
@@ -82,6 +92,13 @@ export default function ConsoleLogStream({
     }
     const element = document.getElementById(hash.slice(1));
     if (!element) return; // Try again the next time the log lines change.
+    for (
+      let section = element.closest("details");
+      section;
+      section = section.parentElement?.closest("details") ?? null
+    ) {
+      section.open = true;
+    }
     element.scrollIntoView({ behavior: "smooth", block: "center" });
 
     // Toggle hash to refresh the :target css matcher of the active line.
@@ -91,24 +108,52 @@ export default function ConsoleLogStream({
     setScrollToLogLine(false);
   }, [scrollToLogLine, stepId, logBuffer.lines]);
 
+  // update() mutates the parser but is idempotent for the same input, so
+  // repeated or discarded renders cannot corrupt its state.
+  const [sectionParser] = useState(() => new ConsoleSectionParser());
+  const logLineCount =
+    logBuffer.lines.length - (logBuffer.exceptionText?.length ?? 0);
+  // A last line without a trailing newline may still be extended by the next
+  // poll, so it is not parsed for markers until it is complete.
+  const stableCount =
+    logBuffer.stopTailing || logBuffer.hasTrailingNewLine
+      ? logLineCount
+      : Math.max(0, logLineCount - 1);
+  const sectionTree = useMemo(
+    () =>
+      sectionParser.update({
+        lines: logBuffer.lines,
+        startByte: logBuffer.startByte,
+        stableCount,
+        logLineCount,
+      }),
+    [
+      sectionParser,
+      logBuffer.lines,
+      logBuffer.startByte,
+      stableCount,
+      logLineCount,
+    ],
+  );
+
   return (
     <div
       role="log"
       ref={logRef}
       style={{ scrollMarginBlockEnd: "var(--section-padding)" }}
     >
-      {logBuffer.lines.map((content, index) => (
-        <ConsoleLine
-          key={index}
-          lineNumber={String(index)}
-          content={content}
+      {/* Line indices restart when the buffer is re-based, so remount. */}
+      <Fragment key={logBuffer.startByte}>
+        <ConsoleSectionNodes
+          nodes={sectionTree}
+          keepLastSectionOpen={stepState === Result.failure}
           stepId={stepId}
           startByte={logBuffer.startByte}
           stopTailingLogs={stopTailingLogs}
           currentRunPath={currentRunPath}
           buildStep={buildStep}
         />
-      ))}
+      </Fragment>
     </div>
   );
 }

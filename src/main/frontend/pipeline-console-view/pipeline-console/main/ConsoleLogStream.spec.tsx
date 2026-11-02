@@ -134,4 +134,29 @@ describe("ConsoleLogStream", () => {
     const open = [...container.querySelectorAll("details")].map((d) => d.open);
     expect(open).toEqual([false, true]);
   });
+
+  it.each([
+    ["start", 0],
+    ["end", 31],
+  ])("opens a collapsed section linked by its %s marker line", (_, line) => {
+    Element.prototype.scrollIntoView = vi.fn();
+    window.location.hash = `#log-2-${line}`;
+    try {
+      const { container } = render(
+        TestComponent({
+          ...DefaultTestProps,
+          logBuffer: {
+            lines: sectionLines,
+            startByte: 0,
+            endByte: 100,
+            stopTailing: true,
+          },
+        }),
+      );
+      expect(container.querySelector("details")!.open).toBe(true);
+      expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
+    } finally {
+      window.location.hash = "";
+    }
+  });
 });

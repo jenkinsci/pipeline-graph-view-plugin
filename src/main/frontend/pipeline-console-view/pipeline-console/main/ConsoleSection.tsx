@@ -61,7 +61,10 @@ export const ConsoleSection = memo(function ConsoleSection({
       open={initiallyOpen}
       className="pgv-console-section"
     >
+      {/* The marker lines are not rendered, so their line anchors live on the
+          summary and an empty element after the children. */}
       <summary
+        id={`log-${shared.stepId}-${group.startIndex}`}
         className="pgv-console-section__summary"
         onClick={() => {
           userToggled.current = true;
@@ -101,6 +104,9 @@ export const ConsoleSection = memo(function ConsoleSection({
         keepLastSectionOpen={keepOpen}
         {...shared}
       />
+      {group.endIndex !== -1 && (
+        <span id={`log-${shared.stepId}-${group.endIndex}`} />
+      )}
     </details>
   );
 });

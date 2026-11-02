@@ -300,16 +300,14 @@ describe("parseConsoleSections", () => {
       expect(group.children).toHaveLength(1);
     });
 
-    it("drops the timestamp text from the title but keeps its markup", () => {
+    it("drops the timestamp from the title", () => {
       const result = parseConsoleSections([
         '<span class="timestamp"><b>01:08:06</b> </span><span style="display: none">[2026-05-29T19:38:06.669Z]</span> ##[group]Compile',
         "x",
         "##[endgroup]",
       ]);
       const group = result[0] as ConsoleSectionGroup;
-      expect(group.title).toBe(
-        '<span class="timestamp"><b></b></span><span style="display: none"></span>Compile',
-      );
+      expect(group.title).toBe("Compile");
     });
 
     it("drops a plain-text timestamp from the title", () => {
@@ -319,6 +317,17 @@ describe("parseConsoleSections", () => {
         "##[endgroup]",
       ]);
       expect((result[0] as ConsoleSectionGroup).title).toBe("Compile");
+    });
+
+    it("keeps colour markup opened before the marker", () => {
+      const result = parseConsoleSections([
+        '<b>01:08:06</b> <span style="color: #00CD00;">##[group]Deps</span>',
+        "x",
+        "##[endgroup]",
+      ]);
+      expect((result[0] as ConsoleSectionGroup).title).toBe(
+        '<span style="color: #00CD00;">Deps</span>',
+      );
     });
 
     it("ignores a marker inside a tag attribute when building the title", () => {

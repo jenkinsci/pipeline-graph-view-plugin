@@ -1,5 +1,5 @@
-// Exercises collapsible console sections. Run it with and without the
-// AnsiColor and Timestamper plugins installed.
+// Exercises collapsible console sections. Requires the AnsiColor and
+// Timestamper plugins; remove ansiColor/timestamps() to test without them.
 pipeline {
     agent any
     options { timestamps() }

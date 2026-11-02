@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useLayoutEffect, useRef, useState } from "react";
 
 import {
   LocalizedMessageKey,
@@ -42,11 +42,14 @@ export const ConsoleSection = memo(function ConsoleSection({
   const [initiallyOpen] = useState(!collapse);
 
   // A section that finishes while it is being tailed collapses like one that
-  // was already finished on load, unless the user has toggled it.
-  useEffect(() => {
-    if (collapse && !userToggled.current && detailsRef.current) {
-      detailsRef.current.open = false;
-    }
+  // was already finished on load, unless the user has toggled it or it holds
+  // the deep-linked line. Running before the parent's scroll-to-tail layout
+  // effect keeps the height change from looking like a user scroll.
+  useLayoutEffect(() => {
+    const details = detailsRef.current;
+    if (!collapse || userToggled.current || !details) return;
+    if (details.querySelector(":target")) return;
+    details.open = false;
   }, [collapse]);
 
   return (

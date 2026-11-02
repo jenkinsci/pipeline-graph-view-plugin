@@ -36,9 +36,10 @@ sh '''
 
 - Sections with more than 25 lines start collapsed.
 - Sections with 25 or fewer lines start open.
-- Sections still being written (not yet closed) stay open.
+- Sections still being written (not yet closed) stay open, and collapse when they close with more than 25 lines unless you have expanded or collapsed them yourself.
 - Sections can be nested.
 - Collapsed sections still contain their lines, so browser find-in-page and links to a line open the section.
+- A marker must be the first text on its line, after an optional Timestamper timestamp in the default format.
 - Lines from `set -x` shell tracing (starting with `+ `) are never treated as markers.
 
 ## Colored titles (AnsiColor plugin)

@@ -82,13 +82,25 @@ function titleHtml(raw: string, visibleTitle: string): string {
     const marker = GROUP_MARKER_RE.exec(raw.slice(pos, end));
     if (marker) {
       const rest = raw.slice(pos + marker.index + marker[0].length);
-      return (styling + rest.trimStart()).trimEnd();
+      return (withoutEmptyElements(styling) + rest.trimStart()).trimEnd();
     }
     if (!token) break;
     styling += token[0];
     pos = end + token[0].length;
   }
   return visibleTitle.trim();
+}
+
+const EMPTY_ELEMENT_RE = /<([a-z]+)\b[^>]*>\s*<\/\1>/gi;
+
+/** Removes elements left empty once the timestamp text was dropped. */
+function withoutEmptyElements(html: string): string {
+  let previous;
+  do {
+    previous = html;
+    html = html.replace(EMPTY_ELEMENT_RE, "");
+  } while (html !== previous);
+  return html;
 }
 
 interface OpenGroup {
@@ -131,7 +143,8 @@ export class ConsoleSectionParser {
     logLineCount,
   }: SectionParseInput): ConsoleSectionNode[] {
     // The poller only appends to the buffer unless it re-bases it, which
-    // changes startByte.
+    // changes startByte. A render with older input than the last one (a
+    // discarded concurrent render) also starts over.
     if (startByte !== this.startByte || stableCount < this.parsed) {
       this.reset(startByte);
     }

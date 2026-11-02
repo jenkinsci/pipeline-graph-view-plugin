@@ -218,4 +218,27 @@ describe("ConsoleSection", () => {
     );
     expect(details.open).toBe(true);
   });
+
+  it("stays open when it holds the deep-linked line", () => {
+    window.location.hash = "#log-5-10";
+    try {
+      const streaming = group({
+        endIndex: -1,
+        lineCount: 30,
+        children: manyLines(30),
+      });
+      const { container, rerender } = render(
+        <ConsoleSection group={streaming} {...baseProps} />,
+      );
+      rerender(
+        <ConsoleSection
+          group={{ ...streaming, endIndex: 31 }}
+          {...baseProps}
+        />,
+      );
+      expect(container.querySelector("details")!.open).toBe(true);
+    } finally {
+      window.location.hash = "";
+    }
+  });
 });

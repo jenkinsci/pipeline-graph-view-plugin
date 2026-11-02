@@ -1,6 +1,6 @@
 /** * @vitest-environment jsdom */
 
-import { render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 
 import {
   ConsoleSection,
@@ -180,5 +180,42 @@ describe("ConsoleSection", () => {
       />,
     );
     expect(details.open).toBe(false);
+  });
+
+  it("collapses a long section when it finishes while tailing", () => {
+    const streaming = group({
+      endIndex: -1,
+      lineCount: 30,
+      children: manyLines(30),
+    });
+    const { container, rerender } = render(
+      <ConsoleSection group={streaming} {...baseProps} />,
+    );
+    const details = container.querySelector("details")!;
+    expect(details.open).toBe(true);
+
+    rerender(
+      <ConsoleSection group={{ ...streaming, endIndex: 31 }} {...baseProps} />,
+    );
+    expect(details.open).toBe(false);
+  });
+
+  it("stays open when the user toggled it before it finished", () => {
+    const streaming = group({
+      endIndex: -1,
+      lineCount: 30,
+      children: manyLines(30),
+    });
+    const { container, rerender } = render(
+      <ConsoleSection group={streaming} {...baseProps} />,
+    );
+    const details = container.querySelector("details")!;
+    fireEvent.click(details.querySelector("summary")!);
+    details.open = true;
+
+    rerender(
+      <ConsoleSection group={{ ...streaming, endIndex: 31 }} {...baseProps} />,
+    );
+    expect(details.open).toBe(true);
   });
 });

@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 
 import {
   LocalizedMessageKey,
@@ -33,15 +33,34 @@ export const ConsoleSection = memo(function ConsoleSection({
   ...shared
 }: ConsoleSectionProps) {
   const messages = useMessages();
+  const detailsRef = useRef<HTMLDetailsElement>(null);
+  const userToggled = useRef(false);
+  const collapse =
+    group.endIndex !== -1 && group.lineCount > COLLAPSE_THRESHOLD;
   // Only the initial value is applied; afterwards the browser owns the open
   // state, so find-in-page and deep links can expand the section natively.
-  const [initiallyOpen] = useState(
-    group.endIndex === -1 || group.lineCount <= COLLAPSE_THRESHOLD,
-  );
+  const [initiallyOpen] = useState(!collapse);
+
+  // A section that finishes while it is being tailed collapses like one that
+  // was already finished on load, unless the user has toggled it.
+  useEffect(() => {
+    if (collapse && !userToggled.current && detailsRef.current) {
+      detailsRef.current.open = false;
+    }
+  }, [collapse]);
 
   return (
-    <details open={initiallyOpen} className="pgv-console-section">
-      <summary className="pgv-console-section__summary">
+    <details
+      ref={detailsRef}
+      open={initiallyOpen}
+      className="pgv-console-section"
+    >
+      <summary
+        className="pgv-console-section__summary"
+        onClick={() => {
+          userToggled.current = true;
+        }}
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 512 512"
@@ -57,14 +76,14 @@ export const ConsoleSection = memo(function ConsoleSection({
             d="M184 112l144 144-144 144"
           />
         </svg>
-        <div className="pgv-console-section__title">
+        <span className="pgv-console-section__title">
           {group.title
             ? makeReactChildren(
                 tokenizeANSIString(sanitizeConsoleHtml(group.title)),
                 `section-title-${group.startIndex}`,
               )
             : messages.format(LocalizedMessageKey.consoleSectionUntitled)}
-        </div>
+        </span>
         <span className="pgv-console-section__count">
           {messages.format(LocalizedMessageKey.consoleSectionLines, {
             0: group.lineCount,

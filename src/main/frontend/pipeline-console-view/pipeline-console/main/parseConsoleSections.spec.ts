@@ -320,6 +320,17 @@ describe("parseConsoleSections", () => {
       ]);
       expect((result[0] as ConsoleSectionGroup).title).toBe("Compile");
     });
+
+    it("ignores a marker inside a tag attribute when building the title", () => {
+      const result = parseConsoleSections([
+        '<a href="http://x/::group::">::group::Title</a>',
+        "x",
+        "::endgroup::",
+      ]);
+      expect((result[0] as ConsoleSectionGroup).title).toBe(
+        '<a href="http://x/::group::">Title</a>',
+      );
+    });
   });
 
   describe("nesting", () => {

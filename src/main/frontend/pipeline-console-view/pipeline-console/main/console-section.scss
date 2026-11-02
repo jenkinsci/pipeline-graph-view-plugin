@@ -51,9 +51,13 @@
 }
 
 .pgv-console-section__title {
-  display: inline;
   font-weight: var(--font-bold-weight);
   color: var(--text-color);
+
+  // makeReactChildren wraps each text segment in a div.
+  div {
+    display: inline;
+  }
 }
 
 .pgv-console-section__count {

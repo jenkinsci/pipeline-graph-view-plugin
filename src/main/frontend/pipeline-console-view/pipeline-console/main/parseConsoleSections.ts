@@ -70,15 +70,25 @@ export function detectMarker(raw: string): Marker {
 /**
  * Detection guarantees that only markup and a Timestamper prefix precede the
  * marker. Keeping the markup (minus its text) preserves colours that were
- * opened before the marker, while dropping the timestamp text.
+ * opened before the marker, while dropping the timestamp text. The marker is
+ * only searched for in text runs so a marker inside an attribute is ignored.
  */
 function titleHtml(raw: string, visibleTitle: string): string {
   if (!visibleTitle.trim()) return "";
-  const marker = GROUP_MARKER_RE.exec(raw);
-  if (!marker) return visibleTitle.trim();
-  const styling = raw.slice(0, marker.index).match(TAG_OR_ANSI_RE) ?? [];
-  const rest = raw.slice(marker.index + marker[0].length).trimStart();
-  return (styling.join("") + rest).trimEnd();
+  let styling = "";
+  let pos = 0;
+  for (const token of [...raw.matchAll(TAG_OR_ANSI_RE), null]) {
+    const end = token ? token.index : raw.length;
+    const marker = GROUP_MARKER_RE.exec(raw.slice(pos, end));
+    if (marker) {
+      const rest = raw.slice(pos + marker.index + marker[0].length);
+      return (styling + rest.trimStart()).trimEnd();
+    }
+    if (!token) break;
+    styling += token[0];
+    pos = end + token[0].length;
+  }
+  return visibleTitle.trim();
 }
 
 interface OpenGroup {
@@ -113,7 +123,6 @@ export class ConsoleSectionParser {
   private stack: OpenGroup[] = [];
   private parsed = 0;
   private startByte = NaN;
-  private firstLine: string | undefined;
 
   update({
     lines,
@@ -121,14 +130,12 @@ export class ConsoleSectionParser {
     stableCount,
     logLineCount,
   }: SectionParseInput): ConsoleSectionNode[] {
-    if (
-      startByte !== this.startByte ||
-      stableCount < this.parsed ||
-      (this.parsed > 0 && lines[0] !== this.firstLine)
-    ) {
+    // The poller only appends to the buffer unless it re-bases it, which
+    // changes startByte.
+    if (startByte !== this.startByte || stableCount < this.parsed) {
       this.reset(startByte);
     }
-    this.firstLine = lines[0];
+    stableCount = Math.min(stableCount, lines.length);
 
     for (; this.parsed < stableCount; this.parsed++) {
       this.consume(this.parsed, lines[this.parsed]);

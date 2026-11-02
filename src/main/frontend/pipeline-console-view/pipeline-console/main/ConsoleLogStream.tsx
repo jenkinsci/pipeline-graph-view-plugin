@@ -1,6 +1,13 @@
 import "./console-section.scss";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  Fragment,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 
 import { BuildStep } from "../../../common/RestClient.tsx";
 import { ConsoleSectionNodeRenderer, nodeKey } from "./ConsoleSection.tsx";
@@ -101,6 +108,8 @@ export default function ConsoleLogStream({
     setScrollToLogLine(false);
   }, [scrollToLogLine, stepId, logBuffer.lines]);
 
+  // update() mutates the parser but is idempotent for the same input, so
+  // repeated or discarded renders cannot corrupt its state.
   const [sectionParser] = useState(() => new ConsoleSectionParser());
   const logLineCount =
     logBuffer.lines.length - (logBuffer.exceptionText?.length ?? 0);
@@ -133,17 +142,20 @@ export default function ConsoleLogStream({
       ref={logRef}
       style={{ scrollMarginBlockEnd: "var(--section-padding)" }}
     >
-      {sectionTree.map((node) => (
-        <ConsoleSectionNodeRenderer
-          key={nodeKey(node)}
-          node={node}
-          stepId={stepId}
-          startByte={logBuffer.startByte}
-          stopTailingLogs={stopTailingLogs}
-          currentRunPath={currentRunPath}
-          buildStep={buildStep}
-        />
-      ))}
+      {/* Line indices restart when the buffer is re-based, so remount. */}
+      <Fragment key={logBuffer.startByte}>
+        {sectionTree.map((node) => (
+          <ConsoleSectionNodeRenderer
+            key={nodeKey(node)}
+            node={node}
+            stepId={stepId}
+            startByte={logBuffer.startByte}
+            stopTailingLogs={stopTailingLogs}
+            currentRunPath={currentRunPath}
+            buildStep={buildStep}
+          />
+        ))}
+      </Fragment>
     </div>
   );
 }

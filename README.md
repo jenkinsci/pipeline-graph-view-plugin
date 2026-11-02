@@ -89,15 +89,6 @@ pipeline {
 
 The REST API documentation can be found [here](https://editor-next.swagger.io/?url=https://raw.githubusercontent.com/jenkinsci/pipeline-graph-view-plugin/refs/heads/main/openapi.yaml).
 
-## Extending the Plugin
-
-Plugin authors can contribute custom collapsible section rules via two extension points:
-
-- `ConsoleSectionRule` - regex-based, runs client-side. Good for simple delimited output (npm install, pip, Docker builds, etc.).
-- `ConsoleSectionAnnotator` - stateful, runs server-side line by line. Good for context-dependent grouping like stack traces or test suite blocks.
-
-See [extending-console-sections.md](docs/extending-console-sections.md) for examples of both.
-
 ## Contributing
 
 Refer to our [contribution guidelines](./CONTRIBUTING.md).

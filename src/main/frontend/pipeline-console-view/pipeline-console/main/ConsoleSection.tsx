@@ -1,5 +1,9 @@
 import { memo, useState } from "react";
 
+import {
+  LocalizedMessageKey,
+  useMessages,
+} from "../../../common/i18n/index.ts";
 import { BuildStep } from "../../../common/RestClient.tsx";
 import { makeReactChildren, tokenizeANSIString } from "./Ansi.tsx";
 import { ConsoleLine } from "./ConsoleLine.tsx";
@@ -7,12 +11,12 @@ import {
   ConsoleSectionGroup,
   ConsoleSectionNode,
 } from "./parseConsoleSections.ts";
+import { sanitizeConsoleHtml } from "./sanitizeConsoleHtml.ts";
 
-/** Sections with more children than this default to collapsed. */
+/** Closed sections with more lines than this start collapsed. */
 const COLLAPSE_THRESHOLD = 25;
 
-export interface ConsoleSectionProps {
-  group: ConsoleSectionGroup;
+interface SharedProps {
   stepId: string;
   startByte: number;
   stopTailingLogs: () => void;
@@ -20,43 +24,29 @@ export interface ConsoleSectionProps {
   buildStep?: BuildStep;
 }
 
+export interface ConsoleSectionProps extends SharedProps {
+  group: ConsoleSectionGroup;
+}
+
 export const ConsoleSection = memo(function ConsoleSection({
   group,
-  stepId,
-  startByte,
-  stopTailingLogs,
-  currentRunPath,
-  buildStep,
+  ...shared
 }: ConsoleSectionProps) {
-  // Unclosed groups (still streaming) default to open.
-  // Closed groups with many children default to collapsed.
-  const [open, setOpen] = useState(
-    group.endIndex === -1 || group.children.length <= COLLAPSE_THRESHOLD,
+  const messages = useMessages();
+  // Only the initial value is applied; afterwards the browser owns the open
+  // state, so find-in-page and deep links can expand the section natively.
+  const [initiallyOpen] = useState(
+    group.endIndex === -1 || group.lineCount <= COLLAPSE_THRESHOLD,
   );
 
   return (
-    <details
-      open={open}
-      onToggle={(e) => {
-        e.stopPropagation();
-        const isOpen = (e.target as HTMLDetailsElement).open;
-        if (isOpen !== open) {
-          setOpen(isOpen);
-        }
-      }}
-      className="pgv-console-section"
-    >
-      <summary
-        className="pgv-console-section__summary"
-        onClick={(e) => {
-          e.preventDefault();
-          setOpen((prev) => !prev);
-        }}
-      >
+    <details open={initiallyOpen} className="pgv-console-section">
+      <summary className="pgv-console-section__summary">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 512 512"
           className="pgv-console-section__chevron"
+          aria-hidden="true"
         >
           <path
             fill="none"
@@ -68,82 +58,53 @@ export const ConsoleSection = memo(function ConsoleSection({
           />
         </svg>
         <div className="pgv-console-section__title">
-          {makeReactChildren(
-            tokenizeANSIString(group.title),
-            `section-title-${group.startIndex}`,
-          )}
+          {group.title
+            ? makeReactChildren(
+                tokenizeANSIString(sanitizeConsoleHtml(group.title)),
+                `section-title-${group.startIndex}`,
+              )
+            : messages.format(LocalizedMessageKey.consoleSectionUntitled)}
         </div>
         <span className="pgv-console-section__count">
-          {group.children.length}{" "}
-          {group.children.length === 1 ? "line" : "lines"}
+          {messages.format(LocalizedMessageKey.consoleSectionLines, {
+            0: group.lineCount,
+          })}
         </span>
       </summary>
-      {open && (
-        <div className="pgv-console-section__body">
-          {group.children.map((node) => (
-            <ConsoleSectionNodeRenderer
-              key={nodeKey(node)}
-              node={node}
-              stepId={stepId}
-              startByte={startByte}
-              stopTailingLogs={stopTailingLogs}
-              currentRunPath={currentRunPath}
-              buildStep={buildStep}
-            />
-          ))}
-        </div>
-      )}
+      {group.children.map((node) => (
+        <ConsoleSectionNodeRenderer
+          key={nodeKey(node)}
+          node={node}
+          {...shared}
+        />
+      ))}
     </details>
   );
 });
 
-export interface ConsoleSectionNodeRendererProps {
+export interface ConsoleSectionNodeRendererProps extends SharedProps {
   node: ConsoleSectionNode;
-  stepId: string;
-  startByte: number;
-  stopTailingLogs: () => void;
-  currentRunPath: string;
-  buildStep?: BuildStep;
 }
 
 export const ConsoleSectionNodeRenderer = memo(
   function ConsoleSectionNodeRenderer({
     node,
-    stepId,
-    startByte,
-    stopTailingLogs,
-    currentRunPath,
-    buildStep,
+    ...shared
   }: ConsoleSectionNodeRendererProps) {
     if (node.kind === "line") {
       return (
         <ConsoleLine
-          key={`line-${node.index}`}
           lineNumber={String(node.index)}
           content={node.content}
-          stepId={stepId}
-          startByte={startByte}
-          stopTailingLogs={stopTailingLogs}
-          currentRunPath={currentRunPath}
-          buildStep={buildStep}
+          {...shared}
         />
       );
     }
-    return (
-      <ConsoleSection
-        key={`section-${node.startIndex}`}
-        group={node}
-        stepId={stepId}
-        startByte={startByte}
-        stopTailingLogs={stopTailingLogs}
-        currentRunPath={currentRunPath}
-        buildStep={buildStep}
-      />
-    );
+    return <ConsoleSection group={node} {...shared} />;
   },
 );
 
-function nodeKey(node: ConsoleSectionNode): string {
+export function nodeKey(node: ConsoleSectionNode): string {
   return node.kind === "line"
     ? `line-${node.index}`
     : `section-${node.startIndex}`;

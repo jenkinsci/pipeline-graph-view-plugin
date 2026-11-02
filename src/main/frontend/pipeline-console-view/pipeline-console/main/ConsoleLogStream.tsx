@@ -2,20 +2,9 @@ import "./console-section.scss";
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
-import {
-  BuildStep,
-  ConsoleSectionBoundary,
-  getConsoleSectionBoundaries,
-  getConsoleSectionRules,
-} from "../../../common/RestClient.tsx";
-import { ConsoleSectionNodeRenderer } from "./ConsoleSection.tsx";
-import {
-  applyAnnotatorBoundaries,
-  applyRulesToSections,
-  CompiledSectionRule,
-  compileSectionRules,
-  parseConsoleSections,
-} from "./parseConsoleSections.ts";
+import { BuildStep } from "../../../common/RestClient.tsx";
+import { ConsoleSectionNodeRenderer, nodeKey } from "./ConsoleSection.tsx";
+import { ConsoleSectionParser } from "./parseConsoleSections.ts";
 import {
   POLL_INTERVAL,
   Result,
@@ -96,6 +85,13 @@ export default function ConsoleLogStream({
     }
     const element = document.getElementById(hash.slice(1));
     if (!element) return; // Try again the next time the log lines change.
+    for (
+      let section = element.closest("details");
+      section;
+      section = section.parentElement?.closest("details") ?? null
+    ) {
+      section.open = true;
+    }
     element.scrollIntoView({ behavior: "smooth", block: "center" });
 
     // Toggle hash to refresh the :target css matcher of the active line.
@@ -105,49 +101,30 @@ export default function ConsoleLogStream({
     setScrollToLogLine(false);
   }, [scrollToLogLine, stepId, logBuffer.lines]);
 
-  const [sectionRules, setSectionRules] = useState<CompiledSectionRule[]>([]);
-  useEffect(() => {
-    let cancelled = false;
-    getConsoleSectionRules(currentRunPath)
-      .then((data) => {
-        if (!cancelled) {
-          setSectionRules(compileSectionRules(data));
-        }
-        return data;
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [currentRunPath]);
-
-  const [boundaries, setBoundaries] = useState<ConsoleSectionBoundary[]>([]);
-  const logComplete = logBuffer.stopTailing ?? false;
-  useEffect(() => {
-    let cancelled = false;
-    getConsoleSectionBoundaries(currentRunPath, stepId)
-      .then((data) => {
-        if (!cancelled) {
-          setBoundaries(data);
-        }
-        return data;
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [currentRunPath, stepId, logComplete]);
-
+  const [sectionParser] = useState(() => new ConsoleSectionParser());
+  const logLineCount =
+    logBuffer.lines.length - (logBuffer.exceptionText?.length ?? 0);
+  // A last line without a trailing newline may still be extended by the next
+  // poll, so it is not parsed for markers until it is complete.
+  const stableCount =
+    logBuffer.stopTailing || logBuffer.hasTrailingNewLine
+      ? logLineCount
+      : Math.max(0, logLineCount - 1);
   const sectionTree = useMemo(
     () =>
-      applyAnnotatorBoundaries(
-        applyRulesToSections(
-          parseConsoleSections(logBuffer.lines),
-          sectionRules,
-        ),
-        boundaries,
-      ),
-    [logBuffer.lines, sectionRules, boundaries],
+      sectionParser.update({
+        lines: logBuffer.lines,
+        startByte: logBuffer.startByte,
+        stableCount,
+        logLineCount,
+      }),
+    [
+      sectionParser,
+      logBuffer.lines,
+      logBuffer.startByte,
+      stableCount,
+      logLineCount,
+    ],
   );
 
   return (
@@ -158,11 +135,7 @@ export default function ConsoleLogStream({
     >
       {sectionTree.map((node) => (
         <ConsoleSectionNodeRenderer
-          key={
-            node.kind === "line"
-              ? `line-${node.index}`
-              : `section-${node.startIndex}`
-          }
+          key={nodeKey(node)}
           node={node}
           stepId={stepId}
           startByte={logBuffer.startByte}

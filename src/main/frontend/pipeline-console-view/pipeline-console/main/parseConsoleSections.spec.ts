@@ -1,16 +1,12 @@
 /** * @vitest-environment jsdom */
 
 import {
-  applyAnnotatorBoundaries,
-  applyRulesToSections,
-  compileSectionRules,
   ConsoleSectionGroup,
+  ConsoleSectionParser,
   parseConsoleSections,
 } from "./parseConsoleSections.ts";
 
 describe("parseConsoleSections", () => {
-  // --- Phase 1: flat pass-through (no markers) ---
-
   it("returns empty array for empty input", () => {
     const result = parseConsoleSections([]);
     expect(result).toEqual([]);
@@ -48,8 +44,6 @@ describe("parseConsoleSections", () => {
     });
   });
 
-  // --- Phase 2: marker detection ---
-
   describe("Azure DevOps syntax (##[group]/##[endgroup])", () => {
     it("creates a group from ##[group] and ##[endgroup]", () => {
       const lines = [
@@ -83,11 +77,19 @@ describe("parseConsoleSections", () => {
       });
     });
 
-    it("uses 'Section' as default title when none provided", () => {
+    it("leaves the title empty when none provided", () => {
       const lines = ["##[group]", "inside", "##[endgroup]"];
       const result = parseConsoleSections(lines);
       const group = result[0] as ConsoleSectionGroup;
-      expect(group.title).toBe("Section");
+      expect(group.title).toBe("");
+    });
+
+    it("detects markers in CRLF output", () => {
+      const lines = ["##[group]Build\r", "inside\r", "##[endgroup]\r"];
+      const group = parseConsoleSections(lines)[0] as ConsoleSectionGroup;
+      expect(group.kind).toBe("group");
+      expect(group.title).toBe("Build");
+      expect(group.endIndex).toBe(2);
     });
 
     it("trims trailing whitespace in title", () => {
@@ -297,6 +299,27 @@ describe("parseConsoleSections", () => {
       expect(group.kind).toBe("group");
       expect(group.children).toHaveLength(1);
     });
+
+    it("drops the timestamp text from the title but keeps its markup", () => {
+      const result = parseConsoleSections([
+        '<span class="timestamp"><b>01:08:06</b> </span><span style="display: none">[2026-05-29T19:38:06.669Z]</span> ##[group]Compile',
+        "x",
+        "##[endgroup]",
+      ]);
+      const group = result[0] as ConsoleSectionGroup;
+      expect(group.title).toBe(
+        '<span class="timestamp"><b></b></span><span style="display: none"></span>Compile',
+      );
+    });
+
+    it("drops a plain-text timestamp from the title", () => {
+      const result = parseConsoleSections([
+        "11:18:37 ##[group]Compile",
+        "x",
+        "##[endgroup]",
+      ]);
+      expect((result[0] as ConsoleSectionGroup).title).toBe("Compile");
+    });
   });
 
   describe("nesting", () => {
@@ -409,7 +432,7 @@ describe("parseConsoleSections", () => {
     });
   });
 
-  describe("no-marker regression (Phase 1 compat)", () => {
+  describe("without markers", () => {
     it("returns flat lines when no markers are present", () => {
       const lines = ["hello", "world", "foo"];
       const result = parseConsoleSections(lines);
@@ -419,235 +442,104 @@ describe("parseConsoleSections", () => {
   });
 });
 
-describe("compileSectionRules", () => {
-  it("compiles valid rules", () => {
-    const rules = compileSectionRules([
-      {
-        id: "test",
-        displayName: "Test",
-        startPattern: "^start$",
-        endPattern: "^end$",
-      },
-    ]);
-    expect(rules).toHaveLength(1);
-    expect(rules[0].startPattern.test("start")).toBe(true);
-    expect(rules[0].endPattern.test("end")).toBe(true);
-  });
-
-  it("skips rules with invalid regex", () => {
-    const rules = compileSectionRules([
-      {
-        id: "bad",
-        displayName: "Bad",
-        startPattern: "^valid$",
-        endPattern: "[invalid",
-      },
-      {
-        id: "good",
-        displayName: "Good",
-        startPattern: "^start$",
-        endPattern: "^end$",
-      },
-    ]);
-    expect(rules).toHaveLength(1);
-    expect(rules[0].id).toBe("good");
-  });
-
-  it("returns empty for empty input", () => {
-    expect(compileSectionRules([])).toEqual([]);
+describe("line counts", () => {
+  it("counts lines in nested groups", () => {
+    const lines = [
+      "##[group]Outer",
+      "a",
+      "##[group]Inner",
+      "b",
+      "c",
+      "##[endgroup]",
+      "##[endgroup]",
+    ];
+    const outer = parseConsoleSections(lines)[0] as ConsoleSectionGroup;
+    expect(outer.lineCount).toBe(3);
+    expect((outer.children[1] as ConsoleSectionGroup).lineCount).toBe(2);
   });
 });
 
-describe("applyRulesToSections", () => {
-  const mavenRules = compileSectionRules([
-    {
-      id: "maven",
-      displayName: "Maven Phase",
-      startPattern: "^\\[INFO\\] --- (.+) ---$",
-      endPattern: "^\\[INFO\\] --- .+ ---|^\\[INFO\\] -+$",
-    },
-  ]);
+describe("ConsoleSectionParser", () => {
+  const update = (
+    parser: ConsoleSectionParser,
+    lines: string[],
+    opts: Partial<{
+      startByte: number;
+      stableCount: number;
+      logLineCount: number;
+    }> = {},
+  ) =>
+    parser.update({
+      lines,
+      startByte: opts.startByte ?? 0,
+      stableCount: opts.stableCount ?? lines.length,
+      logLineCount: opts.logLineCount ?? lines.length,
+    });
 
-  it("creates a group from matching start/end lines", () => {
+  it("produces the same tree incrementally as in one pass", () => {
     const lines = [
-      "[INFO] --- maven-compiler-plugin:3.8.1:compile (default) ---",
-      "[INFO] Compiling 5 source files",
-      "[INFO] All files up to date",
-      "[INFO] -------------------------------------------------------",
+      "before",
+      "##[group]A",
+      "a1",
+      "##[group]B",
+      "b1",
+      "##[endgroup]",
+      "a2",
+      "##[endgroup]",
+      "after",
     ];
-    const flat = parseConsoleSections(lines);
-    const result = applyRulesToSections(flat, mavenRules);
+    const parser = new ConsoleSectionParser();
+    let result;
+    for (let n = 1; n <= lines.length; n++) {
+      result = update(parser, lines.slice(0, n));
+    }
+    expect(result).toEqual(parseConsoleSections(lines));
+  });
+
+  it("keeps the identity of closed groups and stable lines", () => {
+    const parser = new ConsoleSectionParser();
+    const lines = ["first", "##[group]A", "a", "##[endgroup]", "##[group]B"];
+    const before = update(parser, lines);
+    const after = update(parser, [...lines, "b"]);
+    expect(after[0]).toBe(before[0]);
+    expect(after[1]).toBe(before[1]);
+    expect(after[2]).not.toBe(before[2]);
+    expect((after[2] as ConsoleSectionGroup).children).toHaveLength(1);
+  });
+
+  it("does not parse a pending partial line as a marker", () => {
+    const parser = new ConsoleSectionParser();
+    const pending = update(parser, ["x", "##[gro"], { stableCount: 1 });
+    expect(pending.map((n) => n.kind)).toEqual(["line", "line"]);
+
+    const completed = update(parser, ["x", "##[group]Build", "y"], {
+      stableCount: 3,
+    });
+    expect(completed.map((n) => n.kind)).toEqual(["line", "group"]);
+  });
+
+  it("places pending lines in the open group and trailing lines at the root", () => {
+    const parser = new ConsoleSectionParser();
+    const result = update(parser, ["##[group]A", "partial", "exception"], {
+      stableCount: 1,
+      logLineCount: 2,
+    });
     expect(result).toHaveLength(2);
     const group = result[0] as ConsoleSectionGroup;
-    expect(group.kind).toBe("group");
-    expect(group.title).toBe("maven-compiler-plugin:3.8.1:compile (default)");
-    expect(group.children).toHaveLength(2);
-    // The end line is not inside the group.
-    expect(result[1]).toMatchObject({ kind: "line", index: 3 });
+    expect(group.children).toEqual([
+      { kind: "line", index: 1, content: "partial" },
+    ]);
+    expect(group.lineCount).toBe(1);
+    expect(result[1]).toEqual({ kind: "line", index: 2, content: "exception" });
   });
 
-  it("chains sequential groups when end line matches new start", () => {
-    const lines = [
-      "[INFO] --- maven-compiler-plugin:3.8.1:compile ---",
-      "compiling...",
-      "[INFO] --- maven-surefire-plugin:2.22:test ---",
-      "testing...",
-      "[INFO] -------------------------------------------------------",
-    ];
-    const flat = parseConsoleSections(lines);
-    const result = applyRulesToSections(flat, mavenRules);
-    expect(result).toHaveLength(3);
-    expect((result[0] as ConsoleSectionGroup).title).toBe(
-      "maven-compiler-plugin:3.8.1:compile",
-    );
-    expect((result[0] as ConsoleSectionGroup).children).toHaveLength(1);
-    expect((result[1] as ConsoleSectionGroup).title).toBe(
-      "maven-surefire-plugin:2.22:test",
-    );
-    expect((result[1] as ConsoleSectionGroup).children).toHaveLength(1);
-  });
-
-  it("passes through marker-based groups unchanged", () => {
-    const lines = [
-      "##[group]Custom",
-      "inside custom",
-      "##[endgroup]",
-      "[INFO] --- maven-compiler-plugin:3.8.1:compile ---",
-      "compiling",
-      "[INFO] -------------------------------------------------------",
-    ];
-    const markerParsed = parseConsoleSections(lines);
-    const result = applyRulesToSections(markerParsed, mavenRules);
-    // First is the marker group, second is the maven rule group, third is the end line.
-    expect(result).toHaveLength(3);
-    expect((result[0] as ConsoleSectionGroup).title).toBe("Custom");
-    expect((result[1] as ConsoleSectionGroup).title).toBe(
-      "maven-compiler-plugin:3.8.1:compile",
-    );
-  });
-
-  it("returns nodes unchanged when no rules provided", () => {
-    const lines = ["a", "b", "c"];
-    const flat = parseConsoleSections(lines);
-    const result = applyRulesToSections(flat, []);
-    expect(result).toEqual(flat);
-  });
-
-  it("leaves unclosed rule group with endIndex -1", () => {
-    const lines = [
-      "[INFO] --- maven-compiler-plugin:3.8.1:compile ---",
-      "still compiling...",
-    ];
-    const flat = parseConsoleSections(lines);
-    const result = applyRulesToSections(flat, mavenRules);
+  it("re-parses from scratch when the buffer is re-based", () => {
+    const parser = new ConsoleSectionParser();
+    update(parser, ["a", "##[endgroup]"], { startByte: 100 });
+    const result = update(parser, ["##[group]Older", "a", "##[endgroup]"], {
+      startByte: 0,
+    });
     expect(result).toHaveLength(1);
-    const group = result[0] as ConsoleSectionGroup;
-    expect(group.endIndex).toBe(-1);
-    expect(group.children).toHaveLength(1);
-  });
-
-  it("uses displayName as fallback when no capture group", () => {
-    const noCapture = compileSectionRules([
-      {
-        id: "tf",
-        displayName: "Terraform Plan",
-        startPattern: "^Terraform will perform",
-        endPattern: "^Plan: ",
-      },
-    ]);
-    const lines = [
-      "Terraform will perform the following actions:",
-      "  + resource",
-      "Plan: 1 to add",
-    ];
-    const flat = parseConsoleSections(lines);
-    const result = applyRulesToSections(flat, noCapture);
-    expect((result[0] as ConsoleSectionGroup).title).toBe("Terraform Plan");
-  });
-});
-
-describe("applyAnnotatorBoundaries", () => {
-  it("returns nodes unchanged when boundaries is empty", () => {
-    const lines = ["a", "b", "c"];
-    const flat = parseConsoleSections(lines);
-    const result = applyAnnotatorBoundaries(flat, []);
-    expect(result).toEqual(flat);
-  });
-
-  it("groups lines between START and END boundaries", () => {
-    const lines = ["line 0", "line 1", "line 2", "line 3", "line 4"];
-    const flat = parseConsoleSections(lines);
-    const result = applyAnnotatorBoundaries(flat, [
-      { lineIndex: 1, type: "START", title: "Group A" },
-      { lineIndex: 3, type: "END" },
-    ]);
-
-    // START (line 1) and END (line 3) are consumed; line 2 is a child.
-    expect(result).toHaveLength(3);
-    expect(result[0]).toMatchObject({ kind: "line", index: 0 });
-
-    const group = result[1] as ConsoleSectionGroup;
-    expect(group.kind).toBe("group");
-    expect(group.title).toBe("Group A");
-    expect(group.startIndex).toBe(1);
-    expect(group.endIndex).toBe(3);
-    expect(group.children).toHaveLength(1);
-    expect(group.children[0]).toMatchObject({ kind: "line", index: 2 });
-
-    expect(result[2]).toMatchObject({ kind: "line", index: 4 });
-  });
-
-  it("auto-closes unclosed annotator group", () => {
-    const lines = ["line 0", "line 1", "line 2"];
-    const flat = parseConsoleSections(lines);
-    const result = applyAnnotatorBoundaries(flat, [
-      { lineIndex: 1, type: "START", title: "Open" },
-    ]);
-
-    expect(result).toHaveLength(2);
-    expect(result[0]).toMatchObject({ kind: "line", index: 0 });
-
-    const group = result[1] as ConsoleSectionGroup;
-    expect(group.kind).toBe("group");
-    expect(group.title).toBe("Open");
-    expect(group.endIndex).toBe(-1);
-    expect(group.children).toHaveLength(1);
-    expect(group.children[0]).toMatchObject({ kind: "line", index: 2 });
-  });
-
-  it("passes existing marker groups through unchanged", () => {
-    const lines = [
-      "line 0",
-      "##[group]Build",
-      "compiling",
-      "##[endgroup]",
-      "line 4",
-    ];
-    const parsed = parseConsoleSections(lines);
-    const result = applyAnnotatorBoundaries(parsed, [
-      { lineIndex: 0, type: "START", title: "Outer" },
-      { lineIndex: 4, type: "END" },
-    ]);
-
-    // Both START and END boundary lines are consumed (not shown).
-    expect(result).toHaveLength(1);
-    const outer = result[0] as ConsoleSectionGroup;
-    expect(outer.title).toBe("Outer");
-    expect(outer.endIndex).toBe(4);
-    // The marker group should be nested inside the annotator group
-    const markerGroup = outer.children.find((c) => c.kind === "group");
-    expect(markerGroup).toBeDefined();
-    expect((markerGroup as ConsoleSectionGroup).title).toBe("Build");
-  });
-
-  it("uses default title when title is missing", () => {
-    const lines = ["line 0", "line 1"];
-    const flat = parseConsoleSections(lines);
-    const result = applyAnnotatorBoundaries(flat, [
-      { lineIndex: 0, type: "START" },
-    ]);
-
-    const group = result[0] as ConsoleSectionGroup;
-    expect(group.title).toBe("Section");
+    expect((result[0] as ConsoleSectionGroup).title).toBe("Older");
   });
 });

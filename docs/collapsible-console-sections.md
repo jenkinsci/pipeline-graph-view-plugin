@@ -38,6 +38,7 @@ sh '''
 - Sections with 25 or fewer lines start open.
 - Sections still being written (not yet closed) stay open.
 - Sections can be nested.
+- Collapsed sections still contain their lines, so browser find-in-page and links to a line open the section.
 - Lines from `set -x` shell tracing (starting with `+ `) are never treated as markers.
 
 ## Colored titles (AnsiColor plugin)

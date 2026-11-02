@@ -1,328 +1,238 @@
 /**
- * Console section parser.
+ * Groups console lines into collapsible sections delimited by
+ * `##[group]Title` / `##[endgroup]` (Azure DevOps) or
+ * `::group::Title` / `::endgroup::` (GitHub Actions) markers.
  *
- * Detects collapsible section markers in console output:
- * - Azure DevOps / GitHub Actions style: ##[group]Title / ##[endgroup]
- * - GitHub Actions style alias: ::group::Title / ::endgroup::
- *
- * Lines between markers are grouped into ConsoleSectionGroup nodes.
- * Unmatched lines remain flat ConsoleSectionLine nodes.
- * Nesting is supported (groups can contain groups).
- * Unclosed groups auto-close at end of input (endIndex = -1).
+ * Lines are the HTML produced by `progressiveHtml`, so markers may be wrapped
+ * in AnsiColor `<span>`s, raw ANSI escapes or a Timestamper prefix.
  */
 
 export interface ConsoleSectionLine {
   kind: "line";
-  /** Original 0-based index into the raw lines array. */
+  /** 0-based index into the log buffer's lines. */
   index: number;
   content: string;
 }
 
 export interface ConsoleSectionGroup {
   kind: "group";
+  /** Title HTML (unsanitized), or "" when the marker had no title. */
   title: string;
   /** Index of the marker line that opened this group. */
   startIndex: number;
-  /** Index of the marker line that closed this group, or -1 if unclosed. */
+  /** Index of the marker line that closed this group, or -1 if still open. */
   endIndex: number;
+  /** Number of log lines in this group, including nested groups. */
+  lineCount: number;
   children: ConsoleSectionNode[];
 }
 
 export type ConsoleSectionNode = ConsoleSectionLine | ConsoleSectionGroup;
 
-// ANSI escape sequence pattern for stripping before marker detection.
 // eslint-disable-next-line no-control-regex
 const ANSI_RE = /\x1b\[[0-9;]*[a-zA-Z]/g;
-
-// HTML tag pattern for stripping before marker detection.
-// progressiveHtml returns HTML; AnsiColor plugin wraps ANSI codes in <span> tags.
 const HTML_TAG_RE = /<[^>]*>/g;
+// eslint-disable-next-line no-control-regex
+const TAG_OR_ANSI_RE = /<[^>]*>|\x1b\[[0-9;]*[a-zA-Z]/g;
 
-// Timestamp prefix pattern for the Timestamper plugin.
-// After HTML tags are stripped, timestamps remain as plain text. The plugin
-// emits BOTH a visible clock time AND a hidden ISO timestamp per line:
-//   "<b>01:08:06</b> <span style="display:none">[2026-05-29T19:38:06.669Z]</span> "
-// After HTML stripping: "01:08:06 [2026-05-29T19:38:06.669Z] "
-// The trailing + allows matching multiple consecutive timestamp prefixes.
+// Timestamper renders a visible clock time and a hidden ISO timestamp, which
+// after tag stripping read as "01:08:06 [2026-05-29T19:38:06.669Z] ".
 const TIMESTAMP_PREFIX_RE =
   /^(?:\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?[A-Z]*[+-]?\d{0,4}\]\s+|(?:\d{4}[-/]\d{2}[-/]\d{2}\s+)?\d{1,2}:\d{2}(?::\d{2})?(?:\.\d+)?\s+)+/;
 
-// Start markers: ##[group]Title or ::group::Title
-const GROUP_START_RE = /^(?:##\[group\]|::group::)\s*(.*)$/;
-
-// End markers: ##[endgroup] or ::endgroup::
-const GROUP_END_RE = /^(?:##\[endgroup\]|::endgroup::)\s*$/;
-
-/**
- * Strip ANSI escape codes, HTML tags, and leading whitespace from a line
- * for marker detection purposes. The original content is preserved
- * in the output nodes.
- */
-function stripForDetection(line: string): string {
-  return line
-    .replace(ANSI_RE, "")
-    .replace(HTML_TAG_RE, "")
-    .replace(TIMESTAMP_PREFIX_RE, "")
-    .trimStart();
-}
-
-// Pattern matching the group-start marker itself (no capture).
-// Used to strip the marker from the raw line while preserving surrounding
-// HTML tags and ANSI codes for colored title rendering.
+const GROUP_START_RE = /^(?:##\[group\]|::group::)(.*)$/;
+const GROUP_END_RE = /^(?:##\[endgroup\]|::endgroup::)$/;
 const GROUP_MARKER_RE = /##\[group\]|::group::/;
 
-/**
- * Parse raw console lines into a tree of sections.
- *
- * Detects ##[group]/##[endgroup] and ::group::/::endgroup:: markers.
- * Lines between markers are grouped; all other lines remain flat.
- * Supports nesting. Unclosed groups get endIndex = -1.
- */
-export function parseConsoleSections(lines: string[]): ConsoleSectionNode[] {
-  const root: ConsoleSectionNode[] = [];
-  const stack: ConsoleSectionGroup[] = [];
-  const target = () => stack[stack.length - 1]?.children ?? root;
+type Marker = { type: "start"; title: string } | { type: "end" } | null;
 
-  for (let i = 0; i < lines.length; i++) {
-    const raw = lines[i];
-    const stripped = stripForDetection(raw);
+export function detectMarker(raw: string): Marker {
+  // Every marker contains "group"; skip the regex work for all other lines.
+  if (!raw.includes("group")) return null;
 
-    // Reject shell trace lines (e.g. "+ echo ##[group]Build").
-    if (stripped.startsWith("+ ")) {
-      target().push({ kind: "line", index: i, content: raw });
-      continue;
-    }
+  const stripped = raw
+    .replace(ANSI_RE, "")
+    .replace(HTML_TAG_RE, "")
+    .trimStart()
+    .replace(TIMESTAMP_PREFIX_RE, "")
+    .trim();
 
-    const startMatch = GROUP_START_RE.exec(stripped);
-    if (startMatch) {
-      // Preserve surrounding HTML/ANSI for colored title rendering.
-      const title = raw.replace(GROUP_MARKER_RE, "").trim() || "Section";
-      const group: ConsoleSectionGroup = {
-        kind: "group",
-        title,
-        startIndex: i,
-        endIndex: -1,
-        children: [],
-      };
-      target().push(group);
-      stack.push(group);
-      continue;
-    }
-
-    if (GROUP_END_RE.test(stripped)) {
-      if (stack.length > 0) {
-        stack.pop()!.endIndex = i;
-      } else {
-        target().push({ kind: "line", index: i, content: raw });
-      }
-      continue;
-    }
-
-    target().push({ kind: "line", index: i, content: raw });
+  const start = GROUP_START_RE.exec(stripped);
+  if (start) {
+    return { type: "start", title: titleHtml(raw, start[1]) };
   }
-
-  return root;
-}
-
-/**
- * A compiled section rule for client-side application.
- */
-export interface CompiledSectionRule {
-  id: string;
-  displayName: string;
-  startPattern: RegExp;
-  endPattern: RegExp;
-}
-
-/**
- * Compile rule data from the server into RegExp-bearing objects.
- * Invalid patterns are silently skipped.
- */
-export function compileSectionRules(
-  rules: Array<{
-    id: string;
-    displayName: string;
-    startPattern: string;
-    endPattern: string;
-    enabledByDefault?: boolean;
-  }>,
-): CompiledSectionRule[] {
-  const compiled: CompiledSectionRule[] = [];
-  for (const rule of rules) {
-    // Skip rules that are explicitly disabled by default.
-    if (rule.enabledByDefault === false) continue;
-    try {
-      compiled.push({
-        id: rule.id,
-        displayName: rule.displayName,
-        startPattern: new RegExp(rule.startPattern),
-        endPattern: new RegExp(rule.endPattern),
-      });
-    } catch {
-      // Skip rules with invalid regex.
-    }
-  }
-  return compiled;
-}
-
-/**
- * Apply compiled section rules to a flat list of ConsoleSectionNode[].
- *
- * Walks the top-level lines, matching start/end patterns to create groups.
- * Already-grouped nodes (from marker detection) are left untouched.
- * Rules are applied in order; the first matching rule wins for a given line.
- */
-export function applyRulesToSections(
-  nodes: ConsoleSectionNode[],
-  rules: CompiledSectionRule[],
-): ConsoleSectionNode[] {
-  if (rules.length === 0) return nodes;
-
-  const result: ConsoleSectionNode[] = [];
-  let activeRule: CompiledSectionRule | null = null;
-  let activeGroup: ConsoleSectionGroup | null = null;
-  const emit = (n: ConsoleSectionNode) =>
-    activeGroup ? activeGroup.children.push(n) : result.push(n);
-
-  function openGroup(title: string, index: number, rule: CompiledSectionRule) {
-    activeGroup = {
-      kind: "group",
-      title,
-      startIndex: index,
-      endIndex: -1,
-      children: [],
-    };
-    activeRule = rule;
-  }
-
-  function closeGroup(endIndex: number) {
-    activeGroup!.endIndex = endIndex;
-    result.push(activeGroup!);
-    activeGroup = null;
-    activeRule = null;
-  }
-
-  for (const node of nodes) {
-    if (node.kind === "group") {
-      emit(node);
-      continue;
-    }
-
-    const stripped = stripForDetection(node.content);
-
-    // Check if current line ends an active rule-based group.
-    const currentRule = activeRule as CompiledSectionRule | null;
-    if (currentRule && activeGroup && currentRule.endPattern.test(stripped)) {
-      closeGroup(node.index);
-      // The end-line may also start a new section (e.g. next Maven phase).
-      const m = matchAnyRule(stripped, rules);
-      if (m) {
-        openGroup(m.title, node.index, m.rule);
-      } else {
-        result.push(node);
-      }
-      continue;
-    }
-
-    // Check if a new rule-based group starts.
-    if (!activeRule) {
-      const m = matchAnyRule(stripped, rules);
-      if (m) {
-        openGroup(m.title, node.index, m.rule);
-        continue;
-      }
-    }
-
-    emit(node);
-  }
-
-  if (activeGroup) result.push(activeGroup);
-  return result;
-}
-
-function matchAnyRule(
-  stripped: string,
-  rules: CompiledSectionRule[],
-): { rule: CompiledSectionRule; title: string } | null {
-  for (const rule of rules) {
-    const m = rule.startPattern.exec(stripped);
-    if (m) {
-      return {
-        rule,
-        title: m[1] || rule.displayName,
-      };
-    }
+  if (GROUP_END_RE.test(stripped)) {
+    return { type: "end" };
   }
   return null;
 }
 
 /**
- * Apply server-side annotator boundary events to an existing node tree.
- *
- * Boundary events reference plain-text line indices from the backend.
- * Frontend lines come from progressiveHtml (HTML), so indices may not
- * align 1:1 if Jenkins injects extra HTML-only lines. Boundaries are
- * matched only to ConsoleSectionLine nodes whose `index` exactly equals
- * the boundary's `lineIndex`; boundaries with no exact match are ignored.
- *
- * Only flat lines are grouped; already-grouped nodes are passed through.
+ * Detection guarantees that only markup and a Timestamper prefix precede the
+ * marker. Keeping the markup (minus its text) preserves colours that were
+ * opened before the marker, while dropping the timestamp text.
  */
-export function applyAnnotatorBoundaries(
-  nodes: ConsoleSectionNode[],
-  boundaries: Array<{
-    lineIndex: number;
-    type: "START" | "END";
-    title?: string;
-  }>,
-): ConsoleSectionNode[] {
-  if (boundaries.length === 0) return nodes;
+function titleHtml(raw: string, visibleTitle: string): string {
+  if (!visibleTitle.trim()) return "";
+  const marker = GROUP_MARKER_RE.exec(raw);
+  if (!marker) return visibleTitle.trim();
+  const styling = raw.slice(0, marker.index).match(TAG_OR_ANSI_RE) ?? [];
+  const rest = raw.slice(marker.index + marker[0].length).trimStart();
+  return (styling.join("") + rest).trimEnd();
+}
 
-  const startMap = new Map<number, string>();
-  const endSet = new Set<number>();
-  for (const b of boundaries) {
-    if (b.type === "START") {
-      startMap.set(b.lineIndex, b.title ?? "Section");
-    } else {
-      endSet.add(b.lineIndex);
+interface OpenGroup {
+  title: string;
+  startIndex: number;
+  lineCount: number;
+  /** Completed children only; the next open group (if any) is implicit. */
+  children: ConsoleSectionNode[];
+}
+
+export interface SectionParseInput {
+  lines: string[];
+  /** Position of `lines[0]` in the log; a change means the buffer was re-based. */
+  startByte: number;
+  /** Lines before this index are complete and will not change. */
+  stableCount: number;
+  /**
+   * Lines from `stableCount` up to here are log output that may still change
+   * (a partial last line). Lines after it are trailing extras such as the
+   * exception text, which are rendered outside any section.
+   */
+  logLineCount: number;
+}
+
+/**
+ * Parses log lines incrementally: each call only examines lines that became
+ * stable since the previous call. Closed groups and stable line nodes keep
+ * their identity between calls so memoized renderers can skip them.
+ */
+export class ConsoleSectionParser {
+  private root: ConsoleSectionNode[] = [];
+  private stack: OpenGroup[] = [];
+  private parsed = 0;
+  private startByte = NaN;
+  private firstLine: string | undefined;
+
+  update({
+    lines,
+    startByte,
+    stableCount,
+    logLineCount,
+  }: SectionParseInput): ConsoleSectionNode[] {
+    if (
+      startByte !== this.startByte ||
+      stableCount < this.parsed ||
+      (this.parsed > 0 && lines[0] !== this.firstLine)
+    ) {
+      this.reset(startByte);
     }
+    this.firstLine = lines[0];
+
+    for (; this.parsed < stableCount; this.parsed++) {
+      this.consume(this.parsed, lines[this.parsed]);
+    }
+
+    return this.snapshot(lines, stableCount, logLineCount);
   }
 
-  const result: ConsoleSectionNode[] = [];
-  let activeGroup: ConsoleSectionGroup | null = null;
-  const emit = (n: ConsoleSectionNode) =>
-    activeGroup ? activeGroup.children.push(n) : result.push(n);
+  private reset(startByte: number) {
+    this.root = [];
+    this.stack = [];
+    this.parsed = 0;
+    this.startByte = startByte;
+  }
 
-  for (const node of nodes) {
-    if (node.kind === "group") {
-      emit(node);
-      continue;
-    }
-
-    const lineIdx = node.index;
-
-    // Check end before start so same-line close+open works.
-    if (activeGroup && endSet.has(lineIdx)) {
-      activeGroup.endIndex = lineIdx;
-      result.push(activeGroup);
-      activeGroup = null;
-      continue;
-    }
-
-    const startTitle = startMap.get(lineIdx);
-    if (startTitle) {
-      activeGroup = {
-        kind: "group",
-        title: startTitle,
-        startIndex: lineIdx,
-        endIndex: -1,
+  private consume(index: number, content: string) {
+    const marker = detectMarker(content);
+    if (marker?.type === "start") {
+      this.stack.push({
+        title: marker.title,
+        startIndex: index,
+        lineCount: 0,
         children: [],
-      };
-      continue;
+      });
+      return;
     }
-
-    emit(node);
+    if (marker?.type === "end" && this.stack.length > 0) {
+      const open = this.stack.pop()!;
+      this.append({
+        kind: "group",
+        title: open.title,
+        startIndex: open.startIndex,
+        endIndex: index,
+        lineCount: open.lineCount,
+        children: open.children,
+      });
+      return;
+    }
+    this.append({ kind: "line", index, content });
   }
 
-  if (activeGroup) result.push(activeGroup);
-  return result;
+  private append(node: ConsoleSectionNode) {
+    const parent = this.stack[this.stack.length - 1];
+    if (!parent) {
+      this.root.push(node);
+      return;
+    }
+    parent.children.push(node);
+    parent.lineCount += node.kind === "line" ? 1 : node.lineCount;
+  }
+
+  private snapshot(
+    lines: string[],
+    stableCount: number,
+    logLineCount: number,
+  ): ConsoleSectionNode[] {
+    let tail: ConsoleSectionNode[] = lineNodes(
+      lines,
+      stableCount,
+      logLineCount,
+    );
+    for (let depth = this.stack.length - 1; depth >= 0; depth--) {
+      const open = this.stack[depth];
+      const extra = tail.reduce(
+        (sum, n) => sum + (n.kind === "line" ? 1 : n.lineCount),
+        0,
+      );
+      tail = [
+        {
+          kind: "group",
+          title: open.title,
+          startIndex: open.startIndex,
+          endIndex: -1,
+          lineCount: open.lineCount + extra,
+          children: [...open.children, ...tail],
+        },
+      ];
+    }
+    return [
+      ...this.root,
+      ...tail,
+      ...lineNodes(lines, logLineCount, lines.length),
+    ];
+  }
+}
+
+function lineNodes(
+  lines: string[],
+  from: number,
+  to: number,
+): ConsoleSectionLine[] {
+  const nodes: ConsoleSectionLine[] = [];
+  for (let i = from; i < to; i++) {
+    nodes.push({ kind: "line", index: i, content: lines[i] });
+  }
+  return nodes;
+}
+
+/** Parses a complete set of lines in one go. */
+export function parseConsoleSections(lines: string[]): ConsoleSectionNode[] {
+  return new ConsoleSectionParser().update({
+    lines,
+    startByte: 0,
+    stableCount: lines.length,
+    logLineCount: lines.length,
+  });
 }

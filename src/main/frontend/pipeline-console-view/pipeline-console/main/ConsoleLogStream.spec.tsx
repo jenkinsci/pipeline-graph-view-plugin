@@ -68,4 +68,53 @@ describe("ConsoleLogStream", () => {
     expect(findByText(/Hello, world!/));
     expect(DefaultTestProps.fetchExceptionText).toBeCalledWith(baseStep.id);
   });
+
+  const sectionLines = [
+    "##[group]Build",
+    ...Array.from({ length: 30 }, (_, i) => `build ${i}`),
+    "##[endgroup]",
+  ];
+
+  it("groups marker lines and keeps exception text outside sections", () => {
+    const { container } = render(
+      TestComponent({
+        ...DefaultTestProps,
+        logBuffer: {
+          lines: [...sectionLines, "##[group]Unclosed", "Error: boom"],
+          startByte: 0,
+          endByte: 100,
+          stopTailing: true,
+          exceptionText: ["Error: boom"],
+        },
+      }),
+    );
+    const sections = container.querySelectorAll("details");
+    expect(sections).toHaveLength(2);
+    expect(sections[0].open).toBe(false);
+    const log = container.querySelector("[role=log]")!;
+    expect(log.lastElementChild?.textContent).toContain("Error: boom");
+  });
+
+  it("opens the collapsed section that contains the linked line", () => {
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    window.location.hash = "#log-2-10";
+    try {
+      const { container } = render(
+        TestComponent({
+          ...DefaultTestProps,
+          logBuffer: {
+            lines: sectionLines,
+            startByte: 0,
+            endByte: 100,
+            stopTailing: true,
+          },
+        }),
+      );
+      expect(container.querySelector("details")!.open).toBe(true);
+      expect(scrollIntoView).toHaveBeenCalled();
+    } finally {
+      window.location.hash = "";
+    }
+  });
 });

@@ -10,7 +10,7 @@ import {
 } from "react";
 
 import { BuildStep } from "../../../common/RestClient.tsx";
-import { ConsoleSectionNodeRenderer, nodeKey } from "./ConsoleSection.tsx";
+import { ConsoleSectionNodes } from "./ConsoleSection.tsx";
 import { ConsoleSectionParser } from "./parseConsoleSections.ts";
 import {
   POLL_INTERVAL,
@@ -144,17 +144,15 @@ export default function ConsoleLogStream({
     >
       {/* Line indices restart when the buffer is re-based, so remount. */}
       <Fragment key={logBuffer.startByte}>
-        {sectionTree.map((node) => (
-          <ConsoleSectionNodeRenderer
-            key={nodeKey(node)}
-            node={node}
-            stepId={stepId}
-            startByte={logBuffer.startByte}
-            stopTailingLogs={stopTailingLogs}
-            currentRunPath={currentRunPath}
-            buildStep={buildStep}
-          />
-        ))}
+        <ConsoleSectionNodes
+          nodes={sectionTree}
+          keepLastSectionOpen={stepState === Result.failure}
+          stepId={stepId}
+          startByte={logBuffer.startByte}
+          stopTailingLogs={stopTailingLogs}
+          currentRunPath={currentRunPath}
+          buildStep={buildStep}
+        />
       </Fragment>
     </div>
   );

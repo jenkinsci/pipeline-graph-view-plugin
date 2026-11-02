@@ -2,10 +2,7 @@
 
 import { fireEvent, render } from "@testing-library/react";
 
-import {
-  ConsoleSection,
-  ConsoleSectionNodeRenderer,
-} from "./ConsoleSection.tsx";
+import { ConsoleSection, ConsoleSectionNodes } from "./ConsoleSection.tsx";
 import type {
   ConsoleSectionGroup,
   ConsoleSectionLine,
@@ -44,29 +41,52 @@ function manyLines(n: number): ConsoleSectionLine[] {
   }));
 }
 
-describe("ConsoleSectionNodeRenderer", () => {
-  it("renders a line node as ConsoleLine", () => {
+describe("ConsoleSectionNodes", () => {
+  it("renders lines and sections", () => {
     const { container } = render(
-      <ConsoleSectionNodeRenderer
-        node={{ kind: "line", index: 0, content: "Hello, world!" }}
+      <ConsoleSectionNodes
+        nodes={[{ kind: "line", index: 0, content: "Hello, world!" }, group()]}
+        keepLastSectionOpen={false}
         {...baseProps}
       />,
     );
-    expect(container.querySelector(".console-output-line")).toBeTruthy();
     expect(container.textContent).toContain("Hello, world!");
-  });
-
-  it("renders a group node as details/summary", () => {
-    const { container } = render(
-      <ConsoleSectionNodeRenderer node={group()} {...baseProps} />,
-    );
-    expect(container.querySelector("details")).toBeTruthy();
     expect(
       container.querySelector(".pgv-console-section__title")?.textContent,
     ).toBe("Build");
     expect(
       container.querySelector(".pgv-console-section__count")?.textContent,
     ).toBe("2 lines");
+  });
+
+  it("keeps only the last long section open when asked", () => {
+    const long = (startIndex: number) =>
+      group({
+        startIndex,
+        endIndex: startIndex + 31,
+        lineCount: 30,
+        children: manyLines(30),
+      });
+    const nodes = [
+      long(0),
+      long(40),
+      { kind: "line" as const, index: 80, content: "exit 1" },
+    ];
+    const { container, rerender } = render(
+      <ConsoleSectionNodes
+        nodes={nodes}
+        keepLastSectionOpen={false}
+        {...baseProps}
+      />,
+    );
+    const open = () =>
+      [...container.querySelectorAll("details")].map((d) => d.open);
+    expect(open()).toEqual([false, false]);
+
+    rerender(
+      <ConsoleSectionNodes nodes={nodes} keepLastSectionOpen {...baseProps} />,
+    );
+    expect(open()).toEqual([false, true]);
   });
 });
 

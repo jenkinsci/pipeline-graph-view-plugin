@@ -26,30 +26,33 @@ interface SharedProps {
 
 export interface ConsoleSectionProps extends SharedProps {
   group: ConsoleSectionGroup;
+  /** Never auto-collapse, e.g. the section a failed step ended in. */
+  keepOpen?: boolean;
 }
 
 export const ConsoleSection = memo(function ConsoleSection({
   group,
+  keepOpen = false,
   ...shared
 }: ConsoleSectionProps) {
   const messages = useMessages();
   const detailsRef = useRef<HTMLDetailsElement>(null);
   const userToggled = useRef(false);
   const collapse =
-    group.endIndex !== -1 && group.lineCount > COLLAPSE_THRESHOLD;
+    !keepOpen && group.endIndex !== -1 && group.lineCount > COLLAPSE_THRESHOLD;
   // Only the initial value is applied; afterwards the browser owns the open
   // state, so find-in-page and deep links can expand the section natively.
   const [initiallyOpen] = useState(!collapse);
 
-  // A section that finishes while it is being tailed collapses like one that
-  // was already finished on load, unless the user has toggled it or it holds
-  // the deep-linked line. Running before the parent's scroll-to-tail layout
-  // effect keeps the height change from looking like a user scroll.
+  // The open state follows `collapse` as it changes (a section finishing while
+  // tailed, or its step failing) unless the user has toggled the section or
+  // it holds the deep-linked line. Running before the parent's scroll-to-tail
+  // layout effect keeps the height change from looking like a user scroll.
   useLayoutEffect(() => {
     const details = detailsRef.current;
-    if (!collapse || userToggled.current || !details) return;
-    if (details.querySelector(":target")) return;
-    details.open = false;
+    if (!details || userToggled.current) return;
+    if (collapse && details.querySelector(":target")) return;
+    details.open = !collapse;
   }, [collapse]);
 
   return (
@@ -93,41 +96,47 @@ export const ConsoleSection = memo(function ConsoleSection({
           })}
         </span>
       </summary>
-      {group.children.map((node) => (
-        <ConsoleSectionNodeRenderer
-          key={nodeKey(node)}
-          node={node}
-          {...shared}
-        />
-      ))}
+      <ConsoleSectionNodes
+        nodes={group.children}
+        keepLastSectionOpen={keepOpen}
+        {...shared}
+      />
     </details>
   );
 });
 
-export interface ConsoleSectionNodeRendererProps extends SharedProps {
-  node: ConsoleSectionNode;
+export interface ConsoleSectionNodesProps extends SharedProps {
+  nodes: ConsoleSectionNode[];
+  /** Pass `keepOpen` to the last section among `nodes`. */
+  keepLastSectionOpen: boolean;
 }
 
-export const ConsoleSectionNodeRenderer = memo(
-  function ConsoleSectionNodeRenderer({
-    node,
-    ...shared
-  }: ConsoleSectionNodeRendererProps) {
-    if (node.kind === "line") {
-      return (
-        <ConsoleLine
-          lineNumber={String(node.index)}
-          content={node.content}
-          {...shared}
-        />
-      );
+export function ConsoleSectionNodes({
+  nodes,
+  keepLastSectionOpen,
+  ...shared
+}: ConsoleSectionNodesProps) {
+  let lastSection = -1;
+  if (keepLastSectionOpen) {
+    for (let i = nodes.length - 1; i >= 0 && lastSection === -1; i--) {
+      if (nodes[i].kind === "group") lastSection = i;
     }
-    return <ConsoleSection group={node} {...shared} />;
-  },
-);
-
-export function nodeKey(node: ConsoleSectionNode): string {
-  return node.kind === "line"
-    ? `line-${node.index}`
-    : `section-${node.startIndex}`;
+  }
+  return nodes.map((node, i) =>
+    node.kind === "line" ? (
+      <ConsoleLine
+        key={`line-${node.index}`}
+        lineNumber={String(node.index)}
+        content={node.content}
+        {...shared}
+      />
+    ) : (
+      <ConsoleSection
+        key={`section-${node.startIndex}`}
+        group={node}
+        keepOpen={i === lastSection}
+        {...shared}
+      />
+    ),
+  );
 }

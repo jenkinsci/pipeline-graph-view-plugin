@@ -117,4 +117,21 @@ describe("ConsoleLogStream", () => {
       window.location.hash = "";
     }
   });
+
+  it("keeps the last section of a failed step open", () => {
+    const { container } = render(
+      TestComponent({
+        ...DefaultTestProps,
+        stepState: Result.failure,
+        logBuffer: {
+          lines: [...sectionLines, ...sectionLines],
+          startByte: 0,
+          endByte: 100,
+          stopTailing: true,
+        },
+      }),
+    );
+    const open = [...container.querySelectorAll("details")].map((d) => d.open);
+    expect(open).toEqual([false, true]);
+  });
 });

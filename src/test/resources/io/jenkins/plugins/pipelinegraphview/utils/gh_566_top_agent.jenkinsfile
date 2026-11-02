@@ -1,0 +1,10 @@
+pipeline {
+    agent { label 'test-agent-label' }
+    stages {
+        stage('Hello') {
+            steps {
+                echo "Hello, world"
+            }
+        }
+    }
+}

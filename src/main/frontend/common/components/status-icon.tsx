@@ -53,7 +53,7 @@ export default function StatusIcon({
 }: StatusIconProps) {
   const viewBoxSize = 512;
   const strokeWidth = status === "running" ? 50 : 0;
-  const radius = (viewBoxSize - strokeWidth) / 2.2;
+  const radius = (viewBoxSize - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - ((percentage ?? 100) / 100) * circumference;
 
@@ -97,7 +97,8 @@ export default function StatusIcon({
         fill="none"
         stroke="var(--color)"
         strokeWidth={strokeWidth}
-        strokeLinecap="round"
+        // Round caps are always visible, so move to butt when no progress
+        strokeLinecap={percentage ? "round" : "butt"}
         strokeDasharray={circumference}
         strokeDashoffset={offset}
         style={{

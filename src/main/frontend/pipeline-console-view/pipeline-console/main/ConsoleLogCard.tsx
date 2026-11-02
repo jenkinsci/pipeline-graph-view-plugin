@@ -58,8 +58,7 @@ export default function ConsoleLogCard({
 
   const lineCount = stepBuffers.get(step.id)?.lines?.length ?? 0;
 
-  const inputStep = step.inputStep;
-  if (inputStep && !inputStep.parameters) {
+  if (step.inputStep) {
     return <InputStep step={step} />;
   }
 
@@ -264,7 +263,7 @@ const ConsoleLogBody = memo(function ConsoleLogBody({
   };
 
   return (
-    <div style={{ paddingTop: "0.5rem" }}>
+    <div style={{ paddingTop: "0.375rem" }}>
       {getTruncatedLogWarning()}
       <Suspense>
         <ConsoleLogStream

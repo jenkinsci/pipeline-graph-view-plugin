@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>6.2189.v695a_c41f5249</version>
+    <version>6.2250.va_d01d559a_209</version>
     <relativePath />
   </parent>
 
@@ -33,10 +33,10 @@
     <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/pipeline-graph-view-plugin</gitHubRepo>
     <!-- Baseline Jenkins version you use to build the plugin. Users must have this version or newer to run. -->
-    <jenkins.baseline>2.528</jenkins.baseline>
-    <jenkins.version>2.534</jenkins.version>
-    <node.version>24.16.0</node.version>
-    <npm.version>11.15.0</npm.version>
+    <jenkins.baseline>2.555</jenkins.baseline>
+    <jenkins.version>2.585</jenkins.version>
+    <node.version>26.13.0</node.version>
+    <npm.version>12.2.1</npm.version>
     <spotless.check.skip>false</spotless.check.skip>
     <ban-junit4-imports.skip>false</ban-junit4-imports.skip>
   </properties>
@@ -47,7 +47,7 @@
         <!-- Pick up common dependencies for the selected LTS line: https://github.com/jenkinsci/bom#usage -->
         <groupId>io.jenkins.tools.bom</groupId>
         <artifactId>bom-${jenkins.baseline}.x</artifactId>
-        <version>6486.v7c7b_3635dc42</version>
+        <version>7280.ve2096dda_41b_9</version>
         <type>pom</type>
         <scope>import</scope>
       </dependency>
@@ -88,10 +88,6 @@
     </dependency>
     <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
-      <artifactId>metrics</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>pipeline-build-step</artifactId>
     </dependency>
     <dependency>
@@ -117,13 +113,13 @@
     <dependency>
       <groupId>com.microsoft.playwright</groupId>
       <artifactId>playwright</artifactId>
-      <version>1.60.0</version>
+      <version>1.64.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>com.sonyericsson.hudson.plugins.rebuild</groupId>
       <artifactId>rebuild</artifactId>
-      <version>338.va_0a_b_50e29397</version>
+      <version>344.v805899551b_13</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -175,7 +171,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.6.3</version>
+        <version>3.6.4</version>
         <executions>
           <execution>
             <id>install-playwright-chromium</id>

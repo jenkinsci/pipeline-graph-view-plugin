@@ -10,15 +10,18 @@ import { FilterProvider } from "./pipeline-console/main/providers/filter-provide
 import { LayoutPreferencesProvider } from "./pipeline-console/main/providers/user-preference-provider.tsx";
 
 export default function App() {
-  const locale = document.getElementById("console-pipeline-root")!.dataset
-    .userLocale!;
+  const rootElement = document.getElementById("console-pipeline-root")!;
+  const locale = rootElement.dataset.userLocale!;
+  const normalizedParentJobPath = rootElement?.dataset.normalizedParentJobPath!;
   return (
     <UserPermissionsProvider>
       <LocaleProvider locale={locale}>
         <I18NProvider bundles={[ResourceBundleName.messages]}>
           <FilterProvider>
             <UserPreferencesProvider>
-              <LayoutPreferencesProvider>
+              <LayoutPreferencesProvider
+                normalizedParentJobPath={normalizedParentJobPath}
+              >
                 <PipelineConsole />
               </LayoutPreferencesProvider>
             </UserPreferencesProvider>

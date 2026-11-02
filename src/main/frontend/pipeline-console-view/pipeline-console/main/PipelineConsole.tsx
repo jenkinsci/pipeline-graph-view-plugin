@@ -10,11 +10,15 @@ import {
   SETTINGS,
 } from "../../../common/components/symbols.tsx";
 import { useUserPermissions } from "../../../common/user/user-permission-provider.tsx";
-import { Result } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
+import {
+  LayoutInfo,
+  Result,
+} from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import Skeleton from "./components/skeleton.tsx";
 import Stages from "./components/stages.tsx";
 import StagesCustomization from "./components/stages-customization.tsx";
 import DataTreeView from "./DataTreeView.tsx";
+import { EarlyConsoleText } from "./EarlyConsoleText.tsx";
 import { useStepsPoller } from "./hooks/use-steps-poller.ts";
 import { NoStageStepsFallback } from "./NoStageStepsFallback.tsx";
 import { useLayoutPreferences } from "./providers/user-preference-provider.tsx";
@@ -23,36 +27,66 @@ import SplitView from "./split-view.tsx";
 import StageDetails from "./stage-details.tsx";
 import StageView from "./StageView.tsx";
 
+const stagesLayout: Partial<LayoutInfo> = {
+  graphSpacingTop: 34, // spacing for expand button
+  graphSpacingRight: 18, // spacing for expand button
+  graphSpacingBottom: 18, // spacing for zoom buttons
+  graphSpacingLeft: 18, // align with right spacing
+};
+
 export default function PipelineConsole() {
   const rootElement = document.getElementById("console-pipeline-root");
   const currentRunPath = rootElement?.dataset.currentRunPath!;
   const previousRunPath = rootElement?.dataset.previousRunPath;
+  const normalizedParentJobPath = rootElement?.dataset.normalizedParentJobPath!;
+  const currentRunStartTime = parseInt(
+    rootElement?.dataset.currentRunStartTime!,
+  );
+  const previousRunStartTime = parseInt(
+    rootElement?.dataset.previousRunStartTime || "0",
+  );
 
-  const { stageViewPosition, mainViewVisibility } = useLayoutPreferences();
+  const {
+    stageViewPosition,
+    mainViewVisibility,
+    setAutoStageViewHeight,
+    setDefaultStageViewHeight,
+  } = useLayoutPreferences();
   const {
     complete,
     tailLogs,
     scrollToTail,
     startTailingLogs,
     stopTailingLogs,
+    showEarlyConsoleText,
     openStage,
     openStageSteps,
     stepBuffers,
     expandedSteps,
+    expandAllForStage,
+    collapseAllForStage,
     stages,
     handleStageSelect,
     onStepToggle,
     fetchLogText,
     fetchExceptionText,
     loading,
-  } = useStepsPoller({ currentRunPath, previousRunPath });
+  } = useStepsPoller({
+    currentRunPath,
+    previousRunPath,
+    currentRunStartTime,
+    previousRunStartTime,
+  });
 
   const isOnlyPlaceholderNode = stages.length === 1 && stages[0].placeholder;
-  const onlyQueuedPlaceholder =
-    isOnlyPlaceholderNode && stages[0].state === Result.queued;
-
+  const isBeforePipelineStart =
+    isOnlyPlaceholderNode &&
+    // We are waiting for the pipeline to start...
+    (stages[0].state === Result.queued ||
+      // Stopped early. We will never reach the actual pipeline start.
+      complete);
   const showSplitView =
-    loading || (!loading && stages.length > 0 && !onlyQueuedPlaceholder);
+    loading || (!loading && stages.length > 0 && !isBeforePipelineStart);
 
   const { canConfigure } = useUserPermissions();
 
@@ -109,11 +143,15 @@ export default function PipelineConsole() {
               <Skeleton />
             ) : (
               <Stages
+                layout={stagesLayout}
                 stages={stages}
+                currentRunPath={currentRunPath}
                 selectedStage={openStage || undefined}
                 stageViewPosition={stageViewPosition}
                 onStageSelect={handleStageSelect}
-                currentRunPath={currentRunPath}
+                normalizedParentJobPath={normalizedParentJobPath}
+                setAutoStageViewHeight={setAutoStageViewHeight}
+                setDefaultStageViewHeight={setDefaultStageViewHeight}
               />
             ))}
 
@@ -148,6 +186,12 @@ export default function PipelineConsole() {
                   <Skeleton height={2.625} />
                   <Skeleton height={20} />
                 </div>
+              ) : showEarlyConsoleText ? (
+                <EarlyConsoleText
+                  currentRunPath={currentRunPath}
+                  tailLogs={tailLogs}
+                  scrollToTail={scrollToTail}
+                />
               ) : (
                 <StageView
                   tailLogs={tailLogs}
@@ -157,6 +201,8 @@ export default function PipelineConsole() {
                   steps={openStageSteps}
                   stepBuffers={stepBuffers}
                   expandedSteps={expandedSteps}
+                  expandAllForStage={expandAllForStage}
+                  collapseAllForStage={collapseAllForStage}
                   onStepToggle={onStepToggle}
                   fetchLogText={fetchLogText}
                   fetchExceptionText={fetchExceptionText}
@@ -168,9 +214,15 @@ export default function PipelineConsole() {
         </SplitView>
       )}
 
-      {!loading && onlyQueuedPlaceholder && (
+      {!loading && isBeforePipelineStart && (
         <>
-          <StageDetails stage={stages[0]} />
+          <StageDetails
+            stage={stages[0]}
+            steps={openStageSteps}
+            expandedSteps={expandedSteps}
+            expandAllForStage={expandAllForStage}
+            collapseAllForStage={collapseAllForStage}
+          />
           <NoStageStepsFallback
             currentRunPath={currentRunPath}
             tailLogs={tailLogs}

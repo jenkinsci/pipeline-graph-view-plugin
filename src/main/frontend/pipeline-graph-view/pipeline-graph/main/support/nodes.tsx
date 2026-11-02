@@ -84,6 +84,21 @@ function NodeImpl({ node, collapsed, onStageSelect, isSelected }: NodeProps) {
         }}
         className="PWGx-pipeline-node"
       >
+        {node.type === "start" && node.url && (
+          <a
+            href={node.url}
+            onClick={(e) => {
+              if (onStageSelect) {
+                e.preventDefault();
+                history.replaceState({}, "", e.currentTarget.href);
+
+                onStageSelect(String(node.id));
+              }
+            }}
+          >
+            <span className="jenkins-visually-hidden">{node.name}</span>
+          </a>
+        )}
         <span className={"PWGx-pipeline-node-terminal"} />
       </div>
     );
@@ -95,10 +110,7 @@ function NodeImpl({ node, collapsed, onStageSelect, isSelected }: NodeProps) {
     <StageStatusIcon key={`icon-${node.id}`} stage={node.stage} />,
   );
 
-  const clickable =
-    !node.isPlaceholder &&
-    node.stage?.state !== "skipped" &&
-    !node.stage.skeleton;
+  const clickable = !node.isPlaceholder && !node.stage.skeleton;
 
   // Most of the nodes are in shared code, so they're rendered at 0,0. We transform with a <g> to position them
   const groupProps = {

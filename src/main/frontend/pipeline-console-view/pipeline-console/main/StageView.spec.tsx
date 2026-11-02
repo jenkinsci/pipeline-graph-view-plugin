@@ -58,6 +58,8 @@ describe("StageView", () => {
             onStepToggle={vi.fn()}
             fetchLogText={async () => mockBuffer}
             fetchExceptionText={async () => mockBuffer}
+            expandAllForStage={() => {}}
+            collapseAllForStage={() => {}}
           />
         </FilterProvider>,
       );

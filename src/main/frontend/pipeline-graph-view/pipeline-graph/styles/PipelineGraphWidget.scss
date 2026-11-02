@@ -9,8 +9,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 1.625rem;
+  height: 1.625rem;
   z-index: 0;
 
   &::before {
@@ -44,7 +44,7 @@
     &::after {
       content: "";
       position: absolute;
-      inset: 1px;
+      inset: 0;
       border-radius: 50%;
       z-index: -1;
       transition: var(--standard-transition);
@@ -71,7 +71,7 @@
 
     &:focus-visible {
       &::after {
-        box-shadow: 0 0 0 0.2rem var(--text-color) !important;
+        box-shadow: 0 0 0 0.25rem var(--text-color) !important;
       }
     }
   }
@@ -83,8 +83,8 @@
   }
 
   svg {
-    width: 1.75rem;
-    height: 1.75rem;
+    width: 1.625rem;
+    height: 1.625rem;
   }
 
   &:has(.PWGx-pipeline-node-terminal) {
@@ -147,7 +147,7 @@
 
 .PWGx-pipeline-big-label {
   font-weight: var(--font-bold-weight);
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   transition: translate var(--standard-transition);
   text-align: center;
 
@@ -194,7 +194,7 @@
   display: inline-block;
   width: 0.5rem;
   height: 0.5rem;
-  margin-left: 0.2rem;
+  margin-left: 0.25rem;
   vertical-align: baseline;
   transform: rotate(0deg);
   transition: transform var(--standard-transition);

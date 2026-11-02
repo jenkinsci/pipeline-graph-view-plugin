@@ -17,6 +17,7 @@ import io.jenkins.plugins.pipelinegraphview.cards.RunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.ArtifactRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.ChangesRunDetailsItem;
 import io.jenkins.plugins.pipelinegraphview.cards.items.TestResultRunDetailsItem;
+import io.jenkins.plugins.pipelinegraphview.utils.EarlyConsoleText;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphViewCache;
@@ -27,6 +28,7 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import jakarta.servlet.ServletException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -34,6 +36,7 @@ import jenkins.model.Jenkins;
 import jenkins.model.Tab;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.pipeline.modeldefinition.actions.RestartDeclarativePipelineAction;
+import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
 import org.jenkinsci.plugins.workflow.cps.replay.ReplayAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
@@ -121,6 +124,19 @@ public class PipelineConsoleViewAction extends Tab {
         }
     }
 
+    @WebMethod(name = "earlyConsoleText")
+    public void getEarlyConsoleText(StaplerRequest2 req, StaplerResponse2 rsp) throws IOException {
+        run.checkPermission(Item.READ);
+        rsp.setContentType("text/html;charset=UTF-8");
+
+        EarlyConsoleText ect = new EarlyConsoleText(run);
+        boolean anyLogs = ect.writeHtmlTo(rsp.getOutputStream());
+        if (!anyLogs) {
+            rsp.getWriter().write("No early console text found.");
+            rsp.setStatus(404);
+        }
+    }
+
     @WebMethod(name = "log")
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @SuppressFBWarnings(
@@ -141,8 +157,14 @@ public class PipelineConsoleViewAction extends Tab {
         logger.debug("getConsoleText was passed node id '{}'.", nodeId);
         // This will be a step, so return its log output.
         AnnotatedLargeText<? extends FlowNode> logText = getLogForNode(nodeId);
-        if (logText != null) {
-            logText.writeLogTo(0L, rsp.getOutputStream());
+        String exceptionText = getNodeExceptionText(nodeId);
+        if (logText != null || exceptionText != null) {
+            if (logText != null) {
+                logText.writeLogTo(0L, rsp.getOutputStream());
+            }
+            if (exceptionText != null) {
+                rsp.getOutputStream().write(exceptionText.getBytes(StandardCharsets.UTF_8));
+            }
             return;
         }
 
@@ -154,6 +176,14 @@ public class PipelineConsoleViewAction extends Tab {
             if (logText != null) {
                 foundLogs = true;
                 logText.writeLogTo(0L, rsp.getOutputStream());
+            }
+            exceptionText = getNodeExceptionText(step.id);
+            if (exceptionText != null) {
+                if (!exceptionText.endsWith("\n")) {
+                    exceptionText += "\n";
+                }
+                foundLogs = true;
+                rsp.getOutputStream().write(exceptionText.getBytes(StandardCharsets.UTF_8));
             }
         }
         if (!foundLogs) {
@@ -286,6 +316,7 @@ public class PipelineConsoleViewAction extends Tab {
      * Handles the rerun request using ReplayAction feature
      */
     @RequirePOST
+    @WebMethod(name = "rerun")
     @JavaScriptMethod
     public HttpResponse doRerun() {
         run.checkPermission(Item.BUILD);
@@ -294,6 +325,9 @@ public class PipelineConsoleViewAction extends Tab {
             return HttpResponses.errorJSON(Messages.scheduled_failure());
         }
         ReplayAction replayAction = run.getAction(ReplayAction.class);
+        if (replayAction == null) {
+            return HttpResponses.errorJSON(Messages.scheduled_failure());
+        }
         Queue.Item item = replayAction.run2(replayAction.getOriginalScript(), replayAction.getOriginalLoadedScripts());
 
         if (item == null) {
@@ -355,6 +389,97 @@ public class PipelineConsoleViewAction extends Tab {
         return HttpResponses.errorJSON(message);
     }
 
+    /**
+     * Handles the pause request.
+     */
+    @RequirePOST
+    @JavaScriptMethod
+    public HttpResponse doPause() {
+        run.checkPermission(getCancelPermission());
+
+        if (!run.isBuilding()) {
+            return HttpResponses.errorJSON(Messages.run_isFinished());
+        }
+
+        FlowExecution execution = run.getExecution();
+        if (execution == null) {
+            return HttpResponses.errorJSON("No execution found");
+        }
+
+        // Pause is specific to CpsFlowExecution
+        if (execution instanceof CpsFlowExecution) {
+            CpsFlowExecution cpsExecution = (CpsFlowExecution) execution;
+
+            try {
+                cpsExecution.pause(true);
+                return HttpResponses.okJSON();
+            } catch (IOException e) {
+                String pauseFailedMessage = Messages.run_pauseFailed();
+                logger.error(pauseFailedMessage, e);
+                return HttpResponses.errorJSON(pauseFailedMessage + ": " + e.getMessage());
+            }
+        }
+
+        return HttpResponses.errorJSON(Messages.run_noPauseSupport());
+    }
+
+    /**
+     * Handles the resume request.
+     */
+    @RequirePOST
+    @JavaScriptMethod
+    public HttpResponse doResume() {
+        run.checkPermission(getCancelPermission());
+
+        if (!run.isBuilding()) {
+            return HttpResponses.errorJSON(Messages.run_isFinished());
+        }
+
+        FlowExecution execution = run.getExecution();
+        if (execution == null) {
+            return HttpResponses.errorJSON("No execution found");
+        }
+
+        // Resume is specific to CpsFlowExecution
+        if (execution instanceof CpsFlowExecution) {
+            CpsFlowExecution cpsExecution = (CpsFlowExecution) execution;
+
+            try {
+                cpsExecution.pause(false);
+                return HttpResponses.okJSON();
+            } catch (IOException e) {
+                String resumeFailedMessage = Messages.run_resumeFailed();
+                logger.error(resumeFailedMessage, e);
+                return HttpResponses.errorJSON(resumeFailedMessage + ": " + e.getMessage());
+            }
+        }
+
+        return HttpResponses.errorJSON(Messages.run_noPauseSupport());
+    }
+
+    /**
+     * Returns the current pause state of the pipeline.
+     */
+    @GET
+    @WebMethod(name = "pauseState")
+    public HttpResponse getPauseState(StaplerRequest2 req, StaplerResponse2 rsp) {
+        run.checkPermission(Item.READ);
+
+        FlowExecution execution = run.getExecution();
+        JSONObject obj = new JSONObject();
+
+        if (execution instanceof CpsFlowExecution) {
+            CpsFlowExecution cpsExecution = (CpsFlowExecution) execution;
+            obj.put("paused", cpsExecution.isPaused());
+            obj.put("building", run.isBuilding());
+        } else {
+            obj.put("paused", false);
+            obj.put("building", run.isBuilding());
+        }
+
+        return HttpResponses.okJSON(obj);
+    }
+
     public String getFullProjectDisplayName() {
         return run.getParent().getFullDisplayName();
     }
@@ -384,6 +509,26 @@ public class PipelineConsoleViewAction extends Tab {
 
     public String getNextBuildNumber() {
         return getBuildNumber(run.getNextBuild());
+    }
+
+    public String getNormalizedParentJobPath() {
+        boolean isMultiBranch =
+                run.getParent().getProperty("org.jenkinsci.plugins.workflow.multibranch.BranchJobProperty") != null;
+        return isMultiBranch
+                ? run.getParent().getParent().getUrl()
+                : run.getParent().getUrl();
+    }
+
+    public String getCurrentRunStartTime() {
+        return String.valueOf(run.getStartTimeInMillis());
+    }
+
+    public String getPreviousRunStartTime() {
+        WorkflowRun previousBuild = run.getPreviousBuild();
+        if (previousBuild == null) {
+            return null;
+        }
+        return String.valueOf(previousBuild.getStartTimeInMillis());
     }
 
     @GET

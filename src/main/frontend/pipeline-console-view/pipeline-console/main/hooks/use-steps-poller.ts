@@ -89,7 +89,10 @@ async function updateStepBuffer(
   }
 
   stepBuffer.endByte = response.endByte;
-  stepBuffer.consoleAnnotator = response.consoleAnnotator;
+  // Nothing new was rendered, so keep the current annotator.
+  if (startByte !== response.endByte) {
+    stepBuffer.consoleAnnotator = response.consoleAnnotator;
+  }
   if (response.text) {
     // Only overwrite when more text was available.
     stepBuffer.hasTrailingNewLine = hasTrailingNewLine;
@@ -167,14 +170,18 @@ async function fetchStepLogDetail(
 export function useStepsPoller({
   currentRunPath,
   previousRunPath,
+  currentRunStartTime,
+  previousRunStartTime,
 }: RunPollerProps) {
   const { run, loading } = useRunPoller({
     currentRunPath,
     previousRunPath,
+    currentRunStartTime,
+    previousRunStartTime,
   });
   const fetchRunSteps = useCallback(
-    () => getRunSteps(currentRunPath),
-    [currentRunPath],
+    () => getRunSteps(currentRunPath, currentRunStartTime),
+    [currentRunPath, currentRunStartTime],
   );
   const {
     data: { steps, runIsComplete },
@@ -451,9 +458,24 @@ export function useStepsPoller({
     [stopTailingLogs],
   );
 
+  const expandAllForStage = useCallback((steps: StepInfo[]) => {
+    setExpandedSteps((prev) => {
+      return Array.from(new Set(prev.concat(steps.map((step) => step.id))));
+    });
+  }, []);
+
+  const collapseAllForStage = useCallback((steps: StepInfo[]) => {
+    setExpandedSteps((prev) => {
+      const ids = new Set(steps.map((step) => step.id));
+      return prev.filter((id) => !ids.has(id));
+    });
+  }, []);
+
   const openStageSteps = useMemo(() => {
     return steps.filter((step) => step.stageId === openStageId);
   }, [steps, openStageId]);
+
+  const showEarlyConsoleText = openStageId === "-1";
 
   return {
     openStage,
@@ -471,10 +493,15 @@ export function useStepsPoller({
     scrollToTail,
     startTailingLogs,
     stopTailingLogs,
+    expandAllForStage,
+    collapseAllForStage,
+    showEarlyConsoleText,
   };
 }
 
 interface RunPollerProps {
   currentRunPath: string;
   previousRunPath?: string;
+  currentRunStartTime: number;
+  previousRunStartTime?: number;
 }

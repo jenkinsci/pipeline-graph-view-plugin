@@ -1,0 +1,7 @@
+stage("A") {
+    echo "Hello world"
+    catchError {
+      error("This error is caught")
+    }
+    error("This is a fatal error")
+}

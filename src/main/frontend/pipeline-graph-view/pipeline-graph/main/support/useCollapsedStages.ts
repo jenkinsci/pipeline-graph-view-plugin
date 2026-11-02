@@ -8,17 +8,46 @@ function loadFromStorage(key: string): Set<number> {
     if (stored) {
       return new Set(JSON.parse(stored) as number[]);
     }
-  } catch {
-    // ignore
+  } catch (err) {
+    try {
+      // Bad record. Perform best-effort cleanup.
+      window.localStorage.removeItem(key);
+    } catch {}
   }
   return new Set();
 }
 
 function saveToStorage(key: string, ids: Set<number>) {
   try {
+    if (ids.size === 0) {
+      window.localStorage.removeItem(key);
+      return;
+    }
     window.localStorage.setItem(key, JSON.stringify([...ids]));
   } catch {
     // ignore
+  }
+}
+
+function garbageCollectLocalStorage() {
+  try {
+    window.localStorage.key(0);
+  } catch {
+    // Local storage access failed, likely due to browser restrictions (expected).
+    // Perform this check here so that we can log unexpected errors below.
+    return;
+  }
+  try {
+    for (const key of Object.keys(window.localStorage)) {
+      // The old key prefix uses a dot as separator.
+      if (!key.startsWith("pgv.collapsedStages.")) continue;
+      window.localStorage.removeItem(key);
+    }
+  } catch (err) {
+    console.warn(
+      "Error during garbage collection for collapsed stages in localStorage:",
+      err,
+    );
   }
 }
 
@@ -142,13 +171,18 @@ function findCollapsedAncestors(
 }
 
 export function useCollapsedStages(
-  storageKey: string,
+  normalizedParentJobPath: string,
   stages: StageInfo[],
   selectedStageId?: number,
 ) {
+  const storageKey = `pgv.collapsedStages/${normalizedParentJobPath}`;
   const [collapsedStageIds, setCollapsedStageIds] = useState<Set<number>>(() =>
     loadFromStorage(storageKey),
   );
+
+  useEffect(() => {
+    garbageCollectLocalStorage();
+  }, []);
 
   const toggleCollapseStage = useCallback(
     (stageId: number) => {

@@ -86,7 +86,7 @@ beforeEach(() => {
   document.body.innerHTML =
     "<header></header>" +
     '<div class="jenkins-app-bar"></div>' +
-    '<div id="console-pipeline-root" data-current-run-path="/jenkins/job/x/1/"></div>' +
+    '<div id="console-pipeline-root" data-current-run-start-time="1791019535459" data-current-run-path="/jenkins/job/x/1/" data-normalized-parent-job-path="/jenkins/job/x/"></div>' +
     '<div id="console-pipeline-overflow-root"></div>';
 
   if (!(globalThis as any).IntersectionObserver) {
@@ -131,6 +131,47 @@ describe("PipelineConsole — queued placeholder fallback", () => {
       stepBuffers: new Map(),
       expandedSteps: [],
       stages: [placeholderStage],
+      handleStageSelect: () => {},
+      onStepToggle: () => {},
+      fetchLogText: async () => ({ lines: [], startByte: 0, endByte: 0 }),
+      fetchExceptionText: async () => ({ lines: [], startByte: 0, endByte: 0 }),
+      loading: false,
+    });
+
+    await act(async () => {
+      render(
+        <FilterProvider>
+          <PipelineConsole />
+        </FilterProvider>,
+      );
+    });
+
+    expect(
+      screen.getAllByText(/Waiting for next available executor on/).length,
+    ).toBeGreaterThan(0);
+
+    await waitFor(() =>
+      expect(
+        screen.getByText(/Obtained Jenkinsfile from git/),
+      ).toBeInTheDocument(),
+    );
+    expect(
+      screen.getByText(/Still waiting to schedule task/),
+    ).toBeInTheDocument();
+  });
+
+  it("renders StageDetails + NoStageStepsFallback when completed early", async () => {
+    (useStepsPoller as any).mockReturnValue({
+      complete: true,
+      tailLogs: false,
+      scrollToTail: () => {},
+      startTailingLogs: () => {},
+      stopTailingLogs: () => {},
+      openStage: { ...placeholderStage, state: Result.aborted },
+      openStageSteps: [],
+      stepBuffers: new Map(),
+      expandedSteps: [],
+      stages: [{ ...placeholderStage, state: Result.aborted }],
       handleStageSelect: () => {},
       onStepToggle: () => {},
       fetchLogText: async () => ({ lines: [], startByte: 0, endByte: 0 }),

@@ -1,0 +1,24 @@
+// Reproducer for https://github.com/jenkinsci/pipeline-graph-view-plugin/issues/1355
+//
+// The bug only shows up when the "->" text is wrapped in ANSI colour escape
+// codes (as real `terraform plan` output is), because that routes the text
+// through a different (non-HTML-decoding) rendering path in ConsoleLine/Ansi.
+// Plain, uncoloured `echo` output does NOT reproduce the issue.
+pipeline {
+    agent any
+    stages {
+        stage('terraform plan') {
+            steps {
+                sh '''
+                    printf "Terraform will perform the following actions:\\n\\n"
+                    printf "  # aws_instance.example will be updated in-place\\n"
+                    printf "\\033[33m~\\033[0m resource \\"aws_instance\\" \\"example\\" {\\n"
+                    printf "      id                     = \\"i-0123456789abcdef0\\"\\n"
+                    printf "\\033[33m    ~ instance_type          = \\"t2.micro\\" -> \\"t2.small\\"\\033[0m\\n"
+                    printf "  }\\n\\n"
+                    printf "Plan: 0 to add, 1 to change, 0 to destroy.\\n"
+                '''
+            }
+        }
+    }
+}

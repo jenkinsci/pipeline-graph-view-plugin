@@ -1,56 +1,11 @@
-$pgv-icon-size: 1.375rem;
-$pgv-item-padding-inline: 0.7rem;
+$pgv-icon-size: 1.25rem;
+$pgv-item-padding-inline: 0.75rem;
 
 .pgw-filter-bar {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr auto;
   margin-bottom: 0.75rem;
-
-  &::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: var(--card-background);
-    border: var(--card-border-width) solid var(--card-border-color);
-    border-radius: var(--form-input-border-radius);
-    box-shadow: var(--form-input-glow);
-    transition: var(--standard-transition);
-  }
-
-  button {
-    border-radius: 0.4rem;
-    padding-inline: 0;
-    width: 42px;
-
-    &::before,
-    &::after {
-      inset: 5px;
-    }
-  }
 
   .jenkins-search {
     --search-bar-height: 2.625rem;
-
-    input {
-      border: none !important;
-      box-shadow: none !important;
-      background: none !important;
-      padding: 0 0 0 var(--search-bar-height);
-    }
-  }
-
-  &:hover {
-    &::before {
-      border-color: var(--input-border-hover);
-    }
-  }
-
-  &:has(input:focus) {
-    &::before {
-      border-color: var(--focus-input-border);
-      box-shadow: var(--form-input-glow--focus);
-    }
   }
 }
 
@@ -95,7 +50,7 @@ $pgv-item-padding-inline: 0.7rem;
 
   &::before {
     background-color: var(--item-background);
-    border: var(--jenkins-border--subtle);
+    border: var(--jenkins-border);
   }
 
   &::after {
@@ -139,7 +94,7 @@ $pgv-item-padding-inline: 0.7rem;
 
     &:focus-visible {
       &::after {
-        box-shadow: 0 0 0 0.2rem var(--text-color) !important;
+        box-shadow: 0 0 0 0.25rem var(--text-color) !important;
         opacity: 1 !important;
       }
     }
@@ -188,14 +143,14 @@ $pgv-item-padding-inline: 0.7rem;
     display: grid;
     grid-template-columns: auto 1fr;
     align-items: start;
-    gap: 0.65rem;
+    gap: 0.625rem;
     min-width: 0;
   }
 
   &__info {
     display: flex;
     flex-direction: row;
-    gap: 0.65rem;
+    gap: 0.625rem;
   }
 
   &__name,

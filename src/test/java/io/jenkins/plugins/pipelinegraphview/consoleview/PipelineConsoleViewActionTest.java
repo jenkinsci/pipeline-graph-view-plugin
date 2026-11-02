@@ -1,15 +1,21 @@
 package io.jenkins.plugins.pipelinegraphview.consoleview;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
+import java.io.IOException;
 import java.util.List;
+import org.htmlunit.WebRequest;
+import org.htmlunit.WebResponse;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlPage;
+import org.htmlunit.util.UrlUtils;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
@@ -32,6 +38,32 @@ class PipelineConsoleViewActionTest {
         PipelineConsoleViewAction consoleAction = new PipelineConsoleViewAction(run);
         String message = consoleAction.getNodeExceptionText(errorStep.getId());
         assertThat(message, equalTo("This is an error"));
+    }
+
+    void shouldHaveConsoleText(JenkinsRule j, WorkflowRun run, String nodeId, String expectedText) throws IOException {
+        try (var c = j.createWebClient()) {
+            WebRequest req =
+                    new WebRequest(UrlUtils.toUrlSafe(j.getURL() + run.getUrl() + "stages/log?nodeId=" + nodeId));
+            WebResponse rsp = c.loadWebResponse(req);
+            assertThat(rsp.getContentAsString(), equalTo(expectedText));
+        }
+    }
+
+    @Issue("GH#947")
+    @Test
+    void getConsoleTextWithScriptError(JenkinsRule j) throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j, "gh947_stage_mixed_result", "gh947_stage_mixed_result.jenkinsfile", Result.FAILURE);
+
+        PipelineNodeGraphAdapter builder = new PipelineNodeGraphAdapter(run);
+        String stageId = TestUtils.getNodesByDisplayName(run, "A").get(0).getId();
+        List<FlowNodeWrapper> stepNodes = builder.getStageSteps(stageId);
+        assertThat(stepNodes.size(), equalTo(3));
+
+        shouldHaveConsoleText(j, run, stageId, "Hello world\nThis error is caught\nThis is a fatal error\n");
+        shouldHaveConsoleText(j, run, stepNodes.get(0).getId(), "Hello world\n");
+        shouldHaveConsoleText(j, run, stepNodes.get(1).getId(), "This error is caught");
+        shouldHaveConsoleText(j, run, stepNodes.get(2).getId(), "This is a fatal error");
     }
 
     @Issue("GH#224")
@@ -62,6 +94,45 @@ class PipelineConsoleViewActionTest {
             DomElement root = page.getElementById("console-pipeline-root");
             assertThat(root, notNullValue());
             assertThat(root.getAttribute("data-current-run-path"), endsWith("/" + run.getNumber() + "/"));
+        }
+    }
+
+    @Issue("GH#1313")
+    @Test
+    void exposesRunStartTimes(JenkinsRule j) throws Exception {
+        WorkflowRun first =
+                TestUtils.createAndRunJob(j, "hello_world_scripted", "simpleError.jenkinsfile", Result.FAILURE);
+        WorkflowRun second = j.buildAndAssertStatus(Result.FAILURE, first.getParent());
+
+        try (var c = j.createWebClient()) {
+            HtmlPage page = c.goTo(second.getUrl() + "stages");
+            DomElement root = page.getElementById("console-pipeline-root");
+            assertThat(root, notNullValue());
+            assertThat(
+                    root.getAttribute("data-current-run-start-time"),
+                    equalTo(String.valueOf(second.getStartTimeInMillis())));
+            assertThat(
+                    root.getAttribute("data-previous-run-start-time"),
+                    equalTo(String.valueOf(first.getStartTimeInMillis())));
+        }
+    }
+
+    @Test
+    void doRerunReturnsErrorWhenJobIsNotBuildable(JenkinsRule j) throws Exception {
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "hello_world_scripted", "simpleError.jenkinsfile", Result.FAILURE);
+
+        run.getParent().setDisabled(true);
+        j.jenkins.setCrumbIssuer(null);
+
+        try (var c = j.createWebClient()) {
+            c.getOptions().setThrowExceptionOnFailingStatusCode(false);
+            WebRequest request = new WebRequest(
+                    UrlUtils.toUrlSafe(j.getURL() + run.getUrl() + "stages/rerun"), org.htmlunit.HttpMethod.POST);
+            WebResponse rsp = c.loadWebResponse(request);
+            // Before the fix this threw a NullPointerException (HTTP 500).
+            // After the fix, errorJSON() returns HTTP 200 with an error JSON body.
+            assertThat(rsp.getStatusCode(), equalTo(200));
         }
     }
 }

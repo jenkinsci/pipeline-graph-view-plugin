@@ -45,6 +45,7 @@ public class PipelineGraphApi {
                         flowNodeWrapper.getType(),
                         flowNodeWrapper.getDisplayName(), // TODO blue ocean uses timing information: "Passed in 0s"
                         flowNodeWrapper.isSynthetic(),
+                        flowNodeWrapper.isCollapsedByDefault(),
                         flowNodeWrapper.getTiming(),
                         getStageNode(flowNodeWrapper, workspaceNodes, enclosingIdsByNodeId),
                         flowNodeWrapper.getCauseOfBlockage()))

@@ -48,6 +48,20 @@ See a live demonstration from a Jenkins Contributor Summit:
 
 ## Pipeline DSL Extensions
 
+### Collapsible Console Sections
+
+Console output can be split into collapsible sections using `##[group]` / `##[endgroup]` markers (Azure DevOps style) or `::group::` / `::endgroup::` (GitHub Actions style):
+
+```groovy
+sh '''
+    echo "##[group]Unit Tests"
+    ./run-tests.sh
+    echo "##[endgroup]"
+'''
+```
+
+Sections with more than 25 lines start collapsed. Nested sections are supported. See [collapsible-console-sections.md](docs/collapsible-console-sections.md) for full details including colored titles with the AnsiColor plugin.
+
 ### Hiding Steps from View
 
 You can mark specific pipeline steps as hidden from the view by wrapping them with the `hideFromView` step:

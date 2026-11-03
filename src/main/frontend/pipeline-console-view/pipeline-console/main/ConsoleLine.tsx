@@ -1,10 +1,10 @@
-import DOMPurify from "dompurify";
 import linkifyHtml from "linkify-html";
 import { memo } from "react";
 
 import { BuildStep } from "../../../common/RestClient.tsx";
 import { linkifyJsOptions } from "../../../common/utils/linkify-js.ts";
 import { makeReactChildren, tokenizeANSIString } from "./Ansi.tsx";
+import { sanitizeConsoleHtml } from "./sanitizeConsoleHtml.ts";
 
 export interface ConsoleLineProps {
   stopTailingLogs: () => void;
@@ -58,11 +58,7 @@ export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
         <div className="console-text">
           {makeReactChildren(
             tokenizeANSIString(
-              DOMPurify.sanitize(linkifyHtml(content, linkifyJsOptions), {
-                ALLOWED_TAGS: ["a", "span", "b"],
-                ALLOWED_ATTR: ["href", "rel", "class", "style"],
-                ALLOWED_URI_REGEXP: /^(?:https?:\/\/|\/(?![/\\]))/i,
-              }),
+              sanitizeConsoleHtml(linkifyHtml(content, linkifyJsOptions)),
             ),
             id,
           )}

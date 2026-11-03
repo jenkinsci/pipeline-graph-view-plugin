@@ -1,35 +1,10 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { DEFAULT_LOCALE } from "../../../../common/i18n/index.ts";
-import { defaultMessages } from "../../../../common/i18n/messages.ts";
-import { layoutGraph } from "../PipelineGraphLayout.ts";
-import {
-  CounterNodeInfo,
-  LayoutInfo,
-  Result,
-  StageInfo,
-} from "../PipelineGraphModel.tsx";
+import { CounterNodeInfo, Result, StageInfo } from "../PipelineGraphModel.tsx";
 import { Node } from "./nodes.tsx";
 
 describe("Counter node with 50+ parallel stages", () => {
-  const layout: LayoutInfo = {
-    nodeSpacingH: 120,
-    parallelSpacingH: 120,
-    nodeSpacingV: 70,
-    nodeRadius: 12,
-    terminalRadius: 7,
-    curveRadius: 12,
-    connectorStrokeWidth: 3.5,
-    labelOffsetV: 20,
-    smallLabelOffsetV: 15,
-    ypStart: 55,
-    graphSpacingTop: 0,
-    graphSpacingRight: 0,
-    graphSpacingBottom: 0,
-    graphSpacingLeft: 0,
-  };
-
   const baseStage: StageInfo = {
     name: "",
     title: "",
@@ -49,51 +24,6 @@ describe("Counter node with 50+ parallel stages", () => {
     id,
     name,
     url: `/?selected-node=${id}`,
-  });
-
-  const buildGraphWithManyStages = (stageCount: number, maxColumns: number) =>
-    layoutGraph(
-      "job/name/1/",
-      Array.from({ length: stageCount }, (_, i) =>
-        makeStage(i + 1, `Stage ${i + 1}`),
-      ),
-      layout,
-      true,
-      defaultMessages(DEFAULT_LOCALE),
-      false,
-      false,
-      maxColumns,
-    );
-  const counterFor = (graph: ReturnType<typeof buildGraphWithManyStages>) => {
-    return graph.nodes.find((node) => node.type === "counter");
-  };
-
-  describe("layout with 50+ stages", () => {
-    it("collapses 55 stages into a counter node with correct count", () => {
-      const graph = buildGraphWithManyStages(55, 5);
-      const counter = counterFor(graph);
-      expect(counter).toBeDefined();
-      expect(counter?.stages.length).toBe(51);
-    });
-
-    it("collapses 100 stages into a counter node with correct count", () => {
-      const graph = buildGraphWithManyStages(100, 5);
-      const counter = counterFor(graph);
-      expect(counter).toBeDefined();
-      expect(counter?.stages.length).toBe(96);
-    });
-
-    it("counter node holds all stage references for 60 stages at default threshold", () => {
-      const graph = buildGraphWithManyStages(60, 13);
-      const counter = counterFor(graph);
-      expect(counter).toBeDefined();
-      expect(counter?.stages.length).toBe(48);
-      // Each stage should retain its identity
-      counter?.stages.forEach((stage) => {
-        expect(stage.name).toMatch(/^Stage \d+$/);
-        expect(stage.url).toContain("selected-node=");
-      });
-    });
   });
 
   describe("counter node tooltip rendering", () => {

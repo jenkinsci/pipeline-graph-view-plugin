@@ -85,6 +85,8 @@ export enum LocalizedMessageKey {
   collapseNestedStages = "collapse.collapseNested",
   expandAllStages = "collapse.expandAll",
   collapseAllStages = "collapse.collapseAll",
+  consoleSectionLines = "console.section.lines",
+  consoleSectionUntitled = "console.section.untitled",
 }
 
 const DEFAULT_MESSAGES: ResourceBundle = {
@@ -104,6 +106,9 @@ const DEFAULT_MESSAGES: ResourceBundle = {
   [LocalizedMessageKey.collapseNestedStages]: "Collapse nested stages",
   [LocalizedMessageKey.expandAllStages]: "Expand all stages",
   [LocalizedMessageKey.collapseAllStages]: "Collapse all stages",
+  [LocalizedMessageKey.consoleSectionLines]:
+    "{0} {0,choice,0#lines|1#line|1<lines}",
+  [LocalizedMessageKey.consoleSectionUntitled]: "Section",
 };
 
 export function defaultMessages(locale: string): Messages {

@@ -23,7 +23,6 @@ import org.kohsuke.stapler.verb.GET;
 public class MultiPipelineGraphViewAction implements Action, IconSpec {
     private static final int MaxNumberOfElements = 10;
 
-    // Referenced by name so the plugin keeps working once core removes the flag
     private static final String NEW_JOB_PAGE_FLAG = "jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag";
 
     private final WorkflowJob target;

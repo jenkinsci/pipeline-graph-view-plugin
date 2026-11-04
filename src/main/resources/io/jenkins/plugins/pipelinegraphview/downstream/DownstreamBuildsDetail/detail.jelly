@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout">
+  <j:if test="${!empty(it.references)}">
+    <st:adjunct includes="io.jenkins.plugins.pipelinegraphview.downstream.downstream-builds" />
+
+    <l:dialog title="${it.title}">
+      <ul class="pgv-downstream-builds">
+        <j:forEach var="ref" items="${it.references}">
+          <j:set var="build" value="${ref.job().getBuildByNumber(ref.number())}" />
+          <j:if test="${build != null}">
+            <li>
+              <a class="pgv-downstream-builds__item" href="${rootURL}/${ref.url()}">
+                <span class="pgv-downstream-builds__icon">
+                  <l:icon src="symbol-status-${build.iconColor.iconName}" alt="${build.iconColor.description}" />
+                </span>
+                <span class="pgv-downstream-builds__text">
+                  <span class="pgv-downstream-builds__name">
+                    ${ref.job().fullDisplayName}
+                    <span class="pgv-downstream-builds__number">${build.displayName}</span>
+                  </span>
+                  <span class="pgv-downstream-builds__meta">
+                    ${build.iconColor.description} · ${%took(build.durationString)} · ${%ago(build.timestampString)}
+                  </span>
+                </span>
+              </a>
+            </li>
+          </j:if>
+        </j:forEach>
+      </ul>
+    </l:dialog>
+
+    <button type="button" class="jenkins-details__item" data-type="dialog-opener" data-dialog-id="${dialogId}">
+      <div class="jenkins-details__item__icon">
+        <l:icon src="${it.iconClassName}" />
+      </div>
+      <span>${it.displayName}</span>
+    </button>
+  </j:if>
+</j:jelly>

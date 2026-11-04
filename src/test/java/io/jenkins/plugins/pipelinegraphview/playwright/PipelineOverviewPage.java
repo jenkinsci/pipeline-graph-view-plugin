@@ -220,4 +220,14 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
         logs.buildStepLinkHasStagesSuffix();
         return this;
     }
+
+    public PipelineOverviewPage downstreamBuildsDialogLinksTo(String buildName, String href) {
+        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("1 downstream build"))
+                .click();
+        Locator link = page.getByRole(AriaRole.DIALOG)
+                .getByRole(AriaRole.LINK)
+                .filter(new Locator.FilterOptions().setHasText(buildName));
+        assertThat(link).hasAttribute("href", href);
+        return this;
+    }
 }

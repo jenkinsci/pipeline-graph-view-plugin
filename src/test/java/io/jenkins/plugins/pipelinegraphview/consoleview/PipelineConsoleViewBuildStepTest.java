@@ -47,4 +47,19 @@ class PipelineConsoleViewBuildStepTest {
                 .selectStageInGraph("Trigger")
                 .buildStepLinkHasStagesSuffix();
     }
+
+    @Test
+    @ConfiguredWithCode("../configure-appearance.yml")
+    void downstreamBuildIsListedInDetailsBar(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
+        TestUtils.createJob(j, "downstream", "helloWorldScriptedPipeline.jenkinsfile");
+        WorkflowRun run = TestUtils.createAndRunJob(j, "upstream", "buildStep.jenkinsfile", Result.SUCCESS);
+
+        new PipelineJobPage(p, run.getParent())
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .goToBuild()
+                .goToPipelineOverview()
+                .downstreamBuildsDialogLinksTo("downstream #1", "/jenkins/job/downstream/1/stages/");
+    }
 }

@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import jenkins.model.experimentalflags.UserExperimentalFlag;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -21,6 +22,9 @@ import org.kohsuke.stapler.verb.GET;
 
 public class MultiPipelineGraphViewAction implements Action, IconSpec {
     private static final int MaxNumberOfElements = 10;
+
+    // Referenced by name so the plugin keeps working once core removes the flag
+    private static final String NEW_JOB_PAGE_FLAG = "jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag";
 
     private final WorkflowJob target;
 
@@ -119,6 +123,9 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
 
     @Override
     public String getIconClassName() {
+        if (Boolean.TRUE.equals(UserExperimentalFlag.getFlagValueForCurrentUser(NEW_JOB_PAGE_FLAG))) {
+            return null;
+        }
         return "symbol-layers-outline plugin-ionicons-api";
     }
 }

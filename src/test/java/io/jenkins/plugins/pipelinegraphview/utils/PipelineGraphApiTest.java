@@ -378,6 +378,34 @@ class PipelineGraphApiTest {
         assertThat(stagesString, equalTo("ParentStage{failure}[SubStageA{failure},SubStageB{skipped}]"));
     }
 
+    @Issue("GH#1413")
+    @Test
+    void gh1413_nestedNotBuiltStageDoesNotHideSiblings() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j, "gh1413_nestedNotBuiltStage", "gh1413_nestedNotBuiltStage.jenkinsfile", Result.SUCCESS);
+
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
+        String stagesString = TestUtils.collectStagesAsString(stages, TestUtils::nodeNameAndStatus);
+
+        assertThat(stagesString, equalTo("Parent{success}[Child{success}[Skipped{not_built},Runs{success}]]"));
+    }
+
+    @Issue("GH#1413")
+    @Test
+    void gh1413_parallelNotBuiltStageDoesNotHideBranches() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j, "gh1413_parallelNotBuiltStage", "gh1413_parallelNotBuiltStage.jenkinsfile", Result.SUCCESS);
+
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
+        String stagesString = TestUtils.collectStagesAsString(stages, TestUtils::nodeNameAndStatus);
+
+        assertThat(
+                stagesString,
+                equalTo("Parent{unstable}["
+                        + "BranchA{success}[Build{success},Skipped{not_built}],"
+                        + "BranchB{unstable}[Skipped{not_built},Unstable{unstable}]]"));
+    }
+
     @Test
     void pipelineWithEarlyFailure() throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(

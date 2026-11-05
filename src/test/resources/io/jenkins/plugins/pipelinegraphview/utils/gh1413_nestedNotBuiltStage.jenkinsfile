@@ -1,0 +1,12 @@
+stage('Parent') {
+    stage('Child') {
+        stage('Skipped') {
+            catchError(buildResult: 'SUCCESS', stageResult: 'NOT_BUILT') {
+                error('Skipping this stage')
+            }
+        }
+        stage('Runs') {
+            echo 'running'
+        }
+    }
+}

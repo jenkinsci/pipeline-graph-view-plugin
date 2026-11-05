@@ -1,0 +1,26 @@
+stage('Parent') {
+    parallel(
+        'BranchA': {
+            stage('Build') {
+                echo 'building'
+            }
+            stage('Skipped') {
+                catchError(buildResult: 'SUCCESS', stageResult: 'NOT_BUILT') {
+                    error('Skipping this stage')
+                }
+            }
+        },
+        'BranchB': {
+            stage('Skipped') {
+                catchError(buildResult: 'SUCCESS', stageResult: 'NOT_BUILT') {
+                    error('Skipping this stage')
+                }
+            }
+            stage('Unstable') {
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    error('Marking unstable')
+                }
+            }
+        }
+    )
+}

@@ -33,6 +33,7 @@ import hudson.model.Action;
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphRegistry;
 import io.jenkins.plugins.pipelinegraphview.livestate.WarningActionCache;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -371,10 +372,35 @@ public class StatusAndTiming {
             return null;
         }
         return StreamSupport.stream(scanner.spliterator(), false)
-                .map(node -> node.getPersistentAction(WarningAction.class))
+                .map(node -> {
+                    WarningAction warning = node.getPersistentAction(WarningAction.class);
+                    if (warning != null
+                            && warning.getResult() == Result.NOT_BUILT
+                            && isInsideNestedStageOrBranch(node, start)) {
+                        return null;
+                    }
+                    return warning;
+                })
                 .filter(Objects::nonNull)
                 .max(Comparator.comparing(warning -> warning.getResult().ordinal))
                 .orElse(null);
+    }
+
+    /**
+     * A nested stage or parallel branch that was not built (e.g. {@code catchError(stageResult: 'NOT_BUILT')})
+     * says nothing about whether the enclosing block ran. Letting it count would mark the enclosing block as
+     * not executed, and the graph hides the children of blocks that were not executed.
+     */
+    private static boolean isInsideNestedStageOrBranch(@NonNull FlowNode node, @NonNull FlowNode outer) {
+        for (BlockStartNode enclosing : node.iterateEnclosingBlocks()) {
+            if (enclosing.getId().equals(outer.getId())) {
+                return false;
+            }
+            if (PipelineNodeUtil.isStage(enclosing) || PipelineNodeUtil.isParallelBranch(enclosing)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

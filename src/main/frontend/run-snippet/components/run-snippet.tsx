@@ -9,8 +9,10 @@ import {
   useRef,
   useState,
 } from "react";
+import type { Instance } from "tippy.js";
 
 import { DefaultDropdownProps } from "../../common/components/dropdown.tsx";
+import InputStepControls from "../../common/components/input-step-controls.tsx";
 import StatusIcon, {
   StageStatusIcon,
 } from "../../common/components/status-icon.tsx";
@@ -18,6 +20,7 @@ import Tooltip from "../../common/components/tooltip.tsx";
 import { RunStatus } from "../../common/RestClient.tsx";
 import LiveTotal from "../../common/utils/live-total.tsx";
 import {
+  PendingInput,
   Result,
   StageInfo,
 } from "../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
@@ -26,9 +29,13 @@ import { collapseTopLevelStages, expandMatrixStages } from "./utils.ts";
 export default function RunSnippet({
   run,
   currentRunPath,
+  runPath,
 }: {
   run: RunStatus;
+  /** Prefix for links to a stage, followed by the stage's id. */
   currentRunPath: string;
+  /** The run's URL, including the root URL and a trailing slash. */
+  runPath: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const stages = useMemo(() => expandMatrixStages(run.stages), [run.stages]);
@@ -100,6 +107,21 @@ export default function RunSnippet({
             );
           }
 
+          if (e.state === Result.paused && e.pendingInputs?.length) {
+            return (
+              <PendingInputsTooltip
+                key={e.id}
+                stage={e}
+                pendingInputs={e.pendingInputs}
+                runPath={runPath}
+              >
+                <a href={currentRunPath + e.id}>
+                  <StageStatusIcon stage={e} />
+                </a>
+              </PendingInputsTooltip>
+            );
+          }
+
           return (
             <Tooltip
               delay={TOOLTIP_DELAY}
@@ -131,6 +153,63 @@ export default function RunSnippet({
         {total} stage{total === 1 ? "" : "s"}
       </div>
     </div>
+  );
+}
+
+/**
+ * Offers to proceed with or abort each input the stage is waiting on, when hovering or focusing
+ * its child. Parallel branches can each be waiting on their own input, so they're listed by the
+ * stage that's waiting.
+ */
+function PendingInputsTooltip({
+  stage,
+  pendingInputs,
+  runPath,
+  children,
+}: {
+  stage: StageInfo;
+  pendingInputs: PendingInput[];
+  runPath: string;
+  children: ReactElement;
+}) {
+  const instance = useRef<Instance>(undefined);
+  const hide = () => instance.current?.hide();
+
+  return (
+    <Tooltip
+      delay={TOOLTIP_DELAY}
+      interactive
+      trigger="mouseenter focus"
+      // The history column would clip the tooltip
+      appendTo={document.body}
+      onCreate={(created) => {
+        instance.current = created;
+      }}
+      content={
+        <div className="pgv-run-snippet__inputs">
+          <div className="pgv-run-snippet__inputs__stage">{stage.name}</div>
+          {pendingInputs.map((pending) => (
+            <div key={pending.input.id} className="pgv-run-snippet__input">
+              {pending.stageName !== stage.name && (
+                <div className="jenkins-!-text-color-secondary">
+                  {pending.stageName}
+                </div>
+              )}
+              <div className="pgv-run-snippet__input__message">
+                {pending.input.message}
+              </div>
+              <InputStepControls
+                input={pending.input}
+                baseUrl={`${runPath}input/${pending.input.id}/`}
+                onAction={hide}
+              />
+            </div>
+          ))}
+        </div>
+      }
+    >
+      {children}
+    </Tooltip>
   );
 }
 

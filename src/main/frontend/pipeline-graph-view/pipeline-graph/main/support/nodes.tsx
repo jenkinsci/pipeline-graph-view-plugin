@@ -1,7 +1,9 @@
 import "./nodes.scss";
 
-import { CSSProperties, memo, ReactElement } from "react";
+import { CSSProperties, memo, ReactElement, useRef } from "react";
+import type { Instance } from "tippy.js";
 
+import InputStepControls from "../../../../common/components/input-step-controls.tsx";
 import {
   resultToColor,
   StageStatusIcon,
@@ -9,7 +11,12 @@ import {
 import Tooltip from "../../../../common/components/tooltip.tsx";
 import { classNames } from "../../../../common/utils/classnames.ts";
 import LiveTotal from "../../../../common/utils/live-total.tsx";
-import { LayoutInfo, NodeInfo, StageInfo } from "../PipelineGraphModel.tsx";
+import {
+  LayoutInfo,
+  NodeInfo,
+  Result,
+  StageInfo,
+} from "../PipelineGraphModel.tsx";
 
 type SVGChildren = Array<any>; // Fixme: Maybe refine this? Not sure what should go here, we have working code I can't make typecheck
 
@@ -21,12 +28,23 @@ interface NodeProps {
    */
   onStageSelect?: (nodeId: string) => void;
   isSelected: boolean;
+  /**
+   * Run URL including the root URL and a trailing slash, used to submit pending input
+   */
+  currentRunPath: string;
 }
 
 export const Node = memo(NodeImpl);
 
-function NodeImpl({ node, collapsed, onStageSelect, isSelected }: NodeProps) {
+function NodeImpl({
+  node,
+  collapsed,
+  onStageSelect,
+  isSelected,
+  currentRunPath,
+}: NodeProps) {
   const key = node.key;
+  const tooltipInstance = useRef<Instance>(undefined);
 
   if (node.isPlaceholder) {
     if (node.type === "counter") {
@@ -134,8 +152,26 @@ function NodeImpl({ node, collapsed, onStageSelect, isSelected }: NodeProps) {
   const causeOfBlockage =
     node.stage.state === "queued" ? node.stage.causeOfBlockage : undefined;
 
+  const pendingInput =
+    node.stage.state === Result.paused ? node.stage.inputStep : undefined;
+
   let tooltip: ReactElement;
-  if (collapsed) {
+  if (pendingInput) {
+    tooltip = (
+      <div className="pgv-node-tooltip pgv-node-tooltip--input">
+        {collapsed && <div>{title}</div>}
+        <div className="pgv-node-tooltip__input-message">
+          {pendingInput.message}
+        </div>
+        <InputStepControls
+          input={pendingInput}
+          baseUrl={`${currentRunPath}input/${pendingInput.id}/`}
+          className="pgv-node-tooltip__input-controls"
+          onAction={() => tooltipInstance.current?.hide()}
+        />
+      </div>
+    );
+  } else if (collapsed) {
     tooltip = (
       <div className="pgv-node-tooltip">
         <div>{title}</div>
@@ -163,7 +199,13 @@ function NodeImpl({ node, collapsed, onStageSelect, isSelected }: NodeProps) {
   }
 
   return (
-    <Tooltip content={tooltip}>
+    <Tooltip
+      content={tooltip}
+      onCreate={(instance) => {
+        tooltipInstance.current = instance;
+      }}
+      {...(pendingInput && { interactive: true, appendTo: document.body })}
+    >
       <div {...groupProps}>
         {groupChildren}
         {clickable && (

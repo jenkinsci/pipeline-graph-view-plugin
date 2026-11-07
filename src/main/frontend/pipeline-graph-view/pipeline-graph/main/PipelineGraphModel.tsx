@@ -1,3 +1,5 @@
+import type { InputStep } from "../../../common/RestClient.tsx";
+
 export enum Result {
   success = "success",
   failure = "failure",
@@ -9,6 +11,12 @@ export enum Result {
   not_built = "not_built", // May be pending, or job was ended before this point
   skipped = "skipped", // excluded via pipeline "when" clause
   unknown = "unknown", // bad data
+}
+
+export interface PendingInput {
+  stageId: number;
+  stageName: string;
+  input: InputStep;
 }
 
 // Dimensions used for layout, px
@@ -55,6 +63,8 @@ export interface StageInfo {
   agent: string;
   url: string;
   causeOfBlockage?: string; // Set when state is "queued" — e.g. "Waiting for next available executor on 'linux'"
+  inputStep?: InputStep; // Set when the stage is paused waiting for input
+  pendingInputs?: PendingInput[]; // Build history only: input this stage or its nested stages are waiting on
 
   skeleton?: boolean;
   pauseLiveTotal?: boolean;

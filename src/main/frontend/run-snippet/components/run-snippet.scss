@@ -147,3 +147,31 @@
   color: var(--text-color-secondary);
   font-variant-numeric: tabular-nums;
 }
+
+// Appended to the body, so not nested under .pgv-run-snippet
+.pgv-run-snippet__inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 20rem;
+  padding: 0.25rem 0;
+  text-align: center;
+
+  .pgv-run-snippet__inputs__stage {
+    margin-bottom: -0.25rem;
+  }
+
+  .pgv-run-snippet__input {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+
+  .pgv-run-snippet__input__message {
+    font-weight: var(--font-bold-weight);
+  }
+
+  .jenkins-button {
+    min-width: 6rem;
+  }
+}

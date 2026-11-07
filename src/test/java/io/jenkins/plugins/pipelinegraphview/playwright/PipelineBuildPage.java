@@ -35,6 +35,16 @@ public class PipelineBuildPage extends JenkinsPage<PipelineBuildPage> {
         return this;
     }
 
+    public PipelineBuildPage respondToInputInGraph(String stage, String button) {
+        graph.respondToInputFromTooltip(stage, button);
+        return this;
+    }
+
+    public InputDialog openInputDialogFromGraph(String stage, String button) {
+        graph.respondToInputFromTooltip(stage, button);
+        return new InputDialog(page).waitForLoaded();
+    }
+
     public PipelineOverviewPage goToPipelineOverview() {
         page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Pipeline Overview"))
                 .click();

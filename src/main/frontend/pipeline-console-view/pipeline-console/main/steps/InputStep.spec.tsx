@@ -3,12 +3,12 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 
+import { openInputStepDialog } from "../../../../common/components/input-step-dialog.ts";
 import { StepInfo } from "../../../../common/RestClient.tsx";
 import { Result } from "../../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import InputStep from "./InputStep.tsx";
-import { openInputStepDialog } from "./inputStepDialog.ts";
 
-vi.mock("./inputStepDialog.ts", () => ({
+vi.mock("../../../../common/components/input-step-dialog.ts", () => ({
   openInputStepDialog: vi.fn(),
 }));
 

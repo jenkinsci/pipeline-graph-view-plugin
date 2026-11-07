@@ -125,6 +125,7 @@ class PipelineJsonWriterTest {
                 new TimingInfo(500, 0, 1_700_000_002_000L),
                 "built-in",
                 "job/example/1/",
+                null,
                 null);
 
         PipelineGraph graph = new PipelineGraph(List.of(stage), true);

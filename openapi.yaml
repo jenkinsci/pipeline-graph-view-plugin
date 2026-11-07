@@ -417,6 +417,11 @@ components:
         url:
           type: string
           description: URL to view this stage in the UI
+        inputStep:
+          $ref: "#/components/schemas/InputStep"
+          description: >-
+            Input step this stage is paused on, waiting for a user to proceed or
+            abort. Omitted when the stage is not waiting for input.
 
     PipelineState:
       type: string

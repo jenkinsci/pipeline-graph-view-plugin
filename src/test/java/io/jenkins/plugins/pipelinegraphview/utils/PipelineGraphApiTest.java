@@ -657,6 +657,59 @@ class PipelineGraphApiTest {
         assertThat(run.getResult(), equalTo(Result.SUCCESS));
     }
 
+    @Issue("GH#348")
+    @Test
+    void createTree_stageWaitingForInputExposesPendingInput() throws Exception {
+        WorkflowJob job = j.createProject(WorkflowJob.class, "nestedInput");
+        job.setDefinition(new CpsFlowDefinition("""
+                pipeline {
+                    agent any
+                    stages {
+                        stage('Parent') {
+                            stages {
+                                stage('Approve') {
+                                    steps {
+                                        input id: 'Release', message: 'Release it?', ok: 'Ship', parameters: [string(name: 'VERSION')]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                """, true));
+        WorkflowRun run = job.scheduleBuild2(0).waitForStart();
+
+        PipelineGraphApi api = new PipelineGraphApi(run);
+        PipelineStage parent = await().until(
+                        () -> api.createTree().stages.stream()
+                                .filter(s -> s.name.equals("Parent"))
+                                .findFirst()
+                                .orElse(null),
+                        s -> s != null
+                                && !s.getChildren().isEmpty()
+                                && s.getChildren().get(0).getInputStep() != null);
+
+        assertThat(parent.state, equalTo(PipelineState.PAUSED));
+        assertThat(parent.getInputStep(), nullValue());
+
+        PipelineStage approve = parent.getChildren().get(0);
+        assertThat(approve.state, equalTo(PipelineState.PAUSED));
+        assertThat(
+                approve.getInputStep(),
+                equalTo(new PipelineInputStep("Release it?", "Abort", "Release", "Ship", true)));
+
+        org.jenkinsci.plugins.workflow.support.steps.input.InputAction inputAction =
+                run.getAction(org.jenkinsci.plugins.workflow.support.steps.input.InputAction.class);
+        inputAction.getExecution("Release").proceed(Map.of("VERSION", "1.0"));
+        j.waitForCompletion(run);
+
+        PipelineStage completed = api.createTree().stages.stream()
+                .filter(s -> s.name.equals("Parent"))
+                .findFirst()
+                .orElseThrow();
+        assertThat(completed.getChildren().get(0).getInputStep(), nullValue());
+    }
+
     @Issue("GH#486")
     @Test
     void queuedStageReportsCauseOfBlockage() throws Exception {

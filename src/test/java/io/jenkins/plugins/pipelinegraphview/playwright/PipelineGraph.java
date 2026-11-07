@@ -5,6 +5,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.AriaRole;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +57,18 @@ class PipelineGraph {
         Locator stateSvg = getStageByName(stage).locator("..").getByRole(AriaRole.IMG);
 
         assertThat(stateSvg).hasAccessibleName(state.toString());
+    }
+
+    public void respondToInputFromTooltip(String stage, String button) {
+        log.info("Clicking {} for the input in stage {} from the graph tooltip", button, stage);
+        Locator node = getStageByName(stage).locator("..");
+        assertThat(node).hasClass(Pattern.compile("PWGx-pipeline-node--paused"));
+        node.hover();
+
+        Locator tooltip = graph.page().locator(".pgv-node-tooltip--input");
+        assertThat(tooltip).isVisible();
+        tooltip.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName(button))
+                .click();
     }
 
     private Locator getStageByName(String name) {

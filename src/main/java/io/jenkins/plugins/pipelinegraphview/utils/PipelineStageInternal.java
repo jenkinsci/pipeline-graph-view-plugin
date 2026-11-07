@@ -1,10 +1,12 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import java.util.Collections;
 import java.util.List;
 import org.jenkinsci.plugins.workflow.support.steps.input.InputAction;
+import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
 
 class PipelineStageInternal {
 
@@ -128,44 +130,42 @@ class PipelineStageInternal {
     }
 
     /**
-     * Checks if this stage or any of its children are waiting for input.
-     * A stage is waiting for input if any of its steps have a non-null inputStep
-     * and the step state is PAUSED.
-     * Only performs the check if there is an InputAction attached to the WorkflowRun.
+     * Returns the input step this stage's own steps are paused on, so the graph can offer
+     * proceed / abort without opening the console. Paused input in nested stages is carried
+     * by those stages instead.
      */
-    private boolean isWaitingForInput(List<PipelineStage> children) {
-        // Early exit if there's no InputAction on the run
-        if (inputAction == null) {
+    @CheckForNull
+    private InputStep findPendingInput() {
+        if (inputAction == null || builder == null || id == null) {
+            return null;
+        }
+        List<FlowNodeWrapper> steps = builder.getStageSteps(id);
+        if (steps == null) {
+            return null;
+        }
+        for (FlowNodeWrapper step : steps) {
+            if (step.getInputStep() != null && step.getStatus().state == BlueRun.BlueRunState.PAUSED) {
+                return step.getInputStep();
+            }
+        }
+        return null;
+    }
+
+    private static boolean anyChildPaused(List<PipelineStage> children) {
+        if (children == null) {
             return false;
         }
-
-        // Check if any child stages are waiting for input
-        if (children != null && !children.isEmpty()) {
-            for (PipelineStage child : children) {
-                if (child.state == PipelineState.PAUSED) {
-                    return true;
-                }
+        for (PipelineStage child : children) {
+            if (child.state == PipelineState.PAUSED) {
+                return true;
             }
         }
-
-        // Check steps for this stage
-        if (builder != null && id != null) {
-            List<FlowNodeWrapper> steps = builder.getStageSteps(id);
-            if (steps != null) {
-                for (FlowNodeWrapper step : steps) {
-                    // Check if step has an input and is paused
-                    if (step.getInputStep() != null && step.getStatus().state == BlueRun.BlueRunState.PAUSED) {
-                        return true;
-                    }
-                }
-            }
-        }
-
         return false;
     }
 
     public PipelineStage toPipelineStage(List<PipelineStage> children, String runUrl) {
-        boolean waitingForInput = isWaitingForInput(children);
+        InputStep pendingInput = findPendingInput();
+        boolean waitingForInput = pendingInput != null || (inputAction != null && anyChildPaused(children));
         PipelineState effectiveState;
         if (waitingForInput) {
             effectiveState = PipelineState.PAUSED;
@@ -193,6 +193,7 @@ class PipelineStageInternal {
                 timingInfo,
                 agent,
                 runUrl,
-                causeOfBlockage);
+                causeOfBlockage,
+                PipelineInputStep.of(pendingInput));
     }
 }

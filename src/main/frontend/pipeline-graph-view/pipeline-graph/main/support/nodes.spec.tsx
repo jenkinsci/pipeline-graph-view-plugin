@@ -1,7 +1,12 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { CounterNodeInfo, Result, StageInfo } from "../PipelineGraphModel.tsx";
+import {
+  CounterNodeInfo,
+  Result,
+  StageInfo,
+  StageNodeInfo,
+} from "../PipelineGraphModel.tsx";
 import { Node } from "./nodes.tsx";
 
 describe("Counter node with 50+ parallel stages", () => {
@@ -41,7 +46,7 @@ describe("Counter node with 50+ parallel stages", () => {
         ),
       };
 
-      render(<Node node={counterNode} isSelected={false} />);
+      render(<Node node={counterNode} isSelected={false} currentRunPath="/" />);
       expect(screen.getByText("55")).toBeInTheDocument();
     });
 
@@ -60,7 +65,7 @@ describe("Counter node with 50+ parallel stages", () => {
         ),
       };
 
-      render(<Node node={counterNode} isSelected={false} />);
+      render(<Node node={counterNode} isSelected={false} currentRunPath="/" />);
 
       // Trigger tooltip by hovering (mouseenter)
       const counterBadge = screen.getByText(String(stageCount));
@@ -96,7 +101,7 @@ describe("Counter node with 50+ parallel stages", () => {
         ),
       };
 
-      render(<Node node={counterNode} isSelected={false} />);
+      render(<Node node={counterNode} isSelected={false} currentRunPath="/" />);
 
       const counterBadge = screen.getByText(String(stageCount));
       fireEvent.mouseEnter(counterBadge.closest(".PWGx-pipeline-node")!);
@@ -105,5 +110,106 @@ describe("Counter node with 50+ parallel stages", () => {
       expect(tooltipList).not.toBeNull();
       expect(tooltipList!.querySelectorAll("li").length).toBe(stageCount);
     });
+  });
+});
+
+describe("Stage node waiting for input", () => {
+  const fetchMock = vi.fn();
+
+  const stageNode = (stage: Partial<StageInfo>): StageNodeInfo => ({
+    x: 100,
+    y: 50,
+    name: "Deploy",
+    id: 7,
+    isPlaceholder: false,
+    key: "stage-7",
+    type: "stage",
+    stage: {
+      name: "Deploy",
+      title: "Deploy",
+      state: Result.paused,
+      id: 7,
+      type: "STAGE",
+      children: [],
+      pauseDurationMillis: 0,
+      startTimeMillis: 0,
+      agent: "built-in",
+      url: "/job/example/1/stages/?selected-node=7",
+      ...stage,
+    },
+  });
+
+  const inputStep = {
+    message: "Deploy to production?",
+    ok: "Deploy",
+    cancel: "Abort",
+    id: "Approve",
+    parameters: false,
+  };
+
+  const hover = () =>
+    fireEvent.mouseEnter(document.querySelector(".PWGx-pipeline-node")!);
+
+  beforeEach(() => {
+    fetchMock.mockReset();
+    fetchMock.mockResolvedValue({ ok: true });
+    vi.stubGlobal("fetch", fetchMock);
+    window.crumb = {
+      wrap: vi.fn().mockReturnValue({ "Jenkins-Crumb": "crumb" }),
+    };
+  });
+
+  it("proceeds with the input from the tooltip", async () => {
+    render(
+      <Node
+        node={stageNode({ inputStep })}
+        isSelected={false}
+        currentRunPath="/jenkins/job/example/1/"
+      />,
+    );
+    hover();
+
+    expect(screen.getByText("Deploy to production?")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Deploy" }));
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/jenkins/job/example/1/input/Approve/proceedEmpty",
+      { method: "POST", headers: { "Jenkins-Crumb": "crumb" } },
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByText("Deploy to production?").closest(".tippy-box"),
+      ).toHaveAttribute("data-state", "hidden"),
+    );
+  });
+
+  it("aborts the input from the tooltip", () => {
+    render(
+      <Node
+        node={stageNode({ inputStep })}
+        isSelected={false}
+        currentRunPath="/jenkins/job/example/1/"
+      />,
+    );
+    hover();
+
+    fireEvent.click(screen.getByRole("button", { name: "Abort" }));
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/jenkins/job/example/1/input/Approve/abort",
+      { method: "POST", headers: { "Jenkins-Crumb": "crumb" } },
+    );
+  });
+
+  it("does not offer input controls once the stage is no longer paused", () => {
+    render(
+      <Node
+        node={stageNode({ inputStep, state: Result.running })}
+        isSelected={false}
+        currentRunPath="/jenkins/job/example/1/"
+      />,
+    );
+    hover();
+
+    expect(screen.queryByRole("button", { name: "Deploy" })).toBeNull();
   });
 });

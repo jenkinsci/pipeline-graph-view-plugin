@@ -3,6 +3,7 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 import static io.jenkins.plugins.pipelinegraphview.consoleview.PipelineConsoleViewAction.URL_NAME;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import java.util.List;
@@ -22,6 +23,9 @@ public class PipelineStage extends AbstractPipelineNode {
     final String agent;
     private final String url;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private final PipelineInputStep inputStep;
+
     public PipelineStage(
             String id,
             String name,
@@ -37,7 +41,8 @@ public class PipelineStage extends AbstractPipelineNode {
             TimingInfo timingInfo,
             String agent,
             String runUrl,
-            String causeOfBlockage) {
+            String causeOfBlockage,
+            PipelineInputStep inputStep) {
         super(id, name, state, type, title, timingInfo, causeOfBlockage);
         this.children = children;
         this.seqContainerName = seqContainerName;
@@ -47,6 +52,7 @@ public class PipelineStage extends AbstractPipelineNode {
         this.placeholder = placeholder;
         this.agent = agent;
         this.url = "/" + runUrl + URL_NAME + "/?selected-node=" + id;
+        this.inputStep = inputStep;
     }
 
     @JsonCreator
@@ -67,7 +73,8 @@ public class PipelineStage extends AbstractPipelineNode {
             long startTimeMillis,
             String agent,
             String url,
-            String causeOfBlockage) {
+            String causeOfBlockage,
+            PipelineInputStep inputStep) {
         super(id, name, state, type, title, pauseDurationMillis, totalDurationMillis, startTimeMillis, causeOfBlockage);
         this.children = children;
         this.seqContainerName = seqContainerName;
@@ -77,6 +84,7 @@ public class PipelineStage extends AbstractPipelineNode {
         this.placeholder = placeholder;
         this.agent = agent;
         this.url = url;
+        this.inputStep = inputStep;
     }
 
     public List<PipelineStage> getChildren() {
@@ -109,5 +117,9 @@ public class PipelineStage extends AbstractPipelineNode {
 
     public String getUrl() {
         return url;
+    }
+
+    public PipelineInputStep getInputStep() {
+        return inputStep;
     }
 }

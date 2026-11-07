@@ -21,6 +21,7 @@ const meta: Meta<Args> = {
   },
   args: {
     currentRunPath: "#",
+    runPath: "#",
     width: 500,
   },
   render: ({ width, ...props }) => (
@@ -246,7 +247,7 @@ function TimelineExample() {
   return (
     <>
       <Column width={width}>
-        <RunSnippet run={run} currentRunPath="#" />
+        <RunSnippet run={run} currentRunPath="#" runPath="#" />
       </Column>
       <StoryControls>
         <label htmlFor="timeline-width">Width</label>

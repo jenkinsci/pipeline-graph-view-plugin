@@ -4,7 +4,7 @@
  so the lifecycle lives here: fetch the form, mount it in a <dialog>, re-run the adjunct scripts
  it pulls in (e.g., the credentials dropdown), and post the result to the input REST endpoints.
 */
-import { CLOSE_ICON } from "../../../../common/components/close-icon.ts";
+import { CLOSE_ICON } from "./close-icon.ts";
 
 interface OpenInputStepDialogOptions {
   message: string;

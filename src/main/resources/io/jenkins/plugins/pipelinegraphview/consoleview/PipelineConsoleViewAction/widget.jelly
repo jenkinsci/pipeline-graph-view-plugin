@@ -3,6 +3,7 @@
 <j:jelly xmlns:j="jelly:core">
     <div class="jenkins-card"
          id="graph"
+         data-user-locale="${request2.getLocale().toLanguageTag()}"
          data-normalized-parent-job-path="${it.normalizedParentJobPath}"
          data-current-run-start-time="${it.currentRunStartTime}"
          data-previous-run-start-time="${it.previousRunStartTime}"

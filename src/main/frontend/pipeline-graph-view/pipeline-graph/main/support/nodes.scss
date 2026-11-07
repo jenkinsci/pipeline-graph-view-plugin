@@ -52,6 +52,11 @@
   padding: 0.25rem 0;
   max-width: 20rem;
 
+  .pgv-node-tooltip__input-approvers {
+    color: var(--text-color-secondary);
+    text-wrap: wrap;
+  }
+
   .pgv-node-tooltip__input-message {
     color: var(--text-color);
     text-wrap: wrap;

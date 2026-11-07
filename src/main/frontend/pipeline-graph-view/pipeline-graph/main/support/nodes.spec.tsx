@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -211,5 +217,92 @@ describe("Stage node waiting for input", () => {
     hover();
 
     expect(screen.queryByRole("button", { name: "Deploy" })).toBeNull();
+  });
+
+  it("doesn't offer the previous run's input on a placeholder stage", () => {
+    render(
+      <Node
+        node={stageNode({ inputStep, skeleton: true })}
+        isSelected={false}
+        currentRunPath="/jenkins/job/example/1/"
+      />,
+    );
+    hover();
+
+    expect(screen.queryByRole("button", { name: "Deploy" })).toBeNull();
+  });
+
+  describe("with the keyboard", () => {
+    const renderPausedNode = () =>
+      render(
+        <Node
+          node={stageNode({ inputStep })}
+          isSelected={false}
+          currentRunPath="/jenkins/job/example/1/"
+        />,
+      );
+
+    const focusStage = () => {
+      const link = screen.getByRole("link", { name: "Deploy" });
+      // jsdom doesn't report :focus-visible while handling focusin, so treat this as keyboard focus
+      const matches = link.matches.bind(link);
+      vi.spyOn(link, "matches").mockImplementation(
+        (selector) => selector === ":focus-visible" || matches(selector),
+      );
+      act(() => link.focus());
+      return link;
+    };
+
+    it("moves focus into the tooltip when the stage is focused", async () => {
+      renderPausedNode();
+      focusStage();
+
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: "Deploy" })).toHaveFocus(),
+      );
+    });
+
+    it("returns focus to the stage when tabbing past the last button", async () => {
+      renderPausedNode();
+      const link = focusStage();
+      await waitFor(() =>
+        expect(screen.getByRole("button", { name: "Deploy" })).toHaveFocus(),
+      );
+
+      const abort = screen.getByRole("button", { name: "Abort" });
+      act(() => abort.focus());
+      fireEvent.keyDown(abort, { key: "Tab" });
+
+      expect(link).toHaveFocus();
+      expect(abort.closest(".tippy-box")).toHaveAttribute(
+        "data-state",
+        "hidden",
+      );
+    });
+
+    it("leaves focus on the stage when it's focused by a click", async () => {
+      renderPausedNode();
+      const link = screen.getByRole("link", { name: "Deploy" });
+      // Treat this focus as a click's, which isn't :focus-visible
+      const matches = link.matches.bind(link);
+      vi.spyOn(link, "matches").mockImplementation(
+        (selector) => selector !== ":focus-visible" && matches(selector),
+      );
+      act(() => link.focus());
+
+      await screen.findByRole("button", { name: "Deploy" });
+      expect(link).toHaveFocus();
+    });
+
+    it("returns focus to the stage on Escape", async () => {
+      renderPausedNode();
+      const link = focusStage();
+      const deploy = await screen.findByRole("button", { name: "Deploy" });
+      await waitFor(() => expect(deploy).toHaveFocus());
+
+      fireEvent.keyDown(deploy, { key: "Escape" });
+
+      expect(link).toHaveFocus();
+    });
   });
 });

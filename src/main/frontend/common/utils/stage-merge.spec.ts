@@ -21,6 +21,32 @@ describe("mergeStageInfos", () => {
     expect(test.skeleton).toBe(true);
   });
 
+  it("doesn't carry the previous run's input over to this run", () => {
+    const input = {
+      id: "Approve",
+      message: "Deploy?",
+      ok: "Deploy",
+      cancel: "Abort",
+      parameters: false,
+    };
+    const skeletons = [
+      stage("Build", { state: Result.paused, inputStep: input }),
+      stage("Deploy", {
+        state: Result.paused,
+        inputStep: input,
+        pendingInputs: [{ stageId: 2, stageName: "Deploy", input }],
+      }),
+    ];
+    const incoming = [stage("Build", { state: Result.paused })];
+
+    const [build, deploy] = mergeStageInfos(skeletons, incoming);
+
+    expect(build.inputStep).toBeUndefined();
+    expect(deploy.skeleton).toBe(true);
+    expect(deploy.inputStep).toBeUndefined();
+    expect(deploy.pendingInputs).toBeUndefined();
+  });
+
   it("recursively merges children", () => {
     const skeletons = [
       stage("Parent", {

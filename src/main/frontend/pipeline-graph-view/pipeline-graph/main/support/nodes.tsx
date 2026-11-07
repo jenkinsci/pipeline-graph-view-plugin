@@ -1,7 +1,6 @@
 import "./nodes.scss";
 
-import { CSSProperties, memo, ReactElement, useRef } from "react";
-import type { Instance } from "tippy.js";
+import { CSSProperties, memo, ReactElement } from "react";
 
 import InputStepControls from "../../../../common/components/input-step-controls.tsx";
 import {
@@ -9,6 +8,7 @@ import {
   StageStatusIcon,
 } from "../../../../common/components/status-icon.tsx";
 import Tooltip from "../../../../common/components/tooltip.tsx";
+import { useInputTooltip } from "../../../../common/components/use-input-tooltip.ts";
 import { classNames } from "../../../../common/utils/classnames.ts";
 import LiveTotal from "../../../../common/utils/live-total.tsx";
 import {
@@ -44,7 +44,8 @@ function NodeImpl({
   currentRunPath,
 }: NodeProps) {
   const key = node.key;
-  const tooltipInstance = useRef<Instance>(undefined);
+  const { tooltipProps: inputTooltipProps, hide: hideInputTooltip } =
+    useInputTooltip();
 
   if (node.isPlaceholder) {
     if (node.type === "counter") {
@@ -153,7 +154,9 @@ function NodeImpl({
     node.stage.state === "queued" ? node.stage.causeOfBlockage : undefined;
 
   const pendingInput =
-    node.stage.state === Result.paused ? node.stage.inputStep : undefined;
+    node.stage.state === Result.paused && !node.stage.skeleton
+      ? node.stage.inputStep
+      : undefined;
 
   let tooltip: ReactElement;
   if (pendingInput) {
@@ -167,7 +170,7 @@ function NodeImpl({
           input={pendingInput}
           baseUrl={`${currentRunPath}input/${pendingInput.id}/`}
           className="pgv-node-tooltip__input-controls"
-          onAction={() => tooltipInstance.current?.hide()}
+          onAction={hideInputTooltip}
         />
       </div>
     );
@@ -199,13 +202,7 @@ function NodeImpl({
   }
 
   return (
-    <Tooltip
-      content={tooltip}
-      onCreate={(instance) => {
-        tooltipInstance.current = instance;
-      }}
-      {...(pendingInput && { interactive: true, appendTo: document.body })}
-    >
+    <Tooltip content={tooltip} {...(pendingInput && inputTooltipProps)}>
       <div {...groupProps}>
         {groupChildren}
         {clickable && (

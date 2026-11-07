@@ -63,8 +63,10 @@ function isCompletedStage(stage: StageInfo): boolean {
   }
 }
 
+// Skeletons are spread under this run's stages, so the previous run's input is dropped to keep it
+// from being submitted to this run
 const markSkeleton = (stages: StageInfo[]): StageInfo[] =>
-  stages.map((s) => ({
+  stages.map(({ inputStep: _, pendingInputs: __, ...s }) => ({
     ...s,
     skeleton: true,
     startTimeMillis: 0, // Do not display start of steps in previous run.

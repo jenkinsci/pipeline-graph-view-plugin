@@ -1,6 +1,12 @@
 /** * @vitest-environment jsdom */
 
-import { fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -134,5 +140,94 @@ describe("RunSnippet pending input", () => {
       "/jenkins/job/example/2/input/Deploy/abort",
       { method: "POST", headers: { "Jenkins-Crumb": "crumb" } },
     );
+  });
+
+  it("submits the input of a paused matrix configuration", async () => {
+    const approve = (id: number, state: Result, inputId?: string) =>
+      stage({
+        id,
+        name: "Approve",
+        state,
+        inputStep: inputId
+          ? {
+              id: inputId,
+              message: `Approve ${inputId}?`,
+              ok: `Approve ${inputId}`,
+              cancel: "Abort",
+              parameters: false,
+            }
+          : undefined,
+      });
+    renderSnippet([
+      stage({
+        id: 2,
+        name: "Matrix",
+        state: Result.paused,
+        children: [
+          stage({
+            id: 3,
+            type: "PARALLEL",
+            name: "Matrix - PLATFORM = 'linux'",
+            state: Result.paused,
+            children: [approve(4, Result.paused, "Linux")],
+          }),
+          stage({
+            id: 5,
+            type: "PARALLEL",
+            name: "Matrix - PLATFORM = 'windows'",
+            state: Result.success,
+            children: [approve(6, Result.success)],
+          }),
+        ],
+      }),
+    ]);
+    fireEvent.mouseEnter(document.querySelector(".pgv-run-snippet a")!);
+
+    expect(await screen.findByText("Approve Linux?")).toBeInTheDocument();
+    expect(screen.queryByText("Approve undefined?")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "Approve Linux" }));
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/jenkins/job/example/2/input/Linux/proceedEmpty",
+      { method: "POST", headers: { "Jenkins-Crumb": "crumb" } },
+    );
+  });
+
+  it("moves keyboard focus into the input tooltip", async () => {
+    renderSnippet([
+      stage({
+        id: 2,
+        name: "Approve",
+        state: Result.paused,
+        pendingInputs: [
+          {
+            stageId: 2,
+            stageName: "Approve",
+            input: {
+              id: "Deploy",
+              message: "Deploy to production?",
+              ok: "Deploy",
+              cancel: "Abort",
+              parameters: false,
+            },
+          },
+        ],
+      }),
+    ]);
+    const link = document.querySelector<HTMLAnchorElement>(
+      'a[href$="selected-node=2"]',
+    )!;
+    // jsdom doesn't report :focus-visible while handling focusin, so treat this as keyboard focus
+    const matches = link.matches.bind(link);
+    vi.spyOn(link, "matches").mockImplementation(
+      (selector) => selector === ":focus-visible" || matches(selector),
+    );
+    act(() => link.focus());
+
+    const deploy = await screen.findByRole("button", { name: "Deploy" });
+    await waitFor(() => expect(deploy).toHaveFocus());
+
+    fireEvent.keyDown(deploy, { key: "Tab", shiftKey: true });
+    expect(link).toHaveFocus();
   });
 });

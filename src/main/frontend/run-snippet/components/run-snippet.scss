@@ -175,3 +175,14 @@
     min-width: 6rem;
   }
 }
+
+.pgv-run-snippet__dropdown-input {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  padding: 0 0.75rem 0.75rem 2.75rem;
+
+  .jenkins-button {
+    min-width: 6rem;
+  }
+}

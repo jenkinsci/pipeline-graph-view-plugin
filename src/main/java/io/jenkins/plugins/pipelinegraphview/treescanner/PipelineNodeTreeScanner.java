@@ -12,6 +12,7 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -300,8 +301,52 @@ public class PipelineNodeTreeScanner {
                     stageMap.put(stage.getId(), remapNode(stage, stageMap));
                 }
             }
-            this.wrappedStageMap = stageMap;
+            this.wrappedStageMap = withStartNodeForPausedStepOutsideStages(stageMap);
             return this.wrappedStageMap;
+        }
+
+        /*
+         * A paused step outside every stage, such as a lock around later stages waiting for a
+         * resource, would otherwise not be shown at all. The pipeline start node is added as a
+         * stage to hold it, positioned where the step is in the run. A pause that never ended
+         * also keeps the stage once the run is aborted, so it shows where the run was stuck.
+         */
+        private @NonNull Map<String, FlowNodeWrapper> withStartNodeForPausedStepOutsideStages(
+                @NonNull Map<String, FlowNodeWrapper> stageMap) {
+            FlowNodeWrapper startNode = null;
+            for (FlowNodeWrapper n : this.wrappedNodeMap.values()) {
+                if (isStartNode(n)) {
+                    startNode = n;
+                    break;
+                }
+            }
+            if (startNode == null || stageMap.containsKey(startNode.getId())) {
+                return stageMap;
+            }
+            Map<String, FlowNodeWrapper> possibleParents = new HashMap<>(stageMap);
+            possibleParents.put(startNode.getId(), startNode);
+            FlowNodeWrapper pausedStep = null;
+            for (FlowNodeWrapper n : this.wrappedNodeMap.values()) {
+                if (n.isStep()
+                        && PipelineNodeUtil.isPaused(n.getNode())
+                        && findParentNode(n, possibleParents) == startNode) {
+                    pausedStep = n;
+                    break;
+                }
+            }
+            if (pausedStep == null) {
+                return stageMap;
+            }
+            FlowNodeWrapper holder = startNode.holding(pausedStep);
+            Map<String, FlowNodeWrapper> ordered = new LinkedHashMap<>();
+            for (Map.Entry<String, FlowNodeWrapper> e : stageMap.entrySet()) {
+                if (!ordered.containsKey(holder.getId()) && e.getValue().getSortPosition() > holder.getSortPosition()) {
+                    ordered.put(holder.getId(), holder);
+                }
+                ordered.put(e.getKey(), e.getValue());
+            }
+            ordered.putIfAbsent(holder.getId(), holder);
+            return ordered;
         }
 
         private boolean shouldBeInStageMap(FlowNodeWrapper n) {

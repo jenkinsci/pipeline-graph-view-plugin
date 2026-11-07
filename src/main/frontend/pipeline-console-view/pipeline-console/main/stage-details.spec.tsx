@@ -72,6 +72,44 @@ describe("StageDetails", () => {
     expect(screen.queryByText("Queued")).not.toBeInTheDocument();
   });
 
+  it("shows what a paused stage is waiting for", () => {
+    render(
+      <FilterProvider>
+        <StageDetails
+          {...defaultArgs}
+          stage={{
+            ...mockStage,
+            state: Result.paused,
+            causeOfBlockage: "Waiting for Lock shared resource: shared-db",
+          }}
+        />
+      </FilterProvider>,
+    );
+
+    expect(
+      screen.getByText("Waiting for Lock shared resource: shared-db"),
+    ).toBeInTheDocument();
+  });
+
+  it("does not show cause of blockage once the stage is running", () => {
+    render(
+      <FilterProvider>
+        <StageDetails
+          {...defaultArgs}
+          stage={{
+            ...mockStage,
+            state: Result.running,
+            causeOfBlockage: "Waiting for Lock shared resource: shared-db",
+          }}
+        />
+      </FilterProvider>,
+    );
+
+    expect(
+      screen.queryByText("Waiting for Lock shared resource: shared-db"),
+    ).not.toBeInTheDocument();
+  });
+
   it("disables dropdown if stage is synthetic", () => {
     render(
       <FilterProvider>

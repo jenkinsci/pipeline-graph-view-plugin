@@ -165,6 +165,20 @@ public class FlowNodeWrapper {
         };
     }
 
+    /**
+     * The name of the step this node runs. A block step's start node is named
+     * {@code "<step> : Start"}, so the step's own name is used for those instead.
+     */
+    public @NonNull String getStepDisplayName() {
+        if (node instanceof StepStartNode stepStartNode && !stepStartNode.isBody()) {
+            StepDescriptor descriptor = stepStartNode.getDescriptor();
+            if (descriptor != null) {
+                return descriptor.getDisplayName();
+            }
+        }
+        return getDisplayName();
+    }
+
     public @CheckForNull String getLabelDisplayName() {
         LabelAction labelAction = node.getAction(LabelAction.class);
         if (labelAction != null) {
@@ -246,6 +260,25 @@ public class FlowNodeWrapper {
             cachedIdInt = v;
         }
         return v;
+    }
+
+    /** Position used for sorting instead of the node's own id, or {@link Integer#MIN_VALUE} if unset. */
+    private int sortPosition = Integer.MIN_VALUE;
+
+    /**
+     * Returns a copy of this node that holds {@code step}: it keeps this node's id and type, but
+     * takes the step's status, timing and position in the run.
+     */
+    public @NonNull FlowNodeWrapper holding(@NonNull FlowNodeWrapper step) {
+        FlowNodeWrapper copy = new FlowNodeWrapper(node, step.getStatus(), step.getTiming(), null, null, run, type);
+        copy.parents.addAll(parents);
+        copy.edges.addAll(edges);
+        copy.sortPosition = step.getIdAsInt();
+        return copy;
+    }
+
+    public int getSortPosition() {
+        return sortPosition != Integer.MIN_VALUE ? sortPosition : getIdAsInt();
     }
 
     public @NonNull FlowNode getNode() {
@@ -476,7 +509,7 @@ public class FlowNodeWrapper {
 
         @Override
         public int compare(FlowNodeWrapper a, FlowNodeWrapper b) {
-            return Integer.compare(a.getIdAsInt(), b.getIdAsInt());
+            return Integer.compare(a.getSortPosition(), b.getSortPosition());
         }
     }
 

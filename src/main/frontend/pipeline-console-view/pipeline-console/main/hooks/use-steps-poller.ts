@@ -103,6 +103,9 @@ async function updateStepBuffer(
   }
 }
 
+// The graph's start node, which opens the console text from before the first stage.
+const EARLY_CONSOLE_STAGE_ID = "-1";
+
 function getDefaultSelectedStep(steps: StepInfo[], runIsComplete: boolean) {
   let selectedStep = steps.find((step) => step !== undefined);
   if (!steps || steps.length === 0 || !selectedStep) {
@@ -214,6 +217,33 @@ export function useStepsPoller({
     }
     return null;
   }, [run.stages, openStageId]);
+  // A stage can go away while the run is going, e.g. the stage holding a step that was paused
+  // outside every stage, once that step resumes. Steps fetched before then still name it.
+  const currentStageIds = useMemo(() => {
+    const ids = new Set<string>();
+    const collect = (stages: StageInfo[]) => {
+      for (const stage of stages) {
+        ids.add(String(stage.id));
+        collect(stage.children);
+      }
+    };
+    collect(run.stages);
+    return ids;
+  }, [run.stages]);
+  const seenStageIds = useRef(new Set<string>());
+  const goneStageIds = useRef(new Set<string>());
+  useEffect(() => {
+    for (const id of currentStageIds) {
+      seenStageIds.current.add(id);
+      goneStageIds.current.delete(id);
+    }
+    for (const id of seenStageIds.current) {
+      if (!currentStageIds.has(id)) {
+        goneStageIds.current.add(id);
+      }
+    }
+  }, [currentStageIds]);
+
   const [expandedSteps, setExpandedSteps] = useState<string[]>([]);
   const collapsedSteps = useRef(new Set<string>());
   const tailStep = useRef("");
@@ -381,6 +411,19 @@ export function useStepsPoller({
       return;
     }
 
+    if (
+      selected !== EARLY_CONSOLE_STAGE_ID &&
+      steps.length > 0 &&
+      currentStageIds.size > 0 &&
+      !currentStageIds.has(selected) &&
+      !steps.some((s) => s.stageId === selected)
+    ) {
+      // Neither a step nor a stage, e.g. one that has since gone, so open the default stage.
+      parsedURLParams.current = true;
+      history.replaceState({}, "", "?");
+      return;
+    }
+
     if (steps.length > 0) {
       // Steps have arrived but `selected` matches none — assume it's a stage ID.
       parsedURLParams.current = true;
@@ -407,12 +450,22 @@ export function useStepsPoller({
       stopTailingLogs();
       setOpenStageId(selected);
     }
-  }, [steps, run.stages, expandLastStageStep, stopTailingLogs]);
+  }, [
+    steps,
+    run.stages,
+    currentStageIds,
+    expandLastStageStep,
+    stopTailingLogs,
+  ]);
 
   useEffect(() => {
     let defaultStep;
+    const liveSteps = steps.filter(
+      (step) => !goneStageIds.current.has(step.stageId),
+    );
     if (tailStage) {
-      defaultStep = steps.filter((s) => s.stageId === tailStage).pop() || null;
+      defaultStep =
+        liveSteps.filter((s) => s.stageId === tailStage).pop() || null;
       if (
         defaultStep &&
         defaultStep.state !== "running" &&
@@ -422,7 +475,7 @@ export function useStepsPoller({
         stopTailingLogs();
       }
     } else {
-      defaultStep = getDefaultSelectedStep(steps, runIsComplete);
+      defaultStep = getDefaultSelectedStep(liveSteps, runIsComplete);
     }
     if (!defaultStep) return;
     tailStep.current = defaultStep.id;
@@ -439,7 +492,34 @@ export function useStepsPoller({
       if (prev.includes(defaultStep.id)) return prev;
       return [...prev, defaultStep.id];
     });
-  }, [steps, tailLogs, runIsComplete, tailStage, stopTailingLogs]);
+  }, [
+    steps,
+    tailLogs,
+    runIsComplete,
+    tailStage,
+    stopTailingLogs,
+    currentStageIds,
+  ]);
+
+  // Open another stage instead of nothing when the open one goes.
+  useEffect(() => {
+    if (!openStageId || !goneStageIds.current.has(openStageId)) return;
+    const params = new URLSearchParams(document.location.search.substring(1));
+    if (params.get("selected-node") === openStageId) {
+      history.replaceState({}, "", "?");
+    }
+    setTailStage("");
+    // While the steps still name the gone stage they're stale; the next steps update picks one.
+    const stepsAreStale = steps.some((step) => step.stageId === openStageId);
+    setOpenStageId(
+      stepsAreStale
+        ? ""
+        : (getDefaultSelectedStep(
+            steps.filter((step) => !goneStageIds.current.has(step.stageId)),
+            runIsComplete,
+          )?.stageId ?? ""),
+    );
+  }, [openStageId, steps, runIsComplete, currentStageIds]);
 
   const handleStageSelect = useCallback((nodeId: string) => {
     if (!nodeId) return;
@@ -481,7 +561,7 @@ export function useStepsPoller({
     return steps.filter((step) => step.stageId === openStageId);
   }, [steps, openStageId]);
 
-  const showEarlyConsoleText = openStageId === "-1";
+  const showEarlyConsoleText = openStageId === EARLY_CONSOLE_STAGE_ID;
 
   return {
     openStage,

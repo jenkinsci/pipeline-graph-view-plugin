@@ -5,7 +5,6 @@ import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import java.util.Collections;
 import java.util.List;
-import org.jenkinsci.plugins.workflow.support.steps.input.InputAction;
 import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
 
 class PipelineStageInternal {
@@ -23,8 +22,7 @@ class PipelineStageInternal {
     private TimingInfo timingInfo;
     private String agent;
     private String causeOfBlockage;
-    private PipelineStepBuilderApi builder;
-    private InputAction inputAction;
+    private PausedStep pausedStep;
 
     public PipelineStageInternal(
             String id,
@@ -121,54 +119,57 @@ class PipelineStageInternal {
         this.agent = aAgent;
     }
 
-    public void setBuilder(PipelineStepBuilderApi builder) {
-        this.builder = builder;
-    }
+    /**
+     * A step of this stage that is paused.
+     *
+     * @param reason what the step is waiting for, or {@code null} when the step describes itself
+     *     elsewhere (e.g. an {@code input} prompt)
+     * @param inputStep the {@code input} the step is waiting on, so the graph can offer proceed /
+     *     abort without opening the console
+     */
+    record PausedStep(
+            @CheckForNull String reason, @CheckForNull InputStep inputStep) {}
 
-    public void setInputAction(InputAction inputAction) {
-        this.inputAction = inputAction;
+    public void setPausedStep(@CheckForNull PausedStep pausedStep) {
+        this.pausedStep = pausedStep;
     }
 
     /**
-     * Returns the input step this stage's own steps are paused on, so the graph can offer
-     * proceed / abort without opening the console. Paused input in nested stages is carried
-     * by those stages instead.
+     * A stage is paused when one of its own steps, or one of its child stages, is paused, e.g. on
+     * an {@code input} step or a {@code lock} waiting for a resource. Paused input in nested
+     * stages is carried by those stages.
      */
-    @CheckForNull
-    private InputStep findPendingInput() {
-        if (inputAction == null || builder == null || id == null) {
-            return null;
-        }
-        List<FlowNodeWrapper> steps = builder.getStageSteps(id);
-        if (steps == null) {
-            return null;
-        }
-        for (FlowNodeWrapper step : steps) {
-            if (step.getInputStep() != null && step.getStatus().state == BlueRun.BlueRunState.PAUSED) {
-                return step.getInputStep();
+    private boolean isPaused(List<PipelineStage> children) {
+        return pausedStep != null || firstPausedChild(children) != null;
+    }
+
+    private static PipelineStage firstPausedChild(List<PipelineStage> children) {
+        if (children != null) {
+            for (PipelineStage child : children) {
+                if (child.state == PipelineState.PAUSED) {
+                    return child;
+                }
             }
         }
         return null;
     }
 
-    private static boolean anyChildPaused(List<PipelineStage> children) {
-        if (children == null) {
-            return false;
+    private String pausedCauseOfBlockage(List<PipelineStage> children) {
+        if (pausedStep != null) {
+            return pausedStep.reason();
         }
-        for (PipelineStage child : children) {
-            if (child.state == PipelineState.PAUSED) {
-                return true;
-            }
-        }
-        return false;
+        PipelineStage child = firstPausedChild(children);
+        return child != null ? child.getCauseOfBlockage() : null;
     }
 
     public PipelineStage toPipelineStage(List<PipelineStage> children, String runUrl) {
-        InputStep pendingInput = findPendingInput();
-        boolean waitingForInput = pendingInput != null || (inputAction != null && anyChildPaused(children));
         PipelineState effectiveState;
-        if (waitingForInput) {
+        String effectiveCauseOfBlockage = causeOfBlockage;
+        if (isPaused(children)) {
             effectiveState = PipelineState.PAUSED;
+            if (effectiveCauseOfBlockage == null) {
+                effectiveCauseOfBlockage = pausedCauseOfBlockage(children);
+            }
         } else if (causeOfBlockage != null && state.isInProgress()) {
             // The chunked status compute can report IN_PROGRESS for a declarative parallel
             // branch whose agent allocation is actually queued; the presence of a cause of
@@ -193,7 +194,7 @@ class PipelineStageInternal {
                 timingInfo,
                 agent,
                 runUrl,
-                causeOfBlockage,
-                PipelineInputStep.of(pendingInput));
+                effectiveCauseOfBlockage,
+                PipelineInputStep.of(pausedStep != null ? pausedStep.inputStep() : null));
     }
 }

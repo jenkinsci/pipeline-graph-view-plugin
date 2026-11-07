@@ -48,9 +48,10 @@ describe("InputStep", () => {
     render(<InputStep step={step} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Yes" }));
-    expect(openInputStepDialog).toHaveBeenCalledWith("../input/input-id/", {
-      message: "Sign this?",
-    });
+    expect(openInputStepDialog).toHaveBeenCalledWith(
+      "../input/input-id/",
+      expect.objectContaining({ message: "Sign this?" }),
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Skip" }));
     expect(fetchMock).toHaveBeenCalledWith("../input/input-id/abort", {

@@ -1,6 +1,8 @@
+import { LocalizedMessageKey, useMessages } from "../i18n/index.ts";
 import { InputStep } from "../RestClient.tsx";
 import { classNames } from "../utils/classnames.ts";
 import { openInputStepDialog } from "./input-step-dialog.ts";
+import { inputErrorMessage, showInputError } from "./input-step-errors.ts";
 
 /**
  * Proceed / abort buttons for a paused input step.
@@ -20,24 +22,29 @@ export default function InputStepControls({
   /** Called after either button is clicked. */
   onAction?: () => void;
 }) {
-  function post(action: string) {
-    fetch(baseUrl + action, {
-      method: "POST",
-      headers: window.crumb.wrap({}),
-    })
-      .then((res) => {
-        if (!res.ok) {
-          console.error(res);
-        }
-        return true;
-      })
-      .catch((err) => {
-        console.error(err);
+  const messages = useMessages();
+
+  async function post(action: string) {
+    try {
+      const response = await fetch(baseUrl + action, {
+        method: "POST",
+        headers: window.crumb.wrap({}),
       });
+      if (!response.ok) {
+        showInputError(inputErrorMessage(response, messages));
+      }
+    } catch (err) {
+      console.error(err);
+      showInputError(
+        messages.format(LocalizedMessageKey.inputSubmitFailed, {
+          "0": String(err),
+        }),
+      );
+    }
   }
 
   const openDialog = () =>
-    openInputStepDialog(baseUrl, { message: input.message });
+    openInputStepDialog(baseUrl, { message: input.message, messages });
 
   return (
     <div

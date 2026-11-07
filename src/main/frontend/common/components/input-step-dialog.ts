@@ -4,10 +4,13 @@
  so the lifecycle lives here: fetch the form, mount it in a <dialog>, re-run the adjunct scripts
  it pulls in (e.g., the credentials dropdown), and post the result to the input REST endpoints.
 */
+import { LocalizedMessageKey, Messages } from "../i18n/index.ts";
 import { CLOSE_ICON } from "./close-icon.ts";
+import { inputErrorMessage, showInputError } from "./input-step-errors.ts";
 
 interface OpenInputStepDialogOptions {
   message: string;
+  messages: Messages;
 }
 
 /**
@@ -17,10 +20,11 @@ interface OpenInputStepDialogOptions {
  * fetched from `${baseUrl}dialog` and submitted to `${baseUrl}proceed` / `${baseUrl}abort`.
  * @param options.message the input message, used as the dialog title when the server does not
  * supply an `X-Dialog-Title` header.
+ * @param options.messages for the notifications shown when the dialog can't be loaded or submitted.
  */
 export function openInputStepDialog(
   baseUrl: string,
-  { message }: OpenInputStepDialogOptions,
+  { message, messages }: OpenInputStepDialogOptions,
 ): void {
   (async () => {
     try {
@@ -28,36 +32,41 @@ export function openInputStepDialog(
         headers: { Accept: "text/html" },
       });
       if (!response.ok) {
-        showFetchError(response.status);
+        showInputError(
+          response.status === 404
+            ? messages.format(LocalizedMessageKey.inputAlreadySubmitted)
+            : messages.format(LocalizedMessageKey.inputFormFailed, {
+                "0": String(response.status),
+              }),
+        );
         return;
       }
       const titleText = response.headers.get("X-Dialog-Title") ?? message;
       const html = await response.text();
-      mountDialog(html, baseUrl, titleText);
+      mountDialog(html, baseUrl, titleText, messages);
     } catch (err) {
       console.error(err);
+      showInputError(
+        messages.format(LocalizedMessageKey.inputFormFailed, {
+          "0": String(err),
+        }),
+      );
     }
   })();
 }
 
-function showFetchError(status: number): void {
-  if (status === 404) {
-    window.notificationBar.show(
-      "Error: Input has already been submitted",
-      window.notificationBar.ERROR,
-    );
-  } else {
-    window.notificationBar.show(
-      "An error occurred when fetching the dialog: " + status,
-      window.notificationBar.ERROR,
-    );
-  }
-}
-
-function mountDialog(html: string, baseUrl: string, titleText: string): void {
+function mountDialog(
+  html: string,
+  baseUrl: string,
+  titleText: string,
+  messages: Messages,
+): void {
   const dialog = document.createElement("dialog");
   dialog.className = "jenkins-dialog";
-  dialog.append(buildTitleBar(dialog, titleText), buildContents(html, baseUrl));
+  dialog.append(
+    buildTitleBar(dialog, titleText),
+    buildContents(html, baseUrl, messages),
+  );
   document.body.appendChild(dialog);
 
   // innerHTML doesn't execute <script> tags pulled in by <st:adjunct> (e.g. select.js for the
@@ -106,7 +115,11 @@ function buildTitleBar(
   return titleBar;
 }
 
-function buildContents(html: string, baseUrl: string): HTMLElement {
+function buildContents(
+  html: string,
+  baseUrl: string,
+  messages: Messages,
+): HTMLElement {
   const body = document.createElement("div");
   body.className = "jenkins-dialog__contents";
   body.innerHTML = html;
@@ -115,12 +128,16 @@ function buildContents(html: string, baseUrl: string): HTMLElement {
     "form.input-step-dialog-form",
   );
   if (form) {
-    attachSubmitHandler(form, baseUrl);
+    attachSubmitHandler(form, baseUrl, messages);
   }
   return body;
 }
 
-function attachSubmitHandler(form: HTMLFormElement, baseUrl: string): void {
+function attachSubmitHandler(
+  form: HTMLFormElement,
+  baseUrl: string,
+  messages: Messages,
+): void {
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     const abort =
@@ -160,32 +177,19 @@ function attachSubmitHandler(form: HTMLFormElement, baseUrl: string): void {
           return;
         }
         console.error("input-step dialog submit failed", response);
+        showInputError(inputErrorMessage(response, messages));
         if (response.status === 404) {
-          window.notificationBar.show(
-            "Error: Input has already been submitted",
-            window.notificationBar.ERROR,
-          );
           // The input is already settled, so there is nothing left to do in the dialog.
           closeDialog();
-        } else if (response.status === 400) {
-          const json = await response.json();
-          window.notificationBar.show(
-            json.message,
-            window.notificationBar.ERROR,
-          );
-          setDisabled(false);
         } else {
-          window.notificationBar.show(
-            "Error: input-step dialog submit failed: " + response.status,
-            window.notificationBar.ERROR,
-          );
           setDisabled(false);
         }
       } catch (err) {
         console.error(err);
-        window.notificationBar.show(
-          "Error: " + err,
-          window.notificationBar.ERROR,
+        showInputError(
+          messages.format(LocalizedMessageKey.inputSubmitFailed, {
+            "0": String(err),
+          }),
         );
         setDisabled(false);
       }

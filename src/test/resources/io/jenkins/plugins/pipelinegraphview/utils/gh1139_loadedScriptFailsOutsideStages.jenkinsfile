@@ -1,0 +1,11 @@
+node {
+    writeFile file: 'loaded.groovy', text: "throw new hudson.AbortException('from loaded script')"
+    try {
+        load 'loaded.groovy'
+    } catch (err) {
+        echo "Caught: ${err.message}"
+    }
+}
+stage('Build') {
+    echo 'building'
+}

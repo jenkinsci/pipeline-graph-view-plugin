@@ -6,6 +6,7 @@ import hudson.model.Run;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import io.jenkins.plugins.pipelinegraphview.livestate.BlockResolutionCache;
 import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphRegistry;
+import io.jenkins.plugins.pipelinegraphview.utils.BlueRun;
 import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
 import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
@@ -301,17 +302,24 @@ public class PipelineNodeTreeScanner {
                     stageMap.put(stage.getId(), remapNode(stage, stageMap));
                 }
             }
-            this.wrappedStageMap = withStartNodeForPausedStepOutsideStages(stageMap);
+            this.wrappedStageMap = withStartNodeForStepsOutsideStages(stageMap);
             return this.wrappedStageMap;
         }
 
         /*
-         * A paused step outside every stage, such as a lock around later stages waiting for a
-         * resource, would otherwise not be shown at all. The pipeline start node is added as a
-         * stage to hold it, positioned where the step is in the run. A pause that never ended
-         * also keeps the stage once the run is aborted, so it shows where the run was stuck.
+         * A step outside every stage has no stage to be listed under, so it is dropped. That
+         * hides why a build failed when the failure happened before, between or after the
+         * stages, e.g. a Declarative agent that could not start, and hides what the run is
+         * waiting on when a step such as a lock around later stages is paused. When such a step
+         * did not succeed or is paused, the start node is added as a synthetic stage to hold
+         * the steps outside stages. It is added after the stages are remapped so that real
+         * stages never get it as a parent.
+         * A paused step gives the stage its timing and its position in the run. A pause that
+         * never ended also keeps the stage once the run is aborted, so it shows where the run
+         * was stuck. The start node's own status is the status of the whole run, so when a step
+         * outside stages failed, the stage gets the combined status of the steps it holds.
          */
-        private @NonNull Map<String, FlowNodeWrapper> withStartNodeForPausedStepOutsideStages(
+        private @NonNull Map<String, FlowNodeWrapper> withStartNodeForStepsOutsideStages(
                 @NonNull Map<String, FlowNodeWrapper> stageMap) {
             FlowNodeWrapper startNode = null;
             for (FlowNodeWrapper n : this.wrappedNodeMap.values()) {
@@ -334,10 +342,34 @@ public class PipelineNodeTreeScanner {
                     break;
                 }
             }
-            if (pausedStep == null) {
+            List<FlowNodeWrapper> stepsOutsideStages = new ArrayList<>();
+            for (FlowNodeWrapper n : this.wrappedNodeMap.values()) {
+                if (shouldBeInStepMap(n) && !isInStage(n, stageMap)) {
+                    stepsOutsideStages.add(n);
+                }
+            }
+            boolean hasProblem = stepsOutsideStages.stream().anyMatch(GraphBuilder::isProblem);
+            if (pausedStep == null && !hasProblem) {
                 return stageMap;
             }
-            FlowNodeWrapper holder = startNode.holding(pausedStep);
+            FlowNodeWrapper holder;
+            if (hasProblem) {
+                NodeRunStatus status = NodeRunStatus.combine(stepsOutsideStages.stream()
+                        .map(FlowNodeWrapper::getStatus)
+                        .toList());
+                holder = pausedStep != null
+                        ? startNode.holding(pausedStep, status)
+                        : new FlowNodeWrapper(
+                                startNode.getNode(),
+                                status,
+                                startNode.getTiming(),
+                                null,
+                                null,
+                                startNode.getRun(),
+                                startNode.getType());
+            } else {
+                holder = startNode.holding(pausedStep);
+            }
             Map<String, FlowNodeWrapper> ordered = new LinkedHashMap<>();
             for (Map.Entry<String, FlowNodeWrapper> e : stageMap.entrySet()) {
                 if (!ordered.containsKey(holder.getId()) && e.getValue().getSortPosition() > holder.getSortPosition()) {
@@ -347,6 +379,26 @@ public class PipelineNodeTreeScanner {
             }
             ordered.putIfAbsent(holder.getId(), holder);
             return ordered;
+        }
+
+        /*
+         * Mirrors how getStepMapping assigns a step to a stage: its own parent when that is a
+         * stage (an exception node is parented to the start of the block it came from, which
+         * can be the stage itself), otherwise the closest enclosing stage.
+         */
+        private boolean isInStage(FlowNodeWrapper n, Map<String, FlowNodeWrapper> stageMap) {
+            FlowNodeWrapper firstParent = n.getFirstParent();
+            if (firstParent != null && stageMap.containsKey(firstParent.getId())) {
+                return true;
+            }
+            return findParentNode(n, stageMap) != null;
+        }
+
+        private static boolean isProblem(FlowNodeWrapper n) {
+            BlueRun.BlueRunResult result = n.getStatus().getResult();
+            return result == BlueRun.BlueRunResult.FAILURE
+                    || result == BlueRun.BlueRunResult.UNSTABLE
+                    || result == BlueRun.BlueRunResult.ABORTED;
         }
 
         private boolean shouldBeInStageMap(FlowNodeWrapper n) {
@@ -448,14 +500,9 @@ public class PipelineNodeTreeScanner {
          */
         private void buildGraph() {
             List<FlowNode> nodeList = FlowNodeWrapper.sortByFlowNodeId(nodes, false);
-            // If the Pipeline ended with an unhandled exception, then we want to catch the
-            // node which threw it.
-            BlockEndNode<?> nodeThatThrewException = null;
-            if (!nodeList.isEmpty()) {
-                nodeThatThrewException = getUnhandledException(nodeList.get(nodeList.size() - 1));
-            }
+            Set<String> nodesThatThrewException = findNodesThatThrewException(nodeList);
             for (FlowNode node : nodeList) {
-                if (nodeThatThrewException == node) {
+                if (nodesThatThrewException.contains(node.getId())) {
                     handleException(node, this.relationships.get(node.getId()));
                     continue;
                 } else if (node instanceof BlockEndNode) {
@@ -478,46 +525,42 @@ public class PipelineNodeTreeScanner {
         }
 
         /*
-         * Returns the origin of any unhandled exception for this node, or null if none
-         * found.
+         * Returns the IDs of the block end nodes that an exception escaped from, whether or not
+         * the exception was caught further up. An exception propagates through every enclosing
+         * block end, so with nodes in ID order the first node carrying it is where it came from.
+         * Exceptions from a step are shown on that step, and Jenkins failure exceptions
+         * (AbortException, FlowInterruptedException) are attached to the step that raised them,
+         * so neither gets its own node.
          */
-        private @CheckForNull BlockEndNode<?> getUnhandledException(@NonNull FlowNode node) {
-            // Check for an unhandled exception.
-            ErrorAction errorAction = node.getAction(ErrorAction.class);
-            // If this is a Jenkins failure exception, then we don't need to add a new node
-            // - it will come from an existing step.
-            if (errorAction != null && !PipelineNodeUtil.isJenkinsFailureException(errorAction.getError())) {
-                if (isDebugEnabled) {
-                    logger.debug(
-                            "getUnhandledException => Found unhandled exception: {}",
-                            errorAction.getError().getMessage());
+        private @NonNull Set<String> findNodesThatThrewException(@NonNull List<FlowNode> nodeList) {
+            Set<String> origins = new HashSet<>();
+            List<Throwable> seenErrors = new ArrayList<>();
+            for (FlowNode node : nodeList) {
+                // A FlowStartNode can carry the error of a Pipeline that failed before running
+                // anything, but it is the matching end node that can be shown as a step.
+                if (node instanceof BlockStartNode) {
+                    continue;
                 }
-                FlowNode nodeThatThrewException = ErrorAction.findOrigin(errorAction.getError(), this.execution);
-                if (nodeThatThrewException instanceof BlockEndNode<?>) {
+                ErrorAction errorAction = node.getAction(ErrorAction.class);
+                if (errorAction == null) {
+                    continue;
+                }
+                Throwable error = errorAction.getError();
+                if (PipelineNodeUtil.isJenkinsFailureException(error)) {
+                    continue;
+                }
+                if (seenErrors.stream().anyMatch(seen -> ErrorAction.equals(seen, error))) {
+                    continue;
+                }
+                seenErrors.add(error);
+                if (node instanceof BlockEndNode<?>) {
                     if (isDebugEnabled) {
-                        logger.debug(
-                                "getUnhandledException => Returning nodeThatThrewException: {}",
-                                nodeThatThrewException.getId());
+                        logger.debug("Found exception thrown from {}: {}", node.getId(), error.getMessage());
                     }
-                    return (BlockEndNode<?>) nodeThatThrewException;
+                    origins.add(node.getId());
                 }
-
-                /*
-                 * This is a corner case for trivial graphs - ones that only have one action. In
-                 * this case the error can be thrown by a the FlowStartNode, which would mean a
-                 * single nodes needs to be a stage and a step. Rather than adding a fake node
-                 * to the graph, we use the end node that we were given to act as the step
-                 * - this might need additional logic when getting the log for the exception.
-                 */
-                if (node instanceof BlockEndNode<?> && nodes.size() <= 2) {
-                    if (isDebugEnabled) {
-                        logger.debug("getUnhandledException => Returning node: {}", node.getId());
-                    }
-                    return (BlockEndNode<?>) node;
-                }
-                logger.error("Could not find BlockEndNode that threw exception:{}.", errorAction.getDisplayName());
             }
-            return null;
+            return origins;
         }
 
         /*
@@ -596,15 +639,30 @@ public class PipelineNodeTreeScanner {
         }
 
         /*
+         * The start of the parallel branch that this node starts or ends, or null. A branch's end
+         * node shares the whole parallel block's relationship, and is wrapped when an exception
+         * was thrown from the branch, so it needs the branch's own status and timing too.
+         */
+        private static @CheckForNull BlockStartNode parallelBranchStart(@NonNull FlowNode node) {
+            if (node instanceof BlockStartNode start && PipelineNodeUtil.isParallelBranch(start)) {
+                return start;
+            }
+            if (node instanceof BlockEndNode<?> end && PipelineNodeUtil.isParallelBranch(end.getStartNode())) {
+                return end.getStartNode();
+            }
+            return null;
+        }
+
+        /*
          * Wraps a FlowNode in a FlowNodeWrapper.
          */
         private @NonNull FlowNodeWrapper wrapNode(@NonNull FlowNode node, @NonNull NodeRelationship relationship) {
             TimingInfo timing = null;
             NodeRunStatus status = null;
-            if (relationship instanceof ParallelBlockRelationship parallelRelationship
-                    && PipelineNodeUtil.isParallelBranch(node)) {
-                timing = parallelRelationship.getBranchTimingInfo(this.run, (BlockStartNode) node);
-                status = parallelRelationship.getBranchStatus(this.run, (BlockStartNode) node);
+            BlockStartNode branchStart = parallelBranchStart(node);
+            if (relationship instanceof ParallelBlockRelationship parallelRelationship && branchStart != null) {
+                timing = parallelRelationship.getBranchTimingInfo(this.run, branchStart);
+                status = parallelRelationship.getBranchStatus(this.run, branchStart);
             } else {
                 FlowNode start = relationship.getStart();
                 FlowNode end = relationship.getEnd();

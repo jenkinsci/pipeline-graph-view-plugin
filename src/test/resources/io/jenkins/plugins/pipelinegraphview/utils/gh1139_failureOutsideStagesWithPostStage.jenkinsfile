@@ -1,0 +1,7 @@
+try {
+    error 'Could not start agent'
+} finally {
+    stage('Post Actions') {
+        echo 'test'
+    }
+}

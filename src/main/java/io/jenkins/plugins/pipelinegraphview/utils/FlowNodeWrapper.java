@@ -270,7 +270,12 @@ public class FlowNodeWrapper {
      * takes the step's status, timing and position in the run.
      */
     public @NonNull FlowNodeWrapper holding(@NonNull FlowNodeWrapper step) {
-        FlowNodeWrapper copy = new FlowNodeWrapper(node, step.getStatus(), step.getTiming(), null, null, run, type);
+        return holding(step, step.getStatus());
+    }
+
+    /** Like {@link #holding(FlowNodeWrapper)}, but with the given status instead of the step's. */
+    public @NonNull FlowNodeWrapper holding(@NonNull FlowNodeWrapper step, @NonNull NodeRunStatus status) {
+        FlowNodeWrapper copy = new FlowNodeWrapper(node, status, step.getTiming(), null, null, run, type);
         copy.parents.addAll(parents);
         copy.edges.addAll(edges);
         copy.sortPosition = step.getIdAsInt();

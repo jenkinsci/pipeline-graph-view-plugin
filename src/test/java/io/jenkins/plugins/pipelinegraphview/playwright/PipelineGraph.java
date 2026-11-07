@@ -71,6 +71,26 @@ class PipelineGraph {
                 .click();
     }
 
+    public void scroll(double deltaX, double deltaY) {
+        log.info("Scrolling the graph by ({}, {})", deltaX, deltaY);
+        graph.hover();
+        graph.page().mouse().wheel(deltaX, deltaY);
+    }
+
+    public void hasTransform(String positionX, String scale) {
+        log.info("Checking the graph is at x {} with scale {}", positionX, scale);
+        assertThat(graph.locator("xpath=ancestor::*[contains(@class, 'react-transform-component')]"))
+                .hasAttribute(
+                        "style",
+                        Pattern.compile("transform: translate\\(" + escapeRegex(positionX) + ", [^)]*\\) scale\\("
+                                + escapeRegex(scale) + "\\);"));
+    }
+
+    // Playwright evaluates patterns as JavaScript regexes, which don't support Pattern.quote
+    private static String escapeRegex(String value) {
+        return value.replace(".", "\\.");
+    }
+
     private Locator getStageByName(String name) {
         log.info("Getting stage by name {}", name);
         return getStages().getByRole(AriaRole.LINK, new Locator.GetByRoleOptions().setName(name));

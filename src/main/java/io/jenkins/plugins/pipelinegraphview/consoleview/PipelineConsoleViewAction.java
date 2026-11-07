@@ -5,8 +5,11 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Plugin;
 import hudson.console.AnnotatedLargeText;
 import hudson.model.BallColor;
+import hudson.model.Failure;
 import hudson.model.Item;
+import hudson.model.ParametersAction;
 import hudson.model.ParametersDefinitionProperty;
+import hudson.model.PasswordParameterValue;
 import hudson.model.Queue;
 import hudson.model.Result;
 import hudson.security.Permission;
@@ -324,11 +327,21 @@ public class PipelineConsoleViewAction extends Tab {
         if (!run.getParent().isBuildable()) {
             return HttpResponses.errorJSON(Messages.scheduled_failure());
         }
+        if (hasPasswordParameter()) {
+            JSONObject obj = new JSONObject();
+            obj.put("redirectUrl", getParameterizedBuildUrl());
+            return HttpResponses.okJSON(obj);
+        }
         ReplayAction replayAction = run.getAction(ReplayAction.class);
         if (replayAction == null) {
             return HttpResponses.errorJSON(Messages.scheduled_failure());
         }
-        Queue.Item item = replayAction.run2(replayAction.getOriginalScript(), replayAction.getOriginalLoadedScripts());
+        Queue.Item item;
+        try {
+            item = replayAction.run2(replayAction.getOriginalScript(), replayAction.getOriginalLoadedScripts());
+        } catch (Failure e) {
+            return HttpResponses.errorJSON(e.getMessage());
+        }
 
         if (item == null) {
             return HttpResponses.errorJSON(Messages.scheduled_failure());
@@ -338,6 +351,19 @@ public class PipelineConsoleViewAction extends Tab {
         obj.put("message", Messages.scheduled_success());
         obj.put("queueId", item.getId());
         return HttpResponses.okJSON(obj);
+    }
+
+    private boolean hasPasswordParameter() {
+        ParametersAction parameters = run.getAction(ParametersAction.class);
+        return parameters != null
+                && parameters.getParameters().stream().anyMatch(PasswordParameterValue.class::isInstance);
+    }
+
+    private String getParameterizedBuildUrl() {
+        if (isRebuildAvailable()) {
+            return run.getUrl() + "rebuild/parameterized";
+        }
+        return run.getParent().getUrl() + "build?delay=0sec";
     }
 
     @SuppressWarnings("unused")

@@ -12,6 +12,7 @@ import {
 } from "react";
 
 import { DefaultDropdownProps } from "../../common/components/dropdown.tsx";
+import InputApprovers from "../../common/components/input-approvers.tsx";
 import InputStepControls from "../../common/components/input-step-controls.tsx";
 import StatusIcon, {
   StageStatusIcon,
@@ -195,6 +196,10 @@ function PendingInputsTooltip({
               <div className="pgv-run-snippet__input__message">
                 {pending.input.message}
               </div>
+              <InputApprovers
+                input={pending.input}
+                className="jenkins-!-text-color-secondary"
+              />
               <InputStepControls
                 input={pending.input}
                 baseUrl={`${runPath}input/${pending.input.id}/`}
@@ -317,6 +322,10 @@ function StagesDropdown({
                     <div className="pgv-run-snippet__input__message">
                       {pending.input.message}
                     </div>
+                    <InputApprovers
+                      input={pending.input}
+                      className="jenkins-!-text-color-secondary"
+                    />
                     <InputStepControls
                       input={pending.input}
                       baseUrl={`${runPath}input/${pending.input.id}/`}

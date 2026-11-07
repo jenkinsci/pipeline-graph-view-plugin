@@ -13,6 +13,7 @@ import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -301,21 +302,24 @@ public class PipelineNodeTreeScanner {
                     stageMap.put(stage.getId(), remapNode(stage, stageMap));
                 }
             }
-            this.wrappedStageMap = withStartNodeForProblemsOutsideStages(stageMap);
+            this.wrappedStageMap = withStartNodeForStepsOutsideStages(stageMap);
             return this.wrappedStageMap;
         }
 
         /*
          * A step outside every stage has no stage to be listed under, so it is dropped. That
          * hides why a build failed when the failure happened before, between or after the
-         * stages, e.g. a Declarative agent that could not start. When such a step did not
-         * succeed, the start node is added as a synthetic stage to hold the steps outside
-         * stages. It is added after the stages are remapped so that real stages never get it
-         * as a parent.
-         * The start node's own status is the status of the whole run, so the synthetic stage
-         * gets the combined status of the steps it holds instead.
+         * stages, e.g. a Declarative agent that could not start, and hides what the run is
+         * waiting on when a step such as a lock around later stages is paused. When such a step
+         * did not succeed or is paused, the start node is added as a synthetic stage to hold
+         * the steps outside stages. It is added after the stages are remapped so that real
+         * stages never get it as a parent.
+         * A paused step gives the stage its timing and its position in the run. A pause that
+         * never ended also keeps the stage once the run is aborted, so it shows where the run
+         * was stuck. The start node's own status is the status of the whole run, so when a step
+         * outside stages failed, the stage gets the combined status of the steps it holds.
          */
-        private @NonNull Map<String, FlowNodeWrapper> withStartNodeForProblemsOutsideStages(
+        private @NonNull Map<String, FlowNodeWrapper> withStartNodeForStepsOutsideStages(
                 @NonNull Map<String, FlowNodeWrapper> stageMap) {
             FlowNodeWrapper startNode = null;
             for (FlowNodeWrapper n : this.wrappedNodeMap.values()) {
@@ -327,29 +331,54 @@ public class PipelineNodeTreeScanner {
             if (startNode == null || stageMap.containsKey(startNode.getId())) {
                 return stageMap;
             }
+            Map<String, FlowNodeWrapper> possibleParents = new HashMap<>(stageMap);
+            possibleParents.put(startNode.getId(), startNode);
+            FlowNodeWrapper pausedStep = null;
+            for (FlowNodeWrapper n : this.wrappedNodeMap.values()) {
+                if (n.isStep()
+                        && PipelineNodeUtil.isPaused(n.getNode())
+                        && findParentNode(n, possibleParents) == startNode) {
+                    pausedStep = n;
+                    break;
+                }
+            }
             List<FlowNodeWrapper> stepsOutsideStages = new ArrayList<>();
             for (FlowNodeWrapper n : this.wrappedNodeMap.values()) {
                 if (shouldBeInStepMap(n) && !isInStage(n, stageMap)) {
                     stepsOutsideStages.add(n);
                 }
             }
-            if (stepsOutsideStages.stream().noneMatch(GraphBuilder::isProblem)) {
+            boolean hasProblem = stepsOutsideStages.stream().anyMatch(GraphBuilder::isProblem);
+            if (pausedStep == null && !hasProblem) {
                 return stageMap;
             }
-            FlowNodeWrapper syntheticStage = new FlowNodeWrapper(
-                    startNode.getNode(),
-                    NodeRunStatus.combine(stepsOutsideStages.stream()
-                            .map(FlowNodeWrapper::getStatus)
-                            .toList()),
-                    startNode.getTiming(),
-                    null,
-                    null,
-                    startNode.getRun(),
-                    startNode.getType());
-            Map<String, FlowNodeWrapper> withStartNode = new LinkedHashMap<>();
-            withStartNode.put(syntheticStage.getId(), syntheticStage);
-            withStartNode.putAll(stageMap);
-            return withStartNode;
+            FlowNodeWrapper holder;
+            if (hasProblem) {
+                NodeRunStatus status = NodeRunStatus.combine(stepsOutsideStages.stream()
+                        .map(FlowNodeWrapper::getStatus)
+                        .toList());
+                holder = pausedStep != null
+                        ? startNode.holding(pausedStep, status)
+                        : new FlowNodeWrapper(
+                                startNode.getNode(),
+                                status,
+                                startNode.getTiming(),
+                                null,
+                                null,
+                                startNode.getRun(),
+                                startNode.getType());
+            } else {
+                holder = startNode.holding(pausedStep);
+            }
+            Map<String, FlowNodeWrapper> ordered = new LinkedHashMap<>();
+            for (Map.Entry<String, FlowNodeWrapper> e : stageMap.entrySet()) {
+                if (!ordered.containsKey(holder.getId()) && e.getValue().getSortPosition() > holder.getSortPosition()) {
+                    ordered.put(holder.getId(), holder);
+                }
+                ordered.put(e.getKey(), e.getValue());
+            }
+            ordered.putIfAbsent(holder.getId(), holder);
+            return ordered;
         }
 
         /*

@@ -410,9 +410,11 @@ components:
             - string
             - null
           description: >-
-            Human-readable reason this stage is blocked. Currently set when the
-            stage's state is "queued" because its `agent`/`node` step is waiting
-            for an executor (e.g. "Waiting for next available executor on 'linux'").
+            Human-readable reason this stage is blocked. Set when the stage's
+            state is "queued" because its `agent`/`node` step is waiting for an
+            executor (e.g. "Waiting for next available executor on 'linux'"), or
+            when the state is "paused" because a block step is waiting before
+            running its body (e.g. "Waiting for Lock shared resource: shared-db").
             Omitted when the stage is not blocked.
         url:
           type: string
@@ -527,6 +529,14 @@ components:
           description: >-
             Whether the current user can abort the input, which needs Job/Cancel
             or being able to proceed with it.
+        approvers:
+          type: array
+          items:
+            type: string
+          description: >-
+            Who the input's submitter allows to approve it: users by their full
+            name, and anything else, such as a group, as it's written. Omitted
+            when anyone who can build the job can approve it.
 
     NextBuildResponse:
       type: object

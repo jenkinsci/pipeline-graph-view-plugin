@@ -3,6 +3,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { Mock, vi } from "vitest";
 
+import useRunPoller from "../../../../common/tree-api.ts";
 import * as model from "../PipelineConsoleModel.tsx";
 import {
   ConsoleLogData,
@@ -297,6 +298,125 @@ it("switches to next stage when current one finishes", async () => {
   await waitFor(() => expect(result.current.openStage?.id).toBe("stage-2"));
   expect(result.current.expandedSteps).toContain("s2");
 
+  unmount();
+});
+
+describe("when the open stage disappears", () => {
+  // A paused step outside every stage is held by a stage that goes away once the step resumes.
+  const holderStage = { id: "holder", name: "System Generated", children: [] };
+  const waitingSteps = [
+    { id: "s1", title: "Step 1", stageId: "stage-1", state: "success" },
+    { id: "lock", title: "Lock", stageId: "holder", state: "paused" },
+  ];
+  const resumedSteps = [
+    { id: "s1", title: "Step 1", stageId: "stage-1", state: "success" },
+    { id: "s2", title: "Step 2", stageId: "stage-2", state: "running" },
+  ];
+  let stages: { id: string; name: string; children: never[] }[];
+
+  beforeEach(() => {
+    stages = [mockStages[0], holderStage];
+    (useRunPoller as Mock).mockImplementation(() => ({
+      run: { stages, complete: false },
+    }));
+    (model.getRunSteps as Mock).mockResolvedValue({ steps: waitingSteps });
+  });
+
+  afterEach(() => {
+    (useRunPoller as Mock).mockImplementation(() => ({
+      run: { stages: mockStages, complete: false },
+    }));
+  });
+
+  function resume() {
+    stages = [mockStages[0], mockStages[1]];
+    (model.getRunSteps as Mock).mockResolvedValue({ steps: resumedSteps });
+  }
+
+  it("opens the running stage after the user selected it", async () => {
+    const { result, rerender, unmount } = renderHook(() =>
+      useStepsPoller({ currentRunPath: "/run/1", currentRunStartTime: 1337 }),
+    );
+    await waitFor(() => expect(result.current.openStage?.id).toBe("holder"));
+    act(() => result.current.handleStageSelect("holder"));
+
+    resume();
+    rerender();
+
+    await waitFor(() => expect(result.current.openStage?.id).toBe("stage-2"));
+    unmount();
+  });
+
+  it("opens a remaining stage after the user stopped tailing", async () => {
+    const { result, rerender, unmount } = renderHook(() =>
+      useStepsPoller({ currentRunPath: "/run/1", currentRunStartTime: 1337 }),
+    );
+    await waitFor(() => expect(result.current.openStage?.id).toBe("holder"));
+    act(() => result.current.stopTailingLogs());
+
+    resume();
+    rerender();
+
+    await waitFor(() => expect(result.current.openStage?.id).toBe("stage-2"));
+    unmount();
+  });
+
+  it("doesn't reselect it from steps fetched before it went", async () => {
+    const { result, rerender, unmount } = renderHook(() =>
+      useStepsPoller({ currentRunPath: "/run/1", currentRunStartTime: 1337 }),
+    );
+    await waitFor(() => expect(result.current.openStage?.id).toBe("holder"));
+    act(() => result.current.stopTailingLogs());
+    act(() => result.current.handleStageSelect("holder"));
+
+    // The graph drops the stage before the steps catch up.
+    let resolveSteps: (value: {
+      steps: typeof resumedSteps;
+    }) => void = () => {};
+    (model.getRunSteps as Mock).mockReturnValue(
+      new Promise((resolve) => {
+        resolveSteps = resolve;
+      }),
+    );
+    stages = [mockStages[0], mockStages[1]];
+    rerender();
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(result.current.openStage?.id).not.toBe("holder");
+
+    await act(async () => resolveSteps({ steps: resumedSteps }));
+    (model.getRunSteps as Mock).mockResolvedValue({ steps: resumedSteps });
+
+    await waitFor(() => expect(result.current.openStage).not.toBeNull());
+    expect(result.current.openStage?.id).not.toBe("holder");
+    unmount();
+  });
+
+  it("clears it from the URL", async () => {
+    const { result, rerender, unmount } = renderHook(() =>
+      useStepsPoller({ currentRunPath: "/run/1", currentRunStartTime: 1337 }),
+    );
+    await waitFor(() => expect(result.current.openStage?.id).toBe("holder"));
+    // As clicking the stage in the graph does.
+    window.history.replaceState({}, "", "?selected-node=holder");
+    act(() => result.current.handleStageSelect("holder"));
+
+    resume();
+    rerender();
+
+    await waitFor(() => expect(result.current.openStage?.id).toBe("stage-2"));
+    expect(window.location.search).not.toContain("selected-node=holder");
+    unmount();
+  });
+});
+
+it("opens the default stage when the URL names a node that no longer exists", async () => {
+  window.history.replaceState({}, "", "?selected-node=gone");
+  const { result, unmount } = renderHook(() =>
+    useStepsPoller({ currentRunPath: "/run/1", currentRunStartTime: 1337 }),
+  );
+
+  await waitFor(() => expect(result.current.openStage?.id).toBe("stage-2"));
+  expect(window.location.search).not.toContain("selected-node=gone");
   unmount();
 });
 
@@ -752,3 +872,13 @@ function expectSameStepBuffer(a?: StepLogBufferInfo, b?: StepLogBufferInfo) {
   // Ignore lastFetched timestamp when comparing two buffers.
   expect({ ...a, lastFetched: 0 }).to.deep.equal({ ...b, lastFetched: 0 });
 }
+
+it("opens the early console from the URL", async () => {
+  window.history.replaceState({}, "", "?selected-node=-1");
+  const { result, unmount } = renderHook(() =>
+    useStepsPoller({ currentRunPath: "/run/1", currentRunStartTime: 1337 }),
+  );
+
+  await waitFor(() => expect(result.current.showEarlyConsoleText).toBe(true));
+  unmount();
+});

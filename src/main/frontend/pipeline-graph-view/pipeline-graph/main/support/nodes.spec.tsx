@@ -237,6 +237,23 @@ describe("Stage node waiting for input", () => {
     expect(screen.queryByRole("button")).toBeNull();
   });
 
+  it("says who can approve an input limited to particular submitters", () => {
+    render(
+      <Node
+        node={stageNode({
+          inputStep: { ...inputStep, approvers: ["Alice", "release-team"] },
+        })}
+        isSelected={false}
+        currentRunPath="/jenkins/job/example/1/"
+      />,
+    );
+    hover();
+
+    expect(
+      screen.getByText("Waiting for approval from Alice or release-team"),
+    ).toBeInTheDocument();
+  });
+
   it("doesn't offer the previous run's input on a placeholder stage", () => {
     render(
       <Node

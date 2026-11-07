@@ -1,6 +1,7 @@
 package io.jenkins.plugins.pipelinegraphview.utils;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
@@ -53,7 +54,8 @@ class PipelineJsonWriterTest {
                 "STEP",
                 "",
                 "2",
-                new PipelineInputStep("Deploy to prod?", "Cancel", "input-1", "Proceed", true),
+                new PipelineInputStep(
+                        "Deploy to prod?", "Cancel", "input-1", "Proceed", true, List.of("Alice", "release-team")),
                 null,
                 new TimingInfo(0, 200, 1_700_000_001_000L),
                 Map.of());
@@ -93,6 +95,7 @@ class PipelineJsonWriterTest {
         JSONObject input = third.getJSONObject("inputStep");
         assertThat(input.getString("message"), is("Deploy to prod?"));
         assertThat(input.getBoolean("parameters"), is(true));
+        assertThat(input.getJSONArray("approvers"), contains("Alice", "release-team"));
 
         JSONObject fourth = steps.getJSONObject(3);
         JSONObject build = fourth.getJSONObject("buildStep");

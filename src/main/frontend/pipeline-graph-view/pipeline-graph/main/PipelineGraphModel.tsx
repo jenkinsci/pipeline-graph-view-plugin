@@ -62,7 +62,7 @@ export interface StageInfo {
   previousTotalDurationMillis?: number; // populated from previous run, if exists
   agent: string;
   url: string;
-  causeOfBlockage?: string; // Set when state is "queued" — e.g. "Waiting for next available executor on 'linux'"
+  causeOfBlockage?: string; // Set when state is "queued" or "paused" — e.g. "Waiting for next available executor on 'linux'"
   inputStep?: InputStep; // Set when the stage is paused waiting for input
   pendingInputs?: PendingInput[]; // Build history only: input this stage or its nested stages are waiting on
 

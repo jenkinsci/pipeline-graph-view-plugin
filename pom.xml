@@ -117,11 +117,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.6wind.jenkins</groupId>
-      <artifactId>lockable-resources</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>com.sonyericsson.hudson.plugins.rebuild</groupId>
       <artifactId>rebuild</artifactId>
       <version>344.v805899551b_13</version>
@@ -130,6 +125,11 @@
     <dependency>
       <groupId>io.jenkins.configuration-as-code</groupId>
       <artifactId>test-harness</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.6wind.jenkins</groupId>
+      <artifactId>lockable-resources</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>

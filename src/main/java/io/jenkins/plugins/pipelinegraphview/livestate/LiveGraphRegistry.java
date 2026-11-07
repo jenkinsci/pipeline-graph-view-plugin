@@ -3,6 +3,8 @@ package io.jenkins.plugins.pipelinegraphview.livestate;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import hudson.Extension;
+import hudson.ExtensionList;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import java.time.Duration;
@@ -11,7 +13,7 @@ import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 /**
- * Singleton holding one {@link LiveGraphState} per in-progress run.
+ * Holds one {@link LiveGraphState} per in-progress run of this Jenkins.
  * Entries are created on demand by the listener / lifecycle code, removed on completion,
  * and otherwise bounded by a Caffeine LRU so abandoned entries (deleted runs, listener
  * bugs) don't leak.
@@ -26,17 +28,14 @@ import org.jenkinsci.plugins.workflow.job.WorkflowRun;
  *       Extra runs use the scanner path until an entry evicts.</li>
  * </ul>
  */
+@Extension
 public final class LiveGraphRegistry {
 
-    // Must be declared before INSTANCE: the Caffeine builder reads this during INSTANCE
-    // construction, and Caffeine's maximumSize(0) means "no entries allowed".
     private static final int CACHE_MAX_SIZE =
             SystemProperties.getInteger(LiveGraphRegistry.class.getName() + ".size", 512);
 
-    private static final LiveGraphRegistry INSTANCE = new LiveGraphRegistry();
-
     public static LiveGraphRegistry get() {
-        return INSTANCE;
+        return ExtensionList.lookupSingleton(LiveGraphRegistry.class);
     }
 
     private final Cache<String, LiveGraphState> states = Caffeine.newBuilder()
@@ -44,7 +43,7 @@ public final class LiveGraphRegistry {
             .expireAfterAccess(Duration.ofMinutes(30))
             .build();
 
-    LiveGraphRegistry() {}
+    public LiveGraphRegistry() {}
 
     /** See the {@code .enabled} knob documented on the class javadoc. */
     private static boolean disabled() {

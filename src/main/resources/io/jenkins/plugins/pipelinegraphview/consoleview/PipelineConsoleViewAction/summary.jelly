@@ -5,6 +5,7 @@
     <!-- workaround floatingBox elements overlapping -->
     <div class="clearfix" />
     <div id="graph"
+         data-user-locale="${request2.getLocale().toLanguageTag()}"
          data-normalized-parent-job-path="${it.normalizedParentJobPath}"
          data-current-run-start-time="${it.currentRunStartTime}"
          data-previous-run-start-time="${it.previousRunStartTime}"

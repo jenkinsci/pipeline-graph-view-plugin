@@ -696,7 +696,7 @@ class PipelineGraphApiTest {
         assertThat(approve.state, equalTo(PipelineState.PAUSED));
         assertThat(
                 approve.getInputStep(),
-                equalTo(new PipelineInputStep("Release it?", "Abort", "Release", "Ship", true)));
+                equalTo(new PipelineInputStep("Release it?", "Abort", "Release", "Ship", true, null)));
 
         org.jenkinsci.plugins.workflow.support.steps.input.InputAction inputAction =
                 run.getAction(org.jenkinsci.plugins.workflow.support.steps.input.InputAction.class);

@@ -2,6 +2,7 @@ import "./nodes.scss";
 
 import { CSSProperties, memo, ReactElement } from "react";
 
+import InputApprovers from "../../../../common/components/input-approvers.tsx";
 import InputStepControls from "../../../../common/components/input-step-controls.tsx";
 import {
   resultToColor,
@@ -168,6 +169,10 @@ function NodeImpl({
         <div className="pgv-node-tooltip__input-message">
           {pendingInput.message}
         </div>
+        <InputApprovers
+          input={pendingInput}
+          className="pgv-node-tooltip__input-approvers"
+        />
         <InputStepControls
           input={pendingInput}
           baseUrl={`${currentRunPath}input/${pendingInput.id}/`}

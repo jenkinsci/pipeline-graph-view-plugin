@@ -18,15 +18,21 @@ import io.jenkins.plugins.pipelinegraphview.treescanner.NodeRelationshipFinder;
 import io.jenkins.plugins.pipelinegraphview.treescanner.ParallelBlockRelationship;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeTreeScanner;
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
+import org.jenkinsci.plugins.workflow.cps.nodes.StepAtomNode;
+import org.jenkinsci.plugins.workflow.flow.GraphListener;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.jenkinsci.plugins.workflow.support.steps.input.InputAction;
+import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
 import org.jenkinsci.plugins.workflow.test.steps.SemaphoreStep;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -34,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.LogRecorder;
+import org.jvnet.hudson.test.TestExtension;
 import org.jvnet.hudson.test.WithoutJenkins;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
@@ -630,5 +637,58 @@ class PipelineStepApiTest {
         assertThat(visibleStep.name, is("This is also visible"));
         assertThat(visibleStep.getFlags(), notNullValue());
         assertThat(visibleStep.getFlags().isEmpty(), is(true));
+    }
+
+    @Test
+    @DisplayName("An input step listed before it paused is listed with its prompt once it pauses")
+    void inputStepListedBeforeItPausesShowsItsPromptOncePaused() throws Exception {
+        WorkflowJob job = j.createProject(WorkflowJob.class, "inputListedBeforePause");
+        job.setDefinition(new CpsFlowDefinition("stage('gate') { input message: 'Ship it?', ok: 'Ship' }", true));
+        WorkflowRun run = job.scheduleBuild2(0).waitForStart();
+        // The input step prints its prompt after it has registered the execution and paused.
+        j.waitForMessage("Ship it?", run);
+
+        // A poll (steps and graph) that landed between the input node becoming head and the step pausing.
+        PipelineStep beforePause = find(ListStepsWhenInputBecomesHead.steps, ListStepsWhenInputBecomesHead.nodeId);
+        assertThat(beforePause, notNullValue());
+        assertThat(beforePause.inputStep, nullValue());
+
+        // No node is added while the build waits, so this must not reuse that earlier list.
+        PipelineStep paused = find(new PipelineStepApi(run).getAllSteps(), ListStepsWhenInputBecomesHead.nodeId);
+        assertThat(paused.state, is(PipelineState.PAUSED));
+        assertThat(paused.inputStep, notNullValue());
+        assertThat(paused.inputStep.message(), is("Ship it?"));
+        PipelineStage gate = new PipelineGraphApi(run).createTree().stages.get(0);
+        assertThat(gate.name, is("gate"));
+        assertThat(gate.state, is(PipelineState.PAUSED));
+
+        run.getAction(InputAction.class).getExecutions().get(0).proceed(null);
+        j.assertBuildStatusSuccess(j.waitForCompletion(run));
+    }
+
+    private static PipelineStep find(PipelineStepList list, String id) {
+        return list == null
+                ? null
+                : list.steps.stream().filter(s -> s.id.equals(id)).findFirst().orElse(null);
+    }
+
+    @TestExtension("inputStepListedBeforeItPausesShowsItsPromptOncePaused")
+    public static class ListStepsWhenInputBecomesHead implements GraphListener.Synchronous {
+        static volatile String nodeId;
+        static volatile PipelineStepList steps;
+
+        @Override
+        public void onNewHead(FlowNode node) {
+            if (node instanceof StepAtomNode atom && atom.getDescriptor() instanceof InputStep.DescriptorImpl) {
+                try {
+                    nodeId = node.getId();
+                    WorkflowRun run = (WorkflowRun) node.getExecution().getOwner().getExecutable();
+                    steps = new PipelineStepApi(run).getAllSteps();
+                    new PipelineGraphApi(run).createTree();
+                } catch (IOException e) {
+                    throw new AssertionError(e);
+                }
+            }
+        }
     }
 }

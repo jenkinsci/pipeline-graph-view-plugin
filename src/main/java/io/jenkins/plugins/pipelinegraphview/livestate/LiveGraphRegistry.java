@@ -98,24 +98,26 @@ public final class LiveGraphRegistry {
 
     /**
      * Returns a previously-cached {@link PipelineGraph} for this run if it was computed at
-     * or after {@code minVersion}, otherwise {@code null}. Use {@link LiveGraphSnapshot#version()}
-     * as the argument — cache entries older than the caller's snapshot are rejected.
+     * or after {@code minVersion} with the run's current heads paused as they are now,
+     * otherwise {@code null}. Use {@link #currentVersion} as the argument — cache entries
+     * older than the caller's version are rejected.
      */
     public PipelineGraph cachedGraph(WorkflowRun run, long minVersion) {
         if (disabled()) {
             return null;
         }
         LiveGraphState state = states.getIfPresent(run.getExternalizableId());
-        return state == null ? null : state.cachedGraph(minVersion);
+        return state == null ? null : state.cachedGraph(minVersion, LiveGraphState.pausedHeadIds(run.getExecution()));
     }
 
-    public void cacheGraph(WorkflowRun run, long version, PipelineGraph graph) {
+    /** Caches a graph computed from {@code snapshot}, keyed on its version and paused heads. */
+    public void cacheGraph(WorkflowRun run, LiveGraphSnapshot snapshot, PipelineGraph graph) {
         if (disabled()) {
             return;
         }
         LiveGraphState state = states.getIfPresent(run.getExternalizableId());
         if (state != null) {
-            state.cacheGraph(version, graph);
+            state.cacheGraph(snapshot.version(), snapshot.pausedHeadIds(), graph);
         }
     }
 
@@ -124,16 +126,19 @@ public final class LiveGraphRegistry {
             return null;
         }
         LiveGraphState state = states.getIfPresent(run.getExternalizableId());
-        return state == null ? null : state.cachedAllSteps(minVersion);
+        return state == null
+                ? null
+                : state.cachedAllSteps(minVersion, LiveGraphState.pausedHeadIds(run.getExecution()));
     }
 
-    public void cacheAllSteps(WorkflowRun run, long version, PipelineStepList steps) {
+    /** Caches a step list computed from {@code snapshot}, keyed on its version and paused heads. */
+    public void cacheAllSteps(WorkflowRun run, LiveGraphSnapshot snapshot, PipelineStepList steps) {
         if (disabled()) {
             return;
         }
         LiveGraphState state = states.getIfPresent(run.getExternalizableId());
         if (state != null) {
-            state.cacheAllSteps(version, steps);
+            state.cacheAllSteps(snapshot.version(), snapshot.pausedHeadIds(), steps);
         }
     }
 

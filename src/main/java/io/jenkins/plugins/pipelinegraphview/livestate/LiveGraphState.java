@@ -2,6 +2,7 @@ package io.jenkins.plugins.pipelinegraphview.livestate;
 
 import io.jenkins.plugins.pipelinegraphview.steps.HideFromViewStep;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -142,7 +143,38 @@ final class LiveGraphState {
         // read-only (see {@link LiveGraphSnapshot}).
         Set<String> activeNodeIds = computeActiveNodeIds(execution);
         return new LiveGraphSnapshot(
-                nodesCopy, workspaceNodes, enclosingIdsByNodeId, hideFromViewBlockStartIds, activeNodeIds, v);
+                nodesCopy,
+                workspaceNodes,
+                enclosingIdsByNodeId,
+                hideFromViewBlockStartIds,
+                activeNodeIds,
+                pausedHeadIds(execution),
+                v);
+    }
+
+    /**
+     * IDs of the current heads that are paused, e.g. an {@code input} waiting for an answer.
+     * {@code null} when the heads can't be read, which never matches a cache entry.
+     *
+     * <p>A step pauses after its node became a head, so pausing adds no node and doesn't bump
+     * {@link #version}. Output computed between the two would otherwise be served as current
+     * for as long as the build waits (the step shown running, without its input prompt).
+     */
+    static Set<String> pausedHeadIds(FlowExecution execution) {
+        if (execution == null || execution.isComplete()) {
+            return Set.of();
+        }
+        Set<String> paused = new HashSet<>();
+        try {
+            for (FlowNode head : execution.getCurrentHeads()) {
+                if (PipelineNodeUtil.isPaused(head)) {
+                    paused.add(head.getId());
+                }
+            }
+        } catch (Throwable ignored) {
+            return null;
+        }
+        return Set.copyOf(paused);
     }
 
     /**
@@ -178,27 +210,31 @@ final class LiveGraphState {
     }
 
     /**
-     * Returns the cached graph if it was computed at or after {@code minVersion}. Returning
-     * a newer cache than requested is intentional — the caller's snapshot can only become
-     * staler, so a newer output is strictly more accurate.
+     * Returns the cached graph if it was computed at or after {@code minVersion} with the same
+     * heads paused. Returning a newer cache than requested is intentional — the caller's
+     * snapshot can only become staler, so a newer output is strictly more accurate.
      */
-    synchronized PipelineGraph cachedGraph(long minVersion) {
-        return (cachedGraph != null && cachedGraph.version >= minVersion) ? cachedGraph.value : null;
+    synchronized PipelineGraph cachedGraph(long minVersion, Set<String> pausedHeadIds) {
+        return (cachedGraph != null && cachedGraph.isCurrent(minVersion, pausedHeadIds)) ? cachedGraph.value : null;
     }
 
-    synchronized void cacheGraph(long version, PipelineGraph graph) {
-        if (cachedGraph == null || cachedGraph.version < version) {
-            cachedGraph = new VersionedCache<>(version, graph);
+    // Same version replaces too: a pause recomputes at the version the stale entry holds.
+    // Recomputes run under the per-run compute lock, so writes arrive in snapshot order.
+    synchronized void cacheGraph(long version, Set<String> pausedHeadIds, PipelineGraph graph) {
+        if (cachedGraph == null || cachedGraph.version <= version) {
+            cachedGraph = new VersionedCache<>(version, pausedHeadIds, graph);
         }
     }
 
-    synchronized PipelineStepList cachedAllSteps(long minVersion) {
-        return (cachedAllSteps != null && cachedAllSteps.version >= minVersion) ? cachedAllSteps.value : null;
+    synchronized PipelineStepList cachedAllSteps(long minVersion, Set<String> pausedHeadIds) {
+        return (cachedAllSteps != null && cachedAllSteps.isCurrent(minVersion, pausedHeadIds))
+                ? cachedAllSteps.value
+                : null;
     }
 
-    synchronized void cacheAllSteps(long version, PipelineStepList steps) {
-        if (cachedAllSteps == null || cachedAllSteps.version < version) {
-            cachedAllSteps = new VersionedCache<>(version, steps);
+    synchronized void cacheAllSteps(long version, Set<String> pausedHeadIds, PipelineStepList steps) {
+        if (cachedAllSteps == null || cachedAllSteps.version <= version) {
+            cachedAllSteps = new VersionedCache<>(version, pausedHeadIds, steps);
         }
     }
 
@@ -230,5 +266,9 @@ final class LiveGraphState {
         return skippedStageCache;
     }
 
-    private record VersionedCache<T>(long version, T value) {}
+    private record VersionedCache<T>(long version, Set<String> pausedHeadIds, T value) {
+        boolean isCurrent(long minVersion, Set<String> currentPausedHeadIds) {
+            return version >= minVersion && pausedHeadIds != null && pausedHeadIds.equals(currentPausedHeadIds);
+        }
+    }
 }

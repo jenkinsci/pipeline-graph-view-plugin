@@ -28,6 +28,8 @@ const step: StepInfo = {
     cancel: "Skip",
     id: "input-id",
     parameters: true,
+    canProceed: true,
+    canAbort: true,
   },
 };
 

@@ -46,6 +46,11 @@ export default function InputStepControls({
   const openDialog = () =>
     openInputStepDialog(baseUrl, { message: input.message, messages });
 
+  // Neither is offered to a user who can't use them, such as one who isn't an allowed submitter
+  if (!input.canProceed && !input.canAbort) {
+    return null;
+  }
+
   return (
     <div
       className={classNames(
@@ -53,32 +58,36 @@ export default function InputStepControls({
         { [className ?? ""]: !!className },
       )}
     >
-      <button
-        onClick={() => {
-          if (input.parameters) {
-            openDialog();
-          } else {
-            post("proceedEmpty");
+      {input.canProceed && (
+        <button
+          onClick={() => {
+            if (input.parameters) {
+              openDialog();
+            } else {
+              post("proceedEmpty");
+            }
+            onAction?.();
+          }}
+          className={
+            input.parameters
+              ? "jenkins-button jenkins-button--primary input-step-dialog-opener"
+              : "jenkins-button jenkins-button--primary"
           }
-          onAction?.();
-        }}
-        className={
-          input.parameters
-            ? "jenkins-button jenkins-button--primary input-step-dialog-opener"
-            : "jenkins-button jenkins-button--primary"
-        }
-      >
-        {input.ok}
-      </button>
-      <button
-        onClick={() => {
-          post("abort");
-          onAction?.();
-        }}
-        className={"jenkins-button"}
-      >
-        {input.cancel}
-      </button>
+        >
+          {input.ok}
+        </button>
+      )}
+      {input.canAbort && (
+        <button
+          onClick={() => {
+            post("abort");
+            onAction?.();
+          }}
+          className={"jenkins-button"}
+        >
+          {input.cancel}
+        </button>
+      )}
     </div>
   );
 }

@@ -84,6 +84,8 @@ describe("RunSnippet pending input", () => {
               ok: "Approve QA",
               cancel: "Reject QA",
               parameters: false,
+              canProceed: true,
+              canAbort: true,
             },
           },
           {
@@ -95,6 +97,8 @@ describe("RunSnippet pending input", () => {
               ok: "Approve security",
               cancel: "Reject security",
               parameters: false,
+              canProceed: true,
+              canAbort: true,
             },
           },
         ],
@@ -128,6 +132,8 @@ describe("RunSnippet pending input", () => {
               ok: "Deploy",
               cancel: "Abort",
               parameters: false,
+              canProceed: true,
+              canAbort: true,
             },
           },
         ],
@@ -155,6 +161,8 @@ describe("RunSnippet pending input", () => {
               ok: `Approve ${inputId}`,
               cancel: "Abort",
               parameters: false,
+              canProceed: true,
+              canAbort: true,
             }
           : undefined,
       });
@@ -209,6 +217,8 @@ describe("RunSnippet pending input", () => {
               ok: "Deploy",
               cancel: "Abort",
               parameters: false,
+              canProceed: true,
+              canAbort: true,
             },
           },
         ],
@@ -238,6 +248,8 @@ describe("RunSnippet pending input", () => {
       ok: `Approve ${id}`,
       cancel: "Abort",
       parameters: false,
+      canProceed: true,
+      canAbort: true,
     });
 
     const matrix = (

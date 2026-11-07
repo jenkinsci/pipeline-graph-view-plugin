@@ -28,6 +28,8 @@ describe("mergeStageInfos", () => {
       ok: "Deploy",
       cancel: "Abort",
       parameters: false,
+      canProceed: true,
+      canAbort: true,
     };
     const skeletons = [
       stage("Build", { state: Result.paused, inputStep: input }),

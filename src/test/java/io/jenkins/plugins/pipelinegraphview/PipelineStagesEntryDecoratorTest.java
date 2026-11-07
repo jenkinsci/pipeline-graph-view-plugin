@@ -13,6 +13,7 @@ import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.StreamSupport;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
@@ -87,7 +88,8 @@ class PipelineStagesEntryDecoratorTest {
         JsonNode signOff = await().until(
                         () -> JsonMapper.builder()
                                 .build()
-                                .readTree(PipelineStagesEntryDecorator.toHistoryPageJson(api.createTree(), null))
+                                .readTree(PipelineStagesEntryDecorator.toHistoryPageJson(
+                                        api.createTree(), null, Map.of()))
                                 .path("stages")
                                 .get(0),
                         stage -> stage != null && stage.path("pendingInputs").size() == 2);
@@ -113,7 +115,8 @@ class PipelineStagesEntryDecoratorTest {
 
     private JsonNode historyPageStages(String jobName, String jenkinsFile) throws Exception {
         WorkflowRun run = TestUtils.createAndRunJob(j, jobName, jenkinsFile, Result.SUCCESS);
-        String json = PipelineStagesEntryDecorator.toHistoryPageJson(new PipelineGraphApi(run).createTree(), null);
+        String json =
+                PipelineStagesEntryDecorator.toHistoryPageJson(new PipelineGraphApi(run).createTree(), null, Map.of());
         return JsonMapper.builder().build().readTree(json).path("stages");
     }
 

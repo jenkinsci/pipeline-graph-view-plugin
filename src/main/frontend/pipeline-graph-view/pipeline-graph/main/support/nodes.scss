@@ -46,7 +46,8 @@
   }
 }
 
-.pgv-node-tooltip--input {
+// Also .pgv-node-tooltip, to win over its last div's styles when there are no controls
+.pgv-node-tooltip.pgv-node-tooltip--input {
   gap: 0.5rem;
   padding: 0.25rem 0;
   max-width: 20rem;

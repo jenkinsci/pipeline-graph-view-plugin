@@ -16,6 +16,10 @@ export interface InputStep {
   id: string;
   ok: string;
   parameters: boolean;
+  /** Whether the current user can proceed with the input. */
+  canProceed: boolean;
+  /** Whether the current user can abort the input. */
+  canAbort: boolean;
 }
 
 export interface BuildStep {

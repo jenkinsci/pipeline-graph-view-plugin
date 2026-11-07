@@ -151,6 +151,8 @@ describe("Stage node waiting for input", () => {
     cancel: "Abort",
     id: "Approve",
     parameters: false,
+    canProceed: true,
+    canAbort: true,
   };
 
   const hover = () =>
@@ -217,6 +219,22 @@ describe("Stage node waiting for input", () => {
     hover();
 
     expect(screen.queryByRole("button", { name: "Deploy" })).toBeNull();
+  });
+
+  it("shows the input without controls to a user who can't respond to it", () => {
+    render(
+      <Node
+        node={stageNode({
+          inputStep: { ...inputStep, canProceed: false, canAbort: false },
+        })}
+        isSelected={false}
+        currentRunPath="/jenkins/job/example/1/"
+      />,
+    );
+    hover();
+
+    expect(screen.getByText("Deploy to production?")).toBeInTheDocument();
+    expect(screen.queryByRole("button")).toBeNull();
   });
 
   it("doesn't offer the previous run's input on a placeholder stage", () => {

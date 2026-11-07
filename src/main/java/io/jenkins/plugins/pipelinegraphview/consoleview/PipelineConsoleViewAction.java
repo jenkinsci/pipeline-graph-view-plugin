@@ -93,7 +93,7 @@ public class PipelineConsoleViewAction extends Tab {
         PipelineStepList steps = stepApi.getSteps(nodeId);
         rsp.setStatus(200);
         rsp.setContentType("application/json;charset=UTF-8");
-        PipelineJsonWriter.write(steps, rsp.getOutputStream());
+        PipelineJsonWriter.writeWithInputPermissions(steps, run, rsp.getOutputStream());
     }
 
     // Return all steps to:
@@ -113,7 +113,7 @@ public class PipelineConsoleViewAction extends Tab {
         }
         PipelineStepList steps = stepApi.getAllSteps();
         setCache(rsp, steps.runIsComplete);
-        PipelineJsonWriter.write(steps, rsp.getOutputStream());
+        PipelineJsonWriter.writeWithInputPermissions(steps, run, rsp.getOutputStream());
     }
 
     private void setCache(StaplerResponse2 rsp, boolean complete) {
@@ -543,7 +543,7 @@ public class PipelineConsoleViewAction extends Tab {
         }
         PipelineGraph tree = graphApi.createTree();
         setCache(rsp, tree.complete);
-        PipelineJsonWriter.write(tree, rsp.getOutputStream());
+        PipelineJsonWriter.writeWithInputPermissions(tree, run, rsp.getOutputStream());
     }
 
     // Icon related methods these may appear as unused but are used by /lib/hudson/buildCaption.jelly

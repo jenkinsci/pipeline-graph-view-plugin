@@ -11,6 +11,8 @@ const input = {
   ok: "Deploy",
   cancel: "Abort",
   parameters: false,
+  canProceed: true,
+  canAbort: true,
 };
 
 describe("InputStepControls", () => {
@@ -25,10 +27,29 @@ describe("InputStepControls", () => {
     window.notificationBar = { show, ERROR: "error" };
   });
 
-  const renderControls = () =>
+  const renderControls = (overrides: Partial<typeof input> = {}) =>
     render(
-      <InputStepControls input={input} baseUrl="/job/x/1/input/Deploy/" />,
+      <InputStepControls
+        input={{ ...input, ...overrides }}
+        baseUrl="/job/x/1/input/Deploy/"
+      />,
     );
+
+  it("only offers abort to a user who can't proceed", () => {
+    renderControls({ canProceed: false });
+
+    expect(screen.queryByRole("button", { name: "Deploy" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Abort" })).toBeInTheDocument();
+  });
+
+  it("offers nothing to a user who can neither proceed nor abort", () => {
+    const { container } = renderControls({
+      canProceed: false,
+      canAbort: false,
+    });
+
+    expect(container).toBeEmptyDOMElement();
+  });
 
   it("shows why the input step refused the submission", async () => {
     fetchMock.mockResolvedValue(

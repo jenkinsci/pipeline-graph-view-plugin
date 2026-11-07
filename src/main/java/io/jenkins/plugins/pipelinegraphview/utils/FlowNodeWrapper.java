@@ -165,6 +165,20 @@ public class FlowNodeWrapper {
         };
     }
 
+    /**
+     * The name of the step this node runs. A block step's start node is named
+     * {@code "<step> : Start"}, so the step's own name is used for those instead.
+     */
+    public @NonNull String getStepDisplayName() {
+        if (node instanceof StepStartNode stepStartNode && !stepStartNode.isBody()) {
+            StepDescriptor descriptor = stepStartNode.getDescriptor();
+            if (descriptor != null) {
+                return descriptor.getDisplayName();
+            }
+        }
+        return getDisplayName();
+    }
+
     public @CheckForNull String getLabelDisplayName() {
         LabelAction labelAction = node.getAction(LabelAction.class);
         if (labelAction != null) {
@@ -246,6 +260,27 @@ public class FlowNodeWrapper {
             cachedIdInt = v;
         }
         return v;
+    }
+
+    /** Position used for sorting instead of the node's own id, or {@link Integer#MIN_VALUE} if unset. */
+    private int sortPosition = Integer.MIN_VALUE;
+
+    /**
+     * Returns a copy of this node that sorts at {@code other}'s position in the run, for a node
+     * standing in for something that happened later than the node itself.
+     */
+    public @NonNull FlowNodeWrapper positionedAt(@NonNull FlowNodeWrapper other) {
+        FlowNodeWrapper copy = new FlowNodeWrapper(node, status, timingInfo, inputStep, downstreamBuildRun, run, type);
+        copy.parents.addAll(parents);
+        copy.edges.addAll(edges);
+        copy.causeOfFailure = causeOfFailure;
+        copy.blockErrorAction = blockErrorAction;
+        copy.sortPosition = other.getIdAsInt();
+        return copy;
+    }
+
+    public int getSortPosition() {
+        return sortPosition != Integer.MIN_VALUE ? sortPosition : getIdAsInt();
     }
 
     public @NonNull FlowNode getNode() {
@@ -476,7 +511,7 @@ public class FlowNodeWrapper {
 
         @Override
         public int compare(FlowNodeWrapper a, FlowNodeWrapper b) {
-            return Integer.compare(a.getIdAsInt(), b.getIdAsInt());
+            return Integer.compare(a.getSortPosition(), b.getSortPosition());
         }
     }
 

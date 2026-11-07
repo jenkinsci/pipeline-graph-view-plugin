@@ -3,6 +3,7 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 import static java.util.Collections.emptyList;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphRegistry;
 import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphSnapshot;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
@@ -15,7 +16,7 @@ import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.graphanalysis.DepthFirstScanner;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.jenkinsci.plugins.workflow.support.steps.input.InputAction;
+import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.slf4j.Logger;
@@ -84,15 +85,10 @@ public class PipelineGraphApi {
         // these are completely new representations.
         List<PipelineStageInternal> stages = getPipelineNodes(builder, workspaceNodes, enclosingIdsByNodeId);
 
-        // Get InputAction once for all stages
-        InputAction inputAction = run.getAction(InputAction.class);
-
-        // Set the builder and inputAction on each stage so they can check for paused steps
-        if (builder instanceof PipelineStepBuilderApi stepBuilder) {
-            stages.forEach(stage -> {
-                stage.setBuilder(stepBuilder);
-                stage.setInputAction(inputAction);
-            });
+        // Only a running build can be paused; skipping finished builds avoids remapping their steps.
+        if (!complete && builder instanceof PipelineStepBuilderApi stepBuilder) {
+            Map<String, PipelineStageInternal.PausedStep> pausedSteps = pausedStepsByStage(stepBuilder);
+            stages.forEach(stage -> stage.setPausedStep(pausedSteps.get(stage.getId())));
         }
 
         // id => stage
@@ -127,6 +123,32 @@ public class PipelineGraphApi {
                 .filter(stage -> !childNodes.contains(stage.id))
                 .collect(Collectors.toList());
         return new PipelineGraph(stageResults, complete);
+    }
+
+    private static Map<String, PipelineStageInternal.PausedStep> pausedStepsByStage(
+            PipelineStepBuilderApi stepBuilder) {
+        Map<String, PipelineStageInternal.PausedStep> pausedSteps = new HashMap<>();
+        stepBuilder.getAllSteps().forEach((stageId, steps) -> {
+            for (FlowNodeWrapper step : steps) {
+                if (step.getStatus().state == BlueRun.BlueRunState.PAUSED) {
+                    InputStep inputStep = step.getInputStep();
+                    pausedSteps.put(
+                            stageId,
+                            new PipelineStageInternal.PausedStep(
+                                    inputStep == null ? waitingFor(step) : null, inputStep));
+                    return;
+                }
+            }
+        });
+        return pausedSteps;
+    }
+
+    private static String waitingFor(FlowNodeWrapper step) {
+        String stepName = step.getStepDisplayName();
+        String arguments = step.getArgumentsAsString();
+        return arguments == null || arguments.isBlank()
+                ? Messages.PipelineStage_waitingForStep(stepName)
+                : Messages.PipelineStage_waitingForStepWithArguments(stepName, arguments);
     }
 
     private static String getStageNode(

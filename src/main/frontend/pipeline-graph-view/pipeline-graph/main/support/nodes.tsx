@@ -151,7 +151,9 @@ function NodeImpl({
   };
 
   const causeOfBlockage =
-    node.stage.state === "queued" ? node.stage.causeOfBlockage : undefined;
+    node.stage.state === Result.queued || node.stage.state === Result.paused
+      ? node.stage.causeOfBlockage
+      : undefined;
 
   const pendingInput =
     node.stage.state === Result.paused && !node.stage.skeleton

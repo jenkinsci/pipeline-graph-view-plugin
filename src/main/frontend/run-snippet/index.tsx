@@ -1,5 +1,10 @@
 import { createRoot, Root } from "react-dom/client";
 
+import {
+  I18NProvider,
+  LocaleProvider,
+  ResourceBundleName,
+} from "../common/i18n/index.ts";
 import { RunStatus } from "../common/RestClient.tsx";
 import { UserPreferencesProvider } from "../common/user/user-preferences-provider.tsx";
 import { mergeStageInfos } from "../common/utils/stage-merge.ts";
@@ -8,6 +13,7 @@ import RunSnippet from "./components/run-snippet.tsx";
 
 const roots = new WeakMap<Element, Root>();
 const HOST_SELECTOR = '[data-type="pipeline-graph-host"]';
+const bundles = [ResourceBundleName.messages];
 
 function mountGraphHost(element: Element): void {
   if (roots.has(element)) {
@@ -17,7 +23,8 @@ function mountGraphHost(element: Element): void {
   const root = createRoot(element);
   roots.set(element, root);
 
-  const { currentRunPath, runPath } = (element as HTMLElement).dataset;
+  const { currentRunPath, runPath, userLocale } = (element as HTMLElement)
+    .dataset;
   const previousElement = element.previousElementSibling as HTMLTemplateElement;
   const json = JSON.parse(
     previousElement.content.textContent as string,
@@ -29,13 +36,17 @@ function mountGraphHost(element: Element): void {
     : json;
 
   root.render(
-    <UserPreferencesProvider>
-      <RunSnippet
-        run={run}
-        currentRunPath={currentRunPath!}
-        runPath={runPath!}
-      />
-    </UserPreferencesProvider>,
+    <LocaleProvider locale={userLocale!}>
+      <I18NProvider bundles={bundles}>
+        <UserPreferencesProvider>
+          <RunSnippet
+            run={run}
+            currentRunPath={currentRunPath!}
+            runPath={runPath!}
+          />
+        </UserPreferencesProvider>
+      </I18NProvider>
+    </LocaleProvider>,
   );
 }
 

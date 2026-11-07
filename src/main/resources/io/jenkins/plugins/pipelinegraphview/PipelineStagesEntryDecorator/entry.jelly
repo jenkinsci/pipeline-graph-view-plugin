@@ -7,5 +7,6 @@
     </template>
     <div data-type="pipeline-graph-host" class="pgv-run-snippet-host"
          data-current-run-path="${rootURL + '/' + build.url + 'stages?selected-node='}"
-         data-run-path="${rootURL + '/' + build.url}" />
+         data-run-path="${rootURL + '/' + build.url}"
+         data-user-locale="${request2.getLocale().toLanguageTag()}" />
 </j:jelly>

@@ -194,7 +194,21 @@ export async function getEarlyConsoleText(url: string): Promise<string | null> {
   }
 }
 
-export async function getResourceBundle(
+const resourceBundles = new Map<string, Promise<ResourceBundle | undefined>>();
+
+/** Fetches a resource bundle once per page, as every builds-list row asks for the same one. */
+export function getResourceBundle(
+  resource: string,
+): Promise<ResourceBundle | undefined> {
+  let bundle = resourceBundles.get(resource);
+  if (!bundle) {
+    bundle = fetchResourceBundle(resource);
+    resourceBundles.set(resource, bundle);
+  }
+  return bundle;
+}
+
+async function fetchResourceBundle(
   resource: string,
 ): Promise<ResourceBundle | undefined> {
   try {

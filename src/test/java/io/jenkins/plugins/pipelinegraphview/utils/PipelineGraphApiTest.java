@@ -710,6 +710,108 @@ class PipelineGraphApiTest {
         assertThat(completed.getChildren().get(0).getInputStep(), nullValue());
     }
 
+    @Issue("GH#315")
+    @Test
+    void stageWaitingForLockShowsAsPausedWithCause() throws Exception {
+        WorkflowJob holder = j.jenkins.createProject(WorkflowJob.class, "lockHolder");
+        holder.setDefinition(new CpsFlowDefinition("lock('shared-db') { semaphore 'hold' }", true));
+        WorkflowRun holderRun = holder.scheduleBuild2(0).waitForStart();
+        SemaphoreStep.waitForStart("hold/1", holderRun);
+
+        WorkflowJob waiter = j.jenkins.createProject(WorkflowJob.class, "lockWaiter");
+        waiter.setDefinition(new CpsFlowDefinition("""
+                pipeline {
+                  agent none
+                  stages {
+                    stage('Deploy') {
+                      parallel {
+                        stage('Database') {
+                          steps {
+                            lock('shared-db') { echo 'Lock acquired' }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }""", true));
+        WorkflowRun run = waiter.scheduleBuild2(0).waitForStart();
+        j.waitForMessage("is not free, waiting for execution", run);
+
+        String waitingFor = Messages.PipelineStage_waitingForStepWithArguments("Lock shared resource", "shared-db");
+        PipelineGraphApi graphApi = new PipelineGraphApi(run);
+        await().until(
+                        () -> TestUtils.collectStagesAsString(
+                                graphApi.createTree().stages,
+                                s -> s.getName() + "{" + s.getState() + "," + s.getCauseOfBlockage() + "}"),
+                        equalTo("Deploy{paused," + waitingFor + "}[Database{paused," + waitingFor + "}]"));
+
+        PipelineStepApi stepApi = new PipelineStepApi(run);
+        await().until(
+                        () -> stepApi.computeAllSteps().steps.stream()
+                                .map(s -> s.getName() + "|" + s.getTitle() + "|" + s.getState())
+                                .toList(),
+                        contains("shared-db|Lock shared resource|paused"));
+
+        SemaphoreStep.success("hold/1", null);
+        j.assertBuildStatusSuccess(j.waitForCompletion(holderRun));
+        j.assertBuildStatusSuccess(j.waitForCompletion(run));
+
+        assertThat(
+                TestUtils.collectStagesAsString(
+                        graphApi.createTree().stages,
+                        s -> s.getName() + "{" + s.getState() + "," + s.getCauseOfBlockage() + "}"),
+                equalTo("Deploy{success,null}[Database{success,null}]"));
+        assertThat(
+                stepApi.computeAllSteps().steps.stream()
+                        .map(PipelineStep::getName)
+                        .toList(),
+                contains("Lock acquired"));
+    }
+
+    @Issue("GH#315")
+    @Test
+    void lockOutsideStagesWaitingShowsAsPausedStageAfterEarlierStages() throws Exception {
+        WorkflowJob holder = j.jenkins.createProject(WorkflowJob.class, "lockHolderOutside");
+        holder.setDefinition(new CpsFlowDefinition("lock('shared-db') { semaphore 'hold' }", true));
+        WorkflowRun holderRun = holder.scheduleBuild2(0).waitForStart();
+        SemaphoreStep.waitForStart("hold/1", holderRun);
+
+        WorkflowJob waiter = j.jenkins.createProject(WorkflowJob.class, "lockOutsideStages");
+        waiter.setDefinition(new CpsFlowDefinition("""
+                stage('First') { echo 'hi' }
+                lock('shared-db') {
+                  stage('Locked') { echo 'Lock acquired' }
+                }""", true));
+        WorkflowRun run = waiter.scheduleBuild2(0).waitForStart();
+        j.waitForMessage("is not free, waiting for execution", run);
+
+        String waitingFor = Messages.PipelineStage_waitingForStepWithArguments("Lock shared resource", "shared-db");
+        PipelineGraphApi graphApi = new PipelineGraphApi(run);
+        await().until(
+                        () -> TestUtils.collectStagesAsString(
+                                graphApi.createTree().stages,
+                                s -> s.getName() + "{" + s.getState() + "," + s.getCauseOfBlockage() + "}"),
+                        equalTo("First{success,null}," + Messages.FlowNodeWrapper_noStage() + "{paused," + waitingFor
+                                + "}"));
+
+        PipelineStage holderStage = graphApi.createTree().stages.get(1);
+        assertThat(
+                new PipelineStepApi(run)
+                        .computeAllSteps().steps.stream()
+                                .filter(s -> s.stageId.equals(holderStage.getId()))
+                                .map(s -> s.getName() + "|" + s.getState())
+                                .toList(),
+                contains("shared-db|paused"));
+
+        SemaphoreStep.success("hold/1", null);
+        j.assertBuildStatusSuccess(j.waitForCompletion(holderRun));
+        j.assertBuildStatusSuccess(j.waitForCompletion(run));
+
+        assertThat(
+                TestUtils.collectStagesAsString(graphApi.createTree().stages, TestUtils::nodeNameAndStatus),
+                equalTo("First{success},Locked{success}"));
+    }
+
     @Issue("GH#486")
     @Test
     void queuedStageReportsCauseOfBlockage() throws Exception {

@@ -64,6 +64,9 @@ public class PipelineNodeUtil {
             }
             if (node instanceof StepStartNode) {
                 StepStartNode stepStartNode = (StepStartNode) node;
+                if (isPausedBeforeBody(stepStartNode)) {
+                    return true;
+                }
                 boolean takesImplicitBlockArgument = false;
                 StepDescriptor sd = stepStartNode.getDescriptor();
                 if (sd != null) {
@@ -76,6 +79,15 @@ public class PipelineNodeUtil {
             }
         }
         return false;
+    }
+
+    /**
+     * A block step that pauses before running its body, such as {@code lock} waiting for a
+     * resource, has no child steps to show, so it is surfaced as a step itself to make it clear
+     * what the stage is waiting for.
+     */
+    private static boolean isPausedBeforeBody(StepStartNode node) {
+        return !node.isBody() && isPaused(node) && !isStage(node) && !isParallelBranch(node);
     }
 
     public static boolean isStage(FlowNode node) {

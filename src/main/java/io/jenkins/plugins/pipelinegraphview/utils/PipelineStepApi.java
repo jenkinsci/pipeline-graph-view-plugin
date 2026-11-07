@@ -44,7 +44,7 @@ public class PipelineStepApi {
                         String stepArguments = flowNodeWrapper.getArgumentsAsString();
                         if (stepArguments != null && !stepArguments.isEmpty()) {
                             displayName = stepArguments;
-                            title = flowNodeWrapper.getDisplayName();
+                            title = flowNodeWrapper.getStepDisplayName();
                         }
                         // Use the step label as the displayName if set
                         String labelDisplayName = flowNodeWrapper.getLabelDisplayName();

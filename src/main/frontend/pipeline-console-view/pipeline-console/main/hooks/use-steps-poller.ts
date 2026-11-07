@@ -426,7 +426,13 @@ export function useStepsPoller({
     }
     if (!defaultStep) return;
     tailStep.current = defaultStep.id;
-    if (!tailLogsRef.current) return;
+    if (!tailLogsRef.current) {
+      // Tailing can stop (e.g. a scroll during page load) before any steps have arrived.
+      // Still open a stage then, so the stage view isn't left blank.
+      const stageId = defaultStep.stageId;
+      setOpenStageId((current) => current || stageId);
+      return;
+    }
     setOpenStageId(defaultStep.stageId);
     if (collapsedSteps.current.has(defaultStep.id)) return;
     setExpandedSteps((prev) => {

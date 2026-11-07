@@ -74,6 +74,32 @@ it("selects default step if URL param is missing", async () => {
   unmount();
 });
 
+it("selects a stage when the user scrolls before the first steps arrive", async () => {
+  let resolveSteps: (value: { steps: typeof mockSteps }) => void = () => {};
+  (model.getRunSteps as Mock).mockReturnValueOnce(
+    new Promise((resolve) => {
+      resolveSteps = resolve;
+    }),
+  );
+
+  const { result, unmount } = renderHook(() =>
+    useStepsPoller({ currentRunPath: "/run/1", currentRunStartTime: 1337 }),
+  );
+
+  // Let the stage-switch scroll guard expire, then scroll as a user would.
+  await new Promise((resolve) => setTimeout(resolve, 150));
+  act(() => {
+    window.dispatchEvent(new Event("scroll"));
+  });
+  await waitFor(() => expect(result.current.tailLogs).toBe(false));
+
+  await act(async () => resolveSteps({ steps: mockSteps }));
+
+  await waitFor(() => expect(result.current.openStage?.id).toBe("stage-2"));
+
+  unmount();
+});
+
 it("handles empty console log", async () => {
   (model.getConsoleTextOffset as Mock).mockResolvedValue({
     consoleAnnotator: "",

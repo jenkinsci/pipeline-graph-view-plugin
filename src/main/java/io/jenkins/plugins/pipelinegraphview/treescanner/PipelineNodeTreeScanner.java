@@ -312,9 +312,8 @@ public class PipelineNodeTreeScanner {
          * succeed, the start node is added as a synthetic stage to hold the steps outside
          * stages. It is added after the stages are remapped so that real stages never get it
          * as a parent.
-         * Block steps such as node are ignored: they fail whenever something inside them
-         * fails, even when that is a stage, so only the step or exception that caused the
-         * failure counts.
+         * The start node's own status is the status of the whole run, so the synthetic stage
+         * gets the combined status of the steps it holds instead.
          */
         private @NonNull Map<String, FlowNodeWrapper> withStartNodeForProblemsOutsideStages(
                 @NonNull Map<String, FlowNodeWrapper> stageMap) {
@@ -328,23 +327,53 @@ public class PipelineNodeTreeScanner {
             if (startNode == null || stageMap.containsKey(startNode.getId())) {
                 return stageMap;
             }
-            boolean problemOutsideStages = false;
+            List<FlowNodeWrapper> stepsOutsideStages = new ArrayList<>();
             for (FlowNodeWrapper n : this.wrappedNodeMap.values()) {
-                if (shouldBeInStepMap(n)
-                        && !(n.getNode() instanceof BlockStartNode)
-                        && isProblem(n)
-                        && !isInStage(n, stageMap)) {
-                    problemOutsideStages = true;
-                    break;
+                if (shouldBeInStepMap(n) && !isInStage(n, stageMap)) {
+                    stepsOutsideStages.add(n);
                 }
             }
-            if (!problemOutsideStages) {
+            if (stepsOutsideStages.stream().noneMatch(GraphBuilder::isProblem)) {
                 return stageMap;
             }
+            FlowNodeWrapper syntheticStage = new FlowNodeWrapper(
+                    startNode.getNode(),
+                    combinedStatus(stepsOutsideStages),
+                    startNode.getTiming(),
+                    null,
+                    null,
+                    startNode.getRun(),
+                    startNode.getType());
             Map<String, FlowNodeWrapper> withStartNode = new LinkedHashMap<>();
-            withStartNode.put(startNode.getId(), startNode);
+            withStartNode.put(syntheticStage.getId(), syntheticStage);
             withStartNode.putAll(stageMap);
             return withStartNode;
+        }
+
+        /*
+         * The worst result of the steps, ranked as Jenkins ranks build results, and running while
+         * any of them is.
+         */
+        private static @NonNull NodeRunStatus combinedStatus(@NonNull List<FlowNodeWrapper> steps) {
+            List<BlueRun.BlueRunResult> severity = List.of(
+                    BlueRun.BlueRunResult.SUCCESS,
+                    BlueRun.BlueRunResult.UNSTABLE,
+                    BlueRun.BlueRunResult.FAILURE,
+                    BlueRun.BlueRunResult.ABORTED);
+            BlueRun.BlueRunResult result = BlueRun.BlueRunResult.SUCCESS;
+            BlueRun.BlueRunState state = BlueRun.BlueRunState.FINISHED;
+            for (FlowNodeWrapper step : steps) {
+                NodeRunStatus status = step.getStatus();
+                if (severity.indexOf(status.getResult()) > severity.indexOf(result)) {
+                    result = status.getResult();
+                }
+                if (status.getState() == BlueRun.BlueRunState.RUNNING) {
+                    state = BlueRun.BlueRunState.RUNNING;
+                } else if (status.getState() == BlueRun.BlueRunState.PAUSED && state != BlueRun.BlueRunState.RUNNING) {
+                    state = BlueRun.BlueRunState.PAUSED;
+                }
+            }
+            return new NodeRunStatus(result, state);
         }
 
         /*
@@ -605,15 +634,30 @@ public class PipelineNodeTreeScanner {
         }
 
         /*
+         * The start of the parallel branch that this node starts or ends, or null. A branch's end
+         * node shares the whole parallel block's relationship, and is wrapped when an exception
+         * was thrown from the branch, so it needs the branch's own status and timing too.
+         */
+        private static @CheckForNull BlockStartNode parallelBranchStart(@NonNull FlowNode node) {
+            if (node instanceof BlockStartNode start && PipelineNodeUtil.isParallelBranch(start)) {
+                return start;
+            }
+            if (node instanceof BlockEndNode<?> end && PipelineNodeUtil.isParallelBranch(end.getStartNode())) {
+                return end.getStartNode();
+            }
+            return null;
+        }
+
+        /*
          * Wraps a FlowNode in a FlowNodeWrapper.
          */
         private @NonNull FlowNodeWrapper wrapNode(@NonNull FlowNode node, @NonNull NodeRelationship relationship) {
             TimingInfo timing = null;
             NodeRunStatus status = null;
-            if (relationship instanceof ParallelBlockRelationship parallelRelationship
-                    && PipelineNodeUtil.isParallelBranch(node)) {
-                timing = parallelRelationship.getBranchTimingInfo(this.run, (BlockStartNode) node);
-                status = parallelRelationship.getBranchStatus(this.run, (BlockStartNode) node);
+            BlockStartNode branchStart = parallelBranchStart(node);
+            if (relationship instanceof ParallelBlockRelationship parallelRelationship && branchStart != null) {
+                timing = parallelRelationship.getBranchTimingInfo(this.run, branchStart);
+                status = parallelRelationship.getBranchStatus(this.run, branchStart);
             } else {
                 FlowNode start = relationship.getStart();
                 FlowNode end = relationship.getEnd();

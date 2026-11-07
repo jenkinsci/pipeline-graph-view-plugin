@@ -1,0 +1,9 @@
+def var = null
+parallel(
+    failing: {
+        var.isEmpty()
+    },
+    waiting: {
+        semaphore 'wait'
+    }
+)

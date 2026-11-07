@@ -543,6 +543,57 @@ class PipelineStepApiTest {
                         .formatted(Messages.FlowNodeWrapper_noStage())));
     }
 
+    @Issue("GH#863")
+    @Test
+    void exceptionInParallelBranchIsFailedWhileSiblingRuns() throws Exception {
+        QueueTaskFuture<WorkflowRun> futureRun = TestUtils.createAndRunJobNoWait(
+                j, "gh863_exceptionInParallelBranch", "gh863_exceptionInParallelBranch.jenkinsfile");
+        WorkflowRun run = futureRun.waitForStart();
+        SemaphoreStep.waitForStart("wait/1", run);
+
+        PipelineStep errorStep = new PipelineStepApi(run)
+                .getAllSteps().steps.stream()
+                        .filter(s -> s.name.equals("Pipeline error"))
+                        .findFirst()
+                        .orElseThrow();
+        assertThat(TestUtils.nodeNameAndStatus(errorStep), equalTo("Pipeline error{failure}"));
+
+        SemaphoreStep.success("wait/1", null);
+        j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(run));
+    }
+
+    @Issue("GH#1139")
+    @Test
+    void syntheticStageHasStatusOfItsOwnSteps() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j,
+                "gh1139_caughtFailureOutsideStages",
+                "gh1139_caughtFailureOutsideStages.jenkinsfile",
+                Result.SUCCESS);
+
+        assertThat(
+                stepsByStage(run),
+                equalTo(
+                        "%s{failure}[Could not start agent{failure},Caught: Could not start agent{success}],Build{success}[building{success}]"
+                                .formatted(Messages.FlowNodeWrapper_noStage())));
+    }
+
+    @Issue("GH#1139")
+    @Test
+    void failedBodyStepOutsideStagesIsShown() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j,
+                "gh1139_loadedScriptFailsOutsideStages",
+                "gh1139_loadedScriptFailsOutsideStages.jenkinsfile",
+                Result.SUCCESS,
+                false);
+
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
+        assertThat(
+                TestUtils.collectStagesAsString(stages, TestUtils::nodeNameAndStatus),
+                equalTo("%s{failure},Build{success}".formatted(Messages.FlowNodeWrapper_noStage())));
+    }
+
     @Issue("GH#1139")
     @Test
     void successfulStepsOutsideStagesDoNotAddSyntheticStage() throws Exception {

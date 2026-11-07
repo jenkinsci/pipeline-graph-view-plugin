@@ -65,6 +65,16 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
         return this;
     }
 
+    public PipelineOverviewPage scrollGraph(double deltaX, double deltaY) {
+        graph.scroll(deltaX, deltaY);
+        return this;
+    }
+
+    public PipelineOverviewPage graphHasTransform(String positionX, String scale) {
+        graph.hasTransform(positionX, scale);
+        return this;
+    }
+
     public PipelineOverviewPage selectStageInGraph(String stage) {
         graph.selectStage(stage);
         return this;

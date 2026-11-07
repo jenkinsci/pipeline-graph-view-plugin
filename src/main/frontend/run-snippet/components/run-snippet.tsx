@@ -211,19 +211,26 @@ function PendingInputsTooltip({
 }
 
 /**
- * The input a stage or its nested stages are waiting on. A matrix configuration only has its
- * own input, as it's not a top-level stage.
+ * The input a stage or its nested stages are waiting on. Top-level stages come with theirs
+ * gathered, while the stages of a matrix keep their nested stages to look through.
  */
 function pendingInputsOf(stage: StageInfo): PendingInput[] {
-  if (stage.skeleton || stage.state !== Result.paused) {
+  if (stage.skeleton) {
     return [];
   }
   if (stage.pendingInputs?.length) {
     return stage.pendingInputs;
   }
-  return stage.inputStep
-    ? [{ stageId: stage.id, stageName: stage.name, input: stage.inputStep }]
-    : [];
+  const nested = (stage.children ?? []).flatMap(pendingInputsOf);
+  // A matrix's stage copies one configuration's state and input, which its configurations
+  // already account for
+  if (stage.synthetic || stage.state !== Result.paused || !stage.inputStep) {
+    return nested;
+  }
+  return [
+    { stageId: stage.id, stageName: stage.name, input: stage.inputStep },
+    ...nested,
+  ];
 }
 
 /**

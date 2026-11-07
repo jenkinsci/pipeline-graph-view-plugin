@@ -230,4 +230,98 @@ describe("RunSnippet pending input", () => {
     fireEvent.keyDown(deploy, { key: "Tab", shiftKey: true });
     expect(link).toHaveFocus();
   });
+
+  describe("in a matrix", () => {
+    const input = (id: string) => ({
+      id,
+      message: `Approve ${id}?`,
+      ok: `Approve ${id}`,
+      cancel: "Abort",
+      parameters: false,
+    });
+
+    const matrix = (
+      id: number,
+      configurations: Array<[string, StageInfo]>,
+    ): StageInfo =>
+      stage({
+        id,
+        name: "Matrix",
+        state: Result.paused,
+        children: configurations.map(([platform, child], index) =>
+          stage({
+            id: id * 10 + index,
+            type: "PARALLEL",
+            name: `Matrix - PLATFORM = '${platform}'`,
+            state: child.state,
+            children: [child],
+          }),
+        ),
+      });
+
+    it("offers the input of every configuration of a stage hidden in a collapsed marker", async () => {
+      renderSnippet([
+        stage({ id: 1, name: "Checkout" }),
+        matrix(2, [
+          [
+            "linux",
+            stage({
+              id: 100,
+              name: "Approve",
+              state: Result.paused,
+              inputStep: input("Linux"),
+            }),
+          ],
+          [
+            "windows",
+            stage({
+              id: 101,
+              name: "Approve",
+              state: Result.paused,
+              inputStep: input("Windows"),
+            }),
+          ],
+        ]),
+        stage({ id: 3, name: "Package" }),
+        stage({ id: 4, name: "Test", state: Result.failure }),
+        stage({ id: 5, name: "Publish" }),
+      ]);
+      fireEvent.mouseEnter(
+        document.querySelector(".pgv-run-snippet__collapsed")!,
+      );
+
+      expect(await screen.findByText("Approve Linux?")).toBeInTheDocument();
+      expect(screen.getByText("Approve Windows?")).toBeInTheDocument();
+      expect(screen.getAllByText(/^Approve (Linux|Windows)\?$/)).toHaveLength(
+        2,
+      );
+    });
+
+    it("offers the input of a configuration's nested stage", async () => {
+      renderSnippet([
+        matrix(2, [
+          [
+            "linux",
+            stage({
+              id: 100,
+              name: "Release",
+              state: Result.paused,
+              children: [
+                stage({
+                  id: 101,
+                  name: "Sign-off",
+                  state: Result.paused,
+                  inputStep: input("Linux"),
+                }),
+              ],
+            }),
+          ],
+        ]),
+      ]);
+      fireEvent.mouseEnter(document.querySelector(".pgv-run-snippet a")!);
+
+      expect(await screen.findByText("Approve Linux?")).toBeInTheDocument();
+      expect(screen.getByText("Sign-off")).toBeInTheDocument();
+    });
+  });
 });

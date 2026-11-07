@@ -6,7 +6,6 @@ import hudson.model.Run;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import io.jenkins.plugins.pipelinegraphview.livestate.BlockResolutionCache;
 import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphRegistry;
-import io.jenkins.plugins.pipelinegraphview.utils.BlueRun;
 import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
 import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
@@ -309,7 +308,8 @@ public class PipelineNodeTreeScanner {
         /*
          * A paused step outside every stage, such as a lock around later stages waiting for a
          * resource, would otherwise not be shown at all. The pipeline start node is added as a
-         * stage to hold it, positioned where the step is in the run.
+         * stage to hold it, positioned where the step is in the run. A pause that never ended
+         * also keeps the stage once the run is aborted, so it shows where the run was stuck.
          */
         private @NonNull Map<String, FlowNodeWrapper> withStartNodeForPausedStepOutsideStages(
                 @NonNull Map<String, FlowNodeWrapper> stageMap) {
@@ -329,7 +329,6 @@ public class PipelineNodeTreeScanner {
             for (FlowNodeWrapper n : this.wrappedNodeMap.values()) {
                 if (n.isStep()
                         && PipelineNodeUtil.isPaused(n.getNode())
-                        && n.getStatus().getState() == BlueRun.BlueRunState.PAUSED
                         && findParentNode(n, possibleParents) == startNode) {
                     pausedStep = n;
                     break;

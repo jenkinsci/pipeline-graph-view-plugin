@@ -812,6 +812,43 @@ class PipelineGraphApiTest {
                 equalTo("First{success},Locked{success}"));
     }
 
+    @Issue("GH#315")
+    @Test
+    void lockOutsideStagesAbortedWhileWaitingKeepsStageWithLockStep() throws Exception {
+        WorkflowJob holder = j.jenkins.createProject(WorkflowJob.class, "lockHolderAborted");
+        holder.setDefinition(new CpsFlowDefinition("lock('shared-db') { semaphore 'hold' }", true));
+        WorkflowRun holderRun = holder.scheduleBuild2(0).waitForStart();
+        SemaphoreStep.waitForStart("hold/1", holderRun);
+
+        WorkflowJob waiter = j.jenkins.createProject(WorkflowJob.class, "lockOutsideStagesAborted");
+        waiter.setDefinition(new CpsFlowDefinition("""
+                stage('First') { echo 'hi' }
+                lock('shared-db') {
+                  stage('Locked') { echo 'Lock acquired' }
+                }""", true));
+        WorkflowRun run = waiter.scheduleBuild2(0).waitForStart();
+        j.waitForMessage("is not free, waiting for execution", run);
+
+        run.doStop();
+        j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(run));
+
+        PipelineGraphApi graphApi = new PipelineGraphApi(run);
+        List<PipelineStage> stages = graphApi.createTree().stages;
+        assertThat(
+                TestUtils.collectStagesAsString(stages, TestUtils::nodeNameAndStatus),
+                equalTo("First{success}," + Messages.FlowNodeWrapper_noStage() + "{aborted}"));
+        assertThat(
+                new PipelineStepApi(run)
+                        .computeAllSteps().steps.stream()
+                                .filter(s -> s.stageId.equals(stages.get(1).getId()))
+                                .map(s -> s.getName() + "|" + s.getState())
+                                .toList(),
+                contains("shared-db|aborted"));
+
+        SemaphoreStep.success("hold/1", null);
+        j.assertBuildStatusSuccess(j.waitForCompletion(holderRun));
+    }
+
     @Issue("GH#486")
     @Test
     void queuedStageReportsCauseOfBlockage() throws Exception {

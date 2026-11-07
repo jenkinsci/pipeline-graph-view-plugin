@@ -441,6 +441,26 @@ export function useStepsPoller({
     });
   }, [steps, tailLogs, runIsComplete, tailStage, stopTailingLogs]);
 
+  // A stage can go away while the run is going, e.g. the stage holding a step that was paused
+  // outside every stage, once that step resumes. Open the default step's stage instead of nothing.
+  const lastFoundOpenStageId = useRef("");
+  useEffect(() => {
+    if (openStage) {
+      lastFoundOpenStageId.current = String(openStage.id);
+      return;
+    }
+    if (!openStageId || lastFoundOpenStageId.current !== openStageId) return;
+    lastFoundOpenStageId.current = "";
+    setTailStage("");
+    // Steps still in the stage are from before it went; the next steps update picks the stage then.
+    const stepsAreStale = steps.some((step) => step.stageId === openStageId);
+    setOpenStageId(
+      stepsAreStale
+        ? ""
+        : (getDefaultSelectedStep(steps, runIsComplete)?.stageId ?? ""),
+    );
+  }, [openStage, openStageId, steps, runIsComplete]);
+
   const handleStageSelect = useCallback((nodeId: string) => {
     if (!nodeId) return;
 

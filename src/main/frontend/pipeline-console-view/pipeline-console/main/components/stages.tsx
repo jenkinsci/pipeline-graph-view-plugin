@@ -5,6 +5,7 @@ import {
   SetStateAction,
   useCallback,
   useContext,
+  useRef,
   useState,
 } from "react";
 import {
@@ -30,6 +31,7 @@ import {
 import { useCollapsedStages } from "../../../../pipeline-graph-view/pipeline-graph/main/support/useCollapsedStages.ts";
 import {
   isZoomModifierPressed,
+  useContainWheel,
   useWheelScroll,
 } from "../../../../pipeline-graph-view/pipeline-graph/main/support/wheelScroll.ts";
 import { StageViewPosition } from "../providers/user-preference-provider.tsx";
@@ -57,6 +59,8 @@ export default function Stages({
   currentRunPath,
 }: StagesProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  useContainWheel(containerRef, isExpanded);
 
   const {
     collapsedStageIds,
@@ -86,6 +90,7 @@ export default function Stages({
 
   return (
     <div
+      ref={containerRef}
       className={classNames("pgv-stages-graph", {
         "pgv-stages-graph--left": stageViewPosition === StageViewPosition.LEFT,
         "pgv-stages-graph--dialog": isExpanded,
@@ -153,7 +158,7 @@ export default function Stages({
         maxScale={MAX_SCALE}
         wheel={{ activationKeys: isZoomModifierPressed }}
       >
-        <WheelScroll containScroll={isExpanded} />
+        <WheelScroll />
         <ZoomControls
           defaultTransform={defaultTransform}
           minScale={minScale}
@@ -200,8 +205,8 @@ interface StagesProps {
   currentRunPath: string;
 }
 
-function WheelScroll({ containScroll }: { containScroll: boolean }) {
-  useWheelScroll(containScroll);
+function WheelScroll() {
+  useWheelScroll();
   return null;
 }
 

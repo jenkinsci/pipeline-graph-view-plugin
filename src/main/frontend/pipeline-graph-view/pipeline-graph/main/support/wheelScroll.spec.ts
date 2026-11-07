@@ -87,6 +87,19 @@ describe("computeWheelScroll", () => {
     ).toEqual({ positionX: -48, positionY: 25 });
   });
 
+  it("converts page-based shift+wheel deltas to the viewport width", () => {
+    expect(
+      computeWheelScroll(
+        wheel({
+          deltaY: 1,
+          shiftKey: true,
+          deltaMode: WheelEvent.DOM_DELTA_PAGE,
+        }),
+        WIDE_GRAPH,
+      ),
+    ).toEqual({ positionX: -1000, positionY: 25 });
+  });
+
   it("converts page-based deltas to the viewport size", () => {
     expect(
       computeWheelScroll(

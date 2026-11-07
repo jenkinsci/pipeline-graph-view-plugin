@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { RefObject, useEffect } from "react";
 import { useTransformContext } from "react-zoom-pan-pinch";
 
 const LINE_HEIGHT_PX = 16;
@@ -54,12 +54,13 @@ export function computeWheelScroll(
   event: WheelScrollInput,
   geometry: ScrollGeometry,
 ): { positionX: number; positionY: number } | null {
-  let deltaX = toPixels(event.deltaX, event.deltaMode, geometry.viewportWidth);
-  let deltaY = toPixels(event.deltaY, event.deltaMode, geometry.viewportHeight);
+  let { deltaX, deltaY } = event;
   if (event.shiftKey && deltaX === 0) {
     deltaX = deltaY;
     deltaY = 0;
   }
+  deltaX = toPixels(deltaX, event.deltaMode, geometry.viewportWidth);
+  deltaY = toPixels(deltaY, event.deltaMode, geometry.viewportHeight);
 
   const positionX = scrollAxis(
     geometry.positionX,
@@ -83,11 +84,8 @@ export function computeWheelScroll(
 /**
  * Scrolls the graph with the mouse wheel or trackpad. Must be used inside a
  * TransformWrapper whose wheel zoom requires a modifier key.
- *
- * With containScroll, wheel events never reach the page, for when the graph
- * covers it.
  */
-export function useWheelScroll(containScroll: boolean) {
+export function useWheelScroll() {
   const instance = useTransformContext();
 
   useEffect(() => {
@@ -105,12 +103,9 @@ export function useWheelScroll(containScroll: boolean) {
           positionX,
           positionY,
         });
-        if (next) {
-          instance.setState(scale, next.positionX, next.positionY);
-        } else if (!containScroll) {
-          return;
-        }
+        if (!next) return;
         event.preventDefault();
+        instance.setState(scale, next.positionX, next.positionY);
       };
       wrapper.addEventListener("wheel", onWheel, { passive: false });
       return () => wrapper.removeEventListener("wheel", onWheel);
@@ -129,5 +124,22 @@ export function useWheelScroll(containScroll: boolean) {
       unsubscribe();
       detach?.();
     };
-  }, [instance, containScroll]);
+  }, [instance]);
+}
+
+/**
+ * Stops wheel events within the element from scrolling the page, for when the
+ * element covers it.
+ */
+export function useContainWheel(
+  ref: RefObject<HTMLElement | null>,
+  enabled: boolean,
+) {
+  useEffect(() => {
+    const element = ref.current;
+    if (!enabled || !element) return;
+    const onWheel = (event: WheelEvent) => event.preventDefault();
+    element.addEventListener("wheel", onWheel, { passive: false });
+    return () => element.removeEventListener("wheel", onWheel);
+  }, [ref, enabled]);
 }

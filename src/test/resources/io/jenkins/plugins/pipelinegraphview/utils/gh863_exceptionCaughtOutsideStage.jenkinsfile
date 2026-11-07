@@ -1,0 +1,11 @@
+def var = null
+try {
+    node {
+        stage('test') {
+            echo 'test'
+            var.isEmpty()
+        }
+    }
+} catch (err) {
+    echo "Caught: ${err}"
+}

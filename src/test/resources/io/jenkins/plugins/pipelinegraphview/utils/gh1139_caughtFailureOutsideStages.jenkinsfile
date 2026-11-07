@@ -1,0 +1,8 @@
+try {
+    error 'Could not start agent'
+} catch (err) {
+    echo "Caught: ${err.message}"
+}
+stage('Build') {
+    echo 'building'
+}

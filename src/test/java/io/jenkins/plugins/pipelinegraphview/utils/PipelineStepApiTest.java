@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.nullValue;
 
 import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
+import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.treescanner.NodeRelationship;
 import io.jenkins.plugins.pipelinegraphview.treescanner.NodeRelationshipFinder;
 import io.jenkins.plugins.pipelinegraphview.treescanner.ParallelBlockRelationship;
@@ -494,6 +495,122 @@ class PipelineStepApiTest {
         String stepsString = TestUtils.collectStepsAsString(stepList.steps, TestUtils::nodeNameAndStatus);
 
         assertThat(stepsString, equalTo("Pipeline error{failure}"));
+    }
+
+    @Issue("GH#863")
+    @Test
+    void exceptionCaughtOutsideStageIsShownInStage() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j,
+                "gh863_exceptionCaughtOutsideStage",
+                "gh863_exceptionCaughtOutsideStage.jenkinsfile",
+                Result.SUCCESS);
+
+        assertThat(stepsByStage(run), equalTo("test{failure}[test{success},Pipeline error{failure}]"));
+        PipelineStep errorStep = new PipelineStepApi(run)
+                .getAllSteps().steps.stream()
+                        .filter(s -> s.name.equals("Pipeline error"))
+                        .findFirst()
+                        .orElseThrow();
+        String errorText = PipelineNodeUtil.getExceptionText(run.getExecution().getNode(errorStep.id));
+        assertThat(errorText, containsString("Found unhandled java.lang.NullPointerException exception"));
+    }
+
+    @Issue("GH#863")
+    @Test
+    void exceptionAfterStagesIsShown() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j, "gh863_exceptionAfterStages", "gh863_exceptionAfterStages.jenkinsfile", Result.FAILURE);
+
+        assertThat(
+                stepsByStage(run),
+                equalTo("%s{failure}[Pipeline error{failure}],Build{success}[building{success}]"
+                        .formatted(Messages.FlowNodeWrapper_noStage())));
+    }
+
+    @Issue("GH#1139")
+    @Test
+    void failedStepOutsideStagesIsShownAlongsideOtherStages() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j,
+                "gh1139_failureOutsideStagesWithPostStage",
+                "gh1139_failureOutsideStagesWithPostStage.jenkinsfile",
+                Result.FAILURE);
+
+        assertThat(
+                stepsByStage(run),
+                equalTo("%s{failure}[Could not start agent{failure}],Post Actions{success}[test{success}]"
+                        .formatted(Messages.FlowNodeWrapper_noStage())));
+    }
+
+    @Issue("GH#863")
+    @Test
+    void exceptionInParallelBranchIsFailedWhileSiblingRuns() throws Exception {
+        QueueTaskFuture<WorkflowRun> futureRun = TestUtils.createAndRunJobNoWait(
+                j, "gh863_exceptionInParallelBranch", "gh863_exceptionInParallelBranch.jenkinsfile");
+        WorkflowRun run = futureRun.waitForStart();
+        SemaphoreStep.waitForStart("wait/1", run);
+
+        PipelineStep errorStep = new PipelineStepApi(run)
+                .getAllSteps().steps.stream()
+                        .filter(s -> s.name.equals("Pipeline error"))
+                        .findFirst()
+                        .orElseThrow();
+        assertThat(TestUtils.nodeNameAndStatus(errorStep), equalTo("Pipeline error{failure}"));
+
+        SemaphoreStep.success("wait/1", null);
+        j.assertBuildStatus(Result.FAILURE, j.waitForCompletion(run));
+    }
+
+    @Issue("GH#1139")
+    @Test
+    void syntheticStageHasStatusOfItsOwnSteps() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j,
+                "gh1139_caughtFailureOutsideStages",
+                "gh1139_caughtFailureOutsideStages.jenkinsfile",
+                Result.SUCCESS);
+
+        assertThat(
+                stepsByStage(run),
+                equalTo(
+                        "%s{failure}[Could not start agent{failure},Caught: Could not start agent{success}],Build{success}[building{success}]"
+                                .formatted(Messages.FlowNodeWrapper_noStage())));
+    }
+
+    @Issue("GH#1139")
+    @Test
+    void failedBodyStepOutsideStagesIsShown() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j,
+                "gh1139_loadedScriptFailsOutsideStages",
+                "gh1139_loadedScriptFailsOutsideStages.jenkinsfile",
+                Result.SUCCESS,
+                false);
+
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
+        assertThat(
+                TestUtils.collectStagesAsString(stages, TestUtils::nodeNameAndStatus),
+                equalTo("%s{failure},Build{success}".formatted(Messages.FlowNodeWrapper_noStage())));
+    }
+
+    @Issue("GH#1139")
+    @Test
+    void successfulStepsOutsideStagesDoNotAddSyntheticStage() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j, "gh1139_successOutsideStages", "gh1139_successOutsideStages.jenkinsfile", Result.SUCCESS);
+
+        assertThat(stepsByStage(run), equalTo("Build{success}[building{success}]"));
+    }
+
+    private static String stepsByStage(WorkflowRun run) {
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
+        PipelineStepApi stepApi = new PipelineStepApi(run);
+        return TestUtils.collectStagesAsString(
+                stages,
+                stage -> TestUtils.nodeNameAndStatus(stage) + "["
+                        + TestUtils.collectStepsAsString(stepApi.getSteps(stage.id).steps, TestUtils::nodeNameAndStatus)
+                        + "]");
     }
 
     @Test

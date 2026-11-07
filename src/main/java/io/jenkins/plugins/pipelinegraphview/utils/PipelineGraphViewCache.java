@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import hudson.Extension;
+import hudson.ExtensionList;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -35,6 +37,7 @@ import tools.jackson.databind.json.JsonMapper;
  * <p>Schema version is encoded in the file name: a future format change just bumps
  * {@link #SCHEMA_VERSION} so old files become orphans on disk and are ignored.
  */
+@Extension
 public class PipelineGraphViewCache {
 
     public static final int SCHEMA_VERSION = 3;
@@ -47,7 +50,6 @@ public class PipelineGraphViewCache {
     private static final byte[] ENVELOPE_SUFFIX = "}".getBytes(StandardCharsets.UTF_8);
 
     private static final Logger logger = LoggerFactory.getLogger(PipelineGraphViewCache.class);
-    private static final PipelineGraphViewCache INSTANCE = new PipelineGraphViewCache();
 
     private static final ObjectMapper MAPPER = JsonMapper.builder()
             .changeDefaultPropertyInclusion(inc -> inc.withValueInclusion(JsonInclude.Include.NON_NULL))
@@ -58,10 +60,10 @@ public class PipelineGraphViewCache {
             Caffeine.newBuilder().maximumSize(256).build();
 
     public static PipelineGraphViewCache get() {
-        return INSTANCE;
+        return ExtensionList.lookupSingleton(PipelineGraphViewCache.class);
     }
 
-    PipelineGraphViewCache() {}
+    public PipelineGraphViewCache() {}
 
     /**
      * If a cached graph file exists for {@code run}, write it to {@code out} wrapped in the

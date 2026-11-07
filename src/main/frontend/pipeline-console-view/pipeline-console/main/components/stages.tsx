@@ -28,6 +28,10 @@ import {
   StageInfo,
 } from "../../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import { useCollapsedStages } from "../../../../pipeline-graph-view/pipeline-graph/main/support/useCollapsedStages.ts";
+import {
+  isZoomModifierPressed,
+  useWheelScroll,
+} from "../../../../pipeline-graph-view/pipeline-graph/main/support/wheelScroll.ts";
 import { StageViewPosition } from "../providers/user-preference-provider.tsx";
 
 const MAX_SCALE = 3;
@@ -147,8 +151,9 @@ export default function Stages({
         initialScale={initialScale}
         minScale={minScale}
         maxScale={MAX_SCALE}
-        wheel={{ activationKeys: isExpanded ? [] : ["Control"] }}
+        wheel={{ activationKeys: isZoomModifierPressed }}
       >
+        <WheelScroll containScroll={isExpanded} />
         <ZoomControls
           defaultTransform={defaultTransform}
           minScale={minScale}
@@ -193,6 +198,11 @@ interface StagesProps {
   setAutoStageViewHeight: Dispatch<SetStateAction<number>>;
   setDefaultStageViewHeight: Dispatch<SetStateAction<number>>;
   currentRunPath: string;
+}
+
+function WheelScroll({ containScroll }: { containScroll: boolean }) {
+  useWheelScroll(containScroll);
+  return null;
 }
 
 interface ZoomControlsProps {

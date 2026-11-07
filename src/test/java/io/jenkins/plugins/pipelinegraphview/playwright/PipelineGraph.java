@@ -5,6 +5,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.options.AriaRole;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
+import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +57,26 @@ class PipelineGraph {
         Locator stateSvg = getStageByName(stage).locator("..").getByRole(AriaRole.IMG);
 
         assertThat(stateSvg).hasAccessibleName(state.toString());
+    }
+
+    public void scroll(double deltaX, double deltaY) {
+        log.info("Scrolling the graph by ({}, {})", deltaX, deltaY);
+        graph.hover();
+        graph.page().mouse().wheel(deltaX, deltaY);
+    }
+
+    public void hasTransform(String positionX, String scale) {
+        log.info("Checking the graph is at x {} with scale {}", positionX, scale);
+        assertThat(graph.locator("xpath=ancestor::*[contains(@class, 'react-transform-component')]"))
+                .hasAttribute(
+                        "style",
+                        Pattern.compile("transform: translate\\(" + escapeRegex(positionX) + ", [^)]*\\) scale\\("
+                                + escapeRegex(scale) + "\\);"));
+    }
+
+    // Playwright evaluates patterns as JavaScript regexes, which don't support Pattern.quote
+    private static String escapeRegex(String value) {
+        return value.replace(".", "\\.");
     }
 
     private Locator getStageByName(String name) {

@@ -1,0 +1,11 @@
+stage("First") {
+    echo("first")
+}
+for (int i = 1; i <= 25; i++) {
+    stage("Stage ${i}") {
+        echo("stage ${i}")
+    }
+}
+stage("Last") {
+    echo("last")
+}

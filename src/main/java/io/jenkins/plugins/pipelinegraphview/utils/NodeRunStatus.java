@@ -5,6 +5,7 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.analysis.GenericStatus;
 import io.jenkins.plugins.pipelinegraphview.analysis.StatusAndTiming;
+import java.util.List;
 import java.util.Set;
 import org.jenkinsci.plugins.workflow.actions.ErrorAction;
 import org.jenkinsci.plugins.workflow.actions.NotExecutedNodeAction;
@@ -62,6 +63,35 @@ public class NodeRunStatus {
     public NodeRunStatus(BlueRun.BlueRunResult result, BlueRun.BlueRunState state) {
         this.result = result;
         this.state = state;
+    }
+
+    /**
+     * Combines the statuses of several nodes shown together. The result is the worst one, ranked
+     * as Jenkins ranks build results. The state is the one that most needs attention: running,
+     * then paused, then queued, and finished only when all of them are.
+     */
+    public static @NonNull NodeRunStatus combine(@NonNull List<NodeRunStatus> statuses) {
+        List<BlueRun.BlueRunResult> resultSeverity = List.of(
+                BlueRun.BlueRunResult.SUCCESS,
+                BlueRun.BlueRunResult.UNSTABLE,
+                BlueRun.BlueRunResult.FAILURE,
+                BlueRun.BlueRunResult.ABORTED);
+        List<BlueRun.BlueRunState> statePrecedence = List.of(
+                BlueRun.BlueRunState.FINISHED,
+                BlueRun.BlueRunState.QUEUED,
+                BlueRun.BlueRunState.PAUSED,
+                BlueRun.BlueRunState.RUNNING);
+        BlueRun.BlueRunResult result = BlueRun.BlueRunResult.SUCCESS;
+        BlueRun.BlueRunState state = BlueRun.BlueRunState.FINISHED;
+        for (NodeRunStatus status : statuses) {
+            if (resultSeverity.indexOf(status.getResult()) > resultSeverity.indexOf(result)) {
+                result = status.getResult();
+            }
+            if (statePrecedence.indexOf(status.getState()) > statePrecedence.indexOf(state)) {
+                state = status.getState();
+            }
+        }
+        return new NodeRunStatus(result, state);
     }
 
     public BlueRun.BlueRunResult getResult() {

@@ -338,7 +338,9 @@ public class PipelineNodeTreeScanner {
             }
             FlowNodeWrapper syntheticStage = new FlowNodeWrapper(
                     startNode.getNode(),
-                    combinedStatus(stepsOutsideStages),
+                    NodeRunStatus.combine(stepsOutsideStages.stream()
+                            .map(FlowNodeWrapper::getStatus)
+                            .toList()),
                     startNode.getTiming(),
                     null,
                     null,
@@ -348,32 +350,6 @@ public class PipelineNodeTreeScanner {
             withStartNode.put(syntheticStage.getId(), syntheticStage);
             withStartNode.putAll(stageMap);
             return withStartNode;
-        }
-
-        /*
-         * The worst result of the steps, ranked as Jenkins ranks build results, and running while
-         * any of them is.
-         */
-        private static @NonNull NodeRunStatus combinedStatus(@NonNull List<FlowNodeWrapper> steps) {
-            List<BlueRun.BlueRunResult> severity = List.of(
-                    BlueRun.BlueRunResult.SUCCESS,
-                    BlueRun.BlueRunResult.UNSTABLE,
-                    BlueRun.BlueRunResult.FAILURE,
-                    BlueRun.BlueRunResult.ABORTED);
-            BlueRun.BlueRunResult result = BlueRun.BlueRunResult.SUCCESS;
-            BlueRun.BlueRunState state = BlueRun.BlueRunState.FINISHED;
-            for (FlowNodeWrapper step : steps) {
-                NodeRunStatus status = step.getStatus();
-                if (severity.indexOf(status.getResult()) > severity.indexOf(result)) {
-                    result = status.getResult();
-                }
-                if (status.getState() == BlueRun.BlueRunState.RUNNING) {
-                    state = BlueRun.BlueRunState.RUNNING;
-                } else if (status.getState() == BlueRun.BlueRunState.PAUSED && state != BlueRun.BlueRunState.RUNNING) {
-                    state = BlueRun.BlueRunState.PAUSED;
-                }
-            }
-            return new NodeRunStatus(result, state);
         }
 
         /*

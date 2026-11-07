@@ -6,6 +6,7 @@ import hudson.model.Run;
 import io.jenkins.plugins.pipelinegraphview.analysis.TimingInfo;
 import io.jenkins.plugins.pipelinegraphview.livestate.BlockResolutionCache;
 import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphRegistry;
+import io.jenkins.plugins.pipelinegraphview.utils.BlueRun;
 import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
 import io.jenkins.plugins.pipelinegraphview.utils.NodeRunStatus;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
@@ -300,8 +301,70 @@ public class PipelineNodeTreeScanner {
                     stageMap.put(stage.getId(), remapNode(stage, stageMap));
                 }
             }
-            this.wrappedStageMap = stageMap;
+            this.wrappedStageMap = withStartNodeForProblemsOutsideStages(stageMap);
             return this.wrappedStageMap;
+        }
+
+        /*
+         * A step outside every stage has no stage to be listed under, so it is dropped. That
+         * hides why a build failed when the failure happened before, between or after the
+         * stages, e.g. a Declarative agent that could not start. When such a step did not
+         * succeed, the start node is added as a synthetic stage to hold the steps outside
+         * stages. It is added after the stages are remapped so that real stages never get it
+         * as a parent.
+         * Block steps such as node are ignored: they fail whenever something inside them
+         * fails, even when that is a stage, so only the step or exception that caused the
+         * failure counts.
+         */
+        private @NonNull Map<String, FlowNodeWrapper> withStartNodeForProblemsOutsideStages(
+                @NonNull Map<String, FlowNodeWrapper> stageMap) {
+            FlowNodeWrapper startNode = null;
+            for (FlowNodeWrapper n : this.wrappedNodeMap.values()) {
+                if (isStartNode(n)) {
+                    startNode = n;
+                    break;
+                }
+            }
+            if (startNode == null || stageMap.containsKey(startNode.getId())) {
+                return stageMap;
+            }
+            boolean problemOutsideStages = false;
+            for (FlowNodeWrapper n : this.wrappedNodeMap.values()) {
+                if (shouldBeInStepMap(n)
+                        && !(n.getNode() instanceof BlockStartNode)
+                        && isProblem(n)
+                        && !isInStage(n, stageMap)) {
+                    problemOutsideStages = true;
+                    break;
+                }
+            }
+            if (!problemOutsideStages) {
+                return stageMap;
+            }
+            Map<String, FlowNodeWrapper> withStartNode = new LinkedHashMap<>();
+            withStartNode.put(startNode.getId(), startNode);
+            withStartNode.putAll(stageMap);
+            return withStartNode;
+        }
+
+        /*
+         * Mirrors how getStepMapping assigns a step to a stage: its own parent when that is a
+         * stage (an exception node is parented to the start of the block it came from, which
+         * can be the stage itself), otherwise the closest enclosing stage.
+         */
+        private boolean isInStage(FlowNodeWrapper n, Map<String, FlowNodeWrapper> stageMap) {
+            FlowNodeWrapper firstParent = n.getFirstParent();
+            if (firstParent != null && stageMap.containsKey(firstParent.getId())) {
+                return true;
+            }
+            return findParentNode(n, stageMap) != null;
+        }
+
+        private static boolean isProblem(FlowNodeWrapper n) {
+            BlueRun.BlueRunResult result = n.getStatus().getResult();
+            return result == BlueRun.BlueRunResult.FAILURE
+                    || result == BlueRun.BlueRunResult.UNSTABLE
+                    || result == BlueRun.BlueRunResult.ABORTED;
         }
 
         private boolean shouldBeInStageMap(FlowNodeWrapper n) {
@@ -403,14 +466,9 @@ public class PipelineNodeTreeScanner {
          */
         private void buildGraph() {
             List<FlowNode> nodeList = FlowNodeWrapper.sortByFlowNodeId(nodes, false);
-            // If the Pipeline ended with an unhandled exception, then we want to catch the
-            // node which threw it.
-            BlockEndNode<?> nodeThatThrewException = null;
-            if (!nodeList.isEmpty()) {
-                nodeThatThrewException = getUnhandledException(nodeList.get(nodeList.size() - 1));
-            }
+            Set<String> nodesThatThrewException = findNodesThatThrewException(nodeList);
             for (FlowNode node : nodeList) {
-                if (nodeThatThrewException == node) {
+                if (nodesThatThrewException.contains(node.getId())) {
                     handleException(node, this.relationships.get(node.getId()));
                     continue;
                 } else if (node instanceof BlockEndNode) {
@@ -433,46 +491,42 @@ public class PipelineNodeTreeScanner {
         }
 
         /*
-         * Returns the origin of any unhandled exception for this node, or null if none
-         * found.
+         * Returns the IDs of the block end nodes that an exception escaped from, whether or not
+         * the exception was caught further up. An exception propagates through every enclosing
+         * block end, so with nodes in ID order the first node carrying it is where it came from.
+         * Exceptions from a step are shown on that step, and Jenkins failure exceptions
+         * (AbortException, FlowInterruptedException) are attached to the step that raised them,
+         * so neither gets its own node.
          */
-        private @CheckForNull BlockEndNode<?> getUnhandledException(@NonNull FlowNode node) {
-            // Check for an unhandled exception.
-            ErrorAction errorAction = node.getAction(ErrorAction.class);
-            // If this is a Jenkins failure exception, then we don't need to add a new node
-            // - it will come from an existing step.
-            if (errorAction != null && !PipelineNodeUtil.isJenkinsFailureException(errorAction.getError())) {
-                if (isDebugEnabled) {
-                    logger.debug(
-                            "getUnhandledException => Found unhandled exception: {}",
-                            errorAction.getError().getMessage());
+        private @NonNull Set<String> findNodesThatThrewException(@NonNull List<FlowNode> nodeList) {
+            Set<String> origins = new HashSet<>();
+            List<Throwable> seenErrors = new ArrayList<>();
+            for (FlowNode node : nodeList) {
+                // A FlowStartNode can carry the error of a Pipeline that failed before running
+                // anything, but it is the matching end node that can be shown as a step.
+                if (node instanceof BlockStartNode) {
+                    continue;
                 }
-                FlowNode nodeThatThrewException = ErrorAction.findOrigin(errorAction.getError(), this.execution);
-                if (nodeThatThrewException instanceof BlockEndNode<?>) {
+                ErrorAction errorAction = node.getAction(ErrorAction.class);
+                if (errorAction == null) {
+                    continue;
+                }
+                Throwable error = errorAction.getError();
+                if (PipelineNodeUtil.isJenkinsFailureException(error)) {
+                    continue;
+                }
+                if (seenErrors.stream().anyMatch(seen -> ErrorAction.equals(seen, error))) {
+                    continue;
+                }
+                seenErrors.add(error);
+                if (node instanceof BlockEndNode<?>) {
                     if (isDebugEnabled) {
-                        logger.debug(
-                                "getUnhandledException => Returning nodeThatThrewException: {}",
-                                nodeThatThrewException.getId());
+                        logger.debug("Found exception thrown from {}: {}", node.getId(), error.getMessage());
                     }
-                    return (BlockEndNode<?>) nodeThatThrewException;
+                    origins.add(node.getId());
                 }
-
-                /*
-                 * This is a corner case for trivial graphs - ones that only have one action. In
-                 * this case the error can be thrown by a the FlowStartNode, which would mean a
-                 * single nodes needs to be a stage and a step. Rather than adding a fake node
-                 * to the graph, we use the end node that we were given to act as the step
-                 * - this might need additional logic when getting the log for the exception.
-                 */
-                if (node instanceof BlockEndNode<?> && nodes.size() <= 2) {
-                    if (isDebugEnabled) {
-                        logger.debug("getUnhandledException => Returning node: {}", node.getId());
-                    }
-                    return (BlockEndNode<?>) node;
-                }
-                logger.error("Could not find BlockEndNode that threw exception:{}.", errorAction.getDisplayName());
             }
-            return null;
+            return origins;
         }
 
         /*

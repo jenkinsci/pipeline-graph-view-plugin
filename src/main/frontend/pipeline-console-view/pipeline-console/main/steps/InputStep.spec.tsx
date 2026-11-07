@@ -3,12 +3,12 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
 
+import { openInputStepDialog } from "../../../../common/components/input-step-dialog.ts";
 import { StepInfo } from "../../../../common/RestClient.tsx";
 import { Result } from "../../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import InputStep from "./InputStep.tsx";
-import { openInputStepDialog } from "./inputStepDialog.ts";
 
-vi.mock("./inputStepDialog.ts", () => ({
+vi.mock("../../../../common/components/input-step-dialog.ts", () => ({
   openInputStepDialog: vi.fn(),
 }));
 
@@ -28,6 +28,8 @@ const step: StepInfo = {
     cancel: "Skip",
     id: "input-id",
     parameters: true,
+    canProceed: true,
+    canAbort: true,
   },
 };
 
@@ -48,9 +50,10 @@ describe("InputStep", () => {
     render(<InputStep step={step} />);
 
     fireEvent.click(screen.getByRole("button", { name: "Yes" }));
-    expect(openInputStepDialog).toHaveBeenCalledWith("../input/input-id/", {
-      message: "Sign this?",
-    });
+    expect(openInputStepDialog).toHaveBeenCalledWith(
+      "../input/input-id/",
+      expect.objectContaining({ message: "Sign this?" }),
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Skip" }));
     expect(fetchMock).toHaveBeenCalledWith("../input/input-id/abort", {

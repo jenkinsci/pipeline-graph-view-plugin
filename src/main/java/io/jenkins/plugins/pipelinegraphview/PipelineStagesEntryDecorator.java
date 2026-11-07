@@ -30,10 +30,12 @@ import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import hudson.Extension;
 import hudson.model.Item;
 import hudson.widgets.HistoryWidget;
+import io.jenkins.plugins.pipelinegraphview.utils.InputPermissions;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStage;
 import java.util.List;
+import java.util.Map;
 import jenkins.model.HistoricalBuild;
 import jenkins.widgets.HistoryPageEntryDecorator;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -44,6 +46,7 @@ import org.kohsuke.accmod.restrictions.NoExternalUse;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 /**
@@ -75,33 +78,60 @@ public class PipelineStagesEntryDecorator extends HistoryPageEntryDecorator {
         // TODO - Do this without returning children
         PipelineGraph tree = new PipelineGraphApi(run).createTree();
         WorkflowRun previous = tree.complete ? null : run.getPreviousBuild();
-        return toHistoryPageJson(tree, previous == null ? null : new PipelineGraphApi(previous).createTree());
+        return toHistoryPageJson(
+                tree,
+                previous == null ? null : new PipelineGraphApi(previous).createTree(),
+                InputPermissions.forCurrentUser(run));
     }
 
     /**
      * While a run is in progress, also includes the previous run's stages so the frontend can show
      * the stages still to come as placeholders.
      */
-    static String toHistoryPageJson(PipelineGraph tree, @Nullable PipelineGraph previous) {
-        ObjectNode json = toHistoryPageNode(tree);
+    static String toHistoryPageJson(
+            PipelineGraph tree, @Nullable PipelineGraph previous, Map<String, InputPermissions> inputPermissions) {
+        ObjectNode json = toHistoryPageNode(tree, inputPermissions);
         if (previous != null) {
-            json.set("previousStages", toHistoryPageNode(previous).get("stages"));
+            json.set("previousStages", toHistoryPageNode(previous, Map.of()).get("stages"));
         }
         return MAPPER.writeValueAsString(json);
     }
 
     /**
      * This is embedded in every build history entry, so a stage's children are only kept when the
-     * frontend needs them, which is to show a matrix as the stages it runs.
+     * frontend needs them, which is to show a matrix as the stages it runs. Input that a stage or
+     * any of its nested stages is waiting on is gathered onto the stage as {@code pendingInputs},
+     * so it can be submitted from the entry.
      */
-    private static ObjectNode toHistoryPageNode(PipelineGraph tree) {
+    private static ObjectNode toHistoryPageNode(PipelineGraph tree, Map<String, InputPermissions> inputPermissions) {
         ObjectNode json = MAPPER.valueToTree(tree);
+        InputPermissions.apply(json, inputPermissions);
         for (JsonNode stage : json.path("stages")) {
+            ObjectNode stageNode = (ObjectNode) stage;
+            ArrayNode pendingInputs = stageNode.arrayNode();
+            collectPendingInputs(stageNode, pendingInputs);
+            if (!pendingInputs.isEmpty()) {
+                stageNode.set("pendingInputs", pendingInputs);
+            }
+            stageNode.remove("inputStep");
             if (!isMatrix(stage)) {
-                ((ObjectNode) stage).remove(List.of("children", "type"));
+                stageNode.remove(List.of("children", "type"));
             }
         }
         return json;
+    }
+
+    private static void collectPendingInputs(JsonNode stage, ArrayNode pendingInputs) {
+        JsonNode inputStep = stage.path("inputStep");
+        if (inputStep.isObject()) {
+            ObjectNode pending = pendingInputs.addObject();
+            pending.set("stageId", stage.path("id"));
+            pending.set("stageName", stage.path("name"));
+            pending.set("input", inputStep);
+        }
+        for (JsonNode child : stage.path("children")) {
+            collectPendingInputs(child, pendingInputs);
+        }
     }
 
     /**
@@ -122,6 +152,16 @@ public class PipelineStagesEntryDecorator extends HistoryPageEntryDecorator {
         return true;
     }
 
-    @JsonIncludeProperties({"id", "name", "state", "type", "children", "startTimeMillis", "totalDurationMillis", "url"})
+    @JsonIncludeProperties({
+        "id",
+        "name",
+        "state",
+        "type",
+        "children",
+        "startTimeMillis",
+        "totalDurationMillis",
+        "url",
+        "inputStep"
+    })
     private abstract static class HistoryPagePipelineStageMixIn {}
 }

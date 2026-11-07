@@ -17,8 +17,7 @@ function mountGraphHost(element: Element): void {
   const root = createRoot(element);
   roots.set(element, root);
 
-  const currentRunPath = (element as HTMLTemplateElement).dataset
-    .currentRunPath!;
+  const { currentRunPath, runPath } = (element as HTMLElement).dataset;
   const previousElement = element.previousElementSibling as HTMLTemplateElement;
   const json = JSON.parse(
     previousElement.content.textContent as string,
@@ -31,7 +30,11 @@ function mountGraphHost(element: Element): void {
 
   root.render(
     <UserPreferencesProvider>
-      <RunSnippet run={run} currentRunPath={currentRunPath} />
+      <RunSnippet
+        run={run}
+        currentRunPath={currentRunPath!}
+        runPath={runPath!}
+      />
     </UserPreferencesProvider>,
   );
 }

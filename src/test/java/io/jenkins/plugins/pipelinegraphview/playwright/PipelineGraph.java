@@ -59,6 +59,18 @@ class PipelineGraph {
         assertThat(stateSvg).hasAccessibleName(state.toString());
     }
 
+    public void respondToInputFromTooltip(String stage, String button) {
+        log.info("Clicking {} for the input in stage {} from the graph tooltip", button, stage);
+        Locator node = getStageByName(stage).locator("..");
+        assertThat(node).hasClass(Pattern.compile("PWGx-pipeline-node--paused"));
+        node.hover();
+
+        Locator tooltip = graph.page().locator(".pgv-node-tooltip--input");
+        assertThat(tooltip).isVisible();
+        tooltip.getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName(button))
+                .click();
+    }
+
     public void scroll(double deltaX, double deltaY) {
         log.info("Scrolling the graph by ({}, {})", deltaX, deltaY);
         graph.hover();

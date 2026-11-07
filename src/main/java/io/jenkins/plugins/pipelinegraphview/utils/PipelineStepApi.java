@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.slf4j.Logger;
@@ -76,7 +75,7 @@ public class PipelineStepApi {
                             flowNodeWrapper.getType().name(),
                             title,
                             stageId,
-                            mapInputStep(flowNodeWrapper.getInputStep()),
+                            PipelineInputStep.of(flowNodeWrapper.getInputStep()),
                             mapBuildStep(flowNodeWrapper.getDownstreamBuildRun()),
                             flowNodeWrapper.getTiming(),
                             flags);
@@ -108,18 +107,6 @@ public class PipelineStepApi {
             return flags;
         }
         return wrapper.getFeatureFlags();
-    }
-
-    private PipelineInputStep mapInputStep(InputStep inputStep) {
-        if (inputStep == null) {
-            return null;
-        }
-        return new PipelineInputStep(
-                inputStep.getMessage(),
-                inputStep.getCancel(),
-                inputStep.getId(),
-                inputStep.getOk(),
-                !inputStep.getParameters().isEmpty());
     }
 
     private PipelineBuildStep mapBuildStep(Run<?, ?> downstreamBuildRun) {

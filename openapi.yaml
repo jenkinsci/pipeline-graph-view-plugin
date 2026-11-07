@@ -417,6 +417,11 @@ components:
         url:
           type: string
           description: URL to view this stage in the UI
+        inputStep:
+          $ref: "#/components/schemas/InputStep"
+          description: >-
+            Input step this stage is paused on, waiting for a user to proceed or
+            abort. Omitted when the stage is not waiting for input.
 
     PipelineState:
       type: string
@@ -511,6 +516,17 @@ components:
         parameters:
           type: boolean
           description: Whether the input step has parameters
+        canProceed:
+          type: boolean
+          description: >-
+            Whether the current user can proceed with the input. Without a
+            submitter this needs Job/Build; with one, the user needs to be one of
+            the submitters (or in one of the groups), or an administrator.
+        canAbort:
+          type: boolean
+          description: >-
+            Whether the current user can abort the input, which needs Job/Cancel
+            or being able to proceed with it.
 
     NextBuildResponse:
       type: object

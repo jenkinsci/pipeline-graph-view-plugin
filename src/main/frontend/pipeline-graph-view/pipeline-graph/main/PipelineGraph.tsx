@@ -387,6 +387,7 @@ export function PipelineGraph({
               node.isPlaceholder ? false : selectedStage?.id === node.stage.id
             }
             onStageSelect={onStageSelect}
+            currentRunPath={currentRunPath}
           />
         ))}
 

@@ -2,6 +2,7 @@ import "./run-snippet.scss";
 
 import Tippy, { TippyProps } from "@tippyjs/react";
 import {
+  Fragment,
   ReactElement,
   RefObject,
   useLayoutEffect,
@@ -11,13 +12,16 @@ import {
 } from "react";
 
 import { DefaultDropdownProps } from "../../common/components/dropdown.tsx";
+import InputStepControls from "../../common/components/input-step-controls.tsx";
 import StatusIcon, {
   StageStatusIcon,
 } from "../../common/components/status-icon.tsx";
 import Tooltip from "../../common/components/tooltip.tsx";
+import { useInputTooltip } from "../../common/components/use-input-tooltip.ts";
 import { RunStatus } from "../../common/RestClient.tsx";
 import LiveTotal from "../../common/utils/live-total.tsx";
 import {
+  PendingInput,
   Result,
   StageInfo,
 } from "../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
@@ -26,9 +30,13 @@ import { collapseTopLevelStages, expandMatrixStages } from "./utils.ts";
 export default function RunSnippet({
   run,
   currentRunPath,
+  runPath,
 }: {
   run: RunStatus;
+  /** Prefix for links to a stage, followed by the stage's id. */
   currentRunPath: string;
+  /** The run's URL, including the root URL and a trailing slash. */
+  runPath: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const stages = useMemo(() => expandMatrixStages(run.stages), [run.stages]);
@@ -53,6 +61,7 @@ export default function RunSnippet({
                 key={item.id}
                 stages={item.stages}
                 currentRunPath={currentRunPath}
+                runPath={runPath}
               >
                 <button
                   type="button"
@@ -92,11 +101,28 @@ export default function RunSnippet({
                 heading={e.name}
                 stages={e.children}
                 currentRunPath={currentRunPath}
+                runPath={runPath}
               >
                 <a href={currentRunPath + e.id}>
                   <StageStatusIcon stage={e} />
                 </a>
               </StagesDropdown>
+            );
+          }
+
+          const pendingInputs = pendingInputsOf(e);
+          if (pendingInputs.length > 0) {
+            return (
+              <PendingInputsTooltip
+                key={e.id}
+                stage={e}
+                pendingInputs={pendingInputs}
+                runPath={runPath}
+              >
+                <a href={currentRunPath + e.id}>
+                  <StageStatusIcon stage={e} />
+                </a>
+              </PendingInputsTooltip>
             );
           }
 
@@ -135,6 +161,79 @@ export default function RunSnippet({
 }
 
 /**
+ * Offers to proceed with or abort each input the stage is waiting on, when hovering or focusing
+ * its child. Parallel branches can each be waiting on their own input, so they're listed by the
+ * stage that's waiting.
+ */
+function PendingInputsTooltip({
+  stage,
+  pendingInputs,
+  runPath,
+  children,
+}: {
+  stage: StageInfo;
+  pendingInputs: PendingInput[];
+  runPath: string;
+  children: ReactElement;
+}) {
+  const { tooltipProps, hide } = useInputTooltip();
+
+  return (
+    <Tooltip
+      delay={TOOLTIP_DELAY}
+      {...tooltipProps}
+      content={
+        <div className="pgv-run-snippet__inputs">
+          <div className="pgv-run-snippet__inputs__stage">{stage.name}</div>
+          {pendingInputs.map((pending) => (
+            <div key={pending.input.id} className="pgv-run-snippet__input">
+              {pending.stageName !== stage.name && (
+                <div className="jenkins-!-text-color-secondary">
+                  {pending.stageName}
+                </div>
+              )}
+              <div className="pgv-run-snippet__input__message">
+                {pending.input.message}
+              </div>
+              <InputStepControls
+                input={pending.input}
+                baseUrl={`${runPath}input/${pending.input.id}/`}
+                onAction={hide}
+              />
+            </div>
+          ))}
+        </div>
+      }
+    >
+      {children}
+    </Tooltip>
+  );
+}
+
+/**
+ * The input a stage or its nested stages are waiting on. Top-level stages come with theirs
+ * gathered, while the stages of a matrix keep their nested stages to look through.
+ */
+function pendingInputsOf(stage: StageInfo): PendingInput[] {
+  if (stage.skeleton) {
+    return [];
+  }
+  if (stage.pendingInputs?.length) {
+    return stage.pendingInputs;
+  }
+  const nested = (stage.children ?? []).flatMap(pendingInputsOf);
+  // A matrix's stage copies one configuration's state and input, which its configurations
+  // already account for
+  if (stage.synthetic || stage.state !== Result.paused || !stage.inputStep) {
+    return nested;
+  }
+  return [
+    { stageId: stage.id, stageName: stage.name, input: stage.inputStep },
+    ...nested,
+  ];
+}
+
+/**
  * Lists the stages in a dropdown when hovering or focusing its child, linking to each one that's
  * started.
  */
@@ -142,27 +241,33 @@ function StagesDropdown({
   heading,
   stages,
   currentRunPath,
+  runPath,
   children,
 }: {
   heading?: string;
   stages: StageInfo[];
   currentRunPath: string;
+  runPath: string;
   children: ReactElement;
 }) {
+  const { tooltipProps, hide } = useInputTooltip();
+
   return (
     <Tippy
       {...DefaultDropdownProps}
-      trigger="mouseenter focus"
+      {...tooltipProps}
       placement="top"
       offset={[0, DROPDOWN_GAP_PX]}
       // Always open upwards, scrolling if there isn't room, rather than flipping
       popperOptions={{
         modifiers: [{ name: "flip", enabled: false }],
       }}
-      onShow={fitAboveReference}
-      // Interactive tippies are put next to their reference by default, where the
-      // history column would clip them
-      appendTo={document.body}
+      onShow={(instance) => {
+        if (tooltipProps.onShow?.(instance) === false) {
+          return false;
+        }
+        fitAboveReference(instance);
+      }}
       content={
         <div className="jenkins-dropdown">
           {heading && (
@@ -183,22 +288,43 @@ function StagesDropdown({
                 {stage.name}
               </button>
             ) : (
-              <a
-                key={stage.id}
-                className="jenkins-dropdown__item pgv-run-snippet__stage"
-                href={currentRunPath + stage.id}
-              >
-                <div className="jenkins-dropdown__item__icon">
-                  <StageStatusIcon stage={stage} />
-                </div>
-                {stage.name}
-                <span className="jenkins-dropdown__item__badge pgv-run-snippet__duration">
-                  <LiveTotal
-                    total={stage.totalDurationMillis}
-                    start={stage.startTimeMillis}
-                  />
-                </span>
-              </a>
+              <Fragment key={stage.id}>
+                <a
+                  className="jenkins-dropdown__item pgv-run-snippet__stage"
+                  href={currentRunPath + stage.id}
+                >
+                  <div className="jenkins-dropdown__item__icon">
+                    <StageStatusIcon stage={stage} />
+                  </div>
+                  {stage.name}
+                  <span className="jenkins-dropdown__item__badge pgv-run-snippet__duration">
+                    <LiveTotal
+                      total={stage.totalDurationMillis}
+                      start={stage.startTimeMillis}
+                    />
+                  </span>
+                </a>
+                {pendingInputsOf(stage).map((pending) => (
+                  <div
+                    key={pending.input.id}
+                    className="pgv-run-snippet__dropdown-input"
+                  >
+                    {pending.stageName !== stage.name && (
+                      <div className="jenkins-!-text-color-secondary">
+                        {pending.stageName}
+                      </div>
+                    )}
+                    <div className="pgv-run-snippet__input__message">
+                      {pending.input.message}
+                    </div>
+                    <InputStepControls
+                      input={pending.input}
+                      baseUrl={`${runPath}input/${pending.input.id}/`}
+                      onAction={hide}
+                    />
+                  </div>
+                ))}
+              </Fragment>
             ),
           )}
         </div>

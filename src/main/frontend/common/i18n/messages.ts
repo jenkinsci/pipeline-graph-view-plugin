@@ -87,6 +87,9 @@ export enum LocalizedMessageKey {
   collapseAllStages = "collapse.collapseAll",
   consoleSectionLines = "console.section.lines",
   consoleSectionUntitled = "console.section.untitled",
+  inputAlreadySubmitted = "input.alreadySubmitted",
+  inputSubmitFailed = "input.submitFailed",
+  inputFormFailed = "input.formFailed",
 }
 
 const DEFAULT_MESSAGES: ResourceBundle = {
@@ -109,6 +112,10 @@ const DEFAULT_MESSAGES: ResourceBundle = {
   [LocalizedMessageKey.consoleSectionLines]:
     "{0} {0,choice,0#lines|1#line|1<lines}",
   [LocalizedMessageKey.consoleSectionUntitled]: "Section",
+  [LocalizedMessageKey.inputAlreadySubmitted]:
+    "This input has already been submitted",
+  [LocalizedMessageKey.inputSubmitFailed]: "Submitting the input failed: {0}",
+  [LocalizedMessageKey.inputFormFailed]: "Loading the input form failed: {0}",
 };
 
 export function defaultMessages(locale: string): Messages {

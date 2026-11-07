@@ -67,4 +67,53 @@ class PipelineConsoleViewInputTest {
 
         j.assertBuildStatus(Result.SUCCESS, j.waitForCompletion(run));
     }
+
+    @Test
+    @ConfiguredWithCode("../configure-appearance.yml")
+    void inputSucceedsFromGraph(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
+        WorkflowRun run =
+                TestUtils.createAndRunJobNoWait(j, "input", "input.jenkinsfile").waitForStart();
+
+        new PipelineJobPage(p, run.getParent())
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .goToBuild()
+                .respondToInputInGraph("Input", "Proceed");
+
+        j.assertBuildStatus(Result.SUCCESS, j.waitForCompletion(run));
+    }
+
+    @Test
+    @ConfiguredWithCode("../configure-appearance.yml")
+    void inputAbortedFromGraph(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
+        WorkflowRun run =
+                TestUtils.createAndRunJobNoWait(j, "input", "input.jenkinsfile").waitForStart();
+
+        new PipelineJobPage(p, run.getParent())
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .goToBuild()
+                .respondToInputInGraph("Input", "Abort");
+
+        j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(run));
+    }
+
+    @Test
+    @ConfiguredWithCode("../configure-appearance.yml")
+    void inputWithParametersSucceedsFromGraph(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJobNoWait(
+                        j, "input-with-parameters", "input-with-parameters.jenkinsfile")
+                .waitForStart();
+        new PipelineJobPage(p, run.getParent())
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .goToBuild()
+                .openInputDialogFromGraph("Input", "Proceed")
+                .enterText("Hi there!")
+                .proceed();
+        j.assertBuildStatus(Result.SUCCESS, j.waitForCompletion(run));
+    }
 }

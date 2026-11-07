@@ -45,3 +45,20 @@
     text-wrap: nowrap;
   }
 }
+
+// Also .pgv-node-tooltip, to win over its last div's styles when there are no controls
+.pgv-node-tooltip.pgv-node-tooltip--input {
+  gap: 0.5rem;
+  padding: 0.25rem 0;
+  max-width: 20rem;
+
+  .pgv-node-tooltip__input-message {
+    color: var(--text-color);
+    text-wrap: wrap;
+    font-weight: var(--font-bold-weight);
+  }
+
+  .jenkins-button {
+    min-width: 6rem;
+  }
+}

@@ -337,7 +337,7 @@ public class PipelineNodeTreeScanner {
             if (pausedStep == null) {
                 return stageMap;
             }
-            FlowNodeWrapper holder = startNode.positionedAt(pausedStep);
+            FlowNodeWrapper holder = startNode.holding(pausedStep);
             Map<String, FlowNodeWrapper> ordered = new LinkedHashMap<>();
             for (Map.Entry<String, FlowNodeWrapper> e : stageMap.entrySet()) {
                 if (!ordered.containsKey(holder.getId()) && e.getValue().getSortPosition() > holder.getSortPosition()) {

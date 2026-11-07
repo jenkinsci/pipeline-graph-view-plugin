@@ -849,6 +849,37 @@ class PipelineGraphApiTest {
         j.assertBuildStatusSuccess(j.waitForCompletion(holderRun));
     }
 
+    @Issue("GH#315")
+    @Test
+    void lockOutsideStagesInterruptedWhileWaitingShowsLockStatusOnLaterStages() throws Exception {
+        WorkflowJob holder = j.jenkins.createProject(WorkflowJob.class, "lockHolderInterrupted");
+        holder.setDefinition(new CpsFlowDefinition("lock('shared-db') { semaphore 'hold' }", true));
+        WorkflowRun holderRun = holder.scheduleBuild2(0).waitForStart();
+        SemaphoreStep.waitForStart("hold/1", holderRun);
+
+        WorkflowJob waiter = j.jenkins.createProject(WorkflowJob.class, "lockOutsideStagesInterrupted");
+        waiter.setDefinition(new CpsFlowDefinition("""
+                stage('First') { echo 'hi' }
+                catchError(buildResult: 'SUCCESS', stageResult: 'ABORTED') {
+                  timeout(time: 1, unit: 'SECONDS') {
+                    lock('shared-db') { stage('Locked') { echo 'Lock acquired' } }
+                  }
+                }
+                stage('After') { semaphore 'after' }""", true));
+        WorkflowRun run = waiter.scheduleBuild2(0).waitForStart();
+        SemaphoreStep.waitForStart("after/1", run);
+
+        assertThat(
+                TestUtils.collectStagesAsString(
+                        new PipelineGraphApi(run).createTree().stages, TestUtils::nodeNameAndStatus),
+                equalTo("First{success}," + Messages.FlowNodeWrapper_noStage() + "{aborted},After{running}"));
+
+        SemaphoreStep.success("after/1", null);
+        j.waitForCompletion(run);
+        SemaphoreStep.success("hold/1", null);
+        j.assertBuildStatusSuccess(j.waitForCompletion(holderRun));
+    }
+
     @Issue("GH#486")
     @Test
     void queuedStageReportsCauseOfBlockage() throws Exception {

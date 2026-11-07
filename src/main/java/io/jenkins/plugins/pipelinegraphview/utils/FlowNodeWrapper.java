@@ -266,16 +266,14 @@ public class FlowNodeWrapper {
     private int sortPosition = Integer.MIN_VALUE;
 
     /**
-     * Returns a copy of this node that sorts at {@code other}'s position in the run, for a node
-     * standing in for something that happened later than the node itself.
+     * Returns a copy of this node that holds {@code step}: it keeps this node's id and type, but
+     * takes the step's status, timing and position in the run.
      */
-    public @NonNull FlowNodeWrapper positionedAt(@NonNull FlowNodeWrapper other) {
-        FlowNodeWrapper copy = new FlowNodeWrapper(node, status, timingInfo, inputStep, downstreamBuildRun, run, type);
+    public @NonNull FlowNodeWrapper holding(@NonNull FlowNodeWrapper step) {
+        FlowNodeWrapper copy = new FlowNodeWrapper(node, step.getStatus(), step.getTiming(), null, null, run, type);
         copy.parents.addAll(parents);
         copy.edges.addAll(edges);
-        copy.causeOfFailure = causeOfFailure;
-        copy.blockErrorAction = blockErrorAction;
-        copy.sortPosition = other.getIdAsInt();
+        copy.sortPosition = step.getIdAsInt();
         return copy;
     }
 

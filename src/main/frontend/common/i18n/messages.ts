@@ -90,6 +90,7 @@ export enum LocalizedMessageKey {
   inputAlreadySubmitted = "input.alreadySubmitted",
   inputSubmitFailed = "input.submitFailed",
   inputFormFailed = "input.formFailed",
+  inputApprovers = "input.approvers",
 }
 
 const DEFAULT_MESSAGES: ResourceBundle = {
@@ -116,6 +117,7 @@ const DEFAULT_MESSAGES: ResourceBundle = {
     "This input has already been submitted",
   [LocalizedMessageKey.inputSubmitFailed]: "Submitting the input failed: {0}",
   [LocalizedMessageKey.inputFormFailed]: "Loading the input form failed: {0}",
+  [LocalizedMessageKey.inputApprovers]: "Waiting for approval from {0}",
 };
 
 export function defaultMessages(locale: string): Messages {

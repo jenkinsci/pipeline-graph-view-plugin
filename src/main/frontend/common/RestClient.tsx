@@ -20,6 +20,8 @@ export interface InputStep {
   canProceed: boolean;
   /** Whether the current user can abort the input. */
   canAbort: boolean;
+  /** Who the input's submitter allows to approve it, when not anyone who can build the job. */
+  approvers?: string[];
 }
 
 export interface BuildStep {

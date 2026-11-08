@@ -113,42 +113,50 @@ export default function SplitView(props: SplitViewNewProps) {
     };
   });
 
-  // If we only have one child, just return it
   const childrenArray = Children.toArray(props.children).filter(Boolean);
-  if (childrenArray.length === 1) {
-    return <>{childrenArray[0]}</>;
-  }
+  const hasSidePanel = childrenArray.length > 1;
+  const mainPanel = hasSidePanel ? childrenArray[1] : childrenArray[0];
 
-  const gridTemplate =
-    direction === "vertical" ? `${panelSize}px 1fr` : `${panelSize}px 1fr`;
+  const gridTemplate = `${panelSize}px 1fr`;
 
+  // The main panel stays in the same place in the tree whether or not the side
+  // panel is shown, so hiding or showing the side panel doesn't remount it and
+  // lose its state, such as expanded console sections and keyboard focus.
   return (
     <div
       ref={containerRef}
       className="pgv-split-view__container"
-      style={{
-        display: "grid",
-        gridTemplateColumns:
-          direction === "vertical" ? undefined : gridTemplate,
-        gridTemplateRows: direction === "vertical" ? gridTemplate : undefined,
-      }}
+      style={
+        hasSidePanel
+          ? {
+              gridTemplateColumns:
+                direction === "vertical" ? undefined : gridTemplate,
+              gridTemplateRows:
+                direction === "vertical" ? gridTemplate : undefined,
+            }
+          : { display: "block" }
+      }
     >
-      <div
-        className={classNames("pgv-split-view__side-panel", {
-          "pgv-split-view__side-panel--vertical": direction === "vertical",
-        })}
-      >
-        {childrenArray[0]}
+      {hasSidePanel && (
         <div
-          ref={dividerRef}
-          onMouseDown={startDragging}
-          onDoubleClick={handleDoubleClick}
-          className={`pgv-split-view__divider ${
-            direction === "vertical" ? "pgv-split-view__divider--vertical" : ""
-          }`}
-        />
-      </div>
-      <div>{childrenArray[1]}</div>
+          className={classNames("pgv-split-view__side-panel", {
+            "pgv-split-view__side-panel--vertical": direction === "vertical",
+          })}
+        >
+          {childrenArray[0]}
+          <div
+            ref={dividerRef}
+            onMouseDown={startDragging}
+            onDoubleClick={handleDoubleClick}
+            className={`pgv-split-view__divider ${
+              direction === "vertical"
+                ? "pgv-split-view__divider--vertical"
+                : ""
+            }`}
+          />
+        </div>
+      )}
+      <div>{mainPanel}</div>
     </div>
   );
 }

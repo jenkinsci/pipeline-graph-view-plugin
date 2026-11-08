@@ -3,8 +3,11 @@ import { useState } from "react";
 import Tooltip from "../../../common/components/tooltip.tsx";
 import { LocalizedMessageKey, useMessages } from "../../../common/i18n";
 
-// eslint-disable-next-line no-control-regex
-const ANSI_RE = /\x1b\[[0-?]*[ -/]*[@-~]/g;
+// CSI sequences (colours, cursor movement) and OSC sequences such as OSC 8 hyperlinks,
+// which end in BEL or ST.
+const ANSI_RE =
+  // eslint-disable-next-line no-control-regex
+  /\x1b\[[0-?]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)/g;
 
 async function fetchStepLog(url: string): Promise<string> {
   const response = await fetch(url);
@@ -17,16 +20,21 @@ async function fetchStepLog(url: string): Promise<string> {
 /**
  * Safari only allows clipboard writes during the click's user activation, which is lost
  * once the log fetch resolves. Handing ClipboardItem a promise keeps the write inside it.
+ *
+ * The clipboard is only available in secure contexts, so check for it before downloading
+ * a log that could not be copied.
  */
-async function writeToClipboard(text: Promise<string>) {
-  if (typeof ClipboardItem !== "undefined" && navigator.clipboard?.write) {
-    const blob = text.then((t) => new Blob([t], { type: "text/plain" }));
-    await navigator.clipboard.write([
-      new ClipboardItem({ "text/plain": blob }),
-    ]);
+async function copyToClipboard(loadText: () => Promise<string>) {
+  const clipboard = navigator.clipboard;
+  if (!clipboard) {
+    throw new Error("The clipboard is not available in this context");
+  }
+  if (typeof ClipboardItem !== "undefined" && clipboard.write) {
+    const blob = loadText().then((t) => new Blob([t], { type: "text/plain" }));
+    await clipboard.write([new ClipboardItem({ "text/plain": blob })]);
     return;
   }
-  await navigator.clipboard.writeText(await text);
+  await clipboard.writeText(await loadText());
 }
 
 export default function CopyStepLogButton({ logUrl }: CopyStepLogButtonProps) {
@@ -37,7 +45,7 @@ export default function CopyStepLogButton({ logUrl }: CopyStepLogButtonProps) {
   const copy = async () => {
     setCopying(true);
     try {
-      await writeToClipboard(fetchStepLog(logUrl));
+      await copyToClipboard(() => fetchStepLog(logUrl));
       window.notificationBar?.show(
         messages.format(LocalizedMessageKey.consoleCopied),
         window.notificationBar.SUCCESS,

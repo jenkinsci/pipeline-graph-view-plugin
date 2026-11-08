@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:l="/lib/layout" xmlns:x="jelly:xml" xmlns:d="jelly:define">
+  <st:documentation>
+    A copy of core's lib/layout/details-bar.jelly for a Pipeline run, except that an upstream Pipeline cause links
+    to that run's stages page, so following a chain of Pipelines stays on this view. Core resolves a cause's
+    detail.jelly from its own classloader, so the plugin cannot override only that view. Keep this in step with
+    core's details bar.
+
+    <st:attribute name="action" use="required">
+      The PipelineConsoleViewAction of the run.
+    </st:attribute>
+  </st:documentation>
+
+  <div class="jenkins-details">
+    <j:forEach var="group" items="${h.getDetailsFor(attrs.action.run)}" indexVar="index">
+      <j:if test="${index gt 0}">
+        <div class="jenkins-details__separator">•</div>
+      </j:if>
+      <j:forEach var="detail" items="${group.value}">
+        <j:set var="causes" value="${attrs.action.causesOf(detail)}" />
+        <j:choose>
+          <j:when test="${causes != null}">
+            <j:forEach var="cause" items="${causes}">
+              <j:set var="stagesLink" value="${attrs.action.getUpstreamStagesLink(cause)}" />
+              <j:choose>
+                <j:when test="${stagesLink != null}">
+                  <a class="jenkins-details__item" href="${rootURL}/${stagesLink.href()}">
+                    <div class="jenkins-details__item__icon">
+                      <l:icon src="symbol-cause" />
+                    </div>
+                    <span>${stagesLink.text()}</span>
+                  </a>
+                </j:when>
+                <j:otherwise>
+                  <st:include page="detail.jelly" it="${cause}" optional="true">
+                    <div class="jenkins-details__item">
+                      <div class="jenkins-details__item__icon">
+                        <l:icon src="symbol-information-circle" />
+                      </div>
+                      <div>
+                        <st:include page="description.jelly" it="${cause}" />
+                      </div>
+                    </div>
+                  </st:include>
+                </j:otherwise>
+              </j:choose>
+            </j:forEach>
+          </j:when>
+          <j:otherwise>
+            <st:include page="detail.jelly" it="${detail}" optional="true">
+              <j:if test="${detail.iconClassName != null}">
+                <x:element name="${detail.link != null ? 'a' : 'div'}">
+                  <x:attribute name="class">jenkins-details__item</x:attribute>
+                  <x:attribute name="href">${detail.link}</x:attribute>
+                  <div class="jenkins-details__item__icon">
+                    <l:icon src="${detail.iconClassName}" />
+                  </div>
+                  ${detail.displayName}
+                </x:element>
+              </j:if>
+            </st:include>
+          </j:otherwise>
+        </j:choose>
+      </j:forEach>
+    </j:forEach>
+    <d:invokeBody />
+  </div>
+</j:jelly>

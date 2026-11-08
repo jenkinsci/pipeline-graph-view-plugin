@@ -5,6 +5,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Plugin;
 import hudson.console.AnnotatedLargeText;
 import hudson.model.BallColor;
+import hudson.model.Cause;
+import hudson.model.CauseAction;
 import hudson.model.Failure;
 import hudson.model.Item;
 import hudson.model.ParametersAction;
@@ -34,9 +36,12 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
 import jenkins.model.Tab;
+import jenkins.model.details.CauseDetail;
+import jenkins.model.details.Detail;
 import net.sf.json.JSONObject;
 import org.jenkinsci.plugins.pipeline.modeldefinition.actions.RestartDeclarativePipelineAction;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowExecution;
@@ -44,6 +49,8 @@ import org.jenkinsci.plugins.workflow.cps.replay.ReplayAction;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.HttpResponse;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
@@ -260,6 +267,49 @@ public class PipelineConsoleViewAction extends Tab {
         TestResultRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
         ArtifactRunDetailsItem.get(run).ifPresent(runDetailsItems::add);
         return runDetailsItems;
+    }
+
+    /**
+     * The causes a {@link CauseDetail} renders, or {@code null} for any other detail, which the details bar leaves to
+     * core.
+     */
+    @CheckForNull
+    @Restricted(NoExternalUse.class)
+    public Set<Cause> causesOf(Detail detail) {
+        if (!(detail instanceof CauseDetail)) {
+            return null;
+        }
+        CauseAction causeAction = run.getAction(CauseAction.class);
+        return causeAction == null ? Set.of() : causeAction.getCauseCounts().keySet();
+    }
+
+    /**
+     * Links an upstream Pipeline run to its stages page, so following a chain of Pipelines stays on this view.
+     * Returns {@code null}, leaving the cause to core, when the user cannot see the upstream run, when it is not a
+     * Pipeline, or when the cause brings its own {@code detail.jelly}.
+     */
+    @CheckForNull
+    @Restricted(NoExternalUse.class)
+    public RunDetailsItem.ItemContent.LinkContent getUpstreamStagesLink(Cause cause) {
+        if (cause instanceof Cause.UpstreamCause upstreamCause
+                && rendersWithCoreUpstreamView(upstreamCause)
+                && upstreamCause.getUpstreamRun() instanceof WorkflowRun upstreamRun) {
+            return new RunDetailsItem.ItemContent.LinkContent(
+                    upstreamRun.getUrl() + URL_NAME + "/",
+                    Messages.cause_upstream(
+                            upstreamRun.getParent().getFullDisplayName(), String.valueOf(upstreamRun.getNumber())));
+        }
+        return null;
+    }
+
+    private static boolean rendersWithCoreUpstreamView(Cause.UpstreamCause cause) {
+        for (Class<?> c = cause.getClass(); c != Cause.UpstreamCause.class; c = c.getSuperclass()) {
+            String view = c.getName().replace('.', '/').replace('$', '/') + "/detail.jelly";
+            if (c.getClassLoader().getResource(view) != null) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public boolean isShowGraphOnBuildPage() {

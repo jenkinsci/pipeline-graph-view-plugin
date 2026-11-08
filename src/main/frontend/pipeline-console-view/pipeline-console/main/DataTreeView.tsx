@@ -4,6 +4,7 @@ import {
   memo,
   MouseEvent as ReactMouseEvent,
   useEffect,
+  useRef,
   useState,
 } from "react";
 
@@ -117,6 +118,7 @@ const TreeNode = memo(function TreeNode({
   const { search, visibleStatuses, allVisible } = useFilter();
   const hasChildren = stage.children && stage.children.length > 0;
   const isSelected = String(stage.id) === selected;
+  const itemRef = useRef<HTMLDivElement>(null);
   const [isExpanded, setIsExpanded] = useState<boolean>(
     hasSelectedDescendant(stage, selected),
   );
@@ -131,6 +133,12 @@ const TreeNode = memo(function TreeNode({
       setIsExpanded(true);
     }
   }, [stage, selected]);
+
+  useEffect(() => {
+    if (isSelected && itemRef.current) {
+      revealInScrollContainer(itemRef.current);
+    }
+  }, [isSelected]);
 
   useEffect(() => {
     if (search.length || !allVisible) {
@@ -148,7 +156,7 @@ const TreeNode = memo(function TreeNode({
       aria-selected={isSelected}
       aria-labelledby={`stage-${stage.id}-name`}
     >
-      <div className="pgv-tree-item-container">
+      <div className="pgv-tree-item-container" ref={itemRef}>
         <a
           href={currentRunPath + `stages/?selected-node=` + stage.id}
           onClick={(e) => {
@@ -237,6 +245,46 @@ const TreeNode = memo(function TreeNode({
     </li>
   );
 });
+
+function findScrollContainer(element: HTMLElement): HTMLElement | null {
+  let current = element.parentElement;
+  while (current) {
+    const { overflowY } = getComputedStyle(current);
+    if (overflowY === "auto" || overflowY === "scroll") {
+      return current;
+    }
+    current = current.parentElement;
+  }
+  return null;
+}
+
+/**
+ * Centres the element within the on-screen part of its scrollable sidebar when
+ * it is out of view. The sidebar is sticky, so before the page is scrolled its
+ * lower part can be below the fold. Only the sidebar is scrolled (unlike
+ * scrollIntoView) because the page position is owned by the console, which
+ * scrolls to the selected step's log or a linked log line.
+ */
+function revealInScrollContainer(element: HTMLElement) {
+  const container = findScrollContainer(element);
+  if (!container || container.scrollHeight <= container.clientHeight) return;
+  const containerRect = container.getBoundingClientRect();
+  const elementRect = element.getBoundingClientRect();
+  let visibleTop = Math.max(containerRect.top, 0);
+  let visibleBottom = Math.min(containerRect.bottom, window.innerHeight);
+  if (visibleBottom - visibleTop < elementRect.height) {
+    // Hardly any of the sidebar is on screen, so centre within all of it.
+    visibleTop = containerRect.top;
+    visibleBottom = containerRect.bottom;
+  }
+  if (elementRect.top >= visibleTop && elementRect.bottom <= visibleBottom) {
+    return;
+  }
+  container.scrollTop +=
+    elementRect.top -
+    visibleTop -
+    (visibleBottom - visibleTop - elementRect.height) / 2;
+}
 
 const filterStageTree = (
   search: string,

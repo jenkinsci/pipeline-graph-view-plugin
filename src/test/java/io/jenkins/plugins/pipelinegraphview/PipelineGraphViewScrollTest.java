@@ -26,8 +26,25 @@ class PipelineGraphViewScrollTest {
                 .nthBuild(0)
                 .goToBuild()
                 .goToPipelineOverview()
+                .stageIsSelected("Last")
+                .selectStageInTree("First")
                 .graphHasTransform("0px", "0.8")
                 .scrollGraph(400, 0)
                 .graphHasTransform("-400px", "0.8");
+    }
+
+    @Test
+    @ConfiguredWithCode("configure-appearance.yml")
+    void wideGraphOpensAtSelectedStage(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(j, "wide", "gh240_widePipeline.jenkinsfile", Result.SUCCESS);
+        new PipelineJobPage(p, run.getParent())
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .goToBuild()
+                .goToPipelineOverview()
+                .stageIsSelected("Last")
+                .stageIsInViewInGraph("Last")
+                .stageIsInViewInTree("Last");
     }
 }

@@ -91,6 +91,12 @@ function nodeX(nodes: NodeInfo[], name: string): number {
   return node.x;
 }
 
+function nodeId(nodes: NodeInfo[], name: string): number {
+  const node = nodes.find((n) => !n.isPlaceholder && n.stage.name === name);
+  if (!node || node.isPlaceholder) throw new Error(`No node named ${name}`);
+  return node.stage.id;
+}
+
 function transformFor(stages: StageInfo[]) {
   const graph = layout(stages);
   return {
@@ -226,6 +232,30 @@ describe("findFocusX", () => {
     );
 
     expect(findFocusX(graph.nodes)).toBe(nodeX(graph.nodes, "Lint"));
+  });
+
+  it("prefers the selected stage", () => {
+    const graph = layout(
+      widePipeline({ Unit: Result.failure, Push: Result.running }),
+    );
+
+    expect(findFocusX(graph.nodes, nodeId(graph.nodes, "Promote"))).toBe(
+      nodeX(graph.nodes, "Promote"),
+    );
+  });
+
+  it("focuses a selected parallel branch", () => {
+    const graph = layout(widePipeline());
+
+    expect(findFocusX(graph.nodes, nodeId(graph.nodes, "Trivy"))).toBe(
+      nodeX(graph.nodes, "Trivy"),
+    );
+  });
+
+  it("falls back when the selected stage is not in the graph", () => {
+    const graph = layout(widePipeline({ Lint: Result.failure }));
+
+    expect(findFocusX(graph.nodes, -1)).toBe(nodeX(graph.nodes, "Lint"));
   });
 
   it("has no focus for a successful run", () => {

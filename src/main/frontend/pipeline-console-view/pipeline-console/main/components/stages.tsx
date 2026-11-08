@@ -71,15 +71,18 @@ export default function Stages({
     effectiveStages,
   } = useCollapsedStages(normalizedParentJobPath, stages, selectedStage?.id);
 
+  const [centerGraph, setCenterGraph] = useState(true);
+
   const handleStageSelect = useCallback(
     (nodeId: string) => {
+      // The graph follows the selected stage until the user interacts with
+      // it; a stage picked here is already in view.
+      setCenterGraph(false);
       onStageSelect?.(nodeId);
       setIsExpanded(false);
     },
     [onStageSelect],
   );
-
-  const [centerGraph, setCenterGraph] = useState(true);
   const [initialScale, setInitialScale] = useState(1);
   const [minScale, setMinScale] = useState(0.75);
   const [defaultTransform, setDefaultTransform] = useState<GraphTransform>({

@@ -158,7 +158,10 @@ export function PipelineGraph({
     [selectedStage],
   );
 
-  const focusX = useMemo(() => findFocusX(nodes), [nodes]);
+  const focusX = useMemo(
+    () => findFocusX(nodes, selectedStage?.id),
+    [nodes, selectedStage?.id],
+  );
 
   const transform = useContext(TransformContext);
   const [transformViewport, setTransformViewport] = useState({

@@ -20,6 +20,7 @@ import StagesCustomization from "./components/stages-customization.tsx";
 import DataTreeView from "./DataTreeView.tsx";
 import { EarlyConsoleText } from "./EarlyConsoleText.tsx";
 import { useStepsPoller } from "./hooks/use-steps-poller.ts";
+import { useStickyFit } from "./hooks/use-sticky-fit.ts";
 import { NoStageStepsFallback } from "./NoStageStepsFallback.tsx";
 import { useLayoutPreferences } from "./providers/user-preference-provider.tsx";
 import ScrollToTopBottom from "./scroll-to-top-bottom.tsx";
@@ -46,6 +47,7 @@ export default function PipelineConsole() {
     rootElement?.dataset.previousRunStartTime || "0",
   );
 
+  const sidebarRef = useStickyFit();
   const {
     stageViewPosition,
     mainViewVisibility,
@@ -163,6 +165,7 @@ export default function PipelineConsole() {
                   key="tree-view"
                   id="tree-view-pane"
                   className="pgv-sticky-sidebar"
+                  ref={sidebarRef}
                 >
                   {loading ? (
                     <div className={"pgv-skeleton-column"}>

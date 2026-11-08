@@ -3,6 +3,7 @@ package io.jenkins.plugins.pipelinegraphview.playwright;
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
 import com.microsoft.playwright.Locator;
+import com.microsoft.playwright.assertions.LocatorAssertions;
 import com.microsoft.playwright.options.AriaRole;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
 import java.util.regex.Pattern;
@@ -40,6 +41,11 @@ class PipelineGraph {
     public void stageIsSelected(String name) {
         log.info("Checking if stage {} is selected", name);
         assertThat(selectedStage().getByRole(AriaRole.LINK)).hasText(name);
+    }
+
+    public void stageIsInView(String name) {
+        log.info("Checking stage {} is in view in the graph", name);
+        assertThat(getStageByName(name)).isInViewport(new LocatorAssertions.IsInViewportOptions().setRatio(1));
     }
 
     public Locator selectedStage() {

@@ -1,8 +1,8 @@
 /** * @vitest-environment jsdom */
 
-import { fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { useState } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import SplitView from "./split-view.tsx";
 
@@ -36,7 +36,18 @@ function Layout({ showSidePanel }: { showSidePanel: boolean }) {
   );
 }
 
+const container = () =>
+  document.querySelector(".pgv-split-view__container") as HTMLElement;
+
 describe("SplitView", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("renders the side panel and main panel side by side", () => {
     render(<Layout showSidePanel />);
 
@@ -59,6 +70,9 @@ describe("SplitView", () => {
       button.focus();
 
       rerender(<Layout showSidePanel={!initiallyShown} />);
+      act(() => {
+        vi.runAllTimers();
+      });
 
       const after = screen.getByRole("button");
       expect(after).toBe(button);
@@ -67,4 +81,41 @@ describe("SplitView", () => {
       expect(screen.queryByText("Side panel") !== null).toBe(!initiallyShown);
     },
   );
+
+  it("keeps the side panel while it collapses, then removes it", () => {
+    const { rerender } = render(<Layout showSidePanel />);
+    expect(container()).not.toHaveClass("pgv-split-view__container--collapsed");
+
+    rerender(<Layout showSidePanel={false} />);
+
+    expect(screen.getByText("Side panel")).toBeInTheDocument();
+    expect(container()).toHaveClass("pgv-split-view__container--collapsed");
+    expect(container().style.gridTemplateColumns).toBe("0px 1fr");
+    expect(
+      document.querySelector(".pgv-split-view__side-panel"),
+    ).toHaveAttribute("inert");
+
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    expect(screen.queryByText("Side panel")).not.toBeInTheDocument();
+    expect(container().style.display).toBe("block");
+  });
+
+  it("expands the side panel from collapsed to its full size", () => {
+    const { rerender } = render(<Layout showSidePanel={false} />);
+
+    rerender(<Layout showSidePanel />);
+
+    expect(screen.getByText("Side panel")).toBeInTheDocument();
+    expect(container()).toHaveClass("pgv-split-view__container--animating");
+    expect(container().style.gridTemplateColumns).toBe("300px 1fr");
+
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    expect(container()).not.toHaveClass("pgv-split-view__container--animating");
+  });
 });

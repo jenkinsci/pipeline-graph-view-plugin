@@ -5,6 +5,7 @@ import {
   MouseEvent as ReactMouseEvent,
   ReactNode,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -12,6 +13,15 @@ import {
 import { classNames } from "../../../common/utils/classnames.ts";
 import { defaultLayout } from "../../../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
 import { useLayoutPreferences } from "./providers/user-preference-provider.tsx";
+
+/** Matches the transition duration in split-view.scss. */
+const SIDE_PANEL_TRANSITION_MS = 350;
+
+/**
+ * - opening: rendered collapsed for one frame, so expanding can transition
+ * - expanding / closing: transitioning to full size / to collapsed
+ */
+type SidePanelPhase = "open" | "closed" | "opening" | "expanding" | "closing";
 
 export default function SplitView(props: SplitViewNewProps) {
   const {
@@ -117,7 +127,47 @@ export default function SplitView(props: SplitViewNewProps) {
   const hasSidePanel = childrenArray.length > 1;
   const mainPanel = hasSidePanel ? childrenArray[1] : childrenArray[0];
 
-  const gridTemplate = `${panelSize}px 1fr`;
+  const [phase, setPhase] = useState<SidePanelPhase>(
+    hasSidePanel ? "open" : "closed",
+  );
+  // The side panel keeps being rendered while it collapses, after the parent
+  // has already stopped passing it.
+  const lastSidePanel = useRef<ReactNode>(null);
+  useLayoutEffect(() => {
+    if (hasSidePanel) {
+      lastSidePanel.current = childrenArray[0];
+    }
+  });
+  const sidePanel = hasSidePanel ? childrenArray[0] : lastSidePanel.current;
+
+  useLayoutEffect(() => {
+    if (hasSidePanel && (phase === "closed" || phase === "closing")) {
+      setPhase("opening");
+    } else if (!hasSidePanel && phase !== "closed" && phase !== "closing") {
+      setPhase("closing");
+    }
+  }, [hasSidePanel, phase]);
+
+  useLayoutEffect(() => {
+    if (phase === "opening") {
+      // Apply the collapsed size before expanding, so the change transitions.
+      containerRef.current?.getBoundingClientRect();
+      setPhase("expanding");
+    } else if (phase === "expanding" || phase === "closing") {
+      const timeout = setTimeout(
+        () => setPhase(phase === "closing" ? "closed" : "open"),
+        SIDE_PANEL_TRANSITION_MS,
+      );
+      return () => clearTimeout(timeout);
+    }
+  }, [phase]);
+
+  const showSidePanel = hasSidePanel || phase !== "closed";
+  const collapsed =
+    phase === "opening" ||
+    phase === "closing" ||
+    (hasSidePanel && phase === "closed");
+  const gridTemplate = `${collapsed ? 0 : panelSize}px 1fr`;
 
   // The main panel stays in the same place in the tree whether or not the side
   // panel is shown, so hiding or showing the side panel doesn't remount it and
@@ -125,9 +175,12 @@ export default function SplitView(props: SplitViewNewProps) {
   return (
     <div
       ref={containerRef}
-      className="pgv-split-view__container"
+      className={classNames("pgv-split-view__container", {
+        "pgv-split-view__container--animating": phase !== "open",
+        "pgv-split-view__container--collapsed": collapsed,
+      })}
       style={
-        hasSidePanel
+        showSidePanel
           ? {
               gridTemplateColumns:
                 direction === "vertical" ? undefined : gridTemplate,
@@ -137,13 +190,14 @@ export default function SplitView(props: SplitViewNewProps) {
           : { display: "block" }
       }
     >
-      {hasSidePanel && (
+      {showSidePanel && (
         <div
           className={classNames("pgv-split-view__side-panel", {
             "pgv-split-view__side-panel--vertical": direction === "vertical",
           })}
+          inert={!hasSidePanel}
         >
-          {childrenArray[0]}
+          {sidePanel}
           <div
             ref={dividerRef}
             onMouseDown={startDragging}

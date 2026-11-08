@@ -21,6 +21,8 @@ type DurationUnit =
   | "milliseconds";
 
 export function humanise(duration: number, locale: string): string {
+  // Intl.DurationFormat throws on fractions of a millisecond
+  duration = Math.round(duration);
   const years = Math.floor(duration / ONE_YEAR_MS);
   duration %= ONE_YEAR_MS;
   const months = Math.floor(duration / ONE_MONTH_MS);

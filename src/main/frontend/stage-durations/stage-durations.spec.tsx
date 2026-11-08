@@ -57,9 +57,19 @@ const renderView = (
 };
 
 const rowOf = (stageName: string) =>
-  screen
+  within(durationsTable())
     .getByRole("rowheader", { name: new RegExp(`^${stageName}`) })
     .closest("tr")!;
+
+function durationsTable() {
+  return document.querySelector<HTMLElement>(
+    ".pgv-stage-durations__scroller table",
+  )!;
+}
+
+function changesCard() {
+  return document.querySelector<HTMLElement>(".pgv-stage-durations__changes");
+}
 
 const cellsOf = (stageName: string) =>
   within(rowOf(stageName)).getAllByRole("cell");
@@ -76,7 +86,7 @@ describe("StageDurationsView", () => {
   it("lists a row per stage with the builds oldest to newest", () => {
     renderView(steadyThenSlower);
 
-    const headings = within(document.querySelector("thead")!)
+    const headings = within(durationsTable().querySelector("thead")!)
       .getAllByRole("columnheader")
       .map((heading) => heading.textContent);
     expect(headings).toEqual([
@@ -92,7 +102,7 @@ describe("StageDurationsView", () => {
       "Trend",
     ]);
     expect(
-      screen
+      within(durationsTable())
         .getAllByRole("rowheader")
         .map(
           (heading) =>
@@ -111,8 +121,21 @@ describe("StageDurationsView", () => {
   it("points out a stage that got slower and the build it started in", () => {
     renderView(steadyThenSlower);
 
-    expect(screen.getByText("1 stage got slower: Build")).toHaveClass(
-      "jenkins-alert-warning",
+    const card = changesCard()!;
+    expect(within(card).getByText("Stages that changed")).toBeInTheDocument();
+    const cells = within(card)
+      .getByRole("rowheader", { name: "Build" })
+      .closest("tr")!
+      .querySelectorAll("td");
+    expect([...cells].map((cell) => cell.textContent)).toEqual([
+      "4s",
+      "9s",
+      "▲ +125%",
+      "#8",
+    ]);
+    expect(within(cells[3]).getByRole("link")).toHaveAttribute(
+      "href",
+      "/jenkins/job/example/8/",
     );
     expect(
       within(rowOf("Build")).getByRole("link", { name: "Slower since #8" }),
@@ -149,6 +172,7 @@ describe("StageDurationsView", () => {
     expect(
       screen.getByText("No stage got noticeably slower or faster"),
     ).toBeInTheDocument();
+    expect(changesCard()).toBeNull();
   });
 
   it("only shows a stage's status when it didn't succeed", () => {

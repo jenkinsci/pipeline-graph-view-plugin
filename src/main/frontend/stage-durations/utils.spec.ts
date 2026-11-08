@@ -77,7 +77,11 @@ describe("median", () => {
   });
 
   it("is the mean of the middle two for an even count", () => {
-    expect(median([4, 1, 2, 3])).toBe(2.5);
+    expect(median([4, 1, 2, 6])).toBe(3);
+  });
+
+  it("is whole milliseconds, so it can be formatted", () => {
+    expect(median([534, 535])).toBe(535);
   });
 
   it("is undefined without values", () => {

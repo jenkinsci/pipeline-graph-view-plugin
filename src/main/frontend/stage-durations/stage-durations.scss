@@ -250,3 +250,84 @@ a.pgv-stage-durations__stage {
   width: 1.25rem;
   height: 1.25rem;
 }
+
+.pgv-stage-durations__changes {
+  margin-bottom: 0;
+
+  .jenkins-table {
+    margin-bottom: 0;
+  }
+
+  th,
+  td {
+    white-space: nowrap;
+  }
+
+  thead th {
+    text-align: right;
+  }
+
+  // The stage name takes the spare width, so the figures sit together
+  thead th:first-child,
+  thead th:last-child {
+    text-align: left;
+  }
+
+  thead th:first-child {
+    width: 100%;
+  }
+
+  tbody th {
+    background: var(--table-body-background);
+    font-weight: normal;
+    text-align: left;
+    padding: var(--table-padding) 1.6rem var(--table-padding)
+      calc(var(--table-padding) * 2);
+    border-top-left-radius: var(--table-row-border-radius);
+    border-bottom-left-radius: var(--table-row-border-radius);
+  }
+
+  .jenkins-table > tbody > tr > td {
+    padding-left: 1.5rem;
+    padding-right: 0.75rem;
+    text-align: right;
+  }
+
+  .jenkins-table > tbody > tr > td:last-child {
+    text-align: left;
+    padding-right: calc(var(--table-padding) * 2);
+  }
+
+  .jenkins-table > thead > tr > th:not(:first-child) {
+    padding-left: 1.5rem;
+    padding-right: 0.75rem;
+  }
+}
+
+.pgv-stage-durations__note {
+  margin-left: 0.5rem;
+  color: var(--text-color-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.pgv-stage-durations__change {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--font-bold-weight);
+}
+
+.pgv-stage-durations__change--slower {
+  color: var(--warning-color);
+}
+
+.pgv-stage-durations__change--faster {
+  color: var(--success-color);
+}
+
+// The row header is the first cell, so the first data cell shouldn't round its corners too
+.pgv-stage-durations__scroller,
+.pgv-stage-durations__changes {
+  .jenkins-table > tbody > tr > th + td:first-of-type {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+}

@@ -172,7 +172,7 @@ export function StageDurationsView({
 
   return (
     <div className="pgv-stage-durations">
-      <Banners rows={rows} />
+      <ChangedStages rows={rows} builds={builds} jobPath={jobPath} />
 
       <Legend rows={rows} count={builds.length} />
 
@@ -424,43 +424,107 @@ function Legend({ rows, count }: { rows: StageRow[]; count: number }) {
   );
 }
 
-/** Names the stages whose duration changed and stayed changed, slowest first. */
-function Banners({ rows }: { rows: StageRow[] }) {
+/** The stages whose duration changed, biggest slowdown first, with the build each change started in. */
+function ChangedStages({
+  rows,
+  builds,
+  jobPath,
+}: {
+  rows: StageRow[];
+  builds: Build[];
+  jobPath: string;
+}) {
   const messages = useMessages();
   const locale = useLocale();
 
-  const byImpact = (a: StageRow, b: StageRow) =>
-    Math.abs(b.step!.after - b.step!.before) -
-    Math.abs(a.step!.after - a.step!.before);
-  const names = (direction: Step["direction"]) =>
-    rows
-      .filter((row) => row.step?.direction === direction)
-      .sort(byImpact)
-      .map((row) => row.name);
-  const slower = names("slower");
-  const faster = names("faster");
-  const list = (items: string[]) =>
-    new Intl.ListFormat(locale, { type: "conjunction" }).format(items);
+  const impact = (row: StageRow) => row.step!.after - row.step!.before;
+  const changed = rows
+    .filter((row) => row.step)
+    .sort((a, b) => {
+      const slower = (row: StageRow) => row.step!.direction === "slower";
+      if (slower(a) !== slower(b)) {
+        return slower(a) ? -1 : 1;
+      }
+      return Math.abs(impact(b)) - Math.abs(impact(a));
+    });
+
+  if (changed.length === 0) {
+    return null;
+  }
 
   return (
-    <>
-      {slower.length > 0 && (
-        <div className="jenkins-alert jenkins-alert-warning jenkins-!-margin-bottom-0">
-          {messages.format(LocalizedMessageKey.stageDurationsGotSlower, {
-            0: slower.length,
-            1: list(slower),
-          })}
-        </div>
-      )}
-      {faster.length > 0 && (
-        <div className="jenkins-alert jenkins-alert-success jenkins-!-margin-bottom-0">
-          {messages.format(LocalizedMessageKey.stageDurationsGotFaster, {
-            0: faster.length,
-            1: list(faster),
-          })}
-        </div>
-      )}
-    </>
+    <div className="jenkins-card pgv-stage-durations__changes">
+      <div className="jenkins-card__title">
+        {messages.format(LocalizedMessageKey.stageDurationsChangedStages)}
+      </div>
+      <div className="jenkins-card__content">
+        <table className="jenkins-table jenkins-table--small">
+          <thead>
+            <tr>
+              <th scope="col">
+                {messages.format(LocalizedMessageKey.stageDurationsStage)}
+              </th>
+              <th scope="col">
+                {messages.format(LocalizedMessageKey.stageDurationsBefore)}
+              </th>
+              <th scope="col">
+                {messages.format(LocalizedMessageKey.stageDurationsNow)}
+              </th>
+              <th scope="col">
+                {messages.format(LocalizedMessageKey.stageDurationsChange)}
+              </th>
+              <th scope="col">
+                {messages.format(LocalizedMessageKey.stageDurationsSince)}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {changed.map((row) => {
+              const step = row.step!;
+              const run = builds[step.start].run;
+              const percent = Math.round((step.after / step.before - 1) * 100);
+              return (
+                <tr key={row.name}>
+                  <th scope="row">{row.name}</th>
+                  <td>
+                    <span className="pgv-stage-durations__duration">
+                      {humanise(step.before, locale)}
+                    </span>
+                  </td>
+                  <td>
+                    <span className="pgv-stage-durations__duration">
+                      {humanise(step.after, locale)}
+                    </span>
+                  </td>
+                  <td
+                    className={`pgv-stage-durations__change pgv-stage-durations__change--${step.direction}`}
+                  >
+                    {step.direction === "slower" ? "▲" : "▼"}{" "}
+                    {(percent > 0 ? "+" : "") + percent + "%"}
+                  </td>
+                  <td>
+                    <a
+                      href={jobPath + run.id + "/"}
+                      className="jenkins-table__link"
+                    >
+                      #{run.id}
+                    </a>
+                    {step.builds < SUSTAINED_BUILDS && (
+                      <span className="pgv-stage-durations__note">
+                        {messages.format(
+                          LocalizedMessageKey.stageDurationsRecent,
+                          { 0: step.builds },
+                        )}
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
   );
 }
 

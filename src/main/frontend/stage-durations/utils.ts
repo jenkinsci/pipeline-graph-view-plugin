@@ -25,6 +25,7 @@ export function stageNames(builds: StageInfo[][]): string[] {
   return columns;
 }
 
+// Durations are whole milliseconds, which is all Intl.DurationFormat accepts
 export function median(values: number[]): number | undefined {
   if (values.length === 0) {
     return undefined;
@@ -32,7 +33,7 @@ export function median(values: number[]): number | undefined {
   const sorted = [...values].sort((a, b) => a - b);
   const middle = Math.floor(sorted.length / 2);
   return sorted.length % 2 === 0
-    ? (sorted[middle - 1] + sorted[middle]) / 2
+    ? Math.round((sorted[middle - 1] + sorted[middle]) / 2)
     : sorted[middle];
 }
 

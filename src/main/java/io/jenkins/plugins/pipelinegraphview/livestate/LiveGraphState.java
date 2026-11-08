@@ -178,27 +178,27 @@ final class LiveGraphState {
     }
 
     /**
-     * Returns the cached graph if it was computed at or after {@code minVersion}. Returning
-     * a newer cache than requested is intentional — the caller's snapshot can only become
-     * staler, so a newer output is strictly more accurate.
+     * Returns the cached graph if it satisfies {@code key}. A cache newer than requested is
+     * served on purpose — the caller's key can only become staler, so a newer output is
+     * strictly more accurate.
      */
-    synchronized PipelineGraph cachedGraph(long minVersion) {
-        return (cachedGraph != null && cachedGraph.version >= minVersion) ? cachedGraph.value : null;
+    synchronized PipelineGraph cachedGraph(LiveGraphCacheKey key) {
+        return (cachedGraph != null && cachedGraph.key.satisfies(key)) ? cachedGraph.value : null;
     }
 
-    synchronized void cacheGraph(long version, PipelineGraph graph) {
-        if (cachedGraph == null || cachedGraph.version < version) {
-            cachedGraph = new VersionedCache<>(version, graph);
+    synchronized void cacheGraph(LiveGraphCacheKey key, PipelineGraph graph) {
+        if (cachedGraph == null || cachedGraph.key.version() <= key.version()) {
+            cachedGraph = new VersionedCache<>(key, graph);
         }
     }
 
-    synchronized PipelineStepList cachedAllSteps(long minVersion) {
-        return (cachedAllSteps != null && cachedAllSteps.version >= minVersion) ? cachedAllSteps.value : null;
+    synchronized PipelineStepList cachedAllSteps(LiveGraphCacheKey key) {
+        return (cachedAllSteps != null && cachedAllSteps.key.satisfies(key)) ? cachedAllSteps.value : null;
     }
 
-    synchronized void cacheAllSteps(long version, PipelineStepList steps) {
-        if (cachedAllSteps == null || cachedAllSteps.version < version) {
-            cachedAllSteps = new VersionedCache<>(version, steps);
+    synchronized void cacheAllSteps(LiveGraphCacheKey key, PipelineStepList steps) {
+        if (cachedAllSteps == null || cachedAllSteps.key.version() <= key.version()) {
+            cachedAllSteps = new VersionedCache<>(key, steps);
         }
     }
 
@@ -230,5 +230,5 @@ final class LiveGraphState {
         return skippedStageCache;
     }
 
-    private record VersionedCache<T>(long version, T value) {}
+    private record VersionedCache<T>(LiveGraphCacheKey key, T value) {}
 }

@@ -3,6 +3,7 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.Run;
 import io.jenkins.plugins.pipelinegraphview.consoleview.PipelineConsoleViewAction;
+import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphCacheKey;
 import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphRegistry;
 import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphSnapshot;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
@@ -159,9 +160,9 @@ public class PipelineStepApi {
     public PipelineStepList computeAllSteps() {
         boolean runIsComplete = !run.isBuilding();
         // Fast path: cache hit without locking.
-        Long currentVersion = LiveGraphRegistry.get().currentVersion(run);
-        if (currentVersion != null) {
-            PipelineStepList cached = LiveGraphRegistry.get().cachedAllSteps(run, currentVersion);
+        LiveGraphCacheKey currentKey = LiveGraphRegistry.get().cacheKey(run);
+        if (currentKey != null) {
+            PipelineStepList cached = LiveGraphRegistry.get().cachedAllSteps(run, currentKey);
             if (cached != null) {
                 return cached;
             }
@@ -170,13 +171,15 @@ public class PipelineStepApi {
         Object lock = LiveGraphRegistry.get().allStepsComputeLock(run);
         if (lock != null) {
             synchronized (lock) {
-                Long retryVersion = LiveGraphRegistry.get().currentVersion(run);
-                if (retryVersion != null) {
-                    PipelineStepList cached = LiveGraphRegistry.get().cachedAllSteps(run, retryVersion);
+                LiveGraphCacheKey retryKey = LiveGraphRegistry.get().cacheKey(run);
+                if (retryKey != null) {
+                    PipelineStepList cached = LiveGraphRegistry.get().cachedAllSteps(run, retryKey);
                     if (cached != null) {
                         return cached;
                     }
                 }
+                // Read before the snapshot, so a pause that starts while computing makes the next read recompute
+                Set<String> pausedNodeIds = LiveGraphRegistry.pausedNodeIds(run);
                 LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
                 if (snapshot != null) {
                     PipelineStepList computed = getAllSteps(
@@ -185,7 +188,8 @@ public class PipelineStepApi {
                             runIsComplete,
                             snapshot.hideFromViewBlockStartIds(),
                             snapshot.enclosingIdsByNodeId());
-                    LiveGraphRegistry.get().cacheAllSteps(run, snapshot.version(), computed);
+                    LiveGraphRegistry.get()
+                            .cacheAllSteps(run, new LiveGraphCacheKey(snapshot.version(), pausedNodeIds), computed);
                     return computed;
                 }
             }

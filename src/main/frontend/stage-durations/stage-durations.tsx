@@ -282,20 +282,34 @@ export function StageDurationsView({
   const loaded = history.every((build) => build.stages);
   const hasRuns = runs.length > 0;
 
-  // Fits the table into the window below it, so its header row stays in view as it scrolls
-  useLayoutEffect(() => {
+  // Fits the table into the window below it, so its header row stays in view as it scrolls. The
+  // controls and changes above it come and go, so it's measured again after every render and
+  // whenever the page around it changes size.
+  const fit = useCallback(() => {
+    const element = scroller.current;
+    if (element) {
+      const top = element.getBoundingClientRect().top + window.scrollY;
+      element.style.maxHeight = `max(20rem, ${window.innerHeight - top - 16}px)`;
+    }
+  }, []);
+  useLayoutEffect(fit);
+  useEffect(() => {
     const element = scroller.current;
     if (!element) {
       return;
     }
-    const fit = () => {
-      const top = element.getBoundingClientRect().top + window.scrollY;
-      element.style.maxHeight = `max(20rem, ${window.innerHeight - top - 16}px)`;
-    };
-    fit();
     window.addEventListener("resize", fit);
-    return () => window.removeEventListener("resize", fit);
-  }, [hasRuns]);
+    const observer =
+      typeof ResizeObserver === "undefined"
+        ? undefined
+        : new ResizeObserver(fit);
+    observer?.observe(element.parentElement ?? element);
+    observer?.observe(document.body);
+    return () => {
+      window.removeEventListener("resize", fit);
+      observer?.disconnect();
+    };
+  }, [fit, hasRuns]);
 
   // Opens on the newest builds, which are on the right, along with the median and trend when
   // there's room for them beside a few builds
@@ -341,7 +355,8 @@ export function StageDurationsView({
   const narrowed = visibleRows.length < rows.length;
 
   const totals = builds.map(({ run }) =>
-    run.result === Result.success || run.result === Result.unstable
+    !run.building &&
+    (run.result === Result.success || run.result === Result.unstable)
       ? run.duration
       : undefined,
   );
@@ -672,7 +687,7 @@ function BuildHeading({ run, jobPath }: { run: RunInfo; jobPath: string }) {
 
 function BuildTotal({ run, counted }: { run: RunInfo; counted: boolean }) {
   const messages = useMessages();
-  if (isInProgress(run.result)) {
+  if (run.building) {
     return (
       <span className="pgv-stage-durations__duration">
         <LiveTotal total={undefined} start={run.timestamp} />
@@ -741,24 +756,18 @@ const StageCell = memo(function StageCell({
     stage.state !== Result.success ? statusLabel(stage.state) : undefined;
   const duration = usualDuration(stage);
 
+  const showsDuration = !skipped && !stage.skeleton;
+  // The name is the link's own text, so a running stage's ticking duration is part of it
   const content = (
-    <a
-      href={stagePath + stage.id}
-      className="pgv-stage-durations__stage"
-      aria-label={[
-        buildName,
-        stage.name,
-        status,
-        !skipped && stage.totalDurationMillis !== undefined
-          ? formatDuration(stage.totalDurationMillis, locale)
-          : undefined,
-        change && legendLabel(messages, change),
-      ]
-        .filter(Boolean)
-        .join(", ")}
-    >
+    <a href={stagePath + stage.id} className="pgv-stage-durations__stage">
+      <span className="pgv-stage-durations__visually-hidden">
+        {[buildName, stage.name, status].filter(Boolean).join(", ")}
+        {showsDuration && ","}
+      </span>{" "}
       {stage.state !== Result.success && !skipped && (
-        <StageStatusIcon stage={stage} />
+        <span className="pgv-stage-durations__icon" aria-hidden="true">
+          <StageStatusIcon stage={stage} />
+        </span>
       )}
       {marked && (
         <span className="pgv-stage-durations__arrow" aria-hidden="true">
@@ -770,7 +779,7 @@ const StageCell = memo(function StageCell({
           –
         </span>
       ) : (
-        !stage.skeleton && (
+        showsDuration && (
           <span className="pgv-stage-durations__duration">
             {stage.totalDurationMillis !== undefined &&
             !isInProgress(stage.state) ? (
@@ -783,6 +792,11 @@ const StageCell = memo(function StageCell({
             )}
           </span>
         )
+      )}
+      {change && (
+        <span className="pgv-stage-durations__visually-hidden">
+          , {legendLabel(messages, change)}
+        </span>
       )}
     </a>
   );
@@ -934,16 +948,37 @@ function Changes({
     return null;
   }
 
+  // Kept even when nothing changed, so a view narrowed down to changes can always be widened
+  const changedOnlyToggle = filtering && (
+    <span className="jenkins-checkbox">
+      <input
+        type="checkbox"
+        id={id + "changed"}
+        checked={changedOnly}
+        onChange={(event) => onChangedOnly(event.target.checked)}
+      />
+      <label htmlFor={id + "changed"}>
+        {messages.format(LocalizedMessageKey.stageDurationsChangedOnly)}
+      </label>
+    </span>
+  );
+
   // Says so when nothing changed, so it isn't mistaken for not having looked
   if (changed.length === 0) {
     return (
-      <p className="pgv-stage-durations__changes pgv-stage-durations__changes--none">
-        {history.length < MIN_SAMPLES + SUSTAINED_BUILDS
-          ? messages.format(LocalizedMessageKey.stageDurationsNeedMoreBuilds, {
-              0: MIN_SAMPLES + SUSTAINED_BUILDS,
-            })
-          : messages.format(LocalizedMessageKey.stageDurationsNoChanges)}
-      </p>
+      <div className="pgv-stage-durations__changes">
+        {changedOnlyToggle}
+        <p className="pgv-stage-durations__changes--none">
+          {history.length < MIN_SAMPLES + SUSTAINED_BUILDS
+            ? messages.format(
+                LocalizedMessageKey.stageDurationsNeedMoreBuilds,
+                {
+                  0: MIN_SAMPLES + SUSTAINED_BUILDS,
+                },
+              )
+            : messages.format(LocalizedMessageKey.stageDurationsNoChanges)}
+        </p>
+      </div>
     );
   }
 
@@ -954,19 +989,7 @@ function Changes({
 
   return (
     <div className="pgv-stage-durations__changes">
-      {filtering && (
-        <span className="jenkins-checkbox">
-          <input
-            type="checkbox"
-            id={id + "changed"}
-            checked={changedOnly}
-            onChange={(event) => onChangedOnly(event.target.checked)}
-          />
-          <label htmlFor={id + "changed"}>
-            {messages.format(LocalizedMessageKey.stageDurationsChangedOnly)}
-          </label>
-        </span>
-      )}
+      {changedOnlyToggle}
       <div
         className="pgv-stage-durations__changes__items"
         role="group"

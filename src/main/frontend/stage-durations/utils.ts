@@ -153,12 +153,14 @@ export interface Step {
 
 /**
  * When the stage's latest builds have taken noticeably longer, or shorter, than the builds before
- * them, which build that started in. When it changed more than once, the latest change is the one
- * that explains how long it takes now. Comparing with the builds before the change rather than
- * every build means a change that has stuck for a while is still found, where a stage that's been
- * slower for most builds would have dragged their median up with it. The first and latest builds
- * since must both take the new time, and a few in between may not, so an occasional quick build
- * doesn't hide a change that has otherwise stuck.
+ * them, which build that started in. The builds are split into stretches that each took about the
+ * same time, every stretch measured against the one before it, so a stage that changed more than
+ * once, or went back to how long it used to take, reports the change that explains how long it
+ * takes now. Measuring against the builds before rather than every build means a change that has
+ * stuck for a while is still found, where it would otherwise have dragged the median up with it.
+ * The first and last builds of a stretch must both take its new time, and a few in between may
+ * not, so an occasional quick build doesn't hide a change that has otherwise stuck. Nothing is
+ * reported while the latest builds haven't settled into a stretch of their own.
  *
  * @param durations each build's usual duration for the stage, oldest first
  */
@@ -169,17 +171,15 @@ export function findStep(
     duration === undefined ? [] : [{ duration, index }],
   );
 
-  // After each change, look for another among the builds since, measured against them
-  let latest: Step | undefined;
-  let from = 0;
-  for (;;) {
-    const step = firstStep(samples.slice(from));
-    if (!step) {
-      return latest;
-    }
-    latest = step;
-    from = samples.findIndex((sample) => sample.index === step.start);
+  let latest: Stretch | undefined;
+  for (
+    let found = nextStretch(samples, 0);
+    found;
+    found = nextStretch(samples, found.split)
+  ) {
+    latest = found;
   }
+  return latest?.end === samples.length ? latest.step : undefined;
 }
 
 interface Sample {
@@ -187,18 +187,21 @@ interface Sample {
   index: number;
 }
 
-function firstStep(samples: Sample[]): Step | undefined {
+interface Stretch {
+  step: Step;
+  /** Where the stretch starts and ends among the samples. */
+  split: number;
+  end: number;
+}
+
+/** The first stretch after the samples from the given one that took noticeably different. */
+function nextStretch(samples: Sample[], from: number): Stretch | undefined {
   for (
-    let split = MIN_SAMPLES;
+    let split = from + MIN_SAMPLES;
     split <= samples.length - SUSTAINED_BUILDS;
     split++
   ) {
-    const before = usual(samples.slice(0, split).map((s) => s.duration))!;
-    const since = samples.slice(split);
-    const allowedMisses = Math.max(
-      since.length > SUSTAINED_BUILDS ? 1 : 0,
-      Math.floor(since.length * ALLOWED_MISSES),
-    );
+    const before = usual(samples.slice(from, split).map((s) => s.duration))!;
 
     for (const direction of ["slower", "faster"] as const) {
       const differs = (s: Sample) =>
@@ -206,20 +209,32 @@ function firstStep(samples: Sample[]): Step | undefined {
           ? isSlower(s.duration, before)
           : isFaster(s.duration, before);
       // When the build just before already took the new time, the change started earlier
-      if (
-        !differs(samples[split - 1]) &&
-        differs(since[0]) &&
-        differs(since[since.length - 1]) &&
-        since.filter((s) => !differs(s)).length <= allowedMisses
-      ) {
-        return {
-          direction,
-          start: since[0].index,
-          usual: before,
-          before: before.median,
-          after: median(since.map((s) => s.duration))!,
-          builds: since.length,
-        };
+      if (differs(samples[split - 1]) || !differs(samples[split])) {
+        continue;
+      }
+      for (let end = samples.length; end >= split + SUSTAINED_BUILDS; end--) {
+        const since = samples.slice(split, end);
+        const allowedMisses = Math.max(
+          since.length > SUSTAINED_BUILDS ? 1 : 0,
+          Math.floor(since.length * ALLOWED_MISSES),
+        );
+        if (
+          differs(since[since.length - 1]) &&
+          since.filter((s) => !differs(s)).length <= allowedMisses
+        ) {
+          return {
+            split,
+            end,
+            step: {
+              direction,
+              start: since[0].index,
+              usual: before,
+              before: before.median,
+              after: median(since.map((s) => s.duration))!,
+              builds: since.length,
+            },
+          };
+        }
       }
     }
   }

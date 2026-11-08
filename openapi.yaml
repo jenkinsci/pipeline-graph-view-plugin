@@ -610,6 +610,9 @@ components:
           description: Number of changes in this run
         result:
           $ref: "#/components/schemas/PipelineState"
+        building:
+          type: boolean
+          description: Whether the run is still in progress, even once it has a result such as unstable
 
     SuccessResponse:
       type: object

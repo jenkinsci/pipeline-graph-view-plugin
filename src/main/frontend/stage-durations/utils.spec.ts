@@ -285,6 +285,21 @@ describe("findStep", () => {
     ).toMatchObject({ direction: "slower", start: 9, after: 60_000 });
   });
 
+  it("finds a stage going back to how long it used to take", () => {
+    expect(
+      findStep(s(20, 20, 20, 20, 40, 40, 40, 40, 20, 20, 20)),
+    ).toMatchObject({
+      direction: "faster",
+      start: 8,
+      before: 40_000,
+      after: 20_000,
+    });
+  });
+
+  it("says nothing while the latest builds haven't settled", () => {
+    expect(findStep(s(20, 20, 20, 20, 40, 40, 40, 40, 20, 20))).toBeUndefined();
+  });
+
   it("keeps the start of a change through a few quick builds since", () => {
     expect(
       findStep(s(20, 20, 20, 20, 40, 40, 20, 40, 40, 40, 20, 40, 40, 40)),

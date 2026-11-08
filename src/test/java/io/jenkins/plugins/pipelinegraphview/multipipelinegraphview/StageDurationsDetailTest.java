@@ -116,6 +116,12 @@ class StageDurationsDetailTest {
                     .getContentAsString();
             assertThat(JSONObject.fromObject(all).getJSONArray("data").size(), is(12));
             assertThat(JSONObject.fromObject(usual).getJSONArray("data").size(), is(10));
+            assertThat(
+                    JSONObject.fromObject(usual)
+                            .getJSONArray("data")
+                            .getJSONObject(0)
+                            .getBoolean("building"),
+                    is(false));
         }
     }
 }

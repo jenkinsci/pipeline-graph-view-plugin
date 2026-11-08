@@ -7,4 +7,6 @@ export interface RunInfo {
   duration: number;
   changesCount: number;
   result: Result;
+  /** Whether the run is still going, even once it has a result such as unstable. */
+  building: boolean;
 }

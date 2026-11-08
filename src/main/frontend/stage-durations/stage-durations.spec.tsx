@@ -22,6 +22,7 @@ const run = (id: number, result = Result.success): RunInfo => ({
   duration: 60_000,
   changesCount: 0,
   result,
+  building: false,
 });
 
 let nextId = 1;
@@ -524,5 +525,54 @@ describe("percentChange", () => {
 
   it("is left out when there's nothing to compare with", () => {
     expect(percentChange(2_000, 0)).toBe("");
+  });
+});
+
+describe("StageDurationsView with a build still going", () => {
+  it("leaves it out of the median even once it's unstable", () => {
+    const runs = [
+      { ...run(4, Result.unstable), duration: 0, building: true },
+      run(3),
+      run(2),
+      run(1),
+    ];
+    render(
+      <View
+        runs={runs}
+        stagesByRun={Object.fromEntries(
+          [1, 2, 3, 4].map((id) => [id, [stage("Build", 4)]]),
+        )}
+        jobPath="/jenkins/job/example/"
+      />,
+    );
+
+    const total = within(rowOf("Build total")).getAllByRole("cell");
+    expect(total[4]).toHaveTextContent("1m");
+  });
+});
+
+describe("StageDurationsView narrowed to changes", () => {
+  it("can be widened again when nothing changed", () => {
+    const names = Array.from({ length: 13 }, (_, index) => `Stage ${index}`);
+    render(
+      <View
+        runs={[6, 5, 4, 3, 2, 1].map((id) => run(id))}
+        stagesByRun={Object.fromEntries(
+          [1, 2, 3, 4, 5, 6].map((id) => [
+            id,
+            names.map((name) => stage(name, 4)),
+          ]),
+        )}
+        jobPath="/jenkins/job/example/"
+        initial={{ changedOnly: true }}
+      />,
+    );
+
+    const changedOnly = screen.getByRole("checkbox", { name: "Changed only" });
+    expect(changedOnly).toBeChecked();
+    fireEvent.click(changedOnly);
+    expect(
+      within(durationsTable()).getAllByRole("rowheader").map(nameOf),
+    ).toHaveLength(14);
   });
 });

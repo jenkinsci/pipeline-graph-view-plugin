@@ -15,6 +15,8 @@ import jenkins.model.experimentalflags.UserExperimentalFlag;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebMethod;
@@ -23,7 +25,7 @@ import org.kohsuke.stapler.verb.GET;
 public class MultiPipelineGraphViewAction implements Action, IconSpec {
     private static final int MaxNumberOfElements = 10;
 
-    private static final String NEW_JOB_PAGE_FLAG = "jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag";
+    static final String NEW_JOB_PAGE_FLAG = "jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag";
 
     private final WorkflowJob target;
 
@@ -97,6 +99,14 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
 
     public String getJobUrl() {
         return target.getUrl();
+    }
+
+    /**
+     * The job, which the new job page's layout renders the header and controls for.
+     */
+    @Restricted(NoExternalUse.class)
+    public WorkflowJob getObject() {
+        return target;
     }
 
     public String getNormalizedParentJobPath() {

@@ -1,0 +1,77 @@
+package io.jenkins.plugins.pipelinegraphview.multipipelinegraphview;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+
+import hudson.model.User;
+import hudson.security.ACL;
+import hudson.security.ACLContext;
+import java.util.List;
+import java.util.Map;
+import jenkins.model.experimentalflags.UserExperimentalFlagsProperty;
+import org.htmlunit.html.HtmlPage;
+import org.jenkinsci.plugins.workflow.job.WorkflowJob;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
+
+@WithJenkins
+class StageDurationsDetailTest {
+
+    private JenkinsRule j;
+    private WorkflowJob job;
+
+    @BeforeEach
+    void setUp(JenkinsRule j) throws Exception {
+        this.j = j;
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        job = j.createProject(WorkflowJob.class, "example");
+    }
+
+    @Test
+    void offeredOnTheNewJobPage() throws Exception {
+        User alice = userWithNewJobPage("alice", true);
+
+        try (ACLContext ignored = ACL.as(alice)) {
+            List<?> details = new StageDurationsDetailFactory().createFor(job);
+            assertThat(details, contains(instanceOf(StageDurationsDetail.class)));
+            assertThat(
+                    ((StageDurationsDetail) details.get(0)).getLink(),
+                    is("job/example/multi-pipeline-graph/durations"));
+        }
+    }
+
+    @Test
+    void notOfferedOnTheClassicJobPage() throws Exception {
+        User bob = userWithNewJobPage("bob", false);
+
+        try (ACLContext ignored = ACL.as(bob)) {
+            assertThat(new StageDurationsDetailFactory().createFor(job), empty());
+        }
+    }
+
+    @Test
+    void durationsPageRenders() throws Exception {
+        userWithNewJobPage("alice", true);
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            wc.getOptions().setThrowExceptionOnScriptError(false);
+            HtmlPage page = wc.getPage(job, "multi-pipeline-graph/durations");
+            assertThat(page.getElementById("stage-durations-root"), notNullValue());
+            assertThat(
+                    page.getElementById("stage-durations-root").getAttribute("data-current-job-path"),
+                    is(j.contextPath + "/job/example/"));
+        }
+    }
+
+    private static User userWithNewJobPage(String id, boolean enabled) throws Exception {
+        User user = User.getById(id, true);
+        user.addProperty(new UserExperimentalFlagsProperty(Map.of("new-job-page.flag", String.valueOf(enabled))));
+        return user;
+    }
+}

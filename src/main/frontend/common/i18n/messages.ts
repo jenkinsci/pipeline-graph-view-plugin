@@ -96,6 +96,11 @@ export enum LocalizedMessageKey {
   inputSubmitFailed = "input.submitFailed",
   inputFormFailed = "input.formFailed",
   inputApprovers = "input.approvers",
+  stageDurationsBuild = "stageDurations.build",
+  stageDurationsTotal = "stageDurations.total",
+  stageDurationsMedian = "stageDurations.median",
+  stageDurationsSlower = "stageDurations.slower",
+  stageDurationsNotRun = "stageDurations.notRun",
 }
 
 const DEFAULT_MESSAGES: ResourceBundle = {
@@ -128,6 +133,11 @@ const DEFAULT_MESSAGES: ResourceBundle = {
   [LocalizedMessageKey.inputSubmitFailed]: "Submitting the input failed: {0}",
   [LocalizedMessageKey.inputFormFailed]: "Loading the input form failed: {0}",
   [LocalizedMessageKey.inputApprovers]: "Waiting for approval from {0}",
+  [LocalizedMessageKey.stageDurationsBuild]: "Build",
+  [LocalizedMessageKey.stageDurationsTotal]: "Total",
+  [LocalizedMessageKey.stageDurationsMedian]: "Median",
+  [LocalizedMessageKey.stageDurationsSlower]: "{0}% slower than usual ({1})",
+  [LocalizedMessageKey.stageDurationsNotRun]: "Not run in this build",
 };
 
 export function defaultMessages(locale: string): Messages {

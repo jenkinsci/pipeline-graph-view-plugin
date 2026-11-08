@@ -20,6 +20,7 @@ export default defineConfig({
         "pipeline-graph-view":
           "src/main/frontend/pipeline-graph-view/index.tsx",
         "run-snippet": "src/main/frontend/run-snippet/index.tsx",
+        "stage-durations": "src/main/frontend/stage-durations/index.tsx",
         "multi-pipeline-graph-view":
           "src/main/frontend/multi-pipeline-graph-view/index.tsx",
       },

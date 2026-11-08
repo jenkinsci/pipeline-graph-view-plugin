@@ -1,0 +1,74 @@
+// Scrolls sideways when there are more stages than fit, keeping the builds in view
+.pgv-stage-durations {
+  overflow-x: auto;
+
+  .jenkins-table {
+    width: auto;
+    min-width: 100%;
+  }
+
+  th,
+  td {
+    white-space: nowrap;
+  }
+
+  // The builds stay in view while scrolling through the stages
+  thead th:first-child,
+  tbody td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+  }
+
+  thead th:first-child {
+    background: var(--table-background);
+  }
+
+  .pgv-stage-durations__median td {
+    background: transparent;
+    color: var(--text-color-secondary);
+  }
+
+  .pgv-stage-durations__median td:first-child {
+    background: var(--table-background);
+    font-weight: var(--font-bold-weight);
+  }
+
+  a.pgv-stage-durations__stage {
+    color: inherit;
+  }
+}
+
+.pgv-stage-durations__build,
+.pgv-stage-durations__stage {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+  }
+}
+
+.pgv-stage-durations__stage {
+  text-decoration: none;
+
+  &:hover .pgv-stage-durations__duration {
+    text-decoration: underline;
+  }
+}
+
+.pgv-stage-durations__duration {
+  font-variant-numeric: tabular-nums;
+}
+
+.pgv-stage-durations__slower {
+  color: var(--warning-color);
+  font-size: 0.75rem;
+}
+
+.pgv-stage-durations__missing {
+  color: var(--text-color-secondary);
+}

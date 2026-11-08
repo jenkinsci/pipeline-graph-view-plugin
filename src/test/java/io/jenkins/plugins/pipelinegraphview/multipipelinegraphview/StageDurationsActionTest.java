@@ -1,10 +1,8 @@
 package io.jenkins.plugins.pipelinegraphview.multipipelinegraphview;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -12,7 +10,6 @@ import static org.hamcrest.Matchers.nullValue;
 import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
-import java.util.List;
 import java.util.Map;
 import jenkins.model.experimentalflags.UserExperimentalFlagsProperty;
 import net.sf.json.JSONObject;
@@ -25,7 +22,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 @WithJenkins
-class StageDurationsDetailTest {
+class StageDurationsActionTest {
 
     private JenkinsRule j;
     private WorkflowJob job;
@@ -39,15 +36,17 @@ class StageDurationsDetailTest {
     }
 
     @Test
-    void offeredOnTheNewJobPage() throws Exception {
-        User alice = userWithNewJobPage("alice", true);
+    void inTheOverflowMenuOfTheNewJobPage() throws Exception {
+        userWithNewJobPage("alice", true);
 
-        try (ACLContext ignored = ACL.as(alice)) {
-            List<?> details = new StageDurationsDetailFactory().createFor(job);
-            assertThat(details, contains(instanceOf(StageDurationsDetail.class)));
-            assertThat(
-                    ((StageDurationsDetail) details.get(0)).getLink(),
-                    is("job/example/multi-pipeline-graph/durations"));
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            JSONObject menu =
+                    JSONObject.fromObject(wc.goTo("job/example/contextMenu?menu-only=true", "application/json")
+                            .getWebResponse()
+                            .getContentAsString());
+            JSONObject item = findItem(menu, "Stage durations");
+            assertThat(item, notNullValue());
+            assertThat(item.getJSONObject("event").getString("url"), is("multi-pipeline-graph/durations"));
         }
     }
 
@@ -56,8 +55,18 @@ class StageDurationsDetailTest {
         User bob = userWithNewJobPage("bob", false);
 
         try (ACLContext ignored = ACL.as(bob)) {
-            assertThat(new StageDurationsDetailFactory().createFor(job), empty());
+            assertThat(new StageDurationsActionFactory().createFor(job), empty());
         }
+    }
+
+    private static JSONObject findItem(JSONObject menu, String displayName) {
+        for (Object o : menu.getJSONArray("items")) {
+            JSONObject item = (JSONObject) o;
+            if (displayName.equals(item.optString("displayName"))) {
+                return item;
+            }
+        }
+        return null;
     }
 
     @Test

@@ -2,17 +2,18 @@ package io.jenkins.plugins.pipelinegraphview.multipipelinegraphview;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import hudson.model.Action;
+import java.util.Collection;
 import java.util.List;
-import jenkins.model.details.Detail;
-import jenkins.model.details.DetailFactory;
+import jenkins.model.TransientActionFactory;
 import jenkins.model.experimentalflags.UserExperimentalFlag;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 
 /**
- * Adds a button to the new job page's builds list that opens the stage durations table.
+ * Adds "Stage durations" to the new job page's overflow menu.
  */
 @Extension
-public class StageDurationsDetailFactory extends DetailFactory<WorkflowJob> {
+public class StageDurationsActionFactory extends TransientActionFactory<WorkflowJob> {
 
     @Override
     public Class<WorkflowJob> type() {
@@ -21,12 +22,12 @@ public class StageDurationsDetailFactory extends DetailFactory<WorkflowJob> {
 
     @NonNull
     @Override
-    public List<? extends Detail> createFor(@NonNull WorkflowJob target) {
-        // The job's details are only shown above the builds list on the new job page
+    public Collection<? extends Action> createFor(@NonNull WorkflowJob target) {
+        // The classic job page would list it in the sidebar too
         if (!Boolean.TRUE.equals(
                 UserExperimentalFlag.getFlagValueForCurrentUser(MultiPipelineGraphViewAction.NEW_JOB_PAGE_FLAG))) {
             return List.of();
         }
-        return List.of(new StageDurationsDetail(target));
+        return List.of(new StageDurationsAction());
     }
 }

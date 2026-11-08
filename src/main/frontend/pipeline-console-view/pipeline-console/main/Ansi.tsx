@@ -122,13 +122,19 @@ export function parseEscapeCode(escapeCode: string): Result {
   return result;
 }
 
+// Attributes of a tag; a ">" inside a quoted value does not end the tag.
+const TAG_ATTRIBUTES = String.raw`(?:"[^"]*"|'[^']*'|[^'">])*`;
 // CSI (ESC [ params final), OSC (ESC ] text BEL|ST) and other ESC sequences
 // (ESC intermediates final). A CSI cut off at the end of the input is still consumed.
-const ESCAPE_SEQUENCE_SOURCE = String.raw`\u001b(?:\[[0-?]*[ -/]*[@-~]?|\][^\u0007\u001b]*(?:\u0007|\u001b\\)?|[ -/]*[0-~])?`;
+// The OSC text can contain markup: Jenkins' URL annotator links the URL of an OSC 8
+// hyperlink, copying the terminator into the generated href.
+const ESCAPE_SEQUENCE_SOURCE = String.raw`\u001b(?:\[[0-?]*[ -/]*[@-~]?|\](?:[^\u0007\u001b<]|<${TAG_ATTRIBUTES}>)*(?:\u0007|\u001b\\)?|[ -/]*[0-~])?`;
 const ESCAPE_SEQUENCE = new RegExp(ESCAPE_SEQUENCE_SOURCE, "y");
 const ESCAPE_SEQUENCES = new RegExp(ESCAPE_SEQUENCE_SOURCE, "g");
-// A comment or tag; a ">" inside a quoted attribute value does not end the tag.
-const TAG = /<!--[\s\S]*?(?:-->|$)|<(?:"[^"]*"|'[^']*'|[^'">])*(?:>|$)/y;
+const TAG = new RegExp(
+  String.raw`<!--[\s\S]*?(?:-->|$)|<${TAG_ATTRIBUTES}(?:>|$)`,
+  "y",
+);
 // eslint-disable-next-line no-control-regex
 const TEXT = /[^\u001b<]+/y;
 

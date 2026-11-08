@@ -56,6 +56,18 @@ describe("ansiToHtml", () => {
     ).toBe("see Example now");
   });
 
+  it("drops OSC hyperlinks whose URL Jenkins has annotated", () => {
+    // Jenkins' URL annotator links everything up to the next space, terminators included
+    const st = "http://example.com\x1b\\Example\x1b]8;;\x1b\\";
+    expect(ansiToHtml(`see \x1b]8;;<a href='${st}'>${st}</a> now`)).toBe(
+      "see Example</a> now",
+    );
+    const bel = "http://example.com\x07Example\x1b]8;;\x07";
+    expect(ansiToHtml(`see \x1b]8;;<a href='${bel}'>${bel}</a> now`)).toBe(
+      "see Example</a> now",
+    );
+  });
+
   it("drops a colour code cut off at the end of the line", () => {
     expect(ansiToHtml("a\x1b[31")).toBe("a");
   });

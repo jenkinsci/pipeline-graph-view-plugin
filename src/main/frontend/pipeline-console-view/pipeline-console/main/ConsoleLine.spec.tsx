@@ -91,6 +91,17 @@ describe("ConsoleLine", () => {
     );
   });
 
+  it("drops an OSC 8 hyperlink whose URL Jenkins has annotated", () => {
+    const url = "http://example.com\u001b\\Example\u001b]8;;\u001b\\";
+    const { container } = renderConsoleLine(
+      `see \u001b]8;;<a href='${url}'>${url}</a> now`,
+    );
+    const consoleText = container.querySelector(".console-text")!;
+
+    expect(consoleText.querySelector("a")).toBeNull();
+    expect(consoleText.textContent).toBe("see Example now");
+  });
+
   it("colours ANSI text without links", () => {
     const { container } = renderConsoleLine(
       "    dxtbx      \u001b[0m[ \u001b[32mOK\u001b[0m ]",

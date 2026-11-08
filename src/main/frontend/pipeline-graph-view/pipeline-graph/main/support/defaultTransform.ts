@@ -16,10 +16,20 @@ export interface DefaultTransform {
 }
 
 /**
- * The x position of the stage that should be in view by default: the left-most
- * running (or paused) stage, otherwise the left-most failed stage.
+ * The x position of the stage that should be in view by default: the selected
+ * stage, otherwise the left-most running (or paused) stage, otherwise the
+ * left-most failed stage.
  */
-export function findFocusX(nodes: NodeInfo[]): number | undefined {
+export function findFocusX(
+  nodes: NodeInfo[],
+  selectedStageId?: number,
+): number | undefined {
+  if (selectedStageId !== undefined) {
+    const selected = nodes.find(
+      (node) => !node.isPlaceholder && node.stage.id === selectedStageId,
+    );
+    if (selected) return selected.x;
+  }
   let active: number | undefined;
   let failed: number | undefined;
   for (const node of nodes) {

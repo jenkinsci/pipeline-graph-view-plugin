@@ -65,6 +65,26 @@ public class PipelineOverviewPage extends JenkinsPage<PipelineOverviewPage> {
         return this;
     }
 
+    public PipelineOverviewPage stageIsInViewInGraph(String stage) {
+        graph.stageIsInView(stage);
+        return this;
+    }
+
+    public PipelineOverviewPage stageIsInViewInTree(String stage) {
+        tree.stageIsInView(stage);
+        return this;
+    }
+
+    public PipelineOverviewPage graphResetIsEnabled(boolean enabled) {
+        graph.resetIsEnabled(enabled);
+        return this;
+    }
+
+    public PipelineOverviewPage resetGraph() {
+        graph.reset();
+        return this;
+    }
+
     public PipelineOverviewPage scrollGraph(double deltaX, double deltaY) {
         graph.scroll(deltaX, deltaY);
         return this;

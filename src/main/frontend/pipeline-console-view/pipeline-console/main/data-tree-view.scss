@@ -2,7 +2,14 @@ $pgv-icon-size: 1.25rem;
 $pgv-item-padding-inline: 0.75rem;
 
 .pgw-filter-bar {
-  margin-bottom: 0.75rem;
+  // Stays in view while the stage list scrolls under it. Without this the
+  // browser scrolls the list back up to keep the input visible while typing,
+  // undoing scrolling to the selected stage once a search is cleared.
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding-bottom: 0.75rem;
+  background: var(--background);
 
   .jenkins-search {
     --search-bar-height: 2.625rem;

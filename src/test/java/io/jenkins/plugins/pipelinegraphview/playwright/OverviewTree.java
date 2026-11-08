@@ -4,6 +4,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
+import com.microsoft.playwright.assertions.LocatorAssertions;
 import com.microsoft.playwright.options.AriaRole;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
 import org.slf4j.Logger;
@@ -32,6 +33,12 @@ class OverviewTree {
     private Locator selectedStage() {
         log.info("Getting selected stage from the tree");
         return getTree().getByRole(AriaRole.TREEITEM).and(getTree().locator("[aria-selected=true]"));
+    }
+
+    public void stageIsInView(String name) {
+        log.info("Checking stage {} is in view in the tree", name);
+        assertThat(getStageByName(name).locator(".pgv-tree-item-container"))
+                .isInViewport(new LocatorAssertions.IsInViewportOptions().setRatio(1));
     }
 
     public void searchForStage(String stage) {

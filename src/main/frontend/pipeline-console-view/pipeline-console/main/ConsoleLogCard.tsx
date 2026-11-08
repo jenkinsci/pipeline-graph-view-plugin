@@ -20,6 +20,7 @@ import { BuildStep } from "../../../common/RestClient.tsx";
 import { classNames } from "../../../common/utils/classnames.ts";
 import { linkifyJsOptions } from "../../../common/utils/linkify-js.ts";
 import LiveTotal from "../../../common/utils/live-total.tsx";
+import CopyStepLogButton from "./CopyStepLogButton.tsx";
 import {
   Result,
   StepInfo,
@@ -119,6 +120,10 @@ export default function ConsoleLogCard({
             </span>
           </div>
         </a>
+
+        <CopyStepLogButton
+          logUrl={`${currentRunPath}stages/log?nodeId=${step.id}`}
+        />
 
         <Tooltip content={messages.format(LocalizedMessageKey.consoleNewTab)}>
           <a

@@ -24,7 +24,7 @@ describe("InputStepControls", () => {
     show.mockReset();
     vi.stubGlobal("fetch", fetchMock);
     window.crumb = { wrap: vi.fn().mockReturnValue({}) };
-    window.notificationBar = { show, ERROR: "error" };
+    window.notificationBar = { show, SUCCESS: "success", ERROR: "error" };
   });
 
   const renderControls = (overrides: Partial<typeof input> = {}) =>

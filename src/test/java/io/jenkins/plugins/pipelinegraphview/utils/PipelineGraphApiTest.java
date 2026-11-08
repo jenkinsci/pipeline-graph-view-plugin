@@ -16,6 +16,7 @@ import io.jenkins.plugins.pipelinegraphview.Messages;
 import io.jenkins.plugins.pipelinegraphview.treescanner.NodeRelationshipFinder;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeTreeScanner;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -619,6 +620,37 @@ class PipelineGraphApiTest {
         // A parent stage does not take the agent of its child stage.
         assertAgents(
                 run, "Wrapped{" + name + "},Parent{null}[Child{" + name + "}],Parallel{null}[branch{" + name + "}]");
+    }
+
+    @Issue("GH#591")
+    @Test
+    void stageWaitingForItsOwnAgentDoesNotShowTheEnclosingAgent() throws Exception {
+        WorkflowJob job =
+                TestUtils.createJob(j, "gh591_stageWaitingForAgent", "gh591_stageWaitingForAgent.jenkinsfile");
+        WorkflowRun run = job.scheduleBuild2(0).waitForStart();
+
+        waitForQueuedAgent("first");
+        assertAgents(run, "Outer{built-in},Own agent{null}");
+
+        DumbSlave first = j.createSlave(new LabelAtom("first"));
+        waitForQueuedAgent("second");
+        assertAgents(
+                run,
+                "Outer{built-in},Own agent{" + first.getNodeName() + "},Branches{built-in}[api{null},web{built-in}]");
+
+        DumbSlave second = j.createSlave(new LabelAtom("second"));
+        j.assertBuildStatusSuccess(j.waitForCompletion(run));
+        assertAgents(
+                run,
+                "Outer{built-in},Own agent{" + first.getNodeName() + "},Branches{built-in}[api{" + second.getNodeName()
+                        + "}[api-setup{" + second.getNodeName() + "}],web{built-in}]");
+    }
+
+    private void waitForQueuedAgent(String label) {
+        await().atMost(30, TimeUnit.SECONDS)
+                .until(() -> Arrays.stream(j.jenkins.getQueue().getItems())
+                        .anyMatch(item -> item.getAssignedLabel() != null
+                                && label.equals(item.getAssignedLabel().getName())));
     }
 
     /**

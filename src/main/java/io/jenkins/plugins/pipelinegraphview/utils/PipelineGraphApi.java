@@ -17,6 +17,7 @@ import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.graphanalysis.DepthFirstScanner;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 import org.jenkinsci.plugins.workflow.support.steps.input.InputStep;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -25,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 public class PipelineGraphApi {
     private static final Logger logger = LoggerFactory.getLogger(PipelineGraphApi.class);
+    private static final String EXECUTOR_STEP = "org.jenkinsci.plugins.workflow.support.steps.ExecutorStep";
     private final transient WorkflowRun run;
 
     public PipelineGraphApi(WorkflowRun run) {
@@ -54,6 +56,8 @@ public class PipelineGraphApi {
                 pipelineNodes.stream().map(FlowNodeWrapper::getId).collect(Collectors.toSet());
         Map<String, String> agentsWithinStages =
                 agentsWithinStages(stageIds, resolvedWorkspaceNodes, resolvedEnclosingIds);
+        Set<String> stagesWaitingForAgent =
+                stagesWaitingForAgent(run.getExecution(), stageIds, agentsWithinStages, resolvedEnclosingIds);
         Map<String, List<String>> enclosingIds = resolvedEnclosingIds;
         return pipelineNodes.stream()
                 .map(flowNodeWrapper -> new PipelineStageInternal(
@@ -68,7 +72,10 @@ public class PipelineGraphApi {
                         flowNodeWrapper.getDisplayName(), // TODO blue ocean uses timing information: "Passed in 0s"
                         flowNodeWrapper.isSynthetic(),
                         flowNodeWrapper.getTiming(),
-                        getStageNode(flowNodeWrapper, agentsWithinStages, resolvedWorkspaceNodes, enclosingIds),
+                        stagesWaitingForAgent.contains(flowNodeWrapper.getId())
+                                ? null
+                                : getStageNode(
+                                        flowNodeWrapper, agentsWithinStages, resolvedWorkspaceNodes, enclosingIds),
                         flowNodeWrapper.getCauseOfBlockage()))
                 .collect(Collectors.toList());
     }
@@ -207,6 +214,41 @@ public class PipelineGraphApi {
             }
         }
         return agents;
+    }
+
+    /**
+     * Stages or parallel branches whose own {@code node} step is still in the queue, and that
+     * have no agent allocated inside them yet. Until it gets an executor, the step has no
+     * workspace, so the stage would otherwise show the agent of an enclosing block, where none
+     * of its steps run. A queued {@code node} step is always one of the execution's heads.
+     */
+    private static Set<String> stagesWaitingForAgent(
+            @CheckForNull FlowExecution execution,
+            Set<String> stageIds,
+            Map<String, String> agentsWithinStages,
+            Map<String, List<String>> enclosingIdsByNodeId) {
+        if (execution == null || execution.isComplete()) {
+            return Set.of();
+        }
+        Set<String> waiting = new HashSet<>();
+        for (FlowNode head : execution.getCurrentHeads()) {
+            if (isQueuedNodeStep(head)) {
+                String stageId = nearestStageId(head, stageIds, enclosingIdsFor(head, enclosingIdsByNodeId));
+                if (stageId != null && !agentsWithinStages.containsKey(stageId)) {
+                    waiting.add(stageId);
+                }
+            }
+        }
+        return waiting;
+    }
+
+    /** The start of a {@code node} step whose body hasn't started, as the head has no children. */
+    private static boolean isQueuedNodeStep(FlowNode head) {
+        if (!(head instanceof StepStartNode start) || start.isBody()) {
+            return false;
+        }
+        StepDescriptor descriptor = start.getDescriptor();
+        return descriptor != null && EXECUTOR_STEP.equals(descriptor.getId());
     }
 
     /** @param enclosingIds the node's enclosing block IDs, innermost first */

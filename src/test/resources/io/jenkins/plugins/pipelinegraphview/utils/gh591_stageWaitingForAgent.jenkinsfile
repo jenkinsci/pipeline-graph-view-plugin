@@ -1,0 +1,35 @@
+pipeline {
+    agent { label 'built-in' }
+    stages {
+        stage('Outer') {
+            steps {
+                echo 'on the pipeline agent'
+            }
+        }
+        stage('Own agent') {
+            agent { label 'first' }
+            steps {
+                echo 'on its own agent'
+            }
+        }
+        stage('Branches') {
+            parallel {
+                stage('api') {
+                    agent { label 'second' }
+                    stages {
+                        stage('api-setup') {
+                            steps {
+                                echo 'on the branch agent'
+                            }
+                        }
+                    }
+                }
+                stage('web') {
+                    steps {
+                        echo 'on the pipeline agent'
+                    }
+                }
+            }
+        }
+    }
+}

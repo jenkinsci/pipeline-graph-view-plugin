@@ -4,6 +4,7 @@ import static java.util.Collections.emptyList;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import io.jenkins.plugins.pipelinegraphview.Messages;
+import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphCacheKey;
 import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphRegistry;
 import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphSnapshot;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
@@ -229,9 +230,9 @@ public class PipelineGraphApi {
     @Restricted(NoExternalUse.class)
     public PipelineGraph computeTree() {
         // Fast path: cache hit without locking.
-        Long currentVersion = LiveGraphRegistry.get().currentVersion(run);
-        if (currentVersion != null) {
-            PipelineGraph cached = LiveGraphRegistry.get().cachedGraph(run, currentVersion);
+        LiveGraphCacheKey currentKey = LiveGraphRegistry.get().cacheKey(run);
+        if (currentKey != null) {
+            PipelineGraph cached = LiveGraphRegistry.get().cachedGraph(run, currentKey);
             if (cached != null) {
                 return cached;
             }
@@ -242,13 +243,15 @@ public class PipelineGraphApi {
         if (lock != null) {
             synchronized (lock) {
                 // Re-check — another thread likely computed while we waited.
-                Long retryVersion = LiveGraphRegistry.get().currentVersion(run);
-                if (retryVersion != null) {
-                    PipelineGraph cached = LiveGraphRegistry.get().cachedGraph(run, retryVersion);
+                LiveGraphCacheKey retryKey = LiveGraphRegistry.get().cacheKey(run);
+                if (retryKey != null) {
+                    PipelineGraph cached = LiveGraphRegistry.get().cachedGraph(run, retryKey);
                     if (cached != null) {
                         return cached;
                     }
                 }
+                // Read before the snapshot, so a pause that starts while computing makes the next read recompute
+                Set<String> pausedNodeIds = LiveGraphRegistry.pausedNodeIds(run);
                 LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
                 if (snapshot != null) {
                     PipelineGraph computed = createTree(
@@ -256,7 +259,8 @@ public class PipelineGraphApi {
                                     run, snapshot.nodes(), snapshot.enclosingIdsByNodeId(), snapshot.activeNodeIds()),
                             snapshot.workspaceNodes(),
                             snapshot.enclosingIdsByNodeId());
-                    LiveGraphRegistry.get().cacheGraph(run, snapshot.version(), computed);
+                    LiveGraphRegistry.get()
+                            .cacheGraph(run, new LiveGraphCacheKey(snapshot.version(), pausedNodeIds), computed);
                     return computed;
                 }
             }

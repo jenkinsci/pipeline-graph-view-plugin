@@ -77,7 +77,8 @@ public class PipelineStagesEntryDecorator extends HistoryPageEntryDecorator {
         WorkflowRun run = (WorkflowRun) build;
         // TODO - Do this without returning children
         PipelineGraph tree = new PipelineGraphApi(run).createTree();
-        WorkflowRun previous = tree.complete ? null : run.getPreviousBuild();
+        // A previous run that is still in progress has not reached its later stages yet
+        WorkflowRun previous = tree.complete ? null : run.getPreviousCompletedBuild();
         return toHistoryPageJson(
                 tree,
                 previous == null ? null : new PipelineGraphApi(previous).createTree(),

@@ -17,8 +17,10 @@ import org.htmlunit.WebResponse;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlPage;
 import org.htmlunit.util.UrlUtils;
+import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.jenkinsci.plugins.workflow.test.steps.SemaphoreStep;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -117,6 +119,33 @@ class PipelineConsoleViewActionTest {
                     root.getAttribute("data-previous-run-start-time"),
                     equalTo(String.valueOf(first.getStartTimeInMillis())));
         }
+    }
+
+    @Issue("GH#847")
+    @Test
+    void previousRunIsLastCompletedRunWhenPreviousRunIsStillInProgress(JenkinsRule j) throws Exception {
+        WorkflowJob job = j.createProject(WorkflowJob.class, "concurrent");
+        job.setDefinition(new CpsFlowDefinition("stage('First') { semaphore 'first' }", true));
+        SemaphoreStep.success("first/1", null);
+        WorkflowRun completed = j.buildAndAssertSuccess(job);
+        WorkflowRun inProgress = job.scheduleBuild2(0).waitForStart();
+        SemaphoreStep.waitForStart("first/2", inProgress);
+        WorkflowRun latest = job.scheduleBuild2(0).waitForStart();
+        SemaphoreStep.waitForStart("first/3", latest);
+
+        try (var c = j.createWebClient()) {
+            DomElement root = c.goTo(latest.getUrl() + "stages").getElementById("console-pipeline-root");
+            assertThat(root, notNullValue());
+            assertThat(root.getAttribute("data-previous-run-path"), equalTo(j.contextPath + "/" + completed.getUrl()));
+            assertThat(
+                    root.getAttribute("data-previous-run-start-time"),
+                    equalTo(String.valueOf(completed.getStartTimeInMillis())));
+        }
+
+        SemaphoreStep.success("first/2", null);
+        SemaphoreStep.success("first/3", null);
+        j.assertBuildStatusSuccess(j.waitForCompletion(inProgress));
+        j.assertBuildStatusSuccess(j.waitForCompletion(latest));
     }
 
     @Issue("GH#1419")

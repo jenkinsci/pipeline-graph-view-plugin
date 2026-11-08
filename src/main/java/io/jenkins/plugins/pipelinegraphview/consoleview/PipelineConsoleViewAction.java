@@ -525,8 +525,12 @@ public class PipelineConsoleViewAction extends Tab {
         return getBuildNumber(run.getPreviousBuild());
     }
 
+    /**
+     * The run whose stages are shown as placeholders for the stages this run has not reached yet.
+     * A previous run that is still in progress has not reached its later stages either.
+     */
     public String getPreviousBuildUrl() {
-        WorkflowRun previousBuild = run.getPreviousBuild();
+        WorkflowRun previousBuild = run.getPreviousCompletedBuild();
         if (previousBuild == null) {
             return null;
         }
@@ -550,7 +554,7 @@ public class PipelineConsoleViewAction extends Tab {
     }
 
     public String getPreviousRunStartTime() {
-        WorkflowRun previousBuild = run.getPreviousBuild();
+        WorkflowRun previousBuild = run.getPreviousCompletedBuild();
         if (previousBuild == null) {
             return null;
         }

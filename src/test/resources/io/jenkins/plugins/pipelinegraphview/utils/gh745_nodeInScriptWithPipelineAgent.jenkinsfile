@@ -1,0 +1,29 @@
+pipeline {
+    agent { label 'built-in' }
+    stages {
+        stage('Setup') {
+            steps {
+                echo 'setup on the pipeline agent'
+            }
+        }
+        stage('Own agent') {
+            agent { label 'built-in' }
+            steps {
+                script {
+                    node('external') {
+                        echo 'running on a node nested in the stage agent'
+                    }
+                }
+            }
+        }
+        stage('Dynamic node') {
+            steps {
+                script {
+                    node('external') {
+                        echo 'running on a dynamically named node'
+                    }
+                }
+            }
+        }
+    }
+}

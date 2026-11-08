@@ -1,0 +1,23 @@
+stage('Wrapped') {
+    timeout(5) {
+        node('external') {
+            echo 'node inside timeout'
+        }
+    }
+}
+stage('Parent') {
+    stage('Child') {
+        node('external') {
+            echo 'child'
+        }
+    }
+}
+parallel(
+    branch: {
+        timeout(5) {
+            node('external') {
+                echo 'node inside timeout in a branch'
+            }
+        }
+    }
+)

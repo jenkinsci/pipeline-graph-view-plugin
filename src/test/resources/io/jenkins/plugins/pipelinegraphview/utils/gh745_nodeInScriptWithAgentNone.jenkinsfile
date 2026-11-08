@@ -1,0 +1,21 @@
+pipeline {
+    agent none
+    stages {
+        stage('Agent with options') {
+            agent { label 'external' }
+            options { timeout(time: 5, unit: 'MINUTES') }
+            steps {
+                echo 'stage agent with the node wrapped by options'
+            }
+        }
+        stage('Dynamic node') {
+            steps {
+                script {
+                    node('external') {
+                        echo 'running on a dynamically named node'
+                    }
+                }
+            }
+        }
+    }
+}

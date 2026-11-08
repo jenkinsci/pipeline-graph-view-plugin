@@ -8,11 +8,11 @@ import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphCacheKey;
 import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphRegistry;
 import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphSnapshot;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
-import java.io.IOException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.actions.WorkspaceAction;
+import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.graphanalysis.DepthFirstScanner;
@@ -35,7 +35,27 @@ public class PipelineGraphApi {
             PipelineGraphBuilderApi builder,
             @CheckForNull List<FlowNode> workspaceNodes,
             @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
-        return builder.getPipelineNodes().stream()
+        List<FlowNodeWrapper> pipelineNodes = builder.getPipelineNodes();
+        if (pipelineNodes.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<FlowNode> resolvedWorkspaceNodes =
+                workspaceNodes != null ? workspaceNodes : findWorkspaceNodes(run.getExecution());
+        // Each stage is checked against every workspace node, so resolve their ancestry once
+        // instead of going to storage for it per stage.
+        Map<String, List<String>> resolvedEnclosingIds = enclosingIdsByNodeId;
+        if (resolvedEnclosingIds == null) {
+            resolvedEnclosingIds = new HashMap<>();
+            for (FlowNode n : resolvedWorkspaceNodes) {
+                resolvedEnclosingIds.put(n.getId(), n.getAllEnclosingIds());
+            }
+        }
+        Set<String> stageIds =
+                pipelineNodes.stream().map(FlowNodeWrapper::getId).collect(Collectors.toSet());
+        Map<String, String> agentsWithinStages =
+                agentsWithinStages(stageIds, resolvedWorkspaceNodes, resolvedEnclosingIds);
+        Map<String, List<String>> enclosingIds = resolvedEnclosingIds;
+        return pipelineNodes.stream()
                 .map(flowNodeWrapper -> new PipelineStageInternal(
                         flowNodeWrapper.getId(), // TODO no need to parse it BO returns a string even though the
                         // datatype is number on the frontend
@@ -48,7 +68,7 @@ public class PipelineGraphApi {
                         flowNodeWrapper.getDisplayName(), // TODO blue ocean uses timing information: "Passed in 0s"
                         flowNodeWrapper.isSynthetic(),
                         flowNodeWrapper.getTiming(),
-                        getStageNode(flowNodeWrapper, workspaceNodes, enclosingIdsByNodeId),
+                        getStageNode(flowNodeWrapper, agentsWithinStages, resolvedWorkspaceNodes, enclosingIds),
                         flowNodeWrapper.getCauseOfBlockage()))
                 .collect(Collectors.toList());
     }
@@ -152,21 +172,73 @@ public class PipelineGraphApi {
                 : Messages.PipelineStage_waitingForStepWithArguments(stepName, arguments);
     }
 
+    /**
+     * The workspace (node step) starts of a run, in depth-first order from the heads so an inner
+     * workspace comes before the one enclosing it. Only a {@link StepStartNode} can carry a
+     * {@link WorkspaceAction}.
+     */
+    private static List<FlowNode> findWorkspaceNodes(@CheckForNull FlowExecution execution) {
+        if (execution == null) {
+            return new ArrayList<>();
+        }
+        return new DepthFirstScanner()
+                .filteredNodes(
+                        execution,
+                        n -> n instanceof StepStartNode && n.getPersistentAction(WorkspaceAction.class) != null);
+    }
+
+    /**
+     * Maps each stage or parallel branch to the agent allocated inside it, e.g. a node step
+     * wrapped in script or timeout. That is where the stage's steps ran, so it wins over an
+     * agent the stage inherited from an enclosing block. Each workspace counts only for its
+     * nearest enclosing stage or branch, not for that stage's parents.
+     */
+    private static Map<String, String> agentsWithinStages(
+            Set<String> stageIds, List<FlowNode> workspaceNodes, Map<String, List<String>> enclosingIdsByNodeId) {
+        Map<String, String> agents = new HashMap<>();
+        for (FlowNode n : workspaceNodes) {
+            WorkspaceAction ws = n.getPersistentAction(WorkspaceAction.class);
+            if (ws == null) {
+                continue;
+            }
+            String stageId = nearestStageId(n, stageIds, enclosingIdsFor(n, enclosingIdsByNodeId));
+            if (stageId != null) {
+                agents.putIfAbsent(stageId, agentName(ws));
+            }
+        }
+        return agents;
+    }
+
+    /** @param enclosingIds the node's enclosing block IDs, innermost first */
+    @CheckForNull
+    private static String nearestStageId(FlowNode node, Set<String> stageIds, List<String> enclosingIds) {
+        if (stageIds.contains(node.getId())) {
+            return node.getId();
+        }
+        for (String enclosingId : enclosingIds) {
+            if (stageIds.contains(enclosingId)) {
+                return enclosingId;
+            }
+        }
+        return null;
+    }
+
     private static String getStageNode(
             FlowNodeWrapper flowNodeWrapper,
-            @CheckForNull List<FlowNode> workspaceNodes,
-            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
+            Map<String, String> agentsWithinStages,
+            List<FlowNode> workspaceNodes,
+            Map<String, List<String>> enclosingIdsByNodeId) {
         FlowNode flowNode = flowNodeWrapper.getNode();
         logger.debug("Checking node {}", flowNode);
-        FlowExecution execution = flowNode.getExecution();
-        Iterable<FlowNode> candidates =
-                workspaceNodes != null ? workspaceNodes : new DepthFirstScanner().allNodes(execution);
-        // Prefer pre-computed ancestry: FlowNode#getAllEnclosingIds / getEnclosingId /
-        // execution.getNode all acquire the storage read lock, which contends with the
-        // running build's writes.
+        String agentWithinStage = agentsWithinStages.get(flowNode.getId());
+        if (agentWithinStage != null) {
+            return agentWithinStage;
+        }
+        // Prefer pre-computed ancestry: FlowNode#getAllEnclosingIds acquires the storage read
+        // lock, which contends with the running build's writes.
         List<String> flowNodeEnclosingIds = enclosingIdsFor(flowNode, enclosingIdsByNodeId);
-        for (FlowNode n : candidates) {
-            WorkspaceAction ws = n.getAction(WorkspaceAction.class);
+        for (FlowNode n : workspaceNodes) {
+            WorkspaceAction ws = n.getPersistentAction(WorkspaceAction.class);
             if (ws != null) {
                 logger.debug("Found workspace node: {}", n);
                 List<String> nEnclosingIds = enclosingIdsFor(n, enclosingIdsByNodeId);
@@ -177,49 +249,27 @@ public class PipelineGraphApi {
 
                 // For parallel stages the stage wrapper sits three levels above the workspace
                 // node (branch → parallel block → sub-stage → workspace).
-                if (flowNodeWrapper.getType() == FlowNodeWrapper.NodeType.PARALLEL) {
-                    if (enclosingIdsByNodeId != null) {
-                        if (nEnclosingIds.size() >= 3) {
-                            isWorkspaceNode = Objects.equals(flowNode.getId(), nEnclosingIds.get(2));
-                        }
-                    } else {
-                        try {
-                            if (n.getEnclosingId() != null) {
-                                FlowNode p = execution.getNode(n.getEnclosingId());
-                                if (p != null && p.getEnclosingId() != null) {
-                                    p = execution.getNode(p.getEnclosingId());
-                                    if (p != null && p.getEnclosingId() != null) {
-                                        isWorkspaceNode = Objects.equals(flowNode.getId(), p.getEnclosingId());
-                                    }
-                                }
-                            }
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
+                if (flowNodeWrapper.getType() == FlowNodeWrapper.NodeType.PARALLEL && nEnclosingIds.size() >= 3) {
+                    isWorkspaceNode = Objects.equals(flowNode.getId(), nEnclosingIds.get(2));
                 }
 
                 if (isWorkspaceNode) {
                     logger.debug("Found correct stage node: {}", n.getId());
-                    String node = ws.getNode();
-                    if (node.isEmpty()) {
-                        node = "built-in";
-                    }
-                    return node;
+                    return agentName(ws);
                 }
             }
         }
         return null;
     }
 
-    private static List<String> enclosingIdsFor(FlowNode node, @CheckForNull Map<String, List<String>> map) {
-        if (map != null) {
-            List<String> pre = map.get(node.getId());
-            if (pre != null) {
-                return pre;
-            }
-        }
-        return node.getAllEnclosingIds();
+    private static String agentName(WorkspaceAction ws) {
+        String node = ws.getNode();
+        return node.isEmpty() ? "built-in" : node;
+    }
+
+    private static List<String> enclosingIdsFor(FlowNode node, Map<String, List<String>> map) {
+        List<String> pre = map.get(node.getId());
+        return pre != null ? pre : node.getAllEnclosingIds();
     }
 
     public PipelineGraph createTree() {

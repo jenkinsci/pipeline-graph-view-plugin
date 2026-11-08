@@ -96,11 +96,23 @@ export enum LocalizedMessageKey {
   inputSubmitFailed = "input.submitFailed",
   inputFormFailed = "input.formFailed",
   inputApprovers = "input.approvers",
-  stageDurationsBuild = "stageDurations.build",
+  stageDurationsStage = "stageDurations.stage",
   stageDurationsTotal = "stageDurations.total",
   stageDurationsMedian = "stageDurations.median",
-  stageDurationsSlower = "stageDurations.slower",
+  stageDurationsTrend = "stageDurations.trend",
   stageDurationsNotRun = "stageDurations.notRun",
+  stageDurationsComparedWith = "stageDurations.comparedWith",
+  stageDurationsBuilds = "stageDurations.builds",
+  stageDurationsLegendSlower = "stageDurations.legend.slower",
+  stageDurationsLegendMuchSlower = "stageDurations.legend.muchSlower",
+  stageDurationsLegendFaster = "stageDurations.legend.faster",
+  stageDurationsGotSlower = "stageDurations.gotSlower",
+  stageDurationsGotFaster = "stageDurations.gotFaster",
+  stageDurationsSince = "stageDurations.since",
+  stageDurationsRecent = "stageDurations.recent",
+  stageDurationsNoChanges = "stageDurations.noChanges",
+  stageDurationsNeedMoreBuilds = "stageDurations.needMoreBuilds",
+  stageDurationsChanges = "stageDurations.changes",
 }
 
 const DEFAULT_MESSAGES: ResourceBundle = {
@@ -133,11 +145,29 @@ const DEFAULT_MESSAGES: ResourceBundle = {
   [LocalizedMessageKey.inputSubmitFailed]: "Submitting the input failed: {0}",
   [LocalizedMessageKey.inputFormFailed]: "Loading the input form failed: {0}",
   [LocalizedMessageKey.inputApprovers]: "Waiting for approval from {0}",
-  [LocalizedMessageKey.stageDurationsBuild]: "Build",
+  [LocalizedMessageKey.stageDurationsStage]: "Stage",
   [LocalizedMessageKey.stageDurationsTotal]: "Total",
   [LocalizedMessageKey.stageDurationsMedian]: "Median",
-  [LocalizedMessageKey.stageDurationsSlower]: "{0}% slower than usual ({1})",
+  [LocalizedMessageKey.stageDurationsTrend]: "Trend",
   [LocalizedMessageKey.stageDurationsNotRun]: "Not run in this build",
+  [LocalizedMessageKey.stageDurationsComparedWith]: "{0}, usually {1} ({2})",
+  [LocalizedMessageKey.stageDurationsBuilds]:
+    "Last {0} {0,choice,1#build|1<builds}, oldest to newest",
+  [LocalizedMessageKey.stageDurationsLegendSlower]: "Slower than usual",
+  [LocalizedMessageKey.stageDurationsLegendMuchSlower]: "Twice as long or more",
+  [LocalizedMessageKey.stageDurationsLegendFaster]: "Faster than usual",
+  [LocalizedMessageKey.stageDurationsGotSlower]:
+    "{0} {0,choice,1#stage|1<stages} got slower",
+  [LocalizedMessageKey.stageDurationsGotFaster]:
+    "{0} {0,choice,1#stage|1<stages} got faster",
+  [LocalizedMessageKey.stageDurationsSince]: "since {0}",
+  [LocalizedMessageKey.stageDurationsRecent]:
+    "Only in the last {0} {0,choice,1#build|1<builds} so far",
+  [LocalizedMessageKey.stageDurationsNoChanges]:
+    "No stage has got noticeably slower or faster in these builds",
+  [LocalizedMessageKey.stageDurationsNeedMoreBuilds]:
+    "Slower stages are pointed out once there are at least {0} builds to compare",
+  [LocalizedMessageKey.stageDurationsChanges]: "Changes",
 };
 
 export function defaultMessages(locale: string): Messages {

@@ -1,10 +1,37 @@
-// Scrolls sideways when there are more stages than fit, keeping the builds in view
 .pgv-stage-durations {
+  --pgv-slower-background: color-mix(
+    in srgb,
+    var(--warning-color) 14%,
+    transparent
+  );
+  --pgv-much-slower-background: color-mix(
+    in srgb,
+    var(--warning-color) 32%,
+    transparent
+  );
+  --pgv-faster-background: color-mix(
+    in srgb,
+    var(--success-color) 14%,
+    transparent
+  );
+
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+// Scrolls sideways when there are more builds than fit, keeping the stage names in view. The page
+// sizes its column to the widest content, so the table takes the space it's given rather than
+// asking for room for every build.
+.pgv-stage-durations__scroller {
   overflow-x: auto;
+  width: 0;
+  min-width: 100%;
 
   .jenkins-table {
     width: auto;
     min-width: 100%;
+    margin-bottom: 0;
   }
 
   th,
@@ -12,9 +39,20 @@
     white-space: nowrap;
   }
 
-  // The builds stay in view while scrolling through the stages
+  // Durations line up by their digits
+  thead th:not(:first-child),
+  tbody td {
+    text-align: right;
+  }
+
+  tbody th {
+    font-weight: normal;
+    text-align: left;
+  }
+
+  // Stage names stay in view while scrolling through the builds
   thead th:first-child,
-  tbody td:first-child {
+  tbody th {
     position: sticky;
     left: 0;
     z-index: 1;
@@ -24,18 +62,40 @@
     background: var(--table-background);
   }
 
-  .pgv-stage-durations__median td {
-    background: transparent;
+  tbody th {
+    background: var(--table-body-background);
+    padding: var(--table-padding) 1.6rem var(--table-padding)
+      calc(var(--table-padding) * 2);
+    border-top-left-radius: var(--table-row-border-radius);
+    border-bottom-left-radius: var(--table-row-border-radius);
+  }
+
+  tbody td {
+    height: 2.25rem;
+    padding-left: 1rem;
+  }
+
+  // The column for the build under the pointer, so one build can be read across every stage
+  .pgv-stage-durations--hovered {
+    box-shadow: inset 0 0 0 9999px
+      color-mix(in srgb, var(--text-color) 5%, transparent);
+  }
+
+  .pgv-stage-durations__summary {
+    padding-left: 2rem;
     color: var(--text-color-secondary);
   }
 
-  .pgv-stage-durations__median td:first-child {
-    background: var(--table-background);
-    font-weight: var(--font-bold-weight);
-  }
+  .pgv-stage-durations__total {
+    th,
+    td {
+      background: transparent;
+      font-weight: var(--font-bold-weight);
+    }
 
-  a.pgv-stage-durations__stage {
-    color: inherit;
+    th {
+      background: var(--table-background);
+    }
   }
 }
 
@@ -43,32 +103,185 @@
 .pgv-stage-durations__stage {
   display: inline-flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 0.375rem;
 
   svg {
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 1rem;
+    height: 1rem;
     flex-shrink: 0;
   }
 }
 
-.pgv-stage-durations__stage {
+a.pgv-stage-durations__stage {
+  color: inherit;
   text-decoration: none;
+  padding: 0.125rem 0.375rem;
+  margin: -0.125rem -0.375rem;
+  border-radius: 0.375rem;
 
   &:hover .pgv-stage-durations__duration {
     text-decoration: underline;
   }
 }
 
+.pgv-stage-durations__stage--slower {
+  background: var(--pgv-slower-background);
+}
+
+.pgv-stage-durations__stage--much-slower {
+  background: var(--pgv-much-slower-background);
+  font-weight: var(--font-bold-weight);
+}
+
+.pgv-stage-durations__stage--faster {
+  background: var(--pgv-faster-background);
+}
+
 .pgv-stage-durations__duration {
   font-variant-numeric: tabular-nums;
 }
 
-.pgv-stage-durations__slower {
-  color: var(--warning-color);
-  font-size: 0.75rem;
-}
-
 .pgv-stage-durations__missing {
   color: var(--text-color-secondary);
+  opacity: 0.6;
+}
+
+.pgv-stage-durations__loading {
+  display: inline-block;
+  width: 1.75rem;
+  height: 0.625rem;
+  border-radius: 0.3rem;
+  background: color-mix(in srgb, var(--text-color) 10%, transparent);
+}
+
+.pgv-stage-durations__legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.25rem;
+  font-size: var(--font-size-sm);
+}
+
+.pgv-stage-durations__swatch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+
+  &::before {
+    content: "";
+    width: 0.875rem;
+    height: 0.875rem;
+    border-radius: 0.25rem;
+  }
+}
+
+.pgv-stage-durations__swatch--slower::before {
+  background: var(--pgv-slower-background);
+}
+
+.pgv-stage-durations__swatch--much-slower::before {
+  background: var(--pgv-much-slower-background);
+}
+
+.pgv-stage-durations__swatch--faster::before {
+  background: var(--pgv-faster-background);
+}
+
+.pgv-stage-durations__findings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 0;
+}
+
+.pgv-stage-durations__finding {
+  flex: 1 1 22rem;
+  padding: 0.875rem 1rem;
+  border-radius: 0.66rem;
+  border-left: 0.25rem solid var(--warning-color);
+  background: var(--pgv-slower-background);
+
+  h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    font-weight: var(--font-bold-weight);
+  }
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.75rem;
+  }
+}
+
+.pgv-stage-durations__finding--faster {
+  border-left-color: var(--success-color);
+  background: var(--pgv-faster-background);
+}
+
+.pgv-stage-durations__finding__name {
+  font-weight: var(--font-bold-weight);
+}
+
+.pgv-stage-durations__finding__percent {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-color-secondary);
+}
+
+.pgv-stage-durations__sparkline {
+  display: block;
+  margin-left: auto;
+  overflow: visible;
+  color: var(--text-color-secondary);
+
+  polyline {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+
+  circle {
+    fill: currentColor;
+  }
+}
+
+.pgv-stage-durations__sparkline__median {
+  stroke: currentColor;
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+  opacity: 0.4;
+}
+
+.pgv-stage-durations__sparkline__since {
+  fill: var(--pgv-slower-background);
+}
+
+.pgv-stage-durations__sparkline--slower {
+  color: var(--warning-color);
+}
+
+.pgv-stage-durations__sparkline--faster {
+  color: var(--success-color);
+
+  .pgv-stage-durations__sparkline__since {
+    fill: var(--pgv-faster-background);
+  }
+}
+
+.pgv-stage-durations__build svg {
+  width: 1.25rem;
+  height: 1.25rem;
 }

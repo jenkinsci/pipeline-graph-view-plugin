@@ -164,13 +164,13 @@ a.pgv-stage-durations__stage {
   color: inherit;
   text-decoration: none;
 
-  &:hover .pgv-stage-durations__icon {
-    display: inline-flex;
-  }
-
-  .pgv-stage-durations__duration {
+  &:hover .pgv-stage-durations__duration {
     text-decoration: underline;
   }
+}
+
+.pgv-stage-durations__icon {
+  display: inline-flex;
 }
 
 // The whole cell is shaded, so the shading lines up with the column and the hovered column

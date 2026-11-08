@@ -16,6 +16,7 @@ declare global {
 
   interface NotificationBar {
     show: (message: string, type: unknown) => void;
+    SUCCESS: unknown;
     ERROR: unknown;
   }
 

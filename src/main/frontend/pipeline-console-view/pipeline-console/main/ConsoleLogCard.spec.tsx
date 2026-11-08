@@ -66,6 +66,14 @@ describe("ConsoleLogCard", () => {
     expect(getByText(/This is a step/));
   });
 
+  it("renders a copy button alongside the plain text link", async () => {
+    const { getByRole } = render(<ConsoleLogCard {...DefaultTestProps} />);
+    expect(getByRole("button", { name: "Copy step output" })).toBeVisible();
+    expect(
+      getByRole("link", { name: "View step as plain text" }),
+    ).toHaveAttribute("href", "/jenkins/job/name/1/stages/log?nodeId=2");
+  });
+
   it("renders step console when expanded", async () => {
     const { getByText, findByText } = render(
       <ConsoleLogCard {...DefaultTestProps} />,

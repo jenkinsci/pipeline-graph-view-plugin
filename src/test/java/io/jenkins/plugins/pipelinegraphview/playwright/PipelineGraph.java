@@ -48,6 +48,27 @@ class PipelineGraph {
         assertThat(getStageByName(name)).isInViewport(new LocatorAssertions.IsInViewportOptions().setRatio(1));
     }
 
+    public void resetIsEnabled(boolean enabled) {
+        log.info("Checking the graph's Reset button is {}", enabled ? "enabled" : "disabled");
+        Locator reset = resetButton();
+        if (enabled) {
+            assertThat(reset).isEnabled();
+        } else {
+            assertThat(reset).isDisabled();
+        }
+    }
+
+    public void reset() {
+        log.info("Resetting the graph");
+        resetButton().click();
+    }
+
+    private Locator resetButton() {
+        return graph.page()
+                .locator(".pgw-zoom-controls")
+                .getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Reset"));
+    }
+
     public Locator selectedStage() {
         log.info("Getting the selected stage");
         return graph.locator(".PWGx-pipeline-node--selected");

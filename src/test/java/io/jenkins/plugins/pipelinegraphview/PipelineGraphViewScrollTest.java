@@ -47,4 +47,22 @@ class PipelineGraphViewScrollTest {
                 .stageIsInViewInGraph("Last")
                 .stageIsInViewInTree("Last");
     }
+
+    @Test
+    @ConfiguredWithCode("configure-appearance.yml")
+    void resetResumesFollowingAfterPickingAStageInTheGraph(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(j, "fits", "smokeTest.jenkinsfile", Result.FAILURE);
+        new PipelineJobPage(p, run.getParent())
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .goToBuild()
+                .goToPipelineOverview()
+                .graphResetIsEnabled(false)
+                // The whole graph fits, so picking a stage doesn't move it.
+                .selectStageInGraph("Checkout")
+                .graphResetIsEnabled(true)
+                .resetGraph()
+                .graphResetIsEnabled(false);
+    }
 }

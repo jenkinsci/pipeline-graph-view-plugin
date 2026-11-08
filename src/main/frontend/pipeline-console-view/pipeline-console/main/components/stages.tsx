@@ -169,6 +169,7 @@ export default function Stages({
           hasCollapsibleStages={hasCollapsibleStages}
           onCollapseAll={collapseAll}
           onExpandAll={expandAll}
+          centerGraph={centerGraph}
           setCenterGraph={setCenterGraph}
         />
 
@@ -220,6 +221,7 @@ interface ZoomControlsProps {
   hasCollapsibleStages: boolean;
   onCollapseAll: () => void;
   onExpandAll: () => void;
+  centerGraph: boolean;
   setCenterGraph: Dispatch<SetStateAction<boolean>>;
 }
 
@@ -230,6 +232,7 @@ function ZoomControls({
   hasCollapsibleStages,
   onCollapseAll,
   onExpandAll,
+  centerGraph,
   setCenterGraph,
 }: ZoomControlsProps) {
   const { zoomIn, zoomOut } = useControls();
@@ -293,8 +296,11 @@ function ZoomControls({
       <Tooltip content={"Reset"}>
         <button
           className={"jenkins-button jenkins-button--tertiary"}
+          aria-label={"Reset"}
           onClick={() => setCenterGraph(true)}
-          disabled={isAtDefaultTransform}
+          // Picking a stage in the graph stops it following the selection
+          // without moving it, so Reset stays available to turn that back on.
+          disabled={centerGraph && isAtDefaultTransform}
         >
           <svg className="ionicon" viewBox="0 0 512 512">
             <path

@@ -135,10 +135,22 @@ const TreeNode = memo(function TreeNode({
   }, [stage, selected]);
 
   useEffect(() => {
-    if (isSelected && itemRef.current) {
-      revealInScrollContainer(itemRef.current);
-    }
-  }, [isSelected]);
+    const element = itemRef.current;
+    if (!isSelected || !element) return;
+    if (revealInScrollContainer(element)) return;
+    // The sidebar has no room for the stage yet, e.g. it is still below the
+    // fold. Try again once it has, but only until the stage has been shown so
+    // the user's own scrolling of the sidebar is left alone.
+    const container = findScrollContainer(element);
+    if (!container) return;
+    const observer = new ResizeObserver(() => {
+      if (revealInScrollContainer(element)) observer.disconnect();
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+    // Filtering changes which stages are shown around this one, which can
+    // leave it out of view.
+  }, [isSelected, search, visibleStatuses]);
 
   useEffect(() => {
     if (search.length || !allVisible) {
@@ -260,16 +272,19 @@ function findScrollContainer(element: HTMLElement): HTMLElement | null {
 
 /**
  * Centres the element within the on-screen part of its scrollable sidebar when
- * it is out of view. The sidebar is sticky, so before the page is scrolled its
+ * it is out of view. Returns false when the sidebar has no room for it yet. The sidebar is sticky, so before the page is scrolled its
  * lower part can be below the fold. Only the sidebar is scrolled (unlike
  * scrollIntoView) because the page position is owned by the console, which
  * scrolls to the selected step's log or a linked log line.
  */
-function revealInScrollContainer(element: HTMLElement) {
+function revealInScrollContainer(element: HTMLElement): boolean {
   const container = findScrollContainer(element);
-  if (!container || container.scrollHeight <= container.clientHeight) return;
+  if (!container || container.scrollHeight <= container.clientHeight) {
+    return true;
+  }
   const containerRect = container.getBoundingClientRect();
   const elementRect = element.getBoundingClientRect();
+  if (containerRect.height < elementRect.height) return false;
   let visibleTop = Math.max(containerRect.top, 0);
   let visibleBottom = Math.min(containerRect.bottom, window.innerHeight);
   if (visibleBottom - visibleTop < elementRect.height) {
@@ -278,12 +293,13 @@ function revealInScrollContainer(element: HTMLElement) {
     visibleBottom = containerRect.bottom;
   }
   if (elementRect.top >= visibleTop && elementRect.bottom <= visibleBottom) {
-    return;
+    return true;
   }
   container.scrollTop +=
     elementRect.top -
     visibleTop -
     (visibleBottom - visibleTop - elementRect.height) / 2;
+  return true;
 }
 
 const filterStageTree = (

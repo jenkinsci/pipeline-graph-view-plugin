@@ -45,6 +45,12 @@ describe("computeStickyFit", () => {
     }
   });
 
+  it("caps the offset at the stuck max-height when entirely below the fold", () => {
+    expect(
+      computeStickyFit({ ...stuck, top: 1200, contentHeight: 2000 }),
+    ).toEqual({ offset: 800, margin: 800 });
+  });
+
   it("does not count being pushed up past where it sticks", () => {
     expect(
       computeStickyFit({ ...stuck, top: 20, contentHeight: 2000 }),

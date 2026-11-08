@@ -23,7 +23,9 @@ export function computeStickyFit({
   stuckMaxHeight,
   contentHeight,
 }: StickyFitInput): StickyFit {
-  const offset = Math.max(0, top - stickyTop);
+  // Capped so the stuck max-height can still be worked out from the applied
+  // max-height when the element starts entirely below the fold.
+  const offset = Math.min(Math.max(0, top - stickyTop), stuckMaxHeight);
   const stuckHeight = Math.min(contentHeight, stuckMaxHeight);
   const height = Math.min(contentHeight, Math.max(0, stuckMaxHeight - offset));
   return { offset, margin: stuckHeight - height };
@@ -61,14 +63,18 @@ export function useStickyFit() {
     window.addEventListener("scroll", update, { passive: true });
     window.addEventListener("resize", update);
     // Content above the element (such as the graph) or in it can change
-    // height without the page scrolling.
-    const observer = new ResizeObserver(update);
-    observer.observe(document.body);
-    observer.observe(element);
+    // height without the page scrolling. Once the element is capped, content
+    // added to it (such as an expanded group) only changes its scrollHeight.
+    const resizeObserver = new ResizeObserver(update);
+    resizeObserver.observe(document.body);
+    resizeObserver.observe(element);
+    const mutationObserver = new MutationObserver(update);
+    mutationObserver.observe(element, { childList: true, subtree: true });
     return () => {
       window.removeEventListener("scroll", update);
       window.removeEventListener("resize", update);
-      observer.disconnect();
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
     };
   }, []);
 }

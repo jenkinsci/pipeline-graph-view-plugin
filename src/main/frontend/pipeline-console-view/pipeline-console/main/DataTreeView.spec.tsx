@@ -1,6 +1,6 @@
 /** * @vitest-environment jsdom */
 
-import { render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -100,8 +100,9 @@ describe("DataTreeView", () => {
   });
 
   afterEach(() => {
-    // jsdom does not implement scrollIntoView, so it is stubbed per test.
+    // jsdom does not implement these, so they are stubbed per test.
     delete (Element.prototype as Partial<Element>).scrollIntoView;
+    delete (globalThis as Partial<typeof globalThis>).ResizeObserver;
     sidebarTop = 0;
     sidebarHeight = SIDEBAR_HEIGHT;
     vi.restoreAllMocks();
@@ -164,6 +165,50 @@ describe("DataTreeView", () => {
     sidebarTop = window.innerHeight;
     const { sidebar } = renderTree(manyStages.slice(0, 3), 3);
 
+    expect(sidebar.scrollTop).toBe(0);
+  });
+
+  it("shows the selected stage again once a search is cleared", () => {
+    const { sidebar } = renderTree(manyStages, 40);
+    const search = screen.getByRole("searchbox");
+
+    fireEvent.change(search, { target: { value: "Stage 40" } });
+    // The browser clamps the scroll position once the list is that short.
+    sidebar.scrollTop = 0;
+    fireEvent.change(search, { target: { value: "" } });
+
+    expect(sidebar.scrollTop).toBe(39 * ITEM_HEIGHT - 80);
+  });
+
+  it("waits until the sidebar has room before showing the selected stage", () => {
+    const callbacks: (() => void)[] = [];
+    // jsdom has no ResizeObserver, so one is stubbed per test.
+    globalThis.ResizeObserver = class {
+      private connected = true;
+      constructor(callback: ResizeObserverCallback) {
+        callbacks.push(() => this.connected && callback([], this));
+      }
+      observe() {}
+      unobserve() {}
+      disconnect() {
+        this.connected = false;
+      }
+    };
+    // The graph pushes the sidebar so far down it has no height yet.
+    sidebarTop = window.innerHeight;
+    sidebarHeight = 0;
+    const { sidebar } = renderTree(manyStages, 40);
+    expect(sidebar.scrollTop).toBe(0);
+
+    sidebarTop = 0;
+    sidebarHeight = SIDEBAR_HEIGHT;
+    act(() => callbacks.forEach((callback) => callback()));
+
+    expect(sidebar.scrollTop).toBe(39 * ITEM_HEIGHT - 80);
+
+    // Once shown, later resizes leave the user's scrolling alone.
+    sidebar.scrollTop = 0;
+    act(() => callbacks.forEach((callback) => callback()));
     expect(sidebar.scrollTop).toBe(0);
   });
 

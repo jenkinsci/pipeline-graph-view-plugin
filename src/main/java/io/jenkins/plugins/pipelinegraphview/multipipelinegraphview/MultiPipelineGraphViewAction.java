@@ -23,7 +23,10 @@ import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.verb.GET;
 
 public class MultiPipelineGraphViewAction implements Action, IconSpec {
-    private static final int MaxNumberOfElements = 10;
+    private static final int DEFAULT_RUNS = 10;
+
+    // Enough history to tell when a stage's duration changed, without loading every build
+    static final int MAX_RUNS = 50;
 
     static final String NEW_JOB_PAGE_FLAG = "jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag";
 
@@ -68,6 +71,7 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
     @WebMethod(name = "runs")
     public void getRuns(StaplerRequest2 req, StaplerResponse2 rsp) throws ServletException, IOException {
         target.checkPermission(Item.READ);
+        int limit = runsLimit(req.getParameter("limit"));
         RunList<WorkflowRun> runs = target.getBuilds();
         List<PipelineRun> pipelineRuns = new ArrayList<>();
 
@@ -76,7 +80,7 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
             PipelineRun r = new PipelineRun(run);
             etagBuilder.add(r);
             pipelineRuns.add(r);
-            if (pipelineRuns.size() >= MaxNumberOfElements) {
+            if (pipelineRuns.size() >= limit) {
                 break;
             }
         }
@@ -95,6 +99,17 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
         rsp.setStatus(200);
         rsp.setContentType("application/json;charset=UTF-8");
         PipelineJsonWriter.write(pipelineRuns, rsp.getOutputStream());
+    }
+
+    static int runsLimit(String parameter) {
+        if (parameter == null) {
+            return DEFAULT_RUNS;
+        }
+        try {
+            return Math.max(1, Math.min(MAX_RUNS, Integer.parseInt(parameter)));
+        } catch (NumberFormatException e) {
+            return DEFAULT_RUNS;
+        }
     }
 
     public String getJobUrl() {

@@ -21,6 +21,7 @@ describe("Sparkline", () => {
         step={{
           direction: "slower",
           start: 3,
+          usual: { median: 3000, spread: 0 },
           before: 3000,
           after: 6000,
           builds: 2,

@@ -19,6 +19,7 @@ import StatusIcon, {
 } from "../../common/components/status-icon.tsx";
 import Tooltip from "../../common/components/tooltip.tsx";
 import { useInputTooltip } from "../../common/components/use-input-tooltip.ts";
+import { LocalizedMessageKey, useMessages } from "../../common/i18n/index.ts";
 import { RunStatus } from "../../common/RestClient.tsx";
 import LiveTotal from "../../common/utils/live-total.tsx";
 import {
@@ -39,6 +40,7 @@ export default function RunSnippet({
   /** The run's URL, including the root URL and a trailing slash. */
   runPath: string;
 }) {
+  const messages = useMessages();
   const ref = useRef<HTMLDivElement>(null);
   const stages = useMemo(() => expandMatrixStages(run.stages), [run.stages]);
   const maxVisible = useFittingSlots(ref, stages);
@@ -161,6 +163,8 @@ export default function RunSnippet({
             <span aria-hidden="true">·</span>
             <span className="pgv-run-snippet__summary__name">
               {current.name}
+              {current.state === Result.paused &&
+                ` (${messages.format(LocalizedMessageKey.stageDurationsStatusPaused)})`}
             </span>
             <span className="pgv-run-snippet__summary__duration">
               <LiveTotal

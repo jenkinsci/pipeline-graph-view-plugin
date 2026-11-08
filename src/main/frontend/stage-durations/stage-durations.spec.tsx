@@ -1,6 +1,6 @@
 /** * @vitest-environment jsdom */
 
-import { render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { RunInfo } from "../multi-pipeline-graph-view/multi-pipeline-graph/main/MultiPipelineGraphModel.ts";
@@ -106,7 +106,8 @@ describe("StageDurationsView", () => {
         .getAllByRole("rowheader")
         .map(
           (heading) =>
-            heading.querySelector("span")?.textContent ?? heading.textContent,
+            heading.querySelector(".pgv-user-specified-text")?.textContent ??
+            heading.textContent,
         ),
     ).toEqual(["Checkout", "Build", "Total"]);
     expect(cellsOf("Build")[0]).toHaveTextContent("4s");
@@ -121,25 +122,35 @@ describe("StageDurationsView", () => {
   it("points out a stage that got slower and the build it started in", () => {
     renderView(steadyThenSlower);
 
-    const card = changesCard()!;
-    expect(within(card).getByText("Stages that changed")).toBeInTheDocument();
-    const cells = within(card)
-      .getByRole("rowheader", { name: "Build" })
-      .closest("tr")!
-      .querySelectorAll("td");
-    expect([...cells].map((cell) => cell.textContent)).toEqual([
-      "4s",
-      "9s",
-      "▲ +125%",
-      "#8",
-    ]);
-    expect(within(cells[3]).getByRole("link")).toHaveAttribute(
-      "href",
-      "/jenkins/job/example/8/",
-    );
+    const change = within(
+      screen.getByRole("group", { name: "Stages that changed" }),
+    ).getByRole("button");
+    expect(change).toHaveTextContent("Build▲ +125%4s → 9ssince #8");
     expect(
       within(rowOf("Build")).getByRole("link", { name: "Slower since #8" }),
     ).toHaveAttribute("href", "/jenkins/job/example/8/");
+  });
+
+  it("narrows the table down to a changed stage when it's pressed", () => {
+    renderView(steadyThenSlower);
+    const change = within(
+      screen.getByRole("group", { name: "Stages that changed" }),
+    ).getByRole("button");
+
+    fireEvent.click(change);
+    expect(change).toHaveAttribute("aria-pressed", "true");
+    expect(
+      within(durationsTable())
+        .getAllByRole("rowheader")
+        .map(
+          (heading) =>
+            heading.querySelector(".pgv-user-specified-text")?.textContent ??
+            heading.textContent,
+        ),
+    ).toEqual(["Build", "Total"]);
+
+    fireEvent.click(change);
+    expect(change).toHaveAttribute("aria-pressed", "false");
   });
 
   it("shades the builds since a stage got slower against how long it took before", () => {
@@ -161,6 +172,7 @@ describe("StageDurationsView", () => {
       3: [stage("Build", 4)],
       4: [stage("Build", 7)],
       5: [stage("Build", 4)],
+      6: [stage("Build", 4)],
     });
 
     expect(
@@ -227,7 +239,7 @@ describe("StageDurationsView", () => {
 
     expect(
       screen.getByText(
-        "Slower stages are pointed out once there are 4 builds to compare",
+        "Slower stages are pointed out once there are 6 builds to compare",
       ),
     ).toBeInTheDocument();
   });
@@ -240,5 +252,151 @@ describe("StageDurationsView before a stage got slower", () => {
     expect(
       container.querySelectorAll(".pgv-stage-durations__cell--faster"),
     ).toHaveLength(0);
+  });
+});
+
+describe("StageDurationsView with many stages", () => {
+  const names = [
+    "Checkout",
+    "Compile",
+    "Unit tests",
+    "Lint",
+    "Package",
+    "Integration tests",
+    "Scan",
+    "Publish",
+    "Deploy to staging",
+    "Smoke tests",
+    "Deploy to production",
+    "Notify",
+    "Cleanup",
+  ];
+  const stagesByRun = Object.fromEntries(
+    [1, 2, 3, 4, 5, 6, 7].map((id) => [
+      id,
+      names.map((name) =>
+        stage(name, name === "Unit tests" && id >= 5 ? 9 : 4),
+      ),
+    ]),
+  );
+  const shownStages = () =>
+    within(durationsTable())
+      .getAllByRole("rowheader")
+      .map(
+        (heading) =>
+          heading.querySelector(".pgv-user-specified-text")?.textContent ??
+          heading.textContent,
+      );
+  const renderWith = (options: {
+    builds?: number;
+    filter?: string;
+    changedOnly?: boolean;
+  }) =>
+    render(
+      <StageDurationsView
+        runs={[7, 6, 5, 4, 3, 2, 1].map((id) => run(id))}
+        stagesByRun={stagesByRun}
+        jobPath="/jenkins/job/example/"
+        options={{ builds: 10, filter: "", changedOnly: false, ...options }}
+      />,
+    );
+
+  it("offers a filter once there are more stages than fit", () => {
+    renderWith({});
+
+    expect(
+      screen.getByRole("searchbox", { name: "Filter stages" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("checkbox", { name: "Changed only" }),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the stages whose name matches, keeping the total", () => {
+    renderWith({ filter: "TESTS" });
+
+    expect(shownStages()).toEqual([
+      "Unit tests",
+      "Integration tests",
+      "Smoke tests",
+      "Total",
+    ]);
+  });
+
+  it("shows only the stages that changed", () => {
+    renderWith({ changedOnly: true });
+
+    expect(shownStages()).toEqual(["Unit tests", "Total"]);
+  });
+
+  it("says when no stage matches", () => {
+    renderWith({ filter: "nothing like this" });
+
+    expect(screen.getByText("No stages match")).toBeInTheDocument();
+  });
+});
+
+describe("StageDurationsView with few stages", () => {
+  it("doesn't offer a filter", () => {
+    renderView(steadyThenSlower);
+
+    expect(screen.queryByRole("searchbox")).toBeNull();
+  });
+});
+
+describe("StageDurationsView with earlier builds loaded", () => {
+  it("still points out a change that started before the builds shown", () => {
+    const stagesByRun = Object.fromEntries(
+      Array.from({ length: 15 }, (_, index) => index + 1).map((id) => [
+        id,
+        [stage("Build", id >= 4 ? 9 : 4)],
+      ]),
+    );
+    render(
+      <StageDurationsView
+        runs={Object.keys(stagesByRun)
+          .map(Number)
+          .sort((a, b) => b - a)
+          .map((id) => run(id))}
+        stagesByRun={stagesByRun}
+        jobPath="/jenkins/job/example/"
+        options={{ builds: 10, filter: "", changedOnly: false }}
+      />,
+    );
+
+    expect(
+      within(durationsTable().querySelector("thead")!)
+        .getAllByRole("columnheader")
+        .map((heading) => heading.textContent)[1],
+    ).toBe("#6");
+    expect(
+      within(rowOf("Build")).getByRole("link", { name: "Slower since #4" }),
+    ).toHaveAttribute("href", "/jenkins/job/example/4/");
+  });
+});
+
+describe("StageDurationsView cells", () => {
+  it("shows a skipped stage without a duration", () => {
+    renderView({
+      ...steadyThenSlower,
+      11: [
+        stage("Checkout", 1),
+        stage("Build", 0.02, { state: Result.skipped }),
+      ],
+    });
+
+    const cell = cellsOf("Build")[7];
+    expect(cell).not.toHaveTextContent("20ms");
+    expect(within(cell).getByRole("link")).toHaveAccessibleName(
+      "Build, Skipped",
+    );
+  });
+
+  it("describes a shaded cell in words, not just colour", () => {
+    renderView(steadyThenSlower);
+
+    expect(within(cellsOf("Build")[4]).getByRole("link")).toHaveAccessibleName(
+      "Build, 9s, Twice as long or more",
+    );
   });
 });

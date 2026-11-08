@@ -387,7 +387,7 @@ describe("RunSnippet current stage", () => {
           totalDurationMillis: undefined,
         }),
       ]),
-    ).toEqual(["1 stage", "·", "Approve", "3s"]);
+    ).toEqual(["1 stage", "·", "Approve (Waiting for input)", "3s"]);
   });
 
   it("shows a matrix stage that's still running in one configuration after another failed", () => {

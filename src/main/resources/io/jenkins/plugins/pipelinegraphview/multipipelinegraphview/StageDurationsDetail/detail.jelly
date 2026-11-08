@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
-  <a class="jenkins-button jenkins-details__button" href="${rootURL}/${it.link}" tooltip="${it.displayName}">
+  <a class="jenkins-button jenkins-details__button" href="${rootURL}/${it.link}">
     <l:icon src="${it.iconClassName}" />
+    ${it.displayName}
   </a>
 </j:jelly>

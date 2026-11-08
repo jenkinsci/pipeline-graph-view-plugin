@@ -3,6 +3,7 @@
 <j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
   <l:job-subpage>
     <l:app-bar title="${%Stage durations}">
+      <div id="stage-durations-controls" class="jenkins-!-display-contents" />
       <a class="jenkins-button jenkins-button--tertiary" href="${rootURL}/${it.jobUrl}">
         <l:icon src="symbol-chevron-back-outline plugin-ionicons-api" />
         ${%Builds}

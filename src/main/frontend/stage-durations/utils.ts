@@ -63,60 +63,92 @@ export const MIN_SAMPLES = 3;
 const SLOWER_BY_MILLIS = 1_500;
 const SLOWER_RATIO = 1.25;
 
+// How many times its usual spread a stage has to move by, so a stage whose duration varies a lot
+// from build to build isn't flagged for varying as it always has
+const NOISE_FACTOR = 3;
+
 /** The median of the durations, once there are enough of them to say what's usual. */
 export function baseline(
   durations: Array<number | undefined>,
 ): number | undefined {
+  return usual(durations)?.median;
+}
+
+/** How long a stage usually takes and how much that varies between builds. */
+export interface Usual {
+  median: number;
+  /** The median distance from the median. */
+  spread: number;
+}
+
+/** What's usual for the durations, once there are enough of them to say. */
+export function usual(durations: Array<number | undefined>): Usual | undefined {
   const samples = durations.filter(
     (duration): duration is number => duration !== undefined,
   );
-  return samples.length >= MIN_SAMPLES ? median(samples) : undefined;
+  if (samples.length < MIN_SAMPLES) {
+    return undefined;
+  }
+  const middle = median(samples)!;
+  return {
+    median: middle,
+    spread: median(samples.map((sample) => Math.abs(sample - middle)))!,
+  };
 }
 
 /**
- * How long the stage usually took before the given build. Only earlier builds count, so the builds
+ * What was usual for the stage before the given build. Only earlier builds count, so the builds
  * from before a stage got slower aren't made to look faster by the slower builds after them.
  */
 export function usualBefore(
   durations: Array<number | undefined>,
   index: number,
-): number | undefined {
-  return baseline(durations.slice(0, index));
+): Usual | undefined {
+  return usual(durations.slice(0, index));
 }
 
-export function isSlower(duration: number, usual: number): boolean {
+function threshold(usual: Usual): number {
+  return Math.max(SLOWER_BY_MILLIS, NOISE_FACTOR * usual.spread);
+}
+
+export function isSlower(duration: number, usual: Usual): boolean {
   return (
-    duration - usual >= SLOWER_BY_MILLIS && duration >= usual * SLOWER_RATIO
+    duration - usual.median >= threshold(usual) &&
+    duration >= usual.median * SLOWER_RATIO
   );
 }
 
-export function isFaster(duration: number, usual: number): boolean {
+export function isFaster(duration: number, usual: Usual): boolean {
   return (
-    usual - duration >= SLOWER_BY_MILLIS && duration * SLOWER_RATIO <= usual
+    usual.median - duration >= threshold(usual) &&
+    duration * SLOWER_RATIO <= usual.median
   );
 }
 
-// A change seen in at least this many builds in a row has stuck, rather than being a one-off
+// A change has to last this many builds before it's pointed out, so a one-off isn't mistaken for it
 export const SUSTAINED_BUILDS = 3;
 
 export interface Step {
   direction: "slower" | "faster";
   /** Index of the first build that took the new time. */
   start: number;
+  /** What was usual before the change. */
+  usual: Usual;
   /** Median duration before the change. */
   before: number;
   /** Median duration since the change. */
   after: number;
-  /** How many builds have taken the new time. */
+  /** How many builds have run the stage since the change. */
   builds: number;
 }
 
 /**
- * When the stage's latest builds have all taken noticeably longer, or shorter, than the builds
- * before them, which build that started in. Comparing with the builds before the change rather
- * than every build means a change that has stuck for a while is still found, where a stage that's
- * been slower for most builds would have dragged their median up with it. A one-off slow build is
- * followed by a usual one, so it's never the start of a change.
+ * When the stage's latest builds have taken noticeably longer, or shorter, than the builds before
+ * them, which build that started in. Comparing with the builds before the change rather than every
+ * build means a change that has stuck for a while is still found, where a stage that's been slower
+ * for most builds would have dragged their median up with it. The first and latest builds since
+ * must both take the new time, and once there are enough of them one build in between may not, so
+ * a single quick build doesn't hide a change that has otherwise stuck.
  *
  * @param durations each build's usual duration for the stage, oldest first
  */
@@ -127,22 +159,33 @@ export function findStep(
     duration === undefined ? [] : [{ duration, index }],
   );
 
-  for (let split = MIN_SAMPLES; split < samples.length; split++) {
-    const before = median(samples.slice(0, split).map((s) => s.duration))!;
+  for (
+    let split = MIN_SAMPLES;
+    split <= samples.length - SUSTAINED_BUILDS;
+    split++
+  ) {
+    const before = usual(samples.slice(0, split).map((s) => s.duration))!;
     const since = samples.slice(split);
+    const allowedMisses = since.length > SUSTAINED_BUILDS ? 1 : 0;
 
     for (const direction of ["slower", "faster"] as const) {
-      const differs = direction === "slower" ? isSlower : isFaster;
+      const differs = (s: { duration: number }) =>
+        direction === "slower"
+          ? isSlower(s.duration, before)
+          : isFaster(s.duration, before);
       // When the build just before already took the new time, the change started earlier than
       // there are enough builds before it to tell
       if (
-        !differs(samples[split - 1].duration, before) &&
-        since.every((s) => differs(s.duration, before))
+        !differs(samples[split - 1]) &&
+        differs(since[0]) &&
+        differs(since[since.length - 1]) &&
+        since.filter((s) => !differs(s)).length <= allowedMisses
       ) {
         return {
           direction,
           start: since[0].index,
-          before,
+          usual: before,
+          before: before.median,
           after: median(since.map((s) => s.duration))!,
           builds: since.length,
         };

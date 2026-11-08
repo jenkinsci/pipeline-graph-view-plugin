@@ -5,7 +5,7 @@ import {
   useMessages,
 } from "../../../common/i18n/index.ts";
 import { BuildStep } from "../../../common/RestClient.tsx";
-import { makeReactChildren, tokenizeANSIString } from "./Ansi.tsx";
+import { ansiToHtml } from "./Ansi.tsx";
 import { ConsoleLine } from "./ConsoleLine.tsx";
 import {
   ConsoleSectionGroup,
@@ -85,14 +85,18 @@ export const ConsoleSection = memo(function ConsoleSection({
             d="M184 112l144 144-144 144"
           />
         </svg>
-        <span className="pgv-console-section__title">
-          {group.title
-            ? makeReactChildren(
-                tokenizeANSIString(sanitizeConsoleHtml(group.title)),
-                `section-title-${group.startIndex}`,
-              )
-            : messages.format(LocalizedMessageKey.consoleSectionUntitled)}
-        </span>
+        {group.title ? (
+          <span
+            className="pgv-console-section__title"
+            dangerouslySetInnerHTML={{
+              __html: sanitizeConsoleHtml(ansiToHtml(group.title)),
+            }}
+          />
+        ) : (
+          <span className="pgv-console-section__title">
+            {messages.format(LocalizedMessageKey.consoleSectionUntitled)}
+          </span>
+        )}
         <span className="pgv-console-section__count">
           {messages.format(LocalizedMessageKey.consoleSectionLines, {
             0: group.lineCount,

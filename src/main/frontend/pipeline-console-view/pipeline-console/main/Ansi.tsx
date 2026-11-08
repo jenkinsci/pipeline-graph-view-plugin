@@ -63,8 +63,13 @@ export function parseEscapeCode(escapeCode: string): Result {
       .map((str) => parseInt(str || "0"));
 
     // Now go through the ints, decode them into bg/fg info
-    for (const num of params) {
-      if (num >= 30 && num <= 37) {
+    for (let i = 0; i < params.length; i++) {
+      const num = params[i];
+      if (num === 38 || num === 48 || num === 58) {
+        // 256-colour (5;n) and truecolour (2;r;g;b) have no matching style; skip their arguments
+        const mode = params[i + 1];
+        i += mode === 5 ? 2 : mode === 2 ? 4 : 0;
+      } else if (num >= 30 && num <= 37) {
         result.setFG = num - 30; // Normal FG set
       } else if (num >= 40 && num <= 47) {
         result.setBG = num - 40; // Normal BG set
@@ -117,217 +122,120 @@ export function parseEscapeCode(escapeCode: string): Result {
   return result;
 }
 
-/**
- * Break up a string into an array of plain strings and escape codes. Returns [input] if no codes present.
- */
-export function tokenizeANSIString(input?: string): string[] | Result[] {
-  if (typeof input !== "string") {
-    return [];
+// Attributes of a tag; a ">" inside a quoted value does not end the tag.
+const TAG_ATTRIBUTES = String.raw`(?:"[^"]*"|'[^']*'|[^'">])*`;
+// CSI (ESC [ params final), OSC (ESC ] text BEL|ST) and other ESC sequences
+// (ESC intermediates final). A CSI cut off at the end of the input is still consumed.
+// The OSC text can contain markup: Jenkins' URL annotator links the URL of an OSC 8
+// hyperlink, copying the terminator into the generated href.
+const ESCAPE_SEQUENCE_SOURCE = String.raw`\u001b(?:\[[0-?]*[ -/]*[@-~]?|\](?:[^\u0007\u001b<]|<${TAG_ATTRIBUTES}>)*(?:\u0007|\u001b\\)?|[ -/]*[0-~])?`;
+const ESCAPE_SEQUENCE = new RegExp(ESCAPE_SEQUENCE_SOURCE, "y");
+const ESCAPE_SEQUENCES = new RegExp(ESCAPE_SEQUENCE_SOURCE, "g");
+const TAG = new RegExp(
+  String.raw`<!--[\s\S]*?(?:-->|$)|<${TAG_ATTRIBUTES}(?:>|$)`,
+  "y",
+);
+// eslint-disable-next-line no-control-regex
+const TEXT = /[^\u001b<]+/y;
+
+type TextStyle = Required<
+  Pick<
+    Result,
+    | "setFG"
+    | "setBG"
+    | "setBold"
+    | "setFaint"
+    | "setItalic"
+    | "setUnderline"
+    | "setStrikeThrough"
+  >
+>;
+
+const DEFAULT_STYLE: TextStyle = {
+  setFG: false,
+  setBG: false,
+  setBold: false,
+  setFaint: false,
+  setItalic: false,
+  setUnderline: false,
+  setStrikeThrough: false,
+};
+
+function applyEscapeCode(style: TextStyle, code: Result): TextStyle {
+  const next = { ...style };
+  if (code.resetFG) next.setFG = false;
+  if (code.resetBG) next.setBG = false;
+  if (typeof code.setFG === "number") next.setFG = code.setFG;
+  if (typeof code.setBG === "number") next.setBG = code.setBG;
+  if (code.setBold !== undefined) next.setBold = code.setBold;
+  if (code.setFaint !== undefined) next.setFaint = code.setFaint;
+  if (code.setItalic !== undefined) next.setItalic = code.setItalic;
+  if (code.setUnderline !== undefined) next.setUnderline = code.setUnderline;
+  if (code.setStrikeThrough !== undefined) {
+    next.setStrikeThrough = code.setStrikeThrough;
   }
+  return next;
+}
 
-  const len = input.length;
-
-  if (len === 0) {
-    return [];
+function classNamesFor(style: TextStyle): string[] {
+  const classNames = [];
+  if (typeof style.setFG === "number") {
+    classNames.push(`ansi-fg-${style.setFG}`);
   }
-
-  /*
-    loopCounter         - Where should the next loop start looping for escape codes.
-    escapeCodeIndex     - The index in the string of the next ANSI escape code or -1.
-    parsedPointer       - The parse pointer how far in the string have we parsed.
-                          This will === loopCounter unless there are commented ANSI escape characters.
-    commentStartIndex   - The start index of the next comment block, or -1.
-    commentEndIndex     - The end index of the next comment block, or -1.
-  */
-  let loopCounter = 0;
-  let escapeCodeIndex = 0;
-  let parsedPointer = 0;
-  // comment start
-  let commentStartIndex = 0;
-  // comment end
-  let commentEndIndex = 0;
-  const result: string[] | Result[] = [];
-
-  while (loopCounter < len) {
-    //--------------------------------------------------------------------------
-    //  Find next escape code
-    escapeCodeIndex = input.indexOf("\x1b", loopCounter);
-
-    if (escapeCodeIndex === -1) {
-      // No more escape codes
-      break;
-    }
-
-    // Check if escape code is commented
-    commentStartIndex = input.indexOf("<!--", loopCounter);
-    commentEndIndex = input.indexOf("-->", commentStartIndex);
-    if (commentEndIndex !== -1) {
-      commentEndIndex += 3;
-    }
-    if (
-      escapeCodeIndex > commentStartIndex &&
-      escapeCodeIndex < commentEndIndex
-    ) {
-      // Skip past the comment
-      loopCounter = commentEndIndex;
-      continue;
-    }
-
-    //--------------------------------------------------------------------------
-    //  Capture any text between the start pointer and the escape code
-
-    if (escapeCodeIndex > loopCounter) {
-      result.push(input.substring(loopCounter, escapeCodeIndex));
-      loopCounter = escapeCodeIndex; // Advance our start pointer to the beginning of the escape code
-    }
-
-    //--------------------------------------------------------------------------
-    //  Find the end of the escape code (a char from 64 - 126 indicating command)
-
-    escapeCodeIndex += 2; // Skip past ESC and '['
-
-    let code = input.charCodeAt(escapeCodeIndex);
-    while (escapeCodeIndex < len && (code < 64 || code > 126)) {
-      escapeCodeIndex++;
-      code = input.charCodeAt(escapeCodeIndex);
-    }
-
-    //--------------------------------------------------------------------------
-    //  Create token for the escape code
-
-    // TODO fix type checking
-    const parsedEscapeCode: any = parseEscapeCode(
-      input.substring(loopCounter, escapeCodeIndex + 1),
-    );
-    result.push(parsedEscapeCode);
-
-    //--------------------------------------------------------------------------
-    //  Keep looking in the rest of the string
-
-    loopCounter = escapeCodeIndex + 1;
-    // Move parsedPointer as we have processes the text to this point.
-    parsedPointer = loopCounter;
+  if (typeof style.setBG === "number") {
+    classNames.push(`ansi-bg-${style.setBG}`);
   }
-
-  if (parsedPointer < len) {
-    result.push(input.substr(parsedPointer));
-  }
-
-  return result;
+  if (style.setBold) classNames.push("ansi-bold");
+  if (style.setFaint) classNames.push("ansi-faint");
+  if (style.setItalic) classNames.push("ansi-italic");
+  if (style.setUnderline) classNames.push("ansi-underline");
+  if (style.setStrikeThrough) classNames.push("ansi-strikethrough");
+  return classNames;
 }
 
 /**
- * Takes an array of string snippets and parsed escape codes produced bv tokenizeANSIString, and creates
- * an array of strings and spans with classNames for attributes.
+ * Converts ANSI SGR escape codes in console HTML into `<span class="ansi-*">` elements.
+ *
+ * The input is HTML, as produced by Jenkins console annotators (timestamps, hyperlinks,
+ * ...). Each run of text between tags gets its own span, so the generated spans never
+ * cross the boundaries of the existing markup. Escape sequences inside a tag are dropped:
+ * Jenkins' URL annotator can include a trailing escape sequence in an `href`.
  */
-export function makeReactChildren(
-  tokenizedInput: string[] | Result[],
-  key: string,
-) {
-  const result = [];
-  let currentState: Result = {
-    setFG: false,
-    setBG: false,
-    setBold: false,
-    setFaint: false,
-    setItalic: false,
-    setUnderline: false,
-    setStrikeThrough: false,
+export function ansiToHtml(input: string): string {
+  if (!input.includes("\u001b")) {
+    return input;
+  }
+
+  let output = "";
+  let style = DEFAULT_STYLE;
+  let i = 0;
+
+  const matchAt = (pattern: RegExp) => {
+    pattern.lastIndex = i;
+    return pattern.exec(input)?.[0];
   };
 
-  for (let i = 0; i < tokenizedInput.length; i++) {
-    const codeOrString = tokenizedInput[i];
-    if (typeof codeOrString === "string") {
-      // Need to output a <span> or plain text if there's no interesting current state
-      if (
-        !currentState.setFG &&
-        !currentState.setBG &&
-        !currentState.setBold &&
-        !currentState.setFaint &&
-        !currentState.setItalic &&
-        !currentState.setUnderline &&
-        !currentState.setStrikeThrough
-      ) {
-        result.push(
-          <div
-            dangerouslySetInnerHTML={{ __html: codeOrString }}
-            key={`${key}-${i}`}
-          />,
-        );
-      } else {
-        const classNames = [];
-
-        if (typeof currentState.setFG === "number") {
-          classNames.push(`ansi-fg-${currentState.setFG}`);
-        }
-        if (typeof currentState.setBG === "number") {
-          classNames.push(`ansi-bg-${currentState.setBG}`);
-        }
-        if (currentState.setBold) {
-          classNames.push("ansi-bold");
-        }
-        if (currentState.setFaint) {
-          classNames.push("ansi-faint");
-        }
-        if (currentState.setItalic) {
-          classNames.push("ansi-italic");
-        }
-        if (currentState.setUnderline) {
-          classNames.push("ansi-underline");
-        }
-        if (currentState.setStrikeThrough) {
-          classNames.push("ansi-strikethrough");
-        }
-
-        result.push(
-          <span
-            className={classNames.join(" ")}
-            dangerouslySetInnerHTML={{ __html: codeOrString }}
-            key={`${key}-${i}`}
-          />,
-        );
+  while (i < input.length) {
+    if (input[i] === "\u001b") {
+      const sequence = matchAt(ESCAPE_SEQUENCE)!;
+      const code = parseEscapeCode(sequence);
+      if (code.isSelectGraphicRendition) {
+        style = applyEscapeCode(style, code);
       }
-    } else if (codeOrString.isSelectGraphicRendition) {
-      // Update the current FG / BG colors for the next text span
-      const nextState = { ...currentState };
-
-      if (codeOrString.resetFG) {
-        nextState.setFG = false;
-      }
-      if (codeOrString.resetBG) {
-        nextState.setBG = false;
-      }
-
-      if (typeof codeOrString.setFG === "number") {
-        nextState.setFG = codeOrString.setFG;
-      }
-      if (typeof codeOrString.setBG === "number") {
-        nextState.setBG = codeOrString.setBG;
-      }
-
-      if (codeOrString.setBold !== undefined) {
-        nextState.setBold = codeOrString.setBold;
-      }
-
-      if (codeOrString.setFaint !== undefined) {
-        nextState.setFaint = codeOrString.setFaint;
-      }
-
-      if (codeOrString.setItalic !== undefined) {
-        nextState.setItalic = codeOrString.setItalic;
-      }
-
-      if (codeOrString.setUnderline !== undefined) {
-        nextState.setUnderline = codeOrString.setUnderline;
-      }
-
-      if (codeOrString.setStrikeThrough !== undefined) {
-        nextState.setStrikeThrough = codeOrString.setStrikeThrough;
-      }
-
-      currentState = nextState;
+      i += sequence.length;
+    } else if (input[i] === "<") {
+      const tag = matchAt(TAG) ?? input.substring(i);
+      output += tag.replace(ESCAPE_SEQUENCES, "");
+      i += tag.length;
+    } else {
+      const text = matchAt(TEXT)!;
+      const classNames = classNamesFor(style);
+      output += classNames.length
+        ? `<span class="${classNames.join(" ")}">${text}</span>`
+        : text;
+      i += text.length;
     }
   }
 
-  return result;
+  return output;
 }

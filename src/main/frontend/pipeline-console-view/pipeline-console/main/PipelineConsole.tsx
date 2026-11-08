@@ -194,6 +194,7 @@ export default function PipelineConsole() {
                 />
               ) : (
                 <StageView
+                  canToggleStages={!isOnlyPlaceholderNode}
                   tailLogs={tailLogs}
                   scrollToTail={scrollToTail}
                   stopTailingLogs={stopTailingLogs}

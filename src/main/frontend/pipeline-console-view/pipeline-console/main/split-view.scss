@@ -5,6 +5,35 @@
   animation: fade-in 0.1s ease-in-out both;
 }
 
+.pgv-split-view__container--animating {
+  transition:
+    grid-template-columns 0.35s ease,
+    grid-template-rows 0.35s ease,
+    gap 0.35s ease;
+
+  & > .pgv-split-view__side-panel {
+    min-width: 0;
+    min-height: 0;
+    overflow: clip;
+    transition: opacity 0.35s ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &,
+    & > .pgv-split-view__side-panel {
+      transition: none;
+    }
+  }
+}
+
+.pgv-split-view__container--collapsed {
+  gap: 0;
+
+  & > .pgv-split-view__side-panel {
+    opacity: 0;
+  }
+}
+
 @keyframes fade-in {
   from {
     opacity: 0;

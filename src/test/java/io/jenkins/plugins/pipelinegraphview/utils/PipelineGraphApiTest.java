@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
@@ -581,6 +582,7 @@ class PipelineGraphApiTest {
     void getAgentForNodeInScriptPrefersItOverPipelineAgent() throws Exception {
         DumbSlave agent = j.createSlave(new LabelAtom("external"));
         j.waitOnline(agent);
+        String name = agent.getNodeName();
 
         WorkflowRun run = TestUtils.createAndRunJob(
                 j,
@@ -588,11 +590,7 @@ class PipelineGraphApiTest {
                 "gh745_nodeInScriptWithPipelineAgent.jenkinsfile",
                 Result.SUCCESS);
 
-        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
-
-        assertThat(
-                TestUtils.collectStagesAsString(stages, s -> s.name + "{" + s.agent + "}"),
-                equalTo("Setup{built-in},Dynamic node{" + agent.getNodeName() + "}"));
+        assertAgents(run, "Setup{built-in},Own agent{" + name + "},Dynamic node{" + name + "}");
     }
 
     @Issue("GH#745")
@@ -604,11 +602,8 @@ class PipelineGraphApiTest {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "gh745_nodeInScriptWithAgentNone", "gh745_nodeInScriptWithAgentNone.jenkinsfile", Result.SUCCESS);
 
-        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
-
-        assertThat(
-                TestUtils.collectStagesAsString(stages, s -> s.name + "{" + s.agent + "}"),
-                equalTo("Dynamic node{" + agent.getNodeName() + "}"));
+        String name = agent.getNodeName();
+        assertAgents(run, "Agent with options{" + name + "},Dynamic node{" + name + "}");
     }
 
     @Issue("GH#745")
@@ -621,13 +616,20 @@ class PipelineGraphApiTest {
         WorkflowRun run = TestUtils.createAndRunJob(
                 j, "gh745_scriptedNestedNode", "gh745_scriptedNestedNode.jenkinsfile", Result.SUCCESS);
 
-        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
-
         // A parent stage does not take the agent of its child stage.
-        assertThat(
-                TestUtils.collectStagesAsString(stages, s -> s.name + "{" + s.agent + "}"),
-                equalTo("Wrapped{" + name + "},Parent{null}[Child{" + name + "}],Parallel{null}[branch{" + name
-                        + "}]"));
+        assertAgents(
+                run, "Wrapped{" + name + "},Parent{null}[Child{" + name + "}],Parallel{null}[branch{" + name + "}]");
+    }
+
+    /**
+     * Checks the graph served for the finished run, which was computed from the live state while
+     * it ran, and a fresh computation, which reads the flow nodes from storage instead.
+     */
+    private static void assertAgents(WorkflowRun run, String expected) {
+        PipelineGraphApi api = new PipelineGraphApi(run);
+        Function<PipelineStage, String> nameAndAgent = s -> s.name + "{" + s.agent + "}";
+        assertThat(TestUtils.collectStagesAsString(api.createTree().stages, nameAndAgent), equalTo(expected));
+        assertThat(TestUtils.collectStagesAsString(api.computeTree().stages, nameAndAgent), equalTo(expected));
     }
 
     @Issue("GH#616")

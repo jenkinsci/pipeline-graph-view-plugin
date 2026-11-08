@@ -152,13 +152,17 @@ export default function RunSnippet({
         })}
       </div>
       <div className="pgv-run-snippet__summary jenkins-!-text-color-secondary">
-        {started < total ? `${started} of ` : ""}
-        {total} stage{total === 1 ? "" : "s"}
+        <span>
+          {started < total ? `${started} of ` : ""}
+          {total} stage{total === 1 ? "" : "s"}
+        </span>
         {current && (
           <>
-            {" · "}
-            <span className="pgv-run-snippet__summary__current">
-              {current.name}{" "}
+            <span aria-hidden="true">·</span>
+            <span className="pgv-run-snippet__summary__name">
+              {current.name}
+            </span>
+            <span className="pgv-run-snippet__summary__duration">
               <LiveTotal
                 total={current.totalDurationMillis}
                 start={current.startTimeMillis}
@@ -172,8 +176,8 @@ export default function RunSnippet({
 }
 
 /**
- * The stage the run is on, so how long it has been going can be seen without hovering over it.
- * Placeholders are only guesses at what's to come, so they're never the current stage.
+ * The stage the run is on. Placeholders are only guesses at what's to come, so they're never it,
+ * and a queued stage is waiting for an agent so it hasn't started yet.
  */
 function currentStage(stages: StageInfo[]): StageInfo | undefined {
   return stages.find(

@@ -118,16 +118,29 @@
   }
 }
 
-// Long stage names are cut short rather than widening the history column
+// Only the stage's name is cut short when there isn't room, so the count and duration stay
+// visible without widening the history column
 .pgv-run-snippet__summary {
+  display: flex;
+  gap: 0.3em;
+  min-width: 0;
   font-size: 12px;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
-}
 
-.pgv-run-snippet__summary__current {
-  font-variant-numeric: tabular-nums;
+  & > * {
+    flex-shrink: 0;
+  }
+
+  .pgv-run-snippet__summary__name {
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .pgv-run-snippet__summary__duration {
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 // Fill the history column without growing past it, so the snippet can measure how many stages fit.

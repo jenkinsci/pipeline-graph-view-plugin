@@ -15,15 +15,20 @@ import jenkins.model.experimentalflags.UserExperimentalFlag;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.kohsuke.stapler.StaplerRequest2;
 import org.kohsuke.stapler.StaplerResponse2;
 import org.kohsuke.stapler.WebMethod;
 import org.kohsuke.stapler.verb.GET;
 
 public class MultiPipelineGraphViewAction implements Action, IconSpec {
-    private static final int MaxNumberOfElements = 10;
+    private static final int DEFAULT_RUNS = 10;
 
-    private static final String NEW_JOB_PAGE_FLAG = "jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag";
+    // Enough history to tell when a stage's duration changed, without loading every build
+    static final int MAX_RUNS = 50;
+
+    static final String NEW_JOB_PAGE_FLAG = "jenkins.model.experimentalflags.NewJobPageUserExperimentalFlag";
 
     private final WorkflowJob target;
 
@@ -66,6 +71,7 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
     @WebMethod(name = "runs")
     public void getRuns(StaplerRequest2 req, StaplerResponse2 rsp) throws ServletException, IOException {
         target.checkPermission(Item.READ);
+        int limit = runsLimit(req.getParameter("limit"));
         RunList<WorkflowRun> runs = target.getBuilds();
         List<PipelineRun> pipelineRuns = new ArrayList<>();
 
@@ -74,7 +80,7 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
             PipelineRun r = new PipelineRun(run);
             etagBuilder.add(r);
             pipelineRuns.add(r);
-            if (pipelineRuns.size() >= MaxNumberOfElements) {
+            if (pipelineRuns.size() >= limit) {
                 break;
             }
         }
@@ -95,8 +101,27 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
         PipelineJsonWriter.write(pipelineRuns, rsp.getOutputStream());
     }
 
+    static int runsLimit(String parameter) {
+        if (parameter == null) {
+            return DEFAULT_RUNS;
+        }
+        try {
+            return (int) Math.max(1, Math.min(MAX_RUNS, Long.parseLong(parameter)));
+        } catch (NumberFormatException e) {
+            return DEFAULT_RUNS;
+        }
+    }
+
     public String getJobUrl() {
         return target.getUrl();
+    }
+
+    /**
+     * The job, which the new job page's layout renders the header and controls for.
+     */
+    @Restricted(NoExternalUse.class)
+    public WorkflowJob getObject() {
+        return target;
     }
 
     public String getNormalizedParentJobPath() {

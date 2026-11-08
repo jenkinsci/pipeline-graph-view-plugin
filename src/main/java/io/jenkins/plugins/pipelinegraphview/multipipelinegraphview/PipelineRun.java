@@ -2,7 +2,6 @@ package io.jenkins.plugins.pipelinegraphview.multipipelinegraphview;
 
 import static io.jenkins.plugins.pipelinegraphview.utils.ChangesUtil.getChanges;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineState;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -19,8 +18,8 @@ public class PipelineRun {
     private final long duration;
     private final int changesCount;
 
-    // Not part of the wire format — only used server-side via {@link #isBuilding()}.
-    @JsonIgnore
+    // A run can have a result while it's still building, such as once it's marked unstable, so
+    // this says whether its duration is final
     private final boolean building;
 
     @NonNull
@@ -54,7 +53,6 @@ public class PipelineRun {
         this.building = building;
     }
 
-    @JsonIgnore
     public boolean isBuilding() {
         return building;
     }

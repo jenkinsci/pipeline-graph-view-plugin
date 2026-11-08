@@ -30,6 +30,12 @@ This plugin adds a visual representation of Jenkins pipelines, showing each stag
 
 Hidden steps are not displayed by default in the Pipeline Overview, but can be toggled visible using the filter controls.
 
+### Stage durations
+
+To compare how long each stage took across recent builds, and see when one got slower or faster, enable _New job page_ in your user's _Experiments_ settings. Then open _Stage durations_ from the job page's overflow menu (⋯).
+
+![Stage durations](./docs/images/stage-durations.png)
+
 ## Screenshots
 
 Basic pipeline:

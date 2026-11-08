@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:l="/lib/layout">
+  <l:job-subpage>
+    <l:app-bar title="${%Stage durations}">
+      <div id="stage-durations-controls" class="jenkins-!-display-contents" />
+      <a class="jenkins-button jenkins-button--tertiary" href="${rootURL}/${it.jobUrl}">
+        <l:icon src="symbol-chevron-back-outline plugin-ionicons-api" />
+        ${%Builds}
+      </a>
+    </l:app-bar>
+
+    <j:choose>
+      <j:when test="${it.object.lastBuild == null}">
+        <l:notice title="${%No builds}" icon="symbol-stopwatch-outline plugin-ionicons-api" />
+      </j:when>
+      <j:otherwise>
+        <div id="stage-durations-root"
+             data-current-job-path="${rootURL + '/' + it.jobUrl}"
+             data-user-locale="${request2.getLocale().toLanguageTag()}" />
+        <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/stage-durations-bundle.js" type="module"/>
+      </j:otherwise>
+    </j:choose>
+  </l:job-subpage>
+</j:jelly>

@@ -62,10 +62,33 @@ function scanForHosts(node: ParentNode | Element = document): void {
   }
 }
 
+function hostsWithin(element: Element): Element[] {
+  return [
+    ...(element.matches(HOST_SELECTOR) ? [element] : []),
+    ...element.querySelectorAll(HOST_SELECTOR),
+  ];
+}
+
 scanForHosts();
 
+// The builds list replaces a build's row when it changes, so the replaced row is unmounted to
+// stop its live durations ticking in the background
 const observer = new MutationObserver((mutations: MutationRecord[]) => {
   for (const mutation of mutations) {
+    mutation.removedNodes.forEach((node: Node) => {
+      if (!(node instanceof Element)) {
+        return;
+      }
+
+      // A host that's back in the page by now was moved rather than removed
+      hostsWithin(node)
+        .filter((host) => !host.isConnected)
+        .forEach((host) => {
+          roots.get(host)?.unmount();
+          roots.delete(host);
+        });
+    });
+
     mutation.addedNodes.forEach((node: Node) => {
       if (!(node instanceof Element)) {
         return;

@@ -1,0 +1,449 @@
+.pgv-stage-durations {
+  --pgv-slower-background: color-mix(
+    in srgb,
+    var(--warning-color) 14%,
+    transparent
+  );
+  --pgv-much-slower-background: color-mix(
+    in srgb,
+    var(--warning-color) 32%,
+    transparent
+  );
+  --pgv-faster-background: color-mix(
+    in srgb,
+    var(--success-color) 22%,
+    transparent
+  );
+
+  // The theme's warning and success colours are made for icons and fills, so text in them is
+  // darkened towards the text colour to stay readable
+  --pgv-slower-text: color-mix(
+    in oklab,
+    var(--warning-color) 60%,
+    var(--text-color)
+  );
+  --pgv-faster-text: color-mix(
+    in oklab,
+    var(--success-color) 55%,
+    var(--text-color)
+  );
+
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.pgv-stage-durations__visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+// Scrolls when there are more builds or stages than fit, keeping the stage names and builds in
+// view. The page sizes its column to the widest content, so the table takes the space it's given
+// rather than asking for room for every build.
+.pgv-stage-durations__scroller {
+  overflow: auto;
+  width: 0;
+  min-width: 100%;
+  // Keeps a focused cell clear of the sticky header row and stage names
+  scroll-padding: 2.5rem 0 0 min(20rem, 40%);
+
+  .jenkins-table {
+    width: auto;
+    min-width: 100%;
+    margin-bottom: 0;
+  }
+
+  th,
+  td {
+    white-space: nowrap;
+  }
+
+  // Durations line up by their digits
+  thead th:not(:first-child),
+  tbody td {
+    text-align: right;
+  }
+
+  tbody th {
+    font-weight: normal;
+    text-align: left;
+  }
+
+  // Stage names stay in view while scrolling through the builds, and builds while scrolling
+  // through the stages
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--table-background);
+  }
+
+  tbody th {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    // Marks where the builds scroll under the stage names
+    box-shadow: inset -1px 0 0
+      color-mix(in srgb, var(--text-color) 8%, transparent);
+  }
+
+  thead th:first-child {
+    left: 0;
+    z-index: 2;
+  }
+
+  tbody th {
+    background: var(--table-body-background);
+    padding: var(--table-padding) 1.6rem var(--table-padding)
+      calc(var(--table-padding) * 2);
+    border-top-left-radius: var(--table-row-border-radius);
+    border-bottom-left-radius: var(--table-row-border-radius);
+  }
+
+  // Matches the table's own selectors so the cells get room either side for their shading
+  .jenkins-table > tbody > tr > td {
+    height: 2.25rem;
+    padding-left: 1rem;
+    padding-right: 0.75rem;
+  }
+
+  .jenkins-table > thead > tr > th:not(:first-child) {
+    padding-left: 1rem;
+    padding-right: 0.75rem;
+  }
+
+  // The column for the build under the pointer, so one build can be read across every stage
+  .pgv-stage-durations--hovered {
+    box-shadow: inset 0 0 0 9999px
+      color-mix(in srgb, var(--text-color) 5%, transparent);
+  }
+
+  .pgv-stage-durations__summary {
+    padding-left: 2rem;
+  }
+
+  .pgv-stage-durations__no-match {
+    text-align: left;
+    color: var(--text-color-secondary);
+  }
+
+  .pgv-stage-durations__total {
+    th,
+    td {
+      background: transparent;
+      font-weight: var(--font-bold-weight);
+    }
+
+    th {
+      background: var(--table-background);
+    }
+  }
+}
+
+.pgv-stage-durations__build,
+.pgv-stage-durations__stage {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.375rem;
+
+  svg {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+  }
+}
+
+a.pgv-stage-durations__stage {
+  position: relative;
+  color: inherit;
+  text-decoration: none;
+
+  &:hover .pgv-stage-durations__duration {
+    text-decoration: underline;
+  }
+}
+
+.pgv-stage-durations__icon {
+  display: inline-flex;
+}
+
+// The whole cell is shaded, so the shading lines up with the column and the hovered column
+.pgv-stage-durations__scroller {
+  .pgv-stage-durations__cell--slower {
+    background: var(--pgv-slower-background);
+  }
+
+  .pgv-stage-durations__cell--much-slower {
+    background: var(--pgv-much-slower-background);
+    font-weight: var(--font-bold-weight);
+  }
+
+  .pgv-stage-durations__cell--faster {
+    background: var(--pgv-faster-background);
+  }
+}
+
+.pgv-stage-durations__duration {
+  font-variant-numeric: tabular-nums;
+}
+
+.pgv-stage-durations__missing {
+  color: var(--text-color-secondary);
+}
+
+.pgv-stage-durations__duration--not-counted {
+  color: var(--text-color-secondary);
+}
+
+// Says which way a shaded build changed, so it doesn't rest on the colour alone
+.pgv-stage-durations__arrow {
+  font-size: 0.625rem;
+  color: var(--pgv-slower-text);
+
+  .pgv-stage-durations__cell--faster &,
+  .pgv-stage-durations__swatch--faster & {
+    color: var(--pgv-faster-text);
+  }
+}
+
+.pgv-stage-durations__name {
+  display: inline-flex;
+  align-items: center;
+  max-width: 20rem;
+
+  > .pgv-user-specified-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.pgv-stage-durations__build .pgv-user-specified-text {
+  display: inline-block;
+  max-width: 8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+}
+
+.pgv-stage-durations__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pgv-stage-durations__filter {
+  width: 16rem;
+  max-width: 100%;
+}
+
+.pgv-stage-durations__builds {
+  width: auto;
+  flex: 0 0 auto;
+
+  .jenkins-select__input {
+    padding-right: 2.5rem;
+  }
+}
+
+.pgv-stage-durations__loading {
+  display: inline-block;
+  width: 1.75rem;
+  height: 0.625rem;
+  border-radius: 0.3rem;
+  background: color-mix(in srgb, var(--text-color) 10%, transparent);
+}
+
+.pgv-stage-durations__legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.25rem;
+  font-size: var(--font-size-sm);
+}
+
+.pgv-stage-durations__swatch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+
+  &::before {
+    content: "";
+    width: 0.875rem;
+    height: 0.875rem;
+    border-radius: 0.25rem;
+  }
+}
+
+.pgv-stage-durations__swatch--slower::before {
+  background: var(--pgv-slower-background);
+}
+
+.pgv-stage-durations__swatch--much-slower::before {
+  background: var(--pgv-much-slower-background);
+}
+
+.pgv-stage-durations__swatch--faster::before {
+  background: var(--pgv-faster-background);
+}
+
+// The table badge tints itself from its text colour
+.jenkins-table a.pgv-stage-durations__badge--slower {
+  color: var(--pgv-slower-text);
+}
+
+.jenkins-table a.pgv-stage-durations__badge--faster {
+  color: var(--pgv-faster-text);
+}
+
+.pgv-stage-durations__sparkline {
+  display: block;
+  margin-left: auto;
+  overflow: visible;
+  color: var(--text-color-secondary);
+
+  polyline {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+
+  circle {
+    fill: currentColor;
+  }
+}
+
+.pgv-stage-durations__sparkline__median {
+  stroke: currentColor;
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+  opacity: 0.4;
+}
+
+.pgv-stage-durations__sparkline__since {
+  fill: var(--pgv-slower-background);
+}
+
+.pgv-stage-durations__sparkline--slower {
+  color: var(--warning-color);
+}
+
+.pgv-stage-durations__sparkline--faster {
+  color: var(--success-color);
+
+  .pgv-stage-durations__sparkline__since {
+    fill: var(--pgv-faster-background);
+  }
+}
+
+.pgv-stage-durations__build svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.pgv-stage-durations__changes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.5rem;
+  margin: 0;
+}
+
+.pgv-stage-durations__changes--none {
+  margin: 0;
+  color: var(--text-color-secondary);
+}
+
+.pgv-stage-durations__changes__items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+// Outlined at rest so they read as buttons, and filled when pressed so that's told apart from focus
+.pgv-stage-durations__change {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2rem;
+  padding: 0.25rem 0.75rem;
+  border: var(--jenkins-border-width, 1px) solid var(--input-border);
+  border-radius: var(--form-input-border-radius, 0.66rem);
+  background: transparent;
+  color: var(--text-color);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+
+  &:hover {
+    background: var(--item-background--hover);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(
+      --focus-ring--keyboard,
+      0 0 0 2px var(--focus-input-border)
+    );
+  }
+
+  &[aria-pressed="true"] {
+    background: var(--item-background--active);
+    border-color: var(--text-color);
+  }
+}
+
+.pgv-stage-durations__change__percent {
+  font-weight: var(--font-bold-weight);
+}
+
+.pgv-stage-durations__change__percent--slower {
+  color: var(--pgv-slower-text);
+}
+
+.pgv-stage-durations__change__percent--faster {
+  color: var(--pgv-faster-text);
+}
+
+.pgv-stage-durations__change__since {
+  color: var(--text-color-secondary);
+}
+
+.pgv-stage-durations__change__clear {
+  margin-left: 0.125rem;
+  font-weight: var(--font-bold-weight);
+}
+
+// A table of few builds keeps to its content rather than spreading them across the page
+.pgv-stage-durations__scroller .pgv-stage-durations__table--few {
+  min-width: 0;
+}
+
+@media (width <= 700px) {
+  // The builds get most of the width, and the change a stage's badge points out is listed above
+  .pgv-stage-durations__name {
+    max-width: 40vw;
+
+    .pgv-stage-durations__badge {
+      display: none;
+    }
+  }
+}
+
+// The row header is the first cell, so the first data cell shouldn't round its corners too
+.pgv-stage-durations__scroller {
+  .jenkins-table > tbody > tr > th + td:first-of-type {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+}

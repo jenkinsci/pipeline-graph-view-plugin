@@ -11,6 +11,10 @@ describe("Timings", () => {
       return render(<Total ms={ms} />);
     }
 
+    it("should format a fraction of a millisecond", () => {
+      expect(getTotal(534.5).getByText("0.53s")).toBeInTheDocument();
+    });
+
     it("should format milliseconds to hours, minutes, and seconds", () => {
       // First check 359 days.
       expect(getTotal(31_017_600_000).getByText("11 mths")).toBeInTheDocument();

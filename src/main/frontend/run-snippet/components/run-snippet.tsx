@@ -19,6 +19,7 @@ import StatusIcon, {
 } from "../../common/components/status-icon.tsx";
 import Tooltip from "../../common/components/tooltip.tsx";
 import { useInputTooltip } from "../../common/components/use-input-tooltip.ts";
+import { LocalizedMessageKey, useMessages } from "../../common/i18n/index.ts";
 import { RunStatus } from "../../common/RestClient.tsx";
 import LiveTotal from "../../common/utils/live-total.tsx";
 import {
@@ -39,12 +40,14 @@ export default function RunSnippet({
   /** The run's URL, including the root URL and a trailing slash. */
   runPath: string;
 }) {
+  const messages = useMessages();
   const ref = useRef<HTMLDivElement>(null);
   const stages = useMemo(() => expandMatrixStages(run.stages), [run.stages]);
   const maxVisible = useFittingSlots(ref, stages);
   const items = collapseTopLevelStages(stages, maxVisible);
   const total = stages.length;
   const started = stages.filter((stage) => !stage.skeleton).length;
+  const current = currentStage(stages);
 
   return (
     <div>
@@ -150,15 +153,52 @@ export default function RunSnippet({
           );
         })}
       </div>
-      <div
-        className="jenkins-!-text-color-secondary"
-        style={{ fontSize: "12px" }}
-      >
-        {started < total ? `${started} of ` : ""}
-        {total} stage{total === 1 ? "" : "s"}
+      <div className="pgv-run-snippet__summary jenkins-!-text-color-secondary">
+        <span>
+          {started < total ? `${started} of ` : ""}
+          {total} stage{total === 1 ? "" : "s"}
+        </span>
+        {current && (
+          <>
+            <span aria-hidden="true">·</span>
+            <span className="pgv-run-snippet__summary__name">
+              {current.name}
+              {current.state === Result.paused &&
+                ` (${messages.format(LocalizedMessageKey.statusPaused)})`}
+            </span>
+            <span className="pgv-run-snippet__summary__duration">
+              <LiveTotal
+                total={current.totalDurationMillis}
+                start={current.startTimeMillis}
+              />
+            </span>
+          </>
+        )}
       </div>
     </div>
   );
+}
+
+/**
+ * The stage the run is on. Placeholders are only guesses at what's to come, so they're never it,
+ * and a queued stage is waiting for an agent so it hasn't started yet.
+ */
+function currentStage(stages: StageInfo[]): StageInfo | undefined {
+  return stages.find(isActive);
+}
+
+/**
+ * A matrix's stage takes its most noteworthy configuration's state, so a failed configuration
+ * would hide one that's still going. It's active while any of its configurations are.
+ */
+function isActive(stage: StageInfo): boolean {
+  if (stage.skeleton) {
+    return false;
+  }
+  if (stage.synthetic) {
+    return stage.children.some(isActive);
+  }
+  return stage.state === Result.running || stage.state === Result.paused;
 }
 
 /**

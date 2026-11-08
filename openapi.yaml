@@ -290,6 +290,15 @@ paths:
         ETags for efficient caching.
       operationId: getPipelineRuns
       parameters:
+        - name: limit
+          in: query
+          required: false
+          description: How many of the most recent runs to return, at most 50
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
         - name: If-None-Match
           in: header
           required: false
@@ -601,6 +610,9 @@ components:
           description: Number of changes in this run
         result:
           $ref: "#/components/schemas/PipelineState"
+        building:
+          type: boolean
+          description: Whether the run is still in progress, even once it has a result such as unstable
 
     SuccessResponse:
       type: object

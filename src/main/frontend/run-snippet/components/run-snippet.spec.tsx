@@ -7,7 +7,7 @@ import {
   screen,
   waitFor,
 } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
   Result,
@@ -34,6 +34,25 @@ const stage = (overrides: Partial<StageInfo>): StageInfo => ({
   ...overrides,
 });
 
+const renderSnippet = (stages: StageInfo[]) =>
+  render(
+    <RunSnippet
+      run={{ stages, complete: false }}
+      currentRunPath="/jenkins/job/example/2/stages?selected-node="
+      runPath="/jenkins/job/example/2/"
+    />,
+  );
+
+beforeEach(() => {
+  vi.stubGlobal(
+    "ResizeObserver",
+    class {
+      observe() {}
+      disconnect() {}
+    },
+  );
+});
+
 describe("RunSnippet pending input", () => {
   const fetchMock = vi.fn();
 
@@ -41,26 +60,10 @@ describe("RunSnippet pending input", () => {
     fetchMock.mockReset();
     fetchMock.mockResolvedValue({ ok: true });
     vi.stubGlobal("fetch", fetchMock);
-    vi.stubGlobal(
-      "ResizeObserver",
-      class {
-        observe() {}
-        disconnect() {}
-      },
-    );
     window.crumb = {
       wrap: vi.fn().mockReturnValue({ "Jenkins-Crumb": "crumb" }),
     };
   });
-
-  const renderSnippet = (stages: StageInfo[]) =>
-    render(
-      <RunSnippet
-        run={{ stages, complete: false }}
-        currentRunPath="/jenkins/job/example/2/stages?selected-node="
-        runPath="/jenkins/job/example/2/"
-      />,
-    );
 
   const hoverStage = (id: number) =>
     fireEvent.mouseEnter(
@@ -335,5 +338,122 @@ describe("RunSnippet pending input", () => {
       expect(await screen.findByText("Approve Linux?")).toBeInTheDocument();
       expect(screen.getByText("Sign-off")).toBeInTheDocument();
     });
+  });
+});
+
+describe("RunSnippet current stage", () => {
+  const NOW = 1_800_000_000_000;
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"], now: NOW });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  const summaryOf = (stages: StageInfo[]) => {
+    const { container } = renderSnippet(stages);
+    return [
+      ...container.querySelector(".pgv-run-snippet__summary")!.children,
+    ].map((part) => part.textContent);
+  };
+
+  it("shows the running stage's name and how long it has been running", () => {
+    expect(
+      summaryOf([
+        stage({ id: 1, name: "Checkout" }),
+        stage({
+          id: 2,
+          name: "Build",
+          state: Result.running,
+          // Live durations show a second behind, see Since
+          startTimeMillis: NOW - 66_000,
+          totalDurationMillis: undefined,
+        }),
+        stage({ id: 3, name: "Test", state: Result.not_built, skeleton: true }),
+      ]),
+    ).toEqual(["2 of 3 stages", "·", "Build", "1m 5s"]);
+  });
+
+  it("shows how long a stage has been waiting for input", () => {
+    expect(
+      summaryOf([
+        stage({
+          id: 1,
+          name: "Approve",
+          state: Result.paused,
+          startTimeMillis: NOW - 4_000,
+          totalDurationMillis: undefined,
+        }),
+      ]),
+    ).toEqual(["1 stage", "·", "Approve (Waiting for input)", "3s"]);
+  });
+
+  it("shows a matrix stage that's still running in one configuration after another failed", () => {
+    const configuration = (index: number, platform: string, build: StageInfo) =>
+      stage({
+        id: 20 + index,
+        type: "PARALLEL",
+        name: `Matrix - PLATFORM = '${platform}'`,
+        state: build.state,
+        children: [build],
+      });
+
+    expect(
+      summaryOf([
+        stage({
+          id: 2,
+          name: "Matrix",
+          state: Result.running,
+          totalDurationMillis: undefined,
+          children: [
+            configuration(
+              0,
+              "linux",
+              stage({
+                id: 200,
+                state: Result.failure,
+                startTimeMillis: NOW - 10_000,
+                totalDurationMillis: 2_000,
+              }),
+            ),
+            configuration(
+              1,
+              "windows",
+              stage({
+                id: 201,
+                state: Result.running,
+                startTimeMillis: NOW - 8_000,
+                totalDurationMillis: undefined,
+              }),
+            ),
+          ],
+        }),
+      ]),
+    ).toEqual(["1 stage", "·", "Build", "9s"]);
+  });
+
+  it("doesn't treat a queued stage as started", () => {
+    expect(
+      summaryOf([
+        stage({ id: 1, name: "Checkout" }),
+        stage({
+          id: 2,
+          name: "Deploy",
+          state: Result.queued,
+          totalDurationMillis: undefined,
+        }),
+      ]),
+    ).toEqual(["2 stages"]);
+  });
+
+  it("only counts the stages once the run has finished", () => {
+    expect(
+      summaryOf([
+        stage({ id: 1, name: "Checkout" }),
+        stage({ id: 2, name: "Build", state: Result.failure }),
+      ]),
+    ).toEqual(["2 stages"]);
   });
 });

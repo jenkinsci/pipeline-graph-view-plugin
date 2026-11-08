@@ -19,8 +19,10 @@ import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.support.steps.input.InputAction;
+import org.jenkinsci.plugins.workflow.test.steps.SemaphoreStep;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 import tools.jackson.databind.JsonNode;
@@ -111,6 +113,52 @@ class PipelineStagesEntryDecoratorTest {
         inputAction.getExecution("QA").proceed(null);
         inputAction.getExecution("Sec").proceed(null);
         j.assertBuildStatusSuccess(j.waitForCompletion(run));
+    }
+
+    @Issue("GH#847")
+    @Test
+    void placeholdersComeFromLastCompletedRunWhenPreviousRunIsStillInProgress() throws Exception {
+        WorkflowJob job = threeStageJob();
+        SemaphoreStep.success("first/1", null);
+        j.buildAndAssertSuccess(job);
+        WorkflowRun inProgress = job.scheduleBuild2(0).waitForStart();
+        SemaphoreStep.waitForStart("first/2", inProgress);
+        WorkflowRun latest = job.scheduleBuild2(0).waitForStart();
+        SemaphoreStep.waitForStart("first/3", latest);
+
+        JsonNode json = historyPageJson(latest);
+
+        assertThat(names(json.path("previousStages")), contains("First", "Second", "Third"));
+
+        SemaphoreStep.success("first/2", null);
+        SemaphoreStep.success("first/3", null);
+        j.assertBuildStatusSuccess(j.waitForCompletion(inProgress));
+        j.assertBuildStatusSuccess(j.waitForCompletion(latest));
+    }
+
+    @Test
+    void completedRunHasNoPlaceholders() throws Exception {
+        WorkflowJob job = threeStageJob();
+        SemaphoreStep.success("first/1", null);
+        j.buildAndAssertSuccess(job);
+        SemaphoreStep.success("first/2", null);
+        WorkflowRun second = j.buildAndAssertSuccess(job);
+
+        assertThat(historyPageJson(second).has("previousStages"), is(false));
+    }
+
+    private WorkflowJob threeStageJob() throws Exception {
+        WorkflowJob job = j.createProject(WorkflowJob.class, "threeStages");
+        job.setDefinition(new CpsFlowDefinition("""
+                stage('First') { semaphore 'first' }
+                stage('Second') { echo 'second' }
+                stage('Third') { echo 'third' }
+                """, true));
+        return job;
+    }
+
+    private JsonNode historyPageJson(WorkflowRun run) {
+        return JsonMapper.builder().build().readTree(new PipelineStagesEntryDecorator().getJson(run));
     }
 
     private JsonNode historyPageStages(String jobName, String jenkinsFile) throws Exception {

@@ -58,14 +58,22 @@ export function usualDuration(
 // Fewer builds than this aren't enough to say what's usual
 export const MIN_SAMPLES = 3;
 
-// A stage is slower when it takes both this much longer and this many times as long as usual, so
-// neither a few seconds on a short stage nor a small share of a long one stands out
-const SLOWER_BY_MILLIS = 1_500;
-const SLOWER_RATIO = 1.25;
+// How much a stage's duration has to change by to matter. Short stages move by a few seconds
+// for no reason, so nothing under 5s counts. Beyond that it grows with the square root of how
+// long the stage takes, 10s for a 30s stage and 20s for 2 minutes, so a long stage needs more
+// than a short one but less as a share of it. From about 10 minutes, where that reaches 45s, it
+// grows in step with the stage instead, so an hour long stage needs to move by 4.5 minutes.
+const MIN_CHANGE_MILLIS = 5_000;
+const CHANGE_AT_30S_MILLIS = 10_000;
+const CHANGE_SHARE_OF_LONG_STAGES = 0.075;
 
-// A minute or more stands out whatever share of the stage it is, so a long stage that gains
-// minutes is still noticed
-const SLOWER_BY_MILLIS_ON_ANY_STAGE = 60_000;
+export function minimumChange(usualMillis: number): number {
+  return Math.max(
+    MIN_CHANGE_MILLIS,
+    CHANGE_AT_30S_MILLIS * Math.sqrt(usualMillis / 30_000),
+    CHANGE_SHARE_OF_LONG_STAGES * usualMillis,
+  );
+}
 
 // How many times its usual spread a stage has to move by, so a stage whose duration varies a lot
 // from build to build isn't flagged for varying as it always has
@@ -112,25 +120,15 @@ export function usualBefore(
 }
 
 function threshold(usual: Usual): number {
-  return Math.max(SLOWER_BY_MILLIS, NOISE_FACTOR * usual.spread);
+  return Math.max(minimumChange(usual.median), NOISE_FACTOR * usual.spread);
 }
 
 export function isSlower(duration: number, usual: Usual): boolean {
-  const by = duration - usual.median;
-  return (
-    by >= threshold(usual) &&
-    (duration >= usual.median * SLOWER_RATIO ||
-      by >= SLOWER_BY_MILLIS_ON_ANY_STAGE)
-  );
+  return duration - usual.median >= threshold(usual);
 }
 
 export function isFaster(duration: number, usual: Usual): boolean {
-  const by = usual.median - duration;
-  return (
-    by >= threshold(usual) &&
-    (duration * SLOWER_RATIO <= usual.median ||
-      by >= SLOWER_BY_MILLIS_ON_ANY_STAGE)
-  );
+  return usual.median - duration >= threshold(usual);
 }
 
 // A change has to last this many builds before it's pointed out, so a one-off isn't mistaken for it

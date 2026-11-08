@@ -206,7 +206,7 @@ describe("StageDurationsView", () => {
       1: [stage("Build", 4)],
       2: [stage("Build", 4)],
       3: [stage("Build", 4)],
-      4: [stage("Build", 7)],
+      4: [stage("Build", 12)],
       5: [stage("Build", 4)],
       6: [stage("Build", 4)],
     });

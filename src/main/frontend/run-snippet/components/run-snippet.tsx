@@ -180,11 +180,21 @@ export default function RunSnippet({
  * and a queued stage is waiting for an agent so it hasn't started yet.
  */
 function currentStage(stages: StageInfo[]): StageInfo | undefined {
-  return stages.find(
-    (stage) =>
-      !stage.skeleton &&
-      (stage.state === Result.running || stage.state === Result.paused),
-  );
+  return stages.find(isActive);
+}
+
+/**
+ * A matrix's stage takes its most noteworthy configuration's state, so a failed configuration
+ * would hide one that's still going. It's active while any of its configurations are.
+ */
+function isActive(stage: StageInfo): boolean {
+  if (stage.skeleton) {
+    return false;
+  }
+  if (stage.synthetic) {
+    return stage.children.some(isActive);
+  }
+  return stage.state === Result.running || stage.state === Result.paused;
 }
 
 /**

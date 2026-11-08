@@ -390,6 +390,50 @@ describe("RunSnippet current stage", () => {
     ).toEqual(["1 stage", "·", "Approve", "3s"]);
   });
 
+  it("shows a matrix stage that's still running in one configuration after another failed", () => {
+    const configuration = (index: number, platform: string, build: StageInfo) =>
+      stage({
+        id: 20 + index,
+        type: "PARALLEL",
+        name: `Matrix - PLATFORM = '${platform}'`,
+        state: build.state,
+        children: [build],
+      });
+
+    expect(
+      summaryOf([
+        stage({
+          id: 2,
+          name: "Matrix",
+          state: Result.running,
+          totalDurationMillis: undefined,
+          children: [
+            configuration(
+              0,
+              "linux",
+              stage({
+                id: 200,
+                state: Result.failure,
+                startTimeMillis: NOW - 10_000,
+                totalDurationMillis: 2_000,
+              }),
+            ),
+            configuration(
+              1,
+              "windows",
+              stage({
+                id: 201,
+                state: Result.running,
+                startTimeMillis: NOW - 8_000,
+                totalDurationMillis: undefined,
+              }),
+            ),
+          ],
+        }),
+      ]),
+    ).toEqual(["1 stage", "·", "Build", "9s"]);
+  });
+
   it("doesn't treat a queued stage as started", () => {
     expect(
       summaryOf([

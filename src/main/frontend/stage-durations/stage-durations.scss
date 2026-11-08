@@ -195,18 +195,13 @@ a.pgv-stage-durations__stage {
   background: var(--pgv-faster-background);
 }
 
-.pgv-stage-durations__badge {
-  margin-left: 0.5rem;
-}
-
+// The table badge tints itself from its text colour
 .jenkins-table a.pgv-stage-durations__badge--slower {
   color: var(--warning-color);
-  background: var(--pgv-slower-background);
 }
 
 .jenkins-table a.pgv-stage-durations__badge--faster {
   color: var(--success-color);
-  background: var(--pgv-faster-background);
 }
 
 .pgv-stage-durations__sparkline {

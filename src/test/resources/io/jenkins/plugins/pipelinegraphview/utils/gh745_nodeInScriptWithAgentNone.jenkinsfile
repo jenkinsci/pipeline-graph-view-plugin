@@ -1,0 +1,14 @@
+pipeline {
+    agent none
+    stages {
+        stage('Dynamic node') {
+            steps {
+                script {
+                    node('external') {
+                        echo 'running on a dynamically named node'
+                    }
+                }
+            }
+        }
+    }
+}

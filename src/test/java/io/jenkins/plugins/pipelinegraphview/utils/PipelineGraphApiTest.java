@@ -576,6 +576,60 @@ class PipelineGraphApiTest {
         assertThat(externalStage.agent, equalTo(agent.getNodeName()));
     }
 
+    @Issue("GH#745")
+    @Test
+    void getAgentForNodeInScriptPrefersItOverPipelineAgent() throws Exception {
+        DumbSlave agent = j.createSlave(new LabelAtom("external"));
+        j.waitOnline(agent);
+
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j,
+                "gh745_nodeInScriptWithPipelineAgent",
+                "gh745_nodeInScriptWithPipelineAgent.jenkinsfile",
+                Result.SUCCESS);
+
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
+
+        assertThat(
+                TestUtils.collectStagesAsString(stages, s -> s.name + "{" + s.agent + "}"),
+                equalTo("Setup{built-in},Dynamic node{" + agent.getNodeName() + "}"));
+    }
+
+    @Issue("GH#745")
+    @Test
+    void getAgentForNodeInScriptWithAgentNone() throws Exception {
+        DumbSlave agent = j.createSlave(new LabelAtom("external"));
+        j.waitOnline(agent);
+
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j, "gh745_nodeInScriptWithAgentNone", "gh745_nodeInScriptWithAgentNone.jenkinsfile", Result.SUCCESS);
+
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
+
+        assertThat(
+                TestUtils.collectStagesAsString(stages, s -> s.name + "{" + s.agent + "}"),
+                equalTo("Dynamic node{" + agent.getNodeName() + "}"));
+    }
+
+    @Issue("GH#745")
+    @Test
+    void getAgentForScriptedNodeWrappedInAnotherStep() throws Exception {
+        DumbSlave agent = j.createSlave(new LabelAtom("external"));
+        j.waitOnline(agent);
+        String name = agent.getNodeName();
+
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j, "gh745_scriptedNestedNode", "gh745_scriptedNestedNode.jenkinsfile", Result.SUCCESS);
+
+        List<PipelineStage> stages = new PipelineGraphApi(run).createTree().stages;
+
+        // A parent stage does not take the agent of its child stage.
+        assertThat(
+                TestUtils.collectStagesAsString(stages, s -> s.name + "{" + s.agent + "}"),
+                equalTo("Wrapped{" + name + "},Parent{null}[Child{" + name + "}],Parallel{null}[branch{" + name
+                        + "}]"));
+    }
+
     @Issue("GH#616")
     @Test
     void createTree_stageResult() throws Exception {

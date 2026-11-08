@@ -34,7 +34,10 @@ public class PipelineGraphApi {
             PipelineGraphBuilderApi builder,
             @CheckForNull List<FlowNode> workspaceNodes,
             @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
-        return builder.getPipelineNodes().stream()
+        List<FlowNodeWrapper> pipelineNodes = builder.getPipelineNodes();
+        Set<String> stageIds =
+                pipelineNodes.stream().map(FlowNodeWrapper::getId).collect(Collectors.toSet());
+        return pipelineNodes.stream()
                 .map(flowNodeWrapper -> new PipelineStageInternal(
                         flowNodeWrapper.getId(), // TODO no need to parse it BO returns a string even though the
                         // datatype is number on the frontend
@@ -47,7 +50,7 @@ public class PipelineGraphApi {
                         flowNodeWrapper.getDisplayName(), // TODO blue ocean uses timing information: "Passed in 0s"
                         flowNodeWrapper.isSynthetic(),
                         flowNodeWrapper.getTiming(),
-                        getStageNode(flowNodeWrapper, workspaceNodes, enclosingIdsByNodeId),
+                        getStageNode(flowNodeWrapper, stageIds, workspaceNodes, enclosingIdsByNodeId),
                         flowNodeWrapper.getCauseOfBlockage()))
                 .collect(Collectors.toList());
     }
@@ -153,6 +156,7 @@ public class PipelineGraphApi {
 
     private static String getStageNode(
             FlowNodeWrapper flowNodeWrapper,
+            Set<String> stageIds,
             @CheckForNull List<FlowNode> workspaceNodes,
             @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
         FlowNode flowNode = flowNodeWrapper.getNode();
@@ -160,6 +164,15 @@ public class PipelineGraphApi {
         FlowExecution execution = flowNode.getExecution();
         Iterable<FlowNode> candidates =
                 workspaceNodes != null ? workspaceNodes : new DepthFirstScanner().allNodes(execution);
+        // An agent allocated inside the stage, e.g. a node step wrapped in script or timeout, is
+        // where the stage's steps ran, so it wins over an agent the stage inherited from an
+        // enclosing block.
+        for (FlowNode n : candidates) {
+            WorkspaceAction ws = n.getAction(WorkspaceAction.class);
+            if (ws != null && isWithinStage(n, flowNode.getId(), stageIds, enclosingIdsFor(n, enclosingIdsByNodeId))) {
+                return agentName(ws);
+            }
+        }
         // Prefer pre-computed ancestry: FlowNode#getAllEnclosingIds / getEnclosingId /
         // execution.getNode all acquire the storage read lock, which contends with the
         // running build's writes.
@@ -200,15 +213,36 @@ public class PipelineGraphApi {
 
                 if (isWorkspaceNode) {
                     logger.debug("Found correct stage node: {}", n.getId());
-                    String node = ws.getNode();
-                    if (node.isEmpty()) {
-                        node = "built-in";
-                    }
-                    return node;
+                    return agentName(ws);
                 }
             }
         }
         return null;
+    }
+
+    /**
+     * Whether {@code node} is the stage itself or nested in it without crossing into another
+     * stage or parallel branch, whose agent belongs to that child instead.
+     */
+    private static boolean isWithinStage(
+            FlowNode node, String stageId, Set<String> stageIds, List<String> nodeEnclosingIds) {
+        if (node.getId().equals(stageId)) {
+            return true;
+        }
+        for (String enclosingId : nodeEnclosingIds) {
+            if (enclosingId.equals(stageId)) {
+                return true;
+            }
+            if (stageIds.contains(enclosingId)) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    private static String agentName(WorkspaceAction ws) {
+        String node = ws.getNode();
+        return node.isEmpty() ? "built-in" : node;
     }
 
     private static List<String> enclosingIdsFor(FlowNode node, @CheckForNull Map<String, List<String>> map) {

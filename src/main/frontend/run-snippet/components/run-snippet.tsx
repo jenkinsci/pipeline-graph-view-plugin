@@ -45,6 +45,7 @@ export default function RunSnippet({
   const items = collapseTopLevelStages(stages, maxVisible);
   const total = stages.length;
   const started = stages.filter((stage) => !stage.skeleton).length;
+  const current = currentStage(stages);
 
   return (
     <div>
@@ -150,14 +151,35 @@ export default function RunSnippet({
           );
         })}
       </div>
-      <div
-        className="jenkins-!-text-color-secondary"
-        style={{ fontSize: "12px" }}
-      >
+      <div className="pgv-run-snippet__summary jenkins-!-text-color-secondary">
         {started < total ? `${started} of ` : ""}
         {total} stage{total === 1 ? "" : "s"}
+        {current && (
+          <>
+            {" · "}
+            <span className="pgv-run-snippet__summary__current">
+              {current.name}{" "}
+              <LiveTotal
+                total={current.totalDurationMillis}
+                start={current.startTimeMillis}
+              />
+            </span>
+          </>
+        )}
       </div>
     </div>
+  );
+}
+
+/**
+ * The stage the run is on, so how long it has been going can be seen without hovering over it.
+ * Placeholders are only guesses at what's to come, so they're never the current stage.
+ */
+function currentStage(stages: StageInfo[]): StageInfo | undefined {
+  return stages.find(
+    (stage) =>
+      !stage.skeleton &&
+      (stage.state === Result.running || stage.state === Result.paused),
   );
 }
 

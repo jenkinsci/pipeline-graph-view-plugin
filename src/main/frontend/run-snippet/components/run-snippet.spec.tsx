@@ -337,3 +337,65 @@ describe("RunSnippet pending input", () => {
     });
   });
 });
+
+describe("RunSnippet current stage", () => {
+  beforeEach(() => {
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        observe() {}
+        disconnect() {}
+      },
+    );
+  });
+
+  const footer = (stages: StageInfo[]) => {
+    const { container } = render(
+      <RunSnippet
+        run={{ stages, complete: false }}
+        currentRunPath="/jenkins/job/example/2/stages?selected-node="
+        runPath="/jenkins/job/example/2/"
+      />,
+    );
+    return container.querySelector(".pgv-run-snippet__summary")!;
+  };
+
+  it("shows the running stage's name and how long it has been running", () => {
+    const summary = footer([
+      stage({ id: 1, name: "Checkout" }),
+      stage({
+        id: 2,
+        name: "Build",
+        state: Result.running,
+        startTimeMillis: Date.now() - 66_500,
+        totalDurationMillis: undefined,
+      }),
+      stage({ id: 3, name: "Test", state: Result.not_built, skeleton: true }),
+    ]);
+
+    expect(summary).toHaveTextContent("2 of 3 stages · Build 1m 5s");
+  });
+
+  it("shows how long a stage has been waiting for input", () => {
+    const summary = footer([
+      stage({
+        id: 1,
+        name: "Approve",
+        state: Result.paused,
+        startTimeMillis: Date.now() - 4_500,
+        totalDurationMillis: undefined,
+      }),
+    ]);
+
+    expect(summary).toHaveTextContent("1 stage · Approve 3s");
+  });
+
+  it("only counts the stages once the run has finished", () => {
+    const summary = footer([
+      stage({ id: 1, name: "Checkout" }),
+      stage({ id: 2, name: "Build", state: Result.failure }),
+    ]);
+
+    expect(summary).toHaveTextContent(/^2 stages$/);
+  });
+});

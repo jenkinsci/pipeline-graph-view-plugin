@@ -108,11 +108,12 @@ export enum LocalizedMessageKey {
   stageDurationsLegendFaster = "stageDurations.legend.faster",
   stageDurationsGotSlower = "stageDurations.gotSlower",
   stageDurationsGotFaster = "stageDurations.gotFaster",
-  stageDurationsSince = "stageDurations.since",
+  stageDurationsSlowerSince = "stageDurations.slowerSince",
+  stageDurationsFasterSince = "stageDurations.fasterSince",
+  stageDurationsStep = "stageDurations.step",
   stageDurationsRecent = "stageDurations.recent",
   stageDurationsNoChanges = "stageDurations.noChanges",
   stageDurationsNeedMoreBuilds = "stageDurations.needMoreBuilds",
-  stageDurationsChanges = "stageDurations.changes",
 }
 
 const DEFAULT_MESSAGES: ResourceBundle = {
@@ -157,17 +158,18 @@ const DEFAULT_MESSAGES: ResourceBundle = {
   [LocalizedMessageKey.stageDurationsLegendMuchSlower]: "Twice as long or more",
   [LocalizedMessageKey.stageDurationsLegendFaster]: "Faster than usual",
   [LocalizedMessageKey.stageDurationsGotSlower]:
-    "{0} {0,choice,1#stage|1<stages} got slower",
+    "{0} {0,choice,1#stage|1<stages} got slower: {1}",
   [LocalizedMessageKey.stageDurationsGotFaster]:
-    "{0} {0,choice,1#stage|1<stages} got faster",
-  [LocalizedMessageKey.stageDurationsSince]: "since {0}",
+    "{0} {0,choice,1#stage|1<stages} got faster: {1}",
+  [LocalizedMessageKey.stageDurationsSlowerSince]: "Slower since {0}",
+  [LocalizedMessageKey.stageDurationsFasterSince]: "Faster since {0}",
+  [LocalizedMessageKey.stageDurationsStep]: "{0} → {1} ({2})",
   [LocalizedMessageKey.stageDurationsRecent]:
     "Only in the last {0} {0,choice,1#build|1<builds} so far",
   [LocalizedMessageKey.stageDurationsNoChanges]:
-    "No stage has got noticeably slower or faster in these builds",
+    "No stage got noticeably slower or faster",
   [LocalizedMessageKey.stageDurationsNeedMoreBuilds]:
-    "Slower stages are pointed out once there are at least {0} builds to compare",
-  [LocalizedMessageKey.stageDurationsChanges]: "Changes",
+    "Slower stages are pointed out once there are {0} builds to compare",
 };
 
 export function defaultMessages(locale: string): Messages {

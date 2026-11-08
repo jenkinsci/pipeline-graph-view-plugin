@@ -57,7 +57,9 @@ const renderView = (
 };
 
 const rowOf = (stageName: string) =>
-  screen.getByRole("rowheader", { name: stageName }).closest("tr")!;
+  screen
+    .getByRole("rowheader", { name: new RegExp(`^${stageName}`) })
+    .closest("tr")!;
 
 const cellsOf = (stageName: string) =>
   within(rowOf(stageName)).getAllByRole("cell");
@@ -90,7 +92,12 @@ describe("StageDurationsView", () => {
       "Trend",
     ]);
     expect(
-      screen.getAllByRole("rowheader").map((heading) => heading.textContent),
+      screen
+        .getAllByRole("rowheader")
+        .map(
+          (heading) =>
+            heading.querySelector("span")?.textContent ?? heading.textContent,
+        ),
     ).toEqual(["Checkout", "Build", "Total"]);
     expect(cellsOf("Build")[0]).toHaveTextContent("4s");
     expect(within(cellsOf("Build")[4]).getByRole("link")).toHaveAttribute(
@@ -104,14 +111,11 @@ describe("StageDurationsView", () => {
   it("points out a stage that got slower and the build it started in", () => {
     renderView(steadyThenSlower);
 
-    const finding = screen.getByRole("heading", {
-      name: "1 stage got slower",
-    }).parentElement!;
-    expect(finding).toHaveTextContent("Build");
-    expect(finding).toHaveTextContent("4s → 9s");
-    expect(finding).toHaveTextContent("+125%");
+    expect(screen.getByText("1 stage got slower: Build")).toHaveClass(
+      "jenkins-alert-warning",
+    );
     expect(
-      within(finding).getByRole("link", { name: "since #8" }),
+      within(rowOf("Build")).getByRole("link", { name: "Slower since #8" }),
     ).toHaveAttribute("href", "/jenkins/job/example/8/");
   });
 
@@ -119,13 +123,11 @@ describe("StageDurationsView", () => {
     renderView(steadyThenSlower);
 
     const cells = cellsOf("Build");
-    expect(cells[3].querySelector(".pgv-stage-durations__stage--slower")).toBe(
-      null,
-    );
+    expect(cells[3]).not.toHaveClass("pgv-stage-durations__cell--slower");
     for (const index of [4, 5, 6]) {
-      expect(
-        cells[index].querySelector(".pgv-stage-durations__stage--much-slower"),
-      ).not.toBe(null);
+      expect(cells[index]).toHaveClass(
+        "pgv-stage-durations__cell--much-slower",
+      );
     }
   });
 
@@ -139,15 +141,13 @@ describe("StageDurationsView", () => {
     });
 
     expect(
-      container.querySelectorAll(".pgv-stage-durations__stage--slower"),
+      container.querySelectorAll(".pgv-stage-durations__cell--slower"),
     ).toHaveLength(1);
+    expect(cellsOf("Build")[3]).toHaveClass(
+      "pgv-stage-durations__cell--slower",
+    );
     expect(
-      cellsOf("Build")[3].querySelector(".pgv-stage-durations__stage--slower"),
-    ).not.toBe(null);
-    expect(
-      screen.getByText(
-        "No stage has got noticeably slower or faster in these builds",
-      ),
+      screen.getByText("No stage got noticeably slower or faster"),
     ).toBeInTheDocument();
   });
 
@@ -203,7 +203,7 @@ describe("StageDurationsView", () => {
 
     expect(
       screen.getByText(
-        "Slower stages are pointed out once there are at least 4 builds to compare",
+        "Slower stages are pointed out once there are 4 builds to compare",
       ),
     ).toBeInTheDocument();
   });
@@ -214,7 +214,7 @@ describe("StageDurationsView before a stage got slower", () => {
     const container = renderView(steadyThenSlower);
 
     expect(
-      container.querySelectorAll(".pgv-stage-durations__stage--faster"),
+      container.querySelectorAll(".pgv-stage-durations__cell--faster"),
     ).toHaveLength(0);
   });
 });

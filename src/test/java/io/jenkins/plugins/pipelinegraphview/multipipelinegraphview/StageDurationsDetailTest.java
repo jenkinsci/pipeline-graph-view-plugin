@@ -2,10 +2,12 @@ package io.jenkins.plugins.pipelinegraphview.multipipelinegraphview;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 import hudson.model.User;
 import hudson.security.ACL;
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import jenkins.model.experimentalflags.UserExperimentalFlagsProperty;
 import org.htmlunit.html.HtmlPage;
+import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,6 +34,7 @@ class StageDurationsDetailTest {
         this.j = j;
         j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
         job = j.createProject(WorkflowJob.class, "example");
+        job.setDefinition(new CpsFlowDefinition("stage('Build') { echo 'hi' }", true));
     }
 
     @Test
@@ -56,8 +60,20 @@ class StageDurationsDetailTest {
     }
 
     @Test
+    void durationsPageShowsANoticeWithoutBuilds() throws Exception {
+        userWithNewJobPage("alice", true);
+
+        try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
+            HtmlPage page = wc.getPage(job, "multi-pipeline-graph/durations");
+            assertThat(page.getElementById("stage-durations-root"), nullValue());
+            assertThat(page.querySelector(".jenkins-notice").getTextContent(), containsString("No builds"));
+        }
+    }
+
+    @Test
     void durationsPageRenders() throws Exception {
         userWithNewJobPage("alice", true);
+        j.buildAndAssertSuccess(job);
 
         try (JenkinsRule.WebClient wc = j.createWebClient().login("alice")) {
             wc.getOptions().setThrowExceptionOnScriptError(false);

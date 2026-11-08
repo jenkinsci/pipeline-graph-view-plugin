@@ -172,9 +172,9 @@ export function StageDurationsView({
 
   return (
     <div className="pgv-stage-durations">
-      <Findings rows={rows} builds={builds} jobPath={jobPath} />
+      <Banners rows={rows} />
 
-      <Legend count={builds.length} />
+      <Legend rows={rows} count={builds.length} />
 
       <div className="pgv-stage-durations__scroller">
         <table className="jenkins-table jenkins-table--small">
@@ -199,21 +199,46 @@ export function StageDurationsView({
           <tbody>
             {rows.map((row) => (
               <tr key={row.name}>
-                <th scope="row" className="pgv-user-specified-text">
-                  {row.name}
-                </th>
-                {builds.map((build, index) => (
-                  <td key={build.run.id} {...column(index)}>
-                    <StageCell
-                      build={build}
-                      stage={row.cells[index]}
-                      compareWith={comparison(row, index)}
-                      stagePath={
-                        jobPath + build.run.id + "/stages?selected-node="
-                      }
+                <th scope="row">
+                  <span className="pgv-user-specified-text">{row.name}</span>
+                  {row.step && (
+                    <StepBadge
+                      step={row.step}
+                      run={builds[row.step.start].run}
+                      jobPath={jobPath}
                     />
-                  </td>
-                ))}
+                  )}
+                </th>
+                {builds.map((build, index) => {
+                  const cell = column(index);
+                  const change = changeOf(
+                    usualDuration(row.cells[index]),
+                    comparison(row, index),
+                  );
+                  return (
+                    <td
+                      key={build.run.id}
+                      {...cell}
+                      className={[
+                        cell.className,
+                        change && `pgv-stage-durations__cell--${change}`,
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    >
+                      <StageCell
+                        build={build}
+                        stage={row.cells[index]}
+                        compareWith={
+                          change ? comparison(row, index) : undefined
+                        }
+                        stagePath={
+                          jobPath + build.run.id + "/stages?selected-node="
+                        }
+                      />
+                    </td>
+                  );
+                })}
                 <td className="pgv-stage-durations__summary">
                   <Median durations={row.usual} />
                 </td>
@@ -316,16 +341,9 @@ function StageCell({
   }
 
   const duration = usualDuration(stage);
-  const change = duration !== undefined ? changeOf(duration, compareWith) : "";
 
   const content = (
-    <a
-      href={stagePath + stage.id}
-      className={
-        "pgv-stage-durations__stage" +
-        (change ? ` pgv-stage-durations__stage--${change}` : "")
-      }
-    >
+    <a href={stagePath + stage.id} className="pgv-stage-durations__stage">
       {stage.state !== Result.success && <StageStatusIcon stage={stage} />}
       {!stage.skeleton && (
         <span className="pgv-stage-durations__duration">
@@ -338,7 +356,8 @@ function StageCell({
     </a>
   );
 
-  if (!change || duration === undefined || compareWith === undefined) {
+  // Only given when the build is shaded, to say what it was compared with
+  if (duration === undefined || compareWith === undefined) {
     return content;
   }
 
@@ -357,10 +376,10 @@ function StageCell({
 }
 
 function changeOf(
-  duration: number,
+  duration: number | undefined,
   compareWith: number | undefined,
 ): "" | "slower" | "much-slower" | "faster" {
-  if (compareWith === undefined) {
+  if (duration === undefined || compareWith === undefined) {
     return "";
   }
   if (isSlower(duration, compareWith)) {
@@ -369,8 +388,21 @@ function changeOf(
   return isFaster(duration, compareWith) ? "faster" : "";
 }
 
-function Legend({ count }: { count: number }) {
+/**
+ * Says how many builds are shown and how to read the shading, and when nothing changed, says so,
+ * so an empty set of banners isn't mistaken for not having looked.
+ */
+function Legend({ rows, count }: { rows: StageRow[]; count: number }) {
   const messages = useMessages();
+  const note =
+    count <= MIN_SAMPLES
+      ? messages.format(LocalizedMessageKey.stageDurationsNeedMoreBuilds, {
+          0: MIN_SAMPLES + 1,
+        })
+      : rows.some((row) => row.step)
+        ? undefined
+        : messages.format(LocalizedMessageKey.stageDurationsNoChanges);
+
   return (
     <div className="pgv-stage-durations__legend jenkins-!-text-color-secondary">
       <span>
@@ -378,6 +410,7 @@ function Legend({ count }: { count: number }) {
           0: count,
         })}
       </span>
+      {note && <span>{note}</span>}
       <span className="pgv-stage-durations__swatch pgv-stage-durations__swatch--slower">
         {messages.format(LocalizedMessageKey.stageDurationsLegendSlower)}
       </span>
@@ -391,140 +424,92 @@ function Legend({ count }: { count: number }) {
   );
 }
 
-/** Points out the stages whose duration changed and stayed changed, and which build it started in. */
-function Findings({
-  rows,
-  builds,
-  jobPath,
-}: {
-  rows: StageRow[];
-  builds: Build[];
-  jobPath: string;
-}) {
+/** Names the stages whose duration changed and stayed changed, slowest first. */
+function Banners({ rows }: { rows: StageRow[] }) {
   const messages = useMessages();
+  const locale = useLocale();
 
-  if (builds.length <= MIN_SAMPLES) {
-    return (
-      <p className="pgv-stage-durations__findings jenkins-!-text-color-secondary">
-        {messages.format(LocalizedMessageKey.stageDurationsNeedMoreBuilds, {
-          0: MIN_SAMPLES + 1,
-        })}
-      </p>
-    );
-  }
-
-  const changed = rows.filter(
-    (row): row is StageRow & { step: Step } => row.step !== undefined,
-  );
-  const byImpact = (a: { step: Step }, b: { step: Step }) =>
-    Math.abs(b.step.after - b.step.before) -
-    Math.abs(a.step.after - a.step.before);
-  const slower = changed
-    .filter((row) => row.step.direction === "slower")
-    .sort(byImpact);
-  const faster = changed
-    .filter((row) => row.step.direction === "faster")
-    .sort(byImpact);
-
-  if (changed.length === 0) {
-    return (
-      <p className="pgv-stage-durations__findings jenkins-!-text-color-secondary">
-        {messages.format(LocalizedMessageKey.stageDurationsNoChanges)}
-      </p>
-    );
-  }
+  const byImpact = (a: StageRow, b: StageRow) =>
+    Math.abs(b.step!.after - b.step!.before) -
+    Math.abs(a.step!.after - a.step!.before);
+  const names = (direction: Step["direction"]) =>
+    rows
+      .filter((row) => row.step?.direction === direction)
+      .sort(byImpact)
+      .map((row) => row.name);
+  const slower = names("slower");
+  const faster = names("faster");
+  const list = (items: string[]) =>
+    new Intl.ListFormat(locale, { type: "conjunction" }).format(items);
 
   return (
-    <div className="pgv-stage-durations__findings">
+    <>
       {slower.length > 0 && (
-        <FindingGroup
-          heading={messages.format(
-            LocalizedMessageKey.stageDurationsGotSlower,
-            {
-              0: slower.length,
-            },
-          )}
-          direction="slower"
-          rows={slower}
-          builds={builds}
-          jobPath={jobPath}
-        />
+        <div className="jenkins-alert jenkins-alert-warning jenkins-!-margin-bottom-0">
+          {messages.format(LocalizedMessageKey.stageDurationsGotSlower, {
+            0: slower.length,
+            1: list(slower),
+          })}
+        </div>
       )}
       {faster.length > 0 && (
-        <FindingGroup
-          heading={messages.format(
-            LocalizedMessageKey.stageDurationsGotFaster,
-            {
-              0: faster.length,
-            },
-          )}
-          direction="faster"
-          rows={faster}
-          builds={builds}
-          jobPath={jobPath}
-        />
+        <div className="jenkins-alert jenkins-alert-success jenkins-!-margin-bottom-0">
+          {messages.format(LocalizedMessageKey.stageDurationsGotFaster, {
+            0: faster.length,
+            1: list(faster),
+          })}
+        </div>
       )}
-    </div>
+    </>
   );
 }
 
-function FindingGroup({
-  heading,
-  direction,
-  rows,
-  builds,
+/** Links to the build a stage's change started in, with how much it changed by. */
+function StepBadge({
+  step,
+  run,
   jobPath,
 }: {
-  heading: string;
-  direction: Step["direction"];
-  rows: Array<StageRow & { step: Step }>;
-  builds: Build[];
+  step: Step;
+  run: RunInfo;
   jobPath: string;
 }) {
   const messages = useMessages();
+  const locale = useLocale();
+  const percent = Math.round((step.after / step.before - 1) * 100);
+  const detail = messages.format(LocalizedMessageKey.stageDurationsStep, {
+    0: humanise(step.before, locale),
+    1: humanise(step.after, locale),
+    2: (percent > 0 ? "+" : "") + percent + "%",
+  });
+
   return (
-    <section
-      className={`pgv-stage-durations__finding pgv-stage-durations__finding--${direction}`}
+    <Tooltip
+      content={
+        <>
+          <div>{detail}</div>
+          {step.builds < SUSTAINED_BUILDS && (
+            <div className="jenkins-!-text-color-secondary">
+              {messages.format(LocalizedMessageKey.stageDurationsRecent, {
+                0: step.builds,
+              })}
+            </div>
+          )}
+        </>
+      }
     >
-      <h2>{heading}</h2>
-      <ul>
-        {rows.map(({ name, step }) => {
-          const run = builds[step.start].run;
-          const percent = Math.round((step.after / step.before - 1) * 100);
-          return (
-            <li key={name}>
-              <span className="pgv-stage-durations__finding__name pgv-user-specified-text">
-                {name}
-              </span>
-              <span className="pgv-stage-durations__duration">
-                <Total ms={step.before} /> → <Total ms={step.after} />
-              </span>
-              <span className="pgv-stage-durations__finding__percent">
-                {(percent > 0 ? "+" : "") + percent + "%"}
-              </span>
-              <a href={jobPath + run.id + "/"}>
-                {messages.format(LocalizedMessageKey.stageDurationsSince, {
-                  0: run.displayName,
-                })}
-              </a>
-              <a
-                href={jobPath + run.id + "/changes"}
-                className="jenkins-!-text-color-secondary"
-              >
-                {messages.format(LocalizedMessageKey.stageDurationsChanges)}
-              </a>
-              {step.builds < SUSTAINED_BUILDS && (
-                <span className="jenkins-!-text-color-secondary">
-                  {messages.format(LocalizedMessageKey.stageDurationsRecent, {
-                    0: step.builds,
-                  })}
-                </span>
-              )}
-            </li>
-          );
-        })}
-      </ul>
-    </section>
+      <a
+        href={jobPath + run.id + "/"}
+        className={`jenkins-table__link jenkins-table__badge pgv-stage-durations__badge pgv-stage-durations__badge--${step.direction}`}
+      >
+        {messages.format(
+          step.direction === "slower"
+            ? LocalizedMessageKey.stageDurationsSlowerSince
+            : LocalizedMessageKey.stageDurationsFasterSince,
+          { 0: run.displayName },
+        )}
+      </a>
+    </Tooltip>
   );
 }
 

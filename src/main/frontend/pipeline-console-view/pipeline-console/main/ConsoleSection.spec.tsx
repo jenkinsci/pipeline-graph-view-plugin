@@ -174,6 +174,19 @@ describe("ConsoleSection", () => {
     expect(span?.textContent).toBe("Dependencies");
   });
 
+  it("renders title colours from ANSI escape codes", () => {
+    const { container } = render(
+      <ConsoleSection
+        group={group({ title: "\u001b[32mBuild\u001b[0m" })}
+        {...baseProps}
+      />,
+    );
+
+    const title = container.querySelector(".pgv-console-section__title")!;
+    expect(title.querySelector(".ansi-fg-2")).toHaveTextContent("Build");
+    expect(title.textContent).toBe("Build");
+  });
+
   it("sanitizes the title", () => {
     const { container } = render(
       <ConsoleSection

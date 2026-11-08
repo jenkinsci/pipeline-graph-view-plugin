@@ -3,7 +3,7 @@ import { memo } from "react";
 
 import { BuildStep } from "../../../common/RestClient.tsx";
 import { linkifyJsOptions } from "../../../common/utils/linkify-js.ts";
-import { makeReactChildren, tokenizeANSIString } from "./Ansi.tsx";
+import { ansiToHtml } from "./Ansi.tsx";
 import { sanitizeConsoleHtml } from "./sanitizeConsoleHtml.ts";
 
 export interface ConsoleLineProps {
@@ -55,14 +55,14 @@ export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
         >
           {props.lineNumber}
         </a>
-        <div className="console-text">
-          {makeReactChildren(
-            tokenizeANSIString(
-              sanitizeConsoleHtml(linkifyHtml(content, linkifyJsOptions)),
+        <div
+          className="console-text"
+          dangerouslySetInnerHTML={{
+            __html: sanitizeConsoleHtml(
+              linkifyHtml(ansiToHtml(content), linkifyJsOptions),
             ),
-            id,
-          )}
-        </div>
+          }}
+        />
       </div>
     </pre>
   );

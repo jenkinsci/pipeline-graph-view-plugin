@@ -132,6 +132,7 @@ export enum LocalizedMessageKey {
   statusPaused = "status.paused",
   statusRunning = "status.running",
   statusNotBuilt = "status.notBuilt",
+  statusQueued = "status.queued",
 }
 
 const DEFAULT_MESSAGES: ResourceBundle = {
@@ -205,6 +206,7 @@ const DEFAULT_MESSAGES: ResourceBundle = {
   [LocalizedMessageKey.statusPaused]: "Waiting for input",
   [LocalizedMessageKey.statusRunning]: "Running",
   [LocalizedMessageKey.statusNotBuilt]: "Not built",
+  [LocalizedMessageKey.statusQueued]: "Waiting for an agent",
 };
 
 export function defaultMessages(locale: string): Messages {

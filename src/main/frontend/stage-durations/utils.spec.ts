@@ -300,6 +300,16 @@ describe("findStep", () => {
     expect(findStep(s(20, 20, 20, 20, 40, 40, 40, 40, 20, 20))).toBeUndefined();
   });
 
+  it("says nothing while a second slowdown hasn't settled", () => {
+    expect(findStep(s(20, 20, 20, 20, 40, 40, 40, 40, 60, 60))).toBeUndefined();
+  });
+
+  it("finds a second slowdown once it has settled", () => {
+    expect(
+      findStep(s(20, 20, 20, 20, 40, 40, 40, 40, 60, 60, 60)),
+    ).toMatchObject({ start: 8, before: 40_000, after: 60_000 });
+  });
+
   it("keeps the start of a change through a few quick builds since", () => {
     expect(
       findStep(s(20, 20, 20, 20, 40, 40, 20, 40, 40, 40, 20, 40, 40, 40)),

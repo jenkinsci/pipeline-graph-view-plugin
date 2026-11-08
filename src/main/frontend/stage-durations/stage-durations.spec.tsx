@@ -432,6 +432,23 @@ describe("StageDurationsView cells", () => {
     );
   });
 
+  it("says when a stage is waiting for an agent", () => {
+    renderView({
+      ...steadyThenSlower,
+      11: [
+        stage("Checkout", 1),
+        stage("Build", 0, {
+          state: Result.queued,
+          totalDurationMillis: undefined,
+        }),
+      ],
+    });
+
+    expect(within(cellsOf("Build")[7]).getByRole("link")).toHaveAccessibleName(
+      expect.stringContaining("#11, Build, Waiting for an agent"),
+    );
+  });
+
   it("describes a shaded cell in words, not just colour", () => {
     renderView(steadyThenSlower);
 

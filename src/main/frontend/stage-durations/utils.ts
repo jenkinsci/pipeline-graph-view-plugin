@@ -222,16 +222,19 @@ function nextStretch(samples: Sample[], from: number): Stretch | undefined {
           differs(since[since.length - 1]) &&
           since.filter((s) => !differs(s)).length <= allowedMisses
         ) {
+          const settled = settledEnd(samples, split, end);
           return {
             split,
-            end,
+            end: settled,
             step: {
               direction,
               start: since[0].index,
               usual: before,
               before: before.median,
-              after: median(since.map((s) => s.duration))!,
-              builds: since.length,
+              after: median(
+                samples.slice(split, settled).map((s) => s.duration),
+              )!,
+              builds: settled - split,
             },
           };
         }
@@ -239,4 +242,27 @@ function nextStretch(samples: Sample[], from: number): Stretch | undefined {
     }
   }
   return undefined;
+}
+
+/**
+ * Where a stretch really ends, when its latest builds have already moved away from its own usual
+ * time without yet lasting long enough to be a stretch of their own.
+ */
+function settledEnd(samples: Sample[], split: number, end: number): number {
+  for (
+    let tail = Math.max(split + MIN_SAMPLES, end - SUSTAINED_BUILDS + 1);
+    tail < end;
+    tail++
+  ) {
+    const within = usual(samples.slice(split, tail).map((s) => s.duration))!;
+    for (const differs of [isSlower, isFaster]) {
+      if (
+        !differs(samples[tail - 1].duration, within) &&
+        samples.slice(tail, end).every((s) => differs(s.duration, within))
+      ) {
+        return tail;
+      }
+    }
+  }
+  return end;
 }

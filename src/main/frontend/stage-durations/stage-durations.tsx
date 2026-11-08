@@ -113,10 +113,16 @@ export default function StageDurations({ jobPath }: { jobPath: string }) {
   // Builds' stages arrive one request at a time, so they're gathered up and passed on together
   const pending = useRef<Record<string, StageInfo[]>>({});
   const frame = useRef<number>(undefined);
+  // Only builds still loaded are kept, so the stages of builds that have left the window go
+  const loadedIds = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    loadedIds.current = new Set(runs.map((run) => run.id));
+    setStagesByRun((previous) => keepLoaded(previous, loadedIds.current));
+  }, [runs]);
   const onStages = useCallback((id: string, stages: StageInfo[]) => {
     pending.current[id] = stages;
     frame.current ??= requestAnimationFrame(() => {
-      const arrived = pending.current;
+      const arrived = keepLoaded(pending.current, loadedIds.current);
       pending.current = {};
       frame.current = undefined;
       setStagesByRun((previous) => ({ ...previous, ...arrived }));
@@ -156,6 +162,16 @@ export default function StageDurations({ jobPath }: { jobPath: string }) {
       />
     </>
   );
+}
+
+function keepLoaded(
+  stagesByRun: Record<string, StageInfo[]>,
+  ids: Set<string>,
+): Record<string, StageInfo[]> {
+  const kept = Object.entries(stagesByRun).filter(([id]) => ids.has(id));
+  return kept.length === Object.keys(stagesByRun).length
+    ? stagesByRun
+    : Object.fromEntries(kept);
 }
 
 /** Keeps a build's stages up to date while it runs. */
@@ -653,6 +669,7 @@ const STATUS_LABELS: Partial<Record<Result, LocalizedMessageKey>> = {
   [Result.paused]: LocalizedMessageKey.statusPaused,
   [Result.running]: LocalizedMessageKey.statusRunning,
   [Result.not_built]: LocalizedMessageKey.statusNotBuilt,
+  [Result.queued]: LocalizedMessageKey.statusQueued,
 };
 
 function useStatusLabel(): (result: Result) => string | undefined {

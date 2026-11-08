@@ -115,7 +115,7 @@ class PipelineConsoleViewUpstreamCauseTest {
 
     @Issue("GH#1262")
     @Test
-    void upstreamFreestyleCauseKeepsCoreLink(JenkinsRule j) throws Exception {
+    void upstreamFreestyleCauseLinksToTheRun(JenkinsRule j) throws Exception {
         WorkflowJob downstreamJob = j.createProject(WorkflowJob.class, "downstream");
         downstreamJob.setDefinition(new CpsFlowDefinition("echo 'downstream'", true));
         FreeStyleProject upstream = j.createFreeStyleProject("upstream");
@@ -127,7 +127,7 @@ class PipelineConsoleViewUpstreamCauseTest {
 
         try (JenkinsRule.WebClient wc = j.createWebClient()) {
             Map<String, String> links = detailLinks(wc.getPage(downstream, "stages/"));
-            assertThat(links.keySet(), hasItem(j.contextPath + "/job/upstream/1"));
+            assertThat(links.keySet(), hasItem(j.contextPath + "/job/upstream/1/"));
             assertThat(links.keySet(), not(hasItem(j.contextPath + "/job/upstream/1/stages/")));
         }
     }

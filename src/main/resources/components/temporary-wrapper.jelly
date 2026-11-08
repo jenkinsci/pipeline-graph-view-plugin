@@ -5,8 +5,7 @@
          xmlns:d="jelly:define"
          xmlns:st="jelly:stapler"
          xmlns:t="/lib/hudson"
-         xmlns:dd="/lib/layout/dropdowns"
-         xmlns:pgv="/components">
+         xmlns:dd="/lib/layout/dropdowns">
     <l:userExperimentalFlag var="newBuildPage" flagClassName="jenkins.model.experimentalflags.NewBuildPageUserExperimentalFlag" />
 
     <j:choose>
@@ -150,7 +149,7 @@
                     <j:set var="action" value="${it}" />
 
                     <div class="pgv-details">
-                        <pgv:details-bar action="${it}">
+                        <l:details-bar it="${it.run}">
                             <j:forEach var="detail" items="${action.runDetailsItems}" indexVar="index">
                                 <j:if test="${index == 0}">
                                     <div class="jenkins-details__separator">•</div>
@@ -162,7 +161,7 @@
                                     ${detail.content().text()}
                                 </a>
                             </j:forEach>
-                        </pgv:details-bar>
+                        </l:details-bar>
                     </div>
 
                   <div id="pgv-paused-banner" class="jenkins-alert jenkins-alert-warning" style="display: none;">

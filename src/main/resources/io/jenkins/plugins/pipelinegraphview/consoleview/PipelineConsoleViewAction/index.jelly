@@ -6,9 +6,9 @@
         <link rel="stylesheet" href="${resURL}/plugin/pipeline-graph-view/js/style.css" type="text/css" />
 
         <l:app-bar title="Stages">
-            <pgv:details-bar action="${it}">
+            <l:details-bar it="${it.run}">
                 <div id="console-pipeline-overflow-root" />
-            </pgv:details-bar>
+            </l:details-bar>
         </l:app-bar>
 
       <div id="pgv-paused-banner" class="jenkins-alert jenkins-alert-warning" style="display: none;">

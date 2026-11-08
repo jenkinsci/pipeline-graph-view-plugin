@@ -1,3 +1,5 @@
+import "./stage-view.scss";
+
 import {
   StageInfo,
   StepInfo,
@@ -5,17 +7,21 @@ import {
 } from "./PipelineConsoleModel.tsx";
 import StageDetails from "./stage-details.tsx";
 import StageSteps from "./stage-steps.tsx";
+import StagesToggle from "./stages-toggle.tsx";
 
 export default function StageView(props: StageViewProps) {
   return (
     <>
-      <StageDetails
-        stage={props.stage}
-        steps={props.steps}
-        expandedSteps={props.expandedSteps}
-        expandAllForStage={props.expandAllForStage}
-        collapseAllForStage={props.collapseAllForStage}
-      />
+      <div className="pgv-stage-view__header">
+        {props.canToggleStages && <StagesToggle />}
+        <StageDetails
+          stage={props.stage}
+          steps={props.steps}
+          expandedSteps={props.expandedSteps}
+          expandAllForStage={props.expandAllForStage}
+          collapseAllForStage={props.collapseAllForStage}
+        />
+      </div>
       <StageSteps
         stage={props.stage}
         steps={props.steps}
@@ -34,6 +40,7 @@ export default function StageView(props: StageViewProps) {
 }
 
 export interface StageViewProps {
+  canToggleStages?: boolean;
   stage: StageInfo | null;
   steps: Array<StepInfo>;
   stepBuffers: Map<string, StepLogBufferInfo>;

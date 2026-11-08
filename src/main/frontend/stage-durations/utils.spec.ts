@@ -172,6 +172,11 @@ describe("isSlower", () => {
     expect(isSlower(110_000, steady(100_000))).toBe(false);
   });
 
+  it("flags a minute on a long stage, however small a share", () => {
+    expect(isSlower(24 * 60_000, steady(20 * 60_000))).toBe(true);
+    expect(isSlower(20 * 60_000 + 30_000, steady(20 * 60_000))).toBe(false);
+  });
+
   it("ignores a stage varying as much as it usually does", () => {
     expect(isSlower(14_000, { median: 10_000, spread: 2_000 })).toBe(false);
     expect(isSlower(17_000, { median: 10_000, spread: 2_000 })).toBe(true);
@@ -237,6 +242,28 @@ describe("findStep", () => {
     expect(findStep(s(4, 4, 4, 4, 6, 5, 6, 6))).toMatchObject({
       start: 4,
       builds: 4,
+    });
+  });
+
+  it("finds the latest change when a stage changed twice", () => {
+    expect(findStep(s(4, 4, 4, 4, 6, 6, 6, 6, 6, 9, 9, 9))).toMatchObject({
+      direction: "slower",
+      start: 9,
+      after: 9000,
+    });
+  });
+
+  it("keeps the start of a change through a few quick builds since", () => {
+    expect(findStep(s(4, 4, 4, 4, 8, 8, 4, 8, 8, 8, 4, 8, 8, 8))).toMatchObject(
+      { start: 4, builds: 10 },
+    );
+  });
+
+  it("finds a long stage that gained a few minutes", () => {
+    const m = (...minutes: number[]) => minutes.map((value) => value * 60_000);
+    expect(findStep(m(20, 20, 20, 20, 24, 24, 24))).toMatchObject({
+      direction: "slower",
+      start: 4,
     });
   });
 

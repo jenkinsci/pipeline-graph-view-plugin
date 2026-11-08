@@ -1,6 +1,7 @@
 /** * @vitest-environment jsdom */
 
 import { fireEvent, render, screen, within } from "@testing-library/react";
+import { useState } from "react";
 import { describe, expect, it } from "vitest";
 
 import { RunInfo } from "../multi-pipeline-graph-view/multi-pipeline-graph/main/MultiPipelineGraphModel.ts";
@@ -8,7 +9,11 @@ import {
   Result,
   StageInfo,
 } from "../pipeline-graph-view/pipeline-graph/main/PipelineGraphModel.tsx";
-import { StageDurationsView } from "./stage-durations.tsx";
+import {
+  formatDuration,
+  percentChange,
+  StageDurationsView,
+} from "./stage-durations.tsx";
 
 const run = (id: number, result = Result.success): RunInfo => ({
   id: String(id),
@@ -39,6 +44,32 @@ const stage = (
   ...overrides,
 });
 
+type ViewOptions = Parameters<typeof StageDurationsView>[0]["options"];
+
+/** Keeps the options the view is given in step with the ones it asks for. */
+function View({
+  initial,
+  ...props
+}: Omit<Parameters<typeof StageDurationsView>[0], "options" | "onOptions"> & {
+  initial?: Partial<NonNullable<ViewOptions>>;
+}) {
+  const [options, setOptions] = useState<NonNullable<ViewOptions>>({
+    builds: 10,
+    filter: "",
+    changedOnly: false,
+    ...initial,
+  });
+  return (
+    <StageDurationsView
+      {...props}
+      options={options}
+      onOptions={(changed) =>
+        setOptions((previous) => ({ ...previous, ...changed }))
+      }
+    />
+  );
+}
+
 const renderView = (
   stagesByRun: Record<string, StageInfo[]>,
   runs = Object.keys(stagesByRun)
@@ -47,7 +78,7 @@ const renderView = (
     .map((id) => run(id)),
 ) => {
   const { container } = render(
-    <StageDurationsView
+    <View
       runs={runs}
       stagesByRun={stagesByRun}
       jobPath="/jenkins/job/example/"
@@ -56,9 +87,14 @@ const renderView = (
   return container;
 };
 
+const nameOf = (heading: HTMLElement) =>
+  heading.querySelector(".pgv-user-specified-text")?.textContent ??
+  heading.textContent;
+
 const rowOf = (stageName: string) =>
   within(durationsTable())
-    .getByRole("rowheader", { name: new RegExp(`^${stageName}`) })
+    .getAllByRole("rowheader")
+    .find((heading) => nameOf(heading) === stageName)!
     .closest("tr")!;
 
 function durationsTable() {
@@ -109,7 +145,7 @@ describe("StageDurationsView", () => {
             heading.querySelector(".pgv-user-specified-text")?.textContent ??
             heading.textContent,
         ),
-    ).toEqual(["Checkout", "Build", "Total"]);
+    ).toEqual(["Checkout", "Build", "Build total"]);
     expect(cellsOf("Build")[0]).toHaveTextContent("4s");
     expect(within(cellsOf("Build")[4]).getByRole("link")).toHaveAttribute(
       "href",
@@ -125,10 +161,10 @@ describe("StageDurationsView", () => {
     const change = within(
       screen.getByRole("group", { name: "Stages that changed" }),
     ).getByRole("button");
-    expect(change).toHaveTextContent("Build▲ +125%4s → 9ssince #8");
+    expect(change).toHaveTextContent("Build▲ +125% slower4s → 9ssince #8");
     expect(
       within(rowOf("Build")).getByRole("link", { name: "Slower since #8" }),
-    ).toHaveAttribute("href", "/jenkins/job/example/8/");
+    ).toHaveAttribute("href", "/jenkins/job/example/8/changes");
   });
 
   it("narrows the table down to a changed stage when it's pressed", () => {
@@ -147,7 +183,7 @@ describe("StageDurationsView", () => {
             heading.querySelector(".pgv-user-specified-text")?.textContent ??
             heading.textContent,
         ),
-    ).toEqual(["Build", "Total"]);
+    ).toEqual(["Build", "Build total"]);
 
     fireEvent.click(change);
     expect(change).toHaveAttribute("aria-pressed", "false");
@@ -184,7 +220,10 @@ describe("StageDurationsView", () => {
     expect(
       screen.getByText("No stage got noticeably slower or faster"),
     ).toBeInTheDocument();
-    expect(changesCard()).toBeNull();
+    expect(changesCard()).toHaveTextContent(
+      "No stage got noticeably slower or faster",
+    );
+    expect(changesCard()!.querySelector("button")).toBeNull();
   });
 
   it("only shows a stage's status when it didn't succeed", () => {
@@ -319,14 +358,14 @@ describe("StageDurationsView with many stages", () => {
       "Unit tests",
       "Integration tests",
       "Smoke tests",
-      "Total",
+      "Build total",
     ]);
   });
 
   it("shows only the stages that changed", () => {
     renderWith({ changedOnly: true });
 
-    expect(shownStages()).toEqual(["Unit tests", "Total"]);
+    expect(shownStages()).toEqual(["Unit tests", "Build total"]);
   });
 
   it("says when no stage matches", () => {
@@ -371,7 +410,7 @@ describe("StageDurationsView with earlier builds loaded", () => {
     ).toBe("#6");
     expect(
       within(rowOf("Build")).getByRole("link", { name: "Slower since #4" }),
-    ).toHaveAttribute("href", "/jenkins/job/example/4/");
+    ).toHaveAttribute("href", "/jenkins/job/example/4/changes");
   });
 });
 
@@ -388,7 +427,7 @@ describe("StageDurationsView cells", () => {
     const cell = cellsOf("Build")[7];
     expect(cell).not.toHaveTextContent("20ms");
     expect(within(cell).getByRole("link")).toHaveAccessibleName(
-      "Build, Skipped",
+      "#11, Build, Skipped",
     );
   });
 
@@ -396,7 +435,94 @@ describe("StageDurationsView cells", () => {
     renderView(steadyThenSlower);
 
     expect(within(cellsOf("Build")[4]).getByRole("link")).toHaveAccessibleName(
-      "Build, 9s, Twice as long or more",
+      "#8, Build, 9s, Twice as long or more",
     );
+  });
+});
+
+describe("StageDurationsView while builds load", () => {
+  it("doesn't say nothing matched or nothing changed", () => {
+    render(
+      <View
+        runs={[run(3), run(2), run(1)]}
+        stagesByRun={{ 3: [stage("Build", 4)] }}
+        jobPath="/jenkins/job/example/"
+      />,
+    );
+
+    expect(screen.queryByText("No stages match")).toBeNull();
+    expect(changesCard()).toBeNull();
+  });
+});
+
+describe("StageDurationsView with a pressed change", () => {
+  it("lets go of a stage that's no longer listed as changed", () => {
+    render(
+      <View
+        runs={[7, 6, 5, 4].map((id) => run(id))}
+        stagesByRun={Object.fromEntries(
+          [4, 5, 6, 7].map((id) => [
+            id,
+            [stage("Checkout", 1), stage("Build", 4)],
+          ]),
+        )}
+        jobPath="/jenkins/job/example/"
+        initial={{ stage: "Build" }}
+      />,
+    );
+
+    expect(
+      within(durationsTable()).getAllByRole("rowheader").map(nameOf),
+    ).toEqual(["Checkout", "Build", "Build total"]);
+  });
+});
+
+describe("StageDurationsView shading", () => {
+  it("keeps the strongest shading for a change that has lasted", () => {
+    renderView({
+      1: [stage("Build", 4)],
+      2: [stage("Build", 4)],
+      3: [stage("Build", 4)],
+      4: [stage("Build", 9)],
+      5: [stage("Build", 4)],
+      6: [stage("Build", 4)],
+    });
+
+    expect(cellsOf("Build")[3]).toHaveClass(
+      "pgv-stage-durations__cell--slower",
+    );
+  });
+
+  it("marks only the build a change started in with an arrow", () => {
+    const container = renderView(steadyThenSlower);
+
+    expect(
+      container.querySelectorAll("tbody .pgv-stage-durations__arrow"),
+    ).toHaveLength(1);
+    expect(
+      cellsOf("Build")[4].querySelector(".pgv-stage-durations__arrow"),
+    ).not.toBeNull();
+  });
+});
+
+describe("formatDuration", () => {
+  it("gives a short duration to a tenth of a second", () => {
+    expect(formatDuration(1_940, "en")).toBe("1.9s");
+    expect(formatDuration(570, "en")).toBe("0.6s");
+  });
+
+  it("leaves longer durations as they are", () => {
+    expect(formatDuration(67_000, "en")).toBe("1m 7s");
+  });
+});
+
+describe("percentChange", () => {
+  it("is signed", () => {
+    expect(percentChange(9_000, 4_000)).toBe("+125%");
+    expect(percentChange(2_000, 5_000)).toBe("-60%");
+  });
+
+  it("is left out when there's nothing to compare with", () => {
+    expect(percentChange(2_000, 0)).toBe("");
   });
 });

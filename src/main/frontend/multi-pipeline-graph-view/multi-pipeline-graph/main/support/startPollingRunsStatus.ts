@@ -27,12 +27,15 @@ export default function startPollingRunsStatus(
       const res = await fetch(path);
       const text = await res.text();
       if (!stopped && text !== previous) {
+        const { data } = JSON.parse(text);
         previous = text;
-        onFetchSuccess(JSON.parse(text).data);
+        onFetchSuccess(data);
       }
     } catch (err) {
       // TODO: implement exponential backoff of the timeout interval
-      onFetchError(err as Error);
+      if (!stopped) {
+        onFetchError(err as Error);
+      }
     } finally {
       if (!stopped) {
         timeout = setTimeout(() => fetchPipelineData(), interval);

@@ -164,7 +164,7 @@ export default function RunSnippet({
             <span className="pgv-run-snippet__summary__name">
               {current.name}
               {current.state === Result.paused &&
-                ` (${messages.format(LocalizedMessageKey.stageDurationsStatusPaused)})`}
+                ` (${messages.format(LocalizedMessageKey.statusPaused)})`}
             </span>
             <span className="pgv-run-snippet__summary__duration">
               <LiveTotal

@@ -23,7 +23,8 @@ export default function Sparkline({
     return null;
   }
 
-  const max = Math.max(...defined);
+  // At least 1ms, so durations that are all 0 still draw a flat line
+  const max = Math.max(1, ...defined);
   const x = (index: number) =>
     PADDING + (index * (WIDTH - PADDING * 2)) / Math.max(1, values.length - 1);
   const y = (value: number) =>

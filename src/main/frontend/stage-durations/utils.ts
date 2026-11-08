@@ -63,6 +63,10 @@ export const MIN_SAMPLES = 3;
 const SLOWER_BY_MILLIS = 1_500;
 const SLOWER_RATIO = 1.25;
 
+// A minute or more stands out whatever share of the stage it is, so a long stage that gains
+// minutes is still noticed
+const SLOWER_BY_MILLIS_ON_ANY_STAGE = 60_000;
+
 // How many times its usual spread a stage has to move by, so a stage whose duration varies a lot
 // from build to build isn't flagged for varying as it always has
 const NOISE_FACTOR = 3;
@@ -112,21 +116,28 @@ function threshold(usual: Usual): number {
 }
 
 export function isSlower(duration: number, usual: Usual): boolean {
+  const by = duration - usual.median;
   return (
-    duration - usual.median >= threshold(usual) &&
-    duration >= usual.median * SLOWER_RATIO
+    by >= threshold(usual) &&
+    (duration >= usual.median * SLOWER_RATIO ||
+      by >= SLOWER_BY_MILLIS_ON_ANY_STAGE)
   );
 }
 
 export function isFaster(duration: number, usual: Usual): boolean {
+  const by = usual.median - duration;
   return (
-    usual.median - duration >= threshold(usual) &&
-    duration * SLOWER_RATIO <= usual.median
+    by >= threshold(usual) &&
+    (duration * SLOWER_RATIO <= usual.median ||
+      by >= SLOWER_BY_MILLIS_ON_ANY_STAGE)
   );
 }
 
 // A change has to last this many builds before it's pointed out, so a one-off isn't mistaken for it
 export const SUSTAINED_BUILDS = 3;
+
+// The share of builds since a change that may miss the new time, such as a build with a warm cache
+const ALLOWED_MISSES = 0.2;
 
 export interface Step {
   direction: "slower" | "faster";
@@ -144,11 +155,12 @@ export interface Step {
 
 /**
  * When the stage's latest builds have taken noticeably longer, or shorter, than the builds before
- * them, which build that started in. Comparing with the builds before the change rather than every
- * build means a change that has stuck for a while is still found, where a stage that's been slower
- * for most builds would have dragged their median up with it. The first and latest builds since
- * must both take the new time, and once there are enough of them one build in between may not, so
- * a single quick build doesn't hide a change that has otherwise stuck.
+ * them, which build that started in. When it changed more than once, the latest change is the one
+ * that explains how long it takes now. Comparing with the builds before the change rather than
+ * every build means a change that has stuck for a while is still found, where a stage that's been
+ * slower for most builds would have dragged their median up with it. The first and latest builds
+ * since must both take the new time, and a few in between may not, so an occasional quick build
+ * doesn't hide a change that has otherwise stuck.
  *
  * @param durations each build's usual duration for the stage, oldest first
  */
@@ -159,6 +171,25 @@ export function findStep(
     duration === undefined ? [] : [{ duration, index }],
   );
 
+  // After each change, look for another among the builds since, measured against them
+  let latest: Step | undefined;
+  let from = 0;
+  for (;;) {
+    const step = firstStep(samples.slice(from));
+    if (!step) {
+      return latest;
+    }
+    latest = step;
+    from = samples.findIndex((sample) => sample.index === step.start);
+  }
+}
+
+interface Sample {
+  duration: number;
+  index: number;
+}
+
+function firstStep(samples: Sample[]): Step | undefined {
   for (
     let split = MIN_SAMPLES;
     split <= samples.length - SUSTAINED_BUILDS;
@@ -166,15 +197,17 @@ export function findStep(
   ) {
     const before = usual(samples.slice(0, split).map((s) => s.duration))!;
     const since = samples.slice(split);
-    const allowedMisses = since.length > SUSTAINED_BUILDS ? 1 : 0;
+    const allowedMisses = Math.max(
+      since.length > SUSTAINED_BUILDS ? 1 : 0,
+      Math.floor(since.length * ALLOWED_MISSES),
+    );
 
     for (const direction of ["slower", "faster"] as const) {
-      const differs = (s: { duration: number }) =>
+      const differs = (s: Sample) =>
         direction === "slower"
           ? isSlower(s.duration, before)
           : isFaster(s.duration, before);
-      // When the build just before already took the new time, the change started earlier than
-      // there are enough builds before it to tell
+      // When the build just before already took the new time, the change started earlier
       if (
         !differs(samples[split - 1]) &&
         differs(since[0]) &&

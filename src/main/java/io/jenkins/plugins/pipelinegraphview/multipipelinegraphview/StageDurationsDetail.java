@@ -27,9 +27,4 @@ public class StageDurationsDetail extends Detail {
     public String getLink() {
         return ((WorkflowJob) getObject()).getUrl() + "multi-pipeline-graph/durations";
     }
-
-    @Override
-    public Verbosity getVerbosity() {
-        return Verbosity.FULL;
-    }
 }

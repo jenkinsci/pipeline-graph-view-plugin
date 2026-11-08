@@ -106,7 +106,7 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
             return DEFAULT_RUNS;
         }
         try {
-            return Math.max(1, Math.min(MAX_RUNS, Integer.parseInt(parameter)));
+            return (int) Math.max(1, Math.min(MAX_RUNS, Long.parseLong(parameter)));
         } catch (NumberFormatException e) {
             return DEFAULT_RUNS;
         }

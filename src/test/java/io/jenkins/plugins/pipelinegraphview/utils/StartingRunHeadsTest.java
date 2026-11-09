@@ -45,7 +45,9 @@ class StartingRunHeadsTest {
                             .map(FlowNodeWrapper::getDisplayName)
                             .toList(),
                     contains("Build"));
-            new PipelineGraphApi(run).createTree();
+            PipelineGraphApi api = new PipelineGraphApi(run);
+            api.createTree();
+            api.createTreeFrom(adapter, null, null);
             LiveGraphRegistry.pausedNodeIds(run);
         } finally {
             removeHead(execution, emptyHead);

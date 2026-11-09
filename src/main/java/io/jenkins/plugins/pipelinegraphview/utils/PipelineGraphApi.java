@@ -190,7 +190,7 @@ public class PipelineGraphApi {
         }
         return new DepthFirstScanner()
                 .filteredNodes(
-                        execution,
+                        PipelineNodeUtil.currentHeads(execution),
                         n -> n instanceof StepStartNode && n.getPersistentAction(WorkspaceAction.class) != null);
     }
 

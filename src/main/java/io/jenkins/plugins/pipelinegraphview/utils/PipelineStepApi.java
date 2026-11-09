@@ -182,10 +182,12 @@ public class PipelineStepApi {
                 Set<String> pausedNodeIds = LiveGraphRegistry.pausedNodeIds(run);
                 LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
                 if (snapshot != null) {
+                    // snapshot.complete() was captured together with activeNodeIds, so the
+                    // flag cannot contradict the statuses built from that liveness view.
                     PipelineStepList computed = getAllSteps(
                             new PipelineNodeGraphAdapter(
                                     run, snapshot.nodes(), snapshot.enclosingIdsByNodeId(), snapshot.activeNodeIds()),
-                            runIsComplete,
+                            snapshot.complete(),
                             snapshot.hideFromViewBlockStartIds(),
                             snapshot.enclosingIdsByNodeId());
                     LiveGraphRegistry.get()

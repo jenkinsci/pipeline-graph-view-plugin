@@ -70,7 +70,11 @@ public class LiveGraphLifecycle extends FlowExecutionListener {
                     // Force runIsComplete=true for the step list: WorkflowRun.isBuilding() can
                     // still return true here even though the execution is complete.
                     graph = new PipelineGraphApi(run)
-                            .createTreeFrom(adapter, snapshot.workspaceNodes(), snapshot.enclosingIdsByNodeId());
+                            .createTreeFrom(
+                                    adapter,
+                                    snapshot.workspaceNodes(),
+                                    snapshot.enclosingIdsByNodeId(),
+                                    snapshot.complete());
                     allSteps = new PipelineStepApi(run)
                             .getAllStepsFrom(
                                     adapter,

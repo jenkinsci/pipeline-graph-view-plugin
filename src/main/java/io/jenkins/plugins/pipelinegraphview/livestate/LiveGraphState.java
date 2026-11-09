@@ -126,6 +126,13 @@ final class LiveGraphState {
     }
 
     LiveGraphSnapshot snapshot(FlowExecution execution) {
+        // Read completion before capturing liveness. The statuses built from the snapshot use
+        // activeNodeIds, so if the execution completes while the graph is being built, this
+        // response must still say "in progress": the client then polls again and gets the final
+        // graph. Reading completion afterwards instead can report complete=true while stages
+        // resolved from the older active set are still "running", which stops the client's
+        // polling and leaves their animation on screen forever.
+        boolean complete = execution == null || execution.isComplete();
         // Only the node lists need to be copied — enclosingIds and hideFromView are on
         // concurrent structures we can publish by reference. Keeping the monitor-held
         // section down to a couple of array copies means addNode (on the CPS VM thread)
@@ -155,9 +162,9 @@ final class LiveGraphState {
         }
         // Concurrent maps/sets are published by reference — consumers must treat them as
         // read-only (see {@link LiveGraphSnapshot}).
-        Set<String> activeNodeIds = computeActiveNodeIds(execution);
+        Set<String> activeNodeIds = complete ? Set.of() : computeActiveNodeIds(execution);
         return new LiveGraphSnapshot(
-                nodesCopy, workspaceNodes, enclosingIdsByNodeId, hideFromViewBlockStartIds, activeNodeIds, v);
+                nodesCopy, workspaceNodes, enclosingIdsByNodeId, hideFromViewBlockStartIds, activeNodeIds, v, complete);
     }
 
     /**
@@ -166,9 +173,6 @@ final class LiveGraphState {
      * a fresh storage walk when looking up a head's enclosing chain.
      */
     private Set<String> computeActiveNodeIds(FlowExecution execution) {
-        if (execution == null || execution.isComplete()) {
-            return Set.of();
-        }
         Set<String> active = new HashSet<>();
         try {
             for (FlowNode head : PipelineNodeUtil.currentHeads(execution)) {

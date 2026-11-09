@@ -23,6 +23,12 @@ import org.jenkinsci.plugins.workflow.graph.FlowNode;
  * time: the execution's current heads plus every enclosing block start. Status resolution
  * reads liveness from this set.
  *
+ * <p>{@code complete} is whether the execution had completed at the same instant
+ * {@code activeNodeIds} was captured. Consumers must use it as the graph's complete flag
+ * rather than asking the execution again after building the statuses: if the run completes
+ * in between, the statuses still describe it as running, and a response marked complete
+ * stops the client polling and leaves the running animation on screen forever.
+ *
  * <p>{@code version} is a monotonic counter that bumps on every new flow node, so callers
  * can use it as a cache key for computed DTOs.
  */
@@ -32,4 +38,5 @@ public record LiveGraphSnapshot(
         Map<String, List<String>> enclosingIdsByNodeId,
         Set<String> hideFromViewBlockStartIds,
         Set<String> activeNodeIds,
-        long version) {}
+        long version,
+        boolean complete) {}

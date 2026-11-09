@@ -139,7 +139,15 @@ public class PipelineGraphViewCache {
                 entry.allSteps = readJson(allStepsFile(run), PipelineStepList.class);
             }
             if (entry.allSteps == null) {
-                entry.allSteps = compute.get();
+                PipelineStepList computed = compute.get();
+                if (!computed.runIsComplete) {
+                    // See getGraph: never persist a list whose statuses may still be changing.
+                    logger.warn(
+                            "Not caching an incomplete step list for a finished run {}; it will be rebuilt",
+                            run.getExternalizableId());
+                    return computed;
+                }
+                entry.allSteps = computed;
                 writeJson(allStepsFile(run), entry.allSteps);
             }
             return entry.allSteps;

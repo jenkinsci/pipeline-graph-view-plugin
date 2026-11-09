@@ -94,19 +94,12 @@ public class PipelineGraphApi {
     private PipelineGraph createTree(
             PipelineGraphBuilderApi builder,
             @CheckForNull List<FlowNode> workspaceNodes,
-            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
+            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId,
+            boolean complete) {
         FlowExecution execution = run.getExecution();
         if (execution == null) {
-            // No execution either means the run finished without one (e.g. a syntax error),
-            // where the empty graph is final, or the run is still initialising (e.g. checking
-            // out the Jenkinsfile) and the execution doesn't exist yet. Only the former may be
-            // marked complete: complete=true responses are served with immutable cache headers
-            // and stop frontend polling, so marking an initialising run complete freezes its
-            // view empty forever.
-            return new PipelineGraph(new ArrayList<>(), !run.isBuilding());
+            return new PipelineGraph(new ArrayList<>(), complete);
         }
-        // Look up completed state before computing tree.
-        boolean complete = execution.isComplete();
 
         // We want to remap children here, so we don't update the parents of the
         // original objects - as
@@ -318,6 +311,26 @@ public class PipelineGraphApi {
         return PipelineGraphViewCache.get().getGraph(run, this::computeTree);
     }
 
+    /**
+     * Whether a graph built now would be final. Call this <em>before</em> building the graph's
+     * statuses: status resolution reads the nodes' liveness (from a snapshot or
+     * {@link FlowNode#isActive()}), so asking after the build can report the run as complete
+     * while the stages it just resolved still say "running". A complete response stops the
+     * frontend polling, which would leave those stages animating forever.
+     */
+    private boolean isComplete(FlowExecution execution) {
+        if (execution != null) {
+            return execution.isComplete();
+        }
+        // No execution either means the run finished without one (e.g. a syntax error), where
+        // the empty graph is final, or the run is still initialising (e.g. checking out the
+        // Jenkinsfile) and the execution doesn't exist yet. Only the former may be marked
+        // complete: complete=true responses are served with immutable cache headers and stop
+        // frontend polling, so marking an initialising run complete freezes its view empty
+        // forever.
+        return !run.isBuilding();
+    }
+
     /** Uncached compute path; callers are responsible for any caching. */
     @Restricted(NoExternalUse.class)
     public PipelineGraph computeTree() {
@@ -346,18 +359,25 @@ public class PipelineGraphApi {
                 Set<String> pausedNodeIds = LiveGraphRegistry.pausedNodeIds(run);
                 LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
                 if (snapshot != null) {
+                    // snapshot.complete() was captured together with activeNodeIds, so the
+                    // flag cannot contradict the statuses built from that liveness view.
                     PipelineGraph computed = createTree(
                             new PipelineNodeGraphAdapter(
                                     run, snapshot.nodes(), snapshot.enclosingIdsByNodeId(), snapshot.activeNodeIds()),
                             snapshot.workspaceNodes(),
-                            snapshot.enclosingIdsByNodeId());
+                            snapshot.enclosingIdsByNodeId(),
+                            snapshot.complete());
                     LiveGraphRegistry.get()
                             .cacheGraph(run, new LiveGraphCacheKey(snapshot.version(), pausedNodeIds), computed);
                     return computed;
                 }
             }
         }
-        return createTree(CachedPipelineNodeGraphAdaptor.instance.getFor(run), null, null);
+        // Read completion before the adapter is built, for the same reason as above: the
+        // adapter resolves statuses from the nodes' liveness as it constructs them.
+        FlowExecution execution = run.getExecution();
+        boolean complete = isComplete(execution);
+        return createTree(CachedPipelineNodeGraphAdaptor.instance.getFor(run), null, null, complete);
     }
 
     /**
@@ -370,6 +390,21 @@ public class PipelineGraphApi {
             PipelineGraphBuilderApi builder,
             @CheckForNull List<FlowNode> workspaceNodes,
             @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
-        return createTree(builder, workspaceNodes, enclosingIdsByNodeId);
+        return createTree(builder, workspaceNodes, enclosingIdsByNodeId, isComplete(run.getExecution()));
+    }
+
+    /**
+     * Like {@link #createTreeFrom(PipelineGraphBuilderApi, List, Map)}, but with the completion
+     * state to report. Pass the completion flag captured together with the liveness view the
+     * adapter was built from (see {@link LiveGraphSnapshot#complete()}), so the flag and the
+     * stage statuses cannot disagree.
+     */
+    @Restricted(NoExternalUse.class)
+    public PipelineGraph createTreeFrom(
+            PipelineGraphBuilderApi builder,
+            @CheckForNull List<FlowNode> workspaceNodes,
+            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId,
+            boolean complete) {
+        return createTree(builder, workspaceNodes, enclosingIdsByNodeId, complete);
     }
 }

@@ -62,7 +62,38 @@ public final class LiveGraphRegistry {
         if (key == null) {
             return null;
         }
-        return states.get(key, k -> new LiveGraphState());
+        // The key is the run's externalizable id, which is reused when a job is deleted and
+        // recreated (build numbers restart). Reuse an entry only when it was populated from this
+        // very execution, otherwise the new run would be served the old run's nodes.
+        return states.asMap()
+                .compute(
+                        key,
+                        (k, existing) -> existing != null && existing.belongsTo(execution)
+                                ? existing
+                                : new LiveGraphState(execution));
+    }
+
+    /**
+     * Returns the state for this run, only if it was populated from the run's current execution.
+     * A job can be deleted and recreated, so a build number (and thus externalizable id) can be
+     * reused by an unrelated execution; such an entry is treated as absent.
+     */
+    @CheckForNull
+    private LiveGraphState stateFor(WorkflowRun run) {
+        return stateFor(run.getExecution());
+    }
+
+    @CheckForNull
+    private LiveGraphState stateFor(@CheckForNull FlowExecution execution) {
+        if (disabled() || execution == null) {
+            return null;
+        }
+        String key = keyFor(execution);
+        if (key == null) {
+            return null;
+        }
+        LiveGraphState state = states.getIfPresent(key);
+        return state != null && state.belongsTo(execution) ? state : null;
     }
 
     /**
@@ -76,7 +107,7 @@ public final class LiveGraphRegistry {
         if (disabled()) {
             return null;
         }
-        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        LiveGraphState state = stateFor(run);
         Long version = state == null ? null : state.currentVersion();
         return version == null ? null : new LiveGraphCacheKey(version, pausedNodeIds(run));
     }
@@ -105,14 +136,14 @@ public final class LiveGraphRegistry {
         if (disabled()) {
             return null;
         }
-        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        LiveGraphState state = stateFor(run);
         return state == null ? null : state.snapshot(run.getExecution());
     }
 
     void remove(FlowExecution execution) {
         String key = keyFor(execution);
         if (key != null) {
-            states.invalidate(key);
+            states.asMap().computeIfPresent(key, (k, existing) -> existing.belongsTo(execution) ? null : existing);
         }
     }
 
@@ -124,7 +155,7 @@ public final class LiveGraphRegistry {
         if (disabled()) {
             return null;
         }
-        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        LiveGraphState state = stateFor(run);
         return state == null ? null : state.cachedGraph(key);
     }
 
@@ -132,7 +163,7 @@ public final class LiveGraphRegistry {
         if (disabled()) {
             return;
         }
-        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        LiveGraphState state = stateFor(run);
         if (state != null) {
             state.cacheGraph(key, graph);
         }
@@ -142,7 +173,7 @@ public final class LiveGraphRegistry {
         if (disabled()) {
             return null;
         }
-        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        LiveGraphState state = stateFor(run);
         return state == null ? null : state.cachedAllSteps(key);
     }
 
@@ -150,7 +181,7 @@ public final class LiveGraphRegistry {
         if (disabled()) {
             return;
         }
-        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        LiveGraphState state = stateFor(run);
         if (state != null) {
             state.cacheAllSteps(key, steps);
         }
@@ -162,20 +193,14 @@ public final class LiveGraphRegistry {
      */
     @CheckForNull
     public Object graphComputeLock(WorkflowRun run) {
-        if (disabled()) {
-            return null;
-        }
-        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        LiveGraphState state = stateFor(run);
         return state == null ? null : state.graphComputeLock();
     }
 
     /** See {@link #graphComputeLock(WorkflowRun)} — the matching lock for the steps path. */
     @CheckForNull
     public Object allStepsComputeLock(WorkflowRun run) {
-        if (disabled()) {
-            return null;
-        }
-        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        LiveGraphState state = stateFor(run);
         return state == null ? null : state.allStepsComputeLock();
     }
 
@@ -185,14 +210,7 @@ public final class LiveGraphRegistry {
      */
     @CheckForNull
     public WarningActionCache warningActionCache(FlowExecution execution) {
-        if (disabled()) {
-            return null;
-        }
-        String key = keyFor(execution);
-        if (key == null) {
-            return null;
-        }
-        LiveGraphState state = states.getIfPresent(key);
+        LiveGraphState state = stateFor(execution);
         return state == null ? null : state.warningActionCache();
     }
 
@@ -202,14 +220,7 @@ public final class LiveGraphRegistry {
      */
     @CheckForNull
     public BlockResolutionCache blockResolutionCache(FlowExecution execution) {
-        if (disabled()) {
-            return null;
-        }
-        String key = keyFor(execution);
-        if (key == null) {
-            return null;
-        }
-        LiveGraphState state = states.getIfPresent(key);
+        LiveGraphState state = stateFor(execution);
         return state == null ? null : state.blockResolutionCache();
     }
 
@@ -219,14 +230,7 @@ public final class LiveGraphRegistry {
      */
     @CheckForNull
     public SkippedStageCache skippedStageCache(FlowExecution execution) {
-        if (disabled()) {
-            return null;
-        }
-        String key = keyFor(execution);
-        if (key == null) {
-            return null;
-        }
-        LiveGraphState state = states.getIfPresent(key);
+        LiveGraphState state = stateFor(execution);
         return state == null ? null : state.skippedStageCache();
     }
 

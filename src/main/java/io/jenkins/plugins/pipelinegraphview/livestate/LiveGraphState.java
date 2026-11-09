@@ -25,6 +25,11 @@ import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
  */
 final class LiveGraphState {
 
+    // The execution this state was built from. Entries are keyed by the run's externalizable
+    // id, which is reused when a job is deleted and recreated (build numbers restart at 1).
+    // A state from the old job's run must never be served for the new execution sharing that id.
+    private final FlowExecution execution;
+
     private final List<FlowNode> nodes = new ArrayList<>();
     private final Set<String> seenIds = new HashSet<>();
     // Node ID → its enclosing-block IDs (innermost first). Populated at add time on the CPS
@@ -61,6 +66,15 @@ final class LiveGraphState {
     // Separate locks for tree vs steps — a slow tree rebuild must not starve steps.
     private final Object graphComputeLock = new Object();
     private final Object allStepsComputeLock = new Object();
+
+    LiveGraphState(FlowExecution execution) {
+        this.execution = execution;
+    }
+
+    /** Whether this state was captured from the given execution, by object identity. */
+    boolean belongsTo(FlowExecution execution) {
+        return this.execution == execution;
+    }
 
     synchronized void addNode(FlowNode node) {
         if (!seenIds.add(node.getId())) {

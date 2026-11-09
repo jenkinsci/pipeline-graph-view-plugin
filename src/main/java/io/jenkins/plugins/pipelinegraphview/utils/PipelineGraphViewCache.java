@@ -40,7 +40,9 @@ import tools.jackson.databind.json.JsonMapper;
 @Extension
 public class PipelineGraphViewCache {
 
-    public static final int SCHEMA_VERSION = 4;
+    // v5 discards v4 files that could contain an empty graph cached for a run whose job was
+    // deleted and recreated with the same build number.
+    public static final int SCHEMA_VERSION = 5;
 
     public static final String TREE_FILE_NAME = "pipeline-graph-view-tree.v" + SCHEMA_VERSION + ".json";
     public static final String ALL_STEPS_FILE_NAME = "pipeline-graph-view-allsteps.v" + SCHEMA_VERSION + ".json";
@@ -58,6 +60,15 @@ public class PipelineGraphViewCache {
 
     private final Cache<String, CachedValue> memCache =
             Caffeine.newBuilder().maximumSize(256).build();
+
+    /**
+     * Key for the in-memory entry. The externalizable id alone is not enough: deleting and
+     * recreating a job restarts build numbers, so a new run can reuse an old run's id and
+     * would otherwise be served that run's cached graph.
+     */
+    private static String cacheKey(WorkflowRun run) {
+        return run.getExternalizableId() + '@' + run.getStartTimeInMillis();
+    }
 
     public static PipelineGraphViewCache get() {
         return ExtensionList.lookupSingleton(PipelineGraphViewCache.class);
@@ -94,13 +105,24 @@ public class PipelineGraphViewCache {
         if (run.isBuilding()) {
             return compute.get();
         }
-        CachedValue entry = memCache.get(run.getExternalizableId(), k -> new CachedValue());
+        CachedValue entry = memCache.get(cacheKey(run), k -> new CachedValue());
         synchronized (entry) {
             if (entry.graph == null) {
                 entry.graph = readJson(treeFile(run), PipelineGraph.class);
             }
             if (entry.graph == null) {
-                entry.graph = compute.get();
+                PipelineGraph computed = compute.get();
+                if (!computed.complete || computed.stages.isEmpty()) {
+                    // A run that is no longer building should always produce a final, non-empty
+                    // graph. If it doesn't, rebuilding observed completion inconsistently (or the
+                    // execution is unavailable): persist and memoise nothing, so the next request
+                    // can produce the final graph instead of serving this one forever.
+                    logger.warn(
+                            "Not caching an incomplete or empty graph for a finished run {}; it will be rebuilt",
+                            run.getExternalizableId());
+                    return computed;
+                }
+                entry.graph = computed;
                 writeJson(treeFile(run), entry.graph);
             }
             return entry.graph;
@@ -111,7 +133,7 @@ public class PipelineGraphViewCache {
         if (run.isBuilding()) {
             return compute.get();
         }
-        CachedValue entry = memCache.get(run.getExternalizableId(), k -> new CachedValue());
+        CachedValue entry = memCache.get(cacheKey(run), k -> new CachedValue());
         synchronized (entry) {
             if (entry.allSteps == null) {
                 entry.allSteps = readJson(allStepsFile(run), PipelineStepList.class);
@@ -131,7 +153,18 @@ public class PipelineGraphViewCache {
      * {@code WorkflowRun.isBuilding()} may not have flipped yet.
      */
     public void seed(WorkflowRun run, PipelineGraph graph, PipelineStepList allSteps) {
-        CachedValue entry = memCache.get(run.getExternalizableId(), k -> new CachedValue());
+        if (!graph.complete || graph.stages.isEmpty() || !allSteps.runIsComplete) {
+            // Persisting either payload would freeze the view: the tree endpoint serves the
+            // file as immutable, so an incomplete one would never be replaced or re-polled.
+            logger.warn(
+                    "Not seeding the pipeline graph cache for {}: graph complete={}, stages={}, steps complete={}",
+                    run.getExternalizableId(),
+                    graph.complete,
+                    graph.stages.size(),
+                    allSteps.runIsComplete);
+            return;
+        }
+        CachedValue entry = memCache.get(cacheKey(run), k -> new CachedValue());
         synchronized (entry) {
             entry.graph = graph;
             entry.allSteps = allSteps;

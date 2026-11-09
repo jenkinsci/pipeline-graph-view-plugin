@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.jenkinsci.plugins.workflow.test.steps.SemaphoreStep.*;
 
 import hudson.model.Result;
@@ -16,6 +17,7 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
@@ -147,6 +149,32 @@ class PipelineGraphViewCacheTest {
         cache.getGraph(run, () -> new PipelineGraphApi(run).computeTree());
 
         assertThat("legacy XStream cache file is removed", legacy.exists(), is(false));
+    }
+
+    @Test
+    void emptyCompleteGraphIsNotCached() throws Exception {
+        // An empty graph can be produced for a run whose execution is unavailable (e.g. a
+        // force-killed one) or whose job was deleted and recreated. Caching it as final would
+        // freeze the stage view empty, so such a result must always be rebuilt.
+        WorkflowRun run = TestUtils.createAndRunJob(j, "empty-graph", "smokeTest.jenkinsfile", Result.FAILURE);
+        File treeFile = new File(run.getRootDir(), PipelineGraphViewCache.TREE_FILE_NAME);
+        Files.deleteIfExists(treeFile.toPath());
+        cache.invalidateMemory();
+
+        PipelineGraph emptyGraph = new PipelineGraph(new ArrayList<>(), true);
+        assertThat(cache.getGraph(run, () -> emptyGraph), is(sameInstance(emptyGraph)));
+        assertThat("empty graph is not persisted", treeFile.exists(), is(false));
+
+        AtomicInteger computes = new AtomicInteger();
+        PipelineGraph realGraph = new PipelineGraphApi(run).computeTree();
+        assertThat(
+                cache.getGraph(run, () -> {
+                    computes.incrementAndGet();
+                    return realGraph;
+                }),
+                is(sameInstance(realGraph)));
+        assertThat("the next request rebuilt rather than serving the empty graph", computes.get(), equalTo(1));
+        assertThat("the non-empty graph is persisted", treeFile.exists(), is(true));
     }
 
     private WorkflowRun startLongRunningJob() throws Exception {

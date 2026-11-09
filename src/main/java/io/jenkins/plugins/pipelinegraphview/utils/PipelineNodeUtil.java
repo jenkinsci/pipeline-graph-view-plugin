@@ -15,6 +15,8 @@ import io.jenkins.plugins.pipelinegraphview.livestate.SkippedStageCache;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.jenkinsci.plugins.pipeline.StageStatus;
@@ -51,6 +53,14 @@ public class PipelineNodeUtil {
         return isSyntheticStage(node) && name.startsWith(DECLARATIVE_DISPLAY_NAME_PREFIX)
                 ? name.substring(DECLARATIVE_DISPLAY_NAME_PREFIX.length())
                 : name;
+    }
+
+    /**
+     * {@link FlowExecution#getCurrentHeads()} can contain {@code null} while a run is starting:
+     * {@code CpsFlowExecution} registers its first head before giving it a start node.
+     */
+    public static @NonNull List<FlowNode> currentHeads(@NonNull FlowExecution execution) {
+        return execution.getCurrentHeads().stream().filter(Objects::nonNull).toList();
     }
 
     public static boolean isActive(FlowNode node) {
@@ -247,7 +257,7 @@ public class PipelineNodeUtil {
     public static @CheckForNull String getCauseOfBlockage(@NonNull FlowNode stage) {
         FlowExecution execution = stage.getExecution();
         String stageId = stage.getId();
-        for (FlowNode head : execution.getCurrentHeads()) {
+        for (FlowNode head : currentHeads(execution)) {
             if (!(head instanceof StepStartNode)) {
                 continue;
             }

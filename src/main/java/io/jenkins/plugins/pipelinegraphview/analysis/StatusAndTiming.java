@@ -283,7 +283,7 @@ public class StatusAndTiming {
             // can still return true; preferring the execution's own complete flag avoids
             // persisting a final chunk as IN_PROGRESS in that window.
             if (run.isBuilding() && !exec.isComplete()) {
-                if (exec.getCurrentHeads().size() > 1
+                if (PipelineNodeUtil.currentHeads(exec).size() > 1
                         && lastNode instanceof BlockEndNode) { // Check to see if all the action is on other branches
                     BlockStartNode start = ((BlockEndNode) lastNode).getStartNode();
                     if (start.getAction(ThreadNameAction.class) != null) {
@@ -661,7 +661,7 @@ public class StatusAndTiming {
             return;
         }
         DepthFirstScanner scanner = new DepthFirstScanner();
-        List<FlowNode> sorted = scanner.filteredNodes(exec.getCurrentHeads(), Predicates.alwaysTrue());
+        List<FlowNode> sorted = scanner.filteredNodes(PipelineNodeUtil.currentHeads(exec), Predicates.alwaysTrue());
         sorted.sort(new Comparator<>() {
             @Override
             public int compare(FlowNode node1, FlowNode node2) {

@@ -130,7 +130,7 @@ public class PipelineNodeTreeScanner {
      * Gets all the nodes that are reachable in the graph.
      */
     private List<FlowNode> getAllNodes() {
-        List<FlowNode> heads = execution.getCurrentHeads();
+        List<FlowNode> heads = PipelineNodeUtil.currentHeads(execution);
         final DepthFirstScanner scanner = new DepthFirstScanner();
         scanner.setup(heads);
 

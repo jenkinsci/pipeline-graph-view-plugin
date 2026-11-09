@@ -2,6 +2,7 @@ package io.jenkins.plugins.pipelinegraphview.livestate;
 
 import io.jenkins.plugins.pipelinegraphview.steps.HideFromViewStep;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -156,7 +157,7 @@ final class LiveGraphState {
         }
         Set<String> active = new HashSet<>();
         try {
-            for (FlowNode head : execution.getCurrentHeads()) {
+            for (FlowNode head : PipelineNodeUtil.currentHeads(execution)) {
                 active.add(head.getId());
                 List<String> enclosing = enclosingIdsByNodeId.get(head.getId());
                 if (enclosing != null) {

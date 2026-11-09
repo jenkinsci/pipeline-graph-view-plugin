@@ -88,7 +88,7 @@ public final class LiveGraphRegistry {
             return Set.of();
         }
         Set<String> ids = new HashSet<>();
-        for (FlowNode head : execution.getCurrentHeads()) {
+        for (FlowNode head : PipelineNodeUtil.currentHeads(execution)) {
             if (PipelineNodeUtil.isPaused(head)) {
                 ids.add(head.getId());
             }

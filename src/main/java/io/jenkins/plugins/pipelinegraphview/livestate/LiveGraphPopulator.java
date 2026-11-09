@@ -1,6 +1,7 @@
 package io.jenkins.plugins.pipelinegraphview.livestate;
 
 import hudson.Extension;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import java.util.ArrayList;
 import java.util.List;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
@@ -54,7 +55,7 @@ public class LiveGraphPopulator implements GraphListener.Synchronous {
     static void catchUp(FlowExecution execution, LiveGraphState state) {
         try {
             DepthFirstScanner scanner = new DepthFirstScanner();
-            scanner.setup(execution.getCurrentHeads());
+            scanner.setup(PipelineNodeUtil.currentHeads(execution));
             // The scanner walks from current heads backward (newest→oldest). Add nodes in
             // the reverse of that order so the state's insertion order matches the
             // oldest→newest sequence the onNewHead path maintains — LiveGraphState#snapshot

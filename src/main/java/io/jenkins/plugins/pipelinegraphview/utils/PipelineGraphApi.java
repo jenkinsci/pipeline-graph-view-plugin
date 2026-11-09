@@ -190,7 +190,7 @@ public class PipelineGraphApi {
         }
         return new DepthFirstScanner()
                 .filteredNodes(
-                        execution,
+                        PipelineNodeUtil.currentHeads(execution),
                         n -> n instanceof StepStartNode && n.getPersistentAction(WorkspaceAction.class) != null);
     }
 
@@ -231,7 +231,7 @@ public class PipelineGraphApi {
             return Set.of();
         }
         Set<String> waiting = new HashSet<>();
-        for (FlowNode head : execution.getCurrentHeads()) {
+        for (FlowNode head : PipelineNodeUtil.currentHeads(execution)) {
             if (isQueuedNodeStep(head)) {
                 String stageId = nearestStageId(head, stageIds, enclosingIdsFor(head, enclosingIdsByNodeId));
                 if (stageId != null && !agentsWithinStages.containsKey(stageId)) {

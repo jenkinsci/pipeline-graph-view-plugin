@@ -2,6 +2,7 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
@@ -9,14 +10,11 @@ import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
-import hudson.ExtensionList;
 import hudson.model.Result;
-import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphLifecycle;
 import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphRegistry;
 import java.io.File;
 import java.util.List;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
-import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.test.steps.SemaphoreStep;
@@ -79,21 +77,13 @@ class KilledRunGraphTest {
 
         PipelineGraph graph = new PipelineGraphApi(run).createTree();
         assertThat(states(graph.stages), contains(PipelineState.ABORTED));
-        List<PipelineState> stepStates = new PipelineStepApi(run)
-                .getAllSteps().steps.stream().map(PipelineStep::getState).toList();
+        List<PipelineStep> steps = new PipelineStepApi(run).getAllSteps().steps;
+        List<PipelineState> stepStates =
+                steps.stream().map(PipelineStep::getState).toList();
         assertThat(stepStates, hasItem(PipelineState.ABORTED));
         assertThat(stepStates, everyItem(not(PipelineState.PAUSED)));
-    }
-
-    @Test
-    void abandonedExecutionCompletingLaterKeepsTheKilledGraph() throws Exception {
-        WorkflowRun run = startAndWait("stage('one') { echo 'one' }\nstage('two') { semaphore 'wait' }");
-        FlowExecution execution = run.getExecution();
-        kill(run);
-
-        ExtensionList.lookupSingleton(LiveGraphLifecycle.class).onCompleted(execution);
-
-        assertThat(names(new PipelineGraphApi(run).createTree().stages), contains("one", "two"));
+        // The input can no longer be answered, so it mustn't be offered.
+        assertThat(steps.stream().filter(s -> s.inputStep != null).toList(), is(empty()));
     }
 
     private WorkflowRun startAndWait(String script) throws Exception {

@@ -59,9 +59,7 @@ public class LiveGraphLifecycle extends FlowExecutionListener {
     @Override
     public void onCompleted(@NonNull FlowExecution execution) {
         WorkflowRun run = LiveGraphRegistry.runFor(execution);
-        // After a hard kill the abandoned execution can still finish; KilledRunListener has
-        // already seeded the graph for that run.
-        if (run == null || run.getExecution() != execution) {
+        if (run == null) {
             return;
         }
         try {

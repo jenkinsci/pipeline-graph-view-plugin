@@ -708,7 +708,8 @@ public class PipelineNodeTreeScanner {
             }
 
             InputStep inputStep = null;
-            if (node instanceof AtomNode atomNode
+            if (!killed
+                    && node instanceof AtomNode atomNode
                     && PipelineNodeUtil.isPausedForInputStep((StepAtomNode) atomNode, inputAction)) {
                 try {
                     for (InputStepExecution execution : inputAction.getExecutions()) {

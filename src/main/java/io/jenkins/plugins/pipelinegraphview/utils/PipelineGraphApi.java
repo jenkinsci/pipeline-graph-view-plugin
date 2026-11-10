@@ -94,20 +94,8 @@ public class PipelineGraphApi {
     private PipelineGraph createTree(
             PipelineGraphBuilderApi builder,
             @CheckForNull List<FlowNode> workspaceNodes,
-            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
-        FlowExecution execution = run.getExecution();
-        if (execution == null) {
-            // No execution either means the run finished without one (e.g. a syntax error),
-            // where the empty graph is final, or the run is still initialising (e.g. checking
-            // out the Jenkinsfile) and the execution doesn't exist yet. Only the former may be
-            // marked complete: complete=true responses are served with immutable cache headers
-            // and stop frontend polling, so marking an initialising run complete freezes its
-            // view empty forever.
-            return new PipelineGraph(new ArrayList<>(), !run.isBuilding());
-        }
-        // Look up completed state before computing tree.
-        boolean complete = execution.isComplete();
-
+            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId,
+            boolean complete) {
         // We want to remap children here, so we don't update the parents of the
         // original objects - as
         // these are completely new representations.
@@ -350,14 +338,28 @@ public class PipelineGraphApi {
                             new PipelineNodeGraphAdapter(
                                     run, snapshot.nodes(), snapshot.enclosingIdsByNodeId(), snapshot.activeNodeIds()),
                             snapshot.workspaceNodes(),
-                            snapshot.enclosingIdsByNodeId());
+                            snapshot.enclosingIdsByNodeId(),
+                            snapshot.complete());
                     LiveGraphRegistry.get()
                             .cacheGraph(run, new LiveGraphCacheKey(snapshot.version(), pausedNodeIds), computed);
                     return computed;
                 }
             }
         }
-        return createTree(CachedPipelineNodeGraphAdaptor.instance.getFor(run), null, null);
+        FlowExecution execution = run.getExecution();
+        if (execution == null) {
+            // No execution either means the run finished without one (e.g. a syntax error),
+            // where the empty graph is final, or the run is still initialising (e.g. checking
+            // out the Jenkinsfile) and the execution doesn't exist yet. Only the former may be
+            // marked complete: complete=true responses are served with immutable cache headers
+            // and stop frontend polling, so marking an initialising run complete freezes its
+            // view empty forever.
+            return new PipelineGraph(new ArrayList<>(), !run.isBuilding());
+        }
+        // Read before the adapter resolves statuses, so the response can't be marked complete
+        // while a stage still shows as running.
+        boolean complete = execution.isComplete();
+        return createTree(CachedPipelineNodeGraphAdaptor.instance.getFor(run), null, null, complete);
     }
 
     /**
@@ -369,7 +371,8 @@ public class PipelineGraphApi {
     public PipelineGraph createTreeFrom(
             PipelineGraphBuilderApi builder,
             @CheckForNull List<FlowNode> workspaceNodes,
-            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId) {
-        return createTree(builder, workspaceNodes, enclosingIdsByNodeId);
+            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId,
+            boolean complete) {
+        return createTree(builder, workspaceNodes, enclosingIdsByNodeId, complete);
     }
 }

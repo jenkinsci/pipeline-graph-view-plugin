@@ -80,9 +80,19 @@ public class PipelineNodeTreeScanner {
             @CheckForNull Map<String, List<String>> enclosingIdsByNodeId,
             @CheckForNull Set<String> activeNodeIds) {
         this.run = run;
-        this.execution = run.getExecution();
+        this.execution = executionOf(run, nodes);
         this.declarative = run.getAction(ExecutionModelAction.class) != null;
         this.buildFrom(nodes, enclosingIdsByNodeId, activeNodeIds);
+    }
+
+    /** A hard-killed run has no execution, but the nodes it recorded still belong to one. */
+    @CheckForNull
+    private static FlowExecution executionOf(WorkflowRun run, Collection<FlowNode> nodes) {
+        FlowExecution execution = run.getExecution();
+        if (execution == null && !nodes.isEmpty()) {
+            return nodes.iterator().next().getExecution();
+        }
+        return execution;
     }
 
     /**

@@ -14,6 +14,7 @@ import org.jenkinsci.plugins.workflow.actions.WorkspaceAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
+import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 
 /**
@@ -61,6 +62,18 @@ final class LiveGraphState {
     // Separate locks for tree vs steps — a slow tree rebuild must not starve steps.
     private final Object graphComputeLock = new Object();
     private final Object allStepsComputeLock = new Object();
+
+    // Build numbers restart when a job is deleted and recreated, so the registry key alone can
+    // match a state left behind by an earlier run with the same number.
+    private final long runTimestamp;
+
+    LiveGraphState(WorkflowRun run) {
+        this.runTimestamp = run.getTimeInMillis();
+    }
+
+    boolean belongsTo(WorkflowRun run) {
+        return runTimestamp == run.getTimeInMillis();
+    }
 
     synchronized void addNode(FlowNode node) {
         if (!seenIds.add(node.getId())) {
@@ -112,6 +125,7 @@ final class LiveGraphState {
     }
 
     LiveGraphSnapshot snapshot(FlowExecution execution) {
+        boolean complete = execution == null || execution.isComplete();
         // Only the node lists need to be copied — enclosingIds and hideFromView are on
         // concurrent structures we can publish by reference. Keeping the monitor-held
         // section down to a couple of array copies means addNode (on the CPS VM thread)
@@ -141,9 +155,9 @@ final class LiveGraphState {
         }
         // Concurrent maps/sets are published by reference — consumers must treat them as
         // read-only (see {@link LiveGraphSnapshot}).
-        Set<String> activeNodeIds = computeActiveNodeIds(execution);
+        Set<String> activeNodeIds = complete ? Set.of() : computeActiveNodeIds(execution);
         return new LiveGraphSnapshot(
-                nodesCopy, workspaceNodes, enclosingIdsByNodeId, hideFromViewBlockStartIds, activeNodeIds, v);
+                nodesCopy, workspaceNodes, enclosingIdsByNodeId, hideFromViewBlockStartIds, activeNodeIds, v, complete);
     }
 
     /**
@@ -152,9 +166,6 @@ final class LiveGraphState {
      * a fresh storage walk when looking up a head's enclosing chain.
      */
     private Set<String> computeActiveNodeIds(FlowExecution execution) {
-        if (execution == null || execution.isComplete()) {
-            return Set.of();
-        }
         Set<String> active = new HashSet<>();
         try {
             for (FlowNode head : PipelineNodeUtil.currentHeads(execution)) {

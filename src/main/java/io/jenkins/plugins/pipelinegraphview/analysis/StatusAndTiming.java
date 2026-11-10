@@ -151,6 +151,23 @@ public class StatusAndTiming {
     }
 
     /**
+     * The run's execution, or for a hard-killed run (which no longer has one) the execution its
+     * recorded nodes belong to.
+     */
+    @CheckForNull
+    private static FlowExecution executionOf(@NonNull WorkflowRun run, @CheckForNull FlowNode... nodes) {
+        FlowExecution exec = run.getExecution();
+        if (exec == null && nodes != null) {
+            for (FlowNode n : nodes) {
+                if (n != null) {
+                    return n.getExecution();
+                }
+            }
+        }
+        return exec;
+    }
+
+    /**
      * Check that all the flownodes &amp; run describe the same pipeline run/execution
      * @param run Run that nodes must belong to
      * @param nodes Nodes to match to run
@@ -161,7 +178,7 @@ public class StatusAndTiming {
         if (nodes == null || nodes.length == 0) {
             return;
         }
-        FlowExecution exec = run.getExecution();
+        FlowExecution exec = executionOf(run, nodes);
         int i = 0;
         for (FlowNode n : nodes) {
             if (n != null && n.getExecution() != exec) {
@@ -269,7 +286,7 @@ public class StatusAndTiming {
             @NonNull FlowNode firstNode,
             @NonNull FlowNode lastNode,
             @CheckForNull FlowNode after) {
-        FlowExecution exec = run.getExecution();
+        FlowExecution exec = executionOf(run, firstNode);
         verifySameRun(run, before, firstNode, lastNode, after);
         if (exec == null) {
             return null;
@@ -438,9 +455,9 @@ public class StatusAndTiming {
             @NonNull FlowNode firstNode,
             @NonNull FlowNode lastNode,
             @CheckForNull FlowNode after) {
-        FlowExecution exec = run.getExecution();
+        FlowExecution exec = executionOf(run, firstNode);
         if (exec == null) {
-            return null; // Haven't begun execution, or execution was hard-killed, timing is invalid
+            return null; // Haven't begun execution, timing is invalid
         }
         if (!NotExecutedNodeAction.isExecuted(lastNode)) {
             return new TimingInfo(0, 0, 0); // Nothing ran
@@ -458,7 +475,7 @@ public class StatusAndTiming {
         long startTime = (firstNode instanceof FlowStartNode)
                 ? run.getStartTimeInMillis()
                 : TimingAction.getStartTime(firstNode);
-        if (after == null && exec.isComplete()) {
+        if (after == null && (exec.isComplete() || !run.isBuilding())) {
             endTime = run.getDuration() + run.getStartTimeInMillis();
         }
 

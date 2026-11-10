@@ -47,7 +47,7 @@ class StartingRunHeadsTest {
                     contains("Build"));
             PipelineGraphApi api = new PipelineGraphApi(run);
             api.createTree();
-            api.createTreeFrom(adapter, null, null);
+            api.createTreeFrom(adapter, null, null, false);
             LiveGraphRegistry.pausedNodeIds(run);
         } finally {
             removeHead(execution, emptyHead);

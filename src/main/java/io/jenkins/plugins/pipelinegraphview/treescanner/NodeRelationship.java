@@ -165,6 +165,12 @@ public class NodeRelationship {
         }
         // Step node: start and end are the same FlowNode — use the activeNodeIds set.
         if (this.start.getId().equals(this.end.getId())) {
+            if (this.after == null && run.getExecution() == null) {
+                // A step still running when the run was hard-killed: it never got an end, so
+                // take the run's result.
+                return new NodeRunStatus(
+                        StatusAndTiming.computeChunkStatus2(run, this.before, this.start, this.end, this.after));
+            }
             return new NodeRunStatus(this.start, activeNodeIds);
         }
         // Block node: if the start is in the active set the block is still running.

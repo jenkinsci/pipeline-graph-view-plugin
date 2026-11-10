@@ -96,8 +96,23 @@ public class PipelineGraphApi {
             @CheckForNull List<FlowNode> workspaceNodes,
             @CheckForNull Map<String, List<String>> enclosingIdsByNodeId,
             boolean complete) {
+        return createTree(builder, workspaceNodes, enclosingIdsByNodeId, complete, false);
+    }
+
+    /**
+     * @param allowMissingExecution whether to build from a caller-supplied node set when the run
+     *     has no execution left. Jenkins drops the execution of force-killed builds; recovery
+     *     supplies the nodes it captured while the run was alive (or from the persisted node
+     *     files) and builds the graph from those.
+     */
+    private PipelineGraph createTree(
+            PipelineGraphBuilderApi builder,
+            @CheckForNull List<FlowNode> workspaceNodes,
+            @CheckForNull Map<String, List<String>> enclosingIdsByNodeId,
+            boolean complete,
+            boolean allowMissingExecution) {
         FlowExecution execution = run.getExecution();
-        if (execution == null) {
+        if (execution == null && !allowMissingExecution) {
             return new PipelineGraph(new ArrayList<>(), complete);
         }
 
@@ -376,8 +391,30 @@ public class PipelineGraphApi {
         // Read completion before the adapter is built, for the same reason as above: the
         // adapter resolves statuses from the nodes' liveness as it constructs them.
         FlowExecution execution = run.getExecution();
+        if (execution == null && !run.isBuilding()) {
+            PipelineGraph recovered = computeRecoveredTree();
+            if (recovered != null) {
+                return recovered;
+            }
+        }
         boolean complete = isComplete(execution);
         return createTree(CachedPipelineNodeGraphAdaptor.instance.getFor(run), null, null, complete);
+    }
+
+    /**
+     * Builds the graph of a force-killed run from the nodes the plugin captured while it was
+     * running, falling back to the node files Jenkins left in the build directory. Returns
+     * {@code null} when there is nothing to recover.
+     */
+    @CheckForNull
+    private PipelineGraph computeRecoveredTree() {
+        RecoveredFlowExecution.RecoveredInput input = RecoveredFlowExecution.forRun(run);
+        if (input == null) {
+            return null;
+        }
+        PipelineNodeGraphAdapter adapter =
+                new PipelineNodeGraphAdapter(run, input.nodes(), input.enclosingIdsByNodeId(), null);
+        return createTree(adapter, input.workspaceNodes(), input.enclosingIdsByNodeId(), true, true);
     }
 
     /**

@@ -14,6 +14,7 @@ import org.jenkinsci.plugins.workflow.actions.WorkspaceAction;
 import org.jenkinsci.plugins.workflow.cps.nodes.StepStartNode;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
+import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 
 /**
@@ -126,13 +127,41 @@ final class LiveGraphState {
     }
 
     LiveGraphSnapshot snapshot(FlowExecution execution) {
+        return snapshot(execution, false);
+    }
+
+    /**
+     * Builds a snapshot for a run whose execution Jenkins has dropped (a force-killed build):
+     * the nodes captured while it was running are still here. {@code forceComplete} makes the
+     * graph final, since the run itself is no longer building.
+     */
+    LiveGraphSnapshot snapshotForRecovery() {
+        return snapshot(execution, true);
+    }
+
+    /**
+     * Whether this state was populated from a run with the same id <em>and</em> start time.
+     * The id alone is reused when a job is deleted and recreated, so it is not enough.
+     */
+    boolean wasBuiltFrom(WorkflowRun run) {
+        try {
+            Object executable = execution.getOwner().getExecutable();
+            return executable instanceof WorkflowRun other
+                    && other.getExternalizableId().equals(run.getExternalizableId())
+                    && other.getStartTimeInMillis() == run.getStartTimeInMillis();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private LiveGraphSnapshot snapshot(FlowExecution execution, boolean forceComplete) {
         // Read completion before capturing liveness. The statuses built from the snapshot use
         // activeNodeIds, so if the execution completes while the graph is being built, this
         // response must still say "in progress": the client then polls again and gets the final
         // graph. Reading completion afterwards instead can report complete=true while stages
         // resolved from the older active set are still "running", which stops the client's
         // polling and leaves their animation on screen forever.
-        boolean complete = execution == null || execution.isComplete();
+        boolean complete = forceComplete || execution == null || execution.isComplete();
         // Only the node lists need to be copied — enclosingIds and hideFromView are on
         // concurrent structures we can publish by reference. Keeping the monitor-held
         // section down to a couple of array copies means addNode (on the CPS VM thread)

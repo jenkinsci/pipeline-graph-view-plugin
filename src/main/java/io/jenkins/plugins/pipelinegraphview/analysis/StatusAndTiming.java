@@ -162,6 +162,15 @@ public class StatusAndTiming {
             return;
         }
         FlowExecution exec = run.getExecution();
+        if (exec == null) {
+            // A force-killed run has no execution left, but its graph can be recovered from the
+            // nodes captured while it ran (or from the persisted node files). Verify against the
+            // execution those nodes belong to instead.
+            exec = executionOf(nodes);
+        }
+        if (exec == null) {
+            return;
+        }
         int i = 0;
         for (FlowNode n : nodes) {
             if (n != null && n.getExecution() != exec) {
@@ -170,6 +179,18 @@ public class StatusAndTiming {
             }
             i++;
         }
+    }
+
+    /** The first non-null execution among {@code nodes}, for recovered graphs. */
+    private static @CheckForNull FlowExecution executionOf(@CheckForNull FlowNode... nodes) {
+        if (nodes != null) {
+            for (FlowNode node : nodes) {
+                if (node != null && node.getExecution() != null) {
+                    return node.getExecution();
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -270,6 +291,10 @@ public class StatusAndTiming {
             @NonNull FlowNode lastNode,
             @CheckForNull FlowNode after) {
         FlowExecution exec = run.getExecution();
+        if (exec == null) {
+            // Force-killed runs have no execution; the recovered nodes still know theirs.
+            exec = executionOf(before, firstNode, lastNode, after);
+        }
         verifySameRun(run, before, firstNode, lastNode, after);
         if (exec == null) {
             return null;
@@ -440,6 +465,10 @@ public class StatusAndTiming {
             @CheckForNull FlowNode after) {
         FlowExecution exec = run.getExecution();
         if (exec == null) {
+            // Force-killed runs have no execution; the recovered nodes still know theirs.
+            exec = executionOf(firstNode, lastNode, after);
+        }
+        if (exec == null) {
             return null; // Haven't begun execution, or execution was hard-killed, timing is invalid
         }
         if (!NotExecutedNodeAction.isExecuted(lastNode)) {
@@ -458,7 +487,9 @@ public class StatusAndTiming {
         long startTime = (firstNode instanceof FlowStartNode)
                 ? run.getStartTimeInMillis()
                 : TimingAction.getStartTime(firstNode);
-        if (after == null && exec.isComplete()) {
+        if (after == null && (exec.isComplete() || !run.isBuilding())) {
+            // Prefer the run's recorded end; a recovered execution may not have been marked
+            // complete by Jenkins before it was dropped.
             endTime = run.getDuration() + run.getStartTimeInMillis();
         }
 

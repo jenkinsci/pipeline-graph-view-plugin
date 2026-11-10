@@ -140,6 +140,23 @@ public final class LiveGraphRegistry {
         return state == null ? null : state.snapshot(run.getExecution());
     }
 
+    /**
+     * Returns the snapshot of a run whose execution Jenkins has dropped (force-killed build),
+     * or {@code null} if no state from that run is left. The state is matched on the run's id
+     * and start time so a recreated job's build with the same number cannot supply it.
+     */
+    @CheckForNull
+    public LiveGraphSnapshot snapshotForRecovery(WorkflowRun run) {
+        if (disabled()) {
+            return null;
+        }
+        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        if (state == null || !state.wasBuiltFrom(run)) {
+            return null;
+        }
+        return state.snapshotForRecovery();
+    }
+
     void remove(FlowExecution execution) {
         String key = keyFor(execution);
         if (key != null) {

@@ -46,6 +46,8 @@ import org.slf4j.LoggerFactory;
  */
 public class PipelineNodeTreeScanner {
     private final WorkflowRun run;
+
+    @CheckForNull
     private final FlowExecution execution;
 
     // Maps a node ID to a given node wrapper. Stores Stages and parallel blocks -
@@ -107,7 +109,9 @@ public class PipelineNodeTreeScanner {
             Collection<FlowNode> nodes,
             @CheckForNull Map<String, List<String>> enclosingIdsByNodeId,
             @CheckForNull Set<String> activeNodeIds) {
-        if (execution == null || nodes.isEmpty()) {
+        if (nodes.isEmpty()) {
+            // An execution is not required here: recovered graphs (force-killed runs) supply
+            // their nodes explicitly even though WorkflowRun#getExecution() is null.
             this.stageNodeMap = new LinkedHashMap<>();
             this.stepNodeMap = new LinkedHashMap<>();
             return;
@@ -130,6 +134,11 @@ public class PipelineNodeTreeScanner {
      * Gets all the nodes that are reachable in the graph.
      */
     private List<FlowNode> getAllNodes() {
+        if (execution == null) {
+            // Only called when there is an execution to measure; recovered graphs supply their
+            // nodes explicitly instead.
+            return List.of();
+        }
         List<FlowNode> heads = PipelineNodeUtil.currentHeads(execution);
         final DepthFirstScanner scanner = new DepthFirstScanner();
         scanner.setup(heads);
@@ -201,7 +210,7 @@ public class PipelineNodeTreeScanner {
         private final Map<String, NodeRelationship> relationships;
         private final WorkflowRun run;
 
-        @NonNull
+        @CheckForNull
         private final FlowExecution execution;
 
         // Optional pre-computed ancestry. When present, findParentNode avoids the storage
@@ -236,7 +245,7 @@ public class PipelineNodeTreeScanner {
                 Collection<FlowNode> nodes,
                 @NonNull Map<String, NodeRelationship> relationships,
                 @NonNull WorkflowRun run,
-                @NonNull FlowExecution execution,
+                @CheckForNull FlowExecution execution,
                 @CheckForNull Map<String, List<String>> enclosingIdsByNodeId,
                 @CheckForNull Set<String> activeNodeIds) {
             this.nodes = nodes;

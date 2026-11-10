@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -196,7 +197,30 @@ public class PipelineStepApi {
                 }
             }
         }
+        FlowExecution execution = run.getExecution();
+        if (execution == null && !run.isBuilding()) {
+            PipelineStepList recovered = computeRecoveredSteps();
+            if (recovered != null) {
+                return recovered;
+            }
+        }
         return getAllSteps(CachedPipelineNodeGraphAdaptor.instance.getFor(run), runIsComplete, null, null);
+    }
+
+    /**
+     * Rebuilds the step list of a force-killed run from the nodes the plugin captured while it
+     * was running, falling back to the node files Jenkins left in the build directory. Returns
+     * {@code null} when there is nothing to recover.
+     */
+    @CheckForNull
+    private PipelineStepList computeRecoveredSteps() {
+        RecoveredFlowExecution.RecoveredInput input = RecoveredFlowExecution.forRun(run);
+        if (input == null) {
+            return null;
+        }
+        PipelineNodeGraphAdapter adapter =
+                new PipelineNodeGraphAdapter(run, input.nodes(), input.enclosingIdsByNodeId(), null);
+        return getAllSteps(adapter, true, null, input.enclosingIdsByNodeId());
     }
 
     /**

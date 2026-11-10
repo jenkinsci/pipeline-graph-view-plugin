@@ -1,5 +1,6 @@
 package io.jenkins.plugins.pipelinegraphview.multipipelinegraphview;
 
+import hudson.PluginWrapper;
 import hudson.model.Action;
 import hudson.model.Item;
 import hudson.security.Permission;
@@ -11,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import jenkins.model.Jenkins;
 import jenkins.model.experimentalflags.UserExperimentalFlag;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
@@ -128,6 +130,16 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
         boolean isMultiBranch =
                 target.getProperty("org.jenkinsci.plugins.workflow.multibranch.BranchJobProperty") != null;
         return isMultiBranch ? target.getParent().getUrl() : target.getUrl();
+    }
+
+    /**
+     * The plugin version, used by the frontend as a cache-busting token for the graph JSON
+     * endpoints: their responses are immutable, and an upgrade must not keep serving the old
+     * body from the browser cache.
+     */
+    public String getPluginVersion() {
+        PluginWrapper wrapper = Jenkins.get().getPluginManager().getPlugin("pipeline-graph-view");
+        return wrapper != null ? wrapper.getVersion() : "";
     }
 
     @Override

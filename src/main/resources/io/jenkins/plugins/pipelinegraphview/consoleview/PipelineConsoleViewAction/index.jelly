@@ -30,6 +30,7 @@
         />
 
         <div id="console-pipeline-root" data-current-run-path="${rootURL + '/' + it.buildUrl}"
+                       data-graph-cache-version="${it.pluginVersion}"
                        data-previous-run-path="${it.previousBuildUrl != null ? rootURL + '/' + it.previousBuildUrl : null}"
                        data-normalized-parent-job-path="${it.normalizedParentJobPath}"
                        data-current-run-start-time="${it.currentRunStartTime}"

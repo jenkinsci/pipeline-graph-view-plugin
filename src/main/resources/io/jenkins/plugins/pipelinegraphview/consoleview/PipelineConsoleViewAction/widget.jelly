@@ -8,6 +8,7 @@
          data-current-run-start-time="${it.currentRunStartTime}"
          data-previous-run-start-time="${it.previousRunStartTime}"
          data-current-run-path="${rootURL + '/' + it.url}"
+         data-graph-cache-version="${it.pluginVersion}"
          data-previous-run-path="${it.previousBuild != null ? rootURL + '/' + it.previousBuild.url : null}" />
     <script src="${rootURL}/plugin/pipeline-graph-view/js/bundles/pipeline-graph-view-bundle.js" type="module"/>
 </j:jelly>

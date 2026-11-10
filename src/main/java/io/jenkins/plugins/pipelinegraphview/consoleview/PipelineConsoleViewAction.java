@@ -3,6 +3,7 @@ package io.jenkins.plugins.pipelinegraphview.consoleview;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.Plugin;
+import hudson.PluginWrapper;
 import hudson.console.AnnotatedLargeText;
 import hudson.model.BallColor;
 import hudson.model.Failure;
@@ -547,6 +548,16 @@ public class PipelineConsoleViewAction extends Tab {
         return isMultiBranch
                 ? run.getParent().getParent().getUrl()
                 : run.getParent().getUrl();
+    }
+
+    /**
+     * The plugin version, used by the frontend as a cache-busting token for the graph JSON
+     * endpoints: their responses are immutable, and an upgrade must not keep serving the old
+     * body from the browser cache.
+     */
+    public String getPluginVersion() {
+        PluginWrapper wrapper = Jenkins.get().getPluginManager().getPlugin("pipeline-graph-view");
+        return wrapper != null ? wrapper.getVersion() : "";
     }
 
     public String getCurrentRunStartTime() {

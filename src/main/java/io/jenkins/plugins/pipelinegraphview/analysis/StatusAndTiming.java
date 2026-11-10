@@ -35,6 +35,7 @@ import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphRegistry;
 import io.jenkins.plugins.pipelinegraphview.livestate.WarningActionCache;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -151,23 +152,6 @@ public class StatusAndTiming {
     }
 
     /**
-     * The run's execution, or for a hard-killed run (which no longer has one) the execution its
-     * recorded nodes belong to.
-     */
-    @CheckForNull
-    private static FlowExecution executionOf(@NonNull WorkflowRun run, @CheckForNull FlowNode... nodes) {
-        FlowExecution exec = run.getExecution();
-        if (exec == null && nodes != null) {
-            for (FlowNode n : nodes) {
-                if (n != null) {
-                    return n.getExecution();
-                }
-            }
-        }
-        return exec;
-    }
-
-    /**
      * Check that all the flownodes &amp; run describe the same pipeline run/execution
      * @param run Run that nodes must belong to
      * @param nodes Nodes to match to run
@@ -178,7 +162,12 @@ public class StatusAndTiming {
         if (nodes == null || nodes.length == 0) {
             return;
         }
-        FlowExecution exec = executionOf(run, nodes);
+        FlowExecution exec = run.getExecution();
+        if (exec == null) {
+            exec = PipelineNodeUtil.executionOf(
+                    run,
+                    Arrays.stream(nodes).filter(Objects::nonNull).findFirst().orElse(null));
+        }
         int i = 0;
         for (FlowNode n : nodes) {
             if (n != null && n.getExecution() != exec) {
@@ -286,7 +275,7 @@ public class StatusAndTiming {
             @NonNull FlowNode firstNode,
             @NonNull FlowNode lastNode,
             @CheckForNull FlowNode after) {
-        FlowExecution exec = executionOf(run, firstNode);
+        FlowExecution exec = PipelineNodeUtil.executionOf(run, firstNode);
         verifySameRun(run, before, firstNode, lastNode, after);
         if (exec == null) {
             return null;
@@ -298,8 +287,9 @@ public class StatusAndTiming {
         if (isLastChunk) {
             // FlowExecutionListener.onCompleted seeds the cache while WorkflowRun.isBuilding()
             // can still return true; preferring the execution's own complete flag avoids
-            // persisting a final chunk as IN_PROGRESS in that window.
-            if (run.isBuilding() && !exec.isComplete()) {
+            // persisting a final chunk as IN_PROGRESS in that window. A hard-killed run no
+            // longer has an execution and resolves as it was when killed.
+            if ((run.isBuilding() || run.getExecution() == null) && !exec.isComplete()) {
                 if (PipelineNodeUtil.currentHeads(exec).size() > 1
                         && lastNode instanceof BlockEndNode) { // Check to see if all the action is on other branches
                     BlockStartNode start = ((BlockEndNode) lastNode).getStartNode();
@@ -455,7 +445,7 @@ public class StatusAndTiming {
             @NonNull FlowNode firstNode,
             @NonNull FlowNode lastNode,
             @CheckForNull FlowNode after) {
-        FlowExecution exec = executionOf(run, firstNode);
+        FlowExecution exec = PipelineNodeUtil.executionOf(run, firstNode);
         if (exec == null) {
             return null; // Haven't begun execution, timing is invalid
         }
@@ -475,7 +465,7 @@ public class StatusAndTiming {
         long startTime = (firstNode instanceof FlowStartNode)
                 ? run.getStartTimeInMillis()
                 : TimingAction.getStartTime(firstNode);
-        if (after == null && (exec.isComplete() || !run.isBuilding())) {
+        if (after == null && exec.isComplete()) {
             endTime = run.getDuration() + run.getStartTimeInMillis();
         }
 

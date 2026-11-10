@@ -155,7 +155,13 @@ final class LiveGraphState {
         }
         // Concurrent maps/sets are published by reference — consumers must treat them as
         // read-only (see {@link LiveGraphSnapshot}).
-        Set<String> activeNodeIds = complete ? Set.of() : computeActiveNodeIds(execution);
+        // A hard-killed run has no execution, but the one its nodes belong to still knows what
+        // was running at the kill.
+        FlowExecution liveness = execution != null
+                ? execution
+                : nodesCopy.isEmpty() ? null : nodesCopy.get(0).getExecution();
+        Set<String> activeNodeIds =
+                liveness == null || liveness.isComplete() ? Set.of() : computeActiveNodeIds(liveness);
         return new LiveGraphSnapshot(
                 nodesCopy, workspaceNodes, enclosingIdsByNodeId, hideFromViewBlockStartIds, activeNodeIds, v, complete);
     }

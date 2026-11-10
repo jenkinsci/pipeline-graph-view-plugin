@@ -2,6 +2,7 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 
 import hudson.model.Result;
@@ -43,5 +44,24 @@ class RecreatedJobGraphTest {
         assertThat(
                 done.stages.stream().map(PipelineStage::getState).toList(),
                 contains(PipelineState.SUCCESS, PipelineState.SUCCESS));
+    }
+
+    @Test
+    void recreatedJobDoesNotServeTheKilledRunsCachedGraph(JenkinsRule j) throws Exception {
+        WorkflowJob job = j.createProject(WorkflowJob.class, "recreated");
+        job.setDefinition(new CpsFlowDefinition("stage('old') { semaphore 'old' }", true));
+        WorkflowRun oldRun = job.scheduleBuild2(0).waitForStart();
+        SemaphoreStep.waitForStart("old/1", oldRun);
+        oldRun.doKill();
+        j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(oldRun));
+        assertThat(new PipelineGraphApi(oldRun).createTree().stages.size(), is(1));
+        job.delete();
+
+        job = j.createProject(WorkflowJob.class, "recreated");
+        job.setDefinition(new CpsFlowDefinition("this is not valid groovy {", true));
+        WorkflowRun run = j.buildAndAssertStatus(Result.FAILURE, job);
+        assertThat(run.getNumber(), is(oldRun.getNumber()));
+
+        assertThat(new PipelineGraphApi(run).createTree().stages, is(empty()));
     }
 }

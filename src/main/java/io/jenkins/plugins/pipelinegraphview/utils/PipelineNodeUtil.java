@@ -34,6 +34,7 @@ import org.jenkinsci.plugins.workflow.cps.steps.ParallelStep;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.AtomNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
+import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
 import org.jenkinsci.plugins.workflow.support.actions.PauseAction;
@@ -307,6 +308,15 @@ public class PipelineNodeUtil {
         return (pauseAction != null
                 && pauseAction.isPaused()
                 && pauseAction.getCause().equals("Input"));
+    }
+
+    /**
+     * The run's execution, or for a hard-killed run, which no longer has one, the execution its
+     * recorded nodes belong to.
+     */
+    public static @CheckForNull FlowExecution executionOf(@NonNull WorkflowRun run, @CheckForNull FlowNode node) {
+        FlowExecution execution = run.getExecution();
+        return execution == null && node != null ? node.getExecution() : execution;
     }
 
     public static boolean isPaused(@NonNull FlowNode step) {

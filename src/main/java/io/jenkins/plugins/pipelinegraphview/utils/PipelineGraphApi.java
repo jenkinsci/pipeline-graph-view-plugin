@@ -347,6 +347,15 @@ public class PipelineGraphApi {
             }
         }
         FlowExecution execution = run.getExecution();
+        if (execution == null && !run.isBuilding()) {
+            // Jenkins drops the execution of force-killed builds. Rebuild the graph from the
+            // node files it left in the build directory, so the view survives a restart and
+            // works for runs killed before the kill-time seeding existed.
+            PipelineGraph recovered = computeRecoveredTree();
+            if (recovered != null) {
+                return recovered;
+            }
+        }
         if (execution == null) {
             // No execution either means the run finished without one (e.g. a syntax error),
             // where the empty graph is final, or the run is still initialising (e.g. checking
@@ -360,6 +369,21 @@ public class PipelineGraphApi {
         // while a stage still shows as running.
         boolean complete = execution.isComplete();
         return createTree(CachedPipelineNodeGraphAdaptor.instance.getFor(run, complete), null, null, complete);
+    }
+
+    /**
+     * Builds the graph of a force-killed run from the node files Jenkins left in the build
+     * directory. Returns {@code null} when there is nothing to recover.
+     */
+    @CheckForNull
+    private PipelineGraph computeRecoveredTree() {
+        RecoveredFlowExecution.RecoveredInput input = RecoveredFlowExecution.forRun(run);
+        if (input == null) {
+            return null;
+        }
+        PipelineNodeGraphAdapter adapter =
+                new PipelineNodeGraphAdapter(run, input.nodes(), input.enclosingIdsByNodeId(), null);
+        return createTree(adapter, input.workspaceNodes(), input.enclosingIdsByNodeId(), true);
     }
 
     /**

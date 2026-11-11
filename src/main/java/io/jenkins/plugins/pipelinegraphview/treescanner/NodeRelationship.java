@@ -125,8 +125,16 @@ public class NodeRelationship {
                     (this.after != null) ? this.after.getId() : "null");
         }
 
-        // If start and end are equal this is a StepNode
+        // If start and end are equal this is a StepNode, or an unclosed block whose end node
+        // could not be found.
         if (this.start.getId().equals(this.end.getId())) {
+            if (run.getExecution() == null) {
+                // Recovered graph (force-killed run): no active set is available, and a chunk
+                // that was still open at the kill must resolve to the run's result, which
+                // computeChunkStatus2 decides from the recovered heads.
+                return new NodeRunStatus(
+                        StatusAndTiming.computeChunkStatus2(run, this.before, this.start, this.end, this.after));
+            }
             return new NodeRunStatus(this.start);
         }
 
@@ -165,6 +173,11 @@ public class NodeRelationship {
         }
         // Step node: start and end are the same FlowNode — use the activeNodeIds set.
         if (this.start.getId().equals(this.end.getId())) {
+            if (run.getExecution() == null) {
+                // See getStatus(WorkflowRun): recovered graphs have no live execution to consult.
+                return new NodeRunStatus(
+                        StatusAndTiming.computeChunkStatus2(run, this.before, this.start, this.end, this.after));
+            }
             return new NodeRunStatus(this.start, activeNodeIds);
         }
         // Block node: if the start is in the active set the block is still running.

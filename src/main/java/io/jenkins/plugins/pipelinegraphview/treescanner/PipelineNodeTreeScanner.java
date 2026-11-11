@@ -680,7 +680,8 @@ public class PipelineNodeTreeScanner {
                 FlowNode start = relationship.getStart();
                 FlowNode end = relationship.getEnd();
                 // Only memoise once the block is fully past — neither start nor end may be
-                // in the active set. Excluding {@code end} matters for the brief window
+                // in the active set, or, without one, the current head. Excluding
+                // {@code end} matters for the brief window
                 // where a BlockEndNode is itself the current head (between this stage
                 // closing and the next one opening): {@code computeChunkStatus2} treats
                 // {@code isCurrentHead(end)} as a last-chunk signal and returns IN_PROGRESS,
@@ -688,7 +689,8 @@ public class PipelineNodeTreeScanner {
                 boolean blockClosed = start != end
                         && end instanceof BlockEndNode<?>
                         && (activeNodeIds == null
-                                || (!activeNodeIds.contains(start.getId()) && !activeNodeIds.contains(end.getId())));
+                                ? !execution.isCurrentHead(end)
+                                : !activeNodeIds.contains(start.getId()) && !activeNodeIds.contains(end.getId()));
                 BlockResolutionCache cache =
                         blockClosed ? LiveGraphRegistry.get().blockResolutionCache(execution) : null;
                 if (cache != null) {

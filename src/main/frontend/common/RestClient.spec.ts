@@ -21,9 +21,10 @@ describe("graph endpoint cache busting", () => {
     return fetchMock;
   }
 
-  it("appends the plugin version to the graph URLs", async () => {
+  it("appends the page's cache version to the graph URLs", async () => {
+    // The value is opaque to the client: the token comes from the page, whatever it is.
     document.body.innerHTML =
-      '<div data-graph-cache-version="1.2.3 (private-abc)"></div>';
+      '<div data-graph-cache-version="cache schema 5"></div>';
     const fetchMock = mockFetch();
 
     await getRunStatusFromPath("/job/x/1/", 0);
@@ -31,11 +32,11 @@ describe("graph endpoint cache busting", () => {
 
     expect(fetchMock).toHaveBeenNthCalledWith(
       1,
-      "/job/x/1/stages/tree?v=1.2.3%20(private-abc)",
+      "/job/x/1/stages/tree?v=cache%20schema%205",
     );
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
-      "/job/x/1/stages/allSteps?v=1.2.3%20(private-abc)",
+      "/job/x/1/stages/allSteps?v=cache%20schema%205",
     );
   });
 

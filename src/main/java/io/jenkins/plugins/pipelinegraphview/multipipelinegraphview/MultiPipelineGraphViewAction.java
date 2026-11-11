@@ -1,18 +1,17 @@
 package io.jenkins.plugins.pipelinegraphview.multipipelinegraphview;
 
-import hudson.PluginWrapper;
 import hudson.model.Action;
 import hudson.model.Item;
 import hudson.security.Permission;
 import hudson.util.RunList;
 import io.jenkins.plugins.pipelinegraphview.PipelineGraphViewConfiguration;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphViewCache;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineJsonWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import jenkins.model.Jenkins;
 import jenkins.model.experimentalflags.UserExperimentalFlag;
 import org.jenkins.ui.icon.IconSpec;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
@@ -133,13 +132,14 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
     }
 
     /**
-     * The plugin version, used by the frontend as a cache-busting token for the graph JSON
-     * endpoints: their responses are immutable, and an upgrade must not keep serving the old
-     * body from the browser cache.
+     * The graph cache schema version, used by the frontend as a cache-busting token for the
+     * graph JSON endpoints: their responses are immutable, and a change to the payload must not
+     * keep serving the old body from the browser cache. Unlike the plugin version it only
+     * changes when the graph calculation changes, so ordinary upgrades do not force a
+     * recalculation of every graph.
      */
-    public String getPluginVersion() {
-        PluginWrapper wrapper = Jenkins.get().getPluginManager().getPlugin("pipeline-graph-view");
-        return wrapper != null ? wrapper.getVersion() : "";
+    public int getGraphCacheVersion() {
+        return PipelineGraphViewCache.SCHEMA_VERSION;
     }
 
     @Override

@@ -41,6 +41,8 @@ import org.jenkinsci.plugins.workflow.support.actions.PauseAction;
 import org.jenkinsci.plugins.workflow.support.steps.ExecutorStep;
 import org.jenkinsci.plugins.workflow.support.steps.StageStep;
 import org.jenkinsci.plugins.workflow.support.steps.input.InputAction;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 
 /** @author Vivek Pandey */
 public class PipelineNodeUtil {
@@ -314,6 +316,7 @@ public class PipelineNodeUtil {
      * The run's execution, or for a hard-killed run, which no longer has one, the execution its
      * recorded nodes belong to.
      */
+    @Restricted(NoExternalUse.class)
     public static @CheckForNull FlowExecution executionOf(@NonNull WorkflowRun run, @CheckForNull FlowNode node) {
         FlowExecution execution = run.getExecution();
         return execution == null && node != null ? node.getExecution() : execution;

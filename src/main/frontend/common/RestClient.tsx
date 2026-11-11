@@ -96,11 +96,31 @@ async function fetchWithCacheBust(
   return response;
 }
 
+/**
+ * Completed graph responses are immutable, so their URLs carry the graph cache schema version:
+ * a change to the graph calculation then misses the browser cache. The plugin version is not
+ * used, so ordinary upgrades keep the cached responses.
+ */
+function graphCacheBust(): string {
+  try {
+    const element = document.querySelector<HTMLElement>(
+      "[data-graph-cache-version]",
+    );
+    const version = element?.dataset.graphCacheVersion;
+    return version ? `?v=${encodeURIComponent(version)}` : "";
+  } catch {
+    return "";
+  }
+}
+
 export async function getRunStatusFromPath(
   url: string,
   after: number,
 ): Promise<RunStatus> {
-  const response = await fetchWithCacheBust(`${url}stages/tree`, after);
+  const response = await fetchWithCacheBust(
+    `${url}stages/tree${graphCacheBust()}`,
+    after,
+  );
   if (!response.ok) {
     throw response.statusText;
   }
@@ -116,7 +136,10 @@ export async function getRunSteps(
   url: string,
   after: number,
 ): Promise<AllStepsData> {
-  const response = await fetchWithCacheBust(`${url}stages/allSteps`, after);
+  const response = await fetchWithCacheBust(
+    `${url}stages/allSteps${graphCacheBust()}`,
+    after,
+  );
   if (!response.ok) throw response.statusText;
   const text = await response.text();
   const json = JSON.parse(text);

@@ -549,6 +549,11 @@ public class PipelineConsoleViewAction extends Tab {
                 : run.getParent().getUrl();
     }
 
+    /** Appended to the graph endpoint URLs, so immutable responses change with the graph cache. */
+    public int getGraphCacheVersion() {
+        return PipelineGraphViewCache.SCHEMA_VERSION;
+    }
+
     public String getCurrentRunStartTime() {
         return String.valueOf(run.getStartTimeInMillis());
     }

@@ -23,6 +23,9 @@ import org.jenkinsci.plugins.workflow.graph.FlowNode;
  * time: the execution's current heads plus every enclosing block start. Status resolution
  * reads liveness from this set.
  *
+ * <p>{@code complete} is read before {@code activeNodeIds}, so a snapshot never reports a
+ * completed run whose statuses were resolved as still running.
+ *
  * <p>{@code version} is a monotonic counter that bumps on every new flow node, so callers
  * can use it as a cache key for computed DTOs.
  */
@@ -32,4 +35,5 @@ public record LiveGraphSnapshot(
         Map<String, List<String>> enclosingIdsByNodeId,
         Set<String> hideFromViewBlockStartIds,
         Set<String> activeNodeIds,
-        long version) {}
+        long version,
+        boolean complete) {}

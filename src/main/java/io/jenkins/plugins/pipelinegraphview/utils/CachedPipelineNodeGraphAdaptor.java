@@ -7,6 +7,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +20,15 @@ public class CachedPipelineNodeGraphAdaptor {
     private final Map<String, CompletableFuture<PipelineNodeGraphAdapter>> tasks = new ConcurrentHashMap<>();
 
     private CachedPipelineNodeGraphAdaptor() {}
+
+    /**
+     * Like {@link #getFor(WorkflowRun)}, but builds a fresh adapter once the run is complete: a
+     * shared build may have started before completion, and its statuses would still say running.
+     */
+    @Restricted(NoExternalUse.class)
+    public PipelineNodeGraphAdapter getFor(WorkflowRun run, boolean complete) {
+        return complete ? new PipelineNodeGraphAdapter(run) : getFor(run);
+    }
 
     public PipelineNodeGraphAdapter getFor(WorkflowRun run) {
         String key = run.getExternalizableId();

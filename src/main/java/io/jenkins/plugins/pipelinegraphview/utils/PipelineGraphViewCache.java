@@ -94,7 +94,7 @@ public class PipelineGraphViewCache {
         if (run.isBuilding()) {
             return compute.get();
         }
-        CachedValue entry = memCache.get(run.getExternalizableId(), k -> new CachedValue());
+        CachedValue entry = memCache.get(cacheKey(run), k -> new CachedValue());
         synchronized (entry) {
             if (entry.graph == null) {
                 entry.graph = readJson(treeFile(run), PipelineGraph.class);
@@ -111,7 +111,7 @@ public class PipelineGraphViewCache {
         if (run.isBuilding()) {
             return compute.get();
         }
-        CachedValue entry = memCache.get(run.getExternalizableId(), k -> new CachedValue());
+        CachedValue entry = memCache.get(cacheKey(run), k -> new CachedValue());
         synchronized (entry) {
             if (entry.allSteps == null) {
                 entry.allSteps = readJson(allStepsFile(run), PipelineStepList.class);
@@ -131,13 +131,19 @@ public class PipelineGraphViewCache {
      * {@code WorkflowRun.isBuilding()} may not have flipped yet.
      */
     public void seed(WorkflowRun run, PipelineGraph graph, PipelineStepList allSteps) {
-        CachedValue entry = memCache.get(run.getExternalizableId(), k -> new CachedValue());
+        CachedValue entry = memCache.get(cacheKey(run), k -> new CachedValue());
         synchronized (entry) {
             entry.graph = graph;
             entry.allSteps = allSteps;
             writeJson(treeFile(run), graph);
             writeJson(allStepsFile(run), allSteps);
         }
+    }
+
+    // Build numbers restart when a job is deleted and recreated, so the id alone can match an
+    // earlier run's entry.
+    private static String cacheKey(WorkflowRun run) {
+        return run.getExternalizableId() + "@" + run.getTimeInMillis();
     }
 
     /** Returns the JSON-decoded value at {@code source} or {@code null} if the file is absent or unreadable. */

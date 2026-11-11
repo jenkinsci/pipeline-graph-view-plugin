@@ -58,11 +58,28 @@ public final class LiveGraphRegistry {
         if (disabled()) {
             return null;
         }
-        String key = keyFor(execution);
-        if (key == null) {
+        WorkflowRun run = runFor(execution);
+        if (run == null) {
             return null;
         }
-        return states.get(key, k -> new LiveGraphState());
+        LiveGraphState state = stateFor(run);
+        if (state != null) {
+            return state;
+        }
+        return states.asMap()
+                .compute(
+                        run.getExternalizableId(),
+                        (k, existing) ->
+                                existing != null && existing.belongsTo(run) ? existing : new LiveGraphState(run));
+    }
+
+    @CheckForNull
+    private LiveGraphState stateFor(@CheckForNull WorkflowRun run) {
+        if (run == null) {
+            return null;
+        }
+        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        return state != null && state.belongsTo(run) ? state : null;
     }
 
     /**
@@ -73,10 +90,12 @@ public final class LiveGraphRegistry {
      */
     @CheckForNull
     public LiveGraphCacheKey cacheKey(WorkflowRun run) {
-        if (disabled()) {
+        // A hard kill drops the execution without changing the version, so results cached
+        // before the kill would still match.
+        if (disabled() || run.getExecution() == null) {
             return null;
         }
-        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        LiveGraphState state = stateFor(run);
         Long version = state == null ? null : state.currentVersion();
         return version == null ? null : new LiveGraphCacheKey(version, pausedNodeIds(run));
     }
@@ -105,15 +124,12 @@ public final class LiveGraphRegistry {
         if (disabled()) {
             return null;
         }
-        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        LiveGraphState state = stateFor(run);
         return state == null ? null : state.snapshot(run.getExecution());
     }
 
-    void remove(FlowExecution execution) {
-        String key = keyFor(execution);
-        if (key != null) {
-            states.invalidate(key);
-        }
+    void remove(WorkflowRun run) {
+        states.asMap().computeIfPresent(run.getExternalizableId(), (k, state) -> state.belongsTo(run) ? null : state);
     }
 
     /**
@@ -124,7 +140,7 @@ public final class LiveGraphRegistry {
         if (disabled()) {
             return null;
         }
-        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        LiveGraphState state = stateFor(run);
         return state == null ? null : state.cachedGraph(key);
     }
 
@@ -132,7 +148,7 @@ public final class LiveGraphRegistry {
         if (disabled()) {
             return;
         }
-        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        LiveGraphState state = stateFor(run);
         if (state != null) {
             state.cacheGraph(key, graph);
         }
@@ -142,7 +158,7 @@ public final class LiveGraphRegistry {
         if (disabled()) {
             return null;
         }
-        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        LiveGraphState state = stateFor(run);
         return state == null ? null : state.cachedAllSteps(key);
     }
 
@@ -150,7 +166,7 @@ public final class LiveGraphRegistry {
         if (disabled()) {
             return;
         }
-        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        LiveGraphState state = stateFor(run);
         if (state != null) {
             state.cacheAllSteps(key, steps);
         }
@@ -165,7 +181,7 @@ public final class LiveGraphRegistry {
         if (disabled()) {
             return null;
         }
-        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        LiveGraphState state = stateFor(run);
         return state == null ? null : state.graphComputeLock();
     }
 
@@ -175,7 +191,7 @@ public final class LiveGraphRegistry {
         if (disabled()) {
             return null;
         }
-        LiveGraphState state = states.getIfPresent(run.getExternalizableId());
+        LiveGraphState state = stateFor(run);
         return state == null ? null : state.allStepsComputeLock();
     }
 
@@ -188,11 +204,7 @@ public final class LiveGraphRegistry {
         if (disabled()) {
             return null;
         }
-        String key = keyFor(execution);
-        if (key == null) {
-            return null;
-        }
-        LiveGraphState state = states.getIfPresent(key);
+        LiveGraphState state = stateFor(runFor(execution));
         return state == null ? null : state.warningActionCache();
     }
 
@@ -205,11 +217,7 @@ public final class LiveGraphRegistry {
         if (disabled()) {
             return null;
         }
-        String key = keyFor(execution);
-        if (key == null) {
-            return null;
-        }
-        LiveGraphState state = states.getIfPresent(key);
+        LiveGraphState state = stateFor(runFor(execution));
         return state == null ? null : state.blockResolutionCache();
     }
 
@@ -222,21 +230,14 @@ public final class LiveGraphRegistry {
         if (disabled()) {
             return null;
         }
-        String key = keyFor(execution);
-        if (key == null) {
-            return null;
-        }
-        LiveGraphState state = states.getIfPresent(key);
+        LiveGraphState state = stateFor(runFor(execution));
         return state == null ? null : state.skippedStageCache();
     }
 
-    private static String keyFor(FlowExecution execution) {
+    @CheckForNull
+    static WorkflowRun runFor(FlowExecution execution) {
         try {
-            Object exec = execution.getOwner().getExecutable();
-            if (exec instanceof WorkflowRun run) {
-                return run.getExternalizableId();
-            }
-            return null;
+            return execution.getOwner().getExecutable() instanceof WorkflowRun run ? run : null;
         } catch (Exception e) {
             return null;
         }

@@ -80,7 +80,8 @@ public class PipelineNodeTreeScanner {
             @CheckForNull Map<String, List<String>> enclosingIdsByNodeId,
             @CheckForNull Set<String> activeNodeIds) {
         this.run = run;
-        this.execution = run.getExecution();
+        this.execution = PipelineNodeUtil.executionOf(
+                run, nodes.isEmpty() ? null : nodes.iterator().next());
         this.declarative = run.getAction(ExecutionModelAction.class) != null;
         this.buildFrom(nodes, enclosingIdsByNodeId, activeNodeIds);
     }
@@ -226,6 +227,9 @@ public class PipelineNodeTreeScanner {
         private final Logger logger = LoggerFactory.getLogger(GraphBuilder.class);
         private final InputAction inputAction;
         private final DownstreamBuildAction downstreamBuildAction;
+        // A hard kill drops the run's execution: nodes resolve as they were at the kill, and
+        // anything still unfinished then is shown as aborted.
+        private final boolean killed;
         private final boolean isDebugEnabled = logger.isDebugEnabled();
 
         /*
@@ -245,6 +249,7 @@ public class PipelineNodeTreeScanner {
             this.inputAction = run.getAction(InputAction.class);
             this.downstreamBuildAction = run.getAction(DownstreamBuildAction.class);
             this.execution = execution;
+            this.killed = run.getExecution() == null;
             this.enclosingIdsByNodeId = enclosingIdsByNodeId;
             this.activeNodeIds = activeNodeIds;
             buildGraph();
@@ -653,6 +658,14 @@ public class PipelineNodeTreeScanner {
             return null;
         }
 
+        private static boolean isUnfinished(NodeRunStatus status) {
+            return switch (status.getState()) {
+                case RUNNING, PAUSED -> true;
+                case QUEUED -> status.getResult() != BlueRun.BlueRunResult.NOT_BUILT;
+                default -> false;
+            };
+        }
+
         /*
          * Wraps a FlowNode in a FlowNodeWrapper.
          */
@@ -667,7 +680,8 @@ public class PipelineNodeTreeScanner {
                 FlowNode start = relationship.getStart();
                 FlowNode end = relationship.getEnd();
                 // Only memoise once the block is fully past — neither start nor end may be
-                // in the active set. Excluding {@code end} matters for the brief window
+                // in the active set, or, without one, the current head. Excluding
+                // {@code end} matters for the brief window
                 // where a BlockEndNode is itself the current head (between this stage
                 // closing and the next one opening): {@code computeChunkStatus2} treats
                 // {@code isCurrentHead(end)} as a last-chunk signal and returns IN_PROGRESS,
@@ -675,7 +689,8 @@ public class PipelineNodeTreeScanner {
                 boolean blockClosed = start != end
                         && end instanceof BlockEndNode<?>
                         && (activeNodeIds == null
-                                || (!activeNodeIds.contains(start.getId()) && !activeNodeIds.contains(end.getId())));
+                                ? !execution.isCurrentHead(end)
+                                : !activeNodeIds.contains(start.getId()) && !activeNodeIds.contains(end.getId()));
                 BlockResolutionCache cache =
                         blockClosed ? LiveGraphRegistry.get().blockResolutionCache(execution) : null;
                 if (cache != null) {
@@ -690,9 +705,13 @@ public class PipelineNodeTreeScanner {
                     status = relationship.getStatus(this.run, activeNodeIds);
                 }
             }
+            if (killed && isUnfinished(status)) {
+                status = new NodeRunStatus(BlueRun.BlueRunResult.ABORTED, BlueRun.BlueRunState.FINISHED);
+            }
 
             InputStep inputStep = null;
-            if (node instanceof AtomNode atomNode
+            if (!killed
+                    && node instanceof AtomNode atomNode
                     && PipelineNodeUtil.isPausedForInputStep((StepAtomNode) atomNode, inputAction)) {
                 try {
                     for (InputStepExecution execution : inputAction.getExecutions()) {

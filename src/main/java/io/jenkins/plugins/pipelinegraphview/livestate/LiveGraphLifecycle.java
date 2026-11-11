@@ -2,6 +2,8 @@ package io.jenkins.plugins.pipelinegraphview.livestate;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
+import hudson.model.TaskListener;
+import hudson.model.listeners.RunListener;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphApi;
@@ -56,54 +58,73 @@ public class LiveGraphLifecycle extends FlowExecutionListener {
 
     @Override
     public void onCompleted(@NonNull FlowExecution execution) {
+        WorkflowRun run = LiveGraphRegistry.runFor(execution);
+        if (run == null) {
+            return;
+        }
         try {
-            WorkflowRun run = workflowRunFor(execution);
-            if (run != null) {
-                PipelineGraph graph;
-                PipelineStepList allSteps;
-                LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
-                if (snapshot != null) {
-                    // Share a single adapter so both graph and step builds reuse one
-                    // tree-scanner pass.
-                    PipelineNodeGraphAdapter adapter = new PipelineNodeGraphAdapter(
-                            run, snapshot.nodes(), snapshot.enclosingIdsByNodeId(), snapshot.activeNodeIds());
-                    // Force runIsComplete=true for the step list: WorkflowRun.isBuilding() can
-                    // still return true here even though the execution is complete.
-                    graph = new PipelineGraphApi(run)
-                            .createTreeFrom(adapter, snapshot.workspaceNodes(), snapshot.enclosingIdsByNodeId());
-                    allSteps = new PipelineStepApi(run)
-                            .getAllStepsFrom(
-                                    adapter,
-                                    true,
-                                    snapshot.hideFromViewBlockStartIds(),
-                                    snapshot.enclosingIdsByNodeId());
-                } else {
-                    // Fall back to the scanner-backed paths. Defensively copy the step list:
-                    // PipelineStepList.steps is publicly mutable and `raw` may be aliased
-                    // with a concurrent HTTP reader's cached entry.
-                    graph = new PipelineGraphApi(run).computeTree();
-                    PipelineStepList raw = new PipelineStepApi(run).computeAllSteps();
-                    allSteps = new PipelineStepList(new ArrayList<>(raw.steps), true);
-                }
-                PipelineGraphViewCache.get().seed(run, graph, allSteps);
+            LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
+            if (snapshot != null) {
+                seed(run, snapshot);
+            } else {
+                // Fall back to the scanner-backed paths. Defensively copy the step list:
+                // PipelineStepList.steps is publicly mutable and `raw` may be aliased
+                // with a concurrent HTTP reader's cached entry.
+                PipelineGraph graph = new PipelineGraphApi(run).computeTree();
+                PipelineStepList raw = new PipelineStepApi(run).computeAllSteps();
+                PipelineGraphViewCache.get().seed(run, graph, new PipelineStepList(new ArrayList<>(raw.steps), true));
             }
         } catch (Throwable t) {
             logger.warn("seeding disk cache on completion failed", t);
         } finally {
-            try {
-                LiveGraphRegistry.get().remove(execution);
-            } catch (Throwable t) {
-                logger.warn("state eviction on completion failed", t);
-            }
+            evict(run);
         }
     }
 
-    private static WorkflowRun workflowRunFor(FlowExecution execution) {
+    private static void seed(WorkflowRun run, LiveGraphSnapshot snapshot) {
+        // Share a single adapter so both graph and step builds reuse one tree-scanner pass.
+        PipelineNodeGraphAdapter adapter = new PipelineNodeGraphAdapter(
+                run, snapshot.nodes(), snapshot.enclosingIdsByNodeId(), snapshot.activeNodeIds());
+        // Force runIsComplete=true for the step list: WorkflowRun.isBuilding() can still return
+        // true here even though the execution is complete.
+        PipelineGraph graph = new PipelineGraphApi(run)
+                .createTreeFrom(
+                        adapter, snapshot.workspaceNodes(), snapshot.enclosingIdsByNodeId(), snapshot.complete());
+        PipelineStepList allSteps = new PipelineStepApi(run)
+                .getAllStepsFrom(adapter, true, snapshot.hideFromViewBlockStartIds(), snapshot.enclosingIdsByNodeId());
+        PipelineGraphViewCache.get().seed(run, graph, allSteps);
+    }
+
+    private static void evict(WorkflowRun run) {
         try {
-            Object exec = execution.getOwner().getExecutable();
-            return exec instanceof WorkflowRun r ? r : null;
-        } catch (Exception e) {
-            return null;
+            LiveGraphRegistry.get().remove(run);
+        } catch (Throwable t) {
+            logger.warn("state eviction on completion failed", t);
+        }
+    }
+
+    /**
+     * A hard kill ({@code WorkflowRun#doKill}) drops the run's execution without firing
+     * {@link FlowExecutionListener#onCompleted}, leaving the flow nodes reachable only through
+     * the live state. Seed the disk cache from it so the stage graph survives the kill.
+     */
+    @Extension
+    public static class KilledRunListener extends RunListener<WorkflowRun> {
+        @Override
+        public void onCompleted(WorkflowRun run, @NonNull TaskListener listener) {
+            if (run.getExecution() != null) {
+                return;
+            }
+            try {
+                LiveGraphSnapshot snapshot = LiveGraphRegistry.get().snapshot(run);
+                if (snapshot != null) {
+                    seed(run, snapshot);
+                }
+            } catch (Throwable t) {
+                logger.warn("seeding disk cache for a killed run failed", t);
+            } finally {
+                evict(run);
+            }
         }
     }
 }

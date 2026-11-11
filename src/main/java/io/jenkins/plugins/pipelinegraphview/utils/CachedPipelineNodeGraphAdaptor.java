@@ -19,6 +19,14 @@ public class CachedPipelineNodeGraphAdaptor {
 
     private CachedPipelineNodeGraphAdaptor() {}
 
+    /**
+     * Like {@link #getFor(WorkflowRun)}, but builds a fresh adapter once the run is complete: a
+     * shared build may have started before completion, and its statuses would still say running.
+     */
+    public PipelineNodeGraphAdapter getFor(WorkflowRun run, boolean complete) {
+        return complete ? new PipelineNodeGraphAdapter(run) : getFor(run);
+    }
+
     public PipelineNodeGraphAdapter getFor(WorkflowRun run) {
         String key = run.getExternalizableId();
 

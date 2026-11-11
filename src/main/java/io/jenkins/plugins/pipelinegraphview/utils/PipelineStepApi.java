@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.NoExternalUse;
@@ -194,7 +195,10 @@ public class PipelineStepApi {
                 }
             }
         }
-        return getAllSteps(CachedPipelineNodeGraphAdaptor.instance.getFor(run), runIsComplete, null, null);
+        FlowExecution execution = run.getExecution();
+        boolean executionComplete = execution == null || execution.isComplete();
+        return getAllSteps(
+                CachedPipelineNodeGraphAdaptor.instance.getFor(run, executionComplete), runIsComplete, null, null);
     }
 
     /**

@@ -359,7 +359,7 @@ public class PipelineGraphApi {
         // Read before the adapter resolves statuses, so the response can't be marked complete
         // while a stage still shows as running.
         boolean complete = execution.isComplete();
-        return createTree(CachedPipelineNodeGraphAdaptor.instance.getFor(run), null, null, complete);
+        return createTree(CachedPipelineNodeGraphAdaptor.instance.getFor(run, complete), null, null, complete);
     }
 
     /**

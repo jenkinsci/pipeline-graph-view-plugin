@@ -2,6 +2,7 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -20,11 +21,23 @@ public class CachedPipelineNodeGraphAdaptor {
     private CachedPipelineNodeGraphAdaptor() {}
 
     public PipelineNodeGraphAdapter getFor(WorkflowRun run) {
-        String key = run.getExternalizableId();
+        return getFor(run, false);
+    }
+
+    /**
+     * Like {@link #getFor(WorkflowRun)}, but a completed run is scanned with an empty liveness
+     * set: nothing is active any more, and {@code FlowNode#isActive()} can still report an
+     * unclosed block as active while its end node cannot be found.
+     */
+    public PipelineNodeGraphAdapter getFor(WorkflowRun run, boolean complete) {
+        // Keep the two views apart: concurrent requests can disagree about completion, and
+        // sharing an adapter built from the other view would reintroduce the inconsistency.
+        String key = run.getExternalizableId() + (complete ? ":complete" : ":live");
 
         CompletableFuture<PipelineNodeGraphAdapter> task = tasks.computeIfAbsent(key, (ignored) -> {
             log.debug("Creating new PipelineNodeGraphAdapter for run: {}", key);
-            return CompletableFuture.supplyAsync(() -> new PipelineNodeGraphAdapter(run));
+            return CompletableFuture.supplyAsync(() ->
+                    complete ? new PipelineNodeGraphAdapter(run, Set.<String>of()) : new PipelineNodeGraphAdapter(run));
         });
 
         try {

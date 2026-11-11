@@ -398,7 +398,10 @@ public class PipelineGraphApi {
             }
         }
         boolean complete = isComplete(execution);
-        return createTree(CachedPipelineNodeGraphAdaptor.instance.getFor(run), null, null, complete);
+        // A completed run has no active nodes: read liveness from an empty set rather than from
+        // FlowNode#isActive(), which can still call an unclosed block active while its end node
+        // cannot be found, pairing a running stage with a complete graph.
+        return createTree(CachedPipelineNodeGraphAdaptor.instance.getFor(run, complete), null, null, complete);
     }
 
     /**

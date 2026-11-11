@@ -159,7 +159,6 @@ public class PipelineStepApi {
     /** Uncached compute path; callers are responsible for any caching. */
     @Restricted(NoExternalUse.class)
     public PipelineStepList computeAllSteps() {
-        boolean runIsComplete = !run.isBuilding();
         // Fast path: cache hit without locking.
         LiveGraphCacheKey currentKey = LiveGraphRegistry.get().cacheKey(run);
         if (currentKey != null) {
@@ -204,7 +203,9 @@ public class PipelineStepApi {
                 return recovered;
             }
         }
-        return getAllSteps(CachedPipelineNodeGraphAdaptor.instance.getFor(run), runIsComplete, null, null);
+        boolean runIsComplete = execution != null ? execution.isComplete() : !run.isBuilding();
+        return getAllSteps(
+                CachedPipelineNodeGraphAdaptor.instance.getFor(run, runIsComplete), runIsComplete, null, null);
     }
 
     /**

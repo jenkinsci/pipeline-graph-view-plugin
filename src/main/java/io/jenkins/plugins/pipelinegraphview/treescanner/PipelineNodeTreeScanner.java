@@ -63,10 +63,21 @@ public class PipelineNodeTreeScanner {
     private final boolean isDebugEnabled = logger.isDebugEnabled();
 
     public PipelineNodeTreeScanner(@NonNull WorkflowRun run) {
+        this(run, null);
+    }
+
+    /**
+     * Builds from the execution's nodes, using {@code activeNodeIds} for liveness checks when
+     * non-null. A completed run must pass an empty set: nothing can be active any more, and
+     * {@link FlowNode#isActive()} still reports a {@link org.jenkinsci.plugins.workflow.graph.BlockStartNode}
+     * as active while its matching end node cannot be found, which would pair a running stage
+     * with a complete graph.
+     */
+    public PipelineNodeTreeScanner(@NonNull WorkflowRun run, @CheckForNull Set<String> activeNodeIds) {
         this.run = run;
         this.execution = run.getExecution();
         this.declarative = run.getAction(ExecutionModelAction.class) != null;
-        this.build();
+        this.build(activeNodeIds);
     }
 
     /**
@@ -91,11 +102,15 @@ public class PipelineNodeTreeScanner {
      * Builds the flow node graph.
      */
     public void build() {
+        build(null);
+    }
+
+    private void build(@CheckForNull Set<String> activeNodeIds) {
         if (isDebugEnabled) {
             logger.debug("Building graph");
         }
         if (execution != null) {
-            buildFrom(getAllNodes(), null, null);
+            buildFrom(getAllNodes(), null, activeNodeIds);
         } else {
             this.stageNodeMap = new LinkedHashMap<>();
             this.stepNodeMap = new LinkedHashMap<>();

@@ -40,9 +40,11 @@ import tools.jackson.databind.json.JsonMapper;
 @Extension
 public class PipelineGraphViewCache {
 
-    // v5 discards v4 files that could contain an empty graph cached for a run whose job was
-    // deleted and recreated with the same build number.
-    public static final int SCHEMA_VERSION = 5;
+    // v6 discards v5 files that could contain a graph marked complete while a stage was still
+    // running (e.g. a post/finally cleanup stage at the moment the run finished). v5 discarded
+    // v4 files that could contain an empty graph cached for a run whose job was deleted and
+    // recreated with the same build number.
+    public static final int SCHEMA_VERSION = 6;
 
     public static final String TREE_FILE_NAME = "pipeline-graph-view-tree.v" + SCHEMA_VERSION + ".json";
     public static final String ALL_STEPS_FILE_NAME = "pipeline-graph-view-allsteps.v" + SCHEMA_VERSION + ".json";
@@ -103,15 +105,30 @@ public class PipelineGraphViewCache {
 
     public PipelineGraph getGraph(WorkflowRun run, Supplier<PipelineGraph> compute) {
         if (run.isBuilding()) {
-            return compute.get();
+            return withoutInProgressStages(compute.get(), run);
         }
         CachedValue entry = memCache.get(cacheKey(run), k -> new CachedValue());
         synchronized (entry) {
             if (entry.graph == null) {
                 entry.graph = readJson(treeFile(run), PipelineGraph.class);
+                if (entry.graph != null && hasInProgressStages(entry.graph)) {
+                    logger.warn(
+                            "Ignoring the cached graph of {}: it is marked complete but still has stages in progress",
+                            run.getExternalizableId());
+                    entry.graph = null;
+                }
             }
             if (entry.graph == null) {
                 PipelineGraph computed = compute.get();
+                if (computed.complete && hasInProgressStages(computed)) {
+                    // A complete graph cannot still have a running stage: serving it would stop
+                    // the client polling while the stage keeps animating. Report it as
+                    // in-progress so the next request rebuilds it, and memoise nothing.
+                    logger.warn(
+                            "Not caching the graph of {}: it is marked complete but still has stages in progress",
+                            run.getExternalizableId());
+                    return new PipelineGraph(computed.stages, false);
+                }
                 if (!computed.complete || computed.stages.isEmpty()) {
                     // A run that is no longer building should always produce a final, non-empty
                     // graph. If it doesn't, rebuilding observed completion inconsistently (or the
@@ -131,15 +148,28 @@ public class PipelineGraphViewCache {
 
     public PipelineStepList getAllSteps(WorkflowRun run, Supplier<PipelineStepList> compute) {
         if (run.isBuilding()) {
-            return compute.get();
+            return withoutInProgressSteps(compute.get(), run);
         }
         CachedValue entry = memCache.get(cacheKey(run), k -> new CachedValue());
         synchronized (entry) {
             if (entry.allSteps == null) {
                 entry.allSteps = readJson(allStepsFile(run), PipelineStepList.class);
+                if (entry.allSteps != null && entry.allSteps.runIsComplete && hasInProgressSteps(entry.allSteps)) {
+                    logger.warn(
+                            "Ignoring the cached steps of {}: they are marked complete but still have steps in progress",
+                            run.getExternalizableId());
+                    entry.allSteps = null;
+                }
             }
             if (entry.allSteps == null) {
                 PipelineStepList computed = compute.get();
+                if (computed.runIsComplete && hasInProgressSteps(computed)) {
+                    // See getGraph: a complete list cannot still have a running step.
+                    logger.warn(
+                            "Not caching the steps of {}: they are marked complete but still have steps in progress",
+                            run.getExternalizableId());
+                    return new PipelineStepList(computed.steps, false);
+                }
                 if (!computed.runIsComplete) {
                     // See getGraph: never persist a list whose statuses may still be changing.
                     logger.warn(
@@ -161,15 +191,24 @@ public class PipelineGraphViewCache {
      * {@code WorkflowRun.isBuilding()} may not have flipped yet.
      */
     public void seed(WorkflowRun run, PipelineGraph graph, PipelineStepList allSteps) {
-        if (!graph.complete || graph.stages.isEmpty() || !allSteps.runIsComplete) {
+        boolean graphInProgress = hasInProgressStages(graph);
+        boolean stepsInProgress = hasInProgressSteps(allSteps);
+        if (!graph.complete
+                || graph.stages.isEmpty()
+                || graphInProgress
+                || !allSteps.runIsComplete
+                || stepsInProgress) {
             // Persisting either payload would freeze the view: the tree endpoint serves the
             // file as immutable, so an incomplete one would never be replaced or re-polled.
             logger.warn(
-                    "Not seeding the pipeline graph cache for {}: graph complete={}, stages={}, steps complete={}",
+                    "Not seeding the pipeline graph cache for {}: graph complete={}, stages={}, graph in progress={},"
+                            + " steps complete={}, steps in progress={}",
                     run.getExternalizableId(),
                     graph.complete,
                     graph.stages.size(),
-                    allSteps.runIsComplete);
+                    graphInProgress,
+                    allSteps.runIsComplete,
+                    stepsInProgress);
             return;
         }
         CachedValue entry = memCache.get(cacheKey(run), k -> new CachedValue());
@@ -179,6 +218,45 @@ public class PipelineGraphViewCache {
             writeJson(treeFile(run), graph);
             writeJson(allStepsFile(run), allSteps);
         }
+    }
+
+    /** A complete graph cannot still have a stage running, queued or paused. */
+    private static boolean hasInProgressStages(PipelineGraph graph) {
+        return graph.stages.stream().anyMatch(PipelineGraphViewCache::hasInProgressStage);
+    }
+
+    private static boolean hasInProgressStage(PipelineStage stage) {
+        return stage.getState().isInProgress()
+                || stage.getChildren().stream().anyMatch(PipelineGraphViewCache::hasInProgressStage);
+    }
+
+    private static boolean hasInProgressSteps(PipelineStepList steps) {
+        return steps.steps.stream().anyMatch(step -> step.getState().isInProgress());
+    }
+
+    /**
+     * A response marked complete stops the client polling, so an in-progress status in the same
+     * payload would animate forever. Report such a payload as in progress; it is rebuilt on the
+     * next request rather than cached.
+     */
+    private static PipelineGraph withoutInProgressStages(PipelineGraph graph, WorkflowRun run) {
+        if (graph.complete && hasInProgressStages(graph)) {
+            logger.warn(
+                    "Reporting the graph of {} as in progress: it is marked complete but still has stages in progress",
+                    run.getExternalizableId());
+            return new PipelineGraph(graph.stages, false);
+        }
+        return graph;
+    }
+
+    private static PipelineStepList withoutInProgressSteps(PipelineStepList steps, WorkflowRun run) {
+        if (steps.runIsComplete && hasInProgressSteps(steps)) {
+            logger.warn(
+                    "Reporting the steps of {} as in progress: they are marked complete but still have steps in progress",
+                    run.getExternalizableId());
+            return new PipelineStepList(steps.steps, false);
+        }
+        return steps;
     }
 
     /** Returns the JSON-decoded value at {@code source} or {@code null} if the file is absent or unreadable. */

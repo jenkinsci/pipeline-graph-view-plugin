@@ -14,6 +14,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.NoExternalUse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,6 +38,12 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
 
     public PipelineNodeGraphAdapter(WorkflowRun run) {
         treeScanner = new PipelineNodeTreeScanner(run);
+    }
+
+    /** Walks the execution, using {@code activeNodeIds} for liveness checks when non-null. */
+    @Restricted(NoExternalUse.class)
+    public PipelineNodeGraphAdapter(WorkflowRun run, @CheckForNull Set<String> activeNodeIds) {
+        treeScanner = new PipelineNodeTreeScanner(run, activeNodeIds);
     }
 
     /** Builds the adapter over a pre-collected node set rather than walking the execution. */

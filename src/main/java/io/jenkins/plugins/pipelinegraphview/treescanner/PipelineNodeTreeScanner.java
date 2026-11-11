@@ -61,10 +61,18 @@ public class PipelineNodeTreeScanner {
     private final boolean isDebugEnabled = logger.isDebugEnabled();
 
     public PipelineNodeTreeScanner(@NonNull WorkflowRun run) {
+        this(run, null);
+    }
+
+    /**
+     * Walks the execution, using {@code activeNodeIds} for liveness checks instead of
+     * {@link FlowNode#isActive()} when non-null.
+     */
+    public PipelineNodeTreeScanner(@NonNull WorkflowRun run, @CheckForNull Set<String> activeNodeIds) {
         this.run = run;
         this.execution = run.getExecution();
         this.declarative = run.getAction(ExecutionModelAction.class) != null;
-        this.build();
+        this.build(activeNodeIds);
     }
 
     /**
@@ -90,11 +98,15 @@ public class PipelineNodeTreeScanner {
      * Builds the flow node graph.
      */
     public void build() {
+        build(null);
+    }
+
+    private void build(@CheckForNull Set<String> activeNodeIds) {
         if (isDebugEnabled) {
             logger.debug("Building graph");
         }
         if (execution != null) {
-            buildFrom(getAllNodes(), null, null);
+            buildFrom(getAllNodes(), null, activeNodeIds);
         } else {
             this.stageNodeMap = new LinkedHashMap<>();
             this.stepNodeMap = new LinkedHashMap<>();

@@ -3,9 +3,11 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import hudson.model.Result;
@@ -61,6 +63,61 @@ class RecoveredGraphTest {
                 stageStates(tree),
                 contains("one:success", "two:aborted"));
         assertThat("the recovered graph is final", tree.complete, is(true));
+    }
+
+    @Test
+    void recoversFinishedParallelBranchAfterHardKill(JenkinsRule j) throws Exception {
+        WorkflowJob job = j.createProject(WorkflowJob.class, "recover-parallel");
+        job.setDefinition(new CpsFlowDefinition("""
+                pipeline {
+                  agent any
+                  stages {
+                    stage('Parallel') {
+                      parallel {
+                        stage('finished') { steps { echo 'done' } }
+                        stage('held') { steps { semaphore 'hold' } }
+                      }
+                    }
+                  }
+                }""", true));
+        WorkflowRun run = job.scheduleBuild2(0).waitForStart();
+        SemaphoreStep.waitForStart("hold/1", run);
+        // The parallel block is still open; wait until the first branch has closed so its result
+        // is already recorded when the run is killed.
+        awaitStageState(run, "finished", PipelineState.SUCCESS);
+        run.doKill();
+        j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(run));
+        assertThat("test setup: Jenkins dropped the execution", run.getExecution(), is(nullValue()));
+
+        // Simulate a Jenkins restart: the branch end nodes left in workflow/*.xml then look like
+        // heads of the graph, because the parallel block never got its own end node.
+        clearLiveStates();
+        Files.deleteIfExists(treeFile(run).toPath());
+
+        PipelineGraph tree = new PipelineGraphApi(run).createTree();
+        assertThat(
+                "the branch that finished before the kill keeps its own result",
+                TestUtils.collectStagesAsString(tree.stages, stage -> stage.getName() + ":" + stage.getState()),
+                equalTo("Parallel:aborted[finished:success,held:aborted]"));
+    }
+
+    private static void awaitStageState(WorkflowRun run, String stageName, PipelineState state) throws Exception {
+        for (int i = 0; i < 300; i++) {
+            if (hasStageState(new PipelineGraphApi(run).createTree(), stageName, state)) {
+                return;
+            }
+            Thread.sleep(100);
+        }
+        fail("stage '" + stageName + "' did not reach " + state);
+    }
+
+    private static boolean hasStageState(PipelineGraph graph, String name, PipelineState state) {
+        return graph.stages.stream().anyMatch(stage -> hasStageState(stage, name, state));
+    }
+
+    private static boolean hasStageState(PipelineStage stage, String name, PipelineState state) {
+        return (name.equals(stage.getName()) && state == stage.getState())
+                || stage.getChildren().stream().anyMatch(child -> hasStageState(child, name, state));
     }
 
     private static WorkflowRun hardKilledRun(JenkinsRule j, String jobName) throws Exception {

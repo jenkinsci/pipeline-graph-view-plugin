@@ -303,6 +303,13 @@ public class StatusAndTiming {
             return GenericStatus.NOT_EXECUTED;
         }
         boolean isLastChunk = after == null || exec.isCurrentHead(lastNode);
+        if (isLastChunk && run.getExecution() == null && lastNode instanceof BlockEndNode<?>) {
+            // Recovered graph (the run was force-killed): this block closed, but the flow was
+            // cut off before anything referenced it, so the recovered execution sees it as a
+            // head. Resolve it from its own error/warning actions instead of the run's result.
+            // An unfinished chunk ends at a start node and keeps the last-chunk behaviour.
+            isLastChunk = false;
+        }
         if (isLastChunk) {
             // FlowExecutionListener.onCompleted seeds the cache while WorkflowRun.isBuilding()
             // can still return true; preferring the execution's own complete flag avoids

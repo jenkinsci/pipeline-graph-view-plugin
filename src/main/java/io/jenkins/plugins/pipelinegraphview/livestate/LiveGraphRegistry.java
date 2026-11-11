@@ -90,7 +90,9 @@ public final class LiveGraphRegistry {
      */
     @CheckForNull
     public LiveGraphCacheKey cacheKey(WorkflowRun run) {
-        if (disabled()) {
+        // A hard kill drops the execution without changing the version, so results cached
+        // before the kill would still match.
+        if (disabled() || run.getExecution() == null) {
             return null;
         }
         LiveGraphState state = stateFor(run);

@@ -7,10 +7,16 @@ import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
+import hudson.ExtensionList;
 import hudson.model.Result;
+import hudson.model.TaskListener;
+import hudson.model.listeners.RunListener;
+import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphLifecycle;
 import io.jenkins.plugins.pipelinegraphview.livestate.LiveGraphRegistry;
 import java.io.File;
 import java.util.List;
@@ -51,6 +57,46 @@ class KilledRunGraphTest {
         List<String> stepStates =
                 steps.steps.stream().map(s -> s.getName() + ":" + s.getState()).toList();
         assertThat(stepStates.toString(), stepStates, hasItem("wait:" + PipelineState.ABORTED));
+    }
+
+    @Test
+    void readsWhileAKilledRunCompletesSeeTheFinalGraph() throws Exception {
+        WorkflowRun run = startAndWait("stage('one') { echo 'one' }\nstage('two') { semaphore 'wait' }");
+        // Fills the live state's result caches with the running graph and steps.
+        assertThat(
+                states(new PipelineGraphApi(run).createTree().stages),
+                contains(PipelineState.SUCCESS, PipelineState.RUNNING));
+        assertThat(new PipelineStepApi(run).getAllSteps().runIsComplete, is(false));
+
+        // Holds back the seeding of the disk cache, leaving the window between the run finishing
+        // and its live state being evicted open.
+        LiveGraphLifecycle.KilledRunListener seeder =
+                ExtensionList.lookupSingleton(LiveGraphLifecycle.KilledRunListener.class);
+        ExtensionList<RunListener> listeners = RunListener.all();
+        listeners.remove(seeder);
+        try {
+            kill(run);
+        } finally {
+            listeners.add(seeder);
+        }
+        assertThat(LiveGraphRegistry.get().snapshot(run), is(notNullValue()));
+        // Long enough that an end time taken from the clock instead of the run would show.
+        Thread.sleep(1500);
+
+        PipelineGraph graph = new PipelineGraphApi(run).computeTree();
+        assertThat(graph.complete, is(true));
+        assertThat(states(graph.stages), contains(PipelineState.SUCCESS, PipelineState.ABORTED));
+        PipelineStepList steps = new PipelineStepApi(run).computeAllSteps();
+        assertThat(steps.runIsComplete, is(true));
+        assertThat(
+                steps.steps.stream().map(s -> s.getName() + ":" + s.getState()).toList(),
+                hasItem("wait:" + PipelineState.ABORTED));
+
+        seeder.onCompleted(run, TaskListener.NULL);
+        PipelineStage two = new PipelineGraphApi(run).createTree().stages.get(1);
+        assertThat(
+                two.getStartTimeMillis() + two.getTotalDurationMillis(),
+                is(lessThanOrEqualTo(run.getStartTimeInMillis() + run.getDuration())));
     }
 
     @Test

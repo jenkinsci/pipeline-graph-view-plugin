@@ -453,7 +453,15 @@ public class StatusAndTiming {
             return new TimingInfo(0, 0, 0); // Nothing ran
         }
         verifySameRun(run, firstNode, lastNode, after);
-        long endTime = (after != null) ? TimingAction.getStartTime(after) : System.currentTimeMillis();
+        long endTime;
+        if (after != null) {
+            endTime = TimingAction.getStartTime(after);
+        } else if (run.getExecution() == null && !run.isBuilding()) {
+            // Killed: the retained execution never completes, so end open chunks at the kill.
+            endTime = run.getStartTimeInMillis() + run.getDuration();
+        } else {
+            endTime = System.currentTimeMillis();
+        }
 
         if (lastNode instanceof BlockEndNode blockEndNode) {
             BlockStartNode start = blockEndNode.getStartNode();

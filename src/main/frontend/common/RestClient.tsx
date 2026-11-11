@@ -96,11 +96,33 @@ async function fetchWithCacheBust(
   return response;
 }
 
+/**
+ * A token appended to the graph endpoints, whose responses are served as immutable. It changes
+ * with the graph cache schema version, so a change to the payload cannot keep serving a body
+ * cached by the browser from before it (e.g. an empty graph cached before a recovery fix).
+ * The plugin version deliberately is not used: ordinary upgrades must not force a
+ * recalculation of every graph.
+ */
+function graphCacheBust(): string {
+  try {
+    const element = document.querySelector<HTMLElement>(
+      "[data-graph-cache-version]",
+    );
+    const version = element?.dataset.graphCacheVersion;
+    return version ? `?v=${encodeURIComponent(version)}` : "";
+  } catch {
+    return "";
+  }
+}
+
 export async function getRunStatusFromPath(
   url: string,
   after: number,
 ): Promise<RunStatus> {
-  const response = await fetchWithCacheBust(`${url}stages/tree`, after);
+  const response = await fetchWithCacheBust(
+    `${url}stages/tree${graphCacheBust()}`,
+    after,
+  );
   if (!response.ok) {
     throw response.statusText;
   }
@@ -116,7 +138,10 @@ export async function getRunSteps(
   url: string,
   after: number,
 ): Promise<AllStepsData> {
-  const response = await fetchWithCacheBust(`${url}stages/allSteps`, after);
+  const response = await fetchWithCacheBust(
+    `${url}stages/allSteps${graphCacheBust()}`,
+    after,
+  );
   if (!response.ok) throw response.statusText;
   const text = await response.text();
   const json = JSON.parse(text);

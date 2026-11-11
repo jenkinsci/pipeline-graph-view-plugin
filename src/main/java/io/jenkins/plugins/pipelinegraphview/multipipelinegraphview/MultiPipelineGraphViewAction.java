@@ -5,6 +5,7 @@ import hudson.model.Item;
 import hudson.security.Permission;
 import hudson.util.RunList;
 import io.jenkins.plugins.pipelinegraphview.PipelineGraphViewConfiguration;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphViewCache;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineJsonWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
@@ -128,6 +129,17 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
         boolean isMultiBranch =
                 target.getProperty("org.jenkinsci.plugins.workflow.multibranch.BranchJobProperty") != null;
         return isMultiBranch ? target.getParent().getUrl() : target.getUrl();
+    }
+
+    /**
+     * The graph cache schema version, used by the frontend as a cache-busting token for the
+     * graph JSON endpoints: their responses are immutable, and a change to the payload must not
+     * keep serving the old body from the browser cache. Unlike the plugin version it only
+     * changes when the graph calculation changes, so ordinary upgrades do not force a
+     * recalculation of every graph.
+     */
+    public int getGraphCacheVersion() {
+        return PipelineGraphViewCache.SCHEMA_VERSION;
     }
 
     @Override

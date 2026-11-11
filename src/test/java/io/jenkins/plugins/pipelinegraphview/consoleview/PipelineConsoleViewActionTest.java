@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import hudson.model.Result;
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import io.jenkins.plugins.pipelinegraphview.utils.FlowNodeWrapper;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphViewCache;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import java.io.IOException;
 import java.util.List;
@@ -98,6 +99,9 @@ class PipelineConsoleViewActionTest {
             DomElement root = page.getElementById("console-pipeline-root");
             assertThat(root, notNullValue());
             assertThat(root.getAttribute("data-current-run-path"), endsWith("/" + run.getNumber() + "/"));
+            assertThat(
+                    root.getAttribute("data-graph-cache-version"),
+                    equalTo(String.valueOf(PipelineGraphViewCache.SCHEMA_VERSION)));
         }
     }
 

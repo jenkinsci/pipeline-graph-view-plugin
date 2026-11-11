@@ -102,6 +102,17 @@ public class NodeRelationship {
         return new TimingInfo(0, 0, 0);
     }
 
+    /**
+     * Whether liveness state (active steps, pauses, queue state) can be trusted for this run.
+     * A force-killed run keeps its node actions, including an unfinished
+     * {@link org.jenkinsci.plugins.workflow.support.actions.PauseAction}, but nothing is waiting
+     * any more: the steps were interrupted and must resolve to the run result instead of
+     * staying paused forever.
+     */
+    private static boolean hasLiveExecution(@NonNull WorkflowRun run) {
+        return run.isBuilding() || run.getExecution() != null;
+    }
+
     /*
      * Gets Status for relationship.
      */
@@ -109,7 +120,7 @@ public class NodeRelationship {
         boolean skippedStage = PipelineNodeUtil.isSkippedStage(start);
         if (skippedStage) {
             return new NodeRunStatus(BlueRun.BlueRunResult.NOT_BUILT, BlueRun.BlueRunState.SKIPPED);
-        } else if (PipelineNodeUtil.isPaused(this.end)) {
+        } else if (hasLiveExecution(run) && PipelineNodeUtil.isPaused(this.end)) {
             return new NodeRunStatus(BlueRun.BlueRunResult.UNKNOWN, BlueRun.BlueRunState.PAUSED);
         } else if (!PipelineNodeUtil.isActive(start) && PipelineNodeUtil.isStage(start)) {
             WarningAction warningAction = start.getPersistentAction(WarningAction.class);
@@ -161,7 +172,7 @@ public class NodeRelationship {
         if (PipelineNodeUtil.isSkippedStage(start)) {
             return new NodeRunStatus(BlueRun.BlueRunResult.NOT_BUILT, BlueRun.BlueRunState.SKIPPED);
         }
-        if (PipelineNodeUtil.isPaused(this.end)) {
+        if (hasLiveExecution(run) && PipelineNodeUtil.isPaused(this.end)) {
             return new NodeRunStatus(BlueRun.BlueRunResult.UNKNOWN, BlueRun.BlueRunState.PAUSED);
         }
         if (!PipelineNodeUtil.isActive(start) && PipelineNodeUtil.isStage(start)) {

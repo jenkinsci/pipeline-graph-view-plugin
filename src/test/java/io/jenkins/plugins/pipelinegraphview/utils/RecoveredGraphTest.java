@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -19,6 +20,7 @@ import java.util.List;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.jenkinsci.plugins.workflow.support.steps.input.InputAction;
 import org.jenkinsci.plugins.workflow.test.steps.SemaphoreStep;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -99,6 +101,57 @@ class RecoveredGraphTest {
                 "the branch that finished before the kill keeps its own result",
                 TestUtils.collectStagesAsString(tree.stages, stage -> stage.getName() + ":" + stage.getState()),
                 equalTo("Parallel:aborted[finished:success,held:aborted]"));
+    }
+
+    @Test
+    void recoversInterruptedInputAsAborted(JenkinsRule j) throws Exception {
+        WorkflowJob job = j.createProject(WorkflowJob.class, "recover-input");
+        job.setDefinition(new CpsFlowDefinition("""
+                pipeline {
+                  agent any
+                  stages {
+                    stage('ask') {
+                      steps {
+                        input message: 'Continue?', ok: 'Go'
+                      }
+                    }
+                  }
+                }""", true));
+        WorkflowRun run = job.scheduleBuild2(0).waitForStart();
+        waitForPendingInput(run);
+        run.doKill();
+        j.assertBuildStatus(Result.ABORTED, j.waitForCompletion(run));
+        assertThat("test setup: Jenkins dropped the execution", run.getExecution(), is(nullValue()));
+
+        // Keep the live state: it still holds the PauseAction that marked the input as waiting.
+        PipelineGraph tree = new PipelineGraphApi(run).createTree();
+        assertThat(
+                "the stage interrupted at the input is aborted, not paused",
+                TestUtils.collectStagesAsString(tree.stages, stage -> stage.getName() + ":" + stage.getState()),
+                equalTo("ask:aborted"));
+
+        PipelineStepList steps = new PipelineStepApi(run).getAllSteps();
+        assertThat("the recovered step list is final", steps.runIsComplete, is(true));
+        assertThat("the recovered step list is not empty", steps.steps, is(not(empty())));
+        assertThat(
+                "the interrupted input is not left paused",
+                steps.steps.stream().map(PipelineStep::getState).toList(),
+                not(hasItem(PipelineState.PAUSED)));
+        assertThat(
+                "the interrupted input is aborted",
+                steps.steps.stream().map(PipelineStep::getState).toList(),
+                hasItem(PipelineState.ABORTED));
+    }
+
+    private static void waitForPendingInput(WorkflowRun run) throws Exception {
+        for (int i = 0; i < 300; i++) {
+            InputAction input = run.getAction(InputAction.class);
+            if (input != null && !input.getExecutions().isEmpty()) {
+                return;
+            }
+            Thread.sleep(100);
+        }
+        fail("the input step did not start");
     }
 
     private static void awaitStageState(WorkflowRun run, String stageName, PipelineState state) throws Exception {

@@ -45,6 +45,7 @@ class PipelineGraphViewNestedTest {
                 .hasBuilds(1)
                 .nthBuild(0)
                 .hasStages(4, "Checkout", "Test", "A1", "A2" /* counter */)
+                .hasStagesInBuildsList(1, "Parallel")
                 .goToBuild()
                 .hasStagesInGraph(6, /*A*/ "Checkout", "A1", "A2", /*B*/ "Build", "B1", "B2")
                 .goToPipelineOverview()
@@ -121,7 +122,12 @@ class PipelineGraphViewNestedTest {
         String name = "Nested Stage";
         WorkflowRun run = TestUtils.createAndRunJob(j, name, "gh815_nestedStage.jenkinsfile", Result.SUCCESS);
 
-        new PipelineJobPage(p, run.getParent()).goTo().hasBuilds(1).nthBuild(0).hasStages(2, "Parent", "Child");
+        new PipelineJobPage(p, run.getParent())
+                .goTo()
+                .hasBuilds(1)
+                .nthBuild(0)
+                .hasStages(2, "Parent", "Child")
+                .hasStagesInBuildsList(1, "Parent");
     }
 
     @Issue("GH#817")

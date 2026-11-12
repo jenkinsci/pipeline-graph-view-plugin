@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.nullValue;
 import hudson.model.User;
 import hudson.security.ACL;
 import hudson.security.ACLContext;
+import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraphViewCache;
 import java.util.Map;
 import jenkins.model.experimentalflags.UserExperimentalFlagsProperty;
 import net.sf.json.JSONObject;
@@ -92,6 +93,10 @@ class StageDurationsActionTest {
             assertThat(
                     page.getElementById("stage-durations-root").getAttribute("data-current-job-path"),
                     is(j.contextPath + "/job/example/"));
+            assertThat(
+                    "the durations page's graph requests carry the cache token",
+                    page.getElementById("stage-durations-root").getAttribute("data-graph-cache-version"),
+                    is(String.valueOf(PipelineGraphViewCache.SCHEMA_VERSION)));
         }
     }
 

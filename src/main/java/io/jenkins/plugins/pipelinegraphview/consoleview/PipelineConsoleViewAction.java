@@ -549,13 +549,7 @@ public class PipelineConsoleViewAction extends Tab {
                 : run.getParent().getUrl();
     }
 
-    /**
-     * The graph cache schema version, used by the frontend as a cache-busting token for the
-     * graph JSON endpoints: their responses are immutable, and a change to the payload must not
-     * keep serving the old body from the browser cache. Unlike the plugin version it only
-     * changes when the graph calculation changes, so ordinary upgrades do not force a
-     * recalculation of every graph.
-     */
+    /** Appended to the graph endpoint URLs, so immutable responses change with the graph cache. */
     public int getGraphCacheVersion() {
         return PipelineGraphViewCache.SCHEMA_VERSION;
     }

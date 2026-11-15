@@ -1,5 +1,5 @@
-$pgv-icon-size: 1.25rem;
-$pgv-item-padding-inline: 0.75rem;
+$pgv-icon-size: 1.125rem;
+$pgv-item-padding-inline: 0.6875rem;
 
 .pgw-filter-bar {
   // Stays in view while the stage list scrolls under it. Without this the
@@ -61,7 +61,7 @@ $pgv-item-padding-inline: 0.75rem;
   }
 
   &::after {
-    box-shadow: 0 0 0 0.5rem transparent;
+    box-shadow: var(--focus-ring--hidden);
   }
 
   &:focus-visible {
@@ -86,22 +86,26 @@ $pgv-item-padding-inline: 0.75rem;
         background-color: var(--item-background--active);
       }
 
-      &:active {
-        &::after {
-          box-shadow: 0 0 0 0.25rem var(--item-box-shadow--focus);
-        }
+      &::after {
+        box-shadow: 0 0 0 var(--focus-ring-width) var(--item-box-shadow--focus);
       }
     }
 
     &:has(.pgv-tree-item--active) {
+      box-shadow: var(--elevation-2-box-shadow);
+
       &::before {
-        background-color: var(--item-background--active);
+        background-color: var(--button-background) !important;
+      }
+
+      &::after {
+        box-shadow: none !important;
       }
     }
 
     &:focus-visible {
       &::after {
-        box-shadow: 0 0 0 0.25rem var(--text-color) !important;
+        box-shadow: var(--focus-ring--keyboard) !important;
         opacity: 1 !important;
       }
     }
@@ -120,6 +124,8 @@ $pgv-item-padding-inline: 0.75rem;
   justify-content: start;
   align-items: center;
   text-decoration: none;
+  min-height: 2.375rem;
+  font-size: var(--font-size-sm);
   color: var(--text-color);
   position: relative;
   padding: 0.5rem $pgv-item-padding-inline;
@@ -137,7 +143,7 @@ $pgv-item-padding-inline: 0.75rem;
   }
 
   &--active {
-    font-weight: 450;
+    font-weight: var(--font-bold-weight);
 
     .pgv-status-icon {
       svg > * {
@@ -149,7 +155,7 @@ $pgv-item-padding-inline: 0.75rem;
   &__content {
     display: grid;
     grid-template-columns: auto 1fr;
-    align-items: start;
+    align-items: center;
     gap: 0.625rem;
     min-width: 0;
   }
@@ -175,6 +181,9 @@ $pgv-item-padding-inline: 0.75rem;
     top: 0;
     right: 0;
     bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     aspect-ratio: 1;
     transition: var(--standard-transition);
     appearance: none;
@@ -185,17 +194,18 @@ $pgv-item-padding-inline: 0.75rem;
     color: var(--text-color-secondary);
     z-index: 1;
 
-    &--active {
-      rotate: 90deg;
-    }
-
     svg {
       width: 1rem;
       height: 1rem;
+      transition: rotate var(--standard-transition);
 
       * {
         stroke-width: 42px;
       }
+    }
+
+    &--active svg {
+      rotate: 90deg;
     }
 
     &:hover {

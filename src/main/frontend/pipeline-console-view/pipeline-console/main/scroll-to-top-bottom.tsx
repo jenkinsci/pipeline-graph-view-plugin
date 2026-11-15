@@ -59,7 +59,7 @@ export default function ScrollToTopBottom(props: TailLogsButtonProps) {
   return (
     <>
       <div
-        className={classNames(`pgv-scroll-to-top-bottom`, {
+        className={classNames(`pgv-scroll-to-top-bottom jenkins-mobile-hide`, {
           "pgv-scroll-to-top-bottom--visible": isScrollable,
         })}
         aria-hidden={!isScrollable}

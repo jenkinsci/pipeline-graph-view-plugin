@@ -37,31 +37,17 @@ export default function StagesToggle() {
         }
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-          <rect
-            x="48"
-            y="80"
-            width="416"
-            height="352"
-            rx="48"
-            fill="none"
-            stroke="currentColor"
-            strokeLinejoin="round"
-            strokeWidth="32"
-          />
-          <path
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeWidth="32"
-            d="M192 80v352"
-          />
-          {showStages && (
-            <path
-              fill="currentColor"
-              d="M80 112h112v288H96a16 16 0 01-16-16z"
-              opacity="0.3"
+          <g fill="none" stroke="currentColor" strokeWidth="32">
+            <rect
+              x="48"
+              y="86"
+              width="416"
+              height="340"
+              rx="70"
+              strokeLinejoin="round"
             />
-          )}
+            <line x1="125" y1="170" x2="125" y2="342" strokeLinecap="round" />
+          </g>
         </svg>
       </button>
     </Tooltip>

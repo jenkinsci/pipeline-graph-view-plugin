@@ -74,10 +74,14 @@ export function humanise(duration: number, locale: string): string {
   } else if (seconds >= 1) {
     durationParts["seconds"] = seconds;
   } else if (millis >= 100) {
-    durationParts["seconds"] = 0;
-    durationParts["milliseconds"] = millis;
-    options.fractionalDigits = Math.floor(millis / 10) % 10 === 0 ? 1 : 2;
-    options.milliseconds = "numeric";
+    const fractionDigits = Math.floor(millis / 10) % 10 === 0 ? 1 : 2;
+    return new Intl.NumberFormat(locale, {
+      style: "unit",
+      unit: "second",
+      unitDisplay: "narrow",
+      minimumFractionDigits: fractionDigits,
+      maximumFractionDigits: fractionDigits,
+    }).format(Math.floor(millis / 10) / 100);
   } else if (millis >= 1) {
     durationParts["milliseconds"] = millis;
   } else {

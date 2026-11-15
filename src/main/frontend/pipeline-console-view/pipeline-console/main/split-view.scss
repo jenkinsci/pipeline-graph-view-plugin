@@ -1,6 +1,7 @@
 .pgv-split-view__container {
   position: relative;
   display: grid;
+  grid-auto-columns: minmax(0, 1fr);
   gap: var(--section-padding);
   animation: fade-in 0.1s ease-in-out both;
 }

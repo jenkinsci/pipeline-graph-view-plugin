@@ -9,11 +9,7 @@ $pgv-item-padding-inline: 0.6875rem;
   top: 0;
   z-index: 1;
   padding-bottom: 0.75rem;
-  background: var(--background);
-
-  .jenkins-search {
-    --search-bar-height: 2.625rem;
-  }
+  background: transparent;
 }
 
 .pgv-tree {

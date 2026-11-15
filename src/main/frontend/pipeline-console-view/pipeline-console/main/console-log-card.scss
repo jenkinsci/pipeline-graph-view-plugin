@@ -28,13 +28,14 @@
     gap: 1rem;
     text-decoration: none;
     color: var(--text-color);
-    min-height: 2.5rem;
+    min-height: 2.375rem;
   }
 
   .jenkins-button {
     padding: 0 0.625rem;
     color: var(--text-color-secondary) !important;
     margin-left: 0.5rem;
+    box-shadow: none;
 
     &::before,
     &::after {

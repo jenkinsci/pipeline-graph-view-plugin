@@ -59,7 +59,7 @@
     "prettier": "^3.5.3",
     "sass-embedded": "^1.87.0",
     "storybook": "^10.6.1",
-    "typescript": "^6.0.0",
+    "typescript": "^7.0.0",
     "vite": "^8.0.0",
     "vite-plugin-css-injected-by-js": "^5.0.0",
     "vitest": "^5.0.0"

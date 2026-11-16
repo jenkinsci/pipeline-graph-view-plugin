@@ -2,6 +2,7 @@ package io.jenkins.plugins.pipelinegraphview.utils;
 
 import io.jenkins.plugins.pipelinegraphview.treescanner.PipelineNodeGraphAdapter;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -22,12 +23,13 @@ public class CachedPipelineNodeGraphAdaptor {
     private CachedPipelineNodeGraphAdaptor() {}
 
     /**
-     * Like {@link #getFor(WorkflowRun)}, but builds a fresh adapter once the run is complete: a
-     * shared build may have started before completion, and its statuses would still say running.
+     * Like {@link #getFor(WorkflowRun)}, but builds a fresh adapter once the run is complete and
+     * reads liveness from an empty set: nothing is active any more, and {@code FlowNode#isActive()}
+     * can still report an unclosed block as active while its end node cannot be found.
      */
     @Restricted(NoExternalUse.class)
     public PipelineNodeGraphAdapter getFor(WorkflowRun run, boolean complete) {
-        return complete ? new PipelineNodeGraphAdapter(run) : getFor(run);
+        return complete ? new PipelineNodeGraphAdapter(run, Set.<String>of()) : getFor(run);
     }
 
     public PipelineNodeGraphAdapter getFor(WorkflowRun run) {

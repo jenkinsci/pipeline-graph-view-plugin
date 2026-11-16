@@ -55,7 +55,7 @@
     "eslint-plugin-react-hooks": "^7.0.0",
     "eslint-plugin-simple-import-sort": "^14.0.0",
     "jsdom": "^30.0.0",
-    "neostandard": "^0.13.0",
+    "neostandard": "^0.14.0",
     "prettier": "^3.5.3",
     "sass-embedded": "^1.87.0",
     "storybook": "^10.6.1",

@@ -34,7 +34,10 @@ public class ManageAppearancePage extends JenkinsPage<ManageAppearancePage> {
         log.info("Setting pipeline graph as console provider");
         page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add"))
                 .click();
-        page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Pipeline Graph View"))
+        // Dropdown items have the menuitem role since jenkinsci/jenkins#26321, and the button role before it
+        Page.GetByRoleOptions pipelineGraphView = new Page.GetByRoleOptions().setName("Pipeline Graph View");
+        page.getByRole(AriaRole.MENUITEM, pipelineGraphView)
+                .or(page.getByRole(AriaRole.BUTTON, pipelineGraphView))
                 .click();
         return this;
     }

@@ -230,7 +230,7 @@ div.console-output-line--warning {
     border: var(--jenkins-border--inherit-subtle);
     color: var(--pgv-line-severity-color);
     // Hovering a line brings it to full strength.
-    opacity: 0.5;
+    opacity: 0.75;
   }
 
   a.console-line-number {

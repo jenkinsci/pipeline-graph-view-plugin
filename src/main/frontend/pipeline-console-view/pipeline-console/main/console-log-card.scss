@@ -218,3 +218,24 @@ div.console-output-line {
     }
   }
 }
+
+// Lines that look like errors or warnings, see classifyConsoleLines.ts.
+div.console-output-line--error,
+div.console-output-line--warning {
+  --pgv-line-severity-color: var(--error-color, var(--red));
+
+  background-color: color-mix(
+    in srgb,
+    var(--pgv-line-severity-color) 10%,
+    transparent
+  );
+  box-shadow: inset 2px 0 var(--pgv-line-severity-color);
+
+  a.console-line-number {
+    color: var(--pgv-line-severity-color);
+  }
+}
+
+div.console-output-line--warning {
+  --pgv-line-severity-color: var(--warning-color, var(--orange));
+}

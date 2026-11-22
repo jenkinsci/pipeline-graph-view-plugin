@@ -4,6 +4,7 @@ import { memo } from "react";
 import { BuildStep } from "../../../common/RestClient.tsx";
 import { linkifyJsOptions } from "../../../common/utils/linkify-js.ts";
 import { ansiToHtml } from "./Ansi.tsx";
+import type { LineSeverity } from "./classifyConsoleLines.ts";
 import { sanitizeConsoleHtml } from "./sanitizeConsoleHtml.ts";
 
 export interface ConsoleLineProps {
@@ -14,6 +15,7 @@ export interface ConsoleLineProps {
   startByte: number;
   currentRunPath: string;
   buildStep?: BuildStep;
+  severity?: LineSeverity;
 }
 
 // Console output line
@@ -34,7 +36,13 @@ export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
       style={{ background: "none", border: "none" }}
       className="console-output-line"
     >
-      <div className="console-output-line">
+      <div
+        className={
+          props.severity
+            ? `console-output-line console-output-line--${props.severity}`
+            : "console-output-line"
+        }
+      >
         <a
           className="console-line-number"
           id={id}

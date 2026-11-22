@@ -12,6 +12,8 @@ export interface ConsoleSectionLine {
   /** 0-based index into the log buffer's lines. */
   index: number;
   content: string;
+  /** Set when the line looks like an error or warning. */
+  severity?: LineSeverity;
 }
 
 export interface ConsoleSectionGroup {
@@ -29,6 +31,8 @@ export interface ConsoleSectionGroup {
 
 export type ConsoleSectionNode = ConsoleSectionLine | ConsoleSectionGroup;
 
+import { LineClassifier, type LineSeverity } from "./classifyConsoleLines.ts";
+
 // eslint-disable-next-line no-control-regex
 const ANSI_RE = /\x1b\[[0-9;]*[a-zA-Z]/g;
 const HTML_TAG_RE = /<[^>]*>/g;
@@ -37,7 +41,7 @@ const TAG_OR_ANSI_RE = /<[^>]*>|\x1b\[[0-9;]*[a-zA-Z]/g;
 
 // Timestamper renders a visible clock time and a hidden ISO timestamp, which
 // after tag stripping read as "01:08:06 [2026-05-29T19:38:06.669Z] ".
-const TIMESTAMP_PREFIX_RE =
+export const TIMESTAMP_PREFIX_RE =
   /^(?:\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?[A-Z]*[+-]?\d{0,4}\]\s+|(?:\d{4}[-/]\d{2}[-/]\d{2}\s+)?\d{1,2}:\d{2}(?::\d{2})?(?:\.\d+)?\s+)+/;
 
 const GROUP_START_RE = /^(?:##\[group\]|::group::)(.*)$/;
@@ -135,6 +139,7 @@ export class ConsoleSectionParser {
   private stack: OpenGroup[] = [];
   private parsed = 0;
   private startByte = NaN;
+  private classifier = new LineClassifier();
 
   update({
     lines,
@@ -162,10 +167,12 @@ export class ConsoleSectionParser {
     this.stack = [];
     this.parsed = 0;
     this.startByte = startByte;
+    this.classifier = new LineClassifier();
   }
 
   private consume(index: number, content: string) {
     const marker = detectMarker(content);
+    if (marker) this.classifier.reset();
     if (marker?.type === "start") {
       this.stack.push({
         title: marker.title,
@@ -187,7 +194,7 @@ export class ConsoleSectionParser {
       });
       return;
     }
-    this.append({ kind: "line", index, content });
+    this.append(lineNode(index, content, this.classifier));
   }
 
   private append(node: ConsoleSectionNode) {
@@ -205,10 +212,12 @@ export class ConsoleSectionParser {
     stableCount: number,
     logLineCount: number,
   ): ConsoleSectionNode[] {
+    // The partial last line must not advance the shared classifier state.
     let tail: ConsoleSectionNode[] = lineNodes(
       lines,
       stableCount,
       logLineCount,
+      this.classifier.clone(),
     );
     for (let depth = this.stack.length - 1; depth >= 0; depth--) {
       const open = this.stack[depth];
@@ -230,19 +239,31 @@ export class ConsoleSectionParser {
     return [
       ...this.root,
       ...tail,
-      ...lineNodes(lines, logLineCount, lines.length),
+      ...lineNodes(lines, logLineCount, lines.length, new LineClassifier()),
     ];
   }
+}
+
+function lineNode(
+  index: number,
+  content: string,
+  classifier: LineClassifier,
+): ConsoleSectionLine {
+  const severity = classifier.classify(content);
+  return severity
+    ? { kind: "line", index, content, severity }
+    : { kind: "line", index, content };
 }
 
 function lineNodes(
   lines: string[],
   from: number,
   to: number,
+  classifier: LineClassifier,
 ): ConsoleSectionLine[] {
   const nodes: ConsoleSectionLine[] = [];
   for (let i = from; i < to; i++) {
-    nodes.push({ kind: "line", index: i, content: lines[i] });
+    nodes.push(lineNode(i, lines[i], classifier));
   }
   return nodes;
 }

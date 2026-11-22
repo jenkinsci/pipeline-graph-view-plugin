@@ -138,6 +138,7 @@ export function ConsoleSectionNodes({
         key={`line-${node.index}`}
         lineNumber={String(node.index)}
         content={node.content}
+        severity={node.severity}
         {...shared}
       />
     ) : (

@@ -218,3 +218,67 @@ div.console-output-line {
     }
   }
 }
+
+// Lines that look like errors or warnings, see classifyConsoleLines.ts.
+// They reuse the hover/target highlight, tinted with the severity colour.
+div.console-output-line--error,
+div.console-output-line--warning {
+  --pgv-line-severity-color: var(--error-color, var(--red));
+
+  &::before {
+    background-color: color-mix(in srgb, currentColor 10%, transparent);
+    border: var(--jenkins-border--inherit-subtle);
+    color: var(--pgv-line-severity-color);
+    // Hovering a line brings it to full strength.
+    opacity: 0.75;
+  }
+
+  a.console-line-number {
+    color: var(--pgv-line-severity-color);
+  }
+}
+
+div.console-output-line--warning {
+  --pgv-line-severity-color: var(--warning-color, var(--orange));
+}
+
+// Consecutive lines of the same severity read as one block: the boxes join
+// without a border between them. A deep-linked line keeps its own outline.
+@each $severity in error, warning {
+  $line: "pre.console-output-line--#{$severity}";
+
+  #{$line} + #{$line} > div.console-output-line:not(:has(:target))::before {
+    border-top: none;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+
+  #{$line}:has(+ #{$line})
+    > div.console-output-line:not(:has(:target))::before {
+    border-bottom: none;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}
+
+// A warning block directly next to an error block starts 1px lower so their
+// borders don't touch.
+pre.console-output-line--error + pre.console-output-line--warning,
+pre.console-output-line--warning + pre.console-output-line--error {
+  > div.console-output-line::before {
+    top: 1px;
+  }
+}
+
+// Likewise for a plain line's hover outline next to a coloured block.
+$pgv-severity-line: ":is(pre.console-output-line--error, pre.console-output-line--warning)";
+$pgv-plain-line: "pre.console-output-line:not(#{$pgv-severity-line})";
+
+#{$pgv-severity-line} + #{$pgv-plain-line} > div.console-output-line::before {
+  top: 1px;
+}
+
+#{$pgv-plain-line}:has(+ #{$pgv-severity-line})
+  > div.console-output-line::before {
+  bottom: 1px;
+}

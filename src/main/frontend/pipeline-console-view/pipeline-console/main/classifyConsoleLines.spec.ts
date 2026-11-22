@@ -98,6 +98,21 @@ describe("classifyConsoleLines", () => {
     expect(visibleText(line)).toBe("[ERROR] <boom>");
     expect(new LineClassifier().classify(line)).toBe("error");
   });
+
+  it("keeps stack frame indentation after a Timestamper prefix", () => {
+    const ts = '<span class="timestamp"><b>12:00:01</b> </span>';
+    expect(visibleText(`${ts}\tat a.B.c(B.java:1)`)).toBe(
+      "\tat a.B.c(B.java:1)",
+    );
+    expect(
+      classifyConsoleLines([
+        `${ts}java.lang.IllegalStateException: boom`,
+        `${ts}\tat a.B.c(B.java:1)`,
+        `${ts}    at d.E.f(E.java:2)`,
+        `${ts}done`,
+      ]),
+    ).toEqual(["error", "error", "error", undefined]);
+  });
 });
 
 describe("parseConsoleSections severity", () => {

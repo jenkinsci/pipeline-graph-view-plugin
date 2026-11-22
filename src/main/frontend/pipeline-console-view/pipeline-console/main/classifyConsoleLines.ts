@@ -61,7 +61,11 @@ export function visibleText(raw: string): string {
       .replace(/&#39;/g, "'")
       .replace(/&amp;/g, "&");
   }
-  return text.replace(TIMESTAMP_PREFIX_RE, "").trimEnd();
+  // Drop the timestamp and its one separator space, but keep the line's own
+  // indentation, which marks stack frames.
+  const prefix = TIMESTAMP_PREFIX_RE.exec(text);
+  if (prefix) text = text.slice(prefix[0].trimEnd().length + 1);
+  return text.trimEnd();
 }
 
 /**

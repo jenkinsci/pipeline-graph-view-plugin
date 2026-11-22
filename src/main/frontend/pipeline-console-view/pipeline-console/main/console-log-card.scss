@@ -220,16 +220,17 @@ div.console-output-line {
 }
 
 // Lines that look like errors or warnings, see classifyConsoleLines.ts.
+// They reuse the hover/target highlight, tinted with the severity colour.
 div.console-output-line--error,
 div.console-output-line--warning {
   --pgv-line-severity-color: var(--error-color, var(--red));
 
-  background-color: color-mix(
-    in srgb,
-    var(--pgv-line-severity-color) 10%,
-    transparent
-  );
-  box-shadow: inset 2px 0 var(--pgv-line-severity-color);
+  &::before {
+    background-color: color-mix(in srgb, currentColor 10%, transparent);
+    border: var(--jenkins-border--inherit-subtle);
+    color: var(--pgv-line-severity-color);
+    opacity: 1;
+  }
 
   a.console-line-number {
     color: var(--pgv-line-severity-color);

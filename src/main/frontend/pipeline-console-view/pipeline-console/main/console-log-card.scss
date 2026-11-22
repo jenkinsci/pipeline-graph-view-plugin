@@ -240,3 +240,22 @@ div.console-output-line--warning {
 div.console-output-line--warning {
   --pgv-line-severity-color: var(--warning-color, var(--orange));
 }
+
+// Consecutive lines of the same severity read as one block: the boxes join
+// without a border between them. A deep-linked line keeps its own outline.
+@each $severity in error, warning {
+  $line: "pre.console-output-line--#{$severity}";
+
+  #{$line} + #{$line} > div.console-output-line:not(:has(:target))::before {
+    border-top: none;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+
+  #{$line}:has(+ #{$line})
+    > div.console-output-line:not(:has(:target))::before {
+    border-bottom: none;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}

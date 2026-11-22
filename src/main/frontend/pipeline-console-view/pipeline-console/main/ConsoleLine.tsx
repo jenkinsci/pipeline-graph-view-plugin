@@ -31,18 +31,12 @@ export const ConsoleLine = memo(function ConsoleLine(props: ConsoleLineProps) {
       content = content.replace(classicUrl, pipelineViewUrl);
     }
   }
+  const className = props.severity
+    ? `console-output-line console-output-line--${props.severity}`
+    : "console-output-line";
   return (
-    <pre
-      style={{ background: "none", border: "none" }}
-      className="console-output-line"
-    >
-      <div
-        className={
-          props.severity
-            ? `console-output-line console-output-line--${props.severity}`
-            : "console-output-line"
-        }
-      >
+    <pre style={{ background: "none", border: "none" }} className={className}>
+      <div className={className}>
         <a
           className="console-line-number"
           id={id}

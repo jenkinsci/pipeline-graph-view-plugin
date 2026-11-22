@@ -259,3 +259,12 @@ div.console-output-line--warning {
     border-bottom-right-radius: 0;
   }
 }
+
+// A warning block directly next to an error block starts 1px lower so their
+// borders don't touch.
+pre.console-output-line--error + pre.console-output-line--warning,
+pre.console-output-line--warning + pre.console-output-line--error {
+  > div.console-output-line::before {
+    top: 1px;
+  }
+}

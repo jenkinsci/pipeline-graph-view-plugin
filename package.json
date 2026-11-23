@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "@storybook/react-vite": "^10.6.1",
-    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/jest-dom": "^8.0.0",
     "@testing-library/react": "^16.3.0",
     "@types/node": "^26.0.0",
     "@types/react": "^19.1.2",

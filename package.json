@@ -39,7 +39,7 @@
     "linkifyjs": "^4.3.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-zoom-pan-pinch": "4.2.0"
+    "react-zoom-pan-pinch": "4.4.0"
   },
   "devDependencies": {
     "@storybook/react-vite": "^10.6.1",

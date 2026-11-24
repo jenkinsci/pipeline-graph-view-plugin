@@ -45,6 +45,10 @@ public class MultiPipelineGraphViewAction implements Action, IconSpec {
         return target.isBuildable();
     }
 
+    public boolean isParameterized() {
+        return target.isParameterized();
+    }
+
     public Permission getPermission() {
         return Item.BUILD;
     }

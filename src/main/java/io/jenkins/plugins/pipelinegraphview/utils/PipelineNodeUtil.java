@@ -34,6 +34,7 @@ import org.jenkinsci.plugins.workflow.cps.steps.ParallelStep;
 import org.jenkinsci.plugins.workflow.flow.FlowExecution;
 import org.jenkinsci.plugins.workflow.graph.AtomNode;
 import org.jenkinsci.plugins.workflow.graph.FlowNode;
+import org.jenkinsci.plugins.workflow.graph.StepNode;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.jenkinsci.plugins.workflow.steps.FlowInterruptedException;
 import org.jenkinsci.plugins.workflow.steps.StepDescriptor;
@@ -50,12 +51,30 @@ public class PipelineNodeUtil {
     private static final String DECLARATIVE_DISPLAY_NAME_PREFIX = "Declarative: ";
     private static final String PARALLEL_SYNTHETIC_STAGE_NAME = "Parallel";
 
-    public static String getDisplayName(@NonNull FlowNode node) {
+    public static @NonNull String getDisplayName(@NonNull FlowNode node) {
         ThreadNameAction threadNameAction = node.getAction(ThreadNameAction.class);
         String name = threadNameAction != null ? threadNameAction.getThreadName() : node.getDisplayName();
+        if (name == null) {
+            // FlowNode#getDisplayName() returns a LabelAction's name as is, which can be null.
+            name = getStepName(node);
+        }
         return isSyntheticStage(node) && name.startsWith(DECLARATIVE_DISPLAY_NAME_PREFIX)
                 ? name.substring(DECLARATIVE_DISPLAY_NAME_PREFIX.length())
                 : name;
+    }
+
+    /**
+     * The name of the step a node runs, for a node without a display name of its own, or an
+     * empty string if it doesn't run a known step.
+     */
+    static @NonNull String getStepName(@NonNull FlowNode node) {
+        if (node instanceof StepNode stepNode) {
+            StepDescriptor descriptor = stepNode.getDescriptor();
+            if (descriptor != null) {
+                return descriptor.getDisplayName();
+            }
+        }
+        return "";
     }
 
     /**

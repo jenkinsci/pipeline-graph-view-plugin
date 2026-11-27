@@ -14,6 +14,7 @@ import io.jenkins.plugins.casc.misc.JenkinsConfiguredWithCodeRule;
 import io.jenkins.plugins.casc.misc.junit.jupiter.WithJenkinsConfiguredWithCode;
 import io.jenkins.plugins.pipelinegraphview.playwright.PipelineJobPage;
 import io.jenkins.plugins.pipelinegraphview.playwright.PipelineOverviewPage;
+import io.jenkins.plugins.pipelinegraphview.playwright.PipelineStagesPage;
 import io.jenkins.plugins.pipelinegraphview.playwright.PlaywrightConfig;
 import io.jenkins.plugins.pipelinegraphview.utils.TestUtils;
 import jenkins.test.RunMatchers;
@@ -49,6 +50,32 @@ class PipelineGraphViewRebuildTest {
         assertThat(p).hasURL(jobUrl + "2/stages/");
 
         waitUntilBuildIsComplete(j, run);
+    }
+
+    @Issue("GH#1570")
+    @Test
+    @ConfiguredWithCode("configure-appearance.yml")
+    void buildButtonOnStagesPageStartsNewBuild(Page p, JenkinsConfiguredWithCodeRule j) throws Exception {
+        WorkflowRun run =
+                TestUtils.createAndRunJob(j, "hello_world", "helloWorldScriptedPipeline.jenkinsfile", Result.SUCCESS);
+
+        new PipelineStagesPage(p, run.getParent()).goTo().build();
+
+        waitUntilBuildIsComplete(j, run);
+    }
+
+    @Issue("GH#1570")
+    @Test
+    @ConfiguredWithCode("configure-appearance.yml")
+    void buildButtonOnStagesPageGoesToParametersPageForParameterizedJob(Page p, JenkinsConfiguredWithCodeRule j)
+            throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(
+                j, "echo_parameterized", "gh330_parameterizedBuild.jenkinsfile", Result.SUCCESS);
+
+        new PipelineStagesPage(p, run.getParent()).goTo().build();
+
+        assertThat(p).hasURL(run.getParent().getAbsoluteUrl() + "build?delay=0sec");
+        assertEquals(1, run.getParent().getBuilds().size());
     }
 
     @Test

@@ -7,10 +7,9 @@
       <l:app-bar title="${%Stages}">
         <j:if test="${it.buildable}">
           <l:hasPermission permission="${it.permission}">
-            <j:set var="proxyId" value="${h.generateId()}" />
-            <st:bind value="${it}" var="rebuildAction${proxyId}"/>
-            <button id="pgv-rebuild" data-success-message="${%Build scheduled}"
-                    data-proxy-name="rebuildAction${proxyId}"
+            <button id="pgv-build" data-success-message="${%Build scheduled}"
+                    data-build-url="${rootURL}/${it.jobUrl}build"
+                    data-parameterized="${it.parameterized}"
                     class="jenkins-button jenkins-!-build-color">
               <l:icon src="symbol-play-outline plugin-ionicons-api"/>
               ${%Build}

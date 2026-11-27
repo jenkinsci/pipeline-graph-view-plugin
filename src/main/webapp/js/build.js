@@ -1,4 +1,46 @@
-/* global notificationBar */
+/* global notificationBar, crumb */
+
+const buildButton = document.getElementById("pgv-build");
+
+if (buildButton) {
+  buildButton.addEventListener("click", (event) => {
+    event.preventDefault();
+    const buildUrl = `${buildButton.dataset.buildUrl}?delay=0sec`;
+
+    if (buildButton.dataset.parameterized === "true") {
+      // Jenkins asks for the parameters of the build
+      window.location.href = buildUrl;
+      return;
+    }
+
+    fetch(buildUrl, {
+      method: "post",
+      headers: crumb.wrap({}),
+    })
+      .then((response) => {
+        if (response.ok) {
+          notificationBar.show(
+            buildButton.dataset.successMessage,
+            notificationBar.SUCCESS,
+          );
+        } else {
+          console.error("Failed to schedule the build:", response);
+          notificationBar.show(
+            `Failed to schedule the build: HTTP ${response.status}`,
+            notificationBar.WARNING,
+          );
+        }
+        return null;
+      })
+      .catch((error) => {
+        console.error("Failed to schedule the build:", error);
+        notificationBar.show(
+          `Failed to schedule the build: ${error.message}`,
+          notificationBar.WARNING,
+        );
+      });
+  });
+}
 
 const rerunButton = document.getElementById("pgv-rerun");
 

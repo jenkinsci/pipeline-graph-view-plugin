@@ -8,7 +8,6 @@ import hudson.ExtensionList;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineGraph;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineNodeUtil;
 import io.jenkins.plugins.pipelinegraphview.utils.PipelineStepList;
-import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 import jenkins.util.SystemProperties;
@@ -18,9 +17,9 @@ import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 /**
  * Holds one {@link LiveGraphState} per in-progress run of this Jenkins.
- * Entries are created on demand by the listener / lifecycle code, removed on completion,
- * and otherwise bounded by a Caffeine LRU so abandoned entries (deleted runs, listener
- * bugs) don't leak.
+ * Entries are created on demand by the listener / lifecycle code, removed on completion
+ * (including hard kills), and otherwise bounded by a size-limited Caffeine cache so abandoned
+ * entries (deleted runs, listener bugs) don't leak.
  *
  * <p>Operator knobs:
  * <ul>
@@ -42,10 +41,11 @@ public final class LiveGraphRegistry {
         return ExtensionList.lookupSingleton(LiveGraphRegistry.class);
     }
 
-    private final Cache<String, LiveGraphState> states = Caffeine.newBuilder()
-            .maximumSize(CACHE_MAX_SIZE)
-            .expireAfterAccess(Duration.ofMinutes(30))
-            .build();
+    // No idle expiry: a step can run for hours without adding a node, and a state recreated
+    // mid-run by LiveGraphPopulator has missed the earlier nodes, so it never becomes ready and
+    // the rest of the run falls back to the scanner.
+    private final Cache<String, LiveGraphState> states =
+            Caffeine.newBuilder().maximumSize(CACHE_MAX_SIZE).build();
 
     public LiveGraphRegistry() {}
 

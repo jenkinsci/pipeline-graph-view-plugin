@@ -38,6 +38,15 @@ public class PipelineNodeGraphAdapter implements PipelineGraphBuilderApi, Pipeli
         treeScanner = new PipelineNodeTreeScanner(run);
     }
 
+    /**
+     * Builds from the execution's nodes, with liveness read from {@code activeNodeIds} when
+     * non-null. Pass an empty set for a completed run (see
+     * {@link PipelineNodeTreeScanner#PipelineNodeTreeScanner(WorkflowRun, Set)}).
+     */
+    public PipelineNodeGraphAdapter(WorkflowRun run, @CheckForNull Set<String> activeNodeIds) {
+        treeScanner = new PipelineNodeTreeScanner(run, activeNodeIds);
+    }
+
     /** Builds the adapter over a pre-collected node set rather than walking the execution. */
     public PipelineNodeGraphAdapter(WorkflowRun run, Collection<FlowNode> preCollectedNodes) {
         this(run, preCollectedNodes, null, null);

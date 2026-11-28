@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.jenkinsci.plugins.workflow.test.steps.SemaphoreStep.*;
 
 import hudson.model.Result;
@@ -16,6 +17,8 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
@@ -147,6 +150,170 @@ class PipelineGraphViewCacheTest {
         cache.getGraph(run, () -> new PipelineGraphApi(run).computeTree());
 
         assertThat("legacy XStream cache file is removed", legacy.exists(), is(false));
+    }
+
+    @Test
+    void incompleteResultsAreNotCached() throws Exception {
+        // A finished run can capture a graph just as completion is observed and produce one
+        // whose statuses still say "running". Persisting that (or memoising it) would serve
+        // the incomplete graph for the rest of the run's life: the tree endpoint treats a
+        // cache hit as final and the frontend stops polling.
+        WorkflowRun run = TestUtils.createAndRunJob(j, "incomplete", "smokeTest.jenkinsfile", Result.FAILURE);
+        File treeFile = new File(run.getRootDir(), PipelineGraphViewCache.TREE_FILE_NAME);
+        File stepsFile = new File(run.getRootDir(), PipelineGraphViewCache.ALL_STEPS_FILE_NAME);
+        Files.deleteIfExists(treeFile.toPath());
+        Files.deleteIfExists(stepsFile.toPath());
+        cache.invalidateMemory();
+
+        PipelineGraph incompleteGraph = new PipelineGraph(new ArrayList<>(), false);
+        PipelineStepList incompleteSteps = new PipelineStepList(false);
+        assertThat(cache.getGraph(run, () -> incompleteGraph), is(sameInstance(incompleteGraph)));
+        assertThat(cache.getAllSteps(run, () -> incompleteSteps), is(sameInstance(incompleteSteps)));
+
+        assertThat("incomplete graph is not persisted", treeFile.exists(), is(false));
+        assertThat("incomplete step list is not persisted", stepsFile.exists(), is(false));
+
+        // Nothing was memoised either, so the next request rebuilds rather than returning the
+        // incomplete result forever.
+        AtomicInteger computes = new AtomicInteger();
+        PipelineGraph completeGraph = new PipelineGraphApi(run).computeTree();
+        PipelineStepList completeSteps = new PipelineStepList(true);
+        assertThat(
+                cache.getGraph(run, () -> {
+                    computes.incrementAndGet();
+                    return completeGraph;
+                }),
+                is(sameInstance(completeGraph)));
+        assertThat(
+                cache.getAllSteps(run, () -> {
+                    computes.incrementAndGet();
+                    return completeSteps;
+                }),
+                is(sameInstance(completeSteps)));
+        assertThat("both results were recomputed", computes.get(), equalTo(2));
+        assertThat("the complete graph is persisted", treeFile.exists(), is(true));
+        assertThat("the complete step list is persisted", stepsFile.exists(), is(true));
+    }
+
+    @Test
+    void emptyCompleteGraphIsNotCached() throws Exception {
+        // An empty graph can be produced for a run whose execution is unavailable (e.g. a
+        // force-killed one) or whose job was deleted and recreated. Caching it as final would
+        // freeze the stage view empty, so such a result must always be rebuilt.
+        WorkflowRun run = TestUtils.createAndRunJob(j, "empty-graph", "smokeTest.jenkinsfile", Result.FAILURE);
+        File treeFile = new File(run.getRootDir(), PipelineGraphViewCache.TREE_FILE_NAME);
+        Files.deleteIfExists(treeFile.toPath());
+        cache.invalidateMemory();
+
+        PipelineGraph emptyGraph = new PipelineGraph(new ArrayList<>(), true);
+        assertThat(cache.getGraph(run, () -> emptyGraph), is(sameInstance(emptyGraph)));
+        assertThat("empty graph is not persisted", treeFile.exists(), is(false));
+
+        AtomicInteger computes = new AtomicInteger();
+        PipelineGraph realGraph = new PipelineGraphApi(run).computeTree();
+        assertThat(
+                cache.getGraph(run, () -> {
+                    computes.incrementAndGet();
+                    return realGraph;
+                }),
+                is(sameInstance(realGraph)));
+        assertThat("the next request rebuilt rather than serving the empty graph", computes.get(), equalTo(1));
+        assertThat("the non-empty graph is persisted", treeFile.exists(), is(true));
+    }
+
+    @Test
+    void seedRefusesIncompletePayloads() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(j, "seed-incomplete", "smokeTest.jenkinsfile", Result.FAILURE);
+        File treeFile = new File(run.getRootDir(), PipelineGraphViewCache.TREE_FILE_NAME);
+        File stepsFile = new File(run.getRootDir(), PipelineGraphViewCache.ALL_STEPS_FILE_NAME);
+        Files.deleteIfExists(treeFile.toPath());
+        Files.deleteIfExists(stepsFile.toPath());
+        cache.invalidateMemory();
+
+        cache.seed(run, new PipelineGraph(new ArrayList<>(), false), new PipelineStepList(true));
+        assertThat("incomplete graph is not seeded", treeFile.exists(), is(false));
+
+        cache.seed(run, new PipelineGraph(new ArrayList<>(), true), new PipelineStepList(true));
+        assertThat("empty graph is not seeded", treeFile.exists(), is(false));
+
+        PipelineGraph graph = new PipelineGraphApi(run).computeTree();
+        cache.seed(run, graph, new PipelineStepList(false));
+        assertThat("incomplete step list is not seeded", stepsFile.exists(), is(false));
+
+        cache.seed(run, graph, new PipelineStepList(true));
+        assertThat("complete payloads are seeded", treeFile.exists(), is(true));
+        assertThat("complete payloads are seeded", stepsFile.exists(), is(true));
+    }
+
+    @Test
+    void completeGraphWithAnInProgressStageIsNotCached() throws Exception {
+        // A graph captured at the moment a run finishes can still carry a stage that was
+        // running. Persisting it (or returning it as complete) stops the client polling while
+        // the stage animates forever.
+        WorkflowRun run = TestUtils.createAndRunJob(j, "stale-running", "smokeTest.jenkinsfile", Result.FAILURE);
+        File treeFile = new File(run.getRootDir(), PipelineGraphViewCache.TREE_FILE_NAME);
+        File stepsFile = new File(run.getRootDir(), PipelineGraphViewCache.ALL_STEPS_FILE_NAME);
+        Files.deleteIfExists(treeFile.toPath());
+        Files.deleteIfExists(stepsFile.toPath());
+        cache.invalidateMemory();
+
+        PipelineStage stage = new PipelineGraphApi(run).computeTree().stages.get(0);
+        PipelineStage running = withState(stage, PipelineState.RUNNING);
+        PipelineGraph inconsistent = new PipelineGraph(List.of(running), true);
+
+        PipelineGraph served = cache.getGraph(run, () -> inconsistent);
+        assertThat("a complete graph with a running stage is served as in progress", served.complete, is(false));
+        assertThat("it is not persisted", treeFile.exists(), is(false));
+
+        cache.seed(run, inconsistent, new PipelineStepList(true));
+        assertThat("it is not seeded", treeFile.exists(), is(false));
+        assertThat("its steps are not seeded", stepsFile.exists(), is(false));
+    }
+
+    @Test
+    void completeStepsWithAnInProgressStepAreNotCached() throws Exception {
+        WorkflowRun run = TestUtils.createAndRunJob(j, "stale-step-running", "smokeTest.jenkinsfile", Result.FAILURE);
+        File stepsFile = new File(run.getRootDir(), PipelineGraphViewCache.ALL_STEPS_FILE_NAME);
+        Files.deleteIfExists(stepsFile.toPath());
+        cache.invalidateMemory();
+
+        PipelineStep step = new PipelineStepApi(run).computeAllSteps().steps.get(0);
+        PipelineStep running = new PipelineStep(
+                step.id,
+                step.getName(),
+                PipelineState.RUNNING,
+                step.type,
+                step.title,
+                step.stageId,
+                null,
+                null,
+                step.timingInfo,
+                null);
+        PipelineStepList inconsistent = new PipelineStepList(List.of(running), true);
+
+        PipelineStepList served = cache.getAllSteps(run, () -> inconsistent);
+        assertThat("a complete list with a running step is served as in progress", served.runIsComplete, is(false));
+        assertThat("it is not persisted", stepsFile.exists(), is(false));
+    }
+
+    private static PipelineStage withState(PipelineStage stage, PipelineState state) {
+        return new PipelineStage(
+                stage.id,
+                stage.getName(),
+                stage.getChildren(),
+                state,
+                stage.type,
+                stage.title,
+                stage.getSeqContainerName(),
+                stage.getNextSibling(),
+                true,
+                stage.synthetic,
+                false,
+                stage.timingInfo,
+                stage.agent,
+                null,
+                null,
+                null);
     }
 
     private WorkflowRun startLongRunningJob() throws Exception {
